@@ -31,7 +31,7 @@ from harness import launcher, profile, winutil  # noqa: E402
 from m1_minimal_loop import capture_bgr  # noqa: E402
 from m2_slice_chain import wait_model_loaded  # noqa: E402
 
-FIXTURES = HERE.parent.parent / "tests" / "data" / "test_3mf"
+FIXTURES = HERE / "fixtures"   # vendored fixture dir (standalone repo)
 MIXED_3MF = FIXTURES / "mixed_filament_test.3mf"  # CLI auto-load fixture
 
 WS_EX_TOOLWINDOW = 0x00000080

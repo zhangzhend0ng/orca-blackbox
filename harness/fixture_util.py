@@ -20,8 +20,8 @@ import json
 import zipfile
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent.parent
-FIXTURES = HERE.parent.parent / "tests" / "data" / "test_3mf"
+HERE = Path(__file__).resolve().parent.parent   # <repo> (standalone checkout root)
+FIXTURES = HERE / "fixtures"   # vendored 3mf/stl fixtures (was <monorepo>/tests/data/test_3mf)
 MIXED_3MF = FIXTURES / "mixed_filament_test.3mf"
 
 ART_FIXTURES = HERE / "artifacts" / "fixtures"

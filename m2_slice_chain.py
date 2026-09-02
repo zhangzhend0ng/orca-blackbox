@@ -151,7 +151,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--exe", default=None)
     ap.add_argument("--datadir", default=HERE / "artifacts" / "profile", type=Path)
-    ap.add_argument("--model", default=HERE.parent.parent / "tests" / "data" / "test_3mf" / "mixed_filament_test.3mf", type=Path,
+    ap.add_argument("--model", default=HERE / "fixtures" / "mixed_filament_test.3mf", type=Path,
                     help="U1-embedded fixture: Prusa.stl (no embedded preset) falls back to a seed preset "
                          "that leaves Slice disabled — see BLACKBOX_CASES.md '关键源码事实'")
     ap.add_argument("--reuse", action="store_true",

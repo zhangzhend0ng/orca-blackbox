@@ -46,9 +46,9 @@ import sys
 import time
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent  # sandboxes/vision_gui/harness
-SANDBOX = HERE.parent  # sandboxes/vision_gui
-REPO_RESOURCES = SANDBOX.parent.parent / "resources"
+HERE = Path(__file__).resolve().parent  # <repo>/harness
+SANDBOX = HERE.parent  # <repo> (standalone checkout root)
+REPO_RESOURCES = SANDBOX / "resources"  # vendored preset subset (profiles/{Snapmaker,BBL} + printers)
 
 # Minimal conf: everything the startup gate needs and nothing personal.
 # Keys are typed like the real conf (bool vs string) so the app's typed

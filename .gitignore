@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# 运行产物（证据 mp4/截图/日志/gcode/种子 datadir）
+artifacts/
+
+# 打包产物
+build/
+dist/
+
+# 用例草稿（review + git mv 后才进正册，见 README MCP/M3 流程）
+drafts/
+
+# 未 review 的模板裁片（review 后去 draft_ 前缀入库）
+resource/image/draft_*
+
+# 本地种子 datadir
+vision_profile*/
