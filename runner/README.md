@@ -48,5 +48,6 @@ python runner\fetch_mp4.py C:\guest\x.mp4 host_x.mp4
 
 - `relay_cmd.txt`/`relay_out.txt` 的宿主 FIFO 与客机 relay 守护不在本仓（属
   vm_setup/vm_setup_guest 基础设施）；`send_to_guest.ps1` 同理——push_verify 依赖它。
-- 套件仍从 monorepo worktree 跑（默认 `ORCA_BB_GUEST_SANDBOX`）；迁到本仓检出
-  前需把 fixtures/resources 一起同步到客机。
+- 客机检出 = GitHub tarball（客机无 git）：`Invoke-WebRequest
+  https://codeload.github.com/zhangzhend0ng/orca-blackbox/tar.gz/refs/heads/main`
+  解包到 `C:\coil\orca-blackbox`，跑 `tools/check_registry.py` 验证。
