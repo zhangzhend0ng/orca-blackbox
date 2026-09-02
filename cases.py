@@ -43,19 +43,19 @@ def _o(milestone: str, tier: str) -> dict:
 CASES: dict[str, dict] = {
     # --- smoke (engine / chain checks) --------------------------------------
     "m0_boot_check": {
-        "file": "m0_boot_check.py", "milestone": "m0", "tier": "A",
+        "file": "tests/m0_boot_check.py", "milestone": "m0", "tier": "A",
         "suite": "smoke", "enabled": True,
     },
     "m1_minimal_loop": {
-        "file": "m1_minimal_loop.py", "milestone": "m1", "tier": "A",
+        "file": "tests/m1_minimal_loop.py", "milestone": "m1", "tier": "A",
         "suite": "smoke", "enabled": True,
     },
     "m1b_maa": {
-        "file": "m1b_maa.py", "milestone": "m1", "tier": "A",
+        "file": "tests/m1b_maa.py", "milestone": "m1", "tier": "A",
         "suite": None, "enabled": False,  # engine experiment (m0: MaaFw rejected)
     },
     "m2_slice_chain": {
-        "file": "m2_slice_chain.py", "milestone": "m2", "tier": "A",
+        "file": "tests/m2_slice_chain.py", "milestone": "m2", "tier": "A",
         "suite": "smoke", "enabled": True,
     },
     # --- m3a-m3i: early business-path cases (runnable, not in the suite) -----
@@ -114,7 +114,7 @@ CASES: dict[str, dict] = {
 # fill file= from the key (stem == file stem by construction) AFTER the _r/_o calls
 for _k, _v in CASES.items():
     if _v["file"] is None:
-        _v["file"] = f"{_k}.py"
+        _v["file"] = f"tests/{_k}.py"
 
 
 def summary(name: str) -> str:

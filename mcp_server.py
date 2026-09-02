@@ -344,8 +344,8 @@ def tool_gcode_assert(path: str, expect: dict) -> dict:
 
 # --- M2: case runner + artifact access ----------------------------------------
 
-_CASE_SKIP = {"ui_runner.py", "mcp_server.py", "mcp_smoke.py", "m3_common.py",
-              "m5_common.py", "cases.py", "inspect_window.py"}
+_CASE_SKIP = {"ui_runner.py", "mcp_server.py", "mcp_smoke.py", "cases.py",
+              "inspect_window.py"}
 
 
 def _case_scripts() -> dict[str, Path]:
@@ -356,9 +356,9 @@ def _case_scripts() -> dict[str, Path]:
     out = {}
     for name, meta in cases_reg.CASES.items():
         if meta["enabled"]:
-            out[meta["file"]] = cases_reg.HERE / meta["file"]
-    for p in sorted(HERE.glob("*.py")):
-        if p.name.startswith("diag_"):
+            # key = bare filename (MCP API convention), value = full path
+            out[Path(meta["file"]).name] = cases_reg.HERE / meta["file"]
+    for p in sorted((HERE / "diag").glob("*.py")):
             out[p.name] = p
     return out
 

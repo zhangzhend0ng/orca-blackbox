@@ -18,3 +18,4 @@ resource/image/draft_*
 
 # 本地种子 datadir
 vision_profile*/
+.zcode/

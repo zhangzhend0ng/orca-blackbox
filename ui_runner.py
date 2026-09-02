@@ -29,8 +29,8 @@ from harness import session_lock, winutil  # noqa: E402
 from harness.launcher import default_exe  # noqa: E402
 
 SCRIPTS = {
-    "m1": HERE / "m1_minimal_loop.py",
-    "m2": HERE / "m2_slice_chain.py",
+    "m1": HERE / "tests" / "m1_minimal_loop.py",
+    "m2": HERE / "tests" / "m2_slice_chain.py",
 }
 
 # UI state survives restarts (exe path, model list). %LOCALAPPDATA% so it

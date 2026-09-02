@@ -56,11 +56,13 @@ check("hv_go.ps1 has no hardcoded case array",
       not re.search(r"@\(?\s*'m\w+_'\s*,", ps1))
 
 # 6: no orphan case scripts outside the registry
-on_disk = {p.name for p in ROOT.glob("m*.py")
+on_disk = {p.name for p in (ROOT / "tests").glob("m*.py")
            if re.match(r"^m\d", p.name) and p.name not in _SKIP}
-in_reg = {meta["file"] for meta in CASES.values()}
+in_reg = {Path(meta["file"]).name for meta in CASES.values()}
 orphans = on_disk - in_reg
-check("no unregistered case scripts on disk", not orphans, f"orphans={sorted(orphans)}")
+check("no unregistered case scripts in tests/", not orphans, f"orphans={sorted(orphans)}")
+check("registry files live under tests/",
+      all(meta["file"].startswith("tests/") for meta in CASES.values()))
 
 # 7: sanity of the canonical suite
 reg = enabled_cases("regression")
