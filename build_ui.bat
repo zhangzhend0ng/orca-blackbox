@@ -1,6 +1,6 @@
 @echo off
 rem build_ui.bat — package the vision_gui UI shell into a self-contained
-rem onedir app with PyInstaller. Run from sandboxes/vision_gui.
+rem onedir app with PyInstaller. Run from the repo root.
 rem
 rem Result:  dist\vision_gui_runner\vision_gui_runner.exe
 rem Layout (packaged): the driver scripts + harness + templates ship as DATA

@@ -1,7 +1,12 @@
-# vision_gui — MAA/ok-ww 式黑盒视觉 GUI 测试沙盒
+# orca-blackbox — Snapmaker Orca 黑盒视觉 GUI 测试套件
 
 对 `snapmaker-orca.exe` 做**外部黑盒**驱动：截图 → 模板匹配定位 → 消息级输入注入 →
-截图断言。全程不接触 app 内部 API（与 `tests/wx_gui/` 的进程内白盒路线互补）。
+截图断言。全程不接触 app 内部 API（与上游仓库 `tests/wx_gui/` 的进程内白盒路线互补）。
+
+> **出处**：本仓内容源自 Snapmaker_Orca monorepo 的
+> `sandboxes/vision_gui/`（分支 `sandbox/vision-gui-blackbox`，经
+> `git filter-repo --subdirectory-filter` 保留全部 38 个提交拆出，2026-09-02）。
+> 被测对象 = 上游构建产物；本仓对上游源码零依赖（fixture 与预设资源已 vendored）。
 
 - 范式参照：[MaaAssistantArknights](https://github.com/MaaAssistantArknights/MaaAssistantArknights) /
   [ok-wuthering-waves](https://github.com/ok-oldking/ok-wuthering-waves)
@@ -16,13 +21,23 @@ harness/            驱动核心（纯 ctypes，零第三方依赖即可跑 m0�
   winutil.py        眼睛+手：EnumWindows/PID 定位、PrintWindow(FULLCONTENT) 截图、
                     WindowFromPoint+SendMessage 点击（远控免疫）、WM_CHAR 键入
   env_check.py      环境预检（GameViewer 等远控层、DPI）— 移植自 wx_gui 的 C++ 门禁
-  profile.py        沙盒 datadir 种子（**数据源 = 仓库/exe resources，非用户 %APPDATA%**）
+  profile.py        沙盒 datadir 种子（数据源 = 仓内 vendored resources/，非用户 %APPDATA%）
   launcher.py       黑盒启动（显式剥除 ORCA_GUI_TEST_MODE！）
 m0_boot_check.py    里程碑0：启动→定位→截图→关闭 冒烟
-ui_runner.py        薄 UI 封装（CustomTkinter）：选模型→跑 m1/m2/批量→流式日志
-                    + live view 截图面板（按进程名找 app → PrintWindow 轮询显示）
-                    + App exe 可替换（输入框透传 --exe，状态存 %LOCALAPPDATA%\vision_gui）
+m1/m2/m3*/m4*/m5*   用例（m1 层驱动验证 → m2 切片链 → m3 业务路径 →
+                    m4 混色全链路 → m5 工艺参数主流程；35 例全绿套件 = m3j..m5h）
+diag_*.py           与用例同名的诊断脚本（不猜坐标/标签，先 diag 实证）
+fixtures/           vendored 3mf/stl 测试夹具（原 monorepo tests/data/test_3mf 子集）
+resources/          vendored 预设子集（profiles/{Snapmaker,BBL} + printers，~9MB；
+                    datadir 种子数据源，与上游 resources/ 的该子集同源）
+runner/             宿主↔客机跑批基础设施快照（hv_go / relay / 探针，见 runner/README.md）
 resource/image/     模板图（提交入库，测试资产）
+mcp_server.py       MCP stdio server：harness 暴露为 AI 工具（坑编码为服务端不变量）
+ui_runner.py        薄 UI 封装（CustomTkinter）：选模型→跑 m1/m2/批量→流式日志
+                    + live view 截图面板 + App exe 可替换（透传 --exe）
+BLACKBOX_CASES.md   用例登记册（35 例判定标准/证据链）
+PITFALLS_0901.md    实测坑册（§1–§17，全部有日志/帧证据）
+FEISHU_MAPPING.md   飞书证据表映射
 artifacts/          运行产物（gitignored）
 ```
 
@@ -37,6 +52,11 @@ python -m venv .venv && .venv/Scripts/pip install -r requirements.txt
 .venv/Scripts/python ui_runner.py                # 薄 UI 封装（CustomTkinter）
 .venv/Scripts/python inspect_window.py           # 子控件枚举 + 截图（开发辅助）
 ```
+
+App 定位链：`ORCA_VISION_APP_EXE` 环境变量 → `<repo>/orca/snapmaker-orca.exe` →
+dev build 兜底路径（`harness/launcher.py`）。宿主机直跑用例要求本机有可显示会话
+（消息注入 + PrintWindow 路线）；无人值守全量回归走 `runner/hv_go.ps1`（Hyper-V
+客机 + INTERACTIVE 计划任务）。
 
 ## 实测结论（2026-08-25，本机 GameViewer 运行中）
 
@@ -209,7 +229,7 @@ MaaFramework 控制器配置也按此选择。
 
 ## 沙盒种子数据源（2026-08-28 起）
 
-seed 的一切都来自**仓库 `resources/`**（exe 旁 `resources/` 兜底），**不再拷贝用户
+seed 的一切都来自**仓内 vendored `resources/`**（exe 旁 `resources/` 兜底），**不再拷贝用户
 `%APPDATA%\Snapmaker_Orca`**——沙盒因此可复现、可交发（不泄漏用户状态）：
 
 | datadir 项 | 来源 | 说明 |
@@ -227,7 +247,7 @@ WCP 云端订阅回调（datadir/web 与 %LOCALAPPDATA% Sentry/WebView2 数据�
 ## 打包为自包含 exe（2026-08-28）
 
 ```bat
-build_ui.bat        rem 在 sandboxes/vision_gui 下运行
+build_ui.bat        rem 在本仓根目录运行
 ```
 
 产物：`dist\vision_gui_runner\vision_gui_runner.exe`（onedir，~183MB，含
@@ -291,3 +311,9 @@ crop_template 裁模板（draft_ 前缀）→ 人类按草稿头部的 checklist
 
 **冒烟**：`mcp_smoke.py` 覆盖 15 工具全链路 + 4 条护栏（窗口外点击、交互期
 run_case、artifacts 路径逃逸、scaffold/crop 清理），全部 GREEN。
+
+## License / 出处
+
+harness 部分内容（如 `env_check.py` 的门禁逻辑）移植自 Snapmaker_Orca
+（AGPL-3.0）源码；被测 app 本身即 AGPL 项目。正式 LICENSE 文件待定，先以本节
+注记来源。
