@@ -1,7 +1,14 @@
 # BLACKBOX_CASES — 黑盒用例清单与覆盖矩阵（U1 限定）
 
-> 策略（2026-08-29 定）：**以黑盒为主**。白盒线（`tests/wx_gui/`，16 用例）不再扩展，
-> 降级为"调研参考资料 + 最小安全网"。新增用例流程 = **先代码调研 → 落四元组 → 再写脚本**。
+> 策略（2026-08-29 定，2026-09-02 更新）：**以黑盒为主**。白盒线（`tests/wx_gui/`）
+> 已从 16 例扩到 **28 例 full-app**（monorepo `ab3b34adf5`，+695 行：11 条业务路径
+> 全 app 测试，21 过 / 7 env-skip / 199 断言），角色从"最小安全网"升级为
+> **快回归通道**；黑盒 35 例回归的定位随之明确为**独立端到端验证**——不依赖
+> `ORCA_GUI_TEST_MODE`、不依赖测试钩子，从渲染/输入注入层面复现用户真实路径。
+> 白盒相关新机制：双测试模式（`930680170f`，`ORCA_GUI_TEST_MODE=network` 跑真实
+> 设备栈）；测试 bootstrap 默认 `ORCA_GUI_TEST_MODE=1`（`453dc208e1`，仅测试 exe，
+> **不进 snapmaker-orca.exe**，黑盒 launcher 剥变量逻辑不受影响）。
+> 新增用例流程 = **先代码调研 → 落四元组 → 再写脚本**。
 > 预设只关心 **Snapmaker U1**（0.8/0.4 nozzle），Bambu/第三方预设一律不测（坑 #10 门控全部绕开）。
 >
 > 黑盒纯度边界：观测通道只有 截图 / 窗口消息 / 文件系统 / 对话框。**只做静态代码调研，
@@ -55,13 +62,21 @@
 | 删除/清空场景 | business P1-7 + P2-8 | dropdown 菜单→Edit 子菜单→真实点击 Delete All 行：viewport 色度回落空床（<0.4%）+ 空场 Slice 拒绝 | m3b_delete_scene.py | ✅ |
 | 导出 3mf→重载 | business P0-4 | File 菜单→Save Project as→保存对话框→文件落盘：zip 有效 + 3D/3dmodel.model 存在 + `printer_settings_id` 保留 "Snapmaker U1 (0.8 nozzle)" + 二次启动模型到达（≥1%） | m3g_export_3mf.py | ✅ |
 | undo/redo 恢复场景 | business P1-6（菜单半）+ P1-7/P2-8 | Edit 菜单 Delete All 清场 → Undo 行真实点击→模型复现（≥1% 双轮）→ Redo 行→再度清场（<0.4%） | m3h_undo_redo.py | ✅ |
-| View 菜单视角切换 | —（白盒无此用例；源码入口 add_common_view_menu_items，MainFrame.cpp:2470） | View 子菜单 Top/Front 行真实点击：两次切换各使 viewport 显著变化（diff>10，实测 45/116）——视角矩阵外部不可读，不做具体角度断言 | m3i_view_menu.py | ✅ |
+| View 菜单视角切换 | —（白盒无此用例；源码入口 add_common_view_menu_items，MainFrame.cpp:2473） | View 子菜单 Top/Front 行真实点击：两次切换各使 viewport 显著变化（diff>10，实测 45/116）——视角矩阵外部不可读，不做具体角度断言 | m3i_view_menu.py | ✅ |
+
+### 新增（2026-09-02 批次：吸收白盒 ab3b34adf5 缺口）
+
+| 用例 | 白盒引用 | 外部断言 | 脚本 | 状态 |
+|---|---|---|---|---|
+| 对象变换→3mf transform 精确断言 | ab3b34adf5:459（transform→instance matrix）+ :505（undo/redo 半，白盒兜底） | Move gizmo 窗口（ImGui，GizmoObjectManipulation.cpp:800 do_render_move_window）Position X 字段：OCR 定位值框→真实点击→消息键盘退格+键入'60'+Enter→OCR 字段变 60.00 + 模型质心位移 + Save Project as→`<build><item transform>` 平移 X 精确=60.0、Y/Z 不变（136/13.5）。**矩阵精确值断言经文件产物实现**——C 层"instance 矩阵不可测"仅限运行时读取，导出 3mf 后是明文 | m6a_transform_verify.py | ✅ |
 
 ### 受限 / 待办（B 层）
 
 | 用例 | 白盒引用 | 状态与原因 |
 |---|---|---|
-| 对象变换（gizmo） | P1-5 | 🟡 gizmo 拖拽深度交互，断言弱——B 层 |
+| gizmo 拖拽（画布箭头拖动） | P1-5 | 🟡 拖拽本体断言弱——数值变换路径已由 m6a_transform_verify 覆盖（A 层），gizmo 拖拽留视觉冒烟 |
+| 画布选中+Delete 键 | P1-7 变体 | 🟡 GLCanvas3D::on_char 的 WXK_DELETE 需先有选中（画布点击命中测试深），当前由菜单 Delete All 覆盖断言面 |
+
 | 画布选中+Delete 键 | P1-7 变体 | 🟡 GLCanvas3D::on_char 的 WXK_DELETE 需先有选中（画布点击命中测试深），当前由菜单 Delete All 覆盖断言面 |
 
 ### 混色匹配（MixedFilamentBatchDialog，2026-08-29 批次，飞书表 48 条）
@@ -121,7 +136,7 @@ instance 矩阵精确值、slice_result_valid 标志、preset 脏状态、切片
 
 | 事实 | 出处 | 对策 |
 |---|---|---|
-| 导出 gcode 可用 = `can_export_gcode()`：模型非空 + `is_slice_result_ready_for_print()` + 不在导出中 | MainFrame.cpp:1600 | **完成检测 = 探测式点击 Export**：对话框出现=完成（确定性信号，优于绿勾模板） |
+| 导出 gcode 可用 = `can_export_gcode()`：模型非空 + `is_slice_result_ready_for_print()` + 不在导出中 | MainFrame.cpp:1602 | **完成检测 = 探测式点击 Export**：对话框出现=完成（确定性信号，优于绿勾模板） |
 | Slice 按钮禁用门链：slicing 中 / only_gcode_mode / 已切片 / 不可切 / 混色不兼容 / 冷板 / flow_ratio 零 | MainFrame.cpp:1989 | 空场景/不可切时点击被吞 = 负向断言 |
 | Slice/Export 是 topbar 右侧竖排 SideButton（自绘 wxWindowNR，**无子 HWND**） | MainFrame.cpp:1742/1862 | 枚举 + GetWindowText + rect 定位（export_util.topbar_buttons）；label 变长会把 Slice 挤左——**每次重新枚举，禁止缓存坐标** |
 | 导出模式切换：点 print 下拉（主按钮左邻空文本按钮）→ SidePopup（独立顶层 'panel'）→ 行含 'Print'/'Export G-code file'（**顺序不保证**，枚举/排序） | MainFrame.cpp:1862 | popup 行点击**不带 root**（popup 在 root 树外，root 解析会 dismiss 假成功） |
@@ -132,7 +147,7 @@ instance 矩阵精确值、slice_result_valid 标志、preset 脏状态、切片
 | Delete all = Ctrl+D，topbar 顶层菜单下 | wx_gui_business_tests.cpp:588 | **SendMessage 键盘不触发 wx accelerator**（走消息循环）——B 层待办 |
 | fixture：mixed_filament_test.3mf（U1 0.8 + 0.40 Standard 嵌入）、snapmates_nonmixed.3mf（7 板，非混色）、Prusa.stl（单对象） | wx_gui_business_tests.cpp:20 | U1 限定直接可用；**Prusa.stl 无嵌入预设 → fallback 不可切片（Slice disabled）→ 弃用作 fixture** |
 | 每用例 fresh datadir + fresh launch → 无 preset 脏状态泄漏（白盒的坑黑盒天然免疫） | README 坑 #1 | 默认 fresh |
-| 顶栏 File/下拉工具 = wxAuiToolBar 内自绘项（**单 HWND 无子控件**）；`BBLTopbar::OnMouseLeftDown` 用 `FindToolByCurrentPosition()`（**真实光标位置**）决定拖窗还是 Skip 给工具 → 消息点击前必须 `SetCursorPos` 到工具上 | BBLTopbar.cpp:213/663 | topbar_util.click_topbar_tool：SetCursorPos + msg_click_screen，按 x 偏移探测（File~10-40、下拉~70-100 @96dpi）；菜单在 DOWN handler 内 PopupMenu（SendMessage 超时 3s 属预期） |
+| 顶栏 File/下拉工具 = wxAuiToolBar 内自绘项（**单 HWND 无子控件**）；`BBLTopbar::OnMouseLeftDown` 用 `FindToolByCurrentPosition()`（**真实光标位置**）决定拖窗还是 Skip 给工具 → 消息点击前必须 `SetCursorPos` 到工具上 | BBLTopbar.cpp:213/618 | topbar_util.click_topbar_tool：SetCursorPos + msg_click_screen，按 x 偏移探测（File~10-40、下拉~70-100 @96dpi）；菜单在 DOWN handler 内 PopupMenu（SendMessage 超时 3s 属预期） |
 | 顶栏菜单 = 原生 TrackPopupMenu（#32768）；**其状态机在菜单模态循环里**：SendMessage/PostMessage 的键与点击一律不生效 | 实测（键：无高亮；点击：菜单不关） | 顶层项用 `WM_COMMAND(item_id)` 直发 frame（wx 经 wxCurrentPopupMenu→MSWCommand→FindItem→SendEvent 分发，m3g 验证）；**子菜单行用真实输入 SendInput 点击**（模态循环只认真实输入，m3b 验证） |
 | File 菜单子菜单项（Import 3MF）经 WM_COMMAND 可分发；**dropdown 菜单（Edit/View/Help）的子菜单项 WM_COMMAND 不分发**（实测 Preferences 顶层可、Delete All 子层不可，原因未明，不深究） | 实测对比 | 规避：dropdown 子菜单一律真实点击；File 菜单顶层项用 WM_COMMAND（m3g） |
 | 菜单行几何：行高 ~20px、**首行起点比 top+2 低 ~12px**（naive 公式偏上 12px）；行点击后菜单关闭=命中可选项 | 实测（m3b 探针 y=300 命中 Delete All） | topbar_util.submenu_row_candidates：以 base 为心 ±6px 步进探针，结合"菜单关闭+模型消失"判定 |

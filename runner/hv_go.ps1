@@ -1,20 +1,34 @@
 # hv_go.ps1 — ONE-CLICK suite runner (HOST, elevated — run in admin window or via relay).
 # Usage:
-#   & runner\hv_go.ps1              # full 35-case suite
+#   & runner\hv_go.ps1              # full suite from cases.py registry
 #   & runner\hv_go.ps1 m3j_mixing_entry m3k_mixing_match   # subset
+#   & runner\hv_go.ps1 -OnlyFailed  # rerun just the last batch's failures
 # Cold start safe: powers the VM on if off, waits for autologon, then launches.
 # Ported from C:\coil\vm_setup\hv_go.ps1 (un-versioned); parameters now come
-# from runner\_common.ps1 (env-overridable).
-param([string[]]$Cases = @(
-  'm3j_mixing_entry','m3k_mixing_match','m3l_mixing_delta','m3m_mixing_filaments','m3n_mixing_cancel',
-  'm3o_mixing_nomodel','m3p_mixing_persist','m3q_mixing_view','m3r_mixing_progress','m3s_mixing_hover',
-  'm3t_mixing_add_ratio','m3u_mixing_ratio_flow','m3v_mixing_cycle_input','m3w_mixing_cycle_flow',
-  'm3x_mixing_match','m3y_mixing_gradient','m3z_mixing_compat','m4a_mixing_gates','m4b_batch_manual',
-  'm4c_mixing_panel','m4d_mixing_filops','m4e_mixing_paint','m4f_mixing_cap64','m4g_mixing_sublayer',
-  'm4h_mixing_templates','m4i_mixing_slice','m4j_mixing_samecolor',
-  'm5a_preset_cycle','m5b_quality_params','m5c_strength_infill','m5d_support_enable',
-  'm5e_combo_params','m5f_negative_params','m5g_preset_manage','m5h_ironing_combos'))
+# from runner\_common.ps1 (env-overridable). Case list comes from cases.py —
+# do NOT hardcode case names here (see docs/STRUCTURING_PLAN.md).
+param([string[]]$Cases = @(), [switch]$OnlyFailed)
 . (Join-Path $PSScriptRoot '_common.ps1')
+
+# default list: cases.py registry (host python; fall back to guest layout note)
+if (-not $Cases) {
+  $repoRoot = Split-Path $PSScriptRoot -Parent
+  $py = (Get-Command python -ErrorAction SilentlyContinue).Source
+  if (-not $py) { $py = $guestPython }  # guest binary as last resort on the host
+  $reg = & $py -c "import sys; sys.path.insert(0, r'$repoRoot'); from cases import enabled_cases; print(' '.join(enabled_cases('regression')))" 2>$null
+  if ($LASTEXITCODE -ne 0 -or -not $reg) {
+    throw "cannot read cases.py registry (host python missing?) — pass -Cases explicitly"
+  }
+  $Cases = @($reg -split '\s+' | Where-Object { $_ })
+  Write-Host "[0] registry: $($Cases.Count) regression cases from cases.py"
+}
+if ($OnlyFailed) {
+  $ff = Join-Path (Split-Path $PSScriptRoot -Parent) 'artifacts\failed_cases.txt'
+  if (Test-Path $ff) {
+    $fl = @(Get-Content $ff | Where-Object { $_.Trim() })
+    if ($fl.Count) { $Cases = $fl; Write-Host "[0] only-failed: $($fl.Count) cases" }
+  }
+}
 
 # 1) power on if needed
 $v = Get-VM $vm

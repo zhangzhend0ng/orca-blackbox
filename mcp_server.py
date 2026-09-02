@@ -53,6 +53,7 @@ PROTO_OUT = sys.__stdout__   # the ONLY writer to the protocol channel
 sys.stdout = sys.stderr      # harness print()s become client-visible logs
 
 from harness import launcher, profile, session_lock, winutil  # noqa: E402
+from harness.case_runner import parse_case_result as _parse_case_result  # noqa: E402
 from harness.ocr_util import ocr_hwnd  # noqa: E402
 
 SERVER_NAME = "vision-gui"
@@ -344,29 +345,40 @@ def tool_gcode_assert(path: str, expect: dict) -> dict:
 # --- M2: case runner + artifact access ----------------------------------------
 
 _CASE_SKIP = {"ui_runner.py", "mcp_server.py", "mcp_smoke.py", "m3_common.py",
-              "inspect_window.py"}
+              "m5_common.py", "cases.py", "inspect_window.py"}
 
 
 def _case_scripts() -> dict[str, Path]:
-    """Runnable case scripts in the sandbox root (m<digit>* / diag_*)."""
+    """Runnable cases: the cases.py registry (single source of truth, see
+    docs/STRUCTURING_PLAN.md) plus diag_* scripts (interactive diagnosis —
+    never part of any suite, but handy through run_case)."""
+    import cases as cases_reg
     out = {}
+    for name, meta in cases_reg.CASES.items():
+        if meta["enabled"]:
+            out[meta["file"]] = cases_reg.HERE / meta["file"]
     for p in sorted(HERE.glob("*.py")):
-        n = p.name
-        if n in _CASE_SKIP:
-            continue
-        if (len(n) > 1 and n[0] == "m" and n[1].isdigit()) or n.startswith("diag_"):
-            out[n] = p
+        if p.name.startswith("diag_"):
+            out[p.name] = p
     return out
 
 
 def tool_list_cases() -> dict:
+    import cases as cases_reg
     cases = []
-    for name, path in _case_scripts().items():
-        try:
-            doc = ast.get_docstring(ast.parse(path.read_text(encoding="utf-8"))) or ""
-        except Exception:
-            doc = ""
-        cases.append({"script": name, "summary": doc.strip().splitlines()[0] if doc.strip() else ""})
+    for fname, path in _case_scripts().items():
+        stem = Path(fname).stem
+        meta = cases_reg.CASES.get(stem)
+        if meta:
+            doc = cases_reg.summary(stem)
+        else:  # diag_*
+            try:
+                doc = ast.get_docstring(ast.parse(path.read_text(encoding="utf-8"))) or ""
+            except Exception:
+                doc = ""
+        cases.append({"script": fname,
+                      "summary": doc.strip().splitlines()[0] if doc.strip() else "",
+                      "suite": meta["suite"] if meta else "diag"})
     return {"cases": cases, "count": len(cases)}
 
 
@@ -444,27 +456,8 @@ def tool_run_case(script: str, args: dict | None = None, timeout_s: int = 1800) 
         session_lock.release()
     duration = time.monotonic() - started
     text = log_path.read_text(encoding="utf-8", errors="replace")
-    green = None  # explicit GREEN/RED marker if the case prints one
-    verdict: dict[str, str] = {}
-    in_block = False
-    for line in text.splitlines():
-        if "=== verdict ===" in line:
-            in_block = True
-            continue
-        if in_block:
-            s = line.strip()
-            if s.startswith("["):
-                in_block = False
-            elif ":" in s:
-                k2, _, v2 = s.partition(":")
-                verdict[k2.strip()] = v2.strip()
-        if "GREEN" in line:
-            green = True
-        elif "RED" in line:
-            green = False
-    if green is None:
-        # m0/m1/m2 convention: the exit code IS the verdict (no GREEN marker)
-        green = (rc == 0) and not timed_out
+    parsed = _parse_case_result(text, rc, timed_out)
+    green, verdict = parsed["green"], parsed["verdict"] or {}
     return {"script": script, "exit_code": rc, "green": green, "timed_out": timed_out,
             "duration_s": round(duration, 1), "verdict": verdict or None,
             "orphan_windows_closed": orphaned, "log_path": str(log_path),
