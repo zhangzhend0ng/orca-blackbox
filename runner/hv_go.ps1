@@ -48,20 +48,34 @@ if ($q -notmatch $guestUser) { throw "guest not logged on after 6 min (autologon
 Write-Host "    logged on."
 
 # 3) push runner + launch INTERACTIVE task
-Write-Host "[3] launching suite: $($Cases.Count) cases"
+# NOTE: the case LIST is computed ON THE GUEST from cases.py — passing a
+# 36-element array through PS Direct collapsed it into ONE string in the
+# field (measured 09-02: every case then "failed" instantly). The registry
+# is the single source of truth; the guest reads it directly. Explicit
+# -Cases subsets (1+) are still passed through as a single string arg.
+Write-Host "[3] launching suite: $(if ($Cases) { $Cases.Count } else { 'full (guest reads cases.py)' }) cases"
+$guestCaseStr = $Cases -join ' '
 Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
-  param($cases, $sb, $py)
-  $list = ($cases | ForEach-Object { "'$_'" }) -join ','
+  param($caseStr, $sb, $py)
+  # full run: the guest derives the list from cases.py itself (single
+  # source of truth); explicit subset: split the passed string.
   $runner = @"
-`$cases = @($list)
+if (`$args -and `$args[0]) { `$cases = @(`$args[0] -split '\s+' | Where-Object { `$_ }) }
+else {
+  `$reg = & '$py' -c "import sys; sys.path.insert(0, r'$sb'); from cases import enabled_cases; print(' '.join(enabled_cases('regression')))"
+  if (-not `$reg) { 'REGISTRY_READ_FAILED' | Set-Content C:\coil\regress_summary.txt; exit 1 }
+  `$cases = @(`$reg -split '\s+' | Where-Object { `$_ })
+}
+"REGRESSION RUN: `$(`$cases.Count) cases" | Set-Content C:\coil\regress_progress.txt
 `$sb = '$sb'
 Set-Location `$sb
-Remove-Item C:\coil\regress_progress.txt,C:\coil\regress_summary.txt -ErrorAction SilentlyContinue
+New-Item -ItemType Directory -Force artifacts | Out-Null
+Remove-Item C:\coil\regress_summary.txt -ErrorAction SilentlyContinue
 `$pass=0; `$fail=0; `$failed=@()
 foreach (`$c in `$cases) {
   "=== `$c ===" | Add-Content C:\coil\regress_progress.txt
   `$env:PYTHONIOENCODING='utf-8'
-  & "$py" "`$c.py" > "artifacts\regress_`$c.log" 2>&1
+  & "$py" "tests\`$c.py" > "artifacts\regress_`$c.log" 2>&1
   if (`$LASTEXITCODE -eq 0) { `$pass++; "`$c GREEN" | Add-Content C:\coil\regress_progress.txt }
   else { `$fail++; `$failed += `$c; "`$c RED rc=`$LASTEXITCODE" | Add-Content C:\coil\regress_progress.txt }
 }
@@ -70,13 +84,13 @@ if (`$failed) { "FAILED: `$(`$failed -join ' ')" | Add-Content C:\coil\regress_s
 "@
   [IO.File]::WriteAllText('C:\coil\run_suite.ps1', $runner)
   Unregister-ScheduledTask -TaskName suite -Confirm:$false -ErrorAction SilentlyContinue
-  $a = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File C:\coil\run_suite.ps1"
+  $a = New-ScheduledTaskAction -Execute "powershell.exe" -Argument ("-NoProfile -ExecutionPolicy Bypass -File C:\coil\run_suite.ps1 " + $caseStr)
   $st = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Hours 4)
   $p = New-ScheduledTaskPrincipal -GroupId "INTERACTIVE"
   Register-ScheduledTask -TaskName "suite" -Action $a -Settings $st -Principal $p -Force | Out-Null
   Start-ScheduledTask -TaskName "suite"
   "suite launched: " + (Get-ScheduledTask suite).State
-} -ArgumentList (,$Cases), $guestSandbox, $guestPython
+} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython
 Write-Host "[4] DONE. Poll progress any time (admin window):"
 Write-Host "    Get-Content C:\coil\vm_setup\poll_rerun.txt | Set-Content C:\coil\vm_setup\relay_cmd.txt   # via relay"
 Write-Host "    or in guest: Get-Content C:\coil\regress_progress.txt -Tail 5"
