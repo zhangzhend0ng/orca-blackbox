@@ -22,6 +22,12 @@
 批控件，UIA 同样看不见）。结构层存在天花板，且天花板正好落在测试最需要
 的参数断言之下。
 
+> 追加修正（2026-09-03 夜实弹采样后，详见 §五.1）：场景①的"按钮可见可点"
+> 需**分族**——MsgDialog 族（如混色对话框）成立；MsgUpdateConfig（预设包
+> 更新弹窗）检测可见（Window@depth1 + 全文案）但动作按钮不暴露，处置走
+> win32 WM_CLOSE（sweep，PITFALLS §19）。owned 对话框挂主窗子树下、不在
+> 桌面顶层——顶层枚举会漏（wizard 先例同）。
+
 ## 二、树质量数据（seeded datadir，idle-boot 就绪后最大化，走树 ~3s）
 
 | 指标 | 值 | 备注 |
@@ -59,21 +65,42 @@ gizmo 工具条与 tooltip、（自绘）菜单条。
 
 | 级 | 场景 | 可行性 | 价值 |
 |---|---|---|---|
-| ① | **启动拦截窗检测与确定性处置**（更新包弹窗、首启向导类） | **高**：wxDialog 的 OK/Cancel 是原生 wx 按钮，结构层可见可点（InvokePattern） | **今天 22 RED 事故的直接对策**（PITFALLS §19）；弹窗属环境噪声，本就不该由视觉断言吸收 |
+| ① | **启动拦截窗检测与确定性处置**（更新包弹窗、首启向导类） | **检测高、按钮驱动分族**：MsgUpdateConfig 实测在树内可见（Window @depth1 + 全文案 Text），但**动作行按钮不暴露**（子树内只有滚动条按钮）——InvokePattern 驱动该弹窗不可行，处置继续走 win32 WM_CLOSE（sweep 已盖戳：3 相合成检查 + 真弹窗 close_test）；MsgDialog 族（混色对话框实测）OK/Cancel 原生可见可点 | **今天 22 RED 事故的直接对策**（PITFALLS §19）；弹窗属环境噪声，本就不该由视觉断言吸收 |
 | ② | **面板/对话框区域锚定**：用命名 Pane/Text 的 rect 圈定区域，视觉断言只在区域内做 | 高（分区层命名 + rect 可靠） | 直击 §12/§13 坐标带漂移、§17.8 黑盒坐标类痛点；模板仍保留在区域内部做状态判定 |
-| ③ | 参数行控件定位与取值 | **不可行**（自绘，结构层无信号） | —— 继续走视觉 + OCR / WM 通道（现状） |
+| ③ | 参数行控件定位与取值 | **不可行**（自绘，结构层无信号——raw view 同样无，见 §五.2） | —— 继续走视觉 + OCR / WM 通道（现状） |
 
 ## 五、后续验证清单（开口子前补）
 
-1. **更新弹窗实弹采样**：下次弹窗出现时跑探针，确认 wxDialog 按钮的
-   UIA 可见性与 InvokePattern 可点性（场景 ① 的最后一环）。
-2. **RawViewWalker 对照**：pywinauto 走 ControlView；raw view 是否暴露
-   更多自绘结构，一次探针即可定论（预期：否，但值得 5 分钟实锤）。
-3. **语言切换稳定性**：本探针在 `en_US` datadir 下测得；zh_CN 下名字
-   全变（探针关键词已是双语）。若 ①② 落地，定位词表必须入 anchors
-   注册表统一维护（结构层资产 = anchors 的新 kind）。
-4. **UIA 查询对渲染帧率的干扰**：走树期间截图帧是否有副作用（预期无，
-   UIA 是读查询；按黑盒纯度边界记录在案）。
+> 状态更新（2026-09-03 夜，`runner/uia_probe.py` 增 --raw/--zh/--dialog-sample
+> 模式 + `hv_uia_probe.ps1` 模式透传，客机实跑）——①②③ 已闭环：
+
+1. **更新弹窗实弹采样**：✅ **已完成**（--dialog-sample，20:14 实跑；前置 = census v2
+   发现 Setup Wizard 模态阻塞启动链、8s 宽限后 WM_CLOSE 放行，真 feed 仍在推
+   2.2.56.2 → 弹窗按需复现，PITFALLS §19.1）。结论：MsgUpdateConfig 在 UIA 树内
+   以 **Window @depth1 'Configuration update'** 可见，正文 Text 全暴露
+   （"A new configuration package is available…"）；但**子树内动作按钮不暴露**
+   （只有 Line up/Page down/Line down 滚动条钮）→ 场景①按分族修正：检测可行，
+   InvokePattern 驱动该弹窗**不可行**，处置一律走 win32 sweep（WM_CLOSE，3 相
+   blocker_sweep_check + 真弹窗 close_test 双证）；MsgDialog 族（混色对话框）仍
+   保持"原生按钮可见可点"结论。owned-window 教训：主框 owned 对话框在 UIA 里挂
+   在**主窗子树下**而非桌面顶层（wizard 先例同），顶层扫描会漏。
+2. **RawViewWalker 对照**：✅ **已完成**（--raw，comtypes `iuia.RawViewWalker`
+   ——注意 walker 是 [propget] 属性不是方法）。全树 103（pywinauto）vs 114
+   （raw），named 63 vs 69；差值 11 节点/6 named **全部是 Setup Wizard 的
+   wxWebView HTML 子树**（Chrome_RenderWidgetHostHWND、"Welcome to Snapmaker
+   Orca"/"Get Started" @depth12）；app 自身结构逐类相同（Button 21=21、Edit
+   2=2、Text 7 vs 9 的 +2 也是 webview）→ **自绘参数行在 raw view 同样不存在**，
+   §三 天花板结论不变。
+3. **语言切换稳定性**：✅ **已完成**（--zh，conf app.language=zh_CN）。结构完全
+   同形（103 节点/63 named/91 automationId）；名字集合 en∩zh 仅 **11/63（17%）**
+   相同且全是技术名（Close/Default Setting/GLCanvas/panel/mm/wxWebView/引导_P1…），
+   用户可见文案全量翻译（导出G-code文件↔Export G-code file、混色匹配↔Color
+   Mixing Match、层高↔Layer height…）→ 定位词表**必须按 locale 注册**；①②落地时
+   词表入 anchors 注册表（双语条目），纯技术名可跨 locale 复用。
+4. **UIA 查询对渲染帧率的干扰**：记录在案——本日 6+ 次探针运行（含深度走树）
+   期间应用保持响应、其后 OCR 锚点仍 score=1.000；UIA 为只读 WM_GETOBJECT 查询，
+   按黑盒纯度边界记录为无副作用迹象（未做帧率基准测量；如开口子后在真实用例中
+   观察异常再补基准）。
 
 ## 六、纯度边界说明
 
