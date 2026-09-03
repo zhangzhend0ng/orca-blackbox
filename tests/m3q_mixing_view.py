@@ -24,7 +24,7 @@ import numpy as np
 HERE = Path(__file__).resolve().parent.parent  # repo root (cases live in tests/)
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE / "tests"))
 
-from harness import mixing_util, winutil  # noqa: E402
+from harness import anchors, mixing_util, winutil  # noqa: E402
 from m2_slice_chain import wait_model_loaded  # noqa: E402
 from m3_common import MIXED_3MF, add_common_args, boot_session, verdict  # noqa: E402
 
@@ -51,8 +51,8 @@ def view_panels_sig(session, dlg):
         if h == dlg:
             dlg_rect = r
     img = mixing_util.dialog_bgr(dlg)
-    orig = mixing_util.map_region_colored(img, dlg_rect, (738, 451, 918, 631))
-    res = mixing_util.map_region_colored(img, dlg_rect, (938, 451, 1165, 678))
+    orig = mixing_util.map_region_colored(img, dlg_rect, anchors.MIX_VIEW_PANEL_ORIG)
+    res = mixing_util.map_region_colored(img, dlg_rect, anchors.MIX_VIEW_PANEL_RESULT)
     return orig, res
 
 

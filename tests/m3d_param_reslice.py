@@ -27,9 +27,10 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent.parent  # repo root (cases live in tests/)
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE / "tests"))
 
-from harness import export_util  # noqa: E402
+from harness import anchors, export_util  # noqa: E402
+from harness.anchors import IDLE_DONE_SCORE  # noqa: E402
 from m2_slice_chain import click_slice_start, wait_slicing_done  # noqa: E402
-from m3_common import (MIXED_3MF, RESOURCE, add_common_args,  # noqa: E402
+from m3_common import (MIXED_3MF, add_common_args,  # noqa: E402
                        boot_session, export_and_check, slice_and_wait, verdict)
 
 
@@ -122,21 +123,21 @@ def main() -> int:
         # (button already done). Poll for whichever settles. ---
         from m1_minimal_loop import match, capture_bgr
         import cv2
-        tpl_idle = str(RESOURCE / "slice_plate_button.png")
+        tpl_idle = anchors.template_path(anchors.SLICE_PLATE_BUTTON)
         idle_score, done_score = 0.0, 0.0
         deadline = time.monotonic() + 30
         while time.monotonic() < deadline:
             img = capture_bgr(session)
             idle_score, *_ = match(img, tpl_idle)
-            done_score, *_ = match(img, str(RESOURCE / "slice_button_done.png"))
-            if idle_score >= 0.9 or done_score >= 0.9:
+            done_score, *_ = match(img, anchors.SLICE_BUTTON_DONE)
+            if idle_score >= IDLE_DONE_SCORE or done_score >= IDLE_DONE_SCORE:
                 break
             time.sleep(1.0)
         print(f"[m3d] after edit: idle={idle_score:.3f} done={done_score:.3f}")
         ok_slice2 = False
-        if idle_score >= 0.9:
+        if idle_score >= IDLE_DONE_SCORE:
             ok_slice2 = slice_and_wait(session, timeout_s=1500)
-        elif done_score >= 0.9:
+        elif done_score >= IDLE_DONE_SCORE:
             ok_slice2 = True  # auto-resliced by the app
         ok_b, data_b = export_and_check(session, out_b)
         lh_b = gcode_layer_height(data_b)

@@ -47,23 +47,21 @@ sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE / "tests"))
 
 from harness import mix_dialog_util as mdu  # noqa: E402
 from harness import mixing_util, winutil  # noqa: E402
+from harness.anchors import (PAINT_BAR_Y as BAR_Y,  # noqa: E402  band notes live
+                             PAINT_PAL_LEFT_OFF as PAL_LEFT_OFF,  # in anchors
+                             PAINT_PAL_Y0 as PAL_Y0, PAINT_PAL_Y1 as PAL_Y1,
+                             PAINT_PITCH as PITCH, PAINT_SCAN_X0_OFF,
+                             VIEWPORT_X0 as VP_X0, VIEWPORT_Y0 as VP_Y0)
 from m1_minimal_loop import capture_bgr  # noqa: E402
-from m2_slice_chain import (VP_X0, VP_Y0, wait_model_loaded)  # noqa: E402
+from m2_slice_chain import wait_model_loaded  # noqa: E402
 from m3_common import MIXED_3MF, add_common_args, boot_session, verdict  # noqa: E402
 
 user32 = ctypes.WinDLL("user32")
 LOG = "[m4e]"
-# Recalibrated 08-31 on the MAXIMIZED window (1920x1032 client): all three
-# fixed 1200x800-era bands were stale. The gizmo toolbar row is top-anchored
-# (BAR_Y holds), but it is centered over the 3D view and once the window is
-# wider than 1200 it REACHES PAST x=1160 — the Color Painting slot sits in
-# the never-scanned right half. The palette band and the model-centroid band
-# are viewport-relative now (m2_slice_chain._vp calibration).
-BAR_Y = 88           # gizmo toolbar row (client y)
-PITCH = 35
-SCAN_X0 = VP_X0 + 60            # hover-scan from the viewport left edge...
-PAL_Y0, PAL_Y1 = 55, 470        # palette band y (top-anchored chrome)...
-PAL_LEFT_OFF = 250              # ...x from viewport-left+offset to window edge
+# Bands moved to harness/anchors.py (PAINT_*, recalibrated 08-31 on the
+# MAXIMIZED window — the fixed 1200x800-era values were stale). SCAN_X0 is
+# viewport-relative and stays computed here.
+SCAN_X0 = VP_X0 + PAINT_SCAN_X0_OFF  # hover-scan from the viewport left edge
 
 
 def client(session, x, y):

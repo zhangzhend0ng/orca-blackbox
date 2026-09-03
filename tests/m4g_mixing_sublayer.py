@@ -59,17 +59,13 @@ HERE = Path(__file__).resolve().parent.parent  # repo root (cases live in tests/
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE / "tests"))
 
 from harness import mixing_util, process_panel as pp, winutil  # noqa: E402
+from harness.anchors import CHECKED_FRACTION  # noqa: E402
 from m2_slice_chain import wait_model_loaded, wait_slicing_done  # noqa: E402
 from m3_common import (MIXED_3MF, add_common_args, boot_session,  # noqa: E402
                        click_slice_start, verdict)
 
 user32 = ctypes.WinDLL("user32")
 LOG = "[m4g]"
-CHECKED_FRACTION = 0.13  # checked reads ~0.21 teal fraction on this build/
-                         # layout, an unchecked box ~0.00-0.06 (measured
-                         # 08-31 on the maximized window; the windowed-era
-                         # 0.25 threshold misclassified every checked state
-                         # and made the toggle rounds flail).
 
 
 def find_subdivide_row(session):

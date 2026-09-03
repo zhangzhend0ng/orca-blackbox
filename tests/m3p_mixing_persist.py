@@ -26,6 +26,7 @@ HERE = Path(__file__).resolve().parent.parent  # repo root (cases live in tests/
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE / "tests"))
 
 from harness import mixing_util, topbar_util, export_util, winutil  # noqa: E402
+from harness.anchors import SIDEBAR_COLOR_MIXING_PANEL, SPREAD_COLORED  # noqa: E402
 from m1_minimal_loop import capture_bgr  # noqa: E402
 from m2_slice_chain import has_colored_content, wait_model_loaded  # noqa: E402
 from m3_common import MIXED_3MF, add_common_args, boot_session, verdict  # noqa: E402
@@ -37,12 +38,11 @@ def color_mixing_panel_sig(session):
     frame (the panel sits left of the mixing-match bar at screen y~460)."""
     img = capture_bgr(session)
     frect = winutil.window_rect(session.hwnd)
-    # client region of the Color Mixing panel (~x 40-190, y 320-380)
-    x0, y0 = 40, 320
-    x1, y1 = 190, 400
+    # client region of the Color Mixing panel (harness/anchors.py)
+    x0, y0, x1, y1 = SIDEBAR_COLOR_MIXING_PANEL
     sub = img[y0:y1, x0:x1].astype(int)
     spread = sub.max(axis=2) - sub.min(axis=2)
-    return float((spread > 40).mean())
+    return float((spread > SPREAD_COLORED).mean())
 
 
 def main() -> int:

@@ -19,8 +19,8 @@ import time
 
 from . import mix_dialog_util as mdu
 from . import mixing_util, winutil
-from m1_minimal_loop import capture_bgr
-from m2_slice_chain import VP_X0, VP_Y0, has_colored_content
+from .anchors import (VIEWPORT_X0 as VP_X0, VIEWPORT_Y0 as VP_Y0,  # noqa: F401
+                      capture_bgr, has_colored_content)
 
 user32 = ctypes.WinDLL("user32")
 WM_RBUTTONDOWN = 0x0204

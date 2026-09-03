@@ -10,6 +10,12 @@
 #   (b) can message-level input reach NATIVE child controls (Edit fields)?
 #   (c) PrintWindow(PW_RENDERFULLCONTENT) GL capture — proven in m0.
 #
+# 09-03: the match machinery (capture_bgr / match / wait_for /
+# click_and_verify / is_tab_teal) and every locator constant moved to
+# harness/anchors.py (STRUCTURING_PLAN 第二期 #1). This module re-exports
+# them so the ~20 `from m1_minimal_loop import capture_bgr` importers keep
+# working unchanged.
+#
 # Exit code 0 = loop green.
 
 import argparse
@@ -19,104 +25,17 @@ import time
 from pathlib import Path
 
 import cv2
-import numpy as np
 
 HERE = Path(__file__).resolve().parent.parent  # repo root (cases live in tests/)
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE / "tests"))
 
-from harness import env_check, launcher, profile, winutil  # noqa: E402
+from harness import anchors, env_check, launcher, profile, winutil  # noqa: E402
+from harness.anchors import (  # noqa: E402  — re-export shim (see header)
+    MATCH_THRESHOLD, TAB_PREPARE_PROBE, TAB_PREVIEW_PROBE, TEMPLATE_CUTS,
+    TEMPLATE_PATHS, capture_bgr, click_and_verify, is_tab_teal,
+    is_tab_unselected, match, wait_for)
 
-RESOURCE = HERE / "resource" / "image"
 user32 = ctypes.WinDLL("user32")
-
-MATCH_THRESHOLD = 0.80
-
-
-def match(screen_bgr: np.ndarray, template_path: Path):
-    """Best match of template in a BGR capture; returns (score, x, y) top-left."""
-    tpl = cv2.imread(str(template_path))
-    if tpl is None:
-        raise FileNotFoundError(template_path)
-    res = cv2.matchTemplate(screen_bgr, tpl, cv2.TM_CCOEFF_NORMED)
-    _, score, _, loc = cv2.minMaxLoc(res)
-    return score, loc[0], loc[1], tpl.shape[1], tpl.shape[0]
-
-
-def capture_bgr(session):
-    cap = winutil.capture_window(session.hwnd)
-    return cv2.cvtColor(np.frombuffer(cap[2], np.uint8).reshape(cap[1], cap[0], 4),
-                        cv2.COLOR_BGRA2BGR)
-
-
-def wait_for(session, template_path: Path, timeout_s: float = 30.0, poll_s: float = 0.5):
-    """Poll until `template_path` matches the live capture (score >= threshold).
-
-    Startup page selection is racy (the final select_tab runs in a CallAfter
-    after GL init — see GUI_App.cpp load_gl_resources), so the driver must
-    WAIT for the expected visual state, never assume a fixed delay.
-    Returns (score, screen_x, screen_y) of the best match.
-    """
-    tpl = cv2.imread(str(template_path))
-    deadline = time.monotonic() + timeout_s
-    best = (0.0, 0, 0)
-    while time.monotonic() < deadline:
-        cap = winutil.capture_window(session.hwnd)
-        img = cv2.cvtColor(np.frombuffer(cap[2], np.uint8).reshape(cap[1], cap[0], 4),
-                           cv2.COLOR_BGRA2BGR)
-        res = cv2.matchTemplate(img, tpl, cv2.TM_CCOEFF_NORMED)
-        _, score, _, loc = cv2.minMaxLoc(res)
-        cx, cy = loc[0] + tpl.shape[1] // 2, loc[1] + tpl.shape[0] // 2
-        ox, oy = winutil.client_to_screen(session.hwnd, 0, 0)
-        best = (float(score), cx + ox, cy + oy)
-        if score >= MATCH_THRESHOLD:
-            return best
-        time.sleep(poll_s)
-    return best
-
-
-def click_and_verify(session, click_tpl: Path, expect_tpl: Path, attempts: int = 4):
-    """Click the control matching `click_tpl`, retry until `expect_tpl` shows
-    AND STAYS for the bounce window.
-
-    Retrying is essential for two reasons:
-      - page switches posted early after boot can be undone by late startup
-        events (EVT_GLVIEWTOOLBAR_3D / restore-project CallAfters bounce the
-        selection back to Prepare — see GUI_App::load_gl_resources);
-      - a click landing mid-repaint can be lost.
-    A single positive sighting is not enough: the app may bounce back within
-    ~1s, so the expected state must be RE-confirmed after a settle delay.
-    Vision drivers retry; they never assume.
-    Returns (ok, last_expect_score).
-    """
-    last = 0.0
-    for i in range(attempts):
-        score, sx, sy = wait_for(session, click_tpl, timeout_s=5.0)
-        if score < MATCH_THRESHOLD:
-            print(f"[m1] attempt {i+1}: click target not found ({score:.3f})")
-            continue
-        hwnd = winutil.msg_click_screen(sx, sy, session.hwnd)
-        print(f"[m1] attempt {i+1}: clicked {click_tpl.name} at ({sx},{sy}) -> hwnd 0x{hwnd:x}")
-        score2, _, _ = wait_for(session, expect_tpl, timeout_s=6.0)
-        last = score2
-        if score2 >= MATCH_THRESHOLD:
-            time.sleep(1.0)  # bounce window
-            img = capture_bgr(session)
-            tpl = cv2.imread(str(expect_tpl))
-            res = cv2.matchTemplate(img, tpl, cv2.TM_CCOEFF_NORMED)
-            _, score3, _, _ = cv2.minMaxLoc(res)
-            last = float(score3)
-            if score3 >= MATCH_THRESHOLD:
-                print(f"[m1] attempt {i+1}: state stable ({score3:.3f})")
-                return True, score3
-            print(f"[m1] attempt {i+1}: state BOUNCED back ({score2:.3f} -> {score3:.3f}), retrying")
-        else:
-            print(f"[m1] attempt {i+1}: expected state not reached ({score2:.3f}), retrying")
-    return False, last
-
-
-def is_tab_teal(img, x: int, y: int) -> bool:
-    px = img[y, x]
-    return abs(int(px[0]) - 136) + abs(int(px[1]) - 150) + abs(int(px[2])) < 60
 
 
 def get_edit_text(hwnd) -> str:
@@ -142,7 +61,7 @@ def main() -> int:
 
         # Boot page selection is racy (deferred CallAfter after GL init):
         # WAIT for the Prepare tab's active state instead of a fixed sleep.
-        score, px, py = wait_for(session, RESOURCE / "tab_prepare_active.png", timeout_s=45.0)
+        score, px, py = wait_for(session, anchors.TAB_PREPARE_ACTIVE, timeout_s=45.0)
         print(f"[m1] boot settled on Prepare: score={score:.3f} tab center=({px},{py})")
         if score < MATCH_THRESHOLD:
             cv2.imwrite(str(HERE / "artifacts" / "m1_debug_timeout.png"), capture_bgr(session))
@@ -157,12 +76,12 @@ def main() -> int:
         cv2.imwrite(str(HERE / "artifacts" / "m1_debug_cap0.png"), capture_bgr(session))
         print(f"[m1] client origin screen: {winutil.client_to_screen(session.hwnd, 0, 0)}")
 
-        active_tpl = RESOURCE / "tab_preview_active.png"
+        active_tpl = anchors.template_path(anchors.TAB_PREVIEW_ACTIVE)
         bootstrap = not active_tpl.exists()
         if bootstrap:
             # First run: no active-state template yet. Click, settle, verify by
             # the teal pixel (ButtonsListCtrl selected color) STABLY, then cut.
-            score, sx, sy = wait_for(session, RESOURCE / "tab_preview_inactive.png", timeout_s=5.0)
+            score, sx, sy = wait_for(session, anchors.TAB_PREVIEW_INACTIVE, timeout_s=5.0)
             if score < MATCH_THRESHOLD:
                 print("[m1] FAIL: preview tab not found"); return 2
             img1 = None
@@ -170,16 +89,17 @@ def main() -> int:
                 winutil.msg_click_screen(sx, sy, session.hwnd)
                 time.sleep(1.0)
                 probe = capture_bgr(session)
-                if is_tab_teal(probe, 244, 49):
+                if is_tab_teal(probe, *TAB_PREVIEW_PROBE):
                     time.sleep(1.0)  # bounce window
                     probe2 = capture_bgr(session)
-                    if is_tab_teal(probe2, 244, 49):
+                    if is_tab_teal(probe2, *TAB_PREVIEW_PROBE):
                         img1 = probe2
                         break
             if img1 is None:
                 print("[m1] FAIL: Preview never became stably selected (teal)"); return 2
         else:
-            ok, score2 = click_and_verify(session, RESOURCE / "tab_preview_inactive.png", active_tpl)
+            ok, score2 = click_and_verify(session, anchors.TAB_PREVIEW_INACTIVE,
+                                          anchors.TAB_PREVIEW_ACTIVE)
             if not ok:
                 img1 = capture_bgr(session)
                 print("[m1] FAIL: switch to Preview not verifiable "
@@ -192,26 +112,32 @@ def main() -> int:
         # (Template matching alone is a weak state discriminator here — the
         # glyphs are identical between states and TM_CCOEFF_NORMED normalizes
         # the uniform background away — so assert on the button COLORS.)
-        tab_px = img1[49, 244]  # Preview tab center (capture coords)
-        preview_now_selected = is_tab_teal(img1, 244, 49)
-        prep_px = img1[49, 108]
-        prep_now_unselected = abs(int(prep_px[0]) - 70) + abs(int(prep_px[1]) - 68) + abs(int(prep_px[2]) - 59) < 60
+        px_, py_ = TAB_PREVIEW_PROBE
+        tab_px = img1[py_, px_]  # Preview tab center (capture coords)
+        preview_now_selected = is_tab_teal(img1, px_, py_)
+        qx_, qy_ = TAB_PREPARE_PROBE
+        prep_px = img1[qy_, qx_]
+        prep_now_unselected = is_tab_unselected(img1, qx_, qy_)
         print(f"[m1] after click: Preview tab BGR={tab_px} selected={preview_now_selected}; "
               f"Prepare tab BGR={prep_px} unselected={prep_now_unselected}")
         verdict["(a) custom tab click"] = "PASS" if (preview_now_selected and prep_now_unselected) else "FAIL"
 
         # cut templates from the VERIFIED switched state only (never blind)
-        cv2.imwrite(str(RESOURCE / "tab_preview_active.png"), img1[31:67, 176:312])
-        cv2.imwrite(str(RESOURCE / "tab_prepare_inactive.png"), img1[31:67, 40:176])
+        y0, y1, x0, x1 = TEMPLATE_CUTS[anchors.TAB_PREVIEW_ACTIVE]
+        cv2.imwrite(str(anchors.TEMPLATE_PATHS[anchors.TAB_PREVIEW_ACTIVE]),
+                    img1[y0:y1, x0:x1])
+        y0, y1, x0, x1 = TEMPLATE_CUTS[anchors.TAB_PREPARE_INACTIVE]
+        cv2.imwrite(str(anchors.TEMPLATE_PATHS[anchors.TAB_PREPARE_INACTIVE]),
+                    img1[y0:y1, x0:x1])
 
         # ---------- click back to Prepare ----------
-        ok_back, score_back = click_and_verify(session, RESOURCE / "tab_prepare_inactive.png",
-                                               RESOURCE / "tab_prepare_active.png")
+        ok_back, score_back = click_and_verify(session, anchors.TAB_PREPARE_INACTIVE,
+                                               anchors.TAB_PREPARE_ACTIVE)
         img2 = capture_bgr(session)
         print(f"[m1] back on Prepare: template score={score_back:.3f}, "
-              f"tab BGR={img2[49, 108]} teal={is_tab_teal(img2, 108, 49)}")
+              f"tab BGR={img2[qy_, qx_]} teal={is_tab_teal(img2, qx_, qy_)}")
         verdict["(a2) switch back to Prepare"] = (
-            "PASS" if (ok_back and is_tab_teal(img2, 108, 49)) else "FAIL")
+            "PASS" if (ok_back and is_tab_teal(img2, qx_, qy_)) else "FAIL")
 
         # ---------- (b) native Edit control reachable? ----------
         # 'Layer height' Edit was at screen (258,708)-ish; re-discover children

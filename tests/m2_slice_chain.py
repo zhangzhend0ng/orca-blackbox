@@ -20,32 +20,27 @@ import numpy as np
 HERE = Path(__file__).resolve().parent.parent  # repo root (cases live in tests/)
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE / "tests"))
 
-from harness import env_check, launcher, profile, winutil  # noqa: E402
-from m1_minimal_loop import (MATCH_THRESHOLD, capture_bgr,  # noqa: E402
-                             click_and_verify, wait_for)
+from harness import anchors, env_check, launcher, profile, winutil  # noqa: E402
+from harness.anchors import (  # noqa: E402  — constants re-exported below
+    MATCH_THRESHOLD, MODEL_COLORED_THRESHOLD, SPREAD_COLORED,
+    TOOLPATH_COLORED_FLOOR, VIEWPORT_X0, VIEWPORT_Y0, capture_bgr,
+    click_and_verify, viewport_crop, wait_for)
 
 RESOURCE = HERE / "resource" / "image"
 
-# 3D viewport region (client px): right of the settings panel, below topbar.
-VP_X0, VP_Y0 = 430, 70   # left sidebar is fixed-width; viewport starts right of it
+# re-export aliases: m3_common / m5_common / m4e / add_shape / diag import
+# VP_X0/VP_Y0 from HERE (pre-anchors convention) — keep the names importable.
+VP_X0, VP_Y0 = VIEWPORT_X0, VIEWPORT_Y0
+
+
 def _vp(img):
     """Viewport crop calibrated for any window size: fixed left/top origin
     (sidebar/tab chrome don't scale), right/bottom edges follow the window."""
-    h, w = img.shape[:2]
-    return img[VP_Y0:max(VP_Y0 + 1, h - 8), VP_X0:max(VP_X0 + 1, w - 8)]
+    return anchors.viewport_crop(img)
 
 # Fraction of viewport pixels that must be clearly chromatic for the model
-# to count as loaded: empty bed measures ~0.15%, a loaded (multicolor) model
-# ~2.1% — 1% sits with >5x margin on both sides (measured 2026-08-28).
-MODEL_COLORED_THRESHOLD = 0.006  # maximized window enlarges the denominator
-
-# Absolute floor for the toolpath assertion: the pre-slice model baseline
-# is 0.7-2.1% depending on the model (default Prusa.stl 0.69%, multicolor
-# 1.9-2.1%) — 1% keeps the gate model-agnostic while far above empty-bed
-# noise (~0.15%). The >=2x ratio gate does the real discrimination; this
-# floor only excludes sub-1% jitter.
-TOOLPATH_COLORED_FLOOR = 0.010
-
+# to count as loaded: MODEL_COLORED_THRESHOLD (harness/anchors.py) — the
+# measured-margin notes live with the constant.
 
 def viewport_stats(img):
     vp = _vp(img).astype(int)
@@ -60,7 +55,7 @@ def has_colored_content(img) -> float:
     """
     vp = _vp(img).astype(int)
     spread = vp.max(axis=2) - vp.min(axis=2)
-    return float((spread > 40).mean())
+    return float((spread > SPREAD_COLORED).mean())
 
 
 def wait_model_loaded(session, timeout_s=30):

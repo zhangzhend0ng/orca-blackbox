@@ -28,7 +28,7 @@ if str(HERE) not in sys.path:
 
 from harness import mix_dialog_util as mdu  # noqa: E402
 from harness import mixing_util, winutil  # noqa: E402
-from m1_minimal_loop import capture_bgr  # noqa: E402
+from harness.anchors import CHECKED_FRACTION, capture_bgr  # noqa: E402
 
 user32 = ctypes.WinDLL("user32")
 # 64-bit-safe prototype: CB_SELECTSTRING passes a string POINTER in lParam
@@ -1158,7 +1158,7 @@ def set_option_checkbox(session, label_substr, want_checked,
             after = checked_state(session, rect)
             print(f"[panel] checkbox {label_substr!r} att{attempt}: "
                   f"{before:.2f} -> {after:.2f}")
-            now_on = after > 0.13
+            now_on = after > CHECKED_FRACTION
             if now_on == want_checked:
                 return now_on, rect
         time.sleep(0.8)

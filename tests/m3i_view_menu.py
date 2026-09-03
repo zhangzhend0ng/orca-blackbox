@@ -21,25 +21,14 @@ import sys
 import time
 from pathlib import Path
 
-import numpy as np
-
 HERE = Path(__file__).resolve().parent.parent  # repo root (cases live in tests/)
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE / "tests"))
 
 from harness import topbar_util  # noqa: E402
+from harness.anchors import (VIEW_DIFF_THRESHOLD, viewport_diff)  # noqa: E402
 from m1_minimal_loop import capture_bgr  # noqa: E402
 from m2_slice_chain import wait_model_loaded  # noqa: E402
 from m3_common import MIXED_3MF, add_common_args, boot_session, verdict  # noqa: E402
-
-# 3D viewport region (client px), same as m2_slice_chain.
-VP_Y0, VP_Y1, VP_X0, VP_X1 = 70, 1030, 430, 1155
-VIEW_DIFF_THRESHOLD = 10.0  # measured 55 for a real view switch
-
-
-def viewport_diff(a, b) -> float:
-    va = a[VP_Y0:VP_Y1, VP_X0:VP_X1].astype(int)
-    vb = b[VP_Y0:VP_Y1, VP_X0:VP_X1].astype(int)
-    return float(np.abs(va - vb).mean())
 
 
 def switch_view(session, row: str, baseline, label: str) -> bool:

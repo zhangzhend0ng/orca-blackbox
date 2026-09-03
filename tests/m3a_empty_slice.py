@@ -18,12 +18,12 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent.parent  # repo root (cases live in tests/)
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE / "tests"))
 
-from m1_minimal_loop import capture_bgr  # noqa: E402
+from harness import anchors  # noqa: E402
+from harness.anchors import IDLE_DONE_SCORE  # noqa: E402
+from m1_minimal_loop import capture_bgr, click_and_verify, match  # noqa: E402
 from m2_slice_chain import (TOOLPATH_COLORED_FLOOR, click_slice_start,  # noqa: E402
                             has_colored_content)
 from m3_common import add_common_args, boot_session, verdict  # noqa: E402
-
-RESOURCE = HERE / "resource" / "image"
 
 
 def main() -> int:
@@ -43,19 +43,16 @@ def main() -> int:
         # 2) grace window: the idle rendering must be PRESERVED (the done
         #    template alone false-positives on the print-button area of an
         #    empty scene — see wait_slicing_done's idle gate)
-        import cv2
-        from m1_minimal_loop import match
         time.sleep(6.0)
         idle_score, _, _, _, _ = match(capture_bgr(session),
-                                       RESOURCE / "slice_plate_button.png")
+                                       anchors.SLICE_PLATE_BUTTON)
         print(f"[m3a] idle button preserved after grace: {idle_score:.3f}")
         results["button stays idle on empty scene"] = (
-            "PASS" if idle_score >= 0.9 else "FAIL")
+            "PASS" if idle_score >= IDLE_DONE_SCORE else "FAIL")
 
         # 3) Preview tab: no toolpath
-        from m1_minimal_loop import click_and_verify
-        ok_pv, _ = click_and_verify(session, RESOURCE / "tab_preview_inactive.png",
-                                    RESOURCE / "tab_preview_active.png")
+        ok_pv, _ = click_and_verify(session, anchors.TAB_PREVIEW_INACTIVE,
+                                    anchors.TAB_PREVIEW_ACTIVE)
         time.sleep(2.0)
         colored = has_colored_content(capture_bgr(session))
         print(f"[m3a] Preview colored fraction: {colored:.3%} "

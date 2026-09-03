@@ -46,6 +46,10 @@ CASES: dict[str, dict] = {
         "file": "tests/m0_boot_check.py", "milestone": "m0", "tier": "A",
         "suite": "smoke", "enabled": True,
     },
+    "m0_anchor_health": {
+        "file": "tests/m0_anchor_health.py", "milestone": "m0", "tier": "A",
+        "suite": "smoke", "enabled": True,
+    },
     "m1_minimal_loop": {
         "file": "tests/m1_minimal_loop.py", "milestone": "m1", "tier": "A",
         "suite": "smoke", "enabled": True,
