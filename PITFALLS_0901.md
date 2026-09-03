@@ -371,3 +371,12 @@ bash 版）/ `clean_guest.ps1`（杀孤儿）/ `max_vmconnect.ps1`（控制台
   （hv_harvest / hv_go_detached / register_relay_watchdog 等）一律以
   自然结束收尾；需要"提前结束"用 if/else 结构化。`exit` 只允许出现
   在 `-File` 子进程形态（relay_watchdog 即如此）。
+
+### 18.7 PS Direct 进程的桌面指标是无桌面默认值（GUI 门禁会误中）
+- **现象**：经 `Invoke-Command -VMName` 直跑的进程不在交互桌面会话内，
+  `GetSystemMetrics` 返回 1024x768 默认值——分辨率/DPI 类 RIG 门禁在该
+  形态下必炸（09-03 夜 pytest 壳首跑实锤）；同一命令放进 INTERACTIVE
+  计划任务（或控制台手动）则返回真实 1920x1080。
+- **修法**：GUI/桌面相关的检查与用例，经 PS Direct 验证时一律走
+  INTERACTIVE 计划任务通道（hv_go 的 suite 任务同款），不要直跑。
+- **通用化**：PS Direct = "客机服务上下文"，不是"客机桌面会话"。
