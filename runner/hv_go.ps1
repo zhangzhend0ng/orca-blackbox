@@ -10,6 +10,21 @@
 param([string[]]$Cases = @(), [switch]$OnlyFailed)
 . (Join-Path $PSScriptRoot '_common.ps1')
 
+# Guest passthrough gate: ONLY caller-supplied selections (-Cases, -OnlyFailed)
+# may go on the scheduled-task command line. A registry-derived default list
+# must NOT: powershell.exe re-tokenizes "-File run_suite.ps1 <36 joined names>"
+# into 36 positional args, and the guest runner's $args[0] then sees only the
+# first one (measured 09-02 night run: "REGRESSION RUN: 1 cases"). Full runs
+# pass nothing; the guest reads cases.py itself (single source of truth).
+
+# powershell.exe -File binds only the FIRST positional token to
+# [string[]]$Cases and leaves the rest in $args (in-session
+# '& hv_go.ps1 a b c' binds all) — merge so both invocation forms
+# see the full explicit list (measured 09-02 night: -File 5 names
+# launched "1 cases").
+$Cases = @($Cases + @($args)) | Where-Object { $_ }
+$explicitCases = $PSBoundParameters.ContainsKey('Cases') -or @($args).Count -gt 0
+
 # default list: cases.py registry (host python; fall back to guest layout note)
 if (-not $Cases) {
   $repoRoot = Split-Path $PSScriptRoot -Parent
@@ -26,7 +41,7 @@ if ($OnlyFailed) {
   $ff = Join-Path (Split-Path $PSScriptRoot -Parent) 'artifacts\failed_cases.txt'
   if (Test-Path $ff) {
     $fl = @(Get-Content $ff | Where-Object { $_.Trim() })
-    if ($fl.Count) { $Cases = $fl; Write-Host "[0] only-failed: $($fl.Count) cases" }
+    if ($fl.Count) { $Cases = $fl; $explicitCases = $true; Write-Host "[0] only-failed: $($fl.Count) cases" }
   }
 }
 
@@ -52,15 +67,16 @@ Write-Host "    logged on."
 # 36-element array through PS Direct collapsed it into ONE string in the
 # field (measured 09-02: every case then "failed" instantly). The registry
 # is the single source of truth; the guest reads it directly. Explicit
-# -Cases subsets (1+) are still passed through as a single string arg.
-Write-Host "[3] launching suite: $(if ($Cases) { $Cases.Count } else { 'full (guest reads cases.py)' }) cases"
-$guestCaseStr = $Cases -join ' '
+# -Cases/-OnlyFailed selections pass through (the guest runner aggregates
+# ALL positional tokens, so command-line re-tokenization is safe).
+Write-Host "[3] launching suite: $(if ($explicitCases) { $Cases.Count } else { 'full (guest reads cases.py)' }) cases"
+$guestCaseStr = if ($explicitCases) { $Cases -join ' ' } else { '' }
 Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
   param($caseStr, $sb, $py)
   # full run: the guest derives the list from cases.py itself (single
   # source of truth); explicit subset: split the passed string.
   $runner = @"
-if (`$args -and `$args[0]) { `$cases = @(`$args[0] -split '\s+' | Where-Object { `$_ }) }
+if (`$args) { `$cases = @((`$args -join ' ') -split '\s+' | Where-Object { `$_ }) }
 else {
   `$reg = & '$py' -c "import sys; sys.path.insert(0, r'$sb'); from cases import enabled_cases; print(' '.join(enabled_cases('regression')))"
   if (-not `$reg) { 'REGISTRY_READ_FAILED' | Set-Content C:\coil\regress_summary.txt; exit 1 }
