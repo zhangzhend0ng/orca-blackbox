@@ -22,7 +22,8 @@ from harness.case_runner import parse_case_result  # noqa: E402
 def add_result(suite: ET.Element, case: str, rc: int, log_path: Path,
                duration_s: float, timed_out: bool = False) -> ET.Element:
     """Append one <testcase> from a finished case's log; returns the element."""
-    text = log_path.read_text(encoding="utf-8", errors="replace") if log_path.exists() else ""
+    # utf-8-sig: guest logs are Out-File utf8 (PS 5.1 adds a BOM)
+    text = log_path.read_text(encoding="utf-8-sig", errors="replace") if log_path.exists() else ""
     parsed = parse_case_result(text, rc, timed_out)
     tc = ET.SubElement(suite, "testcase", {
         "name": case,

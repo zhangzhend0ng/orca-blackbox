@@ -7,7 +7,7 @@
 # Ported from C:\coil\vm_setup\hv_go.ps1 (un-versioned); parameters now come
 # from runner\_common.ps1 (env-overridable). Case list comes from cases.py —
 # do NOT hardcode case names here (see docs/STRUCTURING_PLAN.md).
-param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$Warmup)
+param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$Warmup, [switch]$NoSync)
 . (Join-Path $PSScriptRoot '_common.ps1')
 
 # Guest passthrough gate: ONLY caller-supplied selections (-Cases, -OnlyFailed)
@@ -69,6 +69,37 @@ do {
 if ($q -notmatch $guestUser) { throw "guest not logged on after 6 min (autologon broken?)" }
 Write-Host "    logged on."
 
+# 2.5) sync the guest checkout — the guest tracks ORIGIN (git clone since
+# 09-03), so unpushed host work never reaches it. Warn on host drift, pull
+# the guest --ff-only, and refuse to launch on a dirty/diverged sandbox:
+# silently running stale tests is exactly what this step exists to prevent.
+Push-Location (Split-Path $PSScriptRoot -Parent)
+# rev-parse does NOT do range semantics — on 'A..B' it prints BOTH endpoints
+# (sha + ^sha), which once falsely reported "2 commits ahead"; rev-list counts.
+$aheadCount = [int](git rev-list --count 'origin/main..HEAD' 2>$null)
+# only tracked modifications count as drift — untracked files are never
+# pushed and never executed (the runner's case list comes from the registry)
+$dirty = @(git status --porcelain 2>$null | Where-Object { $_ -notmatch '^\?\?' })
+Pop-Location
+if ($aheadCount -gt 0) { Write-Warning "host is $aheadCount commit(s) ahead of origin/main — guest will NOT see them until pushed" }
+if ($dirty) { Write-Warning "host worktree has $($dirty.Count) uncommitted entries — these do not reach the guest either" }
+if (-not $NoSync) {
+  Write-Host "[2.5] syncing guest checkout (git pull --ff-only)..."
+  $sync = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
+    param($git, $sb)
+    $dirty = @(& $git -C $sb status --porcelain |
+      Where-Object { $_ -notmatch '^\?\?' })
+    if ($dirty) { return "DIRTY: " + (($dirty | Select-Object -First 5) -join '; ') }
+    $pull = (& $git -C $sb pull --ff-only 2>&1 | ForEach-Object { "$_" }) -join ' | '
+    "PULLED: $pull HEAD: " + (& $git -C $sb log --oneline -1)
+  } -ArgumentList $guestGit, $guestSandbox
+  Write-Host "    $sync"
+  if ("$sync" -match 'DIRTY|fatal|error|conflict|refusing') {
+    throw "guest checkout sync failed — refusing to launch (pass -NoSync to override, e.g. deliberate bisect): $sync"
+  }
+}
+else { Write-Host "[2.5] guest sync skipped (-NoSync)" }
+
 # 3) push runner + launch INTERACTIVE task
 # NOTE: the case LIST is computed ON THE GUEST from cases.py — passing a
 # 36-element array through PS Direct collapsed it into ONE string in the
@@ -93,7 +124,7 @@ Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
     $warmupCode = @"
 if (`$cases.Count -gt 1) {
   "=== warmup (`$(`$cases[0]) result discarded) ===" | Add-Content C:\coil\regress_progress.txt
-  & "$py" "tests\`$(`$cases[0]).py" > "artifacts\regress_`$(`$cases[0]).log.warmup" 2>&1
+  & "$py" "tests\`$(`$cases[0]).py" 2>&1 | Out-File -FilePath "artifacts\regress_`$(`$cases[0]).log.warmup" -Encoding utf8
 }
 "@
   }
@@ -110,16 +141,22 @@ Set-Location `$sb
 New-Item -ItemType Directory -Force artifacts | Out-Null
 Remove-Item C:\coil\regress_summary.txt -ErrorAction SilentlyContinue
 $warmupCode
-`$pass=0; `$fail=0; `$failed=@()
+`$pass=0; `$fail=0; `$failed=@(); `$batch=''
 foreach (`$c in `$cases) {
   "=== `$c ===" | Add-Content C:\coil\regress_progress.txt
   `$env:PYTHONIOENCODING='utf-8'
-  & "$py" "tests\`$c.py" > "artifacts\regress_`$c.log" 2>&1
+  # PS 5.1 '>' writes UTF-16LE — junit_report reads UTF-8; route through
+  # Out-File -Encoding utf8 or the emitter embeds mojibake (measured 09-03).
+  & "$py" "tests\`$c.py" 2>&1 | Out-File -FilePath "artifacts\regress_`$c.log" -Encoding utf8
   if (`$LASTEXITCODE -eq 0) { `$pass++; "`$c GREEN" | Add-Content C:\coil\regress_progress.txt }
   else { `$fail++; `$failed += `$c; "`$c RED rc=`$LASTEXITCODE" | Add-Content C:\coil\regress_progress.txt }
+  `$batch = "`$batch `$c|`$LASTEXITCODE|artifacts\regress_`$c.log"
 }
 "SUMMARY: PASS=`$pass FAIL=`$fail" | Set-Content C:\coil\regress_summary.txt
 if (`$failed) { "FAILED: `$(`$failed -join ' ')" | Add-Content C:\coil\regress_summary.txt }
+`$specs = `$batch.Split()
+`$junit = & "$py" harness\junit_report.py --batch artifacts\junit.xml `$specs 2>&1
+"junit: `$junit" | Add-Content C:\coil\regress_progress.txt
 "@
   [IO.File]::WriteAllText('C:\coil\run_suite.ps1', $runner)
   Unregister-ScheduledTask -TaskName suite -Confirm:$false -ErrorAction SilentlyContinue
