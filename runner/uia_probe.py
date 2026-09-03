@@ -639,6 +639,30 @@ def raw_view_compare(main_hwnd: int, pywinauto_stats: WalkStats,
     return out
 
 
+def _walk_for_dialog(main_info: Any, log: StepLog) -> dict[str, Any]:
+    """Walk the main-window subtree; find an owned update dialog.
+
+    wxDialogs parented to the main frame are OWNED windows: EnumWindows
+    sees them (the census watcher does) but the UIA tree attaches them
+    UNDER the owner — desktop-root scans miss them entirely (measured
+    09-03: extra_windows stayed 0 while the Setup Wizard was demonstrably
+    up and in-tree). Returns the dialog node + its button names.
+    """
+    stats = WalkStats()
+    collected: list[tuple[Node, Any]] = []
+    root = walk_tree(main_info, 0, "", stats, log,
+                     time.monotonic() + 60, collected)
+    nodes = flatten([root])
+    dlg = next((n for n in nodes
+                if n.name.lower() == "configuration update"), None)
+    buttons = [n.name for n in nodes
+               if n.control_type == "Button" and n.name]
+    return {"dialog_found": dlg is not None,
+            "dialog_name": dlg.name if dlg else "",
+            "dialog_depth": dlg.depth if dlg else None,
+            "buttons": buttons[:20], "nodes": stats.nodes}
+
+
 def dialog_sample_run(session: Any, desktop: Any, main_hwnd: int,
                       log: StepLog) -> dict[str, Any]:
     """Scene-① evidence: the REAL preset-pack update dialog under UIA.
@@ -647,10 +671,10 @@ def dialog_sample_run(session: Any, desktop: Any, main_hwnd: int,
     dismiss_blockers=False) so the dialog stays up; the modal Setup
     Wizard is dismissed first (m3-proven WM_CLOSE) because it blocks the
     post-init chain that would produce the dialog (boot_probe census
-    v2, PITFALLS_0901.md 19.1). Then poll-scan for the app's extra
-    windows: the 'Configuration update' MsgUpdateConfig toplevel with
-    its first-level button names — what a UIA-driven dismissal (scene ①)
-    would target. Nothing is clicked.
+    v2, PITFALLS_0901.md 19.1). Then poll-WALK the main window subtree
+    (owned dialogs attach under the main frame — the wizard precedent)
+    until the 'Configuration update' MsgUpdateConfig toplevel with its
+    buttons shows. Nothing is clicked.
     """
     from harness import process_panel as pp
     from harness.mixing_util import toplevel
@@ -660,7 +684,7 @@ def dialog_sample_run(session: Any, desktop: Any, main_hwnd: int,
     #    config_wizard_startup then) — closing earlier closes nothing and
     #    close_setup_wizard returns True for "absent", leaving the chain
     #    blocked behind the wizard (measured 09-03: the first _dlog run
-    #    closed at t=1s -> wizard stayed up -> 64s scan found nothing).
+    #    closed at t=1s -> wizard stayed up -> 64s of scans found nothing).
     hit = None
     for _ in range(40):
         hit = next((h for cls, txt, _r, h in toplevel(session.pid)
@@ -676,18 +700,26 @@ def dialog_sample_run(session: Any, desktop: Any, main_hwnd: int,
                    for cls, txt, _r, _h in toplevel(session.pid))
     log.add("INFO", "wizard_close", f"seen={wizard_seen} closed={wiz_closed} "
                                     f"still_up={still_up}")
-    extras: list[dict[str, Any]] = []
+    scans: list[dict[str, Any]] = []
+    main_spec = desktop.window(handle=session.hwnd)
+    main_info = main_spec.wrapper_object().element_info
     waits_s = 0
+    found = None
     if not still_up:
         for _ in range(8):
             time.sleep(8.0)
             waits_s += 8
-            extras = scan_extra_windows(desktop, main_hwnd, log)
-            if extras:
+            scan = _walk_for_dialog(main_info, log)
+            scans.append({"waits_s": waits_s, **scan})
+            if scan["dialog_found"]:
+                found = scan
                 break
+    if found is None:
+        log.add("WARN", "dialog_sample", "Configuration update dialog not "
+                                         "found in 8 walks")
     out = {"wizard_seen": wizard_seen, "wizard_closed": wiz_closed,
            "wizard_still_up": still_up, "scan_waits_s": waits_s,
-           "extra_windows": extras}
+           "dialog": found, "scans": scans[-3:]}
     for extra in extras:
         log.add("INFO", "dialog_sample_found",
                 f"name={ascii_safe(extra['name'])[:70]} "
@@ -736,9 +768,13 @@ def build_report(result: dict[str, Any]) -> str:
         add(f"  [{ascii_safe(extra['name'])[:70]}] class={extra['class_name']} buttons={ascii_safe('|'.join(extra['buttons']))[:90]}")
     ds = result.get("dialog_sample")
     if ds:
-        add(f"dialog sample (scene 1): wizard_closed={ds.get('wizard_closed')} "
+        dlg = ds.get("dialog") or {}
+        add(f"dialog sample (scene 1): wizard_seen={ds.get('wizard_seen')} "
+            f"closed={ds.get('wizard_closed')} still_up={ds.get('wizard_still_up')} "
             f"scan_waits_s={ds.get('scan_waits_s')} "
-            f"extras={len(ds.get('extra_windows', []))}")
+            f"dialog_found={dlg.get('dialog_found')} "
+            f"name={ascii_safe(dlg.get('dialog_name', ''))[:40]} "
+            f"buttons={ascii_safe('|'.join(dlg.get('buttons', [])))[:120]}")
     mixing = result.get("mixing_search", {})
     add(f"mixing search: {len(mixing.get('matches', []))} matches (keywords={ascii_safe(str(mixing.get('keywords')))}[:110])")
     for attempt in mixing.get("invoke_attempts", []):
@@ -792,12 +828,11 @@ def main() -> int:
         session = launch_app(log, language="zh_CN" if zh else "en_US",
                              dismiss_blockers=not ds)
         if ds:
-            # scene-① sample only: dismiss the modal wizard, then scan for
-            # the REAL preset-pack dialog under UIA; nothing is clicked
+            # scene-① sample only: dismiss the modal wizard, then poll-walk
+            # for the REAL preset-pack dialog under UIA; nothing is clicked
             main_hwnd = int(session.hwnd)
             result["dialog_sample"] = dialog_sample_run(session, desktop,
                                                         main_hwnd, log)
-            result["extra_windows"] = result["dialog_sample"]["extra_windows"]
             completed = True
             return 0  # finally block writes the outputs
         wait_idle_boot(session, log, zh=zh)
