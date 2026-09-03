@@ -16,12 +16,19 @@ v2 (09-03): census v1 blind spots, fixed after source verification
      localhost fetch, no dialog, exactly what v1 measured. Keys now go
      under {"app": {...}} (profile.conf_extra deep-merges one level).
   2. v1 watcher exited on the FIRST non-main toplevel. The first-run
-     Setup Wizard (#32770 'Setup Wizard', self-healing ~10s, measured
-     t=2s in phase a) therefore ended phases before any real blocker
-     could appear. The watcher now classifies windows (wizard vs
-     blockers vs other), tracks the FULL window lifecycle (appear /
-     retitle / gone) and only forms findings from NON-wizard windows
-     that persist >= STABLE_S.
+     Setup Wizard (#32770 'Setup Wizard', measured t=2s in phase a)
+     therefore ended phases before any real blocker could appear. The
+     watcher now classifies windows (wizard vs blockers vs other), tracks
+     the FULL window lifecycle (appear / retitle / gone) and only forms
+     findings from NON-wizard windows that persist >= STABLE_S.
+  2b. Census v2 first run (09-03): the wizard does NOT self-close in
+     empty-seed boots (persisted the full 150s phase) and it is MODAL —
+     phase b with a live localhost feed logged ZERO feed requests while
+     the wizard was up (the post-init chain: config_wizard_startup ->
+     preset sync -> version check never ran). The probe therefore
+     dismisses the wizard after WIZARD_GRACE_S via WM_CLOSE — the
+     m3-proven driver path (tests/m3_common.close_setup_wizard) — so the
+     boot chain can run and blockers become measurable.
   3. The app-version dialog actually shown by the boot chain is
      UpdateVersionDialog, titled "New version of Snapmaker Orca"
      (ReleaseNote.cpp) — NOT MsgUpdateSlic3r ("Snapmaker Orca Update",
@@ -102,6 +109,8 @@ OBSERVE_S = {"a": 150, "b": 150, "f": 90, "c": 150, "e": 150}
 STABLE_S = 12.0        # popup confirmed only after it persists this long
 FORCE_STABLE_S = 8.0   # force dialog: presence is enough, it never self-heals
 POLL_S = 1.0
+WIZARD_GRACE_S = 8.0   # modal wizard grace before the probe dismisses it
+WIZARD_CLOSE_MAX = 2   # per phase; a re-popping wizard is left alone after
 
 # Localhost feed used by phases b/f (the app's own http client, in-process,
 # so 127.0.0.1 works). Payload mirrors meta-cfg.snapmaker.com exactly.
@@ -286,8 +295,17 @@ def watch(phase: str, session, expect: str, stable_s: float = STABLE_S) -> dict:
                   popup is a finding, but keep watching to the cap so ALL
                   findings (e.g. the unstubbable preset-pack dialog) list.
 
-    The first-run Setup Wizard (self-healing ~10s) is classified 'wizard':
-    never a finding, never ends a phase — only its lifecycle is recorded.
+    The first-run Setup Wizard (#32770, HTML) is classified 'wizard': never
+    a finding, never ends a phase. It is MODAL: while it is up, the post-init
+    boot chain (preset sync -> update checks) is blocked and no blocker
+    dialog can ever appear (measured 09-03 census v2: phase b with a live
+    localhost feed got 0 feed requests while the wizard stayed up 150s; the
+    wizard also does NOT self-close in the empty-seed boots the census runs).
+    Regression drivers dismiss it themselves (tests/m3_common:
+    close_setup_wizard, WM_CLOSE — the m3 family has run green on it since
+    09-01), so after WIZARD_GRACE_S the census mirrors that (WM_CLOSE keeps
+    the app alive on the m3-proven path; relocate_wizard would NOT unblock
+    the modal chain) and records app_alive right after.
     """
     pid = session.pid
     main = session.hwnd
@@ -296,8 +314,10 @@ def watch(phase: str, session, expect: str, stable_s: float = STABLE_S) -> dict:
     events: list[dict] = []
     track: dict[int, WinTrack] = {}
     finding = {"verdict": None, "main_rect_first": None, "main_rect_last": None,
-               "app_exited": False, "events": events, "candidates": []}
+               "app_exited": False, "events": events, "candidates": [],
+               "wizard_dismissals": 0}
     ev_no = 0
+    wizard_closes = 0
 
     def event(kind: str, hwnd: int, extra: dict | None = None) -> dict:
         nonlocal ev_no
@@ -388,6 +408,27 @@ def watch(phase: str, session, expect: str, stable_s: float = STABLE_S) -> dict:
                 LOG.add("WIZARD" if wt.kind == "wizard" else "WINDOW", "gone",
                         f"0x{hwnd:x} [{wt.kind}] '{ascii_safe(wt.title)[:60]}' "
                         f"t={elapsed:.0f}s lifetime={wt.lifetime()}s")
+
+        # ---- wizard dismissal (modal boot-chain block) ----------------------
+        if wizard_closes < WIZARD_CLOSE_MAX:
+            for hwnd, wt in list(track.items()):
+                if (wt.kind == "wizard" and wt.gone_t is None
+                        and elapsed - wt.first_t >= WIZARD_GRACE_S):
+                    rec = event("wizard_dismissed", hwnd)
+                    try:
+                        winutil.close_window(hwnd)
+                    except Exception as exc:  # noqa: BLE001
+                        LOG.add("WARN", "wizard_close_failed",
+                                f"0x{hwnd:x}: {exc}")
+                    wizard_closes += 1
+                    finding["wizard_dismissals"] = wizard_closes
+                    LOG.add("TEST", "wizard_close",
+                            f"0x{hwnd:x} t={elapsed:.0f}s "
+                            f"(dismissal {wizard_closes}/{WIZARD_CLOSE_MAX})")
+                    time.sleep(1.0)
+                    LOG.add("TEST", "wizard_close_result",
+                            f"app_alive={session.alive()}")
+                    break
 
         # ---- phase policy ----------------------------------------------------
         stable_hwnds = [h for h, wt in track.items()
@@ -549,7 +590,9 @@ def _write_outputs(results: dict) -> None:
                   f"   main rect first: {r.get('main_rect_first')}",
                   f"   main rect last : {r.get('main_rect_last')}",
                   f"   wizard seen: {r.get('wizard_seen')} "
-                  f"lifetimes_s: {r.get('wizard_lifetimes_s')}"]
+                  f"lifetimes_s: {r.get('wizard_lifetimes_s')} "
+                  f"dismissals: {r.get('wizard_dismissals')}",
+                  ]
         for cand in r.get("candidates", []):
             lines.append(f"   CANDIDATE t={cand['t_s']}s [{cand['kind']}] "
                          f"'{ascii_safe(cand['title'])}' "
