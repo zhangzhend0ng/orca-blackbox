@@ -70,6 +70,24 @@ MINIMAL_CONF = {
 _VENDORS = ["Snapmaker", "BBL"]
 
 
+def default_presets_dir() -> Path:
+    """System-preset vendors source: repo resources/profiles when a dev
+    checkout vendors them, else the exe-side resources/profiles the app
+    ships for Orca Updater staging. The git clone does NOT carry the ~80MB
+    vendor set, so without this fallback datadir/system stays empty and the
+    first-run Setup Wizard comes BACK on empty boots (measured 09-03
+    boot_probe phase a: #32770 'Setup Wizard' at t=2s over the window
+    centre, despite the seeded conf — the wizard gate needs non-default
+    printers, which only system vendors provide)."""
+    from . import launcher
+    for cand in (REPO_RESOURCES / "profiles",
+                 launcher.default_exe().resolve().parent
+                 / "resources" / "profiles"):
+        if cand.exists():
+            return cand
+    return REPO_RESOURCES / "profiles"  # caller prints the visible WARN
+
+
 def default_resources_dir() -> Path:
     """Repo resources/ first (development), then packaged-layout resources/
     (<runner>/resources), then exe-side resources/ (installed builds)."""
@@ -126,7 +144,7 @@ def seed_profile(dest: Path,
     """
     dest = Path(dest)
     resources = default_resources_dir()
-    source_presets = Path(source_presets) if source_presets else resources / "profiles"
+    source_presets = Path(source_presets) if source_presets else default_presets_dir()
     source_printers = Path(source_printers) if source_printers else resources / "printers"
 
     if fresh and dest.exists():
@@ -145,17 +163,24 @@ def seed_profile(dest: Path,
     #    startup wizard does not run. Whitelisted vendors in packed-install
     #    form (vendor dir + vendor.json), the same layout the app's Orca
     #    Updater stages into datadir/system.
+    print(f"[profile] system presets source: {source_presets}")
     dst_system = dest / "system"
     if not dst_system.exists():
+        missing = []
         for vendor in _VENDORS:
             vdir = source_presets / vendor
             if not vdir.exists():
-                print(f"[profile] WARN vendor dir missing: {vdir}")
+                missing.append(vendor)
                 continue
             shutil.copytree(vdir, dst_system / vendor)
             vjson = source_presets / f"{vendor}.json"
             if vjson.exists():
                 shutil.copy2(vjson, dst_system / f"{vendor}.json")
+        if missing:
+            print(f"[profile] WARN vendor dir(s) missing under {source_presets}: "
+                  f"{', '.join(missing)} — datadir/system stays incomplete and "
+                  f"the first-run Setup Wizard can reappear on empty boots "
+                  f"(see profile.default_presets_dir)")
 
     # 2) vendor printer presets: the app's Orca Updater stages these into
     #    <datadir>/printers at startup; without them third-party projects
