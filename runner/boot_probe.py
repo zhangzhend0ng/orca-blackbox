@@ -317,7 +317,10 @@ def run_phase(phase: str, conf_extra: dict) -> dict:
     if phase in ("b", "f"):
         srv = serve_feed(force=(phase == "f"))
         LOG.add("INFO", "feed", f"127.0.0.1:{FEED_PORT} force={phase == 'f'}")
-    session = launcher.launch(exe=None, datadir=datadir, wait_window_s=90.0)
+    # census must observe RAW boots — dismiss_blockers would eat the very
+    # popups this probe exists to census (launcher sweep, PITFALLS 19)
+    session = launcher.launch(exe=None, datadir=datadir, wait_window_s=90.0,
+                              dismiss_blockers=False)
     try:
         result = watch(phase, session,
                        expect_popup={"b": "any", "f": "force", "c": None,

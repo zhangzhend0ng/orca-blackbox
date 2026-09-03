@@ -92,6 +92,16 @@ def enum_windows() -> list[tuple[int, int]]:
     return results
 
 
+def window_title(hwnd: int) -> str:
+    """Top-level window title text (GetWindowTextW; '' when none)."""
+    n = user32.GetWindowTextLengthW(hwnd)
+    if n <= 0:
+        return ""
+    buf = ctypes.create_unicode_buffer(n + 1)
+    user32.GetWindowTextW(hwnd, buf, n + 1)
+    return buf.value
+
+
 def find_main_window(pid: int, timeout_s: float = 60.0, stable_s: float = 1.0) -> int:
     """Wait for the app's main window (top-level, visible, owned by `pid`).
 

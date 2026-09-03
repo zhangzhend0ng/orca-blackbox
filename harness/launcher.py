@@ -72,16 +72,66 @@ class AppSession:
         self.close()
 
 
+# --- boot blocker dismissal (PITFALLS_0901.md 19) ---------------------------
+# Online update prompts pop above the main frame during boot and eat every
+# subsequent click (measured 09-03: the preset-pack "Configuration update"
+# dialog poisoned a full 36-case batch to PASS=14 FAIL=22, hot rerun 1/21).
+# The sweep below closes them inside the launch sequence, BEFORE any case
+# interaction — dialogs raised by a case are never in scope. Matching is by
+# window TITLE (en_US; the seeded conf pins the locale) and deliberately
+# narrow — the force-upgrade dialog closes the app on ANY button
+# (UpdateDialogs.cpp EVT_ENTER_FORCE_UPGRADE) and must never match:
+#   "Configuration update"  — MsgUpdateConfig, preset-pack prompt (l.97)
+#   "Snapmaker Orca Update" — MsgUpdateSlic3r, app-version prompt (l.40)
+BLOCKER_TITLES = (
+    "configuration update",
+    "snapmaker orca update",
+)
+
+
+def sweep_boot_blockers(pid: int, main_hwnd: int, budget_s: float = 15.0) -> list[str]:
+    """WM_CLOSE known boot-blocker dialogs for up to `budget_s`; returns titles.
+
+    Polls the app pid's visible top-levels and closes any window whose title
+    matches BLOCKER_TITLES (case-insensitive). wx dialogs treat WM_CLOSE as
+    Cancel (no DPIDialog close veto in UpdateDialogs.cpp), so nothing gets
+    installed. Each hit sleeps 2s before re-polling so a re-pop within the
+    budget still gets seen; when the budget expires the sweep is over and
+    every later dialog belongs to the case.
+    """
+    dismissed: list[str] = []
+    deadline = time.monotonic() + budget_s
+    while time.monotonic() < deadline:
+        for hwnd, wpid in winutil.enum_windows():
+            if wpid != pid or hwnd == main_hwnd:
+                continue
+            title = winutil.window_title(hwnd).strip().lower()
+            if title in BLOCKER_TITLES:
+                winutil.close_window(hwnd)
+                dismissed.append(title)
+                print(f"[launcher] blocker dismissed: '{title}' (hwnd=0x{hwnd:x}, WM_CLOSE)")
+                time.sleep(2.0)
+        time.sleep(0.5)
+    return dismissed
+
+
 def launch(exe: Path | str | None = None,
            datadir: Path | str | None = None,
            model: Path | str | None = None,
            wait_window_s: float = 90.0,
-           boot_demote_s: float = 12.0) -> AppSession:
+           boot_demote_s: float = 12.0,
+           dismiss_blockers: bool = True,
+           blocker_sweep_s: float = 15.0) -> AppSession:
     """Launch the app; wait for its main window; return the session.
 
     `boot_demote_s` runs a passive z-order/style demotion watchdog for that
     many seconds after window discovery (0 disables; the m1/m2/m3 drivers'
     late demote_window() call still re-asserts afterwards).
+    `dismiss_blockers` runs sweep_boot_blockers() inside the boot window
+    (default 15s after demotion) — online update prompts that pop during
+    boot are WM_CLOSEd before the case can interact (PITFALLS_0901.md 19);
+    the census tools pass dismiss_blockers=False to observe raw boots.
+    `session.blockers` carries the dismissed titles for forensics.
     """
     exe = Path(exe) if exe else default_exe()
     if not exe.exists():
@@ -131,6 +181,9 @@ def launch(exe: Path | str | None = None,
     if boot_demote_s > 0:
         winutil.demote_watchdog(pid=popen.pid, duration_s=boot_demote_s,
                                 fg_restore_to=prev_fg)
+    dismissed: list[str] = []
+    if dismiss_blockers:
+        dismissed = sweep_boot_blockers(popen.pid, hwnd, budget_s=blocker_sweep_s)
     # NOTE: still do NOT touch window position/foreground here. Early
     # interference (before post_init's first-idle input_files load) BREAKS
     # the CLI model auto-load — proven experimentally: hands-off boots load
@@ -139,4 +192,6 @@ def launch(exe: Path | str | None = None,
     # settles).
     dpi = winutil.get_dpi_for_window(hwnd)
     print(f"[launcher] pid={popen.pid} hwnd=0x{hwnd:x} rect={winutil.window_rect(hwnd)} dpi={dpi}")
-    return AppSession(popen, hwnd)
+    session = AppSession(popen, hwnd)
+    session.blockers = dismissed  # forensic trail: titles WM_CLOSEd at boot
+    return session
