@@ -46,9 +46,11 @@ OUT_COMPACT = r"C:\coil\uia_probe_compact.json"
 OUT_REPORT = r"C:\coil\uia_probe_report.txt"
 
 # Hard caps so a pathological tree can never hang the task (30 min limit):
-MAX_DEPTH = 9          # main-window walk depth
+# depth 12: mixing sidebar sections live at depth 6-9 and their parameter
+# rows sit deeper (v2.2: 9 cut exactly those branches off).
+MAX_DEPTH = 12         # main-window walk depth
 MAX_CHILDREN = 60      # per node
-MAX_NODES = 2500       # whole walk
+MAX_NODES = 4000       # whole walk
 WALK_BUDGET_S = 120.0  # wall clock per walk
 MENU_KEYWORDS = ["mix", "multimat", "paint", "filament", "混色", "彩", "涂", "多材"]
 
@@ -480,7 +482,7 @@ def sidebar_sample(nodes: list[Node], main_rect: list[int]) -> dict[str, Any]:
     sample = [
         node
         for node in nodes
-        if node.depth <= 6 and node.rect[0] >= left_edge and node.rect[2] > node.rect[0]
+        if node.rect[0] >= left_edge and node.rect[2] > node.rect[0]
     ][:300]
     stats = WalkStats()
     for node in sample:
