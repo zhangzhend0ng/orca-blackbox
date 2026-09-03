@@ -111,11 +111,18 @@ def seed_profile(dest: Path,
                  source_conf: Path | None = None,
                  source_presets: Path | None = None,
                  source_printers: Path | None = None,
-                 fresh: bool = False) -> Path:
+                 fresh: bool = False,
+                 conf_extra: dict | None = None) -> Path:
     """Create/refresh `dest` as a runnable sandbox datadir; returns it.
 
     All sources default to the repo/exe resources; explicit overrides are
     accepted for CI setups that vendor their own assets.
+
+    `conf_extra` merges extra keys over MINIMAL_CONF (top-level keys land in
+    the conf's default section; dict values deep-merge one level so e.g.
+    {"app": {"skip_version": "..."}} works). This is the isolation knob:
+    boot_probe phases and future "updater UX" cases use it to pin/unpin the
+    upgrade-feed URLs the app fetches at post_init.
     """
     dest = Path(dest)
     resources = default_resources_dir()
@@ -164,6 +171,11 @@ def seed_profile(dest: Path,
     # 3) app conf: minimal hand-written template — reproducible and free of
     #    user state (recent files, window geometry, device identity).
     conf = json.loads(json.dumps(MINIMAL_CONF))
+    for key, value in (conf_extra or {}).items():
+        if isinstance(value, dict) and isinstance(conf.get(key), dict):
+            conf[key].update(value)          # one-level deep merge
+        else:
+            conf[key] = value                # top-level key (default section)
     write_conf(dest / "Snapmaker_Orca.conf", conf)
     print(f"[profile] seeded {dest} (resources: {resources})")
     print(f"[profile] conf: {json.dumps(conf)}")
