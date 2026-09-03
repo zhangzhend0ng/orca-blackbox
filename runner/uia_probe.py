@@ -653,18 +653,40 @@ def dialog_sample_run(session: Any, desktop: Any, main_hwnd: int,
     would target. Nothing is clicked.
     """
     from harness import process_panel as pp
+    from harness.mixing_util import toplevel
 
+    # 1) WAIT for the modal wizard to come up before closing it. It appears
+    #    ~2s after window discovery (the post-init CallAfter reaches
+    #    config_wizard_startup then) — closing earlier closes nothing and
+    #    close_setup_wizard returns True for "absent", leaving the chain
+    #    blocked behind the wizard (measured 09-03: the first _dlog run
+    #    closed at t=1s -> wizard stayed up -> 64s scan found nothing).
+    hit = None
+    for _ in range(40):
+        hit = next((h for cls, txt, _r, h in toplevel(session.pid)
+                    if cls == "#32770" and "wizard" in txt.lower()), None)
+        if hit is not None:
+            break
+        time.sleep(0.5)
+    wizard_seen = hit is not None
+    if wizard_seen:
+        time.sleep(1.0)  # let the wizard finish showing before WM_CLOSE
     wiz_closed = bool(pp.close_setup_wizard(session, attempts=3, log="[uia]"))
-    log.add("INFO", "wizard_closed", f"ok={wiz_closed}")
+    still_up = any(cls == "#32770" and "wizard" in txt.lower()
+                   for cls, txt, _r, _h in toplevel(session.pid))
+    log.add("INFO", "wizard_close", f"seen={wizard_seen} closed={wiz_closed} "
+                                    f"still_up={still_up}")
     extras: list[dict[str, Any]] = []
     waits_s = 0
-    for _ in range(8):
-        time.sleep(8.0)
-        waits_s += 8
-        extras = scan_extra_windows(desktop, main_hwnd, log)
-        if extras:
-            break
-    out = {"wizard_closed": wiz_closed, "scan_waits_s": waits_s,
+    if not still_up:
+        for _ in range(8):
+            time.sleep(8.0)
+            waits_s += 8
+            extras = scan_extra_windows(desktop, main_hwnd, log)
+            if extras:
+                break
+    out = {"wizard_seen": wizard_seen, "wizard_closed": wiz_closed,
+           "wizard_still_up": still_up, "scan_waits_s": waits_s,
            "extra_windows": extras}
     for extra in extras:
         log.add("INFO", "dialog_sample_found",
