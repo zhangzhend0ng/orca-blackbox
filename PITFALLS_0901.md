@@ -431,3 +431,49 @@ bash 版）/ `clean_guest.ps1`（杀孤儿）/ `max_vmconnect.ps1`（控制台
   留给 census（boot_probe）后续实锤。
 - **通用化**：任何带外网的项目，"服务端推新"是回归基线的隐藏变量；
   批次劣化先查弹窗/托盘/更新类覆盖物，再怀疑代码。
+
+### 19.1 census v2 裁决（09-03 夜，boot_probe 全部 5 相跑通）
+
+修复③实施后跑 boot_probe census v2（watcher 分类豁免 + 弹窗全程跟踪 +
+feed 请求日志 + 真实弹窗 WM_CLOSE 实测），逐条收敛 §19 的残余未知：
+
+- **conf 段落根因（v1"未证明"的真因）**：`AppConfig::get(key)` 只读
+  **"app" 段**（AppConfig.hpp：get(key) → get("app", key)）。v1 把
+  `orca_upgrade_url` 写在 conf JSON **顶层** = 一个假 section → app 静默
+  回退真 feed URL → localhost 无请求、无弹窗。改放 `{"app": {...}}` 后
+  phase b/f 的 localhost feed **立刻收到请求**（feed 日志 1 次/相）。
+- **Setup Wizard 是模态链阻塞器，且不"自愈"**：空种子 boot 每相 t=2s 弹
+  #32770 'Setup Wizard'（820×660），实测**持续 ≥150s 不自行关闭**
+  （推翻此前"~10s 自关"假设）；它模态阻塞 post-init 启动链
+  （config_wizard_startup → preset sync → check_new_version_sf），弹窗
+  在时这些全不执行（phase b 弹窗在 150s 内 0 次 feed 请求实证）。census
+  在 8s 宽限后 WM_CLOSE 向导（m3 驱动同款路径；close 后 app_alive=True
+  逐相记录）。**sweep 不碰向导**（m5 relocate 派的告诫：部分路径 close
+  会退出 app；回归用例各自 relocate/无视它）。向导在大部分空种子 boot
+  常驻 → 那些 boot 的链永远不跑 → 无配置弹窗 → 14:40 部分用例因此"侥幸"
+  绿的机制也在此。
+- **修法②（conf stub）盖章为完整双保险，且推翻"预设链不可 conf"旧判**：
+  c 相把三段键（app 下）指向拒连端口 → **零弹窗**；同一晚 a/b/f/e 各相
+  服务端仍在推 2.2.56.2（'Configuration update' 每相 ~t=15-16s 复现，
+  OCR 同 14:40 文案）。e 相（只 stub orca_upgrade_url）配置弹窗照出 →
+  配置包检查走 `get_preset_upgrade_url()`（读 app.profile_upgrade_url），
+  **并非不可 conf 路由**——§19 上文"bambulab 预设链无法 conf 合成/无法
+  conf 修复"的旧判来自 v1 的段落放错实验，作废。三个弹窗族全 conf 可控：
+  app 版本/强制升级（orca_upgrade_url）、配置包（profile_upgrade_url）、
+  flutter web 资源（flutter_upgrade_url）。sweep 仍保留（纵深防御）。
+- **弹窗出现时刻实测 + blocker_sweep_s 回填**（主窗发现后秒数；向导于
+  t=10s 被 census 关闭为前提）：配置弹窗 **t=15s**（真 feed，链解锁后
+  ~5s）、版本弹窗 t=12s（localhost）、强制弹窗 t=12s。census 的向导关闭
+  时刻（10s）晚于任何驱动（多数用例根本不关向导 → 链不跑 → 无弹窗），
+  故 15s 拍脑袋值恰好压在配置弹窗实测值的边缘 → 默认提到 **25s**
+  （向导最晚 ~19s 关闭仍兜得住；代价 +10s/例 ≈ +6 分钟/36 例批次）。
+- **sweep 标题表实锤补齐**：真版本弹窗标题 = **'New version of Snapmaker
+  Orca'**（UpdateVersionDialog/ReleaseNote.cpp）；'Snapmaker Orca Update'
+  （MsgUpdateSlic3r）在本 build 是**死代码**（全树无实例化点），保留仅为
+  对称。census b 相 close_test：真 UpdateVersionDialog WM_CLOSE 后
+  app_alive=True → 加入 BLOCKER_TITLES；blocker_sweep_check 扩成三相
+  （ignore/dismiss/version）全 PASS。强制框标题 'Snapmaker Orca needs an
+  update'（DownloadDialog，EVT_ENTER_FORCE_UPGRADE）按构造不匹配——任意
+  按钮退出 app，永远不得入表。
+- census v2 报告/事件/帧在客机 `C:\coil\boot_probe_report.txt` /
+  `boot_probe_events.json` / `boot_probe_shots\`（ASCII 报告可 relay 直拉）。
