@@ -8,10 +8,14 @@
 # 18.6). Errors are reported via output; the script always ends naturally.
 #
 # Usage (via relay): & 'C:\coil\Projects\orca-blackbox\runner\hv_uia_probe.ps1'
+#                    & '...\hv_uia_probe.ps1' --raw --zh   (mode passthrough)
 # Outputs on guest: C:\coil\uia_probe_out.json / _compact.json / _report.txt
+#   (mode runs add _raw/_zh/_zh_raw suffixes; the no-mode run keeps these)
 #                   C:\coil\uia_probe_task.log (stdout trace of the probe)
 
+param([string[]]$Modes = @())
 . (Join-Path $PSScriptRoot '_common.ps1')
+$modeStr = ($Modes + $args) -join ' '
 
 Write-Host "[1] pywinauto on guest python..."
 $inst = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
@@ -35,13 +39,13 @@ if ("$sync" -match 'DIRTY|fatal|error|conflict|refusing') {
   # fall through without launching; report what the guest is stuck on
 }
 else {
-  Write-Host "[3] registering + starting INTERACTIVE task 'uia_probe'..."
+  Write-Host "[3] registering + starting INTERACTIVE task 'uia_probe' (modes: $modeStr)..."
   $launch = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
-    param($sb, $py)
+    param($sb, $py, $modes)
     $runner = @"
 `$env:PYTHONIOENCODING='utf-8'
 Set-Location '$sb'
-& '$py' 'runner\uia_probe.py' 2>&1 | Out-File -FilePath 'C:\coil\uia_probe_task.log' -Encoding utf8
+& '$py' 'runner\uia_probe.py' $modes 2>&1 | Out-File -FilePath 'C:\coil\uia_probe_task.log' -Encoding utf8
 "@
     [IO.File]::WriteAllText('C:\coil\run_uia_probe.ps1', $runner)
     Unregister-ScheduledTask -TaskName uia_probe -Confirm:$false -ErrorAction SilentlyContinue
@@ -51,7 +55,7 @@ Set-Location '$sb'
     Register-ScheduledTask -TaskName "uia_probe" -Action $a -Settings $st -Principal $p -Force | Out-Null
     Start-ScheduledTask -TaskName "uia_probe"
     "uia_probe task: " + (Get-ScheduledTask uia_probe).State
-  } -ArgumentList $guestSandbox, $guestPython
+  } -ArgumentList $guestSandbox, $guestPython, $modeStr
   Write-Host "    $launch"
 }
 

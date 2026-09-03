@@ -19,6 +19,19 @@ Runs under the INTERACTIVE scheduled task 'uia_probe' (PITFALLS_0901.md 18.7:
 PS Direct cannot see the desktop; UIA needs the interactive session). Needs
 pywinauto on the guest python — hv_uia_probe.ps1 installs it first.
 
+CLI modes (docs/UIA_EVAL_0903.md 5.2/5.3 evidence):
+  (none)   en_US seed + pywinauto tree walk (baseline, as before)
+  --raw    additionally walk the SAME main window through an explicit
+           comtypes RawViewWalker and compare node counts/structure with
+           the pywinauto enumeration (does the raw view expose more of
+           the self-drawn OG_CustomCtrl parameter rows?)
+  --zh     seed the datadir with app.language = zh_CN; same probes, for
+           the name-stability sample against the en_US run. The idle-boot
+           anchor template is en; a low anchor score falls back to a
+           time-based settle instead of failing the walk.
+  Flags combine: --zh --raw. Output files get a matching suffix
+  (_zh/_raw/_zh_raw); the no-flag run keeps the unsuffixed names.
+
 Exit code: 0 = probe completed (individual findings may still be negative),
 1 = probe crashed before finishing (traceback is in the report/steps).
 """
@@ -41,9 +54,10 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 ORCA_EXE_NAME = "snapmaker-orca.exe"
-OUT_FULL = r"C:\coil\uia_probe_out.json"
-OUT_COMPACT = r"C:\coil\uia_probe_compact.json"
-OUT_REPORT = r"C:\coil\uia_probe_report.txt"
+OUT_FULL = r"C:\coil\uia_probe_out"
+OUT_COMPACT = r"C:\coil\uia_probe_compact"
+OUT_REPORT = r"C:\coil\uia_probe_report"
+OUT_SUFFIX = ""   # main() sets "_zh"/"_raw"/"_zh_raw"; files: OUT_* + suffix + ext
 
 # Hard caps so a pathological tree can never hang the task (30 min limit):
 # depth 12: mixing sidebar sections live at depth 6-9 and their parameter
@@ -55,18 +69,26 @@ WALK_BUDGET_S = 120.0  # wall clock per walk
 MENU_KEYWORDS = ["mix", "multimat", "paint", "filament", "混色", "彩", "涂", "多材"]
 
 
-def wait_idle_boot(session: Any, log: StepLog) -> None:
+def wait_idle_boot(session: Any, log: StepLog, zh: bool = False) -> None:
     """Block until the app passes its idle-boot anchor (tab bar settled) —
     v2 lesson: find_main_window returns a hwnd seconds before wx finishes
     building children, so an immediate walk undersamples (80 nodes, sidebar=5).
     Reuses the canonical anchors idle signal, then maximizes so the settings
-    sidebar exposes its full visible set (case-calibrated geometry)."""
+    sidebar exposes its full visible set (case-calibrated geometry).
+    The anchor template is en_US text; a zh_CN boot cannot match it, so the
+    zh mode accepts a low score and falls back to a time-based settle."""
     import ctypes as _ctypes
 
     from harness import anchors
 
-    score, _x, _y = anchors.wait_for(session, "tab_prepare_active", timeout_s=60.0)
-    log.add("INFO", "idle_boot_anchor", f"score={score:.3f}")
+    timeout_s = 25.0 if zh else 60.0
+    score, _x, _y = anchors.wait_for(session, "tab_prepare_active",
+                                     timeout_s=timeout_s)
+    log.add("INFO", "idle_boot_anchor", f"score={score:.3f} zh={zh}")
+    if zh and score < 0.5:
+        log.add("WARN", "idle_boot_anchor",
+                "zh locale: en template cannot match; time-based settle")
+        time.sleep(5.0)
     _ctypes.windll.user32.ShowWindow(int(session.hwnd), 3)  # SW_MAXIMIZE
     time.sleep(2.0)
 
@@ -315,19 +337,23 @@ def info_rect_area(info: Any) -> int:
     return max(0, r - l) * max(0, b - t)
 
 
-def launch_app(log: StepLog) -> Any:
+def launch_app(log: StepLog, language: str = "en_US") -> Any:
     """Seed an isolated datadir and launch via the case-standard launcher.
 
     v1 lesson: a bare exe start resurfaces the boot splash as the
     largest-area window 5s in; launcher.launch -> winutil.find_main_window
     waits out the boot chain for the REAL frame (90s budget).
+    `language` overrides app.language in the seeded conf (zh_CN mode).
     """
     from harness import launcher, profile
 
-    datadir = HERE / "artifacts" / "uia_probe_datadir"
-    profile.seed_profile(datadir)
+    lang_suffix = "" if language == "en_US" else "_" + language
+    datadir = HERE / "artifacts" / f"uia_probe_datadir{lang_suffix}"
+    conf_extra = None if language == "en_US" else {"app": {"language": language}}
+    profile.seed_profile(datadir, fresh=True, conf_extra=conf_extra)
     session = launcher.launch(datadir=datadir)
-    log.add("INFO", "app_launched", f"pid={session.pid} hwnd=0x{session.hwnd:x}")
+    log.add("INFO", "app_launched", f"pid={session.pid} hwnd=0x{session.hwnd:x} "
+                                    f"lang={language}")
     return session
 
 
@@ -506,6 +532,99 @@ def sidebar_sample(nodes: list[Node], main_rect: list[int]) -> dict[str, Any]:
     return {"stats": stats.as_dict(), "nodes": lines}
 
 
+def raw_view_compare(main_hwnd: int, pywinauto_stats: WalkStats,
+                     log: StepLog) -> dict[str, Any]:
+    """Walk the main window through an explicit comtypes RawViewWalker.
+
+    pywinauto's children() enumeration (whatever view it traverses) is the
+    baseline; this walk uses IUIAutomation.GetRawViewWalker directly on the
+    same element so the RAW view count is authoritative. If raw does not
+    expose more named structure than pywinauto's walk, the self-drawn
+    parameter rows are absent from UIA entirely (both views).
+    """
+    from pywinauto.uia_defines import IUIA
+
+    iuia = IUIA()
+    walker = iuia.iuia.GetRawViewWalker()
+    try:
+        root = iuia.iuia.ElementFromHandle(int(main_hwnd))
+    except Exception as exc:  # noqa: BLE001
+        log.add("ERROR", "raw_element_from_handle", f"{type(exc).__name__}: {exc}")
+        return {"error": str(exc)[:200]}
+    stats = WalkStats()
+    com_failures = {"attrs": 0, "children": 0}
+    deadline = time.monotonic() + 90.0
+
+    def attr(el: Any, prop: str, default: Any = "") -> Any:
+        try:
+            value = getattr(el, prop)
+        except Exception:  # COMError — element vanished mid-walk
+            com_failures["attrs"] += 1
+            return default
+        return default if value is None else value
+
+    named: list[dict[str, Any]] = []
+
+    def walk(el: Any, depth: int) -> None:
+        stats.nodes += 1
+        stats.max_depth_seen = max(stats.max_depth_seen, depth)
+        ct = int(attr(el, "CurrentControlType", 0) or 0)
+        ctype = iuia.known_control_type_ids.get(ct, str(ct))
+        stats.by_type[ctype] += 1
+        name = str(attr(el, "CurrentName", "") or "")
+        if name:
+            stats.named += 1
+            named.append({"name": name[:120], "control_type": ctype,
+                          "depth": depth,
+                          "class_name": str(attr(el, "CurrentClassName", ""))[:60],
+                          "automation_id": str(attr(el, "CurrentAutomationId", ""))})
+        if attr(el, "CurrentAutomationId", ""):
+            stats.with_automation_id += 1
+        if depth >= MAX_DEPTH or stats.nodes >= MAX_NODES:
+            stats.cut_by_depth += int(depth >= MAX_DEPTH)
+            stats.cut_by_node_cap = stats.nodes >= MAX_NODES
+            return
+        if time.monotonic() > deadline:
+            stats.cut_by_budget = True
+            return
+        try:
+            child = walker.GetFirstChildElement(el)
+        except Exception:  # noqa: BLE001
+            com_failures["children"] += 1
+            return
+        while child:
+            walk(child, depth + 1)
+            try:
+                child = walker.GetNextSiblingElement(child)
+            except Exception:  # noqa: BLE001
+                com_failures["children"] += 1
+                break
+
+    try:
+        walk(root, 0)
+        error = ""
+    except Exception as exc:  # noqa: BLE001
+        error = f"{type(exc).__name__}: {exc}"[:200]
+        log.add("ERROR", "raw_walk_failed", error)
+    out = {
+        "raw_nodes": stats.nodes,
+        "pywinauto_nodes": pywinauto_stats.nodes,
+        "raw_named": stats.named,
+        "pywinauto_named": pywinauto_stats.named,
+        "raw_max_depth": stats.max_depth_seen,
+        "cuts": {"depth": stats.cut_by_depth, "budget": stats.cut_by_budget,
+                 "node_cap": stats.cut_by_node_cap},
+        "com_failures": com_failures,
+        "by_control_type_raw": dict(stats.by_type.most_common()),
+        "named_sample": named[:150],
+        "error": error,
+    }
+    log.add("INFO", "raw_view_done",
+            f"raw_nodes={stats.nodes} (pywinauto={pywinauto_stats.nodes}) "
+            f"raw_named={stats.named}")
+    return out
+
+
 def build_report(result: dict[str, Any]) -> str:
     # crash-safe: every section is optional so a mid-probe crash still gets
     # a readable report instead of a KeyError inside the finally block
@@ -556,6 +675,12 @@ def build_report(result: dict[str, Any]) -> str:
         dstats = dump["stats"]
         d_named = 100.0 * dstats["named"] / max(1, dstats["nodes"])
         add(f"mixing dialog tree: nodes={dstats['nodes']} named={d_named:.0f}% automationId={100.0 * dstats['with_automation_id'] / max(1, dstats['nodes']):.0f}%")
+    raw = result.get("raw_view")
+    if raw:
+        add(f"RAW VIEW (comtypes RawViewWalker): nodes={raw.get('raw_nodes')} "
+            f"vs pywinauto {raw.get('pywinauto_nodes')} | "
+            f"named {raw.get('raw_named')} vs {raw.get('pywinauto_named')} | "
+            f"com_failures={raw.get('com_failures')} err={raw.get('error', '')[:60]}")
     errors = [e for e in result.get("steps", []) if e["level"] in ("WARN", "ERROR")]
     add(f"steps WARN/ERROR: {len(errors)}")
     for entry in errors[:15]:
@@ -564,10 +689,16 @@ def build_report(result: dict[str, Any]) -> str:
 
 
 def main() -> int:
+    flags = sys.argv[1:]
+    zh = "--zh" in flags
+    raw = "--raw" in flags
+    global OUT_SUFFIX
+    OUT_SUFFIX = ("_zh" if zh else "") + ("_raw" if raw else "")
     log = StepLog()
-    log.add("INFO", "probe_start", "")
+    log.add("INFO", "probe_start", f"mode=zh:{zh} raw:{raw}")
     result: dict[str, Any] = {
-        "meta": {"started": now_hms(), "screen": screen_size(), "exe_name": ORCA_EXE_NAME},
+        "meta": {"started": now_hms(), "screen": screen_size(), "exe_name": ORCA_EXE_NAME,
+                 "mode": OUT_SUFFIX or "(default)"},
         "steps": log.entries,
     }
     completed = False
@@ -580,8 +711,8 @@ def main() -> int:
         from pywinauto import Desktop
 
         desktop = Desktop(backend="uia")
-        session = launch_app(log)
-        wait_idle_boot(session, log)
+        session = launch_app(log, language="zh_CN" if zh else "en_US")
+        wait_idle_boot(session, log, zh=zh)
         main_spec = desktop.window(handle=session.hwnd)
         main_info = main_spec.wrapper_object().element_info
 
@@ -599,6 +730,8 @@ def main() -> int:
             "tree": root.to_dict(),
         }
         log.add("INFO", "main_tree_done", f"nodes={stats.nodes} named={stats.named} aid={stats.with_automation_id}")
+        if raw:
+            result["raw_view"] = raw_view_compare(int(session.hwnd), stats, log)
 
         # menu bar (always-visible level)
         menubar = next((n for n in nodes if n.control_type == "MenuBar"), None)
@@ -655,11 +788,11 @@ def main() -> int:
                 k: v for k, v in result["main_window"].items() if k != "tree"
             }
         for path, payload in ((OUT_FULL, result), (OUT_COMPACT, compact)):
-            with open(path, "w", encoding="utf-8") as handle:
+            with open(path + OUT_SUFFIX + ".json", "w", encoding="utf-8") as handle:
                 json.dump(payload, handle, ensure_ascii=True, separators=(",", ":"))
-        with open(OUT_REPORT, "w", encoding="utf-8") as handle:
+        with open(OUT_REPORT + OUT_SUFFIX + ".txt", "w", encoding="utf-8") as handle:
             handle.write(build_report(result))
-        log.add("INFO", "probe_end", f"completed={completed}")
+        log.add("INFO", "probe_end", f"completed={completed} suffix={OUT_SUFFIX!r}")
     return 0 if completed else 1
 
 
