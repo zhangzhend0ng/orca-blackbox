@@ -25,13 +25,6 @@ param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$W
 $Cases = @($Cases + @($args)) | Where-Object { $_ }
 $explicitCases = $PSBoundParameters.ContainsKey('Cases') -or @($args).Count -gt 0
 
-# Cold-start warmup: after hours of guest idleness, the first GUI
-# interactions of a batch lose clicks (WM_LBUTTONUP timeouts — measured
-# 09-02 night: the first 5 of 36 cases RED, warm rerun 5/5 GREEN). Full
-# runs therefore discard one throwaway pass of the first case before the
-# real batch; explicit subsets are reruns by nature and skip it.
-$warmup = if ($Warmup) { $true } elseif ($NoWarmup) { $false } else { -not $explicitCases }
-
 # default list: cases.py registry (host python; fall back to guest layout note)
 if (-not $Cases) {
   $repoRoot = Split-Path $PSScriptRoot -Parent
@@ -51,6 +44,15 @@ if ($OnlyFailed) {
     if ($fl.Count) { $Cases = $fl; $explicitCases = $true; Write-Host "[0] only-failed: $($fl.Count) cases" }
   }
 }
+
+# Cold-start warmup: after hours of guest idleness, the first GUI
+# interactions of a batch lose clicks (WM_LBUTTONUP timeouts — measured
+# 09-02 night: the first 5 of 36 cases RED, warm rerun 5/5 GREEN). Full
+# runs therefore discard one throwaway pass of the first case before the
+# real batch. Explicit subsets and -OnlyFailed reruns are warm by nature
+# and skip it — computed AFTER the -OnlyFailed override so a failed-case
+# rerun does not pay the throwaway pass.
+$warmup = if ($Warmup) { $true } elseif ($NoWarmup) { $false } else { -not $explicitCases }
 
 # 1) power on if needed
 $v = Get-VM $vm
