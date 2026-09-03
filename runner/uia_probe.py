@@ -5,9 +5,12 @@ Evaluation scaffolding for docs/STRUCTURING_PLAN.md phase-2 item #4 (UIA
 hybrid locating): answers "is Orca's UIA tree good enough to locate controls
 structurally" before any test framework commits to that route. NOT a
 regression case — never registered in cases.py, writes nothing inside the
-sandbox (outputs go to C:\\coil).
+sandbox except artifacts/uia_probe_datadir (gitignored).
 
-Outputs:
+Launches the app exactly like the cases do (profile.seed_profile datadir
+isolation + launcher.launch — v1 lesson: a bare exe start surfaces the boot
+splash as the largest window and walks 27 Panes of nothing). Outputs:
+
   C:\\coil\\uia_probe_out.json       full structured dump (ASCII-escaped UTF-8)
   C:\\coil\\uia_probe_compact.json   everything except the deep main-tree dump
   C:\\coil\\uia_probe_report.txt     ASCII-only human summary (safe over GBK relay)
@@ -25,13 +28,18 @@ from __future__ import annotations
 import ctypes
 import datetime
 import json
+import sys
 import time
 import traceback
 from collections import Counter
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
-ORCA_EXE = r"C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe"
+HERE = Path(__file__).resolve().parents[1]
+if str(HERE) not in sys.path:
+    sys.path.insert(0, str(HERE))
+
 ORCA_EXE_NAME = "snapmaker-orca.exe"
 OUT_FULL = r"C:\coil\uia_probe_out.json"
 OUT_COMPACT = r"C:\coil\uia_probe_compact.json"
@@ -42,7 +50,6 @@ MAX_DEPTH = 7          # main-window walk depth
 MAX_CHILDREN = 60      # per node
 MAX_NODES = 2500       # whole walk
 WALK_BUDGET_S = 120.0  # wall clock per walk
-BOOT_TIMEOUT_S = 150.0
 MENU_KEYWORDS = ["mix", "multimat", "paint", "filament", "混色", "彩", "涂", "多材"]
 
 
@@ -141,14 +148,17 @@ def element_children(info: Any) -> tuple[list[Any], str]:
         return [], f"{type(exc).__name__}: {exc}"
 
 
-def node_from_info(info: Any, depth: int, parent_path: str) -> Node:
+def info_rect(info: Any) -> list[int]:
     rect = element_field(info, "rectangle", None)
-    rect_list = [
+    return [
         int(getattr(rect, "left", 0) or 0),
         int(getattr(rect, "top", 0) or 0),
         int(getattr(rect, "right", 0) or 0),
         int(getattr(rect, "bottom", 0) or 0),
     ]
+
+
+def node_from_info(info: Any, depth: int, parent_path: str) -> Node:
     name = str(element_field(info, "name", "") or "")
     automation_id = str(element_field(info, "automation_id", "") or "")
     control_type = str(element_field(info, "control_type", "") or "")
@@ -160,7 +170,7 @@ def node_from_info(info: Any, depth: int, parent_path: str) -> Node:
         class_name=str(element_field(info, "class_name", "") or ""),
         enabled=bool(element_field(info, "enabled", True)),
         depth=depth,
-        rect=rect_list,
+        rect=info_rect(info),
         path=f"{parent_path}/{control_type}:{label[:48]}",
     )
 
@@ -283,34 +293,59 @@ def top_level_infos(desktop: Any) -> list[tuple[Any, str]]:
 
 
 def info_rect_area(info: Any) -> int:
-    rect = element_field(info, "rectangle", None)
-    return int(
-        max(0, getattr(rect, "right", 0) - getattr(rect, "left", 0))
-        * max(0, getattr(rect, "bottom", 0) - getattr(rect, "top", 0))
-    )
+    l, t, r, b = info_rect(info)
+    return max(0, r - l) * max(0, b - t)
 
 
-def ensure_orca(desktop: Any, log: StepLog) -> tuple[Any, bool]:
-    """Return (main window element_info, launched_by_probe)."""
-    windows = [(i, e) for i, e in top_level_infos(desktop) if e == ORCA_EXE_NAME]
-    if windows:
-        main = max(windows, key=lambda pair: info_rect_area(pair[0]))[0]
-        log.add("INFO", "orca_found_running", f"handle={element_field(main, 'handle', 0)}")
-        return main, False
-    log.add("INFO", "orca_not_running_launching", ORCA_EXE)
-    from pywinauto.application import Application
+def launch_app(log: StepLog) -> Any:
+    """Seed an isolated datadir and launch via the case-standard launcher.
 
-    Application(backend="uia").start(ORCA_EXE)
-    deadline = time.monotonic() + BOOT_TIMEOUT_S
-    while time.monotonic() < deadline:
-        time.sleep(5)
-        windows = [(i, e) for i, e in top_level_infos(desktop) if e == ORCA_EXE_NAME]
-        if windows:
-            main = max(windows, key=lambda pair: info_rect_area(pair[0]))[0]
-            time.sleep(3)  # let the wx layout settle before walking
-            log.add("INFO", "orca_started", f"waited={BOOT_TIMEOUT_S - (deadline - time.monotonic()):.0f}s")
-            return main, True
-    raise RuntimeError(f"orca window not found within {BOOT_TIMEOUT_S:.0f}s")
+    v1 lesson: a bare exe start resurfaces the boot splash as the
+    largest-area window 5s in; launcher.launch -> winutil.find_main_window
+    waits out the boot chain for the REAL frame (90s budget).
+    """
+    from harness import launcher, profile
+
+    datadir = HERE / "artifacts" / "uia_probe_datadir"
+    profile.seed_profile(datadir)
+    session = launcher.launch(datadir=datadir)
+    log.add("INFO", "app_launched", f"pid={session.pid} hwnd=0x{session.hwnd:x}")
+    return session
+
+
+def scan_extra_windows(desktop: Any, main_hwnd: int, log: StepLog) -> list[dict[str, Any]]:
+    """Other visible top-level windows of the app process (update prompts,
+    wizards...): name + class + first-level button names. This quantifies
+    whether UIA can SEE a boot blocker well enough to auto-dismiss it."""
+    extras: list[dict[str, Any]] = []
+    for info, exe in top_level_infos(desktop):
+        if exe != ORCA_EXE_NAME:
+            continue
+        handle = int(element_field(info, "handle", 0) or 0)
+        if handle == main_hwnd or handle == 0:
+            continue
+        if not element_field(info, "visible", True):
+            continue
+        buttons: list[str] = []
+        kids, _err = element_children(info)
+        for kid in kids[:40]:
+            ctype = str(element_field(kid, "control_type", "") or "")
+            if ctype in ("Button", "Hyperlink", "CheckBox"):
+                label = str(element_field(kid, "name", "") or "")
+                if label:
+                    buttons.append(label)
+        extras.append(
+            {
+                "name": str(element_field(info, "name", "") or "")[:120],
+                "class_name": str(element_field(info, "class_name", "") or ""),
+                "control_type": str(element_field(info, "control_type", "") or ""),
+                "rect": info_rect(info),
+                "buttons": buttons[:12],
+            }
+        )
+    if extras:
+        log.add("INFO", "extra_windows", f"count={len(extras)}")
+    return extras
 
 
 def try_menu_expand(pairs: list[tuple[Node, Any]], log: StepLog) -> dict[str, Any]:
@@ -340,7 +375,7 @@ def try_menu_expand(pairs: list[tuple[Node, Any]], log: StepLog) -> dict[str, An
         result["error"] = f"invoke failed: {type(exc).__name__}: {exc}"[:200]
         send_keys("{ESC}")
         return result
-    for info, exe in top_level_infos(desktop):
+    for info, _exe in top_level_infos(desktop):
         # NOTE: no exe filter here — the popup menu belongs to the Orca
         # process itself; only the before-handle set excludes old windows.
         handle = int(element_field(info, "handle", 0) or 0)
@@ -462,8 +497,14 @@ def build_report(result: dict[str, Any]) -> str:
     add(f"UIA PROBE REPORT  {meta['finished']}")
     add(f"screen={meta['screen']['w']}x{meta['screen']['h']}  pywinauto={meta.get('pywinauto_version', '?')}")
     main_window = result.get("main_window", {})
-    add(f"orca: launched_by_probe={meta.get('launched_by_probe')} class={main_window.get('class_name', '?')}")
-    stats = main_window.get("stats", {"nodes": 0, "named": 0, "with_automation_id": 0, "max_depth_seen": 0, "cut_by_depth": 0, "cut_by_children": 0, "cut_by_budget": False, "cut_by_node_cap": False})
+    add(f"app: class={main_window.get('class_name', '?')} framework={main_window.get('framework_id', '?')}")
+    stats = main_window.get(
+        "stats",
+        {
+            "nodes": 0, "named": 0, "with_automation_id": 0, "max_depth_seen": 0,
+            "cut_by_depth": 0, "cut_by_children": 0, "cut_by_budget": False, "cut_by_node_cap": False,
+        },
+    )
     named_pct = 100.0 * stats["named"] / max(1, stats["nodes"])
     aid_pct = 100.0 * stats["with_automation_id"] / max(1, stats["nodes"])
     add(
@@ -471,7 +512,7 @@ def build_report(result: dict[str, Any]) -> str:
         f"maxDepth={stats['max_depth_seen']} cuts(d/c/budget/cap)="
         f"{stats['cut_by_depth']}/{stats['cut_by_children']}/{int(stats['cut_by_budget'])}/{int(stats['cut_by_node_cap'])}"
     )
-    add(f"top control types: {sorted(stats['by_control_type'].items(), key=lambda kv: -kv[1])[:8]}")
+    add(f"top control types: {sorted(stats.get('by_control_type', {}).items(), key=lambda kv: -kv[1])[:8]}")
     menubar = main_window.get("menu_bar", [])
     add(f"menu bar ({len(menubar)}): {ascii_safe(' | '.join(menubar))[:300]}")
     menu_exp = result.get("menu_expand", {})
@@ -481,8 +522,12 @@ def build_report(result: dict[str, Any]) -> str:
         sb_named = 100.0 * sb["named"] / max(1, sb["nodes"])
         sb_aid = 100.0 * sb["with_automation_id"] / max(1, sb["nodes"])
         add(f"settings sidebar sample: nodes={sb['nodes']} named={sb_named:.0f}% automationId={sb_aid:.0f}% maxDepth={sb['max_depth_seen']}")
+    extras = result.get("extra_windows", [])
+    add(f"extra app windows (blockers/prompts): {len(extras)}")
+    for extra in extras[:4]:
+        add(f"  [{ascii_safe(extra['name'])[:70]}] class={extra['class_name']} buttons={ascii_safe('|'.join(extra['buttons']))[:90]}")
     mixing = result.get("mixing_search", {})
-    add(f"mixing search: {len(mixing.get('matches', []))} matches (keywords={mixing.get('keywords')})")
+    add(f"mixing search: {len(mixing.get('matches', []))} matches (keywords={ascii_safe(str(mixing.get('keywords')))}[:110])")
     for attempt in mixing.get("invoke_attempts", []):
         add(
             f"  invoke: invoked={attempt.get('invoked')} new_windows={attempt.get('new_windows')} "
@@ -504,13 +549,12 @@ def main() -> int:
     log = StepLog()
     log.add("INFO", "probe_start", "")
     result: dict[str, Any] = {
-        "meta": {"started": now_hms(), "screen": screen_size(), "orca_exe": ORCA_EXE},
+        "meta": {"started": now_hms(), "screen": screen_size(), "exe_name": ORCA_EXE_NAME},
         "steps": log.entries,
     }
     completed = False
+    session = None
     desktop = None
-    launched = False
-    orca_pid = 0
     try:
         import pywinauto
 
@@ -518,10 +562,9 @@ def main() -> int:
         from pywinauto import Desktop
 
         desktop = Desktop(backend="uia")
-        main_info, launched = ensure_orca(desktop, log)
-        orca_pid = int(element_field(main_info, "process_id", 0) or 0)
-        result["meta"]["launched_by_probe"] = launched
-        result["meta"]["orca_pid"] = orca_pid
+        session = launch_app(log)
+        main_spec = desktop.window(handle=session.hwnd)
+        main_info = main_spec.wrapper_object().element_info
 
         # main window tree
         stats = WalkStats()
@@ -546,6 +589,10 @@ def main() -> int:
         # settings sidebar spatial sample
         result["settings_sidebar_sample"] = sidebar_sample(nodes, root.rect)
 
+        # boot blockers / prompts: other visible windows of the app process
+        main_hwnd = int(session.hwnd)
+        result["extra_windows"] = scan_extra_windows(desktop, main_hwnd, log)
+
         # mixing entry search + invoke probe
         matches = search_matches(collected, MENU_KEYWORDS)
         log.add("INFO", "mixing_matches", f"count={len(matches)}")
@@ -566,12 +613,7 @@ def main() -> int:
                 "control_type": str(element_field(info, "control_type", "")),
                 "pid": int(element_field(info, "process_id", 0) or 0),
                 "exe": exe,
-                "rect": [
-                    int(getattr(element_field(info, "rectangle", None), "left", 0) or 0),
-                    int(getattr(element_field(info, "rectangle", None), "top", 0) or 0),
-                    int(getattr(element_field(info, "rectangle", None), "right", 0) or 0),
-                    int(getattr(element_field(info, "rectangle", None), "bottom", 0) or 0),
-                ],
+                "rect": info_rect(info),
             }
             for info, exe in top_level_infos(desktop)
         ]
@@ -579,14 +621,12 @@ def main() -> int:
     except Exception:
         log.add("ERROR", "probe_crashed", traceback.format_exc(limit=8))
     finally:
-        if launched and orca_pid:
+        if session is not None:
             try:
-                from pywinauto.application import Application
-
-                Application(backend="uia").connect(process=orca_pid).kill()
-                log.add("INFO", "orca_killed", f"pid={orca_pid} (probe launched it)")
+                session.close()
+                log.add("INFO", "app_closed", f"pid={session.pid}")
             except Exception as exc:
-                log.add("WARN", "orca_kill_failed", f"{type(exc).__name__}: {exc}"[:160])
+                log.add("WARN", "app_close_failed", f"{type(exc).__name__}: {exc}"[:160])
         result["meta"]["finished"] = now_hms()
         result["meta"]["completed"] = completed
         result["steps"] = log.entries
