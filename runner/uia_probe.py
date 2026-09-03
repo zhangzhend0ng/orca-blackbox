@@ -19,7 +19,7 @@ Runs under the INTERACTIVE scheduled task 'uia_probe' (PITFALLS_0901.md 18.7:
 PS Direct cannot see the desktop; UIA needs the interactive session). Needs
 pywinauto on the guest python — hv_uia_probe.ps1 installs it first.
 
-CLI modes (docs/UIA_EVAL_0903.md 5.2/5.3 evidence):
+CLI modes (docs/UIA_EVAL_0903.md 5.1/5.2/5.3 evidence):
   (none)   en_US seed + pywinauto tree walk (baseline, as before)
   --raw    additionally walk the SAME main window through an explicit
            comtypes RawViewWalker and compare node counts/structure with
@@ -29,8 +29,15 @@ CLI modes (docs/UIA_EVAL_0903.md 5.2/5.3 evidence):
            the name-stability sample against the en_US run. The idle-boot
            anchor template is en; a low anchor score falls back to a
            time-based settle instead of failing the walk.
+  --dialog-sample  launch WITHOUT the launcher blocker sweep, dismiss the
+           modal Setup Wizard (m3-proven WM_CLOSE), then poll-scan the
+           app's extra windows for the REAL preset-pack 'Configuration
+           update' dialog (the server still pushes 2.2.56.2 — boot_probe
+           census reproduced it at t=15s) and dump its UIA name/class/
+           first-level buttons (scene-① evidence, UIA_EVAL 5.1). Exits
+           after the scan; no tree walk, nothing is clicked.
   Flags combine: --zh --raw. Output files get a matching suffix
-  (_zh/_raw/_zh_raw); the no-flag run keeps the unsuffixed names.
+  (_zh/_raw/_zh_raw/_dlog); the no-flag run keeps the unsuffixed names.
 
 Exit code: 0 = probe completed (individual findings may still be negative),
 1 = probe crashed before finishing (traceback is in the report/steps).
@@ -337,13 +344,16 @@ def info_rect_area(info: Any) -> int:
     return max(0, r - l) * max(0, b - t)
 
 
-def launch_app(log: StepLog, language: str = "en_US") -> Any:
+def launch_app(log: StepLog, language: str = "en_US",
+               dismiss_blockers: bool = True) -> Any:
     """Seed an isolated datadir and launch via the case-standard launcher.
 
     v1 lesson: a bare exe start resurfaces the boot splash as the
     largest-area window 5s in; launcher.launch -> winutil.find_main_window
     waits out the boot chain for the REAL frame (90s budget).
     `language` overrides app.language in the seeded conf (zh_CN mode).
+    `dismiss_blockers=False` (dialog-sample mode) keeps the real update
+    dialog alive for the UIA scene-① scan.
     """
     from harness import launcher, profile
 
@@ -351,9 +361,9 @@ def launch_app(log: StepLog, language: str = "en_US") -> Any:
     datadir = HERE / "artifacts" / f"uia_probe_datadir{lang_suffix}"
     conf_extra = None if language == "en_US" else {"app": {"language": language}}
     profile.seed_profile(datadir, fresh=True, conf_extra=conf_extra)
-    session = launcher.launch(datadir=datadir)
+    session = launcher.launch(datadir=datadir, dismiss_blockers=dismiss_blockers)
     log.add("INFO", "app_launched", f"pid={session.pid} hwnd=0x{session.hwnd:x} "
-                                    f"lang={language}")
+                                    f"lang={language} sweep={dismiss_blockers}")
     return session
 
 
@@ -629,6 +639,41 @@ def raw_view_compare(main_hwnd: int, pywinauto_stats: WalkStats,
     return out
 
 
+def dialog_sample_run(session: Any, desktop: Any, main_hwnd: int,
+                      log: StepLog) -> dict[str, Any]:
+    """Scene-① evidence: the REAL preset-pack update dialog under UIA.
+
+    The launcher blocker sweep is DISABLED for this run (launch with
+    dismiss_blockers=False) so the dialog stays up; the modal Setup
+    Wizard is dismissed first (m3-proven WM_CLOSE) because it blocks the
+    post-init chain that would produce the dialog (boot_probe census
+    v2, PITFALLS_0901.md 19.1). Then poll-scan for the app's extra
+    windows: the 'Configuration update' MsgUpdateConfig toplevel with
+    its first-level button names — what a UIA-driven dismissal (scene ①)
+    would target. Nothing is clicked.
+    """
+    from harness import process_panel as pp
+
+    wiz_closed = bool(pp.close_setup_wizard(session, attempts=3, log="[uia]"))
+    log.add("INFO", "wizard_closed", f"ok={wiz_closed}")
+    extras: list[dict[str, Any]] = []
+    waits_s = 0
+    for _ in range(8):
+        time.sleep(8.0)
+        waits_s += 8
+        extras = scan_extra_windows(desktop, main_hwnd, log)
+        if extras:
+            break
+    out = {"wizard_closed": wiz_closed, "scan_waits_s": waits_s,
+           "extra_windows": extras}
+    for extra in extras:
+        log.add("INFO", "dialog_sample_found",
+                f"name={ascii_safe(extra['name'])[:70]} "
+                f"class={extra['class_name']} "
+                f"buttons={ascii_safe('|'.join(extra['buttons']))[:120]}")
+    return out
+
+
 def build_report(result: dict[str, Any]) -> str:
     # crash-safe: every section is optional so a mid-probe crash still gets
     # a readable report instead of a KeyError inside the finally block
@@ -667,6 +712,11 @@ def build_report(result: dict[str, Any]) -> str:
     add(f"extra app windows (blockers/prompts): {len(extras)}")
     for extra in extras[:4]:
         add(f"  [{ascii_safe(extra['name'])[:70]}] class={extra['class_name']} buttons={ascii_safe('|'.join(extra['buttons']))[:90]}")
+    ds = result.get("dialog_sample")
+    if ds:
+        add(f"dialog sample (scene 1): wizard_closed={ds.get('wizard_closed')} "
+            f"scan_waits_s={ds.get('scan_waits_s')} "
+            f"extras={len(ds.get('extra_windows', []))}")
     mixing = result.get("mixing_search", {})
     add(f"mixing search: {len(mixing.get('matches', []))} matches (keywords={ascii_safe(str(mixing.get('keywords')))}[:110])")
     for attempt in mixing.get("invoke_attempts", []):
@@ -696,10 +746,12 @@ def main() -> int:
     flags = sys.argv[1:]
     zh = "--zh" in flags
     raw = "--raw" in flags
+    ds = "--dialog-sample" in flags
     global OUT_SUFFIX
-    OUT_SUFFIX = ("_zh" if zh else "") + ("_raw" if raw else "")
+    OUT_SUFFIX = (("_zh" if zh else "") + ("_raw" if raw else "")
+                  + ("_dlog" if ds else ""))
     log = StepLog()
-    log.add("INFO", "probe_start", f"mode=zh:{zh} raw:{raw}")
+    log.add("INFO", "probe_start", f"mode=zh:{zh} raw:{raw} dlog:{ds}")
     result: dict[str, Any] = {
         "meta": {"started": now_hms(), "screen": screen_size(), "exe_name": ORCA_EXE_NAME,
                  "mode": OUT_SUFFIX or "(default)"},
@@ -715,7 +767,17 @@ def main() -> int:
         from pywinauto import Desktop
 
         desktop = Desktop(backend="uia")
-        session = launch_app(log, language="zh_CN" if zh else "en_US")
+        session = launch_app(log, language="zh_CN" if zh else "en_US",
+                             dismiss_blockers=not ds)
+        if ds:
+            # scene-① sample only: dismiss the modal wizard, then scan for
+            # the REAL preset-pack dialog under UIA; nothing is clicked
+            main_hwnd = int(session.hwnd)
+            result["dialog_sample"] = dialog_sample_run(session, desktop,
+                                                        main_hwnd, log)
+            result["extra_windows"] = result["dialog_sample"]["extra_windows"]
+            completed = True
+            return 0  # finally block writes the outputs
         wait_idle_boot(session, log, zh=zh)
         main_spec = desktop.window(handle=session.hwnd)
         main_info = main_spec.wrapper_object().element_info
