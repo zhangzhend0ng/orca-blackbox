@@ -545,7 +545,11 @@ def raw_view_compare(main_hwnd: int, pywinauto_stats: WalkStats,
     from pywinauto.uia_defines import IUIA
 
     iuia = IUIA()
-    walker = iuia.iuia.GetRawViewWalker()
+    # NOTE: the walkers are [propget] properties on the comtypes interface
+    # (GetRawViewWalker is NOT a method — pywinauto's own parent lookup
+    # uses `iuia.ControlViewWalker.GetParentElement` property-style; the
+    # method-style call raises AttributeError, measured 09-03).
+    walker = iuia.iuia.RawViewWalker
     try:
         root = iuia.iuia.ElementFromHandle(int(main_hwnd))
     except Exception as exc:  # noqa: BLE001
