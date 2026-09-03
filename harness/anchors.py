@@ -34,23 +34,18 @@ from harness import winutil  # noqa: E402
 RESOURCE = HERE / "resource" / "image"
 
 # --- template images (OpenCV matchTemplate) ------------------------------
-# All measured on the maximized window unless noted; cut rects live in
-# TEMPLATE_CUTS below.
-TAB_PREPARE_ACTIVE = "tab_prepare_active.png"
-TAB_PREPARE_INACTIVE = "tab_prepare_inactive.png"
-TAB_PREVIEW_ACTIVE = "tab_preview_active.png"
-TAB_PREVIEW_INACTIVE = "tab_preview_inactive.png"
-SLICE_PLATE_BUTTON = "slice_plate_button.png"
-SLICE_BUTTON_DONE = "slice_button_done.png"
+# IDs are filename STEMS (stable, same rule as cases.py). All measured on
+# the maximized window unless noted; cut rects live in TEMPLATE_CUTS below.
+TAB_PREPARE_ACTIVE = "tab_prepare_active"
+TAB_PREPARE_INACTIVE = "tab_prepare_inactive"
+TAB_PREVIEW_ACTIVE = "tab_preview_active"
+TAB_PREVIEW_INACTIVE = "tab_preview_inactive"
+SLICE_PLATE_BUTTON = "slice_plate_button"
+SLICE_BUTTON_DONE = "slice_button_done"
 
-TEMPLATE_PATHS = {
-    TAB_PREPARE_ACTIVE: RESOURCE / TAB_PREPARE_ACTIVE,
-    TAB_PREPARE_INACTIVE: RESOURCE / TAB_PREPARE_INACTIVE,
-    TAB_PREVIEW_ACTIVE: RESOURCE / TAB_PREVIEW_ACTIVE,
-    TAB_PREVIEW_INACTIVE: RESOURCE / TAB_PREVIEW_INACTIVE,
-    SLICE_PLATE_BUTTON: RESOURCE / SLICE_PLATE_BUTTON,
-    SLICE_BUTTON_DONE: RESOURCE / SLICE_BUTTON_DONE,
-}
+TEMPLATE_PATHS = {i: RESOURCE / f"{i}.png" for i in (
+    TAB_PREPARE_ACTIVE, TAB_PREPARE_INACTIVE, TAB_PREVIEW_ACTIVE,
+    TAB_PREVIEW_INACTIVE, SLICE_PLATE_BUTTON, SLICE_BUTTON_DONE)}
 
 # idle-boot state: the tab bar shows Prepare-active + Preview-inactive and
 # the idle slice button; SLICE_BUTTON_DONE only exists mid/after a slice
