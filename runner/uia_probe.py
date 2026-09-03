@@ -720,11 +720,10 @@ def dialog_sample_run(session: Any, desktop: Any, main_hwnd: int,
     out = {"wizard_seen": wizard_seen, "wizard_closed": wiz_closed,
            "wizard_still_up": still_up, "scan_waits_s": waits_s,
            "dialog": found, "scans": scans[-3:]}
-    for extra in extras:
+    if found is not None:
         log.add("INFO", "dialog_sample_found",
-                f"name={ascii_safe(extra['name'])[:70]} "
-                f"class={extra['class_name']} "
-                f"buttons={ascii_safe('|'.join(extra['buttons']))[:120]}")
+                f"name={ascii_safe(found.get('dialog_name', ''))[:70]} "
+                f"buttons={ascii_safe('|'.join(found.get('buttons', [])))[:120]}")
     return out
 
 
