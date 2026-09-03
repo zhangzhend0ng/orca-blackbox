@@ -43,4 +43,4 @@ Set-Location '$sb'
   } -ArgumentList $guestSandbox, $guestPython
   Write-Output "    $launch"
 }
-Write-Output "[3] poll: Get-Content C:\coil\blocker_check_task.log -Encoding UTF8 (two boots, ~4 min)"
+Write-Output "[3] poll: Get-Content C:\coil\blocker_check_task.log -Encoding UTF8 (~1 min, two synthetic-dialog phases)"

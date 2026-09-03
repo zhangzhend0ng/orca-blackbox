@@ -1,107 +1,115 @@
 #!/usr/bin/env python3
-"""blocker_sweep_check.py — deterministic end-to-end check of the launch
-boot-blocker sweep (PITFALLS_0901.md 19, launcher.sweep_boot_blockers).
+"""blocker_sweep_check.py — deterministic check of the launch boot-blocker
+sweep mechanics (PITFALLS_0901.md 19, launcher.sweep_boot_blockers).
 
-Discriminating two-phase design (not just "it passed"): the launcher sweep
-dismisses the update dialog within ~0.5s of it appearing, so a single
-sweep-on boot cannot tell "dismissed" from "never popped". Both phases use
-boot_probe's localhost feed trick (9.9.9 non-force via the seed conf knob)
-to make the 'Snapmaker Orca Update' dialog (MsgUpdateSlic3r) appear
-DETERMINISTICALLY:
+Why not a real Orca boot: the incident dialog (MsgUpdateConfig) is driven by
+the preset-updater feed (https://api.bambulab.com — not conf-stubbable), and
+the app-version feed trick (orca_upgrade_url -> localhost, boot_probe phase
+b) was never proven to reach a dialog (measured 09-03: no dialog, no fetch
+evidence; the AppConfig::get section behavior for that key is unverified).
+So this check synthesizes the blocker SIGNATURE instead — a real native
+#32770 dialog (MessageBoxW runs its own message pump) titled exactly like
+the sweep's targets, in the sweep's own process (sweep scopes to the app
+pid; same-process windows are in scope):
 
-  off — launch(dismiss_blockers=False): dialog must APPEAR and SURVIVE 10s
-        (proves the feed drives the dialog and the detector below sees it)
-  on  — fresh boot, sweep enabled: session.blockers must contain the dialog
-        title, and no matching window may survive the sweep
+  ignore — dialog titled 'Unrelated Caption' must SURVIVE a sweep
+  dismiss — dialog titled 'Configuration update' must be WM_CLOSEd by the
+            sweep (returns from its MessageBox thread) and be recorded in
+            the dismissed list; the unrelated dialog stays up
 
-Outputs ASCII lines to stdout (task log); exit 0 = pass, 1 = fail.
-Runs under the INTERACTIVE scheduled task 'blocker_check' (PITFALLS 18.7).
+ASCII stdout; exit 0 = pass, 1 = fail. Runs under the INTERACTIVE scheduled
+task 'blocker_check' (PITFALLS 18.7: window enumeration needs the desktop).
 """
 
 from __future__ import annotations
 
+import ctypes
+import os
 import sys
+import threading
 import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parents[1]
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
-sys.path.insert(0, str(HERE / "runner"))
 
-from harness import launcher, profile, winutil  # noqa: E402
-import boot_probe  # noqa: E402  (runner/ sibling: feed server + payload)
+from harness import launcher  # noqa: E402
 
-TARGET_TITLE = "snapmaker orca update"  # MsgUpdateSlic3r, lowercased
-CONF_EXTRA = {"orca_upgrade_url": f"http://127.0.0.1:{boot_probe.FEED_PORT}/version.json"}
-DATADIR = HERE / "artifacts" / "blocker_check_datadir"
+MB_OKCANCEL = 0x01
+WM_CLOSE = 0x0010
+INVALID_HWND = -1  # MessageBoxW returns 0 on failure; IDs are >0
 
 
-def blocker_windows(pid: int) -> list[tuple[int, str]]:
-    """Visible app windows whose title matches a blocker signature."""
-    hits: list[tuple[int, str]] = []
-    for hwnd, wpid in winutil.enum_windows():
-        if wpid != pid:
-            continue
-        title = winutil.window_title(hwnd).strip().lower()
-        if title in launcher.BLOCKER_TITLES:
-            hits.append((hwnd, title))
-    return hits
+def _message_box_thread(title: str, result: list[int]) -> None:
+    """Blocking MessageBoxW in a worker thread (Windows pumps it for us)."""
+    result.append(ctypes.windll.user32.MessageBoxW(None, "blocker_sweep_check body", title, MB_OKCANCEL))
 
 
-def wait_blocker(pid: int, timeout_s: float = 30.0) -> list[tuple[int, str]]:
-    """Poll until a blocker window is up (the feed check fires a few seconds
-    into boot — launch() does not wait for it in the sweep-off phase)."""
+def open_dialog(title: str) -> tuple[list[int], threading.Thread]:
+    result: list[int] = []
+    thread = threading.Thread(target=_message_box_thread, args=(title, result), daemon=True)
+    thread.start()
+    return result, thread
+
+
+def find_dialogs(title: str, timeout_s: float = 5.0) -> list[int]:
+    """hwnds of visible top-level windows with exactly this title."""
     deadline = time.monotonic() + timeout_s
     while time.monotonic() < deadline:
-        hits = blocker_windows(pid)
+        hits = [h for h, p in launcher.winutil.enum_windows()
+                if launcher.winutil.window_title(h) == title]
         if hits:
             return hits
-        time.sleep(0.5)
+        time.sleep(0.2)
     return []
 
 
-def run_phase(sweep_on: bool) -> bool:
-    label = "on" if sweep_on else "off"
-    print(f"== phase {label}: sweep={'on' if sweep_on else 'off'} ==", flush=True)
-    profile.seed_profile(DATADIR, fresh=True, conf_extra=CONF_EXTRA)
-    srv = boot_probe.serve_feed(force=False)
-    try:
-        session = launcher.launch(datadir=DATADIR, boot_demote_s=0,
-                                  dismiss_blockers=sweep_on, blocker_sweep_s=20.0)
-        if sweep_on:
-            # the sweep already ran inside launch(); dismissal is recorded
-            # on the session and no matching window may survive
-            time.sleep(3.0)  # settle
-            survivors = blocker_windows(session.pid)
-            dismissed = [t.lower() for t in getattr(session, "blockers", [])]
-            ok = TARGET_TITLE in dismissed and not survivors
-            print(f"   dismissed={dismissed} survivors={survivors} -> "
-                  f"{'PASS' if ok else 'FAIL'}", flush=True)
-        else:
-            # must APPEAR, then SURVIVE 10s (appearance alone would not
-            # discriminate a self-closing transient from a real blocker)
-            appeared = wait_blocker(session.pid, timeout_s=30.0)
-            time.sleep(10.0)
-            survivors = blocker_windows(session.pid)
-            ok = bool(appeared) and bool(survivors)
-            print(f"   appeared={bool(appeared)} survived_10s={bool(survivors)} -> "
-                  f"{'PASS' if ok else 'FAIL'} (dialog expected to persist)", flush=True)
-        if session.alive():
-            session.close(timeout_s=15.0)
-        else:
-            print("   app DIED (unexpected for the non-force feed)", flush=True)
-            ok = False
-        return ok
-    finally:
-        srv.shutdown()
+def run_ignore_phase() -> bool:
+    print("== phase ignore: unmatched dialog must survive the sweep ==", flush=True)
+    result, thread = open_dialog("Unrelated Caption")
+    hits = find_dialogs("Unrelated Caption")
+    ok_present = bool(hits)
+    # main_hwnd=0: the unrelated box is genuinely title-matched (not merely
+    # excluded) — this is what proves BLOCKER_TITLES discrimination
+    dismissed = launcher.sweep_boot_blockers(pid=os.getpid(),
+                                             main_hwnd=0,
+                                             budget_s=4.0)
+    ok_dismissed = dismissed == []
+    alive = bool(find_dialogs("Unrelated Caption", timeout_s=1.0))
+    ok = ok_present and ok_dismissed and alive
+    if hits:
+        ctypes.windll.user32.PostMessageW(hits[0], WM_CLOSE, 0, 0)
+    thread.join(timeout=5.0)
+    print(f"   present={ok_present} dismissed={dismissed} survived={alive} -> "
+          f"{'PASS' if ok else 'FAIL'}", flush=True)
+    return ok
+
+
+def run_dismiss_phase() -> bool:
+    print("== phase dismiss: titled blocker must be WM_CLOSEd and recorded ==", flush=True)
+    result, thread = open_dialog("Configuration update")
+    hits = find_dialogs("Configuration update")
+    ok_present = bool(hits)
+    dismissed = launcher.sweep_boot_blockers(pid=__import__("os").getpid(),
+                                             main_hwnd=0,
+                                             budget_s=4.0)
+    thread.join(timeout=5.0)  # MessageBox worker must have returned
+    ok_dismissed = any(t == "configuration update" for t in dismissed)
+    gone = not find_dialogs("Configuration update", timeout_s=2.0)
+    box_returned = bool(result)  # MessageBoxW returned = dialog really closed
+    ok = ok_present and ok_dismissed and gone and box_returned
+    print(f"   present={ok_present} dismissed={dismissed} gone={gone} "
+          f"box_returned={box_returned} thread_alive={thread.is_alive()} -> "
+          f"{'PASS' if ok else 'FAIL'}", flush=True)
+    return ok
 
 
 def main() -> int:
-    results = {}
-    # off first: if the dialog does not even appear, the rest proves nothing
-    results["off"] = run_phase(sweep_on=False)
-    results["on"] = run_phase(sweep_on=True)
+    results = {
+        "ignore": run_ignore_phase(),
+        "dismiss": run_dismiss_phase(),
+    }
     verdict = all(results.values())
     print(f"===== blocker_sweep_check verdict: {'PASS' if verdict else 'FAIL'} "
           f"(phases={results}) =====", flush=True)
