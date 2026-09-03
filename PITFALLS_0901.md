@@ -380,3 +380,40 @@ bash 版）/ `clean_guest.ps1`（杀孤儿）/ `max_vmconnect.ps1`（控制台
 - **修法**：GUI/桌面相关的检查与用例，经 PS Direct 验证时一律走
   INTERACTIVE 计划任务通道（hv_go 的 suite 任务同款），不要直跑。
 - **通用化**：PS Direct = "客机服务上下文"，不是"客机桌面会话"。
+
+### 18.8 relay 守护的 Invoke-Expression 是宿主上下文（不带包装 = 查的是宿主）
+- **现象**：relay 守护把命令字符串在**宿主**自己的 runspace 里
+  Invoke-Expression——命令里不显式包 `Invoke-Command -VMName ...` 就根本
+  没到客机。宿主上恰好存在同形路径的陈迹（`C:\coil\run_suite.ps1` 是
+  08-30 老模板、`C:\coil\orca-blackbox\artifacts` 为空、没有 suite 计划
+  任务），查出来全是"文件消失了/任务没了"的假象（09-03 下午定性 22 RED
+  时实际发生：三次"客机状态消失"全是查了宿主）。判别信号：任务列表里
+  冒出 `OrcaRelayWatchdog` = 查的是宿主。
+- **修法**：凡经 relay 的客机查询/操作，命令体一律显式包
+  `Invoke-Command -VMName ... -Credential ... -ScriptBlock { ... }`（轮询、
+  harvest 类脚本内部已自带包装）。relay 侧脚本要用 Write-Output 回传——
+  守护只捕获管道输出，Write-Host（信息流）是空的。
+- **通用化**：relay 通道 ≠ 客机；它是"宿主执行器"，客机是包装出来的。
+  两者对同一路径各自有状态，排查时先确认自己在哪一侧。
+
+## 19. 0903 补充：在线预设包更新弹窗会整批毒杀（22 RED 实录）
+
+- **现象**：Orca 启动时在线检查预设包，服务端推出新包（2.2.56.2，腔温
+  gcode 修复）后，启动路径弹模态框 "A new configuration package is
+  available. Do you want to install it?"。框一在，交互类断言成片倒塌：
+  topbar 模板找不到（被遮挡）、dropdown 8 次点不开、model selected: FAIL、
+  确认对话框不驱动——而被动视觉断言（multicolor project loads）照常绿。
+  09-03 全量 36 例 PASS=14 FAIL=22，-OnlyFailed 热重跑 PASS=1 FAIL=21
+  （确定性）；前一晚同 commit 基线 31 绿——劣化完全来自这个弹窗。
+  m4e 失败帧已存 `artifacts/m4e_fail_frame.jpg`。
+- **判别**：散布的 GREEN（谁的启动没撞上弹窗谁过）+ 交互断言死、视觉
+  断言活 + SUT/exe 与 commit 未变 = 环境级新变量。抓用例失败现场帧
+  （artifacts\shots\<case>\ 经 base64 拉 JPEG）一步定案。
+- **修法候选（未实施，待拍板）**：
+  1. 客机网络隔离/hosts 屏蔽更新端点（最确定，黑盒纯度也最好）；
+  2. datadir 配置关自动检查预设包更新（若有该开关，写进 seed_profile）；
+  3. 启动序列确定性关弹窗（launcher/warmup 阶段探测并点掉）——若走
+     UIA 混合路线（docs/UIA_EVAL_0903.md），弹窗按钮是原生 wx 按钮，
+     结构层可见可点，属优先场景 ①。
+- **通用化**：任何带外网的项目，"服务端推新"是回归基线的隐藏变量；
+  批次劣化先查弹窗/托盘/更新类覆盖物，再怀疑代码。
