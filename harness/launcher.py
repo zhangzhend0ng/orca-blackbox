@@ -80,16 +80,27 @@ class AppSession:
 # interaction — dialogs raised by a case are never in scope. Matching is by
 # window TITLE (en_US; the seeded conf pins the locale) and deliberately
 # narrow — the force-upgrade dialog closes the app on ANY button
-# (UpdateDialogs.cpp EVT_ENTER_FORCE_UPGRADE) and must never match:
-#   "Configuration update"  — MsgUpdateConfig, preset-pack prompt (l.97)
-#   "Snapmaker Orca Update" — MsgUpdateSlic3r, app-version prompt (l.40)
+# (GUI_App.cpp EVT_ENTER_FORCE_UPGRADE -> DownloadDialog, title "Snapmaker
+# Orca needs an update") and must never match:
+#   "Configuration update"          — MsgUpdateConfig, preset-pack prompt
+#   "New version of Snapmaker Orca" — UpdateVersionDialog, app-version
+#     prompt (boot_probe phase b drove the REAL dialog via a synthetic
+#     feed and WM_CLOSEd it: app survives — close_test 09-03)
+#   "Snapmaker Orca Update"         — MsgUpdateSlic3r (dead code in this
+#     build; kept for symmetry with boot_probe's classification)
+# Blocker appearance timing (census v2, 09-03, measured post-main-window,
+# wizard dismissed at t=10s): config dialog t=15s, version dialog t=12s.
+# The sweep budget therefore defaults to 25s (dismissal tolerance to ~19s);
+# 15s was the pre-census guess and the config dialog lands EXACTLY at its
+# edge when the wizard close runs late.
 BLOCKER_TITLES = (
     "configuration update",
+    "new version of snapmaker orca",
     "snapmaker orca update",
 )
 
 
-def sweep_boot_blockers(pid: int, main_hwnd: int, budget_s: float = 15.0) -> list[str]:
+def sweep_boot_blockers(pid: int, main_hwnd: int, budget_s: float = 25.0) -> list[str]:
     """WM_CLOSE known boot-blocker dialogs for up to `budget_s`; returns titles.
 
     Polls the app pid's visible top-levels and closes any window whose title
@@ -121,16 +132,17 @@ def launch(exe: Path | str | None = None,
            wait_window_s: float = 90.0,
            boot_demote_s: float = 12.0,
            dismiss_blockers: bool = True,
-           blocker_sweep_s: float = 15.0) -> AppSession:
+           blocker_sweep_s: float = 25.0) -> AppSession:
     """Launch the app; wait for its main window; return the session.
 
     `boot_demote_s` runs a passive z-order/style demotion watchdog for that
     many seconds after window discovery (0 disables; the m1/m2/m3 drivers'
     late demote_window() call still re-asserts afterwards).
     `dismiss_blockers` runs sweep_boot_blockers() inside the boot window
-    (default 15s after demotion) — online update prompts that pop during
-    boot are WM_CLOSEd before the case can interact (PITFALLS_0901.md 19);
-    the census tools pass dismiss_blockers=False to observe raw boots.
+    (default 25s after window discovery) — online update prompts that pop
+    during boot are WM_CLOSEd before the case can interact
+    (PITFALLS_0901.md 19); the census tools pass dismiss_blockers=False to
+    observe raw boots.
     `session.blockers` carries the dismissed titles for forensics.
     """
     exe = Path(exe) if exe else default_exe()
