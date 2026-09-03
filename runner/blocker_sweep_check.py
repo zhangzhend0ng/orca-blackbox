@@ -16,6 +16,10 @@ pid; same-process windows are in scope):
   dismiss — dialog titled 'Configuration update' must be WM_CLOSEd by the
             sweep (returns from its MessageBox thread) and be recorded in
             the dismissed list; the unrelated dialog stays up
+  version — dialog titled 'New version of Snapmaker Orca' must be
+            WM_CLOSEd too (the UpdateVersionDialog family; WM_CLOSE on the
+            REAL dialog was proven app-safe by boot_probe phase b's
+            close_test — this phase pins the sweep-title mechanics for it)
 
 ASCII stdout; exit 0 = pass, 1 = fail. Runs under the INTERACTIVE scheduled
 task 'blocker_check' (PITFALLS 18.7: window enumeration needs the desktop).
@@ -86,17 +90,18 @@ def run_ignore_phase() -> bool:
     return ok
 
 
-def run_dismiss_phase() -> bool:
-    print("== phase dismiss: titled blocker must be WM_CLOSEd and recorded ==", flush=True)
-    result, thread = open_dialog("Configuration update")
-    hits = find_dialogs("Configuration update")
+def run_dismiss_phase(title: str) -> bool:
+    print(f"== phase dismiss: titled blocker '{title}' must be WM_CLOSEd "
+          f"and recorded ==", flush=True)
+    result, thread = open_dialog(title)
+    hits = find_dialogs(title)
     ok_present = bool(hits)
     dismissed = launcher.sweep_boot_blockers(pid=__import__("os").getpid(),
                                              main_hwnd=0,
                                              budget_s=4.0)
     thread.join(timeout=5.0)  # MessageBox worker must have returned
-    ok_dismissed = any(t == "configuration update" for t in dismissed)
-    gone = not find_dialogs("Configuration update", timeout_s=2.0)
+    ok_dismissed = any(t == title.lower() for t in dismissed)
+    gone = not find_dialogs(title, timeout_s=2.0)
     box_returned = bool(result)  # MessageBoxW returned = dialog really closed
     ok = ok_present and ok_dismissed and gone and box_returned
     print(f"   present={ok_present} dismissed={dismissed} gone={gone} "
@@ -108,7 +113,8 @@ def run_dismiss_phase() -> bool:
 def main() -> int:
     results = {
         "ignore": run_ignore_phase(),
-        "dismiss": run_dismiss_phase(),
+        "dismiss": run_dismiss_phase("Configuration update"),
+        "version": run_dismiss_phase("New version of Snapmaker Orca"),
     }
     verdict = all(results.values())
     print(f"===== blocker_sweep_check verdict: {'PASS' if verdict else 'FAIL'} "
