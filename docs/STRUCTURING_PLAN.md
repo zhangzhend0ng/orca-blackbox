@@ -22,7 +22,7 @@
 `453dc208e1` 后补充）**：白盒 full-app 套件已达 28 例（11 条业务路径全 app 测试，
 21 过 / 7 env-skip），m3a-m3i 的业务路径白盒侧现也有强覆盖。据此明确双通道分工：
 **白盒 28 例 = 快回归**（ORCA_GUI_TEST_MODE 隐藏窗口 + 测试钩子内驱动）；
-**黑盒 35 例 = 独立端到端验证**（不依赖测试钩子，从渲染/输入注入层面复现用户路径）。
+**黑盒 36 例 = 独立端到端验证**（不依赖测试钩子，从渲染/输入注入层面复现用户路径）。
 registry 中 m3a-m3i `suite: None` 的定位依据即此。另核实：`453dc208e1` 把
 ORCA_GUI_TEST_MODE 默认为 1 只发生在测试 exe 的 bootstrap（不进 snapmaker-orca.exe），
 黑盒 launcher 剥变量逻辑不受影响；BLACKBOX_CASES.md 的源码行号引用已按新 HEAD
@@ -72,7 +72,7 @@ ORCA_GUI_TEST_MODE 默认为 1 只发生在测试 exe 的 bootstrap（不进 sna
 1. **anchors.py 定位资产集中**：模板/锚点/色值/OCR 语料收进命名锚点表，
    用例脚本禁止散写阈值与坐标。UI 改版时打击面收敛到 anchors.py + 换图。
    配套 `m0_anchor_health.py` 冒烟：app 起来后全量匹配锚点，报失效清单
-   ——UI 升级后 5 分钟知道打击面，不用跑 35 例被红淹没。
+   ——UI 升级后 5 分钟知道打击面，不用跑 36 例被红淹没。
 2. **tests/ pytest subprocess 壳**：parametrize 从 cases.py 生成；
    conftest 做 session 级硬门禁（分辨率/远控层/DPI 不过直接 fail-fast）；
    marks 从 tier / known_limitation 映射（xfail strict=False 替代手工 ⏸）；
