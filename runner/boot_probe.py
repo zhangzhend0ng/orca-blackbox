@@ -155,11 +155,11 @@ def serve_feed(force: bool) -> HTTPServer:
 # --- observer ---------------------------------------------------------------
 
 
-def snapshot(pid: int) -> dict[int, tuple[str, str, tuple, int]]:
-    """hwnd -> (class, title, rect, visible) for the pid's visible toplevels."""
+def snapshot(pid: int) -> dict[int, tuple[str, str, tuple]]:
+    """hwnd -> (class, title, rect) for the pid's visible toplevels."""
     out = {}
     for cls, txt, rect, hwnd in toplevel(pid):
-        out[hwnd] = (cls, txt, rect, hwnd)
+        out[hwnd] = (cls, txt, rect)
     return out
 
 
