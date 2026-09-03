@@ -10,10 +10,12 @@
 #                         throwaway isolated Hyper-V guest, NOT a secret;
 #                         override for any real machine)
 #   ORCA_BB_GUEST_SANDBOX guest-side suite checkout  (default C:\coil\orca-blackbox;
-#                         migrated 2026-09-02 off the monorepo worktree — guest
-#                         layout now matches this repo: tests/ + diag/ + cases.py)
+#                         migrated 2026-09-02 off the monorepo worktree; a git
+#                         clone of this repo since 2026-09-03 — the pre-clone
+#                         tarball checkout is kept as .tarball.bak)
 #   ORCA_BB_GUEST_PYTHON  guest python               (default C:\Python311\python.exe)
 #   ORCA_BB_GUEST_TOOLS   guest-side relay tools dir (default C:\coil\vm_setup_guest)
+#   ORCA_BB_GUEST_GIT     guest-side git.exe (MinGit; default C:\coil\tools\mingit\cmd\git.exe)
 
 $vm = $(if ($env:ORCA_BB_VM) { $env:ORCA_BB_VM } else { 'win11-test' })
 $guestUser = $(if ($env:ORCA_BB_GUEST_USER) { $env:ORCA_BB_GUEST_USER } else { 'test' })
@@ -21,4 +23,5 @@ $guestPass = $(if ($env:ORCA_BB_GUEST_PASS) { $env:ORCA_BB_GUEST_PASS } else { '
 $guestSandbox = $(if ($env:ORCA_BB_GUEST_SANDBOX) { $env:ORCA_BB_GUEST_SANDBOX } else { 'C:\coil\orca-blackbox' })
 $guestPython = $(if ($env:ORCA_BB_GUEST_PYTHON) { $env:ORCA_BB_GUEST_PYTHON } else { 'C:\Python311\python.exe' })
 $guestTools = $(if ($env:ORCA_BB_GUEST_TOOLS) { $env:ORCA_BB_GUEST_TOOLS } else { 'C:\coil\vm_setup_guest' })
+$guestGit = $(if ($env:ORCA_BB_GUEST_GIT) { $env:ORCA_BB_GUEST_GIT } else { 'C:\coil\tools\mingit\cmd\git.exe' })
 $cred = New-Object System.Management.Automation.PSCredential($guestUser, (ConvertTo-SecureString $guestPass -AsPlainText -Force))
