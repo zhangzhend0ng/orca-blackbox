@@ -54,18 +54,23 @@ TEMPLATE_PATHS = {
 
 # idle-boot state: the tab bar shows Prepare-active + Preview-inactive and
 # the idle slice button; SLICE_BUTTON_DONE only exists mid/after a slice
-# (context-gated — m0_anchor_health skips it).
+# (context-gated — m0_anchor_health skips it). IDs are filename STEMS
+# (stable, same rule as cases.py), not filenames.
 IDLE_BOOT_TEMPLATES = (
-    TAB_PREPARE_ACTIVE, TAB_PREPARE_INACTIVE,
-    TAB_PREVIEW_ACTIVE, TAB_PREVIEW_INACTIVE,
-    SLICE_PLATE_BUTTON,
+    "tab_prepare_active", "tab_prepare_inactive",
+    "tab_preview_active", "tab_preview_inactive",
+    "slice_plate_button",
 )
 
 
 def template_path(name: str) -> Path:
-    """Resolve a template NAME (stable ID) or pass a Path through."""
-    p = TEMPLATE_PATHS.get(name)
-    return p if p is not None else Path(name)
+    """Resolve a template ID (stem), filename, or pass a Path through."""
+    if name in TEMPLATE_PATHS:
+        return TEMPLATE_PATHS[name]
+    stem = name[:-4] if name.endswith(".png") else name
+    if stem in TEMPLATE_PATHS:
+        return TEMPLATE_PATHS[stem]
+    return Path(name)
 
 
 # --- match thresholds -----------------------------------------------------
