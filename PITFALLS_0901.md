@@ -409,11 +409,25 @@ bash 版）/ `clean_guest.ps1`（杀孤儿）/ `max_vmconnect.ps1`（控制台
 - **判别**：散布的 GREEN（谁的启动没撞上弹窗谁过）+ 交互断言死、视觉
   断言活 + SUT/exe 与 commit 未变 = 环境级新变量。抓用例失败现场帧
   （artifacts\shots\<case>\ 经 base64 拉 JPEG）一步定案。
-- **修法候选（未实施，待拍板）**：
-  1. 客机网络隔离/hosts 屏蔽更新端点（最确定，黑盒纯度也最好）；
-  2. datadir 配置关自动检查预设包更新（若有该开关，写进 seed_profile）；
-  3. 启动序列确定性关弹窗（launcher/warmup 阶段探测并点掉）——若走
-     UIA 混合路线（docs/UIA_EVAL_0903.md），弹窗按钮是原生 wx 按钮，
-     结构层可见可点，属优先场景 ①。
+- **修法（已实施 ③，09-03 傍晚）**：启动序列确定性关弹窗——
+  `harness/launcher.py` 的 `sweep_boot_blockers()` 在 launch() 启动窗内
+  （demote 之后、用例交互之前，默认 15s）按**窗口标题**匹配并 WM_CLOSE
+  （wx 模态框 close=Cancel）：`Configuration update`（MsgUpdateConfig）
+  + `Snapmaker Orca Update`（MsgUpdateSlic3r）；强制升级框按构造排除
+  （任意按钮会退 app）。locale 钉 en_US 由 seed conf 保证；
+  `session.blockers` 留痕。验证：合成 #32770 同名对话框双相判别
+  （`runner/blocker_sweep_check.py`，无关标题存活 + 同名标题被关）双
+  PASS；全量 36 例复跑 **PASS=36 FAIL=0**（同日 14:40 为 14/22、热重跑
+  1/21）。boot_probe 的 census 相传 `dismiss_blockers=False`（要看原始
+  boot）。残余注意：sweep 窗 15s 是拍脑袋值，若未来弹窗出现晚于它，
+  批次会再次中毒——case 日志里没有 `[launcher] blocker dismissed` 却
+  有遮挡症状时，先加大 `blocker_sweep_s`。
+- **未采用的候选**：① 客机网络隔离/hosts 屏蔽更新端点（更彻底但动
+  客机全局状态）；② datadir conf 关更新检查——`profile.py` 的
+  `conf_extra` knob（f562284）已具备能力，且 `orca_upgrade_url` 键
+  可路由 app 版本检查（AppConfig::get_version_upgrade_url），但实测
+  localhost feed 未触发弹窗（fetch 无证据，AppConfig::get 段落行为
+  未定），配置包弹窗走 bambulab preset 链无法 conf 合成——两条线都
+  留给 census（boot_probe）后续实锤。
 - **通用化**：任何带外网的项目，"服务端推新"是回归基线的隐藏变量；
   批次劣化先查弹窗/托盘/更新类覆盖物，再怀疑代码。
