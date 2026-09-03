@@ -46,11 +46,27 @@ OUT_COMPACT = r"C:\coil\uia_probe_compact.json"
 OUT_REPORT = r"C:\coil\uia_probe_report.txt"
 
 # Hard caps so a pathological tree can never hang the task (30 min limit):
-MAX_DEPTH = 7          # main-window walk depth
+MAX_DEPTH = 9          # main-window walk depth
 MAX_CHILDREN = 60      # per node
 MAX_NODES = 2500       # whole walk
 WALK_BUDGET_S = 120.0  # wall clock per walk
 MENU_KEYWORDS = ["mix", "multimat", "paint", "filament", "混色", "彩", "涂", "多材"]
+
+
+def wait_idle_boot(session: Any, log: StepLog) -> None:
+    """Block until the app passes its idle-boot anchor (tab bar settled) —
+    v2 lesson: find_main_window returns a hwnd seconds before wx finishes
+    building children, so an immediate walk undersamples (80 nodes, sidebar=5).
+    Reuses the canonical anchors idle signal, then maximizes so the settings
+    sidebar exposes its full visible set (case-calibrated geometry)."""
+    import ctypes as _ctypes
+
+    from harness import anchors
+
+    score, _x, _y = anchors.wait_for(session, "tab_prepare_active", timeout_s=60.0)
+    log.add("INFO", "idle_boot_anchor", f"score={score:.3f}")
+    _ctypes.windll.user32.ShowWindow(int(session.hwnd), 3)  # SW_MAXIMIZE
+    time.sleep(2.0)
 
 
 def now_hms() -> str:
@@ -563,6 +579,7 @@ def main() -> int:
 
         desktop = Desktop(backend="uia")
         session = launch_app(log)
+        wait_idle_boot(session, log)
         main_spec = desktop.window(handle=session.hwnd)
         main_info = main_spec.wrapper_object().element_info
 
