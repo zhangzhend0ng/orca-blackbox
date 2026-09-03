@@ -28,10 +28,14 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 
 
-def _r(milestone: str, tier: str) -> dict:
-    """Shorthand for an enabled regression-suite entry (file filled below)."""
-    return {"file": None, "milestone": milestone, "tier": tier,
-            "suite": "regression", "enabled": True}
+def _r(milestone: str, tier: str, **extra) -> dict:
+    """Shorthand for an enabled regression-suite entry (file filled below).
+    known_limitation=True = documented PARTIAL/降级 (BLACKBOX_CASES.md) — the
+    pytest shell maps it to xfail(strict=False)."""
+    d = {"file": None, "milestone": milestone, "tier": tier,
+         "suite": "regression", "enabled": True}
+    d.update(extra)
+    return d
 
 
 def _o(milestone: str, tier: str) -> dict:
@@ -82,7 +86,7 @@ CASES: dict[str, dict] = {
     "m3p_mixing_persist": _r("m3", "A"),
     "m3q_mixing_view": _r("m3", "A"),
     "m3r_mixing_progress": _r("m3", "A"),
-    "m3s_mixing_hover": _r("m3", "B"),   # #8 hover tooltips — 降级/PARTIAL in BLACKBOX_CASES.md L85
+    "m3s_mixing_hover": _r("m3", "B", known_limitation=True),   # #8 hover tooltips — 降级/PARTIAL in BLACKBOX_CASES.md L85
     "m3t_mixing_add_ratio": _r("m3", "A"),
     "m3u_mixing_ratio_flow": _r("m3", "A"),
     "m3v_mixing_cycle_input": _r("m3", "A"),
@@ -94,7 +98,7 @@ CASES: dict[str, dict] = {
     "m4b_batch_manual": _r("m4", "A"),
     "m4c_mixing_panel": _r("m4", "A"),
     "m4d_mixing_filops": _r("m4", "A"),
-    "m4e_mixing_paint": _r("m4", "B"),   # 表1#39 部分 — BLACKBOX_CASES.md L96
+    "m4e_mixing_paint": _r("m4", "B", known_limitation=True),   # 表1#39 部分 — BLACKBOX_CASES.md L96
     "m4f_mixing_cap64": _r("m4", "A"),
     "m4g_mixing_sublayer": _r("m4", "A"),
     "m4h_mixing_templates": _r("m4", "A"),

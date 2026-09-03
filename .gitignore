@@ -19,3 +19,6 @@ resource/image/draft_*
 # 本地种子 datadir
 vision_profile*/
 .zcode/
+
+# pytest 工作缓存（shell 见 tests/test_blackbox.py）
+.pytest_cache/

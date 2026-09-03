@@ -33,6 +33,16 @@ SCRIPTS = {
     "m2": HERE / "tests" / "m2_slice_chain.py",
 }
 
+# Registry-driven case picker (STRUCTURING_PLAN 第二期 #3): every ENABLED
+# case from cases.py (single source of truth) is runnable from this UI.
+# Fallback to the legacy pair when cases.py isn't shipped next to the UI
+# (packaged builds) — the m1/m2 buttons keep working regardless.
+try:
+    from cases import enabled_cases  # noqa: E402
+    RUN_CASES = enabled_cases()
+except Exception:
+    RUN_CASES = []
+
 # UI state survives restarts (exe path, model list). %LOCALAPPDATA% so it
 # stays writable when this runs from a onefile PyInstaller bundle.
 STATE_DIR = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "vision_gui"
@@ -114,6 +124,26 @@ class Runner(ctk.CTk):
         self.exe_path.pack(side="left", padx=4)
         self.exe_path.insert(0, str(default_exe()))
         ctk.CTkButton(exe_row, text="Browse…", width=110, command=self._browse_exe).pack(side="left", padx=4)
+
+        # ---- registry-driven case picker (cases.py = single source) ----
+        case_row = ctk.CTkFrame(self)
+        case_row.pack(fill="x", padx=10, pady=4)
+        ctk.CTkLabel(case_row, text="Case:").pack(side="left", padx=(6, 4))
+        if RUN_CASES:
+            self.case_var = ctk.StringVar(value=RUN_CASES[0])
+            ctk.CTkOptionMenu(case_row, values=RUN_CASES,
+                              variable=self.case_var,
+                              width=280).pack(side="left", padx=4)
+        else:
+            self.case_var = None
+            ctk.CTkLabel(case_row, text="cases.py unavailable (packaged build?)",
+                         text_color="#ff6b6b").pack(side="left", padx=4)
+        self.override_model = ctk.CTkCheckBox(
+            case_row, text="override model (first Model above)",
+            checkbox_width=18, checkbox_height=18)
+        self.override_model.pack(side="left", padx=8)
+        ctk.CTkButton(case_row, text="Run case", width=110,
+                      command=self._run_case).pack(side="left", padx=4)
 
         # ---- run buttons ----
         btns = ctk.CTkFrame(self)
@@ -306,6 +336,26 @@ class Runner(ctk.CTk):
 
     def _run_m(self, key: str):
         self._run(SCRIPTS[key], self._exe_arg(), key)
+
+    def _run_case(self):
+        """Run any ENABLED case from cases.py with its own default fixture;
+        'override model' swaps in the first Model above for cases that take
+        --model (leave it OFF for empty-scene cases like m3a)."""
+        if self.case_var is None:
+            self._log("(cases.py unavailable — cannot resolve case)\n", "err")
+            return
+        name = self.case_var.get()
+        script = HERE / "tests" / f"{name}.py"
+        if not script.exists():
+            self._log(f"(registry/file mismatch: {script} missing — "
+                      f"run tools/check_registry.py)\n", "err")
+            return
+        args = self._exe_arg()
+        if self.override_model.get():
+            models = self._models()
+            if models:
+                args += ["--model", models[0]]
+        self._run(script, args, name)
 
     def _run_m2(self):
         models = self._models()

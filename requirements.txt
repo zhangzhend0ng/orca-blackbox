@@ -3,3 +3,5 @@ opencv-python
 mss
 customtkinter
 Pillow
+pytest
+pytest-html
