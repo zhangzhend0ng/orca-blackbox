@@ -655,12 +655,26 @@ def _walk_for_dialog(main_info: Any, log: StepLog) -> dict[str, Any]:
     nodes = flatten([root])
     dlg = next((n for n in nodes
                 if n.name.lower() == "configuration update"), None)
-    buttons = [n.name for n in nodes
-               if n.control_type == "Button" and n.name]
+    # buttons/texts scoped to the DIALOG subtree only (a whole-main-window
+    # button list is polluted by the app's own scrollbars — measured 09-03)
+    dlg_buttons: list[dict[str, str]] = []
+    dlg_texts: list[str] = []
+    if dlg is not None:
+        for n in flatten(dlg.children):
+            if n.control_type == "Button" and n.name:
+                dlg_buttons.append({"name": n.name, "depth": n.depth,
+                                    "rect": n.rect})
+            elif n.control_type in ("Text", "Hyperlink") and n.name:
+                dlg_texts.append(n.name[:80])
     return {"dialog_found": dlg is not None,
             "dialog_name": dlg.name if dlg else "",
             "dialog_depth": dlg.depth if dlg else None,
-            "buttons": buttons[:20], "nodes": stats.nodes}
+            "dialog_control_type": dlg.control_type if dlg else "",
+            "dialog_class": dlg.class_name if dlg else "",
+            "dialog_rect": dlg.rect if dlg else [],
+            "dialog_buttons": dlg_buttons[:15],
+            "dialog_texts": dlg_texts[:10],
+            "nodes": stats.nodes}
 
 
 def dialog_sample_run(session: Any, desktop: Any, main_hwnd: int,
@@ -723,7 +737,8 @@ def dialog_sample_run(session: Any, desktop: Any, main_hwnd: int,
     if found is not None:
         log.add("INFO", "dialog_sample_found",
                 f"name={ascii_safe(found.get('dialog_name', ''))[:70]} "
-                f"buttons={ascii_safe('|'.join(found.get('buttons', [])))[:120]}")
+                f"buttons={ascii_safe('|'.join(b['name'] for b in found.get('dialog_buttons', [])))[:160]} "
+                f"texts={ascii_safe('|'.join(found.get('dialog_texts', [])))[:160]}")
     return out
 
 
@@ -773,7 +788,9 @@ def build_report(result: dict[str, Any]) -> str:
             f"scan_waits_s={ds.get('scan_waits_s')} "
             f"dialog_found={dlg.get('dialog_found')} "
             f"name={ascii_safe(dlg.get('dialog_name', ''))[:40]} "
-            f"buttons={ascii_safe('|'.join(dlg.get('buttons', [])))[:120]}")
+            f"type={dlg.get('dialog_control_type')} depth={dlg.get('dialog_depth')} "
+            f"buttons={ascii_safe('|'.join(b['name'] for b in dlg.get('dialog_buttons', [])))[:120]} "
+            f"texts={ascii_safe('|'.join(dlg.get('dialog_texts', [])))[:120]}")
     mixing = result.get("mixing_search", {})
     add(f"mixing search: {len(mixing.get('matches', []))} matches (keywords={ascii_safe(str(mixing.get('keywords')))}[:110])")
     for attempt in mixing.get("invoke_attempts", []):
