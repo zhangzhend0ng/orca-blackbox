@@ -311,3 +311,63 @@ bash 版）/ `clean_guest.ps1`（杀孤儿）/ `max_vmconnect.ps1`（控制台
   尝试前也补一发 ESC。修复后 solo GREEN 且 35 例回归全绿。
 - **通用化**：任何"hover 展开过子菜单"的菜单，关闭一律先真实 ESC。
 
+
+## 18. 0903 补充：relay/提权/PS Direct 边界五坑一约定（夜间批次事故链）
+
+### 18.1 UAC 安全桌面无法穿透远控层
+- **现象**：`Start-Process -Verb RunAs` 两次瞬时报 "operation was
+  canceled by the user"；Appinfo Running、EnableLUA=1、Consent=5 全正常
+  ——弹窗在安全桌面渲染，用户态远控（GameViewer 类）看不到也点不到，
+  consent 直接取消。
+- **修法**：一次性动作到物理控制台点 UAC；长期方案 = 提权计划任务
+  （OrcaRelayWatchdog，RUNLEVEL HIGHEST + logon/15min 双触发器）。注册
+  动作本身可经**已提权的 relay** 完成，不需要新的 UAC。
+- **通用化**：远控环境里一切"弹窗式提权"都不可依赖；要自愈就注册任务。
+
+### 18.2 powershell -File 位置绑定怪癖（string[] 只吃第一个）
+- **现象**：`powershell -File hv_go.ps1 m3j m3k m3l m3m m3n` 只把 m3j
+  绑进 `[string[]]$Cases`，其余静默落入 `$args`（交互式
+  `& script.ps1 a b c` 才全量绑定）→ "launching suite: 1 cases"，
+  36 例批次实际只跑了 1 例。
+- **修法**：`$Cases = @($Cases + @($args)) | Where-Object { $_ }`。
+- **通用化**：-File 与会话内调用绑定语义不同，多值参数一律显式合并
+  $args，并让入口把实际计数打进日志。
+
+### 18.3 PS Direct 会话拆解挂死 → relay 守护连坐；掉权限则静默空输出
+- **现象**：守护经 Invoke-Expression 同步执行含 `Invoke-Command
+  -VMName` 的命令，客机侧工作已完成，宿主侧调用不返回——守护卡死
+  数小时，通道整个失效（RUN 头无 DONE，09-02 夜 21:43 实锤）。
+- **相关现象**：守护掉成 medium 完整性时（误以非提权重启），PS Direct
+  权限报错在守护的 Out-String 捕获里渲染为**空**——通道"成功返回但
+  零输出"，极具迷惑性。
+- **修法**：launch 类长事务一律 detached（hv_go_detached.ps1 以隐藏子
+  进程跑 hv_go，输出重定向 artifacts\，守护 2s 释放）；守护必须提权。
+- **通用化**：可能长时间不返回的 PS Direct 调用禁止在守护进程内同步
+  执行；PS Direct 异常静默先查守护完整性级别。
+
+### 18.4 冷启动首批 GUI 交互丢点击（WM_LBUTTONUP 超时）
+- **现象**：客机空闲数小时后的首批用例，`SendMessageTimeoutW
+  (msg=0x202)` 投递超时，首个交互断言（切 Manual / Auto 门控 / 匹配）
+  失败并连锁。36 例恰好前 5 例 RED、第 6 例起 31 连绿；失败例热重跑
+  5/5 GREEN——不是 SUT 回归，是会话冷启动。
+- **修法**：full run 正式批前丢弃式预热第一例（hv_go 自动注入
+  `$warmupCode` 片段，日志 `*.log.warmup`，不计判定）。
+- **通用化**：长 idle 后的交互失败先重跑一次再定性；冷启动预热进
+  批次协议而非人肉记忆。
+
+### 18.5 PS Direct 的 DateTime 按目标旧时区反序列化
+- **现象**：宿主 `Get-Date` 传给客机 `Set-Date`，参数绑定发生在目标
+  `Set-TimeZone` 之前——值按客机**旧时区**（Pacific）转换，墙钟又设
+  错一次。客机时钟差 14.7h 的根因即 TZ=Pacific 且无时间同步。
+- **修法**：传字符串 `yyyy-MM-dd HH:mm:ss`，目标侧
+  `[datetime]::ParseExact` 后再 `Set-Date`；先改 TZ 后对钟。时区修正
+  后 `vmictimesync` 会持续保持。
+- **通用化**：跨 PS Direct 传时间一律字符串显式格式，不传 DateTime。
+
+### 18.6 约定：relay 执行的脚本禁止 exit/return
+- 守护用 `Invoke-Expression` 在**自身 runspace** 执行 relay_cmd 内容：
+  脚本里的 `exit` 会杀死守护进程，`return` 会中断 relay.ps1 主循环
+  （alive 停止更新，等效死亡）。所有可能经 relay 调用的脚本
+  （hv_harvest / hv_go_detached / register_relay_watchdog 等）一律以
+  自然结束收尾；需要"提前结束"用 if/else 结构化。`exit` 只允许出现
+  在 `-File` 子进程形态（relay_watchdog 即如此）。
