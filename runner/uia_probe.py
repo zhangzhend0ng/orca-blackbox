@@ -97,6 +97,11 @@ WIZARD_WALK_DEPTH = 20    # re-rooted at the wizard element: the frame-root
 WIZARD_WALK_NODES = 4000
 WIZARD_WALK_BUDGET_S = 90.0
 INVOKE_SETTLE_S = 2.5     # try_mixing_invoke precedent (this file)
+WIZARD_REWALK_TRIES = 5   # W2/W6 (plan §二): Chromium builds the web a11y
+WIZARD_REWALK_S = 4.0     # tree lazily after the first WM_GETOBJECT — run 1
+                          # (09-04) walked chrome structure with an EMPTY
+                          # Document at t~13s and only activated on later
+                          # queries; retry before any no_invokable verdict
 # UIAutomationClient.h ids, numeric so the file stays pywinauto-only
 UIA_INVOKE_PATTERN_ID = 10000
 UIA_IS_INVOKE_AVAILABLE = 30037
@@ -991,9 +996,18 @@ def wizard_sample_run(session: Any, log: StepLog, zh: bool) -> dict[str, Any]:
     iuia = IUIA()
     walker = iuia.iuia.RawViewWalker
     walk1, invokable_pairs = wizard_walk(iuia, walker, wizard_hwnd, log)
+    rewalks = 0
+    while not invokable_pairs and rewalks < WIZARD_REWALK_TRIES:
+        time.sleep(WIZARD_REWALK_S)
+        walk1, invokable_pairs = wizard_walk(iuia, walker, wizard_hwnd, log)
+        rewalks += 1
+        log.add("INFO", "wizard_rewalk",
+                f"attempt={rewalks} nodes={walk1['stats']['nodes']} "
+                f"named={walk1['stats']['named']} "
+                f"invokable={len(invokable_pairs)}")
     log.add("INFO", "wizard_walk_done",
             f"nodes={walk1['stats']['nodes']} named={walk1['stats']['named']} "
-            f"invokable={len(invokable_pairs)}")
+            f"invokable={len(invokable_pairs)} rewalks={rewalks}")
     if zh:
         drive = {"attempted": False, "result": "skipped_zh_sampling_only"}
     else:
@@ -1006,7 +1020,7 @@ def wizard_sample_run(session: Any, log: StepLog, zh: bool) -> dict[str, Any]:
     if still_up:
         pp.close_setup_wizard(session, attempts=3, log="[uia]")
     return {"wizard_present": True, "wizard_hwnd": f"0x{wizard_hwnd:x}",
-            "walk": walk1, "drive": drive,
+            "walk": walk1, "drive": drive, "rewalks": rewalks,
             "wizard_still_up_after_drive": still_up}
 
 
@@ -1069,7 +1083,7 @@ def build_report(result: dict[str, Any]) -> str:
                      if n.get("patterns") is not None]
             add(f"wizard sample ({wz.get('wizard_hwnd')}): nodes={wstats.get('nodes')} "
                 f"named={wstats.get('named')} maxDepth={wstats.get('max_depth_seen')} "
-                f"interactive={len(inter)} "
+                f"interactive={len(inter)} rewalks={wz.get('rewalks')} "
                 f"com_failures={wz.get('walk', {}).get('com_failures')} "
                 f"err={ascii_safe(str(wz.get('walk', {}).get('error', '')))[:60]}")
             for entry in inter[:8]:
