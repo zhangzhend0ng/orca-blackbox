@@ -39,12 +39,15 @@ CLI modes (docs/UIA_EVAL_0903.md 5.1/5.2/5.3 evidence):
   --wizard  keep the modal Setup Wizard UP (the launcher sweep's
             BLOCKER_TITLES do not match it — PITFALLS_0901.md 19.1) and grade
             the UIA channel against its wxWebView HTML content: re-rooted
-            RawViewWalker walk + interactive-element pattern table (L1), then
-            ONE guarded Invoke with a state-change verdict — hwnd gone =
-            wizard_closed, signature changed = page_advanced, unchanged =
-            inconclusive (L2, en_US only; zh is L1 sampling by plan — the
-            en/zh name sets barely intersect). Nothing is typed; no ESC is
-            ever sent (wx modal ESC == Cancel == app-exit risk, PITFALLS 19.1).
+            RawViewWalker walk + interactive-element pattern table (L1; the
+            web a11y tree builds lazily — poll-rewalks precede any negative
+            verdict), then ONE guarded activation with a state-change
+            verdict — Invoke pattern first, LegacyIAccessible.DoDefault as
+            fallback; hwnd gone = wizard_closed, signature changed =
+            page_advanced, unchanged = inconclusive (L2, en_US only; zh is
+            L1 sampling by plan — the en/zh name sets barely intersect).
+            Nothing is typed; no ESC is ever sent (wx modal ESC == Cancel ==
+            app-exit risk, PITFALLS 19.1).
             Evidence plan: docs/UIA_WIZARD_PROBE_PLAN.md.
   Flags combine: --zh --raw. Output files get a matching suffix
   (_zh/_raw/_zh_raw/_dlog/_wiz); the no-flag run keeps the unsuffixed names.
@@ -104,6 +107,7 @@ WIZARD_REWALK_S = 4.0     # tree lazily after the first WM_GETOBJECT — run 1
                           # queries; retry before any no_invokable verdict
 # UIAutomationClient.h ids, numeric so the file stays pywinauto-only
 UIA_INVOKE_PATTERN_ID = 10000
+UIA_LEGACY_IA_PATTERN_ID = 10018
 UIA_IS_INVOKE_AVAILABLE = 30037
 UIA_IS_TOGGLE_AVAILABLE = 30062
 UIA_IS_LEGACY_IA_AVAILABLE = 30090
@@ -808,12 +812,12 @@ def wizard_walk(iuia: Any, walker: Any, wizard_hwnd: int,
     pywinauto's control-view enumeration cannot see the wxWebView HTML subtree
     (103 vs 114 nodes, UIA_EVAL 5.2), so comtypes RawViewWalker from
     ElementFromHandle(wizard_hwnd) is the primary enumerator. Returns
-    (result_dict, invokable_pairs); the pairs carry live elements for the L2
-    drive and are for internal use only (never JSON-dumped)."""
+    (result_dict, interactive_pairs); the pairs carry live elements for the
+    L2 drive and are for internal use only (never JSON-dumped)."""
     stats = WalkStats()
     com_failures = {"attrs": 0, "children": 0}
     nodes: list[dict[str, Any]] = []
-    invokable_pairs: list[tuple[dict[str, Any], Any]] = []
+    interactive_pairs: list[tuple[dict[str, Any], Any]] = []
     deadline = time.monotonic() + WIZARD_WALK_BUDGET_S
 
     def attr(el: Any, prop: str, default: Any = "") -> Any:
@@ -862,8 +866,7 @@ def wizard_walk(iuia: Any, walker: Any, wizard_hwnd: int,
                 "invoke": pattern_avail(el, UIA_IS_INVOKE_AVAILABLE),
                 "toggle": pattern_avail(el, UIA_IS_TOGGLE_AVAILABLE),
                 "legacy_iaccessible": pattern_avail(el, UIA_IS_LEGACY_IA_AVAILABLE)}
-            if entry["patterns"]["invoke"]:
-                invokable_pairs.append((entry, el))
+            interactive_pairs.append((entry, el))
         nodes.append(entry)
         if depth >= WIZARD_WALK_DEPTH or stats.nodes >= WIZARD_WALK_NODES:
             stats.cut_by_depth += int(depth >= WIZARD_WALK_DEPTH)
@@ -892,58 +895,94 @@ def wizard_walk(iuia: Any, walker: Any, wizard_hwnd: int,
         error = f"{type(exc).__name__}: {exc}"[:200]
         log.add("ERROR", "wizard_walk_failed", error)
     return ({"stats": stats.as_dict(), "com_failures": com_failures,
-             "error": error, "nodes": nodes[:400]}, invokable_pairs)
+             "error": error, "nodes": nodes[:400]}, interactive_pairs)
 
 
 def wizard_drive(session: Any, wizard_hwnd: int, iuia: Any, walker: Any,
-                 invokable_pairs: list[tuple[dict[str, Any], Any]],
+                 interactive_pairs: list[tuple[dict[str, Any], Any]],
                  sig_before: tuple, log: StepLog) -> dict[str, Any]:
-    """L2: ONE guarded Invoke, verdict by state change — never by exception
-    absence. hwnd gone = wizard_closed (the "Get Started" click semantics are
+    """L2: ONE guarded activation, verdict by state change — never by
+    exception absence. Invoke pattern first; when no element exposes it,
+    ONE LegacyIAccessible.DoDefault attempt (measured 09-04 run 2: the
+    activated wizard exposes 'Get Started' as a Hyperlink with legacy
+    only — Chromium hides Invoke here, plan §三.5 named this fallback).
+    hwnd gone = wizard_closed (the 'Get Started' click semantics are
     unknown — it may dismiss the wizard outright, plan §二 W4); signature
-    changed = page_advanced; unchanged = inconclusive (a heuristic can miss,
-    the named diff is dumped for a human). Pre-invoke failures (pattern/QI)
-    fall through to the next candidate — no click happened; once Invoke is
-    CALLED the loop stops, even on a mid-call COMError (the click may have
-    landed; the hwnd check decides)."""
+    changed = page_advanced; unchanged = inconclusive (a heuristic can
+    miss, the named diff is dumped for a human). Pre-activation failures
+    (pattern/QI) fall through to the next candidate — no click happened;
+    once a click is CALLED the loop stops, even on a mid-call COMError
+    (the click may have landed; the hwnd check decides)."""
     from harness.mixing_util import toplevel
     try:
-        from comtypes.gen.UIAutomationClient import IUIAutomationInvokePattern
+        from comtypes.gen.UIAutomationClient import (
+            IUIAutomationInvokePattern, IUIAutomationLegacyIAccessiblePattern)
     except Exception as exc:  # noqa: BLE001
         return {"attempted": False, "result": "skipped_no_pattern_iface",
                 "error": f"{type(exc).__name__}: {exc}"[:160]}
 
     def rank(pair: tuple[dict[str, Any], Any]) -> tuple:
-        entry, _el = pair
-        return (entry["control_type"] != "Button",
-                "start" not in entry["name"].lower(), -entry["depth"])
+        # prefer the page-forward control ('start'); actively deprioritize
+        # Close/Cancel — clicking them first would end the probe trivially
+        name = pair[0]["name"].lower()
+        return ("start" not in name,
+                name in ("close", "cancel"),
+                pair[0]["control_type"] != "Button", -pair[0]["depth"])
 
-    result: dict[str, Any] = {"attempted": bool(invokable_pairs),
-                              "candidate": "", "invoked": False}
-    if not invokable_pairs:
+    invoke_pairs = [p for p in interactive_pairs
+                    if p[0]["patterns"]["invoke"]]
+    result: dict[str, Any] = {"attempted": bool(interactive_pairs),
+                              "candidate": "", "invoked": False,
+                              "pattern_used": ""}
+    if not interactive_pairs:
         result["result"] = "no_invokable_button"
         return result
     result["before"] = _grab_wizard(r"C:\coil\uia_probe_wiz_before.bmp", wizard_hwnd)
-    for entry, el in sorted(invokable_pairs, key=rank):
-        result["candidate"] = entry["name"]
-        try:
-            unk = el.GetCurrentPattern(UIA_INVOKE_PATTERN_ID)
-            if unk is None:
-                result["error"] = "GetCurrentPattern returned None"
+    if invoke_pairs:
+        result["pattern_used"] = "invoke"
+        for entry, el in sorted(invoke_pairs, key=rank):
+            result["candidate"] = entry["name"]
+            try:
+                unk = el.GetCurrentPattern(UIA_INVOKE_PATTERN_ID)
+                if unk is None:
+                    result["error"] = "GetCurrentPattern returned None"
+                    continue
+                pattern = unk.QueryInterface(IUIAutomationInvokePattern)
+            except Exception as exc:  # noqa: BLE001 — stale element pre-click
+                result["error"] = f"{type(exc).__name__}: {exc}"[:200]
                 continue
-            pattern = unk.QueryInterface(IUIAutomationInvokePattern)
-        except Exception as exc:  # noqa: BLE001 — stale element pre-click
-            result["error"] = f"{type(exc).__name__}: {exc}"[:200]
-            continue
-        try:
-            pattern.Invoke()
-        except Exception as exc:  # noqa: BLE001 — call was made; hwnd decides
-            result["error"] = f"Invoke: {type(exc).__name__}: {exc}"[:200]
-        result["invoked"] = True
-        time.sleep(INVOKE_SETTLE_S)
-        break
+            try:
+                pattern.Invoke()
+            except Exception as exc:  # noqa: BLE001 — call made; hwnd decides
+                result["error"] = f"Invoke: {type(exc).__name__}: {exc}"[:200]
+            result["invoked"] = True
+            time.sleep(INVOKE_SETTLE_S)
+            break
+    if not result["invoked"] and not invoke_pairs:
+        # legacy-only fallback: same one-click discipline
+        result["pattern_used"] = "legacy_iaccessible"
+        for entry, el in sorted(interactive_pairs, key=rank):
+            result["candidate"] = entry["name"]
+            try:
+                unk = el.GetCurrentPattern(UIA_LEGACY_IA_PATTERN_ID)
+                if unk is None:
+                    result["error"] = "legacy pattern unavailable"
+                    continue
+                pattern = unk.QueryInterface(
+                    IUIAutomationLegacyIAccessiblePattern)
+            except Exception as exc:  # noqa: BLE001 — stale element pre-click
+                result["error"] = f"{type(exc).__name__}: {exc}"[:200]
+                continue
+            try:
+                pattern.DoDefault()
+            except Exception as exc:  # noqa: BLE001 — call made; hwnd decides
+                result["error"] = f"DoDefault: {type(exc).__name__}: {exc}"[:200]
+            result["invoked"] = True
+            time.sleep(INVOKE_SETTLE_S)
+            break
     if not result["invoked"]:
-        result["result"] = "invoke_failed"
+        result["result"] = ("invoke_failed" if invoke_pairs
+                            else "no_invokable_button")
         return result
     if not ctypes.windll.user32.IsWindow(wizard_hwnd):
         result["result"] = "wizard_closed"
@@ -995,25 +1034,28 @@ def wizard_sample_run(session: Any, log: StepLog, zh: bool) -> dict[str, Any]:
     time.sleep(1.0)  # let the HTML finish showing before the walk (ds precedent)
     iuia = IUIA()
     walker = iuia.iuia.RawViewWalker
-    walk1, invokable_pairs = wizard_walk(iuia, walker, wizard_hwnd, log)
+    walk1, interactive_pairs = wizard_walk(iuia, walker, wizard_hwnd, log)
     rewalks = 0
-    while not invokable_pairs and rewalks < WIZARD_REWALK_TRIES:
+    while not interactive_pairs and rewalks < WIZARD_REWALK_TRIES:
         time.sleep(WIZARD_REWALK_S)
-        walk1, invokable_pairs = wizard_walk(iuia, walker, wizard_hwnd, log)
+        walk1, interactive_pairs = wizard_walk(iuia, walker, wizard_hwnd, log)
         rewalks += 1
         log.add("INFO", "wizard_rewalk",
                 f"attempt={rewalks} nodes={walk1['stats']['nodes']} "
                 f"named={walk1['stats']['named']} "
-                f"invokable={len(invokable_pairs)}")
+                f"interactive={len(interactive_pairs)}")
+    invoke_capable = sum(1 for entry, _el in interactive_pairs
+                         if entry["patterns"]["invoke"])
     log.add("INFO", "wizard_walk_done",
             f"nodes={walk1['stats']['nodes']} named={walk1['stats']['named']} "
-            f"invokable={len(invokable_pairs)} rewalks={rewalks}")
+            f"interactive={len(interactive_pairs)} "
+            f"invoke_capable={invoke_capable} rewalks={rewalks}")
     if zh:
         drive = {"attempted": False, "result": "skipped_zh_sampling_only"}
     else:
         drive = wizard_drive(session, wizard_hwnd, iuia, walker,
-                             invokable_pairs, wizard_signature(walk1["nodes"]),
-                             log)
+                             interactive_pairs,
+                             wizard_signature(walk1["nodes"]), log)
     log.add("INFO", "wizard_drive", f"{drive.get('result')} "
             f"candidate={ascii_safe(str(drive.get('candidate', '')))[:60]}")
     still_up = bool(ctypes.windll.user32.IsWindow(wizard_hwnd))
@@ -1095,6 +1137,7 @@ def build_report(result: dict[str, Any]) -> str:
             diff = drv.get("named_diff", {})
             add(f"wizard drive: {drv.get('result')} candidate="
                 f"{ascii_safe(str(drv.get('candidate', '')))[:40]} "
+                f"pattern={drv.get('pattern_used', '')} "
                 f"invoked={drv.get('invoked')} "
                 f"named+{len(diff.get('added', []))}/-{len(diff.get('removed', []))} "
                 f"nodes_after={drv.get('nodes_after')} "
