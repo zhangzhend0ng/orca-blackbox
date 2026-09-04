@@ -109,3 +109,41 @@ BLACKBOX_CASES 的观测通道约定为 截图/窗口消息/文件系统/对话�
 不挂运行时钩子——与现有 WM_* 通道同族；但"结构化控件树"确实超出既有四通道
 的字面范围，这正是 STRUCTURING_PLAN 要求"先评估再开口子"的原因。本评估
 工具（uia_probe）仅为探针，未注册 cases.py，未进入任何回归路径。
+
+## 七、向导 HTML 子树分级结论（2026-09-04，--wizard 实弹 5 轮）
+
+> 方案与对抗记录：`docs/UIA_WIZARD_PROBE_PLAN.md`（独立 REFUTE: APPROVE）；
+> 工具 `runner/uia_probe.py --wizard`（commits 60297a2..2658b1d）。客机
+> win11-test @1920x1080，en_US，11:10–11:32 五轮实弹。
+
+**分级结论：L0 检测 ✅；L1 定位 ✅（有激活前提）；L2 驱动 ✅ 但仅经
+LegacyIAccessible.DoDefaultAction（InvokePattern 不可得）。**
+
+- **L0**：win32 `#32770 'Setup Wizard'`（toplevel 枚举）与 UIA 子树
+  （comtypes RawViewWalker 重根 `ElementFromHandle(wizard_hwnd)`）双通道可见。
+- **L1**：激活后（判据 = Document 子树内命名节点 >0；实测 rewalk 1–5 次 ×4s
+  内达成）24 节点/12 命名/交互 2：`Get Started`（**Hyperlink**）+ `Close`
+  （Button），均 invoke=False / toggle=False / **legacy=True**。
+- **L2**：`DoDefaultAction('Get Started')` 真实翻页：named +9/−6（移除
+  "Welcome to Snapmaker Orca"/"…Let's start!"/引导_P1，加入 "Please select
+  your login region"+区域五选项+"Next"+引导_P21），nodes 24→35，向导未关闭
+  → **W4 定案：Get Started = 前进（登录区域页），非取消**。同法驱动原生
+  Close 亦真关（run 4，wizard_closed）。前后 PrintWindow 截图字节级有差异
+  （171,894 bytes / 454 行，集中于页面内容区）。
+- **W2 激活时序（关键坑）**：Chromium web a11y 树懒激活——boot 后首次 UIA
+  查询只见浏览器 chrome 结构（RootView/ClientView/Chrome_RenderWidgetHostHWND
+  + 空 Document + 原生 Close），与 §五.2 的 --raw 先例（主窗走树前已查询数
+  分钟）不矛盾。**任何"web 不可见/无按钮"结论必须先过激活重试**。三次假阳
+  性/阴性教训：单查过早下结论（run 1）；`DoDefault` 属性名不存在（真名
+  `DoDefaultAction`，客机 comtypes introspection 一手源裁决）且属性查找失败
+  被误标 invoked=True、重走撞上激活噪声出假 page_advanced（run 3）；Document
+  有空壳 child 的弱激活门放行 15 节点 stub 树导致点了 Close（run 4）。
+- **zh 采样（W3 新数据点）**：zh_CN 种子 boot 2/2 二十秒内无向导
+  （not_present）。上游门 `GUI_App.cpp:7374 config_wizard_startup` =
+  `!m_app_conf_exists || only_default_printers() || privacy empty`，与
+  language 无关（conf 预写、种子同源）；en 5/5 弹 vs zh 2/2 不弹的分叉机制
+  **未定，存疑待查**。zh L1 采样在本配置下不可得。
+- **场景①处置建议**：向导检测可结构化（win32+UIA 双通道）；驱动通道 =
+  LegacyIAccessible（非 Invoke）；现有 WM_CLOSE 处置维持有效，如需可升级为
+  "结构化识别 + 确定性翻页/关闭"。回归用例仍不碰 HTML（PITFALLS §3 0904
+  修订）。

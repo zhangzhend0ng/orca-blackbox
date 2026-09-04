@@ -46,8 +46,15 @@
 
 - **现象**：向导内没有可枚举的原生按钮（children 只有 wxWebView/
   Chrome_RenderWidgetHostHWND），OCR 定位按钮 + 相对坐标点击太脆。
-- **修法**：不驱动它——绕开（见 #2）或 WM_CLOSE。**HTML 界面一律不碰**。
+- **修法（0901 判）**：不驱动它——绕开（见 #2）或 WM_CLOSE。**HTML 界面一律不碰**。
 - **证据/复跑**：`diag_m5_wizard.py` v1。
+- **0904 修订（--wizard 实弹 5 轮，UIA_EVAL §七）**：前提半过时——"不可枚举"
+  只对 pywinauto 控制视图成立；comtypes RawViewWalker 重根 + 激活重试（Chromium
+  web a11y 树懒激活，激活前是 chrome 结构+空 Document 的 stub）后 web 内容可见
+  （24 节点/12 命名/交互 2），且可经 **LegacyIAccessible.DoDefaultAction** 结构化
+  驱动（InvokePattern 不可得；方法名不是 DoDefault——AttributeError 是 pre-click
+  失败，别误标已点击）。"OCR 点 HTML 太脆"结论保留；"HTML 一律不碰"收窄为
+  **"回归用例不碰 HTML"**（探针/评估通道可经 UIA 检测与驱动）。
 
 ## 4. 真右键被远控层吞掉
 

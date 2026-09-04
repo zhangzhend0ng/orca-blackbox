@@ -104,3 +104,29 @@ VERDICT: APPROVE。3 major 全部采纳进 §三：
 minor 采纳：sweep 第三标题、ESC 收尾禁用、flag 组合矩阵、2.5s 等待出处、
 not_present 显式输出、wait_idle_boot 跳过理由更正、hv ps1 零改动、d12 论据更正。
 反驳：无。backlog：WCP/CDP 两条线维持"另立项"，不因本探针结果扩权。
+
+## 七、实施记录（2026-09-04，5 轮实弹闭环；结论并入 UIA_EVAL §七）
+
+| 轮 | commit | 结果 | 教训 → 修订 |
+|---|---|---|---|
+| 1 | 60297a2 | interactive=1（仅原生 Close），单查即判 | W2 懒激活实锤：Chromium a11y 树 boot 后 ~13s 未建（Document 空）→ poll-rewalk（e079544） |
+| 2 | e079544 | rewalks=5 跑满后树激活：Get Started=**Hyperlink**，invoke 全缺、legacy=True | 真结论：InvokePattern 不可得 → LegacyIAccessible.DoDefault 回退（ccbc67e） |
+| 3 | ccbc67e | **假 page_advanced**：`DoDefault` 属性不存在（未点击）却置 invoked=True，重走撞上激活噪声 | 方法真名 `DoDefaultAction`（客机 comtypes introspection 一手源）；pre-click 失败不置 invoked；激活门（6307234） |
+| 4 | 6307234 | doc-child 弱门放行 15 节点 stub 树 → 点 Close=wizard_closed（顺带证实 DoDefaultAction 真能驱动原生钮） | 激活门升级为 Document 子树命名节点>0（2658b1d） |
+| 5 | 2658b1d | **全绿**：doc_named=10 → DoDefaultAction('Get Started') 翻页 named+9/−6、nodes 24→35、向导未关 | W4 定案：前进语义非取消 |
+
+- **预算偏差**：探针代码实际 ~+390 行（方案 ≤120）。超出来自实弹教训驱动的
+  守卫（rewalk 循环、两级激活门、pre-click 语义、pattern 表、报告段），每条
+  有对应 run 编号，非镀金。
+- **zh 采样**：2/2 not_present（20s 轮询内无 #32770 向导）。上游门
+  `GUI_App.cpp:7374` 与 language 无关、种子同源，en 5/5 vs zh 0/2 的分叉机制
+  **未定存疑**；zh L1 采样在本配置下不可得。
+- **证据产物**：宿主 `artifacts/uia_probe_out_wiz.json` +
+  `uia_probe_wiz_{before,after}.bmp`（字节级 DIFFERENT，171,894 bytes/454 行，
+  集中页面内容区；gitignored）；客机 `C:\coil\uia_probe_report_wiz.txt` /
+  `_zh_wiz.txt` / 任务日志。
+- **通道代价值**：run 1–5 全程零 WARN/ERROR、com_failures=0；向导 cleanup
+  （close_setup_wizard + session.close）五轮全部干净。
+- **遗留 backlog**：WCP 首页 WebView2（联网 tier，另立项）；CDP 通道（纯度
+  决策，另立项）；zh 向导分叉机制（上游行为课题）；`fetch_mp4.py` 的 `$cred`
+  缺赋值 bug（runner 线，本次以 relay_run 手工等价命令绕行未修）。
