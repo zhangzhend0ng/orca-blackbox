@@ -459,6 +459,13 @@ feed 请求日志 + 真实弹窗 WM_CLOSE 实测），逐条收敛 §19 的残�
   会退出 app；回归用例各自 relocate/无视它）。向导在大部分空种子 boot
   常驻 → 那些 boot 的链永远不跑 → 无配置弹窗 → 14:40 部分用例因此"侥幸"
   绿的机制也在此。
+  **0904 更新**：本 build 上 WM_CLOSE 向导已多通道证实 app-safe（census v2
+  五相 + uia_probe --wizard 五轮 + close 后链解锁复现 t=15s 配置弹窗并被同
+  窗口 sweep 接住，UIA_EVAL §七）。sweep 增 **opt-in** 的 `dismiss_wizard`
+  （类 #32770 + 标题含 wizard；默认 False 保持 census/probe 原始 boot），
+  case 正式通道在 `m3_common.boot_session` 翻 True——空 boot 用例从"各自
+  relocate/侥幸"变为确定性处置；fixture boot 本就不弹向导（no-op）。
+  blocker_sweep_check 增 wizard-off/on 两相钉死 opt-in 语义（5/5 PASS）。
 - **修法②（conf stub）盖章为完整双保险，且推翻"预设链不可 conf"旧判**：
   c 相把三段键（app 下）指向拒连端口 → **零弹窗**；同一晚 a/b/f/e 各相
   服务端仍在推 2.2.56.2（'Configuration update' 每相 ~t=15-16s 复现，

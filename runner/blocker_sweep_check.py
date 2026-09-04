@@ -110,11 +110,55 @@ def run_dismiss_phase(title: str) -> bool:
     return ok
 
 
+def run_wizard_off_phase() -> bool:
+    """Default sweep must NOT touch the wizard (opt-in semantics): census and
+    the uia_probe --wizard mode rely on raw boots keeping the wizard up."""
+    print("== phase wizard-off: default sweep must leave 'Setup Wizard' up ==", flush=True)
+    result, thread = open_dialog("Setup Wizard")
+    hits = find_dialogs("Setup Wizard")
+    ok_present = bool(hits)
+    dismissed = launcher.sweep_boot_blockers(pid=os.getpid(), main_hwnd=0,
+                                             budget_s=4.0)
+    ok_dismissed = dismissed == []
+    alive = bool(find_dialogs("Setup Wizard", timeout_s=1.0))
+    ok = ok_present and ok_dismissed and alive
+    if hits:
+        ctypes.windll.user32.PostMessageW(hits[0], WM_CLOSE, 0, 0)
+    thread.join(timeout=5.0)
+    print(f"   present={ok_present} dismissed={dismissed} survived={alive} -> "
+          f"{'PASS' if ok else 'FAIL'}", flush=True)
+    return ok
+
+
+def run_wizard_on_phase() -> bool:
+    """dismiss_wizard=True must close a #32770 'Setup Wizard' and record it.
+    MessageBoxW gives a REAL #32770-class dialog titled 'Setup Wizard' — the
+    exact signature the sweep matches (class + title), so this pins both the
+    class check and the WM_CLOSE mechanics."""
+    print("== phase wizard-on: dismiss_wizard=True closes '#32770 Setup Wizard' ==", flush=True)
+    result, thread = open_dialog("Setup Wizard")
+    hits = find_dialogs("Setup Wizard")
+    ok_present = bool(hits)
+    dismissed = launcher.sweep_boot_blockers(pid=os.getpid(), main_hwnd=0,
+                                             budget_s=4.0, dismiss_wizard=True)
+    thread.join(timeout=5.0)
+    ok_dismissed = any(t == "setup wizard" for t in dismissed)
+    gone = not find_dialogs("Setup Wizard", timeout_s=2.0)
+    box_returned = bool(result)
+    ok = ok_present and ok_dismissed and gone and box_returned
+    print(f"   present={ok_present} dismissed={dismissed} gone={gone} "
+          f"box_returned={box_returned} thread_alive={thread.is_alive()} -> "
+          f"{'PASS' if ok else 'FAIL'}", flush=True)
+    return ok
+
+
 def main() -> int:
     results = {
         "ignore": run_ignore_phase(),
         "dismiss": run_dismiss_phase("Configuration update"),
         "version": run_dismiss_phase("New version of Snapmaker Orca"),
+        "wizard-off": run_wizard_off_phase(),
+        "wizard-on": run_wizard_on_phase(),
     }
     verdict = all(results.values())
     print(f"===== blocker_sweep_check verdict: {'PASS' if verdict else 'FAIL'} "

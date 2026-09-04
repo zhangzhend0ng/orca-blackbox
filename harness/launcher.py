@@ -100,7 +100,8 @@ BLOCKER_TITLES = (
 )
 
 
-def sweep_boot_blockers(pid: int, main_hwnd: int, budget_s: float = 25.0) -> list[str]:
+def sweep_boot_blockers(pid: int, main_hwnd: int, budget_s: float = 25.0,
+                        dismiss_wizard: bool = False) -> list[str]:
     """WM_CLOSE known boot-blocker dialogs for up to `budget_s`; returns titles.
 
     Polls the app pid's visible top-levels and closes any window whose title
@@ -109,6 +110,16 @@ def sweep_boot_blockers(pid: int, main_hwnd: int, budget_s: float = 25.0) -> lis
     installed. Each hit sleeps 2s before re-polling so a re-pop within the
     budget still gets seen; when the budget expires the sweep is over and
     every later dialog belongs to the case.
+
+    `dismiss_wizard` (opt-in — census/probes observe raw boots and must pass
+    False) extends the match to the first-run Setup Wizard: class #32770 +
+    title containing 'wizard'. WM_CLOSE on it is app-safe on this build
+    (census v2 09-03: close -> app_alive=True; it unblocks the post-init
+    chain, so the t=15s update popups it was suppressing now appear and are
+    covered by this same sweep — PITFALLS_0901.md 19.1; structured channel
+    evidence: docs/UIA_EVAL_0903.md §七). The 1s settle before closing lets
+    the wizard HTML finish showing (closing a half-shown wizard closed
+    nothing in the 09-03 dialog-sample runs).
     """
     dismissed: list[str] = []
     deadline = time.monotonic() + budget_s
@@ -122,6 +133,13 @@ def sweep_boot_blockers(pid: int, main_hwnd: int, budget_s: float = 25.0) -> lis
                 dismissed.append(title)
                 print(f"[launcher] blocker dismissed: '{title}' (hwnd=0x{hwnd:x}, WM_CLOSE)")
                 time.sleep(2.0)
+            elif (dismiss_wizard and "wizard" in title
+                  and winutil.window_class(hwnd) == "#32770"):
+                time.sleep(1.0)
+                winutil.close_window(hwnd)
+                dismissed.append(title)
+                print(f"[launcher] wizard dismissed: '{title}' (hwnd=0x{hwnd:x}, WM_CLOSE)")
+                time.sleep(2.0)
         time.sleep(0.5)
     return dismissed
 
@@ -132,7 +150,8 @@ def launch(exe: Path | str | None = None,
            wait_window_s: float = 90.0,
            boot_demote_s: float = 12.0,
            dismiss_blockers: bool = True,
-           blocker_sweep_s: float = 25.0) -> AppSession:
+           blocker_sweep_s: float = 25.0,
+           dismiss_wizard: bool = False) -> AppSession:
     """Launch the app; wait for its main window; return the session.
 
     `boot_demote_s` runs a passive z-order/style demotion watchdog for that
@@ -143,6 +162,10 @@ def launch(exe: Path | str | None = None,
     during boot are WM_CLOSEd before the case can interact
     (PITFALLS_0901.md 19); the census tools pass dismiss_blockers=False to
     observe raw boots.
+    `dismiss_wizard` additionally WM_CLOSEs the first-run Setup Wizard in
+    the same sweep window (opt-in; case drivers pass True — the wizard
+    modally blocks the post-init chain, PITFALLS_0901.md 19.1). Defaults
+    False so census/probe boots stay raw.
     `session.blockers` carries the dismissed titles for forensics.
     """
     exe = Path(exe) if exe else default_exe()
@@ -195,7 +218,8 @@ def launch(exe: Path | str | None = None,
                                 fg_restore_to=prev_fg)
     dismissed: list[str] = []
     if dismiss_blockers:
-        dismissed = sweep_boot_blockers(popen.pid, hwnd, budget_s=blocker_sweep_s)
+        dismissed = sweep_boot_blockers(popen.pid, hwnd, budget_s=blocker_sweep_s,
+                                        dismiss_wizard=dismiss_wizard)
     # NOTE: still do NOT touch window position/foreground here. Early
     # interference (before post_init's first-idle input_files load) BREAKS
     # the CLI model auto-load — proven experimentally: hands-off boots load

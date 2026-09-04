@@ -73,7 +73,14 @@ def boot_session(args, model=None, fresh=True):
     """Seed a fresh datadir, launch with optional model, hands-off boot."""
     datadir = Path(args.datadir)
     profile.seed_profile(datadir, fresh=fresh)
-    session = launcher.launch(exe=args.exe, datadir=datadir, model=model)
+    # dismiss_wizard: the first-run Setup Wizard modally blocks the post-init
+    # chain (PITFALLS 19.1) and swallows clicks in its area; WM_CLOSE on it is
+    # app-safe on this build (census v2) and the sweep covers the t=15s
+    # update popups the close unlocks. Fixture boots don't show it (no-op
+    # there); empty boots get deterministic disposal instead of per-case
+    # relocation. Probes/census keep the raw boot (launcher default False).
+    session = launcher.launch(exe=args.exe, datadir=datadir, model=model,
+                              dismiss_wizard=True)
     # archive screenshots for later manual spot-check (all cases, zero edits)
     from harness import shot_archive
     _arch = shot_archive.start_archiver(session, Path(sys.argv[0]).stem)

@@ -102,6 +102,13 @@ def window_title(hwnd: int) -> str:
     return buf.value
 
 
+def window_class(hwnd: int) -> str:
+    """Top-level window class name (GetClassNameW; '' when none)."""
+    buf = ctypes.create_unicode_buffer(256)
+    got = user32.GetClassNameW(hwnd, buf, 256)
+    return buf.value if got > 0 else ""
+
+
 def find_main_window(pid: int, timeout_s: float = 60.0, stable_s: float = 1.0) -> int:
     """Wait for the app's main window (top-level, visible, owned by `pid`).
 
