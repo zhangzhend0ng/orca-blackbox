@@ -820,10 +820,11 @@ def wizard_walk(iuia: Any, walker: Any, wizard_hwnd: int,
     interactive_pairs: list[tuple[dict[str, Any], Any]] = []
     deadline = time.monotonic() + WIZARD_WALK_BUDGET_S
     # W2/W6 gate: Chromium's web DOM appears as children under the Document
-    # element; runs 1-3 (09-04) all saw an EMPTY Document until activation
-    # kicked in — "interactive exists" alone is NOT an activation signal
-    # (the native wx Close button shows up in the unactivated tree too)
-    state = {"activated": False}
+    # element. Two-stage lesson (09-04 runs 3/4): a Document WITH a child can
+    # still be a stub (15-node shape, named web content absent) — the honest
+    # "content is visible" signal is named nodes INSIDE the Document subtree
+    # (run 2 truly-activated: 'Welcome to Snapmaker Orca' et al.)
+    state = {"doc_child": False, "doc_named": 0}
 
     def attr(el: Any, prop: str, default: Any = "") -> Any:
         try:
@@ -849,7 +850,7 @@ def wizard_walk(iuia: Any, walker: Any, wizard_hwnd: int,
             com_failures["attrs"] += 1
             return False
 
-    def walk(el: Any, depth: int) -> None:
+    def walk(el: Any, depth: int, under_doc: bool = False) -> None:
         stats.nodes += 1
         stats.max_depth_seen = max(stats.max_depth_seen, depth)
         ctype = iuia.known_control_type_ids.get(
@@ -858,9 +859,13 @@ def wizard_walk(iuia: Any, walker: Any, wizard_hwnd: int,
         name = str(attr(el, "CurrentName", "") or "")
         if name:
             stats.named += 1
+        if name and under_doc:
+            state["doc_named"] += 1
         automation_id = str(attr(el, "CurrentAutomationId", ""))
         if automation_id:
             stats.with_automation_id += 1
+        if name and under_doc:
+            state["doc_named"] += 1
         entry: dict[str, Any] = {
             "control_type": ctype, "name": name[:120],
             "class_name": str(attr(el, "CurrentClassName", ""))[:60],
@@ -886,9 +891,9 @@ def wizard_walk(iuia: Any, walker: Any, wizard_hwnd: int,
             com_failures["children"] += 1
             return
         if ctype == "Document" and child is not None:
-            state["activated"] = True
+            state["doc_child"] = True
         while child:
-            walk(child, depth + 1)
+            walk(child, depth + 1, under_doc or ctype == "Document")
             try:
                 child = walker.GetNextSiblingElement(child)
             except Exception:  # noqa: BLE001
@@ -903,7 +908,8 @@ def wizard_walk(iuia: Any, walker: Any, wizard_hwnd: int,
         log.add("ERROR", "wizard_walk_failed", error)
     return ({"stats": stats.as_dict(), "com_failures": com_failures,
              "error": error, "nodes": nodes[:400],
-             "activated": state["activated"]}, interactive_pairs)
+             "doc_child": state["doc_child"],
+             "doc_named": state["doc_named"]}, interactive_pairs)
 
 
 def wizard_drive(session: Any, wizard_hwnd: int, iuia: Any, walker: Any,
@@ -1052,7 +1058,7 @@ def wizard_sample_run(session: Any, log: StepLog, zh: bool) -> dict[str, Any]:
     walker = iuia.iuia.RawViewWalker
     walk1, interactive_pairs = wizard_walk(iuia, walker, wizard_hwnd, log)
     rewalks = 0
-    while not walk1.get("activated") and rewalks < WIZARD_REWALK_TRIES:
+    while not walk1.get("doc_named") and rewalks < WIZARD_REWALK_TRIES:
         time.sleep(WIZARD_REWALK_S)
         walk1, interactive_pairs = wizard_walk(iuia, walker, wizard_hwnd, log)
         rewalks += 1
@@ -1060,7 +1066,7 @@ def wizard_sample_run(session: Any, log: StepLog, zh: bool) -> dict[str, Any]:
                 f"attempt={rewalks} nodes={walk1['stats']['nodes']} "
                 f"named={walk1['stats']['named']} "
                 f"interactive={len(interactive_pairs)} "
-                f"activated={walk1.get('activated')}")
+                f"doc_named={walk1.get('doc_named')}")
     invoke_capable = sum(1 for entry, _el in interactive_pairs
                          if entry["patterns"]["invoke"])
     log.add("INFO", "wizard_walk_done",
@@ -1069,10 +1075,10 @@ def wizard_sample_run(session: Any, log: StepLog, zh: bool) -> dict[str, Any]:
             f"invoke_capable={invoke_capable} rewalks={rewalks}")
     if zh:
         drive = {"attempted": False, "result": "skipped_zh_sampling_only"}
-    elif not walk1.get("activated"):
-        # W2 verdict after retries: the web DOM never surfaced under the
-        # Document — driving (and any page-change verdict) would be noise;
-        # this is NOT a no_invokable conclusion (plan §二 W2 disposal)
+    elif not walk1.get("doc_named"):
+        # W2 verdict after retries: named web content never surfaced inside
+        # the Document — driving (and any page-change verdict) would be
+        # noise; this is NOT a no_invokable conclusion (plan §二 W2 disposal)
         drive = {"attempted": False, "result": "skipped_tree_not_activated"}
     else:
         drive = wizard_drive(session, wizard_hwnd, iuia, walker,
@@ -1147,7 +1153,7 @@ def build_report(result: dict[str, Any]) -> str:
                      if n.get("patterns") is not None]
             add(f"wizard sample ({wz.get('wizard_hwnd')}): nodes={wstats.get('nodes')} "
                 f"named={wstats.get('named')} maxDepth={wstats.get('max_depth_seen')} "
-                f"interactive={len(inter)} activated={wz.get('walk', {}).get('activated')} "
+                f"interactive={len(inter)} doc_named={wz.get('walk', {}).get('doc_named')} "
                 f"rewalks={wz.get('rewalks')} "
                 f"com_failures={wz.get('walk', {}).get('com_failures')} "
                 f"err={ascii_safe(str(wz.get('walk', {}).get('error', '')))[:60]}")
