@@ -819,6 +819,11 @@ def wizard_walk(iuia: Any, walker: Any, wizard_hwnd: int,
     nodes: list[dict[str, Any]] = []
     interactive_pairs: list[tuple[dict[str, Any], Any]] = []
     deadline = time.monotonic() + WIZARD_WALK_BUDGET_S
+    # W2/W6 gate: Chromium's web DOM appears as children under the Document
+    # element; runs 1-3 (09-04) all saw an EMPTY Document until activation
+    # kicked in — "interactive exists" alone is NOT an activation signal
+    # (the native wx Close button shows up in the unactivated tree too)
+    state = {"activated": False}
 
     def attr(el: Any, prop: str, default: Any = "") -> Any:
         try:
@@ -880,6 +885,8 @@ def wizard_walk(iuia: Any, walker: Any, wizard_hwnd: int,
         except Exception:  # noqa: BLE001
             com_failures["children"] += 1
             return
+        if ctype == "Document" and child is not None:
+            state["activated"] = True
         while child:
             walk(child, depth + 1)
             try:
@@ -895,7 +902,8 @@ def wizard_walk(iuia: Any, walker: Any, wizard_hwnd: int,
         error = f"{type(exc).__name__}: {exc}"[:200]
         log.add("ERROR", "wizard_walk_failed", error)
     return ({"stats": stats.as_dict(), "com_failures": com_failures,
-             "error": error, "nodes": nodes[:400]}, interactive_pairs)
+             "error": error, "nodes": nodes[:400],
+             "activated": state["activated"]}, interactive_pairs)
 
 
 def wizard_drive(session: Any, wizard_hwnd: int, iuia: Any, walker: Any,
@@ -959,7 +967,10 @@ def wizard_drive(session: Any, wizard_hwnd: int, iuia: Any, walker: Any,
             time.sleep(INVOKE_SETTLE_S)
             break
     if not result["invoked"] and not invoke_pairs:
-        # legacy-only fallback: same one-click discipline
+        # legacy-only fallback: same one-click discipline. Method name is
+        # DoDefaultAction (guest comtypes introspection, 09-04 — 'DoDefault'
+        # raises AttributeError); a missing attribute is a PRE-CLICK failure
+        # and must not set invoked=True (run 3's false page_advanced lesson)
         result["pattern_used"] = "legacy_iaccessible"
         for entry, el in sorted(interactive_pairs, key=rank):
             result["candidate"] = entry["name"]
@@ -970,13 +981,18 @@ def wizard_drive(session: Any, wizard_hwnd: int, iuia: Any, walker: Any,
                     continue
                 pattern = unk.QueryInterface(
                     IUIAutomationLegacyIAccessiblePattern)
+                do_default_action = getattr(pattern, "DoDefaultAction", None)
+                if do_default_action is None:
+                    result["error"] = "no DoDefaultAction attr on interface"
+                    continue
             except Exception as exc:  # noqa: BLE001 — stale element pre-click
                 result["error"] = f"{type(exc).__name__}: {exc}"[:200]
                 continue
             try:
-                pattern.DoDefault()
+                do_default_action()
             except Exception as exc:  # noqa: BLE001 — call made; hwnd decides
-                result["error"] = f"DoDefault: {type(exc).__name__}: {exc}"[:200]
+                result["error"] = (f"DoDefaultAction: "
+                                   f"{type(exc).__name__}: {exc}")[:200]
             result["invoked"] = True
             time.sleep(INVOKE_SETTLE_S)
             break
@@ -1036,14 +1052,15 @@ def wizard_sample_run(session: Any, log: StepLog, zh: bool) -> dict[str, Any]:
     walker = iuia.iuia.RawViewWalker
     walk1, interactive_pairs = wizard_walk(iuia, walker, wizard_hwnd, log)
     rewalks = 0
-    while not interactive_pairs and rewalks < WIZARD_REWALK_TRIES:
+    while not walk1.get("activated") and rewalks < WIZARD_REWALK_TRIES:
         time.sleep(WIZARD_REWALK_S)
         walk1, interactive_pairs = wizard_walk(iuia, walker, wizard_hwnd, log)
         rewalks += 1
         log.add("INFO", "wizard_rewalk",
                 f"attempt={rewalks} nodes={walk1['stats']['nodes']} "
                 f"named={walk1['stats']['named']} "
-                f"interactive={len(interactive_pairs)}")
+                f"interactive={len(interactive_pairs)} "
+                f"activated={walk1.get('activated')}")
     invoke_capable = sum(1 for entry, _el in interactive_pairs
                          if entry["patterns"]["invoke"])
     log.add("INFO", "wizard_walk_done",
@@ -1052,6 +1069,11 @@ def wizard_sample_run(session: Any, log: StepLog, zh: bool) -> dict[str, Any]:
             f"invoke_capable={invoke_capable} rewalks={rewalks}")
     if zh:
         drive = {"attempted": False, "result": "skipped_zh_sampling_only"}
+    elif not walk1.get("activated"):
+        # W2 verdict after retries: the web DOM never surfaced under the
+        # Document — driving (and any page-change verdict) would be noise;
+        # this is NOT a no_invokable conclusion (plan §二 W2 disposal)
+        drive = {"attempted": False, "result": "skipped_tree_not_activated"}
     else:
         drive = wizard_drive(session, wizard_hwnd, iuia, walker,
                              interactive_pairs,
@@ -1125,7 +1147,8 @@ def build_report(result: dict[str, Any]) -> str:
                      if n.get("patterns") is not None]
             add(f"wizard sample ({wz.get('wizard_hwnd')}): nodes={wstats.get('nodes')} "
                 f"named={wstats.get('named')} maxDepth={wstats.get('max_depth_seen')} "
-                f"interactive={len(inter)} rewalks={wz.get('rewalks')} "
+                f"interactive={len(inter)} activated={wz.get('walk', {}).get('activated')} "
+                f"rewalks={wz.get('rewalks')} "
                 f"com_failures={wz.get('walk', {}).get('com_failures')} "
                 f"err={ascii_safe(str(wz.get('walk', {}).get('error', '')))[:60]}")
             for entry in inter[:8]:
