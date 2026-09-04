@@ -36,11 +36,25 @@ CLI modes (docs/UIA_EVAL_0903.md 5.1/5.2/5.3 evidence):
            census reproduced it at t=15s) and dump its UIA name/class/
            first-level buttons (scene-① evidence, UIA_EVAL 5.1). Exits
            after the scan; no tree walk, nothing is clicked.
+  --wizard  keep the modal Setup Wizard UP (the launcher sweep's
+            BLOCKER_TITLES do not match it — PITFALLS_0901.md 19.1) and grade
+            the UIA channel against its wxWebView HTML content: re-rooted
+            RawViewWalker walk + interactive-element pattern table (L1), then
+            ONE guarded Invoke with a state-change verdict — hwnd gone =
+            wizard_closed, signature changed = page_advanced, unchanged =
+            inconclusive (L2, en_US only; zh is L1 sampling by plan — the
+            en/zh name sets barely intersect). Nothing is typed; no ESC is
+            ever sent (wx modal ESC == Cancel == app-exit risk, PITFALLS 19.1).
+            Evidence plan: docs/UIA_WIZARD_PROBE_PLAN.md.
   Flags combine: --zh --raw. Output files get a matching suffix
-  (_zh/_raw/_zh_raw/_dlog); the no-flag run keeps the unsuffixed names.
+  (_zh/_raw/_zh_raw/_dlog/_wiz); the no-flag run keeps the unsuffixed names.
+  --wizard is exclusive with --dialog-sample (both own boot-blocker
+  handling); the combination exits 2. --raw under --wizard is ignored with a
+  warning (the wizard walk is raw-view native).
 
 Exit code: 0 = probe completed (individual findings may still be negative),
-1 = probe crashed before finishing (traceback is in the report/steps).
+1 = probe crashed before finishing (traceback is in the report/steps),
+2 = bad flag combination.
 """
 
 from __future__ import annotations
@@ -64,7 +78,7 @@ ORCA_EXE_NAME = "snapmaker-orca.exe"
 OUT_FULL = r"C:\coil\uia_probe_out"
 OUT_COMPACT = r"C:\coil\uia_probe_compact"
 OUT_REPORT = r"C:\coil\uia_probe_report"
-OUT_SUFFIX = ""   # main() sets "_zh"/"_raw"/"_zh_raw"; files: OUT_* + suffix + ext
+OUT_SUFFIX = ""   # main() sets "_zh"/"_raw"/"_zh_raw"/"_dlog"/"_wiz"; files: OUT_* + suffix + ext
 
 # Hard caps so a pathological tree can never hang the task (30 min limit):
 # depth 12: mixing sidebar sections live at depth 6-9 and their parameter
@@ -74,6 +88,21 @@ MAX_CHILDREN = 60      # per node
 MAX_NODES = 4000       # whole walk
 WALK_BUDGET_S = 120.0  # wall clock per walk
 MENU_KEYWORDS = ["mix", "multimat", "paint", "filament", "混色", "彩", "涂", "多材"]
+
+# --wizard mode (docs/UIA_WIZARD_PROBE_PLAN.md §三; values' provenance inline)
+WIZARD_POLL_TRIES = 40    # *0.5s = 20s — dialog_sample_run polling precedent
+WIZARD_WALK_DEPTH = 20    # re-rooted at the wizard element: the frame-root
+                          # depth-12 hits don't apply to a walk starting at 0;
+                          # headroom for a deep HTML subtree
+WIZARD_WALK_NODES = 4000
+WIZARD_WALK_BUDGET_S = 90.0
+INVOKE_SETTLE_S = 2.5     # try_mixing_invoke precedent (this file)
+# UIAutomationClient.h ids, numeric so the file stays pywinauto-only
+UIA_INVOKE_PATTERN_ID = 10000
+UIA_IS_INVOKE_AVAILABLE = 30037
+UIA_IS_TOGGLE_AVAILABLE = 30062
+UIA_IS_LEGACY_IA_AVAILABLE = 30090
+INTERACTIVE_TYPES = ("Button", "Hyperlink", "CheckBox")
 
 
 def wait_idle_boot(session: Any, log: StepLog, zh: bool = False) -> None:
@@ -742,6 +771,245 @@ def dialog_sample_run(session: Any, desktop: Any, main_hwnd: int,
     return out
 
 
+# --- --wizard mode (docs/UIA_WIZARD_PROBE_PLAN.md) ---------------------------
+
+
+def _grab_wizard(path: str, hwnd: int) -> str:
+    """Best-effort PrintWindow evidence shot; an empty client area or a dead
+    hwnd must never fail the probe — the L2 verdict comes from the re-walk."""
+    from harness import winutil
+
+    try:
+        winutil.save_capture_bmp(path, winutil.capture_window(hwnd))
+        return path
+    except Exception as exc:  # noqa: BLE001
+        return f"<capture failed: {type(exc).__name__}: {exc}>"[:120]
+
+
+def wizard_signature(nodes: list[dict[str, Any]]) -> tuple:
+    """Page-change comparator for the L2 verdict: (node_count, geometry
+    multiset), the geometry key being (control_type, name, rect) over ALL
+    nodes — a page swap can keep names while moving geometry (plan §三.6),
+    and content changes surface through the names riding in the key."""
+    geometry = tuple(sorted(
+        (n["control_type"], n["name"], tuple(n["rect"])) for n in nodes))
+    return (len(nodes), geometry)
+
+
+def wizard_walk(iuia: Any, walker: Any, wizard_hwnd: int,
+                log: StepLog) -> tuple[dict[str, Any], list[tuple[dict[str, Any], Any]]]:
+    """RAW-view walk re-rooted at the wizard dialog + interactive pattern table.
+
+    pywinauto's control-view enumeration cannot see the wxWebView HTML subtree
+    (103 vs 114 nodes, UIA_EVAL 5.2), so comtypes RawViewWalker from
+    ElementFromHandle(wizard_hwnd) is the primary enumerator. Returns
+    (result_dict, invokable_pairs); the pairs carry live elements for the L2
+    drive and are for internal use only (never JSON-dumped)."""
+    stats = WalkStats()
+    com_failures = {"attrs": 0, "children": 0}
+    nodes: list[dict[str, Any]] = []
+    invokable_pairs: list[tuple[dict[str, Any], Any]] = []
+    deadline = time.monotonic() + WIZARD_WALK_BUDGET_S
+
+    def attr(el: Any, prop: str, default: Any = "") -> Any:
+        try:
+            value = getattr(el, prop)
+        except Exception:  # COMError — element vanished mid-walk
+            com_failures["attrs"] += 1
+            return default
+        return default if value is None else value
+
+    def rect_of(el: Any) -> list[int]:
+        r = attr(el, "CurrentBoundingRectangle", None)
+        try:
+            if hasattr(r, "left"):
+                return [int(r.left), int(r.top), int(r.right), int(r.bottom)]
+            return [int(r[0]), int(r[1]), int(r[2]), int(r[3])]
+        except Exception:  # noqa: BLE001
+            return [0, 0, 0, 0]
+
+    def pattern_avail(el: Any, prop_id: int) -> bool:
+        try:
+            return bool(el.GetCurrentPropertyValue(prop_id))
+        except Exception:  # COMError
+            com_failures["attrs"] += 1
+            return False
+
+    def walk(el: Any, depth: int) -> None:
+        stats.nodes += 1
+        stats.max_depth_seen = max(stats.max_depth_seen, depth)
+        ctype = iuia.known_control_type_ids.get(
+            int(attr(el, "CurrentControlType", 0) or 0), "?")
+        stats.by_type[ctype] += 1
+        name = str(attr(el, "CurrentName", "") or "")
+        if name:
+            stats.named += 1
+        automation_id = str(attr(el, "CurrentAutomationId", ""))
+        if automation_id:
+            stats.with_automation_id += 1
+        entry: dict[str, Any] = {
+            "control_type": ctype, "name": name[:120],
+            "class_name": str(attr(el, "CurrentClassName", ""))[:60],
+            "automation_id": automation_id[:80], "depth": depth,
+            "rect": rect_of(el)}
+        if ctype in INTERACTIVE_TYPES:
+            entry["patterns"] = {
+                "invoke": pattern_avail(el, UIA_IS_INVOKE_AVAILABLE),
+                "toggle": pattern_avail(el, UIA_IS_TOGGLE_AVAILABLE),
+                "legacy_iaccessible": pattern_avail(el, UIA_IS_LEGACY_IA_AVAILABLE)}
+            if entry["patterns"]["invoke"]:
+                invokable_pairs.append((entry, el))
+        nodes.append(entry)
+        if depth >= WIZARD_WALK_DEPTH or stats.nodes >= WIZARD_WALK_NODES:
+            stats.cut_by_depth += int(depth >= WIZARD_WALK_DEPTH)
+            stats.cut_by_node_cap = stats.nodes >= WIZARD_WALK_NODES
+            return
+        if time.monotonic() > deadline:
+            stats.cut_by_budget = True
+            return
+        try:
+            child = walker.GetFirstChildElement(el)
+        except Exception:  # noqa: BLE001
+            com_failures["children"] += 1
+            return
+        while child:
+            walk(child, depth + 1)
+            try:
+                child = walker.GetNextSiblingElement(child)
+            except Exception:  # noqa: BLE001
+                com_failures["children"] += 1
+                break
+
+    try:
+        walk(iuia.iuia.ElementFromHandle(int(wizard_hwnd)), 0)
+        error = ""
+    except Exception as exc:  # noqa: BLE001
+        error = f"{type(exc).__name__}: {exc}"[:200]
+        log.add("ERROR", "wizard_walk_failed", error)
+    return ({"stats": stats.as_dict(), "com_failures": com_failures,
+             "error": error, "nodes": nodes[:400]}, invokable_pairs)
+
+
+def wizard_drive(session: Any, wizard_hwnd: int, iuia: Any, walker: Any,
+                 invokable_pairs: list[tuple[dict[str, Any], Any]],
+                 sig_before: tuple, log: StepLog) -> dict[str, Any]:
+    """L2: ONE guarded Invoke, verdict by state change — never by exception
+    absence. hwnd gone = wizard_closed (the "Get Started" click semantics are
+    unknown — it may dismiss the wizard outright, plan §二 W4); signature
+    changed = page_advanced; unchanged = inconclusive (a heuristic can miss,
+    the named diff is dumped for a human). Pre-invoke failures (pattern/QI)
+    fall through to the next candidate — no click happened; once Invoke is
+    CALLED the loop stops, even on a mid-call COMError (the click may have
+    landed; the hwnd check decides)."""
+    from harness.mixing_util import toplevel
+    try:
+        from comtypes.gen.UIAutomationClient import IUIAutomationInvokePattern
+    except Exception as exc:  # noqa: BLE001
+        return {"attempted": False, "result": "skipped_no_pattern_iface",
+                "error": f"{type(exc).__name__}: {exc}"[:160]}
+
+    def rank(pair: tuple[dict[str, Any], Any]) -> tuple:
+        entry, _el = pair
+        return (entry["control_type"] != "Button",
+                "start" not in entry["name"].lower(), -entry["depth"])
+
+    result: dict[str, Any] = {"attempted": bool(invokable_pairs),
+                              "candidate": "", "invoked": False}
+    if not invokable_pairs:
+        result["result"] = "no_invokable_button"
+        return result
+    result["before"] = _grab_wizard(r"C:\coil\uia_probe_wiz_before.bmp", wizard_hwnd)
+    for entry, el in sorted(invokable_pairs, key=rank):
+        result["candidate"] = entry["name"]
+        try:
+            unk = el.GetCurrentPattern(UIA_INVOKE_PATTERN_ID)
+            if unk is None:
+                result["error"] = "GetCurrentPattern returned None"
+                continue
+            pattern = unk.QueryInterface(IUIAutomationInvokePattern)
+        except Exception as exc:  # noqa: BLE001 — stale element pre-click
+            result["error"] = f"{type(exc).__name__}: {exc}"[:200]
+            continue
+        try:
+            pattern.Invoke()
+        except Exception as exc:  # noqa: BLE001 — call was made; hwnd decides
+            result["error"] = f"Invoke: {type(exc).__name__}: {exc}"[:200]
+        result["invoked"] = True
+        time.sleep(INVOKE_SETTLE_S)
+        break
+    if not result["invoked"]:
+        result["result"] = "invoke_failed"
+        return result
+    if not ctypes.windll.user32.IsWindow(wizard_hwnd):
+        result["result"] = "wizard_closed"
+        # closing the wizard unlocks the post-init chain — update dialogs can
+        # appear from ~t=15s (PITFALLS 19.1); snapshot what came up instead of
+        # chasing it (plan §三.6: verdict then wrap up, no chasing)
+        result["toplevel_after"] = [
+            {"class": cls, "title": txt[:80]}
+            for cls, txt, _r, _h in toplevel(session.pid)][:10]
+        return result
+    walk2, _pairs2 = wizard_walk(iuia, walker, wizard_hwnd, log)
+    if walk2["error"]:
+        log.add("WARN", "wizard_rewalk_failed", walk2["error"])
+    result["after"] = _grab_wizard(r"C:\coil\uia_probe_wiz_after.bmp", wizard_hwnd)
+    sig_after = wizard_signature(walk2["nodes"])
+    names_b = {entry[1] for entry in sig_before[1]}
+    names_a = {entry[1] for entry in sig_after[1]}
+    result["named_diff"] = {"added": sorted(names_a - names_b)[:15],
+                            "removed": sorted(names_b - names_a)[:15]}
+    result["nodes_after"] = sig_after[0]
+    result["result"] = ("page_advanced" if sig_after != sig_before
+                        else "inconclusive")
+    return result
+
+
+def wizard_sample_run(session: Any, log: StepLog, zh: bool) -> dict[str, Any]:
+    """Scene-① extension (UIA_WIZARD_PROBE_PLAN): keep the modal Setup Wizard
+    UP and grade the UIA channel against its HTML content. Wizard discovery
+    goes through win32 EnumWindows (toplevel) — the desktop-root UIA scan
+    misses owned windows (measured: extra_windows=0 with the wizard up);
+    enumeration is raw-view only (control view cannot see the HTML subtree).
+    zh runs stop at L1 (name sets barely intersect — UIA_EVAL 5.3)."""
+    from harness import process_panel as pp
+    from harness.mixing_util import toplevel
+    from pywinauto.uia_defines import IUIA
+
+    wizard_hwnd = 0
+    for _ in range(WIZARD_POLL_TRIES):
+        wizard_hwnd = next(
+            (h for cls, txt, _r, h in toplevel(session.pid)
+             if cls == "#32770" and "wizard" in txt.lower()), 0)
+        if wizard_hwnd:
+            break
+        time.sleep(0.5)
+    if not wizard_hwnd:
+        log.add("INFO", "wizard_not_present",
+                f"no #32770 wizard within {WIZARD_POLL_TRIES * 0.5:.0f}s")
+        return {"wizard_present": False, "result": "not_present"}
+    time.sleep(1.0)  # let the HTML finish showing before the walk (ds precedent)
+    iuia = IUIA()
+    walker = iuia.iuia.RawViewWalker
+    walk1, invokable_pairs = wizard_walk(iuia, walker, wizard_hwnd, log)
+    log.add("INFO", "wizard_walk_done",
+            f"nodes={walk1['stats']['nodes']} named={walk1['stats']['named']} "
+            f"invokable={len(invokable_pairs)}")
+    if zh:
+        drive = {"attempted": False, "result": "skipped_zh_sampling_only"}
+    else:
+        drive = wizard_drive(session, wizard_hwnd, iuia, walker,
+                             invokable_pairs, wizard_signature(walk1["nodes"]),
+                             log)
+    log.add("INFO", "wizard_drive", f"{drive.get('result')} "
+            f"candidate={ascii_safe(str(drive.get('candidate', '')))[:60]}")
+    still_up = bool(ctypes.windll.user32.IsWindow(wizard_hwnd))
+    if still_up:
+        pp.close_setup_wizard(session, attempts=3, log="[uia]")
+    return {"wizard_present": True, "wizard_hwnd": f"0x{wizard_hwnd:x}",
+            "walk": walk1, "drive": drive,
+            "wizard_still_up_after_drive": still_up}
+
+
 def build_report(result: dict[str, Any]) -> str:
     # crash-safe: every section is optional so a mid-probe crash still gets
     # a readable report instead of a KeyError inside the finally block
@@ -791,6 +1059,33 @@ def build_report(result: dict[str, Any]) -> str:
             f"type={dlg.get('dialog_control_type')} depth={dlg.get('dialog_depth')} "
             f"buttons={ascii_safe('|'.join(b['name'] for b in dlg.get('dialog_buttons', [])))[:120]} "
             f"texts={ascii_safe('|'.join(dlg.get('dialog_texts', [])))[:120]}")
+    wz = result.get("wizard_sample")
+    if wz:
+        if not wz.get("wizard_present"):
+            add("wizard sample: not_present (no #32770 wizard at poll timeout)")
+        else:
+            wstats = wz.get("walk", {}).get("stats", {})
+            inter = [n for n in wz.get("walk", {}).get("nodes", [])
+                     if n.get("patterns") is not None]
+            add(f"wizard sample ({wz.get('wizard_hwnd')}): nodes={wstats.get('nodes')} "
+                f"named={wstats.get('named')} maxDepth={wstats.get('max_depth_seen')} "
+                f"interactive={len(inter)} "
+                f"com_failures={wz.get('walk', {}).get('com_failures')} "
+                f"err={ascii_safe(str(wz.get('walk', {}).get('error', '')))[:60]}")
+            for entry in inter[:8]:
+                pats = entry.get("patterns", {})
+                add(f"  [{ascii_safe(entry['name'])[:44]}] {entry['control_type']} "
+                    f"invoke={pats.get('invoke')} toggle={pats.get('toggle')} "
+                    f"legacy={pats.get('legacy_iaccessible')}")
+            drv = wz.get("drive", {})
+            diff = drv.get("named_diff", {})
+            add(f"wizard drive: {drv.get('result')} candidate="
+                f"{ascii_safe(str(drv.get('candidate', '')))[:40]} "
+                f"invoked={drv.get('invoked')} "
+                f"named+{len(diff.get('added', []))}/-{len(diff.get('removed', []))} "
+                f"nodes_after={drv.get('nodes_after')} "
+                f"still_up={wz.get('wizard_still_up_after_drive')} "
+                f"err={ascii_safe(str(drv.get('error', '')))[:80]}")
     mixing = result.get("mixing_search", {})
     add(f"mixing search: {len(mixing.get('matches', []))} matches (keywords={ascii_safe(str(mixing.get('keywords')))}[:110])")
     for attempt in mixing.get("invoke_attempts", []):
@@ -821,11 +1116,21 @@ def main() -> int:
     zh = "--zh" in flags
     raw = "--raw" in flags
     ds = "--dialog-sample" in flags
+    wiz = "--wizard" in flags
+    if wiz and ds:
+        # both own boot-blocker handling — an undefined combination (plan §三.1)
+        print("ERROR: --wizard and --dialog-sample are mutually exclusive")
+        return 2
+    if wiz and raw:
+        print("WARN: --raw ignored in --wizard mode (the wizard walk is "
+              "raw-view native); no _raw suffix written", flush=True)
+        raw = False
     global OUT_SUFFIX
     OUT_SUFFIX = (("_zh" if zh else "") + ("_raw" if raw else "")
-                  + ("_dlog" if ds else ""))
+                  + ("_dlog" if ds else "") + ("_wiz" if wiz else ""))
     log = StepLog()
-    log.add("INFO", "probe_start", f"mode=zh:{zh} raw:{raw} dlog:{ds}")
+    log.add("INFO", "probe_start",
+            f"mode=zh:{zh} raw:{raw} dlog:{ds} wizard:{wiz}")
     result: dict[str, Any] = {
         "meta": {"started": now_hms(), "screen": screen_size(), "exe_name": ORCA_EXE_NAME,
                  "mode": OUT_SUFFIX or "(default)"},
@@ -849,6 +1154,12 @@ def main() -> int:
             main_hwnd = int(session.hwnd)
             result["dialog_sample"] = dialog_sample_run(session, desktop,
                                                         main_hwnd, log)
+            completed = True
+            return 0  # finally block writes the outputs
+        if wiz:
+            # wizard sample only: keep the modal wizard up, grade the UIA
+            # channel against its HTML content; ONE guarded Invoke max
+            result["wizard_sample"] = wizard_sample_run(session, log, zh)
             completed = True
             return 0  # finally block writes the outputs
         wait_idle_boot(session, log, zh=zh)
