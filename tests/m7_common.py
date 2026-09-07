@@ -51,6 +51,7 @@ from harness.anchors import (MATCH_THRESHOLD, VIEWPORT_X0,  # noqa: E402
 from m1_minimal_loop import capture_bgr  # noqa: E402
 
 LOG = "[m7]"
+ART = HERE / "artifacts"
 WM_CHAR, WM_KEYDOWN, VK_RETURN = 0x0102, 0x0100, 0x0D
 EMPTY_BED_FLOOR = 0.004  # m3b's measured empty-bed chromatic fraction
 

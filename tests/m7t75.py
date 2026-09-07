@@ -11,8 +11,9 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE / "tests"))
 
-from m3_common import ART, MIXED_3MF  # noqa: E402
+from m3_common import MIXED_3MF  # noqa: E402
 import m7_common as m7  # noqa: E402
+from m7_common import ART  # noqa: E402
 
 
 def steps(session, results):

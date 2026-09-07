@@ -23,8 +23,9 @@ HERE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE / "tests"))
 
 from m2_slice_chain import wait_model_loaded  # noqa: E402
-from m3_common import ART, MIXED_3MF, add_common_args, boot_session  # noqa: E402
+from m3_common import MIXED_3MF, add_common_args, boot_session  # noqa: E402
 import m7_common as m7  # noqa: E402
+from m7_common import ART  # noqa: E402
 
 LOG = "[m7f]"
 TOL = 0.02
