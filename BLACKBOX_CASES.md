@@ -127,6 +127,51 @@
 | B 弱覆盖/降级 | #2/#9/#23 hover 文案细节（m3s 已冒烟）、#38 tooltip 对比说明、#45 工艺配置默认值、#39 模板切换确认 | 视觉冒烟或断言弱 |
 | C 黑盒不可测 | #11 色域比例/ΔE<1 纯耗材、#42/43/44 兼容性内部判定、#50 空记录 | 内部数值/矩阵，需白盒兜底或接受风险 |
 
+### 主流程（m7，2026-09-08 批次：飞书「测试用例」表 tblLR8zYgwBuggDI）
+
+来源 = 飞书 wiki 测试用例表（GUI业务 #7–#24 原子 + 主流程-模板 #72–#111 编排），
+全量映射（含 MANUAL/OUT-OF-SCOPE 的联机/模型站/更新记录）见 **FEISHU_MAINFLOW.md**。
+新增基建：`harness/winutil.real_right_click_screen`（SendInput 右键，开 Plater
+原生右键菜单）+ `tests/m7_common.py`（右键菜单行点击 = GetMenuItemRect 精确几何、
+嵌套子菜单 via、File 菜单 via 分发、gizmo 槽位 tooltip 扫描、ImGui 字段录入、
+gcode/3mf 断言、模板骨架）。工具栏槽位 = 画布内 tooltip 悬停扫描
+（y≈84，x≈690–1700，PITCH 22；Move/Rotate 等需先选中模型才启用）。
+
+| 用例 | 飞书记录 | 外部断言 | 脚本 | 状态 |
+|---|---|---|---|---|
+| 启动进准备页 + 关闭无残留 | #7+#8 | Prepare 模板 + canvas + tasklist 清零 | m7a_boot_shutdown | ✅ |
+| 新建项目清空模型 | #9 | 保存提示出现 → Don't save → 空板 | m7b_new_project | ✅ |
+| 导入本地 STL | #11 | Import 子菜单 → 对话框 → Prusa 到板（0.25%+blob） | m7c_import_stl | ✅ |
+| 导入非法文件 | #12 | 错误对话框 + app 存活 + 无幻影模型 | m7d_import_corrupt | ✅ |
+| 旋转 Z 45° | #15 | Rotation Z=45 OCR → 3mf 矩阵 cos/sin≈0.7071 | m7e_rotate45 | ✅ |
+| 等比缩放 120%+还原 | #16 | Scale=120 OCR → 矩阵列范数≈1.2 → 还原读 100 | m7f_scale120 | ✅ |
+| 多模型整理分离 | #17 | Add Primitive 重叠 → Arrange → ≥2 blob 距离>120px | m7g_arrange | ✅ |
+| 右键删除模型 | #18 | 对象菜单 Delete → 空板 + 切片拒绝 | m7h_context_delete | ✅ |
+| 右键创建新模型 | #19 | 空板菜单 Add Primitive>Cube → 到板 + 切片接受 | m7i_add_primitive | ✅ |
+| 切换对象耗材 | #21 | Change Filament → 导出 3mf extruder 属性变更 | m7j_change_filament | ✅ |
+| 擦除塔/Flush 选项 | #24 🟡 | Flush Options 勾选态翻转（gcode 语义人工） | m7k_flush_options | ✅🟡 |
+| 模板: 导入+删除 | #72 | arrive → Delete All → 空板 | m7t72 | ✅ |
+| 模板: 新建+创建+删除 | #73 | new → cube → Delete All | m7t73 | ✅ |
+| 模板: 变换+切片 | #74 | move/rotate/scale 字段 OCR → slice done | m7t74 | ✅ |
+| 模板: 布局+删一+切片 | #75 | arrange 分离 → 删一留一 → slice+gcode | m7t75 | ✅ |
+| 模板: 分割验证 | #77 | Cut Perform → 2 parts → move/arrange → slice | m7t77 | ✅ |
+| 模板: 朝向+底面 | #78 | orient 视口 diff → Flatten 激活点面 → slice | m7t78 | ✅ |
+| 模板: 拆分对象/零件 | #79 🟡 | split 槽位驱动，can_split 门控如实记录 | m7t79 | ✅🟡 |
+| 模板: 层高+支撑 | #80 | VLH + Support Painting 激活+涂抹 → slice | m7t80 | ✅ |
+| 模板: 布尔+整理 | #81 🟡 | Add Part 第二体积 → MeshBoolean 激活（UI 证据） | m7t81 | ✅🟡 |
+| 模板: 剪贴+耗材切换 | #82 | cut → Change Filament → slice | m7t82 | ✅ |
+| 模板: 新建+导入+切片 | #83 | new → Import STL → arrive → slice | m7t83 | ✅ |
+| 模板: 预设+导入+切片 | #84 🟡 | 打印机 combo 切换；耗材合并=m4d 映射 | m7t84 | ✅🟡 |
+| 模板: 朝向+布尔+整理 | #86 | 组合 78/81 步骤 → slice | m7t86 | ✅ |
+| 模板: 底面+层高+支撑 | #87 | flatten+VLH+support paint → slice | m7t87 | ✅ |
+| 模板: 双导入+拆分+缩放+耗材 | #88 | 2×import + split 探测 + scale + filament → slice | m7t88 | ✅ |
+| 模板: 创建+旋转+涂色+切片 | #89 | cube → rotate 45 → Color painting dab → slice | m7t89 | ✅ |
+| 模板: 预设+全局耗材+切片 | #109 🟡 | 打印机切换 + 耗材弹窗枚举 → slice | m7t109 | ✅🟡 |
+
+🟡 = PARTIAL（known_limitation，断言降级处记录在 FEISHU_MAINFLOW.md 状态注）。
+MANUAL/OUT-OF-SCOPE（联机 #25–#38、更新 #65–#67、热重启 #10、主流程-用例设备段、
+主流程-模板 #90–108/#110/#111、模型站 #201–#220）：见 FEISHU_MAINFLOW.md。
+
 ### C 层（黑盒不可测，存量白盒兜底）
 
 instance 矩阵精确值、slice_result_valid 标志、preset 脏状态、切片几何正确性、

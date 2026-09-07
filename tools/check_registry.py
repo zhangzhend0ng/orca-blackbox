@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from cases import CASES, enabled_cases  # noqa: E402
 
-_SKIP = {"m3_common.py", "m5_common.py"}
+_SKIP = {"m3_common.py", "m5_common.py", "m7_common.py"}
 
 problems: list[str] = []
 
@@ -66,7 +66,9 @@ check("registry files live under tests/",
 
 # 7: sanity of the canonical suite
 reg = enabled_cases("regression")
-check("regression suite non-empty (36 expected)", len(reg) == 36, f"got {len(reg)}")
+# m7 (Feishu main-flow) grew the suite 36 -> 64 on 2026-09-08; assert a
+# sane floor, not an exact count (exact pins churn on every addition)
+check("regression suite non-empty (>= 36)", len(reg) >= 36, f"got {len(reg)}")
 
 print(f"\nregistry: {len(CASES)} entries | regression={len(reg)} "
       f"smoke={len(enabled_cases('smoke'))} "

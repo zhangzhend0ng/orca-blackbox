@@ -496,3 +496,45 @@ feed 请求日志 + 真实弹窗 WM_CLOSE 实测），逐条收敛 §19 的残�
   按钮退出 app，永远不得入表。
 - census v2 报告/事件/帧在客机 `C:\coil\boot_probe_report.txt` /
   `boot_probe_events.json` / `boot_probe_shots\`（ASCII 报告可 relay 直拉）。
+
+
+## 20. 0908 补充：m7 主流程批次（relay/PS Direct/右键菜单/任务计划）
+
+- **ScheduledTask ExecutionTimeLimit 变 PT2M**：`New-ScheduledTaskSettingsSet
+  -ExecutionTimeLimit (New-TimeSpan -Seconds N)` 注册后实测落成 PT2M（每个
+  diagtask 实例 2 分钟被 0x41306 终止、Out-File 0 字节——症状极易误判为
+  "GUI 会话坏了"）。`Register-ScheduledTask -Settings $st` 也复现过；
+  **注册后再 `Set-ScheduledTask -TaskName X -Settings $st`（-Hours 形式）
+  才稳**。guest_run.ps1 已固化该两步。
+- **relay 守护 Invoke-Expression 宿主插值**：`powershell -Command "...{ $c=... }"`
+  里的 `$var` 在宿主守护会话就被展开成空串（客机收不到）——凡经 relay 的
+  PS Direct 命令，`$` 一律写成反引号+`$`（runner/fetch_file.py ic() 已固化）。
+- **PowerShell 没有 r'' 原始字符串**：`r'C:/x'` 被解析成裸词 r 拼接，客机
+  收到 `rC:/x` → 文件不存在 → 静默空输出。
+- **PS 5.1 不能对赋值表达式取索引**：`($c = Get-Content f)[0..399]` 语法错；
+  必须 `$c = Get-Content f; $c[0..399]`。
+- **GetMenuItemRect 的 hWnd=NULL 在客机失败**（菜单开着也返回 0）——传弹出
+  菜单自身的 #32768 窗口句柄才可靠；嵌套子菜单要用
+  `topbar_util.wait_submenu(pid, known)`（wait_menu_popup 会把父菜单也列进
+  来，取 subs[-1] 实测拿错过父菜单）。
+- **Plater 右键菜单结构**（0908 dev build 实测）：空板 = Add Primitive /
+  Add Handy models / Add Models / Show Labels；对象 = Clone/Simplify/
+  Mesh boolean/Center/Drop/Split/Mirror/Delete/Add Part…/Printable/
+  Flush Options/Reload/Replace STL/Export STL/Convert…/Change Filament。
+  行点击 = GetMenuItemRect + 真实点击；行未命中必须显式失败（m7b 首版曾
+  因 fall-through 到 success_fn 误报成功）。
+- **gizmo 工具栏**（maximized 1920x1032, dpi96）：图标行 client y≈65–105
+  （中心 ~84），x≈690–1700，pitch≈45px；Move/Rotate/Scale/Cut/Flatten/
+  Supports/Seam/Fuzzy/ColorPaint/Measure/Assemble/BrimEars 需**选中模型**
+  才启用（灰色也出 tooltip）。tooltip 悬停 OCR 断言用 ≥4 字符阈值（m4e 的
+  6 字符阈值会漏 Move/Rotate 短词）。
+- **Prusa.stl 到板信号只有 ~0.35% 彩色占比**（空板 0.06%）——混色夹具
+  校准的 0.6% MODEL_COLORED_THRESHOLD 对小单色模型过严，小模型导入用
+  0.25% + blob 双信号。
+- **File > Import 是子菜单**（STL/3MF/ZIP 在第二层）：对子菜单标题发
+  WM_COMMAND 是 no-op，须先真实进入子菜单再对行分发。
+- **fetch 通道二进制不可靠**：fetch_mp4 单发 base64 两次损坏（420KB/76KB
+  截断）——文件拉取用 runner/fetch_file.py（MIME 行分块 + MD5 校验）。
+- **launcher 的 --datadir 必须绝对路径**：launcher 以 exe 目录为子进程
+  cwd，相对 datadir 落到 exe 旁 → 种子 conf 不生效 → 首启向导模态阻塞
+  主窗口 → find_main_window 90s 超时。

@@ -116,6 +116,36 @@ CASES: dict[str, dict] = {
     "m5h_ironing_combos": _r("m5", "TBD"),
     # --- m6: transform via artifact (absorbed from white-box ab3b34adf5:459) --
     "m6a_transform_verify": _r("m6", "A"),
+    # --- regression suite: main flow (m7, Feishu 测试用例 base tblLR8zYgwBuggDI
+    #     — GUI业务 #7-#24 原子 + 主流程-模板 O/M 链; mapping in FEISHU_MAINFLOW.md)
+    "m7a_boot_shutdown": _r("m7", "A"),
+    "m7b_new_project": _r("m7", "A"),
+    "m7c_import_stl": _r("m7", "A"),
+    "m7d_import_corrupt": _r("m7", "A"),
+    "m7e_rotate45": _r("m7", "A"),
+    "m7f_scale120": _r("m7", "A"),
+    "m7g_arrange": _r("m7", "A"),
+    "m7h_context_delete": _r("m7", "A"),
+    "m7i_add_primitive": _r("m7", "A"),
+    "m7j_change_filament": _r("m7", "A"),
+    "m7k_flush_options": _r("m7", "B", known_limitation=True),
+    "m7t72": _r("m7", "A"),
+    "m7t73": _r("m7", "A"),
+    "m7t74": _r("m7", "A"),
+    "m7t75": _r("m7", "B"),
+    "m7t77": _r("m7", "B"),
+    "m7t78": _r("m7", "B"),
+    "m7t79": _r("m7", "B", known_limitation=True),
+    "m7t80": _r("m7", "B"),
+    "m7t81": _r("m7", "B", known_limitation=True),
+    "m7t82": _r("m7", "B"),
+    "m7t83": _r("m7", "A"),
+    "m7t84": _r("m7", "B", known_limitation=True),
+    "m7t86": _r("m7", "B"),
+    "m7t87": _r("m7", "B"),
+    "m7t88": _r("m7", "B"),
+    "m7t89": _r("m7", "B"),
+    "m7t109": _r("m7", "B", known_limitation=True),
 }
 
 

@@ -385,6 +385,8 @@ MOUSEEVENTF_ABSOLUTE = 0x8000
 MOUSEEVENTF_MOVE = 0x0001
 MOUSEEVENTF_LEFTDOWN = 0x0002
 MOUSEEVENTF_LEFTUP = 0x0004
+MOUSEEVENTF_RIGHTDOWN = 0x0008
+MOUSEEVENTF_RIGHTUP = 0x0010
 
 
 class _INPUT(ctypes.Structure):
@@ -408,6 +410,30 @@ def real_click_screen(x: int, y: int) -> int:
     events = []
     for flags in (MOUSEEVENTF_MOVE | MOUSEEVENTF_LEFTDOWN,
                   MOUSEEVENTF_LEFTUP):
+        ev = _INPUT()
+        ev.type = 0  # INPUT_MOUSE
+        ev.value.dx = absx
+        ev.value.dy = absy
+        ev.value.dwFlags = flags | MOUSEEVENTF_ABSOLUTE
+        events.append(ev)
+    arr = (_INPUT * 2)(*events)
+    return user32.SendInput(2, arr, ctypes.sizeof(_INPUT))
+
+
+def real_right_click_screen(x: int, y: int) -> int:
+    """A REAL right click at screen (x, y) via SendInput (moves the cursor).
+
+    The Plater context menu (Plater.cpp on_right_click -> show_right_click_menu)
+    is a NATIVE popup (#32768) whose modal loop ignores message-level clicks —
+    the same constraint as the topbar dropdown menu (m3b lesson), so opening
+    the menu needs a real right button press/release."""
+    sw = user32.GetSystemMetrics(0)   # SM_CXSCREEN
+    sh = user32.GetSystemMetrics(1)   # SM_CYSCREEN
+    absx = int(x * 65535 / sw)
+    absy = int(y * 65535 / sh)
+    events = []
+    for flags in (MOUSEEVENTF_MOVE | MOUSEEVENTF_RIGHTDOWN,
+                  MOUSEEVENTF_RIGHTUP):
         ev = _INPUT()
         ev.type = 0  # INPUT_MOUSE
         ev.value.dx = absx
