@@ -337,19 +337,30 @@ def _click_in_submenu(session, shwnd, shmenu, row_substr, success_fn, label):
 
 def gizmo_row_boxes(session, row_label):
     """[(x, y, text)] of EVERY numeric field on the gizmo-window row whose
-    label starts with row_label, left-to-right (X/Y/Z order)."""
+    label starts with row_label, left-to-right (X/Y/Z order).
+
+    Multiple words may start with the label (toolbar tooltip 'Rotate [R]',
+    window title 'Rotate', field row 'Rotate (relative)') — the first
+    candidate with numeric boxes to its right wins. OCR brackets glue to
+    the value ('[0.00') so the numeric pattern strips leading punctuation."""
     img = capture_bgr(session)
     words = mdu.ocr_words_img(img, scale=3)
-    pos = next((w for w in words
-                if w[0].lower().startswith(row_label.lower())), None)
-    if not pos:
-        return []
-    px, py = pos[1], pos[2]
-    nums = sorted((w for w in words
-                   if re.fullmatch(r"-?[\d]+(?:[.,]\d{1,2})?", w[0])
-                   and abs(w[2] - py) < 14 and w[1] > px),
-                  key=lambda w: w[1])
-    return [(n[1] + n[3] // 2, n[2] + n[4] // 2, n[0]) for n in nums]
+
+    def numerics_right(px, py):
+        nums = []
+        for w in words:
+            t = w[0].lstrip("([")
+            if re.fullmatch(r"-?\d+(?:[.,]\d{1,2})?", t)                     and abs(w[2] - py) < 14 and w[1] > px:
+                nums.append((w[1] + w[3] // 2, w[2] + w[4] // 2, t))
+        return sorted(nums, key=lambda n: n[0])
+
+    best: list = []
+    for w in words:
+        if w[0].lower().startswith(row_label.lower()):
+            boxes = numerics_right(w[1], w[2])
+            if len(boxes) > len(best):
+                best = boxes
+    return best
 
 
 def gizmo_field_box(session, row_label, viewport_origin=(0, 0)):
@@ -405,7 +416,12 @@ def click_slot(session, x, cy=BAR_Y):
     winutil.user32.SetCursorPos(sx, sy)
     time.sleep(0.2)
     winutil.real_click_screen(sx, sy)
-    time.sleep(2.0)
+    time.sleep(1.2)
+    # park away from the toolbar: the gizmo tooltip otherwise lingers over
+    # the frame and OCRs before the window rows (m7e lesson)
+    px, py = client(session, 960, 500)
+    winutil.user32.SetCursorPos(px, py)
+    time.sleep(1.0)
 
 
 # --- model presence / export --------------------------------------------------
@@ -495,8 +511,11 @@ def click_dialog_button(dlg_hwnd, text_substr, fallback_first=True):
     # owner-drawn tier: PrintWindow the dialog itself and OCR it for the
     # label (the guest python has no mss; winutil.capture_window covers any
     # hwnd, measured 09-08)
-    rc = ctypes.wintypes.RECT()
-    if user32.GetWindowRect(dlg_hwnd, ctypes.byref(rc)):
+    # PrintWindow renders the CLIENT area — anchor OCR coords at the
+    # client origin (GetWindowRect includes the non-client frame, which
+    # missed every button by the border+title offset, measured 09-08)
+    pt = ctypes.wintypes.POINT(0, 0)
+    if user32.ClientToScreen(dlg_hwnd, ctypes.byref(pt)):
         try:
             import cv2
             import numpy as np
@@ -508,8 +527,8 @@ def click_dialog_button(dlg_hwnd, text_substr, fallback_first=True):
             print(f"{LOG} dialog ocr: {[w[0] for w in words]}")
             for w in words:
                 if text_substr.lower() in w[0].lower():
-                    sx = rc.left + w[1] + w[3] // 2
-                    sy = rc.top + w[2] + w[4] // 2
+                    sx = pt.x + w[1] + w[3] // 2
+                    sy = pt.y + w[2] + w[4] // 2
                     winutil.user32.SetCursorPos(sx, sy)
                     time.sleep(0.2)
                     winutil.real_click_screen(sx, sy)

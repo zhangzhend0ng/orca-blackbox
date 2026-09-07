@@ -3,6 +3,28 @@
 # register_relay_watchdog.ps1 (logon trigger + 15-min repetition, RUNLEVEL
 # HIGHEST — PS Direct needs an elevated token).
 #
+# --- ONE-SHOT VM RESET (09-08, flag-gated; guest remoting wedged) ----------
+# Runs FIRST (before the Probe/exit below). Kill the wedged daemon, hard
+# reset the guest VM, and leave a .done marker. Flag file = human consent.
+$vmFlag = 'C:\coil\vm_setup\vm_reset.flag'
+if (Test-Path $vmFlag) {
+  Remove-Item $vmFlag -Force -ErrorAction SilentlyContinue
+  Remove-Item 'C:\coil\vm_setup\relay_cmd.txt' -Force -ErrorAction SilentlyContinue
+  Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" |
+    Where-Object { $_.CommandLine -match 'relay\.ps1' } |
+    ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+  Start-Sleep -Seconds 3
+  Stop-VM -Name win11-test -TurnOff -Force -ErrorAction SilentlyContinue
+  Start-Sleep -Seconds 5
+  Start-VM -Name win11-test -ErrorAction SilentlyContinue
+  # round-3: PS Direct still wedges after a guest reset - bounce the
+  # host Virtual Machine Management service (the wedge lives there)
+  Restart-Service vmms -Force -ErrorAction SilentlyContinue
+  'VM-RESET ' + (Get-Date -Format T) |
+    Set-Content 'C:\coil\vm_setup\vm_reset.done'
+}
+# ---------------------------------------------------------------------------
+#
 # Why: the relay is the only control channel to the guest, and a manual
 # restart needs a console UAC click — the secure desktop does not punch
 # through remote-control layers (measured 09-02 night: two auto-canceled
@@ -21,10 +43,6 @@ function Probe {
     Where-Object { $_.CommandLine -match 'relay\.ps1' }
 }
 
-# A single empty probe is NOT proof of death: WMI transiently returns nothing
-# under process churn (measured 09-03 night: one empty query between healthy
-# ones). Require two consecutive empty probes 3s apart before starting a
-# daemon — a false start here means two daemons fighting over relay_cmd.txt.
 if (Probe) { exit 0 }
 Start-Sleep -Seconds 3
 if (Probe) { exit 0 }

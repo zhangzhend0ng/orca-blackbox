@@ -30,7 +30,10 @@ def fire(case: str, timeout_s: int):
            f"-ExecutionPolicy Bypass -File {GRUN} -Script tests\\{case}.py "
            f"-TimeoutS {timeout_s}' -RedirectStandardOutput {GRUN_OUT} "
            f"-RedirectStandardError {GRUN_ERR} -WindowStyle Hidden")
-    out = relay_transact(cmd + "; Write-Output FIRED", timeout_s=90)
+    # PS Direct can queue behind other sessions on a busy rig — 90s once
+    # misread as FIRE-FAILED while the fire actually landed late (09-08),
+    # stacking overlapping diagtask instances on the guest
+    out = relay_transact(cmd + "; Write-Output FIRED", timeout_s=240)
     return out is not None and "FIRED" in out
 
 

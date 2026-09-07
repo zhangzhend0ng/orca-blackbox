@@ -80,7 +80,12 @@ def main() -> int:
         m7.click_slot(session, sc_x)
         time.sleep(1.0)
 
-        boxes = m7.gizmo_row_boxes(session, "scale")
+        boxes = (m7.gizmo_row_boxes(session, "scale")
+                 or m7.gizmo_row_boxes(session, "size"))
+        if not boxes:
+            words = m7.words(session)
+            print(f"{LOG} frame words after scale click: "
+                  f"{[w[0] for w in words][:30]}")
         print(f"{LOG} scale row: {[(round(b[0]), round(b[1]), b[2]) for b in boxes]}")
         results["scale row located"] = (
             f"PASS ({len(boxes)} fields)" if boxes else "FAIL (no row)")
