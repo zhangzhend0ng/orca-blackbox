@@ -75,7 +75,12 @@ def main() -> int:
         m7.click_slot(session, rot_x)
         time.sleep(1.0)
 
-        boxes = m7.gizmo_row_boxes(session, "rotation")
+        boxes = (m7.gizmo_row_boxes(session, "rotation")
+                 or m7.gizmo_row_boxes(session, "rotate"))
+        if len(boxes) < 3:
+            words = m7.words(session)
+            print(f"{LOG} frame words after rotate click: "
+                  f"{[w[0] for w in words][:30]}")
         print(f"{LOG} rotation row: {[(round(b[0]), round(b[1]), b[2]) for b in boxes]}")
         results["rotation row located"] = (
             f"PASS ({len(boxes)} fields)" if len(boxes) >= 3 else

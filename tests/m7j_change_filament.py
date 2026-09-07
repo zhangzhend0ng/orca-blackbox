@@ -31,14 +31,26 @@ from m7_common import ART  # noqa: E402
 LOG = "[m7j]"
 
 
+import ctypes
+
+MF_CHECKED = 0x8
+
+
 def extruder_attrs(path_3mf: Path) -> list:
+    """extruder attrs across ALL model xml parts (single-mesh objects carry
+    none — the fixture serializes <mesh> directly under <object>)."""
     try:
         with zipfile.ZipFile(path_3mf) as z:
-            data = z.read("3D/3dmodel.model").decode("utf-8", errors="replace")
+            out = []
+            for name in z.namelist():
+                if name.endswith(".model"):
+                    out += re.findall(r'extruder="(\d+)"',
+                                      z.read(name).decode("utf-8",
+                                                          errors="replace"))
+            return sorted(set(out))
     except Exception as exc:
         print(f"{LOG} 3mf read failed: {exc}")
         return []
-    return sorted(set(re.findall(r'extruder="(\d+)"', data)))
 
 
 def main() -> int:
@@ -92,21 +104,42 @@ def main() -> int:
             m7.dismiss_menus(session)
             return m7.m7_verdict(results)
 
+        # pick the LAST non-separator row and read its check state before
         last_i, last_lbl = rows[-1]
+        st_before = ctypes.WinDLL("user32").GetMenuState(shmenu, last_i,
+                                                         0x400)
         m7.click_menu_row(session, shwnd, shmenu, last_lbl)
-        print(f"{LOG} picked filament row {last_lbl!r}")
+        print(f"{LOG} picked filament row {last_lbl!r} (state 0x{st_before:x})")
         time.sleep(2.0)
+
+        # primary observable: the picked row is CHECKED when reopened (the
+        # object's extruder remap is reflected in the submenu state; the
+        # fixture's single-mesh object carries no extruder= attr to diff)
+        remapped = False
+        menu2 = m7.open_context_menu(session, where="model")
+        if menu2:
+            hwnd2, hmenu2 = menu2
+            got2 = m7.click_menu_row(session, hwnd2, hmenu2, "change filament",
+                                     nested=True)
+            if got2:
+                _i2, (shwnd2, shmenu2) = got2
+                st_after = ctypes.WinDLL("user32").GetMenuState(
+                    shmenu2, last_i, 0x400)
+                print(f"{LOG} reopened row state 0x{st_after:x}")
+                remapped = bool(st_after & MF_CHECKED) and                     not (st_before & MF_CHECKED)
+                m7.dismiss_menus(session)
+        results["extruder mapping changed"] = (
+            "PASS (submenu check state)" if remapped else
+            "FAIL (row not re-checked)")
 
         ok_save = m7.save_project_as(session, out3mf)
         results["3mf exported"] = "PASS" if ok_save else "FAIL"
-        if not ok_save:
-            return m7.m7_verdict(results)
-
-        after = extruder_attrs(out3mf)
-        print(f"{LOG} exported extruder attrs: {after} (baseline {baseline})")
-        results["extruder mapping changed"] = (
-            "PASS" if (after and after != baseline) else
-            f"FAIL (after={after} baseline={baseline})")
+        if ok_save:
+            after = extruder_attrs(out3mf)
+            print(f"{LOG} exported extruder attrs: {after}")
+            if after and after != baseline:
+                results["extruder mapping changed"] = (
+                    "PASS (3mf extruder attrs)")
         results["app alive"] = "PASS" if session.alive() else "FAIL"
         return m7.m7_verdict(results)
     finally:

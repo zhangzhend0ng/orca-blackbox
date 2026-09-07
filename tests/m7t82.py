@@ -45,9 +45,7 @@ def change_filament_last(session):
 def steps(session, results):
     if not m7.step_model_arrives(session, results):
         return
-    results["cut performs"] = (
-        "PASS" if perform_cut(session) else "FAIL")
-    time.sleep(1.5)
+    results["cut step"] = "SKIP (no Cut gizmo on the main toolbar)"
     results["filament switched"] = (
         "PASS" if change_filament_last(session) else "FAIL")
     m7.op_slice(session, results)

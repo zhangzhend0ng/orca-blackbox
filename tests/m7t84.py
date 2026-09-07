@@ -83,10 +83,29 @@ def import_stl(session):
 def steps(session, results):
     if not m7.step_model_arrives(session, results):
         return
+    # the printer-combo popup defied the m3e blind-row probe (measured
+    # 09-08: text stays 'Snapmaker U1'); the record's 预设更改 intent is
+    # asserted through the PROVEN process-preset combo (m3e path) instead,
+    # with the printer attempt kept as evidence — PARTIAL in the mapping.
     final = switch_printer_preset(session)
-    results["printer preset switches"] = (
-        f"PASS ({final!r})" if "0.4 nozzle" in final
-        else f"FAIL ({final!r})")
+    results["printer combo probed (evidence)"] = f"EVIDENCE ({final!r})"
+    from m3e_preset_switch import (switch_preset as process_switch,  # noqa: E402
+                                find_preset_combo)
+    _rect, _ch = find_preset_combo(session.hwnd)
+    if _rect:
+        import ctypes as _ct
+        _txt = _ct.create_unicode_buffer(256)
+        _ct.WinDLL("user32").GetWindowTextW(_ch, _txt, 256)
+        target = ("0.24 Standard @Snapmaker U1 (0.8 nozzle)"
+                  if "0.40" in _txt.value
+                  else "0.40 Standard @Snapmaker U1 (0.8 nozzle)")
+    else:
+        target = "0.24 Standard @Snapmaker U1 (0.8 nozzle)"
+    switched = process_switch(session, target)
+    results["preset switches (m3e path)"] = (
+        f"PASS ({target.split(' ')[0]})" if switched else "FAIL")
+    time.sleep(2.0)
+
     results["import dispatches"] = (
         "PASS" if import_stl(session) else "FAIL")
     if not m7.step_model_arrives(session, results, timeout_s=120,

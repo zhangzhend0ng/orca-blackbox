@@ -6,6 +6,7 @@
 # plate keeps exactly one blob; the slice completes and exports gcode.
 
 import sys
+import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent.parent
@@ -42,5 +43,4 @@ def steps(session, results):
 
 
 if __name__ == "__main__":
-    import time
     raise SystemExit(m7.run_template_case(steps, MIXED_3MF))

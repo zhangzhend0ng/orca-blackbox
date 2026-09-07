@@ -119,7 +119,22 @@ def find_slot(session, pred, cy=BAR_Y):
 
 # --- selection ---------------------------------------------------------------
 
+def ensure_maximized(session) -> bool:
+    """Re-assert SW_MAXIMIZE. The app spontaneously RESTORES (~1366x751)
+    around the first user input after a job (m5_common lesson, re-measured
+    09-08 after Arrange) — every calibrated band goes stale when that
+    happens, so context menus / slot scans must re-check."""
+    l, t, r, b = winutil.window_rect(session.hwnd)
+    if (r - l) < 1900:
+        winutil.user32.ShowWindow(session.hwnd, 3)  # SW_MAXIMIZE
+        time.sleep(1.5)
+        print(f"{LOG} re-maximized: {winutil.window_rect(session.hwnd)}")
+        return True
+    return False
+
+
 def select_model(session, tries=4):
+    ensure_maximized(session)
     """Click the model's chromatic centroid until the Rotate gizmo slot's
     tooltip stops demanding a selection (m4e pattern, own scan bands)."""
     rot_x, _ = find_slot(session, lambda t: "rotate" in t)
@@ -175,6 +190,7 @@ def open_context_menu(session, where="model"):
     The Plater context menu is a #32768 popup whose modal loop ignores
     message-level input — opening AND row selection both need REAL input
     (same lesson as the topbar dropdown, m3b)."""
+    ensure_maximized(session)
     if where == "model":
         pos = find_centroid(session)
         if not pos:
@@ -458,21 +474,60 @@ def dialog_buttons(dlg_hwnd):
     return buttons
 
 
+WM_COMMAND_MSG = 0x0111
+STANDARD_IDS = {"ok": 1, "cancel": 2, "yes": 6, "no": 7, "dont": 7}
+
+
 def click_dialog_button(dlg_hwnd, text_substr, fallback_first=True):
-    """Message-click the dialog button whose label contains text_substr.
-    Returns the button text or None."""
+    """Activate the dialog button matching text_substr. Three tiers:
+    (1) real button text -> message click; (2) owner-drawn buttons (wx
+    BBL dialogs expose EMPTY GetWindowText — measured 09-08 on the Save
+    prompt) -> OCR the dialog frame and real-click the label;
+    (3) WM_COMMAND with the standard MSW dialog control id
+    (IDOK=1/IDCANCEL=2/IDYES=6/IDNO=7). Returns the action taken."""
     buttons = dialog_buttons(dlg_hwnd)
     print(f"{LOG} dialog buttons: {[t for t, _p in buttons]}")
     for t, (x, y) in buttons:
-        if text_substr.lower() in t.lower():
+        if t and text_substr.lower() in t.lower():
             winutil.msg_click_screen(x, y, dlg_hwnd)
             time.sleep(0.8)
-            return t
+            return f"clicked {t!r}"
+    # owner-drawn tier: PrintWindow the dialog itself and OCR it for the
+    # label (the guest python has no mss; winutil.capture_window covers any
+    # hwnd, measured 09-08)
+    rc = ctypes.wintypes.RECT()
+    if user32.GetWindowRect(dlg_hwnd, ctypes.byref(rc)):
+        try:
+            import cv2
+            import numpy as np
+            cap = winutil.capture_window(dlg_hwnd)
+            img = cv2.cvtColor(
+                np.frombuffer(cap[2], np.uint8).reshape(cap[1], cap[0], 4),
+                cv2.COLOR_BGRA2BGR)
+            words = mdu.ocr_words_img(img, scale=3)
+            print(f"{LOG} dialog ocr: {[w[0] for w in words]}")
+            for w in words:
+                if text_substr.lower() in w[0].lower():
+                    sx = rc.left + w[1] + w[3] // 2
+                    sy = rc.top + w[2] + w[4] // 2
+                    winutil.user32.SetCursorPos(sx, sy)
+                    time.sleep(0.2)
+                    winutil.real_click_screen(sx, sy)
+                    time.sleep(0.8)
+                    return f"ocr-clicked {w[0]!r}"
+        except Exception as exc:
+            print(f"{LOG} ocr tier failed: {exc}")
+    # standard-id tier
+    for key, wid in STANDARD_IDS.items():
+        if key in text_substr.lower():
+            user32.SendMessageW(dlg_hwnd, WM_COMMAND_MSG, wid, 0)
+            time.sleep(0.8)
+            return f"WM_COMMAND({wid})"
     if fallback_first and buttons:
         t, (x, y) = buttons[0]
         winutil.msg_click_screen(x, y, dlg_hwnd)
         time.sleep(0.8)
-        return t
+        return f"clicked first (empty {t!r})"
     return None
 
 

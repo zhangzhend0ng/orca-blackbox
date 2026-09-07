@@ -62,15 +62,16 @@ def main() -> int:
         m7.click_menu_row(session, shwnd, shmenu, "cube")
         time.sleep(2.5)
 
+        # a single small cube reads ~0.3% colored (empty bed 0.06%) — the
+        # fixture-calibrated 0.6% gate would miss it (same lesson as m7c)
         deadline = time.monotonic() + 12
         frac1 = m7.model_colored_frac(session)
-        while frac1 < m7.EMPTY_BED_FLOOR + 0.002 and time.monotonic() < deadline:
+        while frac1 < 0.0025 and time.monotonic() < deadline:
             time.sleep(1.0)
             frac1 = m7.model_colored_frac(session)
         print(f"{LOG} colored fraction after cube: {frac1:.3%}")
         results["new model appears on plate"] = (
-            "PASS" if frac1 > m7.EMPTY_BED_FLOOR + 0.002 else
-            f"FAIL ({frac1:.3%})")
+            "PASS" if frac1 > 0.0025 else f"FAIL ({frac1:.3%})")
 
         started = click_slice_start(session)
         results["slice accepts the new model"] = (
