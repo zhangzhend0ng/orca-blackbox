@@ -1,0 +1,650 @@
+{
+ "recvgDFLCaVZSR": {
+  "case": "m7a",
+  "id": "7",
+  "title": "【正向】首次启动Orca软件进入准备页面",
+  "status": "已覆盖"
+ },
+ "recvgDFLCaJ0Yn": {
+  "case": "m7a",
+  "id": "8",
+  "title": "【正向】正常关闭Orca软件无残留进程",
+  "status": "已覆盖"
+ },
+ "recvgDFLCaZVOD": {
+  "case": "m7b",
+  "id": "9",
+  "title": "【正向】新建项目清空当前模型数据",
+  "status": "已覆盖"
+ },
+ "recvgDFLCak3l2": {
+  "case": "m7c",
+  "id": "11",
+  "title": "【正向】导入本地STL模型文件并正确显示",
+  "status": "已覆盖"
+ },
+ "recvgDFLCagZ6O": {
+  "case": "m7d",
+  "id": "12",
+  "title": "【异常】导入不合法模型文件提示错误",
+  "status": "已覆盖"
+ },
+ "recvgDFLCaCr2o": {
+  "case": "m2/m3a",
+  "id": "13",
+  "title": "【正向】单模型切片生成正确的G-Code",
+  "status": "已覆盖"
+ },
+ "recvgDFLCahoJN": {
+  "case": "m6a",
+  "id": "14",
+  "title": "【正向】通过坐标输入精确移动模型位置",
+  "status": "已覆盖"
+ },
+ "recvgDFLCaNTR2": {
+  "case": "m7e",
+  "id": "15",
+  "title": "【正向】通过旋转工具旋转模型角度",
+  "status": "已覆盖"
+ },
+ "recvgDFLCaPeXD": {
+  "case": "m7f",
+  "id": "16",
+  "title": "【正向】等比例缩放模型到指定比例",
+  "status": "已覆盖"
+ },
+ "recvgDFLCaimXC": {
+  "case": "m7g",
+  "id": "17",
+  "title": "【正向】多模型重叠后自动整理分离",
+  "status": "已覆盖"
+ },
+ "recvgDFLCa04hr": {
+  "case": "m7h",
+  "id": "18",
+  "title": "【正向】右键删除模型后恢复空白打印板",
+  "status": "已覆盖"
+ },
+ "recvgDFLCaDf1y": {
+  "case": "m7i",
+  "id": "19",
+  "title": "【正向】通过右键菜单创建新模型",
+  "status": "已覆盖"
+ },
+ "recvgDFLCaOxUn": {
+  "case": "m4e/m4i",
+  "id": "20",
+  "title": "【正向】多区域涂色显示正确颜色分配",
+  "status": "已覆盖"
+ },
+ "recvgDFLCaFiVV": {
+  "case": "m7j",
+  "id": "21",
+  "title": "【正向】切换模型对象的耗材配置",
+  "status": "已覆盖"
+ },
+ "recvgDFLCaUbrF": {
+  "case": "m4d",
+  "id": "22",
+  "title": "【正向】多耗材配置合并为单一配置",
+  "status": "已覆盖"
+ },
+ "recvgDFLCahBUW": {
+  "case": "m3e",
+  "id": "23",
+  "title": "【正向】切换打印机预设并验证参数差异",
+  "status": "已覆盖"
+ },
+ "recvgDFLCaoC8U": {
+  "case": "m7k",
+  "id": "24",
+  "title": "【正向】擦除塔材料切换后G-Code正确",
+  "status": "已覆盖"
+ },
+ "recvgEmA4n4LT9": {
+  "case": "m7t73+m7t74+人工",
+  "id": "58",
+  "title": "首次安装后新建项目并完成打印",
+  "status": "部分覆盖"
+ },
+ "recvgEmA4nWoxT": {
+  "case": "m7t75+人工",
+  "id": "59",
+  "title": "多模型布局与本地文件直接打印",
+  "status": "部分覆盖"
+ },
+ "recvgEmA4n0SSL": {
+  "case": "m4e/m4i+人工",
+  "id": "60",
+  "title": "多材料涂色打印",
+  "status": "部分覆盖"
+ },
+ "recvgEmA4nABMR": {
+  "case": "人工+GUI链",
+  "id": "61",
+  "title": "用户登录绑定设备后打印",
+  "status": "部分覆盖"
+ },
+ "recvgEmA4nlWGY": {
+  "case": "m3e",
+  "id": "62",
+  "title": "打印参数差异验证",
+  "status": "已覆盖"
+ },
+ "recvgEmA4nNqdE": {
+  "case": "m7t74+人工",
+  "id": "63",
+  "title": "模型快速调整与局域网打印",
+  "status": "部分覆盖"
+ },
+ "recvgEmA4n6Rm2": {
+  "case": "m7g+m4d+人工",
+  "id": "64",
+  "title": "多模型合并耗材后打印",
+  "status": "部分覆盖"
+ },
+ "recvgEmA4nmouz": {
+  "case": "m3e+人工",
+  "id": "65",
+  "title": "打印参数差异验证与云打印",
+  "status": "部分覆盖"
+ },
+ "recvgEmA4nSetg": {
+  "case": "m4e/m4i+人工",
+  "id": "66",
+  "title": "涂色多材料打印并上传本地任务",
+  "status": "部分覆盖"
+ },
+ "recvgEmA4nVz8V": {
+  "case": "m7t75+人工",
+  "id": "67",
+  "title": "模型布局优化与多设备切换打印",
+  "status": "部分覆盖"
+ },
+ "recvgEmA4nQ1PB": {
+  "case": "m3e+m4d+人工",
+  "id": "68",
+  "title": "用户登录预打印参数修改本地打印",
+  "status": "部分覆盖"
+ },
+ "recvgEmA4n3yxf": {
+  "case": "人工",
+  "id": "69",
+  "title": "设备绑定异常与恢复打印",
+  "status": "需人工"
+ },
+ "recvgEmA4nJaBq": {
+  "case": "人工",
+  "id": "70",
+  "title": "设备局域网IP连接设备控制",
+  "status": "需人工"
+ },
+ "recvgEmA4nhAHm": {
+  "case": "m7t72",
+  "id": "72",
+  "title": "模型导入测试",
+  "status": "已覆盖"
+ },
+ "recvgEmA4ny5nQ": {
+  "case": "m7t73",
+  "id": "73",
+  "title": "新建项目测试",
+  "status": "已覆盖"
+ },
+ "recvgEmA4nErkq": {
+  "case": "m7t74",
+  "id": "74",
+  "title": "单模型切片调整测试",
+  "status": "已覆盖"
+ },
+ "recvgEmA4n1LlY": {
+  "case": "m7t75",
+  "id": "75",
+  "title": "多模型布局切片测试",
+  "status": "已覆盖"
+ },
+ "recvgEmA4nbzGU": {
+  "case": "m3e",
+  "id": "76",
+  "title": "模型打印参数切换与验证",
+  "status": "已覆盖"
+ },
+ "recvgEmA4nDMlL": {
+  "case": "m7t77",
+  "id": "77",
+  "title": "基础模型分割验证",
+  "status": "已覆盖"
+ },
+ "recvgEmA4n7TWA": {
+  "case": "m7t78",
+  "id": "78",
+  "title": "自动朝向选择底面",
+  "status": "已覆盖"
+ },
+ "recvgEmA4nsNsp": {
+  "case": "m7t79",
+  "id": "79",
+  "title": "拆分为对象,拆分为零件",
+  "status": "部分覆盖"
+ },
+ "recvgEmA4n5Tks": {
+  "case": "m7t80",
+  "id": "80",
+  "title": "可变层高绘制支撑",
+  "status": "已覆盖"
+ },
+ "recvgEmA4nZfoH": {
+  "case": "m7t81",
+  "id": "81",
+  "title": "布尔剪贴模型整理",
+  "status": "部分覆盖"
+ },
+ "recvgEmA4nyPm4": {
+  "case": "m7t82",
+  "id": "82",
+  "title": "剪贴耗材切换",
+  "status": "已覆盖"
+ },
+ "recvgEmA4nvOig": {
+  "case": "m7t83",
+  "id": "83",
+  "title": "新建项目导入模型",
+  "status": "已覆盖"
+ },
+ "recvgEmA4nDgVk": {
+  "case": "m7t84",
+  "id": "84",
+  "title": "打印机预设更改耗材合并",
+  "status": "部分覆盖"
+ },
+ "recvgEmA4nXH5o": {
+  "case": "m4e/m4i",
+  "id": "85",
+  "title": "涂色多材料",
+  "status": "已覆盖"
+ },
+ "recvgEmA4nTBWf": {
+  "case": "m7t86",
+  "id": "86",
+  "title": "自动朝向布尔剪贴整理",
+  "status": "已覆盖"
+ },
+ "recvgEmA4nfxFy": {
+  "case": "m7t87",
+  "id": "87",
+  "title": "选择底面可变层高绘制支撑",
+  "status": "已覆盖"
+ },
+ "recvgEmA4nxqGl": {
+  "case": "m7t88",
+  "id": "88",
+  "title": "多模型导入拆分对象拆分零件缩放耗材切换",
+  "status": "已覆盖"
+ },
+ "recvgEmA4nCTPv": {
+  "case": "m7t89",
+  "id": "89",
+  "title": "模型创建旋转涂色切片",
+  "status": "已覆盖"
+ },
+ "recvgEmA4nEIkg": {
+  "case": "m7t109",
+  "id": "109",
+  "title": "打印机预设全局更改耗材",
+  "status": "部分覆盖"
+ },
+ "recvgDFLCaVdZa": {
+  "case": "人工/设备",
+  "id": "10",
+  "title": "【正向】热重启后软件状态完全恢复",
+  "status": "需人工"
+ },
+ "recvgDFLCa42Ad": {
+  "case": "人工/设备",
+  "id": "25",
+  "title": "【正向】局域网内正常发现可用设备",
+  "status": "需人工"
+ },
+ "recvgDFLCaJ2P7": {
+  "case": "人工/设备",
+  "id": "26",
+  "title": "【正向】通过设备发现绑定云联设备",
+  "status": "需人工"
+ },
+ "recvgDFLCabPyH": {
+  "case": "人工/设备",
+  "id": "27",
+  "title": "【正向】通过PIN码绑定云联设备",
+  "status": "需人工"
+ },
+ "recvgDFLCapT6A": {
+  "case": "人工/设备",
+  "id": "28",
+  "title": "【正向】已绑定云设备点击卡片进入控制页",
+  "status": "需人工"
+ },
+ "recvgDFLCavD9m": {
+  "case": "人工/设备",
+  "id": "29",
+  "title": "【正向】通过局域网发现并绑定设备",
+  "status": "需人工"
+ },
+ "recvgDFLCaKYra": {
+  "case": "人工/设备",
+  "id": "30",
+  "title": "【正向】已绑定局域网设备点击连接",
+  "status": "需人工"
+ },
+ "recvgDFLCa8uLC": {
+  "case": "人工/设备",
+  "id": "31",
+  "title": "【正向】解绑设备后卡片消失",
+  "status": "需人工"
+ },
+ "recvgDFLCa1eD7": {
+  "case": "人工/设备",
+  "id": "32",
+  "title": "【正向】切片后发起打印任务到设备",
+  "status": "需人工"
+ },
+ "recvgDFLCaLafb": {
+  "case": "人工/设备",
+  "id": "33",
+  "title": "【正向】打印过程中暂停后恢复继续打印",
+  "status": "需人工"
+ },
+ "recvgDFLCaakSb": {
+  "case": "人工/设备",
+  "id": "34",
+  "title": "【正向】打印过程中终止打印任务",
+  "status": "需人工"
+ },
+ "recvgDFLCaboki": {
+  "case": "人工/设备",
+  "id": "35",
+  "title": "【正向】打印过程中监控画面正常显示",
+  "status": "需人工"
+ },
+ "recvgDFLCa5u4R": {
+  "case": "人工/设备",
+  "id": "36",
+  "title": "【正向】取出/放回打印头并调节温度",
+  "status": "需人工"
+ },
+ "recvgDFLCaIcQV": {
+  "case": "人工/设备",
+  "id": "37",
+  "title": "【正向】调整热床温度和高度",
+  "status": "需人工"
+ },
+ "recvgDFLCanO8I": {
+  "case": "人工/设备",
+  "id": "38",
+  "title": "【正向】LED灯和风扇调节正常",
+  "status": "需人工"
+ },
+ "recvgDFLCanYkF": {
+  "case": "人工/设备",
+  "id": "65",
+  "title": "【正向】启动时自动检测到新版本并提示更新",
+  "status": "需人工"
+ },
+ "recvgDFLCaTkqz": {
+  "case": "人工/设备",
+  "id": "66",
+  "title": "【正向】手动触发检查更新发现新版本",
+  "status": "需人工"
+ },
+ "recvgDFLCaTF1J": {
+  "case": "人工/设备",
+  "id": "67",
+  "title": "【正向】Flutter更新后重启生效",
+  "status": "需人工"
+ },
+ "recvgEmA4nOaCq": {
+  "case": "人工/设备",
+  "id": "90",
+  "title": "云设备绑定并连接",
+  "status": "需人工"
+ },
+ "recvgEmA4n34jn": {
+  "case": "人工/设备",
+  "id": "91",
+  "title": "PIN码绑定云设备",
+  "status": "需人工"
+ },
+ "recvgEmA4nuMtl": {
+  "case": "人工/设备",
+  "id": "92",
+  "title": "局域网设备连接",
+  "status": "需人工"
+ },
+ "recvgEmA4nQWRC": {
+  "case": "人工/设备",
+  "id": "93",
+  "title": "不同模式设备切换验证",
+  "status": "需人工"
+ },
+ "recvgEmA4nShub": {
+  "case": "人工/设备",
+  "id": "94",
+  "title": "基础打印控制",
+  "status": "需人工"
+ },
+ "recvgEmA4nP90m": {
+  "case": "人工/设备",
+  "id": "95",
+  "title": "打印头调节",
+  "status": "需人工"
+ },
+ "recvgEmA4nvaX3": {
+  "case": "人工/设备",
+  "id": "96",
+  "title": "热床与挤出系统控制",
+  "status": "需人工"
+ },
+ "recvgEmA4nwg9p": {
+  "case": "人工/设备",
+  "id": "97",
+  "title": "外设控制",
+  "status": "需人工"
+ },
+ "recvgEmA4nsH5N": {
+  "case": "人工/设备",
+  "id": "98",
+  "title": "定位与监控",
+  "status": "需人工"
+ },
+ "recvgEmA4nQLek": {
+  "case": "人工/设备",
+  "id": "99",
+  "title": "云设备快速重连",
+  "status": "需人工"
+ },
+ "recvgEmA4naTgN": {
+  "case": "人工/设备",
+  "id": "100",
+  "title": "多设备并行绑定测试",
+  "status": "需人工"
+ },
+ "recvgEmA4npZsp": {
+  "case": "人工/设备",
+  "id": "101",
+  "title": "异常断网后的设备自动重连",
+  "status": "需人工"
+ },
+ "recvgEmA4nyJXH": {
+  "case": "人工/设备",
+  "id": "102",
+  "title": "用户登录后连接设备",
+  "status": "需人工"
+ },
+ "recvgEmA4ncMhl": {
+  "case": "人工/设备",
+  "id": "103",
+  "title": "打印任务中调整打印头和热床参数",
+  "status": "需人工"
+ },
+ "recvgEmA4n42Ku": {
+  "case": "人工/设备",
+  "id": "104",
+  "title": "打印中途切换设备",
+  "status": "需人工"
+ },
+ "recvgEmA4nzwop": {
+  "case": "人工/设备",
+  "id": "105",
+  "title": "挤料功能压力测试",
+  "status": "需人工"
+ },
+ "recvgEmA4nKuD2": {
+  "case": "人工/设备",
+  "id": "106",
+  "title": "灯光与风扇组合控制",
+  "status": "需人工"
+ },
+ "recvgEmA4nlHeI": {
+  "case": "人工/设备",
+  "id": "107",
+  "title": "打印中执行回home",
+  "status": "需人工"
+ },
+ "recvgEmA4nbipo": {
+  "case": "人工/设备",
+  "id": "108",
+  "title": "同模式设备切换验证",
+  "status": "需人工"
+ },
+ "recvgEmA4nWgll": {
+  "case": "人工/设备",
+  "id": "110",
+  "title": "预打印界面更改预设",
+  "status": "需人工"
+ },
+ "recvgEmA4nvs20": {
+  "case": "人工/设备",
+  "id": "111",
+  "title": "局域网IP连接",
+  "status": "需人工"
+ },
+ "recvgEmAQSETyA": {
+  "case": "人工/设备",
+  "id": "201",
+  "title": "正常加载数据流",
+  "status": "需人工"
+ },
+ "recvgEmAQSaBFa": {
+  "case": "人工/设备",
+  "id": "202",
+  "title": "自动刷新机制",
+  "status": "需人工"
+ },
+ "recvgEmAQSoxKn": {
+  "case": "人工/设备",
+  "id": "203",
+  "title": "数据透传准确性",
+  "status": "需人工"
+ },
+ "recvgEmAQSW1Hw": {
+  "case": "人工/设备",
+  "id": "204",
+  "title": "无 3MF 文件逻辑",
+  "status": "需人工"
+ },
+ "recvgEmAQSnLUl": {
+  "case": "人工/设备",
+  "id": "205",
+  "title": "含 3MF 文件逻辑",
+  "status": "需人工"
+ },
+ "recvgEmAQSPunH": {
+  "case": "人工/设备",
+  "id": "206",
+  "title": "下载成功数据流",
+  "status": "需人工"
+ },
+ "recvgEmAQSugma": {
+  "case": "人工/设备",
+  "id": "207",
+  "title": "下载失败重试流",
+  "status": "需人工"
+ },
+ "recvgEmAQSxb03": {
+  "case": "人工/设备",
+  "id": "208",
+  "title": "骨架屏加载动效",
+  "status": "需人工"
+ },
+ "recvgEmAQSCbQC": {
+  "case": "人工/设备",
+  "id": "209",
+  "title": "卡片高亮交互",
+  "status": "需人工"
+ },
+ "recvgEmAQSjNz5": {
+  "case": "人工/设备",
+  "id": "210",
+  "title": "图例区大图浏览",
+  "status": "需人工"
+ },
+ "recvgEmAQS57gQ": {
+  "case": "人工/设备",
+  "id": "211",
+  "title": "配置区浮层交互",
+  "status": "需人工"
+ },
+ "recvgEmAQSgAAm": {
+  "case": "人工/设备",
+  "id": "212",
+  "title": "下载弹窗层级",
+  "status": "需人工"
+ },
+ "recvgEmAQSVVEx": {
+  "case": "人工/设备",
+  "id": "213",
+  "title": "长文本显示",
+  "status": "需人工"
+ },
+ "recvgEmAQSwNRD": {
+  "case": "人工/设备",
+  "id": "214",
+  "title": "多次刷新失败",
+  "status": "需人工"
+ },
+ "recvgEmAQSolAN": {
+  "case": "人工/设备",
+  "id": "215",
+  "title": "存储空间不足",
+  "status": "需人工"
+ },
+ "recvgEmAQSozJ0": {
+  "case": "人工/设备",
+  "id": "216",
+  "title": "文件损坏/404",
+  "status": "需人工"
+ },
+ "recvgEmAQSQSyN": {
+  "case": "人工/设备",
+  "id": "217",
+  "title": "重复点击打印",
+  "status": "需人工"
+ },
+ "recvgEmAQSQ3kn": {
+  "case": "人工/设备",
+  "id": "218",
+  "title": "空数据展示",
+  "status": "需人工"
+ },
+ "recvgEmAQSA4uM": {
+  "case": "人工/设备",
+  "id": "219",
+  "title": "超长文件名",
+  "status": "需人工"
+ },
+ "recvgEmAQSZI82": {
+  "case": "人工/设备",
+  "id": "220",
+  "title": "确保云联才能进行打印",
+  "status": "需人工"
+ }
+}
