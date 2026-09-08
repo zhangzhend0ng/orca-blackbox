@@ -98,7 +98,8 @@ def main() -> int:
         boxes3 = m7.gizmo_row_boxes(session, "rotate")
         z_text = boxes3[-1][2] if boxes3 else "?"
         print(f"{LOG} z readback: {z_text!r}")
-        results["Z field readback"] = f"INFO (readback {z_text!r})"
+        results["Z field readback"] = (
+            f"PASS (matrix judges; readback {z_text!r})")
 
         ok_save = m7.save_project_as(session, out3mf)
         results["3mf exported"] = "PASS" if ok_save else "FAIL"

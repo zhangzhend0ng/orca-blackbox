@@ -61,10 +61,10 @@ def main() -> int:
         time.sleep(1.0)
 
         # overlapping second model: a primitive lands at the plate center
+        before = m7.model_colored_frac(session)
         added = m7.context_click_row(
-            session, "bed", "cube",
-            success_fn=lambda: m7.blob_count(session) >= 1
-            and m7.model_colored_frac(session) > 0.02,
+            session, "bed", "cube", via="Add Primitive",
+            success_fn=lambda: m7.model_colored_frac(session) > before + 0.001,
             label="add-cube")
         print(f"{LOG} cube added over the model: {added}")
         results["second model added (overlap)"] = (

@@ -124,21 +124,19 @@ def main() -> int:
         # object's extruder remap is reflected in the submenu state; the
         # fixture's single-mesh object carries no extruder= attr to diff)
         remapped = False
-        menu2 = m7.open_context_menu(session, where="model")
-        if menu2:
-            hwnd2, hmenu2 = menu2
-            got2 = m7.click_menu_row(session, hwnd2, hmenu2, "change filament",
-                                     nested=True)
-            if got2:
-                _i2, (shwnd2, shmenu2) = got2
-                st_after = ctypes.WinDLL("user32").GetMenuState(
-                    shmenu2, last_i, 0x400)
-                print(f"{LOG} reopened row state 0x{st_after:x}")
-                remapped = bool(st_after & MF_CHECKED) and                     not (st_before & MF_CHECKED)
-                m7.dismiss_menus(session)
+        gcode = ART / "m7j_out.gcode"
+        if m7.op_slice(session, {}, key="slice after remap",
+                       export_to=gcode):
+            data = gcode.read_bytes()
+            used = re.findall(r"; filament used \[g\]([\d. ]*)", data)
+            if used:
+                vals = [float(v) for v in used[0].split()]
+                nonz = [i + 1 for i, v in enumerate(vals) if v > 0]
+                print(f"{LOG} filament used lines: {vals} -> active {nonz}")
+                remapped = len(nonz) >= 1 and nonz[0] > 1
         results["extruder mapping changed"] = (
-            "PASS (submenu check state)" if remapped else
-            "FAIL (row not re-checked)")
+            "PASS (gcode usage moved)" if remapped else
+            "FAIL (usage not redistributed)")
 
         ok_save = m7.save_project_as(session, out3mf)
         results["3mf exported"] = "PASS" if ok_save else "FAIL"
