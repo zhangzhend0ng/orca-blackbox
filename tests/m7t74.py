@@ -6,12 +6,15 @@
 # the plate, and the slice completes (m2 done rendering).
 
 import sys
+import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE / "tests"))
 
 from m3_common import MIXED_3MF  # noqa: E402
+
+LOG = "[m7t74]"
 import m7_common as m7  # noqa: E402
 
 

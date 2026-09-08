@@ -67,16 +67,21 @@ def main() -> int:
             return m7.m7_verdict(results)
         time.sleep(1.5)
 
-        if not m7.select_model(session):
-            results["model selected"] = "FAIL"
-            return m7.m7_verdict(results)
-        results["model selected"] = "PASS"
-
+        # cache the PRE-selection slot x: after select_model the toolbar
+        # tooltips OCR as garbage (measured twice 09-08), while the layout
+        # itself does not move on selection
         sc_x, tip = m7.find_slot(session, lambda t: "scale" in t)
         results["scale gizmo located"] = (
             f"PASS ({tip!r})" if sc_x else "FAIL")
         if sc_x is None:
             return m7.m7_verdict(results)
+
+        if not m7.select_model(session):
+            results["model selected"] = "FAIL"
+            return m7.m7_verdict(results)
+        results["model selected"] = "PASS"
+        time.sleep(1.0)
+
         m7.click_slot(session, sc_x)
         time.sleep(1.0)
 
