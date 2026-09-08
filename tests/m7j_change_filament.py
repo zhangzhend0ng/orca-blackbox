@@ -104,8 +104,16 @@ def main() -> int:
             m7.dismiss_menus(session)
             return m7.m7_verdict(results)
 
-        # pick the LAST non-separator row and read its check state before
-        last_i, last_lbl = rows[-1]
+        # pick a PHYSICAL filament row (a mixed-scheme row carries no
+        # check state on remap — measured 09-08): first non-separator row
+        # that is not 'Default'
+        cand = [(i, l) for i, l in rows
+                if l.strip() and l.lower() != "default"]
+        if not cand:
+            m7.dismiss_menus(session)
+            results["filament options listed"] = "FAIL (no physical row)"
+            return m7.m7_verdict(results)
+        last_i, last_lbl = cand[0]
         st_before = ctypes.WinDLL("user32").GetMenuState(shmenu, last_i,
                                                          0x400)
         m7.click_menu_row(session, shwnd, shmenu, last_lbl)

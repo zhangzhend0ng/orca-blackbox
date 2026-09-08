@@ -28,7 +28,7 @@ def steps(session, results):
     if not added:
         return
     ok, text = m7.op_gizmo_field(session, lambda t: "rotate" in t,
-                                 "rotate", 2, "45")
+                                 "rotate", -1, "45")
     results["rotate Z commits 45"] = (
         "PASS" if ok else f"FAIL (now {text!r})")
 

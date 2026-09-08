@@ -96,6 +96,7 @@ def tooltip_text(session, cx, cy, dwell_s=1.4):
 def scan_slots(session, x0=SCAN_X0, cy=BAR_Y, pred=None, dwell_s=1.1):
     """Hover-scan the gizmo toolbar row; return [(x, tooltip)] hits with
     duplicate texts deduped (consecutive). `pred` filters on lowercase."""
+    ensure_maximized(session)
     img = capture_bgr(session)
     x1 = img.shape[1] - 120
     hits, prev = [], None
@@ -685,12 +686,14 @@ def op_gizmo_field(session, slot_pred, row_label, index, value):
     click_slot(session, x)
     time.sleep(1.0)
     boxes = gizmo_row_boxes(session, row_label)
-    if len(boxes) <= index:
+    idx = index if index >= 0 else len(boxes) + index
+    if idx < 0 or idx >= len(boxes):
         return False, ""
-    type_into_field(session, boxes[index][:2], value,
-                    old_len=len(boxes[index][2]))
+    type_into_field(session, boxes[idx][:2], value,
+                    old_len=len(boxes[idx][2]))
     boxes2 = gizmo_row_boxes(session, row_label)
-    text = boxes2[index][2] if len(boxes2) > index else ""
+    idx2 = index if index >= 0 else len(boxes2) + index
+    text = boxes2[idx2][2] if 0 <= idx2 < len(boxes2) else ""
     return text.startswith(value), text
 
 

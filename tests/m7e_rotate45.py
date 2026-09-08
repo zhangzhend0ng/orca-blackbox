@@ -77,22 +77,23 @@ def main() -> int:
 
         boxes = (m7.gizmo_row_boxes(session, "rotate")
                  or m7.gizmo_row_boxes(session, "rotation"))
-        if len(boxes) < 3:
+        if not boxes:
             words = m7.words(session)
             print(f"{LOG} frame words after rotate click: "
                   f"{[w[0] for w in words][:30]}")
         print(f"{LOG} rotation row: {[(round(b[0]), round(b[1]), b[2]) for b in boxes]}")
+        # the Z field is the RIGHTMOST numeric of the row; OCR sometimes
+        # drops the X value (bracket-glued), so require >=1 not >=3
         results["rotation row located"] = (
-            f"PASS ({len(boxes)} fields)" if len(boxes) >= 3 else
-            f"FAIL ({len(boxes)} fields)")
-        if len(boxes) < 3:
+            f"PASS ({len(boxes)} fields)" if boxes else "FAIL (0 fields)")
+        if not boxes:
             return m7.m7_verdict(results)
 
-        m7.type_into_field(session, boxes[2][:2], "45",
-                           old_len=len(boxes[2][2]))
+        m7.type_into_field(session, boxes[-1][:2], "45",
+                           old_len=len(boxes[-1][2]))
         time.sleep(1.0)
-        boxes2 = m7.gizmo_row_boxes(session, "rotation")
-        z_text = boxes2[2][2] if len(boxes2) >= 3 else "?"
+        boxes2 = m7.gizmo_row_boxes(session, "rotate")
+        z_text = boxes2[-1][2] if boxes2 else "?"
         results["Z field commits 45"] = (
             "PASS" if z_text.startswith("45") else f"FAIL (now {z_text!r})")
 
