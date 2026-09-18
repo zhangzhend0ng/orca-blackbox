@@ -260,9 +260,37 @@ def switch_flow_combo(session, target_substr, tries=4):
     cx = rect[2] - 12
     cy = (rect[1] + rect[3]) // 2
     for attempt in range(tries):
-        winutil.msg_click_screen(cx, cy, session.hwnd)
+        # 09-18 popup3 diag: no native ComboBox child exists here (all
+        # wxWindowNR), and neither the arrow msg_click nor a real_click
+        # opened the dropdown. The filament preset combo opens on a CENTER
+        # msg_click (switch_filament_preset) — try that shape first, fall
+        # back to the arrow edge on odd attempts. The last surface
+        # difference vs that combo is the demoted window: pull the app to
+        # foreground before clicking.
+        try:
+            winutil.user32.SetForegroundWindow(session.hwnd)
+            time.sleep(0.4)
+        except Exception:  # noqa: BLE001
+            pass
+        if attempt % 2 == 0:
+            winutil.msg_click_screen((rect[0] + rect[2]) // 2,
+                                     (rect[1] + rect[3]) // 2, session.hwnd)
+        else:
+            sx, sy = winutil.client_to_screen(session.hwnd, cx, cy)
+            winutil.user32.SetCursorPos(sx, sy)
+            time.sleep(0.2)
+            winutil.real_click_screen(sx, sy)
         popup = export_util.wait_popup(session.pid, timeout_s=4.0)
         if not popup:
+            # the click may still have focused the combo — wx combos flip to
+            # the first item matching a typed letter ('H'igh Flow)
+            winutil.user32.SendMessageW(session.hwnd, 0x0102, ord("H"), 0)
+            time.sleep(0.8)
+            now = nozzle_reads(session).get("flow") or ""
+            print(f"{LOG} flow key 'H': {now!r}")
+            if target_substr in now:
+                time.sleep(1.0)
+                return now
             continue
         pr = popup[2]
         px = (pr[0] + pr[2]) // 2
