@@ -232,12 +232,19 @@ def _menu_item_rect(menu_hwnd, hmenu, index):
     return None
 
 
-def click_menu_row(session, hwnd, hmenu, row_substr, nested=False):
+def click_menu_row(session, hwnd, hmenu, row_substr, nested=False, nth=0):
     """Real-click the row whose label contains row_substr. Returns the row
     index, or None. `nested` = row is a submenu handle: hover it so the
-    submenu opens, and return (index, submenu_tuple) instead."""
+    submenu opens, and return (index, submenu_tuple) instead. `nth` = click
+    the (nth+1)-th MATCHING row — filament submenu rows repeat per slot
+    with identical labels (m8c: object A on slot2, object B on slot3)."""
     items = list_menu(hmenu)
+    seen = -1
     for i, lbl in items:
+        if row_substr.lower() in lbl.lower():
+            seen += 1
+            if seen < nth:
+                continue
         if row_substr.lower() in lbl.lower():
             rect = _menu_item_rect(hwnd, hmenu, i)
             if rect:
