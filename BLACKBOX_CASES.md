@@ -195,12 +195,25 @@ MANUAL/OUT-OF-SCOPE（联机 #25–#38、更新 #65–#67、热重启 #10、主�
 
 ✅ = 客机 suite 实测 GREEN（09-17）。🔵🟡 = 脚本实现完毕、到达/前置全通、
 各剩一个已定位断言点待专项 diag（当日通道劣化暂停迭代）：
-- m8b：clr_picker 真实点击后 FilamentColorDialog 未被 wait_toplevel 捕获
-  （需弹窗类名/时序采样，截图 artifacts/m8_probe/color_dialog_first.png）。
-- m8c：#111 断言需换耗材重映射生效的第二次确认（Change Filament 行真实
-  点击后 remap 未生效——菜单行点击成功但对象仍在 PETG 槽）。
-- m8d：依赖 m8c 同款 Change Filament 重映射；combo 切 ABS 已 PASS。
-- m8f：Flow combo 弹出行点击后值未翻转（弹窗行距/锚点待采样）。
+09-19 收尾更新（原逐条待办已被下列进展取代）：
+- m8a ✅（盘点击候选轮试 + img4 崩溃防护）· m8e ✅ · m8f ✅（根因=夹具缺
+  printer_flow_support 致 Flow combo 被禁用，Plater.cpp:9570；夹具已补
+  ['standard','high_flow']。#136 逐字节一致改为去时间戳+多重集+抖动预算，
+  实测残差 5 行 G1 进给 / 26.7 万行）
+- m8b 主断言点闭合：色盘先弹 #32768 原生菜单（Edit/Delete/Merge with），
+  点 Edit 才开 FilamentColorDialog（diag_m8b_toplevels 实测）。另证 **真发现：
+  色盘非模态**（真实点击画布后对话框直接关闭，与 #48 预期"模态"不符，
+  建议上报产品）。余项：#46 重开后色卡启发式未命中；#55/#56 rainbow 选行。
+- m8c/m8d 🔴 **BLOCKED（产品行为变更，待决策）**：09-16 build 把
+  Sidebar::change_filament 从"对象级重映射"改为"耗材槽合并"（delete_filament，
+  Plater.cpp:8404；依赖混合耗材时弹 Warning 确认框）。坐标点击与
+  WM_COMMAND 路由均不再产生旧版效果（m8d gcode 逐次验证 job 耗材仍为
+  PETG）。基线用例 #111/#113/#122 剧本按旧语义编写，需按合并语义重编或
+  上报产品确认预期文本。已实现 send_menu_command（GetMenuItemID+
+  WM_COMMAND+自动 OK）留作新编排的原语。另证：PETG+ABS 不触发温度门控，
+  仅 PLA+ABS 触发（门控按高温标记+玻璃化温度分级，GCode.cpp:2719）。
+- m8c 已改部分：slice_rejected 把门控确认弹窗计为"已阻止"并关闭放行；
+  编排改双 PLA 槽；目标串 Generic ABS/PC → ABS/ABS-GF（夹具实际行名）。
 
 🔵 = 脚本实现完毕，随 m8 burst 在客机 suite 通道取证据中（当日在跑）。
 PARTIAL 备注：#59 预览主色=视觉冒烟；#91 TD 值文案、#106 组合遍历、#123
