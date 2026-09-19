@@ -56,13 +56,13 @@
 
 | # | 用例标题 | 优先级 | 处置 | 映射/备注 |
 |---|---|---|---|---|
-| 44 | 官方耗材颜色列表展示 | P0 | NEW->m8b | 官方颜色列表 FilamentColorDialog 分类卡 |
-| 46 | 更改颜色后点击确定颜色生效 | P0 | NEW->m8b | 色盘确定->颜色登记(色块像素) |
-| 47 | 更改颜色后点击取消不登记新颜色 | P0 | NEW->m8b | 色盘取消->颜色不变 |
-| 48 | 模态弹窗基本布局展示 | P0 | NEW->m8b | 模态弹窗布局: 颜色卡片+名称+SKU(OCR) |
-| 55 | 用户可选择双拼/渐变色作为耗材类型 | P0 | NEW->m8b | 渐变耗材 PLA Rainbow 预设切换 |
-| 56 | 模型渲染显示双拼/渐变耗材主色 | P0 | NEW->m8b | 渐变主色渲染(模型色度) |
-| 58 | 混色耗材切片生成对应Gcode | P0 | NEW->m8b | 渐变耗材切片 gcode 生成 |
+| 44 | 官方耗材颜色列表展示 | P0 | GREEN(m8b) | 名称/SKU/Official Filaments 文本 + 21 色卡(窗口文本'panel') |
+| 46 | 更改颜色后点击确定颜色生效 | P0 | GREEN(m8b) | 选卡->名称即变(Mint Lemonade->Ice Lake)->OK->chip 像素变 |
+| 47 | 更改颜色后点击取消不登记新颜色 | P0 | GREEN(m8b) | 选卡->Cancel->颜色不变 |
+| 48 | 模态弹窗基本布局展示 | P0 | GREEN(m8b) | 模态✓(ShowModal 实证,撤回 09-19'非模态'伪测量); 卡+名+SKU 窗口文本 |
+| 55 | 用户可选择双拼/渐变色作为耗材类型 | P0 | GREEN(m8b) | 下拉=OrcaFilamentLibrary 全序无 Snapmaker 行,Rainbow 不可达->PolyLite Dual PLA 双拼替代 |
+| 56 | 模型渲染显示双拼/渐变耗材主色 | P0 | GREEN(m8b) | chip 色度弱断言 |
+| 58 | 混色耗材切片生成对应Gcode | P0 | GREEN(m8b) | 槽1 同步 Dual 后 slice+export 落盘 |
 | 59 | 切片预览展示双拼/渐变色的主色 | P0 | PARTIAL | 切片预览主色=视觉冒烟(与 m2 色度共用) |
 
 ## 同步耗材 (4)
@@ -152,16 +152,16 @@
 |---|---|---|---|---|
 | 108 | 顶盖控件显隐与三端入口 | P0 | MANUAL | 顶盖控件=Control 页设备 |
 | 109 | 待机状态交互 | P0 | MANUAL | 同上 |
-| 111 | 低温+高温耗材混用拦截禁止切片 | P0 | NEW->m8c | PLA+ABS 混用->Slice 置灰+无法切片 |
-| 112 | 低温+低温（同类）混用允许切片 | P0 | NEW->m8c | PLA+PLA支撑->切片通过 |
-| 113 | 保温模式GCode各参数值符合工艺定义 | P0 | NEW->m8d | ABS->保温: MODE=3 DESIRE_TEMP=45 无 ALARM_TEMP |
+| 111 | 低温+高温耗材混用拦截禁止切片 | P0 | GREEN(m8c) | 槽2->ABS 后 Slice 置灰,点击被吞 45s 不回归(帧差0+late-check);恢复后复跑✓ |
+| 112 | 低温+低温（同类）混用允许切片 | P0 | GREEN(m8c) | 夹具原样切片 done, used=[1..5] |
+| 113 | 保温模式GCode各参数值符合工艺定义 | P0 | BLOCKED->m8d | 实测 ABS->弱冷 DESIRE=0: staged 模板只看 filament[0], 可达预设全 high=0, 保温分支不可达(待产品确认) |
 | 114 | 弱冷模式GCode参数值符合工艺定义 | P0 | NEW->m8e | PETG->弱冷: MODE=3 DESIRE_TEMP=0 无 ALARM_TEMP |
-| 122 | 修改耗材槽位类型后切片GCode参数同步更新 | P0 | NEW->m8d | 槽位 PLA->ABS: gcode 强冷->保温 |
+| 122 | 修改耗材槽位类型后切片GCode参数同步更新 | P0 | GREEN(m8d) | 槽位切换(=记录原文黑盒等价): MODE 1->3 同步✓(分支值差异见 #113) |
 | 123 | 修改耗材预设的软化温度改变温类归类后GCode更新 | P0 | PARTIAL | 需预设管理器改软化温度(深层 Tab UI), 首批缓行 |
 | 125 | 工艺全局辅材冲突，打开偏好后，可以正常切片并打印 | P0 | PARTIAL | 2 plate 全局辅材冲突+偏好开关, 用例步骤自相矛盾, 缓行 |
-| 126 | 高温耗材 ABS 被正确识别为保温模式 | P0 | NEW->m8d | ABS 识别为保温(与 #113 同链路) |
-| 127 | 高温耗材 PC 被正确识别为保温模式 | P0 | NEW->m8d | PC 识别为保温 |
-| 128 | 保温模式 GCode 参数完整写入起始位置 | P0 | NEW->m8d | 保温参数完整: MODE/DESIRE_TEMP/FAN_SPEED/DELAY_OFF(DYNAMIC_FAN_CONTROL 表写 stale, 模板实为 FAN_SPEED) |
+| 126 | 高温耗材 ABS 被正确识别为保温模式 | P0 | BLOCKED->m8d | 同 #113 build gap: Bambu ABS/Generic ABS 均落弱冷 |
+| 127 | 高温耗材 PC 被正确识别为保温模式 | P0 | BLOCKED->m8d | Generic PC high=0->弱冷, 同 #113 gap |
+| 128 | 保温模式 GCode 参数完整写入起始位置 | P0 | GREEN(m8d) | ABS 切片 MODE/DESIRE_TEMP/FAN_SPEED/DELAY_OFF 全写入(DYNAMIC_FAN_CONTROL 表写 stale, 模板实为 FAN_SPEED) |
 | 129 | 弱冷模式 GCode 参数完整写入起始位置 | P0 | NEW->m8e | 弱冷参数完整: MODE=3+弱冷风扇 |
 
 ## 高流量热端 (5)

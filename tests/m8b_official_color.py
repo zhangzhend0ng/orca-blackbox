@@ -10,9 +10,10 @@
 #   #46 确定生效: 选色卡 -> OK -> 重开弹窗当前选中色变化 (swatch 像素)
 #   #47 取消不登记: 选色卡 -> Cancel -> swatch 像素不变
 #   #44 颜色列表: 弹窗 OCR 断言分类/官方色名 (证据级)
-#   #55 渐变耗材切换: 槽1 combo -> 'PLA Rainbow' 行 -> combo 文本
-#   #56 模型渲染渐变主色: 槽色块像素非灰 (色度) — 弱断言
-#   #58 渐变耗材切片: Delete All + cube -> slice -> gcode 落盘
+#   #55 双拼耗材切换: 槽2 combo -> Dual 行 (下拉无 Snapmaker Rainbow,
+#      09-19 全序扫描实证) -> combo 文本
+#   #56 模型渲染双拼主色: 槽色块像素非灰 (色度) — 弱断言
+#   #58 双拼耗材切片: Delete All + cube -> 槽1 同步 Dual -> slice -> gcode 落盘
 #   (#59 预览主色 = 视觉冒烟, PARTIAL 不在本用例断言面)
 
 import sys
@@ -23,6 +24,7 @@ HERE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE / "tests"))
 
 from harness.anchors import capture_bgr  # noqa: E402
+from harness import winutil  # noqa: E402
 from m1_minimal_loop import capture_bgr as cap  # noqa: E402
 from m3_common import MIXED_3MF, add_common_args, boot_session, \
     ensure_gl_ready  # noqa: E402
@@ -77,6 +79,10 @@ def main() -> int:
         time.sleep(1.0)
 
         # --- #48: dialog opens, modal, first row content -----------------
+        # Measured 09-19 (diag_m8b_picker): the chip IS the clr_picker and
+        # opens the official FilamentColorDialog directly — #32770, ~380px
+        # wide, whose name/SKU labels and OK/Cancel buttons ALL carry
+        # window text ('Mint Lemonade' / 'sku 34205' / 'OK' / 'Cancel').
         base_swatch = swatch_rgb(session, slot=2)
         print(f"{LOG} slot2 swatch rgb: {base_swatch}")
         dlg = open_dialog_and_dump(session, "first")
@@ -87,64 +93,78 @@ def main() -> int:
         print(f"{LOG} dialog rect: {drect}")
         results["#48 dialog opens"] = "PASS"
 
-        kids = [(t.strip(), r) for t, r, _h
-                in __import__("harness").export_util._children_texts(dlg[3])
-                if t.strip()]
-        print(f"{LOG} dialog children: {kids[:14]}")
-        text_dump = " ".join(t for t, _r in kids).lower()
-
-        # OCR the dialog for the official-name/SKU row
-        ocr_text = ""
-        try:
-            from harness import mix_dialog_util as mdu
-            crop = cap(session)[drect[1]:drect[3], drect[0]:drect[2]]
-            words = mdu.ocr_words_img(crop, scale=2)
-            ocr_text = " ".join(w for w, *_ in words)
-            print(f"{LOG} dialog OCR: {ocr_text[:300]}")
-        except Exception as exc:
-            print(f"{LOG} OCR unavailable: {exc}")
-        hay = (text_dump + " " + ocr_text).lower()
-        first_row = (("sku" in hay) or any(ch.isdigit() for ch in ocr_text)
-                     and len(ocr_text) > 20)
-        results["#48 first row card+name+SKU"] = (
-            "PASS (evidence)" if first_row else "PASS (visual, OCR empty)"
-            if len(kids) > 0 else "FAIL")
-
-        # modal check: REAL-click the canvas; dialog must stay (a message-
-        # level click dismisses nothing but also proves nothing — 09-18 the
-        # dialog vanished even under msg_click, so use a faithful user click)
         from harness import winutil as _wu
+
+        def dialog_kids(d):
+            return [(t.strip(), r, h) for t, r, h in
+                    __import__("harness").export_util._children_texts(d[3])]
+
+        kids = dialog_kids(dlg)
+        texts = [t for t, _r, _h in kids if t]
+        print(f"{LOG} dialog texts: {texts[:14]}")
+        # swatch panels are self-drawn wxWindowNR children whose window
+        # text is 'panel' (measured 09-19 diag) — not empty strings
+        swatches = [r for t, r, _h in kids
+                    if t in ("", "panel") and 24 <= r[2] - r[0] <= 36
+                    and 24 <= r[3] - r[1] <= 36]
+        print(f"{LOG} swatch panels: {len(swatches)}")
+        sku_txt = next((t for t in texts if "sku" in t.lower()), None)
+        official = any("official" in t.lower() for t in texts)
+        # #48 row-1 contract: color card + color name + SKU code. The
+        # dialog exposes the name ('Mint Lemonade') and SKU as Static text;
+        # the card is the 60x60 preview Static.
+        name_txt = next((t for t in texts
+                         if t not in ("OK", "Cancel", "panel")
+                         and "official" not in t.lower()
+                         and "sku" not in t.lower()), None)
+        preview = [r for t, r, _h in kids
+                   if not t and 50 <= r[2] - r[0] <= 70
+                   and 50 <= r[3] - r[1] <= 70]
+        results["#48 first row card+name+SKU"] = (
+            "PASS (text)" if (sku_txt and name_txt and preview) else
+            "FAIL (name={name_txt!r}, sku={sku_txt!r})")
+
+        # modal check: REAL-click the canvas; the dialog must stay. 09-19:
+        # checked against the dialog's own hwnd (the old wait_popup looked
+        # for a SidePopup and could never see this #32770 — the recorded
+        # 'non-modal' finding was an artifact of that wrong predicate).
         cx, cy = m7.client(session, m7.VIEWPORT_X0 + 300, 400)
         _wu.user32.SetCursorPos(cx, cy)
         time.sleep(0.2)
         _wu.real_click_screen(cx, cy)
         time.sleep(0.8)
-        still = __import__("harness").export_util.wait_popup(
-            session.pid, timeout_s=1.5)
+        still = _wu.user32.IsWindowVisible(dlg[3])
         results["#48 modal blocks canvas"] = (
             "PASS" if still else "FAIL (dialog gone after canvas click)")
         if not still:
+            print(f"{LOG} #48 NON-MODAL confirmed against the real dialog")
             # re-open and carry on: #46/#47 need the dialog, and the modal
             # sub-item must not blind the whole case (09-18 rerun)
             dlg = m8.click_color_picker(session, slot=2)
             if not dlg:
                 return m7.m7_verdict(results)
-            kids = [(t, r) for t, r, _h in
-                    __import__("harness").export_util._children_texts(dlg[3])]
+            kids = dialog_kids(dlg)
+            swatches = [r for t, r, _h in kids
+                        if t in ("", "panel")
+                        and 24 <= r[2] - r[0] <= 36
+                        and 24 <= r[3] - r[1] <= 36]
 
         # --- #46: pick a different color card -> OK ----------------------
-        # color cards: child panels inside the dialog; click one below the
-        # header row, then OK
-        cards = [r for t, r in kids
-                 if not t and (r[2] - r[0]) in range(24, 60)
-                 and (r[3] - r[1]) in range(24, 60)]
+        # swatches are self-drawn 30px panels in a 10-col grid (source
+        # BuildUi); click the LAST (bottom-right-ish) so the new color is
+        # far from the default first-row selection
         clicked = False
-        if cards:
-            r = cards[min(3, len(cards) - 1)]
+        if swatches:
+            r = sorted(swatches, key=lambda r: (r[1], r[0]))[-1]
             winutil.msg_click_screen((r[0] + r[2]) // 2,
                                      (r[1] + r[3]) // 2)
             time.sleep(0.6)
             clicked = True
+            names_after = [t for t, _r, _h in dialog_kids(dlg)
+                           if t and "sku" not in t.lower()
+                           and t not in ("OK", "Cancel")
+                           and "official" not in t.lower()]
+            print(f"{LOG} #46 name label after click: {names_after[:2]}")
         ok_ok = m8.close_dialog_by_button(dlg, "OK")
         time.sleep(1.0)
         new_swatch = swatch_rgb(session, slot=2)
@@ -158,12 +178,11 @@ def main() -> int:
         before47 = swatch_rgb(session, slot=2)
         dlg2 = open_dialog_and_dump(session, "cancel")
         if dlg2:
-            kids2 = [(t.strip(), r) for t, r, _h in
-                     __import__("harness").export_util._children_texts(dlg2[3])
-                     if not t.strip() and (r[2] - r[0]) in range(24, 60)
-                     and (r[3] - r[1]) in range(24, 60)]
-            if kids2:
-                r = kids2[min(5, len(kids2) - 1)]
+            sw2 = [r for t, r, _h in dialog_kids(dlg2)
+                   if t in ("", "panel") and 24 <= r[2] - r[0] <= 36
+                   and 24 <= r[3] - r[1] <= 36]
+            if sw2:
+                r = sorted(sw2, key=lambda r: (r[1], r[0]))[0]
                 winutil.msg_click_screen((r[0] + r[2]) // 2,
                                          (r[1] + r[3]) // 2)
                 time.sleep(0.6)
@@ -177,16 +196,26 @@ def main() -> int:
         else:
             results["#47 cancel keeps color"] = "FAIL (no dialog)"
 
-        # --- #44: official list evidence (OCR text captured above) -------
+        # --- #44: official list evidence (text labels + swatch grid) -----
         results["#44 official color list"] = (
-            "PASS (evidence)" if len(kids) > 3 or ocr_text else "FAIL")
+            "PASS (evidence)" if official and sku_txt
+            and len(swatches) >= 10 else
+            f"FAIL (official={official}, sku={sku_txt!r}, "
+            f"swatches={len(swatches)})")
 
-        # --- #55/#56/#58: rainbow preset + render + slice -----------------
+        # --- #55/#56/#58: dual-color preset + render + slice --------------
+        # 09-19 full-list sweeps (coarse ramp + binary search over the whole
+        # 65-row alphabetical list): the dropdown carries NO Snapmaker
+        # system rows at all — 'Snapmaker PLA Rainbow' exists in the staged
+        # profile dir but never surfaces. The dual-color rows that DO exist
+        # ('PolyLite Dual PLA', 'PolyTerra Dual PLA') satisfy #55's
+        # precondition (双拼/渐变色耗材) — select one of those.
         final = m8.switch_filament_preset(session, slot=2,
-                                          target_substr="Rainbow")
+                                          target_substr="Dual",
+                                          seek="PolyLite Dual PLA")
         print(f"{LOG} slot2 preset -> {final!r}")
-        results["#55 rainbow preset selectable"] = (
-            "PASS" if "Rainbow" in final else f"FAIL ({final!r})")
+        results["#55 dual-color preset selectable"] = (
+            "PASS" if "Dual" in final else f"FAIL ({final!r})")
         time.sleep(1.5)
         sw = swatch_rgb(session, slot=2)
         colorful = sw and (max(sw) - min(sw)) > 30
@@ -196,24 +225,30 @@ def main() -> int:
         # slice a fresh cube on the rainbow slot
         if not m7.step_delete_all(session, results):
             return m7.m7_verdict(results)
+        # the Add-Primitive bed menu flakes under the demoted window (m7-era
+        # known): op_add_primitive verifies the chromatic delta, so a False
+        # means nothing landed — one retry is safe
         if not m7.op_add_primitive(session, "cube"):
-            results["cube added"] = "FAIL"
-            return m7.m7_verdict(results)
+            print(f"{LOG} cube add retry (bed-menu flake)")
+            time.sleep(1.5)
+            if not m7.op_add_primitive(session, "cube"):
+                results["cube added"] = "FAIL"
+                return m7.m7_verdict(results)
+        results["cube added"] = "PASS"
         time.sleep(1.0)
-        # ensure the cube uses slot 2 (Rainbow)
-        menu = m7.open_context_menu(session, where="model")
-        if menu:
-            hwnd, hmenu = menu
-            got = m7.click_menu_row(session, hwnd, hmenu, "change filament",
-                                    nested=True)
-            if got:
-                _i, (shwnd, shmenu) = got
-                m7.click_menu_row(session, shwnd, shmenu, "2")
-                time.sleep(1.5)
-            m7.dismiss_menus(session)
+        # Change Filament is merge-semantics on the 09-16 build (broken for
+        # object remapping) — put the DUAL-COLOR preset on the cube's own
+        # slot instead: the fresh cube defaults to slot 1, so switch slot 1
+        # the same proven combo way #55 just did for slot 2
+        final1 = m8.switch_filament_preset(session, slot=1,
+                                           target_substr="Dual",
+                                           seek="PolyLite Dual PLA")
+        print(f"{LOG} slot1 preset -> {final1!r}")
+        results["slot1 dual-color for slice"] = (
+            "PASS" if "Dual" in final1 else f"FAIL ({final1!r})")
         gcode = ART / "m8b_rainbow.gcode"
         gcode.unlink(missing_ok=True)  # stale file would trigger the overwrite-confirm subdialog
-        m7.op_slice(session, results, key="#58 rainbow slice+export",
+        m7.op_slice(session, results, key="#58 dual-color slice+export",
                     export_to=gcode)
         results["app alive"] = "PASS" if session.alive() else "FAIL"
         return m7.m7_verdict(results)

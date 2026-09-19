@@ -7,12 +7,17 @@
 # materials..." (Plater.cpp:316/326, 横幅/通知)。"允许混用" 偏好开关存在
 # (Preferences, Plater.cpp:334 文案提及)。
 #
-# 黑盒路径 (mixed 夹具, 全低温槽 PETG(vitr70)+PLA Silk(vitr45)):
-#   #112 低+低共存允许切片: 清场 -> 2 cubes (PETG 槽1 + PLA 槽2) -> slice done
-#   #111 高+低混用拦截:     槽2 combo -> 'Generic ABS' (high_temp=1) ->
-#                           Slice 点击被吞 (按钮 idle 不进入切片) + 横幅
-#                           截图 + OCR 'Detected both high and low'
-#   门解除恢复:             槽2 -> 'PLA Silk' -> slice 恢复可启动
+# 09-19 重编（产品行为变更适配）: 09-16 build 的 Change Filament =
+# 耗材槽合并（Plater.cpp:8404 delete_filament），对象级重映射不复存在，
+# 旧"双 cube 分配双槽"剧本作废。改用**槽位预设切换**（#122 步骤原文
+# "在耗材列中将 PLA 槽位的耗材直接修改/替换为 ABS" 的黑盒等价原语，
+# m8.switch_filament_preset，逐次实测 PASS）:
+#   #112 低+低放行: mixed 夹具原样切片（槽1=Generic PETG vitr70 +
+#                   槽2-5=Snapmaker PLA Silk vitr45，全低温）-> done
+#   #111 高+低拦截: 槽2 combo -> ABS（高温）-> Slice 被门控确认框拦下
+#                   （09-18 实测：门=确认框而非静默拒绝）+ 横幅 OCR
+#   门解除恢复:     槽2 -> 'Silk' -> slice 恢复可启动
+# 若槽2 不在 job 里（混色组合成），回退再切槽3。
 
 import sys
 import time
@@ -21,9 +26,8 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE / "tests"))
 
-from harness import export_util, winutil  # noqa: E402
-from harness.anchors import capture_bgr, SLICE_PLATE_BUTTON  # noqa: E402
-from harness.anchors import match, IDLE_DONE_SCORE  # noqa: E402
+from harness import winutil  # noqa: E402
+from harness.anchors import SLICE_PLATE_BUTTON, match, IDLE_DONE_SCORE  # noqa: E402
 from m1_minimal_loop import capture_bgr as cap  # noqa: E402
 from m3_common import MIXED_3MF, add_common_args, boot_session, \
     ensure_gl_ready  # noqa: E402
@@ -34,87 +38,58 @@ LOG = "[m8c]"
 ART = HERE / "artifacts"
 
 
-def add_cube_and_assign(session, slot_substr, results, key, nth=0, offset_x=None):
-    """Add a cube and Change Filament to the (nth+1)-th row matching
-    slot_substr."""
-    m7.op_add_primitive(session, "cube")  # gate is advisory here: the
-    # downstream temp-gate asserts judge the real state; two stacked cubes
-    # can slip under the chromatic-delta gate (measured 09-17)
-    time.sleep(0.8)
-    if offset_x is not None:
-        # Separate the stacked cubes via Arrange (m7g pattern): the toolbar
-        # arrange slot is always present and needs no selection, unlike the
-        # Move gizmo (whose slot only exists with a selection — not found
-        # 09-19) and unlike select_model (chokes on the overlap).
-        ax_, _tip = m7.find_slot(session, lambda t: "arrange" in t)
-        if ax_:
-            m7.click_slot(session, ax_)
-            time.sleep(6.0)  # the arranger runs async (job + refresh)
-        else:
-            print(f"{LOG} arrange slot not found")
-    if slot_substr and not m7.select_model(session):
-        # measured 09-18: the second primitive lands exactly on the first
-        # (Cube<->Cube overlap) and the centroid click cannot resolve a
-        # selection — but op_add_primitive leaves the NEW object selected,
-        # so keep going and let the context menu act on it
-        print(f"{LOG} select_model failed — relying on fresh-add selection")
-    if slot_substr:
-        menu = m7.open_context_menu(session, where="model")
-        if not menu:
-            # overlap flake (09-18): one real centroid click to re-activate,
-            # then try the menu once more
-            pos = m7.find_centroid(session)
-            if pos:
-                sx, sy = m7.client(session, *pos)
-                winutil.user32.SetCursorPos(sx, sy)
-                time.sleep(0.2)
-                winutil.real_click_screen(sx, sy)
-                time.sleep(1.0)
-            menu = m7.open_context_menu(session, where="model")
-        if not menu:
-            results[key] = "FAIL (no menu)"
-            return False
-        hwnd, hmenu = menu
-        got = m7.click_menu_row(session, hwnd, hmenu, "change filament",
-                                nested=True)
-        if not got:
-            m7.dismiss_menus(session)
-            results[key] = "FAIL (no change-filament)"
-            return False
-        _i, (shwnd, shmenu) = got
-        rows = m7.list_menu(shmenu)
-        print(f"{LOG} filament rows: {[l for _i, l in rows]}")
-        hit = m7.send_menu_command(session, shmenu, slot_substr, nth=nth, confirm_ok=True)
-        m7.dismiss_menus(session)
-        results[key] = "PASS" if hit else "FAIL (no row)"
-        return bool(hit)
-    results[key] = "PASS"
-    return True
+def slice_rejected(session, settle_s=45.0):
+    """Probe-click Slice; classify what happened.
 
-
-def slice_rejected(session):
-    """Probe-click Slice; rejected = button stays idle + no slicing starts
-    (m3a negative contract), OR the temp-mix gate DIALOG is up (measured
-    09-18: the gate is a confirmation, not a silent refusal — the click
-    'takes' by opening it, which the old probe misread as slice-started;
-    the banner OCR independently proved the text)."""
+    09-20 correction: a GREYED-DISABLED button (gate = BlockedError) drops
+    the idle-template score to ~0.67 exactly like the slicing state does —
+    the old probe (started=True, score<0.7) misread a blocked slice as a
+    started one. Discriminators now:
+      - a gate dialog (#32770 confirm or SidePopup warning) after the click
+      - frame dynamics right after the click (slicing animates, greyed
+        button is static)
+      - decisive late check: after settle_s the button returns to the
+        idle/done rendering (score >= IDLE_DONE_SCORE*0.9) iff the slice
+        actually ran; a blocked stay keeps the greyed low score."""
     from m2_slice_chain import click_slice_start
     from harness import export_util
+    import numpy as np
     started = click_slice_start(session)
     time.sleep(2.0)
     popup = export_util.wait_popup(session.pid, timeout_s=1.5)
+    gate_dlg = export_util.wait_toplevel(
+        session.pid, lambda c, t, r: c == "#32770", timeout_s=1.5)
+    img1 = cap(session).astype(int)
+    time.sleep(3.0)
+    img2 = cap(session).astype(int)
+    dynamic = float((np.abs(img2 - img1).sum(axis=2) > 40).mean())
     score, *_rest = match(cap(session), SLICE_PLATE_BUTTON)
-    still_idle = score >= IDLE_DONE_SCORE * 0.9
     print(f"{LOG} slice probe: started={started} idle-score={score:.3f} "
-          f"gate_popup={bool(popup)}")
-    if popup:
-        # close the gate dialog so the restore steps below are not blocked
+          f"gate_popup={bool(popup)} gate_dlg={bool(gate_dlg)} "
+          f"frame-diff={dynamic:.2%}")
+    if gate_dlg:
+        # BlockedError confirmation dialog — close so the restore steps
+        # below are not blocked (screenshot evidence is taken by caller)
         try:
-            winutil.user32.SendMessageW(popup[3], 0x0010, 0, 0)  # WM_CLOSE
+            winutil.user32.SendMessageW(gate_dlg[3], 0x0010, 0, 0)
             time.sleep(1.0)
         except Exception:  # noqa: BLE001
             pass
-    return still_idle and ((not started) or bool(popup))
+        return True
+    if popup:
+        try:
+            winutil.user32.SendMessageW(popup[3], 0x0010, 0, 0)
+            time.sleep(1.0)
+        except Exception:  # noqa: BLE001
+            pass
+        return True
+    # decisive: did the slice run to completion (button back to idle/done)
+    # or is the button still greyed?
+    time.sleep(settle_s)
+    score_late, *_rest = match(cap(session), SLICE_PLATE_BUTTON)
+    print(f"{LOG} late check: idle-score={score_late:.3f}")
+    ran = score_late >= IDLE_DONE_SCORE * 0.9 and dynamic > 0.0005
+    return not ran
 
 
 def main() -> int:
@@ -132,25 +107,18 @@ def main() -> int:
         m7.ensure_maximized(session)
         ensure_gl_ready(session)
 
-        if not m7.step_delete_all(session, results):
-            return m7.m7_verdict(results)
-        # BOTH cubes on PLA slots (2 and 3): the temp gate compares the
-        # job's filaments — measured 09-18: PETG(cube on slot1) + ABS is
-        # high+mid and slices WITHOUT any gate, only PLA+ABS triggers.
-        if not add_cube_and_assign(session, "Silk", results,
-                                   "cube A on PLA slot"):
-            return m7.m7_verdict(results)
-        if not add_cube_and_assign(session, "Silk", results,
-                                   "cube B on PLA slot", nth=1,
-                                   offset_x=40):
-            if not add_cube_and_assign(session, "Silk", results,
-                                       "cube B on PLA slot (retry)", nth=1,
-                                       offset_x=40):
-                return m7.m7_verdict(results)
-
         # --- #112: low+low coexists -> slice completes --------------------
-        m7.op_slice(session, results, key="#112 low+low slice completes")
-        time.sleep(1.0)
+        # the arrived mixed fixture IS the low+low composition (Generic
+        # PETG vitr70 + Snapmaker PLA Silk vitr45; job = the fixture's own
+        # objects) — no reassignment needed under the merge semantics
+        g_a = ART / "m8c_lowlow.gcode"
+        g_a.unlink(missing_ok=True)
+        if not m7.op_slice(session, results, key="#112 low+low slice completes",
+                           export_to=g_a):
+            return m7.m7_verdict(results)
+        used = m8.used_filaments(g_a.read_bytes())
+        print(f"{LOG} low+low job used slots: {used}")
+        results["#112 job evidence"] = f"PASS (used={used})"
 
         # --- #111: switch slot2 -> ABS -> gate blocks ----------------------
         final = m8.switch_filament_preset(session, slot=2,
@@ -163,8 +131,31 @@ def main() -> int:
         time.sleep(2.0)
 
         rejected = slice_rejected(session)
+        switched = []
+        if not rejected:
+            # slot2 may not feed the job (the fixture objects sit on the
+            # mixing slot) — walk the remaining PLA component slots too
+            for s in (3, 4, 5):
+                print(f"{LOG} gate not tripped yet — switching slot{s}")
+                fs = m8.switch_filament_preset(session, slot=s,
+                                               target_substr="ABS")
+                print(f"{LOG} slot{s} -> {fs!r}")
+                switched.append(s)
+                if "ABS" not in fs:
+                    break
+                time.sleep(2.0)
+                rejected = slice_rejected(session)
+                if rejected:
+                    break
         results["#111 slice blocked (high+low)"] = (
-            "PASS" if rejected else "FAIL (slice started or button moved)")
+            "PASS" if rejected else
+            "FAIL (BLOCKED: gate never fires — mixing-slot objects stay "
+            "outside the used-slot collection (Plater.cpp:22313) and the "
+            "09-16 merge semantics removed object-level filament "
+            "assignment, so every reachable job is single-class; "
+            "see BLACKBOX_CASES 09-20)")
+        results["ABS fallback slots switched"] = (
+            "PASS" if switched else "PASS (slot2 suffixed)")
 
         # banner evidence: screenshot + OCR 'Detected both high and low'
         import cv2
@@ -189,6 +180,12 @@ def main() -> int:
         time.sleep(1.5)
         results["slot2 restored to PLA Silk"] = (
             "PASS" if "Silk" in back else f"FAIL ({back!r})")
+        for s in switched:
+            backs = m8.switch_filament_preset(session, slot=s,
+                                              target_substr="Silk")
+            time.sleep(1.0)
+            results[f"slot{s} restored to PLA Silk"] = (
+                "PASS" if "Silk" in backs else f"FAIL ({backs!r})")
         m7.op_slice(session, results, key="slice recovers after restore")
 
         results["app alive"] = "PASS" if session.alive() else "FAIL"

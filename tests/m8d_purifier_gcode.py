@@ -4,16 +4,23 @@
 #
 # 源码事实: U1 机器模板 machine_start_gcode 按 chamber_cooling_mode 分支
 # 写 SET_PURIFIER_MODE — 强冷 MODE=1 DESIRE_TEMP=42 ALARM_TEMP=45
-# DELAY_OFF=0；保温 MODE=3 DESIRE_TEMP=45 (无 ALARM_TEMP) DELAY_OFF=600；
-# 弱冷 MODE=3 DESIRE_TEMP=0。GCode.cpp:2722 推导: 低温耗材
+# DELAY_OFF=0；保温 MODE=3 DESIRE_TEMP=45 (无 ALARM_TEMP)；弱冷 MODE=3
+# DESIRE_TEMP=0。GCode.cpp:2722 推导: 低温耗材
 # temperature_vitrification<=50 -> 强冷；>50 或 filament_is_high_temperature
-# -> 不降级 (默认保温)。
+# -> 不降级 (默认保温)。断言以 gcode 内 machine_start_gcode 回显为准
+# (staged 模板与源码树版本不同, PITFALLS/BLACKBOX_CASES 09-17 基建事实2)。
 #
-# 黑盒路径 (mixed 夹具): 清场 -> cube -> Change Filament -> PLA Silk 槽
-# (vitr=45 -> 强冷) -> slice+export A: MODE=1 + ALARM_TEMP=45
-# (#122 前态) -> 槽2 combo -> Generic ABS (high_temp=1) -> slice+export B:
-# MODE=3 DESIRE_TEMP=45 无 ALARM (#113/#122 后态/#126/#128)
-# -> 槽2 -> Generic PC -> slice+export C: 同保温分支 (#127)。
+# 09-19 重编（产品行为变更适配）: 09-16 build 的 Change Filament =
+# 耗材槽合并（Plater.cpp:8404），对象级换槽不再可用；且 #122 步骤原文
+# 就是"在耗材列中将 PLA 槽位的耗材直接修改/替换为 ABS"——黑盒等价原语 =
+# 槽位预设切换 m8.switch_filament_preset（逐次实测 PASS）。
+# 编排（cube 默认落槽1）:
+#   A  槽1 -> 'Silk' (PLA vitr45)   -> export: MODE=1 + ALARM_TEMP=45
+#      (#122 前态"已切片验证强冷" + #126 强冷侧证据)
+#   B  槽1 -> 'ABS' (高温)          -> export: MODE=3 + DESIRE_TEMP=45
+#      无 ALARM (#113/#122 后态/#126/#128)
+#   C  槽1 -> 'PC' (无 PCTG)        -> export: 同保温分支 (#127)
+#      staged 下拉无 PC 行时以 ABS-GF 替代并如实标注
 
 import sys
 import time
@@ -31,34 +38,16 @@ LOG = "[m8d]"
 ART = HERE / "artifacts"
 
 
-def add_cube_on_pla_slot(session, results):
-    if not m7.step_delete_all(session, results):
-        return False
-    if not m7.op_add_primitive(session, "cube"):
-        results["cube added"] = "FAIL"
-        return False
-    results["cube added"] = "PASS"
-    time.sleep(0.8)
-    if not m7.select_model(session):
-        results["cube selected"] = "FAIL"
-        return False
-    menu = m7.open_context_menu(session, where="model")
-    if not menu:
-        results["context menu"] = "FAIL"
-        return False
-    hwnd, hmenu = menu
-    got = m7.click_menu_row(session, hwnd, hmenu, "change filament",
-                            nested=True)
-    if not got:
-        m7.dismiss_menus(session)
-        results["change filament"] = "FAIL"
-        return False
-    _i, (shwnd, shmenu) = got
-    rows = m7.list_menu(shmenu)
-    print(f"{LOG} filament rows: {[l for _i, l in rows]}")
-    hit = m7.send_menu_command(session, shmenu, "Silk", confirm_ok=True)  # slot 2 (PLA)
-    m7.dismiss_menus(session)
-    return bool(hit)
+def slice_and_params(session, results, key, path):
+    g = ART / path
+    g.unlink(missing_ok=True)
+    if not m7.op_slice(session, results, key=key, export_to=g):
+        return None
+    data = g.read_bytes()
+    used = m8.used_filaments(data)
+    p = m8.purifier_params(data)
+    print(f"{LOG} {key}: used={used} params={p}")
+    return used, p
 
 
 def main() -> int:
@@ -76,86 +65,123 @@ def main() -> int:
         m7.ensure_maximized(session)
         ensure_gl_ready(session)
 
-        if not add_cube_on_pla_slot(session, results):
+        if not m7.step_delete_all(session, results):
             return m7.m7_verdict(results)
+        # the Add-Primitive bed menu flakes under the demoted window;
+        # op_add_primitive verifies the chromatic delta, retry is safe
+        if not m7.op_add_primitive(session, "cube"):
+            print(f"{LOG} cube add retry (bed-menu flake)")
+            time.sleep(1.5)
+            if not m7.op_add_primitive(session, "cube"):
+                results["cube added"] = "FAIL"
+                return m7.m7_verdict(results)
+        results["cube added"] = "PASS"
+        time.sleep(1.0)
 
-        g_a = ART / "m8d_pla.gcode"
-        g_a.unlink(missing_ok=True)  # stale file would trigger the overwrite-confirm subdialog
-        if not m7.op_slice(session, results, key="PLA slice (strong pre)",
-                           export_to=g_a):
+        # --- A: PLA -> strong cool ----------------------------------------
+        final = m8.switch_filament_preset(session, slot=1,
+                                          target_substr="Silk")
+        print(f"{LOG} slot1 -> {final!r}")
+        results["slot1 -> PLA Silk"] = (
+            "PASS" if "Silk" in final else f"FAIL ({final!r})")
+        if "Silk" not in final:
             return m7.m7_verdict(results)
-        pa = m8.purifier_params(g_a.read_bytes())
-        used = m8.used_filaments(g_a.read_bytes())
-        print(f"{LOG} A params={pa} used={used}")
-        if pa and pa["DESIRE_TEMP"] == "0":
-            # cube stayed on the PETG slot: redo the remap, re-slice
-            print(f"{LOG} weak params -> remap retry")
-            if m7.select_model(session):
-                menu = m7.open_context_menu(session, where="model")
-                if menu:
-                    hwnd, hmenu = menu
-                    got = m7.click_menu_row(session, hwnd, hmenu,
-                                            "change filament", nested=True)
-                    if got:
-                        _i, (shwnd, shmenu) = got
-                        m7.click_menu_row(session, shwnd, shmenu, "Silk")
-                        time.sleep(1.5)
-                    m7.dismiss_menus(session)
-            g_a.unlink(missing_ok=True)
-            if m7.op_slice(session, results, key="PLA slice (remap retry)",
-                           export_to=g_a):
-                pa = m8.purifier_params(g_a.read_bytes())
-                used = m8.used_filaments(g_a.read_bytes())
-                print(f"{LOG} A2 params={pa} used={used}")
+        time.sleep(1.5)
+        out = slice_and_params(session, results, "A slice (PLA)",
+                               "m8d_pla.gcode")
+        if not out:
+            return m7.m7_verdict(results)
+        used, pa = out
+        results["A job on slot1"] = (
+            "PASS" if used == [1] else f"FAIL (used={used})")
         results["#122 pre: PLA strong MODE=1"] = (
             "PASS" if pa and pa["MODE"] == "1" and pa["ALARM_TEMP"] == "45"
             else f"FAIL ({pa})")
+        # the staged strong-cool branch writes NO DELAY_OFF (template echo
+        # in the gcode header) — require the other four params only
+        results["#126 strong-side params written"] = (
+            "PASS" if pa and pa["MODE"] == "1" and pa["DESIRE_TEMP"]
+            is not None and pa["ALARM_TEMP"] is not None
+            and pa["FAN_SPEED"] is not None else f"FAIL ({pa})")
 
-        # --- switch slot 2 preset to ABS -> keep-warm ---------------------
-        final = m8.switch_filament_preset(session, slot=2,
-                                          target_substr="ABS")
-        results["slot2 -> Generic ABS"] = (
-            "PASS" if "ABS" in final else f"FAIL ({final!r})")
-        if "ABS" not in final:
+        # --- B: ABS -> keep-warm -------------------------------------------
+        # chamber_cooling_mode derivation (libslic3r/GCode.cpp:2726): the
+        # loop SKIPS filament_is_high_temperature presets, so an all-
+        # high-temp job keeps mode 0 = keep-warm. 'Bambu ABS' is high=0
+        # vitr in (50,70] -> weak; 'Generic ABS' is high=1 -> keep-warm.
+        final_b = m8.switch_filament_preset(session, slot=1,
+                                            target_substr="Generic ABS",
+                                            seek="Generic ABS")
+        print(f"{LOG} slot1 -> {final_b!r}")
+        results["slot1 -> ABS"] = (
+            "PASS" if "ABS" in final_b else f"FAIL ({final_b!r})")
+        if "ABS" not in final_b:
             return m7.m7_verdict(results)
         time.sleep(2.0)
-
-        g_b = ART / "m8d_abs.gcode"
-        g_b.unlink(missing_ok=True)  # stale file would trigger the overwrite-confirm subdialog
-        if not m7.op_slice(session, results, key="ABS slice (keep-warm)",
-                           export_to=g_b):
+        out = slice_and_params(session, results, "B slice (ABS)",
+                               "m8d_abs.gcode")
+        if not out:
             return m7.m7_verdict(results)
-        pb = m8.purifier_params(g_b.read_bytes())
-        print(f"{LOG} B params={pb}")
+        used, pb = out
+        results["B job on slot1"] = (
+            "PASS" if used == [1] else f"FAIL (used={used})")
         results["#113/#122 MODE flips 1->3"] = (
             "PASS" if (pa and pb and pa["MODE"] == "1" and pb["MODE"] == "3")
             else f"FAIL (A={pa and pa['MODE']}, B={pb and pb['MODE']})")
+        # #113 expects the keep-warm branch (DESIRE_TEMP=45). Measured
+        # 09-20: the 09-16 staged template branches on filament[0] only and
+        # every reachable dropdown preset (OrcaFilamentLibrary) carries
+        # filament_is_high_temperature=0, so ABS lands on the WEAK branch
+        # (DESIRE_TEMP=0). The keep-warm branch is unreachable black-box —
+        # recorded as a build-vs-record gap for product confirmation.
         results["#113 keep-warm DESIRE_TEMP=45"] = (
-            "PASS" if pb and pb["DESIRE_TEMP"] == "45" else f"FAIL ({pb})")
-        results["#113 no ALARM_TEMP"] = (
+            "PASS" if pb and pb["DESIRE_TEMP"] == "45" else
+            "FAIL (build gap: ABS -> weak DESIRE_TEMP="
+            f"{pb and pb['DESIRE_TEMP']}; keep-warm 45 branch "
+            "unreachable, dropdown presets all high_temp=0)")
+        results["#113 DELAY_OFF present"] = (
+            "PASS" if pb and pb["DELAY_OFF"] is not None
+            else f"FAIL ({pb})")
+        results["#113/#126 no ALARM_TEMP (keep-warm)"] = (
             "PASS" if pb and pb["ALARM_TEMP"] is None else f"FAIL ({pb})")
         results["#128 params complete"] = (
             "PASS" if pb and all(pb.get(k) is not None for k in
                                  ("MODE", "DESIRE_TEMP", "FAN_SPEED",
                                   "DELAY_OFF")) else f"FAIL ({pb})")
 
-        # --- #127: PC also classifies keep-warm ----------------------------
-        final_pc = m8.switch_filament_preset(session, slot=2,
-                                             target_substr="ABS-GF")
-        results["slot2 -> Generic PC"] = (
-            "PASS" if "PC" in final_pc and "ABS" not in final_pc
-            else f"FAIL ({final_pc!r})")
-        if "PC" in final_pc:
+        # --- C: PC also classifies keep-warm (#127) ------------------------
+        # 'Generic PC' is high=1 (keep-warm by the same derivation);
+        # 'Bambu PC' is high=0 -> weak, not the branch #127 asks for
+        final_c = m8.switch_filament_preset(session, slot=1,
+                                            target_substr="Generic PC",
+                                            excludes=("PCTG",),
+                                            seek="Generic PC")
+        print(f"{LOG} slot1 -> {final_c!r}")
+        pc_ok = "PC" in final_c and "PCTG" not in final_c
+        if pc_ok:
+            results["slot1 -> PC"] = "PASS"
+        else:
+            # staged dropdown may lack a PC row — ABS-GF is the same
+            # high-temp keep-warm family; label the substitute honestly
+            final_c = m8.switch_filament_preset(session, slot=1,
+                                                target_substr="ABS-GF")
+            print(f"{LOG} PC unavailable, slot1 -> {final_c!r}")
+            pc_ok = "ABS-GF" in final_c
+            results["slot1 -> PC"] = (
+                "PASS (ABS-GF proxy, no PC row in dropdown)"
+                if pc_ok else f"FAIL ({final_c!r})")
+        if pc_ok:
             time.sleep(2.0)
-            g_c = ART / "m8d_pc.gcode"
-            g_c.unlink(missing_ok=True)  # stale file would trigger the overwrite-confirm subdialog
-            if m7.op_slice(session, results, key="PC slice (keep-warm)",
-                           export_to=g_c):
-                pc = m8.purifier_params(g_c.read_bytes())
-                print(f"{LOG} C params={pc}")
+            out = slice_and_params(session, results, "C slice (PC/high-T)",
+                                   "m8d_pc.gcode")
+            if out:
+                _used, pc = out
                 results["#127 PC keep-warm"] = (
                     "PASS" if pc and pc["MODE"] == "3"
-                    and pc["DESIRE_TEMP"] == "45" else f"FAIL ({pc})")
+                    and pc["DESIRE_TEMP"] == "45" else
+                    "FAIL (build gap: PC -> weak DESIRE_TEMP="
+                    f"{pc and pc['DESIRE_TEMP']}; same unreachable "
+                    "keep-warm branch as #113)")
 
         results["app alive"] = "PASS" if session.alive() else "FAIL"
         return m7.m7_verdict(results)

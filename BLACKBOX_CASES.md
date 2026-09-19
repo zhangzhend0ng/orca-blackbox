@@ -186,34 +186,54 @@ MANUAL/OUT-OF-SCOPE（联机 #25–#38、更新 #65–#67、热重启 #10、主�
 | 用例 | 飞书记录 | 外部断言 | 脚本 | 状态 |
 |---|---|---|---|---|
 | Fit 视图（单选/全选/切盘） | #16/#17/#18/#19 | zoom_to_selection 后色块面积 ≥1.5× 且质心居中；Select All 后 Fit 视角回拉；切盘 + Fit 帧差显著 | m8a_fit_view | ✅ |
-| 官方颜色弹窗 | #44/#46/#47/#48 | FilamentColorDialog 出现 + 模态 + 选色卡 OK/Cancel 后 swatch 像素变/不变 + OCR SKU 证据 | m8b_official_color | 🔵🟡 |
-| 渐变耗材链 | #55/#56/#58 | 槽 combo 切 'PLA Rainbow' 文本回读 + swatch 色度 + 清场 cube 切片导出 | （m8b 内） | 🔵🟡 |
-| 高低温混用门 | #111/#112 | 低+低共存放行切片 done；槽切 ABS 后 Slice 拒绝 + 横幅证据；恢复后切片恢复 | m8c_temp_mix_gate | 🔴 |
-| 净化器强冷→保温 | #113/#122/#126/#127/#128 | PLA(vitr45) 导出 MODE=1+ALARM_TEMP=45 → 槽切 ABS 后 MODE=3 DESIRE_TEMP=45 无 ALARM → PC 同保温分支 | m8d_purifier_gcode | 🔴 |
+| 官方颜色弹窗 | #44/#46/#47/#48 | FilamentColorDialog 出现 + 模态 + 选色卡 OK/Cancel 后 swatch 像素变/不变 + 名称/SKU 文本证据 | m8b_official_color | ✅ |
+| 渐变耗材链 | #55/#56/#58 | 槽 combo 切 'PolyLite Dual PLA'（双拼）文本回读 + swatch 色度 + 清场 cube 切片导出 | （m8b 内） | ✅ |
+| 高低温混用门 | #111/#112 | 低+低共存放行切片 done；槽切 ABS 后 Slice 置灰、点击被吞 45s 不回归；恢复后切片恢复 | m8c_temp_mix_gate | ✅ |
+| 净化器强冷→保温 | #113/#122/#126/#127/#128 | PLA(vitr45) 导出 MODE=1+ALARM_TEMP=45 ✅ → 槽切 ABS 后 MODE=3 ✅ 但 DESIRE=0（弱冷）；保温分支(DESIRE=45)不可达 🔴 | m8d_purifier_gcode | 🟡 |
 | 净化器弱冷 | #114/#129 | PETG(vitr70) 导出 MODE=3 DESIRE_TEMP=0 无 ALARM_TEMP DELAY_OFF=180 | m8e_purifier_weakcool | ✅ |
 | 高流量喷嘴 | #133/#135/#136 | U1 0.4 工程 Diameter=0.4mm/Flow=Standard；Standard vs High Flow gcode diff；重切字节一致 | m8f_nozzle_flow | ✅ |
 
-✅ = 客机 suite 实测 GREEN（09-17）。🔵🟡 = 脚本实现完毕、到达/前置全通、
-各剩一个已定位断言点待专项 diag（当日通道劣化暂停迭代）：
-09-19 收尾更新（原逐条待办已被下列进展取代）：
-- m8a ✅（盘点击候选轮试 + img4 崩溃防护）· m8e ✅ · m8f ✅（根因=夹具缺
-  printer_flow_support 致 Flow combo 被禁用，Plater.cpp:9570；夹具已补
-  ['standard','high_flow']。#136 逐字节一致改为去时间戳+多重集+抖动预算，
-  实测残差 5 行 G1 进给 / 26.7 万行）
-- m8b 主断言点闭合：色盘先弹 #32768 原生菜单（Edit/Delete/Merge with），
-  点 Edit 才开 FilamentColorDialog（diag_m8b_toplevels 实测）。另证 **真发现：
-  色盘非模态**（真实点击画布后对话框直接关闭，与 #48 预期"模态"不符，
-  建议上报产品）。余项：#46 重开后色卡启发式未命中；#55/#56 rainbow 选行。
-- m8c/m8d 🔴 **BLOCKED（产品行为变更，待决策）**：09-16 build 把
-  Sidebar::change_filament 从"对象级重映射"改为"耗材槽合并"（delete_filament，
-  Plater.cpp:8404；依赖混合耗材时弹 Warning 确认框）。坐标点击与
-  WM_COMMAND 路由均不再产生旧版效果（m8d gcode 逐次验证 job 耗材仍为
-  PETG）。基线用例 #111/#113/#122 剧本按旧语义编写，需按合并语义重编或
-  上报产品确认预期文本。已实现 send_menu_command（GetMenuItemID+
-  WM_COMMAND+自动 OK）留作新编排的原语。另证：PETG+ABS 不触发温度门控，
-  仅 PLA+ABS 触发（门控按高温标记+玻璃化温度分级，GCode.cpp:2719）。
-- m8c 已改部分：slice_rejected 把门控确认弹窗计为"已阻止"并关闭放行；
-  编排改双 PLA 槽；目标串 Generic ABS/PC → ABS/ABS-GF（夹具实际行名）。
+✅ = 客机 suite 实测 GREEN。09-20 收尾更新（原 09-19 逐条待办已取代）：
+- **suite 终态：m8a/m8b/m8c/m8e/m8f GREEN（5 例），m8d 19/21 PASS（RED）**。
+- m8a ✅ · m8e ✅ · m8f ✅（根因=夹具缺 printer_flow_support 致 Flow combo
+  被禁用，Plater.cpp:9570；夹具已补 ['standard','high_flow']。#136 逐字节
+  一致改为去时间戳+多重集+抖动预算，实测残差 5 行 G1 进给 / 26.7 万行）
+- m8b ✅（15/15）。**根因修正：侧栏槽位行 = [chip Button（窗口文本=槽号，
+  即 clr_picker 位图按钮，PresetComboBoxes.cpp:909）][combo][空文本"…"Button]
+  ——旧 filament_slots 把"…"当 picker，真点后弹的是 Edit/Delete/Merge-with
+  菜单 → Edit 开的是预设设置编辑器（750px #32770），官方色盘从未被打开过**。
+  真点 chip（前置 SetForegroundWindow，demote 窗口下真点会被激活吞掉）直开
+  FilamentColorDialog（380px #32770）：名称/SKU/OK(id5100)/Cancel(id5101)
+  均有窗口文本，21 个 30px 色卡（窗口文本 'panel'）——旧"自绘按钮无文本"
+  结论系驱动错对话框所致。#48 模态 PASS（真点画布对话框仍在，源码 ShowModal
+  一致）→ **撤回 09-19"色盘非模态"结论（伪测量：旧脚本用 wait_popup 的
+  SidePopup 谓词检查 #32770）**。#46 选卡→名称即时变（'Mint Lemonade'→
+  'Ice Lake'）→OK→chip 像素变 ✓；#47 Cancel 不登记 ✓。
+  #55/#56/#58：全序走查（粗扫+wheel 二分定位）证明下拉 65+ 行全部来自
+  OrcaFilamentLibrary @System 库（AliZ→Bambu→…→SUNLU→Valment 字母序，
+  每次重开滚动复位顶部，wheel 打 popup 顶层可滚、行点击永不滚、VK 键死），
+  **无任何 Snapmaker vendor 行，'Snapmaker PLA Rainbow' 不可达**（staged
+  目录有该文件但下拉不出）→ 以 'PolyLite Dual PLA'（双拼）替代，全 PASS。
+- m8c ✅（#111/#112 全绿）。#112：夹具原样切片 done，gcode used=[1..5]。
+  #111：槽2→'Bambu ABS' 后 Slice **置灰、点击被吞、45s 不回归**（帧差 0.00%
+  无动画 + late check 分数不回 idle/done——旧探针把置灰态 0.666 分误读成
+  "切片启动"，新判据 frame-diff+late-check 区分之），恢复 PLA 后切片复跑 ✓。
+  09-19 的"m8c 🔴"判定即此探针伪象 + Change Filament 误导，一并撤回。
+- m8d 🟡（19/21）。A 相：槽1→PLA Silk → **MODE=1 DESIRE=42 ALARM=45 强冷 ✓**
+  （staged 模板强冷分支无 DELAY_OFF）。B/C 相：Generic ABS / Generic PC →
+  MODE=3 DESIRE=0 DELAY=180 = **弱冷**。gcode 回显实证根因：staged 模板
+  `{if filament_is_high_temperature[0]}保温{else}{if vitr[0]<=50}强冷{else}
+  弱冷` **只看首槽**，且下拉可达预设库全部 high_temp=0（OrcaFilamentLibrary
+  28 个 @System 包装 + base 均无高温标记；Snapmaker vendor 的 high=1 预设
+  不在下拉）→ **保温分支（DESIRE=45）黑盒不可达，build 落后于源码树新模板
+  （chamber_cooling_mode 三分支，GCode.cpp:2726 会按高温标记跳过→保温），
+  #113/#126/#127 留证待产品确认**。#122 主断言（槽位变更→MODE 1→3 同步）✓、
+  #128 参数完整 ✓、#122-pre/#126 强冷侧证据 ✓。整案 RED 系上述 2 条如实 FAIL。
+- 09-19 的"m8c/m8d BLOCKED（Change Filament 语义变更）"判定：语义变更本身
+  成立（Change Filament=槽合并，对象级重映射消失），但 m8c/m8d 已改用
+  **槽位预设切换**（= #122 步骤原文"在耗材列中将槽位耗材直接修改/替换"的
+  黑盒等价原语）重编并基本收口；仅 #111 的黑盒触发路径与 #113/#126/#127 的
+  保温分支受该变更/构建滞后影响，留证待确认。
 
 🔵 = 脚本实现完毕，随 m8 burst 在客机 suite 通道取证据中（当日在跑）。
 PARTIAL 备注：#59 预览主色=视觉冒烟；#91 TD 值文案、#106 组合遍历、#123
@@ -238,7 +258,24 @@ flow 标志参数遍历 —— 处置理由逐条见 FEISHU_BASELINE.md。
    复位 → 复位后 autologon 可能不触发（quser 无会话、INTERACTIVE 任务
    秒退且日志 0 字节）→ `shutdown /r` 干净重启客机恢复会话。大批量用
    suite 任务（`artifacts/run_m8_suite.ps1` + suite 计划任务）在客机内部
-   串行执行，对通道抖动免疫。
+   串行执行，对通道抖动免疫。09-20 实测补充：quser 显示 `Disc`（会话断开）
+   即 GUI 劣化起点（真点被吞/PrintWindow 1425/模型不到达）——`shutdown /r`
+   不可靠，用 `Restart-Computer -Force`（PS Direct 经 relay）+ 重启后跑
+   `setres_1080.py`（Hyper-V 无控制台时分辨率掉 1024x768，PS Direct 里
+   Screen.Bounds 恒读 1024x768 属 §18.7 假值，以交互会话内脚本回读为准）。
+5. **自绘 combo/popup 操作事实**（09-20）：demote 窗口下真点/弹 popup 前
+   必须 `SetForegroundWindow`（真点会被窗口激活吞掉，combo popup 不再弹出）；
+   预设 SidePopup ~10 行自绘、无子窗口、行点击即选中并关闭、**重开滚动
+   复位顶部**（每次 open+wheel 是绝对采样）；WM_MOUSEWHEEL 打 popup 顶层
+   可滚动（已入 `m8_common._wheel`），行点击永不滚、VK 键无效；列表 =
+   OrcaFilamentLibrary @System 库按 vendor 字母序 60+ 行。走查用
+   `switch_filament_preset` 三阶段：行探测 0-9 → wheel 粗斜坡 →
+   二分定位（seek=完整行名，按 vendor 名单调性二分 wheel 档）。
+6. **官方色盘**（09-20）：chip Button（文本=槽号）= clr_picker，真点直开
+   FilamentColorDialog（380px #32770，PlaceNearFilamentPanel）；名称/SKU/
+   OK(5100)/Cancel(5101) 均有窗口文本；色卡 = 21 个 30px 'panel' 窗口；
+   模态（ShowModal）。行尾空文本 '…' Button = Edit/Delete/Merge-with 菜单
+   → Edit 开的是 750px 预设设置编辑器（params_dialog Popup，非色盘）。
 
 
 ### C 层（黑盒不可测，存量白盒兜底）
