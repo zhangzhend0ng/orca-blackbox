@@ -34,13 +34,24 @@ LOG = "[m8c]"
 ART = HERE / "artifacts"
 
 
-def add_cube_and_assign(session, slot_substr, results, key, nth=0):
+def add_cube_and_assign(session, slot_substr, results, key, nth=0, offset_x=None):
     """Add a cube and Change Filament to the (nth+1)-th row matching
     slot_substr."""
     m7.op_add_primitive(session, "cube")  # gate is advisory here: the
     # downstream temp-gate asserts judge the real state; two stacked cubes
     # can slip under the chromatic-delta gate (measured 09-17)
     time.sleep(0.8)
+    if offset_x is not None:
+        # Separate the stacked cubes via Arrange (m7g pattern): the toolbar
+        # arrange slot is always present and needs no selection, unlike the
+        # Move gizmo (whose slot only exists with a selection — not found
+        # 09-19) and unlike select_model (chokes on the overlap).
+        ax_, _tip = m7.find_slot(session, lambda t: "arrange" in t)
+        if ax_:
+            m7.click_slot(session, ax_)
+            time.sleep(6.0)  # the arranger runs async (job + refresh)
+        else:
+            print(f"{LOG} arrange slot not found")
     if slot_substr and not m7.select_model(session):
         # measured 09-18: the second primitive lands exactly on the first
         # (Cube<->Cube overlap) and the centroid click cannot resolve a
@@ -49,6 +60,17 @@ def add_cube_and_assign(session, slot_substr, results, key, nth=0):
         print(f"{LOG} select_model failed — relying on fresh-add selection")
     if slot_substr:
         menu = m7.open_context_menu(session, where="model")
+        if not menu:
+            # overlap flake (09-18): one real centroid click to re-activate,
+            # then try the menu once more
+            pos = m7.find_centroid(session)
+            if pos:
+                sx, sy = m7.client(session, *pos)
+                winutil.user32.SetCursorPos(sx, sy)
+                time.sleep(0.2)
+                winutil.real_click_screen(sx, sy)
+                time.sleep(1.0)
+            menu = m7.open_context_menu(session, where="model")
         if not menu:
             results[key] = "FAIL (no menu)"
             return False
@@ -62,9 +84,10 @@ def add_cube_and_assign(session, slot_substr, results, key, nth=0):
         _i, (shwnd, shmenu) = got
         rows = m7.list_menu(shmenu)
         print(f"{LOG} filament rows: {[l for _i, l in rows]}")
-        m7.click_menu_row(session, shwnd, shmenu, slot_substr, nth=nth)
-        time.sleep(1.5)
+        hit = m7.send_menu_command(session, shmenu, slot_substr, nth=nth, confirm_ok=True)
         m7.dismiss_menus(session)
+        results[key] = "PASS" if hit else "FAIL (no row)"
+        return bool(hit)
     results[key] = "PASS"
     return True
 
@@ -118,9 +141,11 @@ def main() -> int:
                                    "cube A on PLA slot"):
             return m7.m7_verdict(results)
         if not add_cube_and_assign(session, "Silk", results,
-                                   "cube B on PLA slot", nth=1):
+                                   "cube B on PLA slot", nth=1,
+                                   offset_x=40):
             if not add_cube_and_assign(session, "Silk", results,
-                                       "cube B on PLA slot (retry)", nth=1):
+                                       "cube B on PLA slot (retry)", nth=1,
+                                       offset_x=40):
                 return m7.m7_verdict(results)
 
         # --- #112: low+low coexists -> slice completes --------------------
@@ -129,7 +154,7 @@ def main() -> int:
 
         # --- #111: switch slot2 -> ABS -> gate blocks ----------------------
         final = m8.switch_filament_preset(session, slot=2,
-                                          target_substr="Generic ABS")
+                                          target_substr="ABS")
         print(f"{LOG} slot2 -> {final!r}")
         results["slot2 switches to ABS"] = (
             "PASS" if "ABS" in final else f"FAIL ({final!r})")

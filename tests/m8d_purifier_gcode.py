@@ -56,10 +56,9 @@ def add_cube_on_pla_slot(session, results):
     _i, (shwnd, shmenu) = got
     rows = m7.list_menu(shmenu)
     print(f"{LOG} filament rows: {[l for _i, l in rows]}")
-    m7.click_menu_row(session, shwnd, shmenu, "Silk")  # slot 2 (PLA)
-    time.sleep(1.5)
+    hit = m7.send_menu_command(session, shmenu, "Silk", confirm_ok=True)  # slot 2 (PLA)
     m7.dismiss_menus(session)
-    return True
+    return bool(hit)
 
 
 def main() -> int:
@@ -114,7 +113,7 @@ def main() -> int:
 
         # --- switch slot 2 preset to ABS -> keep-warm ---------------------
         final = m8.switch_filament_preset(session, slot=2,
-                                          target_substr="Generic ABS")
+                                          target_substr="ABS")
         results["slot2 -> Generic ABS"] = (
             "PASS" if "ABS" in final else f"FAIL ({final!r})")
         if "ABS" not in final:
@@ -142,7 +141,7 @@ def main() -> int:
 
         # --- #127: PC also classifies keep-warm ----------------------------
         final_pc = m8.switch_filament_preset(session, slot=2,
-                                             target_substr="Generic PC")
+                                             target_substr="ABS-GF")
         results["slot2 -> Generic PC"] = (
             "PASS" if "PC" in final_pc and "ABS" not in final_pc
             else f"FAIL ({final_pc!r})")

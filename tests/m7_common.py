@@ -280,6 +280,42 @@ def click_menu_row(session, hwnd, hmenu, row_substr, nested=False, nth=0):
     return None
 
 
+def send_menu_command(session, hmenu, row_substr, nth=0, confirm_ok=False):
+    """Fire a native menu item WITHOUT coordinates: GetMenuItemID +
+    WM_COMMAND to the frame. The real-click path on Change Filament rows
+    silently no-ops on the 09-16 build (measured 09-19). NOTE: on that
+    build change_filament is a filament-slot MERGE (Sidebar::change_filament
+    → delete_filament, Plater.cpp:8404) and pops a Warning dialog when the
+    source slot feeds a mixed filament — confirm_ok clicks its OK."""
+    items = list_menu(hmenu)
+    seen = -1
+    for i, lbl in items:
+        if row_substr.lower() in lbl.lower():
+            seen += 1
+            if seen < nth:
+                continue
+            item_id = user32.GetMenuItemID(hmenu, i)
+            winutil.user32.SendMessageW(session.hwnd, 0x0111, item_id, 0)
+            time.sleep(1.5)
+            if confirm_ok:
+                from harness import export_util
+                dlg = export_util.wait_popup(session.pid, timeout_s=3.0)
+                if dlg:
+                    kids = export_util._children_texts(dlg[3])
+                    for t, r, _h in kids:
+                        if t.strip() in ("OK", "确定", "Yes", "是"):
+                            winutil.user32.SetCursorPos(
+                                (r[0] + r[2]) // 2, (r[1] + r[3]) // 2)
+                            time.sleep(0.2)
+                            winutil.real_click_screen(
+                                (r[0] + r[2]) // 2, (r[1] + r[3]) // 2)
+                            time.sleep(1.5)
+                            break
+            return lbl
+    print(f"{LOG} row {row_substr!r} not in menu: {[l for _i, l in items]}")
+    return None
+
+
 def dismiss_menus(session):
     topbar_util.close_menu_windows(session.pid)
     time.sleep(0.4)
