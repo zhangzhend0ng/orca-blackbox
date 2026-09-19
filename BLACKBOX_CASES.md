@@ -188,10 +188,10 @@ MANUAL/OUT-OF-SCOPE（联机 #25–#38、更新 #65–#67、热重启 #10、主�
 | Fit 视图（单选/全选/切盘） | #16/#17/#18/#19 | zoom_to_selection 后色块面积 ≥1.5× 且质心居中；Select All 后 Fit 视角回拉；切盘 + Fit 帧差显著 | m8a_fit_view | ✅ |
 | 官方颜色弹窗 | #44/#46/#47/#48 | FilamentColorDialog 出现 + 模态 + 选色卡 OK/Cancel 后 swatch 像素变/不变 + OCR SKU 证据 | m8b_official_color | 🔵🟡 |
 | 渐变耗材链 | #55/#56/#58 | 槽 combo 切 'PLA Rainbow' 文本回读 + swatch 色度 + 清场 cube 切片导出 | （m8b 内） | 🔵🟡 |
-| 高低温混用门 | #111/#112 | 低+低共存放行切片 done；槽切 ABS 后 Slice 拒绝 + 横幅证据；恢复后切片恢复 | m8c_temp_mix_gate | 🔵🟡 |
-| 净化器强冷→保温 | #113/#122/#126/#127/#128 | PLA(vitr45) 导出 MODE=1+ALARM_TEMP=45 → 槽切 ABS 后 MODE=3 DESIRE_TEMP=45 无 ALARM → PC 同保温分支 | m8d_purifier_gcode | 🔵🟡 |
+| 高低温混用门 | #111/#112 | 低+低共存放行切片 done；槽切 ABS 后 Slice 拒绝 + 横幅证据；恢复后切片恢复 | m8c_temp_mix_gate | 🔴 |
+| 净化器强冷→保温 | #113/#122/#126/#127/#128 | PLA(vitr45) 导出 MODE=1+ALARM_TEMP=45 → 槽切 ABS 后 MODE=3 DESIRE_TEMP=45 无 ALARM → PC 同保温分支 | m8d_purifier_gcode | 🔴 |
 | 净化器弱冷 | #114/#129 | PETG(vitr70) 导出 MODE=3 DESIRE_TEMP=0 无 ALARM_TEMP DELAY_OFF=180 | m8e_purifier_weakcool | ✅ |
-| 高流量喷嘴 | #133/#135/#136 | U1 0.4 工程 Diameter=0.4mm/Flow=Standard；Standard vs High Flow gcode diff；重切字节一致 | m8f_nozzle_flow | 🔵🟡 |
+| 高流量喷嘴 | #133/#135/#136 | U1 0.4 工程 Diameter=0.4mm/Flow=Standard；Standard vs High Flow gcode diff；重切字节一致 | m8f_nozzle_flow | ✅ |
 
 ✅ = 客机 suite 实测 GREEN（09-17）。🔵🟡 = 脚本实现完毕、到达/前置全通、
 各剩一个已定位断言点待专项 diag（当日通道劣化暂停迭代）：
