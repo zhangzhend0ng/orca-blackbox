@@ -22,7 +22,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from cases import CASES, enabled_cases  # noqa: E402
 
-_SKIP = {"m3_common.py", "m5_common.py", "m7_common.py", "m8_common.py"}
+_SKIP = {"m3_common.py", "m5_common.py", "m7_common.py", "m8_common.py",
+         "m9_baseline.py"}   # m9_baseline is a driver (tools/baseline_batch.py), not a case
 
 problems: list[str] = []
 
@@ -55,14 +56,22 @@ check("hv_go.ps1 reads cases.py", "from cases import enabled_cases" in ps1)
 check("hv_go.ps1 has no hardcoded case array",
       not re.search(r"@\(?\s*'m\w+_'\s*,", ps1))
 
-# 6: no orphan case scripts outside the registry
-on_disk = {p.name for p in (ROOT / "tests").glob("m*.py")
+# 6: no orphan case scripts outside the registry. Case scripts live under
+# tests/<group>/ keyed by the Feishu baseline table's 二级分类 (or tests/engine/).
+group_dirs = [d for d in (ROOT / "tests").iterdir()
+              if d.is_dir() and not d.name.startswith("__")]
+on_disk = {p.name for d in group_dirs for p in d.glob("m*.py")
            if re.match(r"^m\d", p.name) and p.name not in _SKIP}
+on_disk |= {p.name for p in (ROOT / "tests").glob("m*.py")
+            if re.match(r"^m\d", p.name) and p.name not in _SKIP}
 in_reg = {Path(meta["file"]).name for meta in CASES.values()}
 orphans = on_disk - in_reg
-check("no unregistered case scripts in tests/", not orphans, f"orphans={sorted(orphans)}")
+check("no unregistered case scripts under tests/", not orphans, f"orphans={sorted(orphans)}")
 check("registry files live under tests/",
       all(meta["file"].startswith("tests/") for meta in CASES.values()))
+check("every registered case file exists",
+      all((ROOT / meta["file"]).exists() for meta in CASES.values()),
+      f"missing={[m['file'] for m in CASES.values() if not (ROOT / m['file']).exists()]}")
 
 # 7: sanity of the canonical suite
 reg = enabled_cases("regression")

@@ -26,8 +26,10 @@ GRUN_ERR = r"C:\coil\vm_setup\grun_err.txt"
 
 
 def fire(case: str, timeout_s: int):
+    # path comes from the registry — case scripts live under tests/<group>/
+    rel = __import__("cases").CASES.get(case, {}).get("file", f"tests/{case}.py")
     cmd = (f"Start-Process powershell -ArgumentList '-NoProfile "
-           f"-ExecutionPolicy Bypass -File {GRUN} -Script tests\\{case}.py "
+           f"-ExecutionPolicy Bypass -File {GRUN} -Script {rel.replace('/', chr(92))} "
            f"-TimeoutS {timeout_s}' -RedirectStandardOutput {GRUN_OUT} "
            f"-RedirectStandardError {GRUN_ERR} -WindowStyle Hidden")
     # PS Direct can queue behind other sessions on a busy rig — 90s once

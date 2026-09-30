@@ -1,0 +1,82 @@
+{
+    "additional_cooling_fan_speed": [
+        "70",
+        "80"
+    ],
+    "fan_max_speed": [
+        "100",
+        "90"
+    ],
+    "fan_min_speed": [
+        "100",
+        "90"
+    ],
+    "filament_deretraction_speed": [
+        "nil",
+        "31"
+    ],
+    "filament_flow_ratio": [
+        "0.966",
+        "0.95"
+    ],
+    "filament_flow_support": [
+        "standard",
+        "high_flow"
+    ],
+    "filament_max_volumetric_speed": [
+        "20",
+        "30"
+    ],
+    "filament_minimal_purge_on_wipe_tower": [
+        "15",
+        "20"
+    ],
+    "filament_multitool_ramming_flow": [
+        "30",
+        "35"
+    ],
+    "filament_multitool_ramming_volume": [
+        "5",
+        "6"
+    ],
+    "filament_retract_length_toolchange": [
+        "5",
+        "6"
+    ],
+    "filament_retraction_length": [
+        "1.2",
+        "1.4"
+    ],
+    "filament_retraction_speed": [
+        "nil",
+        "31"
+    ],
+    "filament_settings_id": [
+        "Snapmaker PLA SnapSpeed @U1 - HF-TEST"
+    ],
+    "filament_wipe_distance": [
+        "nil",
+        "3"
+    ],
+    "filament_z_hop_types": [
+        "Slope Lift",
+        "Spiral Lift"
+    ],
+    "from": "User",
+    "inherits": "Snapmaker PLA SnapSpeed @U1",
+    "is_custom_defined": "0",
+    "name": "Snapmaker PLA SnapSpeed @U1 - HF-TEST",
+    "nozzle_temperature": [
+        "220",
+        "210"
+    ],
+    "nozzle_temperature_initial_layer": [
+        "220",
+        "210"
+    ],
+    "pressure_advance": [
+        "0.02",
+        "0.025"
+    ],
+    "version": "2.3.1.2"
+}

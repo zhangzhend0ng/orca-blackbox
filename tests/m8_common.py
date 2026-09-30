@@ -28,6 +28,7 @@
 #     weak, high-temp filaments skip -> keep-warm)
 
 import ctypes
+import ctypes.wintypes as wt
 import re
 import sys
 import time
@@ -35,6 +36,12 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(HERE / "tests"))
+# cases are grouped under tests/<飞书二级分类>/; shared helpers stay in
+# tests/, and cases import each other across groups — put every group
+# dir on the path.
+for _g in sorted((HERE / "tests").iterdir()):
+    if _g.is_dir() and not _g.name.startswith("__"):
+        sys.path.insert(0, str(_g))
 
 from harness import export_util, winutil  # noqa: E402
 from harness.anchors import capture_bgr  # noqa: E402
@@ -103,37 +110,80 @@ def viewport_diff(img_a, img_b):
 # --- filament slot grid -------------------------------------------------------
 
 def filament_slots(session):
-    """[(slot_no, combo(text,rect,hwnd), picker_rect)] parsed from the
-    sidebar child tree. The grid rows live at y 400-520 on the maximized
-    rig. Measured 09-19 (diag_m8b_picker): each row is
-    [chip Button text=N ~20x20][preset combo wxWindowNR ~150x30]["…" Button
-    text=''] — the CHIP **is** the clr_picker bitmap button
-    (PresetComboBoxes.cpp:909, tooltip 'Click to select filament color'),
-    and the empty '…' Button at the row end opens the edit menu. Hidden
-    stale widgets (rate dialog leftovers) share the y-band, so candidates
-    must be visible and width-plausible."""
-    chips, texts = [], []
-    for text, rect, ch in export_util._children_texts(session.hwnd):
-        if not (395 <= rect[1] <= 545 and rect[0] < 425):
+    """[{slot, combo(text,rect,hwnd), picker_rect, swatch_rect}] from the
+    sidebar child tree.
+
+    STRUCTURAL, not band-based: the numbered chips are found by their text
+    ('1'..'5', a small button), and each row's combo / legacy picker is matched
+    by sharing the chip's row (same centre y, to the right of the chip). The
+    previous version scoped rows with the 'Filaments' label + a fixed y band and
+    an x<425 filter calibrated on the 1200x800 window — under the MAXIMIZED
+    layout (1920x1080) that band matched only ONE row (measured 09-28: slots ==
+    [(5, ...)]), so every slot lookup failed.
+
+    It also computed `picker` OUTSIDE the per-chip loop, so every slot was
+    handed the LAST row's rectangle — that is why clicking slot 2's colour
+    control opened the wrong thing (leading, via the legacy Edit menu, to the
+    native colour picker instead of the official library).
+
+    `swatch` is the numbered chip itself: its background is the filament colour
+    and, for Snapmaker presets, clicking it opens the OFFICIAL colour library
+    (probe 09-28: chip '2' -> popup carrying 'Official Filaments' / 'sku
+    34205'). `picker` is the 16x25 button to its right, whose click opens the
+    legacy Edit/Delete/Merge #32768 menu.
+    """
+    rows = list(export_util._children_texts(session.hwnd))
+    chips, texts, smalls = [], [], []
+    for text, rect, ch in rows:
+        if rect[0] > 520 or rect[2] <= rect[0]:     # sidebar only, sane rect
             continue
-        if not winutil.user32.IsWindowVisible(ch):
-            continue
-        if text.strip().isdigit() and 12 <= rect[2] - rect[0] <= 30 \
-                and 12 <= rect[3] - rect[1] <= 30:
-            chips.append((int(text.strip()), rect, ch))
-        elif text.strip() and rect[2] - rect[0] >= 80:
-            texts.append((text.strip(), rect, ch))
+        w, h = rect[2] - rect[0], rect[3] - rect[1]
+        t = text.strip()
+        if t.isdigit() and len(t) <= 2 and w <= 30 and h <= 32:
+            chips.append((int(t), rect))
+        elif 12 <= w <= 30 and 16 <= h <= 30:
+            smalls.append(rect)
+        elif t and w >= 60:
+            texts.append((t, rect, ch))
     out = []
-    for no, chip_rect, _chip_hwnd in sorted(chips):
+    for no, chip_rect in sorted(chips):
         cy = (chip_rect[1] + chip_rect[3]) / 2
         combo = None
         for text, rect, ch in texts:
             ry = (rect[1] + rect[3]) / 2
-            if abs(ry - cy) < 12 and rect[0] > chip_rect[2] - 6:
+            if abs(ry - cy) < 12 and chip_rect[2] <= rect[0] <= chip_rect[2] + 20:
                 if combo is None or rect[0] < combo[1][0]:
                     combo = (text, rect, ch)
-        out.append({"slot": no, "combo": combo, "picker": chip_rect})
+        picker = None
+        for rect in smalls:
+            ry = (rect[1] + rect[3]) / 2
+            if abs(ry - cy) < 12 and rect[0] > chip_rect[2] - 6:
+                if picker is None or rect[0] < picker[0]:
+                    picker = rect
+        out.append({"slot": no, "combo": combo, "picker": picker,
+                    "swatch": chip_rect})
     return out
+
+
+
+def wait_slots(session, timeout_s=25.0):
+    """filament_slots() once the sidebar actually exposes the slot rows.
+
+    The sidebar is populated ASYNCHRONOUSLY: reading the child tree right after
+    the GL canvas reports ready returns no slot rows at all, which surfaced as
+    "slot 2 combo not found" and killed the whole case in its first step
+    (measured 09-28 — the early system-preset re-apply). Poll instead of
+    assuming the layout exists."""
+    deadline = time.monotonic() + timeout_s
+    slots = filament_slots(session)
+    while time.monotonic() < deadline:
+        if any(s.get("combo") for s in slots):
+            return slots
+        time.sleep(0.5)
+        slots = filament_slots(session)
+    print(f"{LOG} wait_slots: no slot combo appeared within {timeout_s:.0f}s "
+          f"({[{k: (v is not None) for k, v in s.items() if k != 'slot'} for s in slots]})")
+    return slots
 
 
 def combo_text(ch):
@@ -142,157 +192,365 @@ def combo_text(ch):
     return buf.value
 
 
-def _wheel(popup, notches=1):
-    """WM_MOUSEWHEEL at the popup center, one message per notch. Measured
-    09-19 (diag_m8b_scroll): wheel to the popup TOP-LEVEL does scroll the
-    self-drawn preset list (row8 click surfaced 'Bambu PETG Translucent',
-    unreachable by clicks alone); row clicks never scroll past the first
-    ~10 rows and VK keys are dead on this popup."""
-    pr = popup[2]
-    x = (pr[0] + pr[2]) // 2
-    y = (pr[1] + pr[3]) // 2
-    for _ in range(abs(notches)):
-        wp = ((-120 * (1 if notches > 0 else -1)) & 0xFFFF) << 16
-        lp = (y << 16) | (x & 0xFFFF)
-        winutil.user32.PostMessageW(popup[3], 0x020A, wp, lp)
-        time.sleep(0.15)
-    time.sleep(0.3)
+def _ocr_click_line(session, popup_rect, target_substr, popup_hwnd=None) -> bool:
+    """OCR the POPUP window and click the line matching target_substr.
+
+    The popup is a separate top-level window: the main-window capture does not
+    contain it (a first cut OCR'd the panel underneath and read 'Advanced',
+    'Multimaterial' — measured 09-21), so capture the popup itself.
+    """
+    import cv2  # noqa: PLC0415
+    import numpy as np  # noqa: PLC0415
+    from harness import mix_dialog_util as mdu  # noqa: PLC0415
+    if popup_hwnd:
+        try:
+            w, h, buf = winutil.capture_window(popup_hwnd)
+            img = cv2.cvtColor(np.frombuffer(buf, np.uint8).reshape(h, w, 4),
+                               cv2.COLOR_BGRA2BGR)
+        except Exception as exc:  # noqa: BLE001
+            # PrintWindow times out while the app is busy (WinError 1460,
+            # measured 09-23 across a whole filament-switch loop) — fall back
+            # to a SCREEN grab cropped to the popup rect: the popup is a
+            # top-level window, so the desktop shows it.
+            print(f"{LOG} popup PrintWindow failed ({exc}) — screen crop")
+            img = capture_bgr(session)
+            x0, y0, x1, y1 = [int(v) for v in popup_rect]
+            img = img[max(0, y0):y1, max(0, x0):x1]
+        ox, oy = popup_rect[0], popup_rect[1]
+    else:
+        img = capture_bgr(session)
+        ox = oy = 0
+    if img.size == 0:
+        return False
+    try:
+        words = mdu.ocr_words_img(img, scale=3, psm=6)
+    except Exception as exc:  # noqa: BLE001
+        # tesseract can fail to allocate while the app holds most of the
+        # guest's RAM (pix_malloc fail, measured 09-23) — degrade to "row not
+        # read this step" so the scroll loop retries instead of crashing
+        print(f"{LOG} popup OCR failed ({exc}) — retrying")
+        return False
+    tokens = [t.lower() for t in re.split(r"\s+", target_substr) if t]
+    lines: dict[int, list] = {}
+    for wd in words:
+        lines.setdefault(round(wd[2] / 8), []).append(wd)
+    for key in sorted(lines):
+        row = sorted(lines[key], key=lambda wd: wd[1])
+        line_text = " ".join(wd[0] for wd in row).lower()
+        if tokens and all(t in line_text for t in tokens):
+            cx = ox + row[0][1] + row[0][3] // 2
+            cy = oy + row[0][2] + row[0][4] // 2
+            print(f"{LOG} popup OCR row {line_text!r} -> click ({cx},{cy})")
+            winutil.msg_click_screen(cx, cy)   # popup is top-level: no root
+            return True
+    return False
 
 
-def switch_filament_preset(session, slot, target_substr, tries=70,
-                           excludes=(), seek=None):
+def _real_wheel(x, y, notches):
+    """Real (input-queue) wheel scroll at a screen point.
+
+    Self-contained on purpose: some app popups ignore message-level
+    WM_MOUSEWHEEL — the filament preset list never moved on 2.4.0, so an
+    alphabetically earlier target ('Snapmaker PLA Rainbow' above the current
+    selection) stayed unreachable (measured 09-28: 11 attempts OCR'd the same
+    lower window). Inlined via ctypes so no harness-side change has to be
+    shipped alongside the case."""
+    import ctypes  # noqa: PLC0415
+    u = ctypes.WinDLL("user32", use_last_error=True)
+    u.SetCursorPos(int(x), int(y))
+    time.sleep(0.1)
+    u.mouse_event(0x0800, 0, 0, 120 * int(notches), 0)
+
+
+def click_popup_row(session, popup_rect, target_substr, popup_hwnd=None,
+                    scrolls=14, notch=3) -> bool:
+    """Find the target row in the popup (OCR of the POPUP window), scrolling.
+
+    Rows are SELF-DRAWN (child enumeration yields nothing) and the popup shows
+    only ~13 rows, so a click-walk at the historical 28px pitch stalls once it
+    passes the visible area (measured 09-21 — it parked on 'Bambu PAHT-CF'
+    while 'Generic ABS' stayed below the fold). The popup opens AT the current
+    selection, so scroll to the top first, then walk down, re-OCR-ing each step.
+    Wheel goes through WM_MOUSEWHEEL (message-level: no focus needed).
+    """
+    if popup_hwnd is None:
+        return _ocr_click_line(session, popup_rect, target_substr)
+    x = (popup_rect[0] + popup_rect[2]) // 2
+    y = (popup_rect[1] + popup_rect[3]) // 2
+    lparam = ((y & 0xFFFF) << 16) | (x & 0xFFFF)
+
+    def wheel(notches: int) -> None:
+        wparam = (((-120 * notches) & 0xFFFF) << 16)   # negative delta = down
+        winutil._send_msg(popup_hwnd, 0x020A, wparam, lparam)
+
+    wheel(-scrolls * 2)          # first: back to the top of the list
+    time.sleep(0.7)
+    for _step in range(scrolls * 2 + 1):
+        if _ocr_click_line(session, popup_rect, target_substr, popup_hwnd):
+            return True
+        wheel(notch)
+        time.sleep(0.5)
+    # Second pass with REAL wheel input: on 2.4.0 the preset popup ignored
+    # message-level WM_MOUSEWHEEL (the OCR window never moved, so a target
+    # ABOVE the opening position was unreachable — measured 09-28).
+    print(f"{LOG} popup: message-level wheel found nothing — retrying with real input")
+    _real_wheel(x, y, -scrolls)
+    time.sleep(0.7)
+    for _step in range(scrolls + 1):
+        if _ocr_click_line(session, popup_rect, target_substr, popup_hwnd):
+            return True
+        _real_wheel(x, y, max(1, notch // 2))
+        time.sleep(0.45)
+    return False
+
+
+def switch_filament_preset(session, slot, target_substr, tries=30, force=False):
     """Row-probe the slot's preset combo until the text flips to target.
-    Matching = target_substr in text and no exclude in text.
+    Returns the final text ('' on failure).
 
-    Popup facts (09-19 diags): ~10 self-drawn rows visible; a row click
-    selects AND closes; clicks alone never scroll past the first screen;
-    wheel scrolls (monotone); the list is vendor-alphabetical (AliZ, Bambu,
-    FDplast, Fiberon, Generic, NIT, Overture, Panchroma, Polymaker,
-    Snapmaker, SUNLU, Valment; 60+ rows; every reopen resets the scroll,
-    so each open+wheel is an ABSOLUTE sample). Phases: 1) probe rows 0-9
-    (near presets: Silk/ABS/PC/ABS-GF), 2) coarse wheel ramp (reaches the
-    list end in ~20 opens but SKIPS rows), 3) if `seek` (the full short
-    row name, e.g. 'Snapmaker PLA Rainbow') is given, BINARY-SEARCH the
-    wheel offset by vendor-name comparison — the scroll is monotone in
-    offset — then sweep the visible window row by row.
-    Returns the final text ('' on failure)."""
-    slots = filament_slots(session)
+    force=True re-applies the preset even when the combo text ALREADY contains
+    target_substr. That early return is a trap for project-carried settings: the
+    project embeds its own filament_* values (mixed_filament_test.3mf carries 50
+    of them), so slot 2 reads 'Snapmaker PLA Silk @U1 0.8 nozzle*' — the preset
+    NAME with Orca's profile-modified marker. Returning on the name match leaves
+    the PROJECT's values (and the asterisk) in place, while the case is supposed
+    to run on the SYSTEM preset (user instruction, 09-24).
+
+    tries=30: the filament popup lists every installed preset (aliases, Bambu,
+    Generic, …) and the target can sit well past row 10 — with tries=10 the walk
+    stopped early and returned the last row it happened to select (measured
+    09-21: 'Bambu ASA-CF' instead of 'Generic ABS'). Each attempt re-opens the
+    popup and clicks one row deeper, so the walk is O(rows), not a search.
+    """
+    slots = wait_slots(session)
     hit = next((s for s in slots if s["slot"] == slot), None)
     if not hit or not hit["combo"]:
         print(f"{LOG} slot {slot} combo not found")
         return ""
-
-    def matches(text):
-        return target_substr in text and not any(e in text for e in excludes)
-
     text, rect, ch = hit["combo"]
-    if matches(combo_text(ch)):
+    if not force and target_substr in combo_text(ch):
         return combo_text(ch)
+    # Budget guard: each attempt opens the popup (4s wait) and may scroll it 24
+    # notches, so `tries=30` can run tens of minutes when the target row is not
+    # in the list at all — a case that should FAIL loudly instead hung with the
+    # screen frozen (measured 09-24: the force=True re-apply, which cannot use
+    # the name-match short-circuit, sat >15min). The re-apply case also only
+    # needs a short walk: the preset is already the one displayed on the combo.
+    deadline = time.monotonic() + (90.0 if force else 240.0)
     cx = (rect[0] + rect[2]) // 2
     cy = (rect[1] + rect[3]) // 2
-
-    def open_popup():
-        # the self-drawn combo opens its popup unreliably while the app
-        # sits behind the demote watchdog's foreground window (m8f surface
-        # analysis) — pull it forward before every click
-        try:
-            winutil.user32.SetForegroundWindow(session.hwnd)
-            time.sleep(0.4)
-        except Exception:  # noqa: BLE001
-            pass
+    for attempt in range(tries):
+        if time.monotonic() > deadline:
+            print(f"{LOG} slot{slot} preset-switch budget exhausted after "
+                  f"{attempt} attempt(s) — reporting the current text")
+            break
         winutil.msg_click_screen(cx, cy, session.hwnd)
-        return export_util.wait_popup(session.pid, timeout_s=4.0)
-
-    def sample(wheel_n, row):
-        """One absolute sample: open, wheel `wheel_n` notches (0=top),
-        click `row`; returns the selected text or None."""
-        popup = open_popup()
+        popup = export_util.wait_popup(session.pid, timeout_s=4.0)
         if not popup:
             time.sleep(0.5)
-            return None
-        if wheel_n:
-            _wheel(popup, wheel_n)
+            continue
         pr = popup[2]
-        px = (pr[0] + pr[2]) // 2
-        py = pr[1] + 14 + row * 28
-        winutil.msg_click_screen(px, py)
-        time.sleep(0.9)
-        now = combo_text(ch)
-        return now
-
-    for attempt in range(10):
-        now = sample(0, attempt)
-        if now is None:
-            continue
-        print(f"{LOG} slot{slot} popup row {attempt}: {now!r}")
-        if matches(now):
-            time.sleep(1.0)
-            return now
-
-    # coarse ramp: each open is an absolute sample; three clicks per depth
-    last = None
-    repeats = 0
-    reached_end = False
-    for attempt in range(10, tries):
-        k = (attempt - 10) // 3 + 1
-        row = (attempt - 10) % 3 * 3 + 2
-        now = sample(k + max(0, k - 4), row)
-        if now is None:
-            continue
-        print(f"{LOG} slot{slot} popup row {row} (w{k + max(0, k - 4)}, "
-              f"a{attempt}): {now!r}")
-        if matches(now):
-            time.sleep(1.0)
-            return now
-        repeats = repeats + 1 if now == last else 0
-        last = now
-        if repeats >= 3:
-            reached_end = True
-            break
-
-    if not seek:
-        return combo_text(ch)
-    # binary search: the wheel offset maps monotonically to the vendor-
-    # alphabetical row name; converge on the first offset whose TOP row is
-    # >= seek, then sweep the visible window. w=0 is the PINNED current-
-    # preset row (not part of the alphabetical order) — start at 1.
-    def short_name(t):
-        return t.split("@")[0].split("(")[0].strip().lower()
-
-    lo, hi = 1, 48
-    misses = 0
-    while lo < hi:
-        mid = (lo + hi) // 2
-        now = sample(mid, 0)
-        if not now:
-            misses += 1
-            if misses > 4:
-                return combo_text(ch)
-            continue
-        print(f"{LOG} slot{slot} bs w{mid}: {now!r}")
-        if short_name(now) < short_name(seek):
-            lo = mid + 1
-        else:
-            hi = mid
-    for w_off in (max(1, lo - 1), lo):
-        for row in range(10):
-            now = sample(w_off, row)
-            if not now:
-                continue
-            print(f"{LOG} slot{slot} bs-window w{w_off} row {row}: {now!r}")
-            if matches(now):
-                time.sleep(1.0)
+        if click_popup_row(session, pr, target_substr, popup_hwnd=popup[3],
+                           scrolls=24, notch=4):
+            time.sleep(0.9)
+            now = combo_text(ch)
+            print(f"{LOG} slot{slot} OCR row -> {now!r}")
+            if target_substr in now:
                 return now
-    _ = reached_end
+            continue
+        # NO blind pitch-walk fallback: clicking rows that OCR did not match
+        # mis-selects an arbitrary preset (measured 09-23: the walk landed on
+        # 'eSUN PLA+' while looking for '- HF-TEST'), which then poisons every
+        # later step. Report the current text instead and let the caller fail
+        # loudly.
+        # diagnostic: the popup's own text, so a failed match shows what the
+        # list actually offered (OCR is the only reader — the rows are
+        # self-drawn and expose no child text)
+        try:
+            from harness import mix_dialog_util as _mdu
+            import cv2 as _cv2
+            import numpy as _np
+            pw, ph, pbuf = winutil.capture_window(popup[3])
+            pimg = _cv2.cvtColor(_np.frombuffer(pbuf, _np.uint8).reshape(ph, pw, 4),
+                                 _cv2.COLOR_BGRA2BGR)
+            words = [w for w, *_ in _mdu.ocr_words_img(pimg, scale=2)]
+            print(f"{LOG} slot{slot} popup OCR ({len(words)} words): "
+                  f"{' '.join(words)[:280]!r}")
+        except Exception as exc:  # noqa: BLE001
+            print(f"{LOG} slot{slot} popup OCR unavailable: {exc}")
+        print(f"{LOG} slot{slot} target {target_substr!r} not found by OCR "
+              f"(attempt {attempt + 1}/{tries})")
+        time.sleep(0.6)
     return combo_text(ch)
 
 
-def click_color_picker(session, slot, timeout_s=6.0):
-    """Click the slot's color chip (the clr_picker bitmap button itself,
-    measured 09-19: real-click on the chip opens the official
-    FilamentColorDialog DIRECTLY — #32770, client 380px wide; the empty
-    '…' Button at the row end is the edit-menu, NOT the picker) and return
-    the dialog tuple or None."""
+def confirm_flow_dialog(session):
+    """Answer the prompt raised by a High-Flow switch (the doc's
+    '确认切片分配喷嘴' popup) before slicing.
+
+    Measured 09-24: right after Flow -> High Flow the Slice click is rejected
+    ('slice click rejected') until the prompt is answered. Prefer a button
+    mentioning the high-flow nozzle, then OK/Confirm, then the first button.
+    Returns the action taken (or '' when no prompt appeared)."""
+    dlg = export_util.wait_toplevel(
+        session.pid, lambda c, t, r: c == "#32770", timeout_s=3.0)
+    if not dlg:
+        return ""
+    print(f"{LOG} flow prompt: {dlg[1]!r} rect={dlg[2]}")
+    kids = export_util._children_texts(dlg[3])
+    print(f"{LOG} flow prompt texts: {[t.strip() for t, _r, _c in kids if t.strip()][:10]}")
+    for want in ("high", "高流量", "ok", "yes", "confirm", "确定"):
+        # NOTE: this used to call a non-existent click_dialog_button(); the path
+        # was never exercised (m8f/m8g only ever meet the high-flow prompt), so a
+        # different dialog shape — measured 09-29: an app error box raised while
+        # switching flow with an edited process parameter — crashed with
+        # NameError. Match and click the button here, with a REAL click: a modal
+        # dialog swallows message-level clicks (#123 lesson).
+        hit = next(((t.strip(), r) for t, r, _h in kids
+                    if want in t.strip().lower()), None)
+        if hit:
+            t, r = hit
+            cx, cy = (r[0] + r[2]) // 2, (r[1] + r[3]) // 2
+            winutil.user32.SetCursorPos(cx, cy)
+            time.sleep(0.2)
+            winutil.real_click_screen(cx, cy)
+            print(f"{LOG} flow prompt -> {t!r}")
+            time.sleep(1.0)
+            return t
+    if kids:
+        t, r, _c = [k for k in kids if k[0].strip()] or kids
+        cx, cy = (r[0] + r[2]) // 2, (r[1] + r[3]) // 2
+        winutil.user32.SetCursorPos(cx, cy)
+        time.sleep(0.2)
+        winutil.real_click_screen(cx, cy)
+        print(f"{LOG} flow prompt -> first child {t!r}")
+        time.sleep(1.0)
+        return f"first {t!r}"
+    return ""
+
+
+OFFICIAL_MARKER = "official filaments"
+
+
+def official_color_popup(session, timeout_s=8.0):
+    """The OFFICIAL colour library (#32770, empty title, children carrying
+    'Official Filaments' + the current colour's name and SKU), or None.
+
+    Measured 09-24/28 with diag_m8b_swatch_probe (8 controls in slot 2's row
+    clicked one by one): the popup comes from the slot's NUMBERED COLOUR CHIP
+    (child 'Button' with text '2', whose background is the filament colour) for
+    a Snapmaker-named preset, while the 16x25 button to its right opens the
+    Edit/Delete/Merge #32768 menu — the legacy chain that ends at the NATIVE
+    Windows picker. The chip path was never taken by the old code because
+    filament_slots() picked its 'picker' by size (leftmost 12-30px child)."""
+    deadline = time.monotonic() + timeout_s
+    while time.monotonic() < deadline:
+        for cls, title, rect, hwnd in _visible_toplevels(session.pid):
+            if cls != "#32770":
+                continue
+            texts = [t.strip().lower() for t, _r, _h
+                     in export_util._children_texts(hwnd) if t.strip()]
+            if any(OFFICIAL_MARKER in t for t in texts):
+                return cls, title, rect, hwnd
+        time.sleep(0.3)
+    return None
+
+
+def popup_colour_texts(popup):
+    """(name, sku) of the official popup's current colour, or (None, None)."""
+    names, skus = [], []
+    for t, _r, _h in export_util._children_texts(popup[3]):
+        t = t.strip()
+        if not t:
+            continue
+        if t.lower().startswith("sku"):
+            skus.append(t)
+        elif OFFICIAL_MARKER not in t.lower() and t.lower() not in (
+                "panel", "cancel", "ok", "+ other colors", "official filaments"):
+            names.append(t)
+    return (names[0] if names else None), (skus[0] if skus else None)
+
+
+def slot_swatch_rgb(session, slot):
+    """Mean BGR of the slot's colour chip (its background IS the filament
+    colour) — the swatch surface the baseline rows talk about."""
+    import cv2  # noqa: PLC0415
+    import numpy as np  # noqa: PLC0415
+    slots = wait_slots(session)
+    hit = next((s for s in slots if s["slot"] == slot), None)
+    if not hit or not hit.get("swatch"):
+        return None
+    x0, y0, x1, y1 = hit["swatch"]
+    crop = _screen_crop(x0 + 4, y0 + 4, x1 - 4, y1 - 4)
+    if crop is None or crop.size == 0:
+        return None
+    # cv2 BGR order; the chip is a flat colour, so the mean is stable
+    return [int(v) for v in crop.reshape(-1, 3).mean(axis=0)]
+
+
+def _screen_crop(x0, y0, x1, y1):
+    """Crop the desktop grab; the chip rects come from GetWindowRect (screen
+    coordinates), so they apply directly here (the earlier stills mixed client
+    and screen coordinates and cropped the wrong region, measured 09-24)."""
+    import cv2  # noqa: PLC0415
+    import numpy as np  # noqa: PLC0415
+    sw, sh, buf = winutil.screen_grab()
+    img = np.frombuffer(buf, np.uint8).reshape(sh, sw, 4)
+    img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+    return img[max(0, y0):y1, max(0, x0):x1]
+
+
+def click_official_color_popup(session, slot, timeout_s=8.0):
+    """Click the slot's colour chip and return the official popup (or None)."""
+    slots = wait_slots(session)
+    hit = next((s for s in slots if s["slot"] == slot), None)
+    if not hit or not hit.get("swatch"):
+        print(f"{LOG} slot {slot} colour chip not found")
+        return None
+    x0, y0, x1, y1 = hit["swatch"]
+    sx, sy = winutil.client_to_screen(session.hwnd,
+                                      (x0 + x1) // 2, (y0 + y1) // 2)
+    winutil.user32.SetCursorPos(sx, sy)
+    time.sleep(0.25)
+    winutil.real_click_screen(sx, sy)
+    popup = official_color_popup(session, timeout_s=timeout_s)
+    print(f"{LOG} slot{slot} chip click at ({sx},{sy}) -> "
+          f"{'official colour popup' if popup else 'nothing'}")
+    return popup
+
+
+def click_color_picker(session, slot, timeout_s=6.0, dialog_cls="#32770"):
+    """Click the slot's colour control; return the OFFICIAL colour popup tuple
+    or, when the slot holds a non-Snapmaker filament (which falls back to the
+    legacy picker), the native 'Color' dialog.
+
+    Preferred path (measured 09-28): the slot's NUMBERED COLOUR CHIP opens the
+    official library directly for Snapmaker presets. Only when no official
+    popup appears does the legacy chain run: picker (REAL click) -> native
+    #32768 menu (Edit/Delete/Merge with) -> its first row 'Edit' -> 'Material
+    settings' dialog -> its 'colourpicker' child (MESSAGE click: a real click
+    there is swallowed, g7b) -> native 'Color' #32770."""
+    popup = click_official_color_popup(session, slot, timeout_s=timeout_s)
+    if popup:
+        return popup
+    # A non-official filament (非官方耗材, baseline #44's 纯色 case) falls back
+    # to the LEGACY picker and the chip click already opened it — take that one
+    # instead of running the menu chain again and stacking a second dialog
+    # (measured 09-28: slot 1 'Generic PETG' -> 'Please choose the filament
+    # color' with '&Basic colors:').
+    deadline = time.monotonic() + 2.0
+    while time.monotonic() < deadline:
+        native_dlg = export_util.wait_toplevel(
+            session.pid, lambda c, t, r: c == "#32770", timeout_s=0.5)
+        if native_dlg:
+            texts = [x.strip().lower() for x, _r, _h
+                     in export_util._children_texts(native_dlg[3])]
+            if any("basic colors" in x for x in texts):
+                print(f"{LOG} slot{slot}: legacy picker opened by the chip "
+                      f"(title={native_dlg[1]!r})")
+                return native_dlg
+            break
+        time.sleep(0.3)
     slots = filament_slots(session)
     hit = next((s for s in slots if s["slot"] == slot), None)
     if not hit or not hit["picker"]:
@@ -303,45 +561,83 @@ def click_color_picker(session, slot, timeout_s=6.0):
     py = (rect[1] + rect[3]) // 2
     # REAL click: the clr_picker is a wxBitmapButton whose wx handler
     # needs a real input event (message-level clicks never opened the
-    # dialog, measured 09-17 suite). Pull the app foreground first — a
-    # real click on a demoted window is consumed by ACTIVATION and the
-    # picker handler never fires (measured 09-20: dialog wait timed out).
-    try:
-        winutil.user32.SetForegroundWindow(session.hwnd)
-        time.sleep(0.5)
-    except Exception:  # noqa: BLE001
-        pass
+    # menu, measured 09-17 suite)
     sx, sy = winutil.client_to_screen(session.hwnd, px, py)
     winutil.user32.SetCursorPos(sx, sy)
     time.sleep(0.25)
     winutil.real_click_screen(sx, sy)
-    # FilamentColorDialog = 380-400px wide #32770; the width band keeps a
-    # stray 750px preset-settings editor from being mistaken for it
+    menu = export_util.wait_toplevel(
+        session.pid, lambda c, t, r: c == "#32768", timeout_s=3.0)
+    if menu:
+        mr = menu[2]
+        my = mr[1] + max((mr[3] - mr[1]) // 6, 8)   # first row of three
+        mx = (mr[0] + mr[2]) // 2
+        winutil.user32.SetCursorPos(mx, my)
+        time.sleep(0.2)
+        winutil.real_click_screen(mx, my)
+        time.sleep(0.5)
+    # 'Material settings' (contains the colourpicker child)
     dlg = export_util.wait_toplevel(
-        session.pid,
-        lambda c, t, r: c == "#32770" and 300 <= r[2] - r[0] <= 460,
-        timeout_s=timeout_s)
+        session.pid, lambda c, t, r: c == "#32770", timeout_s=timeout_s)
+    if dlg:
+        cp = next((ch for t, r, ch
+                   in export_util._children_texts(dlg[3])
+                   if t.strip() == "colourpicker"), None)
+        if cp:
+            rc = wt.RECT()
+            user32.GetWindowRect(cp, ctypes.byref(rc))
+            winutil.msg_click_screen((rc.left + rc.right) // 2,
+                                     (rc.top + rc.bottom) // 2, cp)
+            time.sleep(1.5)
+            # the official color dialog opens as a SECOND #32770 ('Color')
+            deadline = time.monotonic() + timeout_s
+            while time.monotonic() < deadline:
+                for cls, title, rect2, hwnd in _visible_toplevels(
+                        session.pid):
+                    if cls == "#32770" and "color" in title.lower():
+                        time.sleep(1.0)
+                        return cls, title, rect2, hwnd
+                time.sleep(0.3)
+    if dialog_cls:
+        dlg = export_util.wait_toplevel(
+            session.pid, lambda c, t, r: c == dialog_cls,
+            timeout_s=timeout_s)
+    else:
+        dlg = export_util.wait_popup(session.pid, timeout_s=timeout_s)
     time.sleep(1.0)
     return dlg
 
 
+def _visible_toplevels(pid):
+    """[(cls, title, rect, hwnd)] of the pid's visible top-level windows."""
+    WNDENUMPROC = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p,
+                                     ctypes.c_void_p)
+    out = []
+
+    def cb(hwnd, _lp):
+        tid = wt.DWORD()
+        user32.GetWindowThreadProcessId(hwnd, ctypes.byref(tid))
+        if tid.value != pid or not user32.IsWindowVisible(hwnd):
+            return True
+        cls = ctypes.create_unicode_buffer(64)
+        user32.GetClassNameW(hwnd, cls, 64)
+        txt = ctypes.create_unicode_buffer(96)
+        user32.GetWindowTextW(hwnd, txt, 96)
+        rc = wt.RECT()
+        user32.GetWindowRect(hwnd, ctypes.byref(rc))
+        out.append((cls.value, txt.value,
+                    (rc.left, rc.top, rc.right, rc.bottom), hwnd))
+        return True
+
+    user32.EnumWindows(WNDENUMPROC(cb), 0)
+    return out
+
+
 def close_dialog_by_button(dlg, substr):
-    """Click the dialog button whose visible text contains substr. The
-    FilamentColorDialog's OK/Cancel DO expose text ('OK'/'Cancel', measured
-    09-19 — the earlier 'invisible self-drawn buttons' note came from
-    driving the preset settings editor by mistake). Fallback for truly
-    textless buttons: recursive descendant search by standard control ID
-    (wxID_OK=5100 / wxID_CANCEL=5101) + message click at its rect —
-    GetDlgItem only sees DIRECT children, which is why it missed them."""
+    """Click the dialog child button whose text contains substr."""
     kids = export_util._children_texts(dlg[3])
     for t, r, _h in kids:
         if substr.lower() in t.lower():
-            winutil.msg_click_screen((r[0] + r[2]) // 2, (r[1] + r[3]) // 2)
-            time.sleep(1.2)
-            return True
-    want = 5100 if ("ok" in substr.lower() or "确定" in substr) else 5101
-    for t, r, ch in kids:
-        if not t and winutil.user32.GetDlgCtrlID(ch) == want:
             winutil.msg_click_screen((r[0] + r[2]) // 2, (r[1] + r[3]) // 2)
             time.sleep(1.2)
             return True
@@ -351,14 +647,32 @@ def close_dialog_by_button(dlg, substr):
 # --- nozzle band --------------------------------------------------------------
 
 def nozzle_reads(session):
-    """{diameter, flow, flow_rect} from the sidebar nozzle section (the
-    diameter/flow combo VALUES are text children at y 280-320)."""
+    """{diameter, flow, flow_rect} from the sidebar nozzle section.
+
+    Values are located RELATIVE to the 'Diameter'/'Flow' labels instead of the
+    original rig's absolute band (screen y 275-325): on this rig the section sits
+    elsewhere, so the band returned the diameter by luck and never saw the flow
+    value (measured 09-21: flow=None while the panel showed 'Standard').
+    On 2.4.0 the nozzle section appears TWICE in the child tree: a collapsed
+    template instance (y~248-280, 20px slivers at x5-25) and the live one
+    (y~283-315). Anchor on the LIVE labels (label rows below y=250) and only
+    accept value rects wide enough to be the live widgets (measured 09-22, g11).
+    """
+    rows = list(export_util._children_texts(session.hwnd))
+    labels = [r for t, r, _c in rows if t.strip() in ("Diameter", "Flow")
+              and r[0] < 425 and r[1] > 250]
+    if labels:
+        lo, hi = min(r[1] for r in labels) - 12, max(r[3] for r in labels) + 12
+    else:
+        lo, hi = 275, 325
     diameter = flow = None
     flow_rect = None
-    for text, rect, ch in export_util._children_texts(session.hwnd):
-        if not (275 <= rect[1] <= 325 and rect[0] < 425):
+    for text, rect, ch in rows:
+        if not (lo <= rect[1] <= hi and rect[0] < 425):
             continue
         if text.strip() == "Diameter" or text.strip() == "Flow":
+            continue
+        if rect[2] - rect[0] < 40:      # degenerate template instance
             continue
         if text.strip().endswith("mm"):
             diameter = text.strip().replace(" ", "")
@@ -380,39 +694,25 @@ def switch_flow_combo(session, target_substr, tries=4):
     cx = rect[2] - 12
     cy = (rect[1] + rect[3]) // 2
     for attempt in range(tries):
-        # 09-18 popup3 diag: no native ComboBox child exists here (all
-        # wxWindowNR), and neither the arrow msg_click nor a real_click
-        # opened the dropdown. The filament preset combo opens on a CENTER
-        # msg_click (switch_filament_preset) — try that shape first, fall
-        # back to the arrow edge on odd attempts. The last surface
-        # difference vs that combo is the demoted window: pull the app to
-        # foreground before clicking.
-        try:
-            winutil.user32.SetForegroundWindow(session.hwnd)
-            time.sleep(0.4)
-        except Exception:  # noqa: BLE001
-            pass
-        if attempt % 2 == 0:
-            winutil.msg_click_screen((rect[0] + rect[2]) // 2,
-                                     (rect[1] + rect[3]) // 2, session.hwnd)
-        else:
-            sx, sy = winutil.client_to_screen(session.hwnd, cx, cy)
-            winutil.user32.SetCursorPos(sx, sy)
-            time.sleep(0.2)
-            winutil.real_click_screen(sx, sy)
+        winutil.msg_click_screen(cx, cy, session.hwnd)
         popup = export_util.wait_popup(session.pid, timeout_s=4.0)
         if not popup:
-            # the click may still have focused the combo — wx combos flip to
-            # the first item matching a typed letter ('H'igh Flow)
-            winutil.user32.SendMessageW(session.hwnd, 0x0102, ord("H"), 0)
-            time.sleep(0.8)
-            now = nozzle_reads(session).get("flow") or ""
-            print(f"{LOG} flow key 'H': {now!r}")
-            if target_substr in now:
-                time.sleep(1.0)
-                return now
+            print(f"{LOG} flow attempt {attempt + 1}: popup did not open")
+            time.sleep(0.6)
             continue
         pr = popup[2]
+        # OCR the popup and click the ROW whose text contains the target —
+        # the blind pitch walk missed whenever the popup failed to reopen on
+        # the 2nd attempt, so the switch never happened (measured 09-24: the
+        # options list DID contain 'High Flow' all along, g33).
+        if click_popup_row(session, pr, target_substr, popup_hwnd=popup[3]):
+            time.sleep(0.9)
+            now = nozzle_reads(session).get("flow") or ""
+            print(f"{LOG} flow OCR row -> {now!r}")
+            if target_substr in now:
+                time.sleep(0.8)
+                return now
+            continue
         px = (pr[0] + pr[2]) // 2
         py = pr[1] + 14 + attempt * 28
         winutil.msg_click_screen(px, py)

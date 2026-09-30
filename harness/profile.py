@@ -193,6 +193,17 @@ def seed_profile(dest: Path,
         else:
             shutil.copytree(source_printers, dst_printers)
 
+    # 2.5) USER presets: hand-made test packages (e.g. the flow test pair
+    #      '0.20mm ... - 标准测试' / '- 高流量测试') live in
+    #      <datadir>/user/default/{process,filament,machine} — the same
+    #      folder the tester replaces by hand (resources/user/default is the
+    #      vendored copy, delivered 09-23 for the #135/#136 flow cases).
+    src_user = resources / "user"
+    if src_user.exists() and not (dest / "user").exists():
+        shutil.copytree(src_user, dest / "user")
+        print(f"[profile] user presets seeded: "
+              f"{[p.name for p in (dest / 'user' / 'default').glob('*')]}")
+
     # 3) app conf: minimal hand-written template — reproducible and free of
     #    user state (recent files, window geometry, device identity).
     conf = json.loads(json.dumps(MINIMAL_CONF))
