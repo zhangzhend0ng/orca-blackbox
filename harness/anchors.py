@@ -184,7 +184,30 @@ PAINT_PAL_LEFT_OFF = 250
 
 
 def capture_bgr(session):
-    cap = winutil.capture_window(session.hwnd)
+    """Frame of the app's client area (BGRA -> BGR).
+
+    PrintWindow is the primary path (it renders GL/WebView2 content while
+    occluded) but it TIMES OUT while the app is busy (WinError 1460, measured
+    09-23: m8f's filament-switch loop made every capture raise and killed the
+    case). Falls back to a desktop grab cropped to the client area — the app
+    is the foreground window on the test rig, so the pixels are equivalent."""
+    try:
+        cap = winutil.capture_window(session.hwnd)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[anchors] PrintWindow failed ({exc}) — desktop-grab fallback")
+        import ctypes
+        import ctypes.wintypes as _wt
+        rc = _wt.RECT()
+        winutil.user32.GetClientRect(session.hwnd, ctypes.byref(rc))
+        w, h = rc.right - rc.left, rc.bottom - rc.top
+        ox, oy = winutil.client_to_screen(session.hwnd, 0, 0)
+        sw, sh, buf = winutil.screen_grab()
+        row = w * 4
+        out = bytearray()
+        for y in range(h):
+            o = ((oy + y) * sw + ox) * 4
+            out += buf[o:o + row]
+        cap = (w, h, bytes(out))
     return cv2.cvtColor(np.frombuffer(cap[2], np.uint8).reshape(cap[1], cap[0], 4),
                         cv2.COLOR_BGRA2BGR)
 

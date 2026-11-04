@@ -238,7 +238,19 @@ def export_gcode(session, out_path: Path, timeout_s: float = 60.0) -> bool:
     if not main:
         return False
     _click_center(session, main[1])  # posts EVT_GLTOOLBAR_EXPORT_GCODE
-    dlg = wait_save_dialog(session.pid, timeout_s=15.0)
+    dlg = wait_save_dialog(session.pid, timeout_s=8.0)
+    if not dlg:
+        # The message click occasionally leaves the export button cold on
+        # V2.3.6 (m8f: no dialog; m7t75 same path PASSED) — a REAL click
+        # on the same button opens the dialog reliably (measured 09-22, g9).
+        from . import winutil as _wu
+        rect = main[1]
+        sx, sy = _wu.client_to_screen(session.hwnd, (rect[0] + rect[2]) // 2,
+                                      (rect[1] + rect[3]) // 2)
+        _wu.user32.SetCursorPos(sx, sy)
+        time.sleep(0.25)
+        _wu.real_click_screen(sx, sy)
+        dlg = wait_save_dialog(session.pid, timeout_s=15.0)
     if not dlg:
         return False
     edit = find_edit(dlg[3])

@@ -1,0 +1,15 @@
+{
+    "from": "User",
+    "inherits": "0.24mm Standard @Snapmaker U1 (0.4 nozzle)",
+    "initial_layer_speed": [
+        "60"
+    ],
+    "is_custom_defined": "0",
+    "name": "0.24mm Standard @Snapmaker U1 (0.4 nozzle) - FLOW-TEST",
+    "print_settings_id": "0.24mm Standard @Snapmaker U1 (0.4 nozzle) - FLOW-TEST",
+    "process_flow_support": [
+        "standard",
+        "high_flow"
+    ],
+    "version": "2.3.1.2"
+}

@@ -1,0 +1,172 @@
+{
+    "accel_to_decel_factor": [
+        "50%",
+        "55%"
+    ],
+    "bridge_acceleration": [
+        "50%",
+        "55%"
+    ],
+    "bridge_speed": [
+        "50",
+        "55"
+    ],
+    "default_acceleration": [
+        "10000",
+        "9000"
+    ],
+    "default_jerk": [
+        "0",
+        "5"
+    ],
+    "extrusion_rate_smoothing_external_perimeter_only": [
+        "0",
+        "1"
+    ],
+    "from": "User",
+    "gap_infill_speed": [
+        "250",
+        "550"
+    ],
+    "infill_jerk": [
+        "9",
+        "11"
+    ],
+    "inherits": "0.20mm Standard @Snapmaker U1 (0.4 nozzle)",
+    "initial_layer_acceleration": [
+        "500",
+        "550"
+    ],
+    "initial_layer_infill_speed": [
+        "105",
+        "100"
+    ],
+    "initial_layer_jerk": [
+        "9",
+        "11"
+    ],
+    "initial_layer_speed": [
+        "50",
+        "60"
+    ],
+    "initial_layer_travel_speed": [
+        "100%",
+        "90%"
+    ],
+    "inner_wall_acceleration": [
+        "10000",
+        "9000"
+    ],
+    "inner_wall_jerk": [
+        "9",
+        "11"
+    ],
+    "inner_wall_speed": [
+        "300",
+        "550"
+    ],
+    "internal_bridge_speed": [
+        "150%",
+        "155%"
+    ],
+    "internal_solid_infill_acceleration": [
+        "100%",
+        "95%"
+    ],
+    "internal_solid_infill_speed": [
+        "250",
+        "550"
+    ],
+    "is_custom_defined": "0",
+    "max_volumetric_extrusion_rate_slope": [
+        "0",
+        "5"
+    ],
+    "max_volumetric_extrusion_rate_slope_segment_length": [
+        "3",
+        "5"
+    ],
+    "name": "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - HF-TEST",
+    "outer_wall_acceleration": [
+        "5000",
+        "6000"
+    ],
+    "outer_wall_jerk": [
+        "9",
+        "11"
+    ],
+    "outer_wall_speed": [
+        "200",
+        "550"
+    ],
+    "overhang_1_4_speed": [
+        "0",
+        "5"
+    ],
+    "overhang_2_4_speed": [
+        "50",
+        "55"
+    ],
+    "overhang_3_4_speed": [
+        "30",
+        "35"
+    ],
+    "overhang_4_4_speed": [
+        "10",
+        "15"
+    ],
+    "print_settings_id": "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - HF-TEST",
+    "process_flow_support": [
+        "standard",
+        "high_flow"
+    ],
+    "slow_down_layers": [
+        "0",
+        "1"
+    ],
+    "slowdown_for_curled_perimeters": [
+        "0",
+        "1"
+    ],
+    "small_perimeter_speed": [
+        "50%",
+        "55%"
+    ],
+    "small_perimeter_threshold": [
+        "0",
+        "5"
+    ],
+    "sparse_infill_acceleration": [
+        "100%",
+        "95%"
+    ],
+    "sparse_infill_speed": [
+        "270",
+        "550"
+    ],
+    "top_surface_acceleration": [
+        "2000",
+        "2500"
+    ],
+    "top_surface_jerk": [
+        "9",
+        "11"
+    ],
+    "top_surface_speed": [
+        "200",
+        "550"
+    ],
+    "travel_acceleration": [
+        "10000",
+        "9000"
+    ],
+    "travel_jerk": [
+        "12",
+        "11"
+    ],
+    "travel_speed": [
+        "500",
+        "550"
+    ],
+    "version": "2.3.1.2"
+}

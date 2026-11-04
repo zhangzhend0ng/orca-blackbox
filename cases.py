@@ -49,24 +49,27 @@ def _o(milestone: str, tier: str, **extra) -> dict:
 
 CASES: dict[str, dict] = {
     # --- smoke (engine / chain checks) --------------------------------------
+    # file= is filled in below from the on-disk layout: cases live in
+    # tests/<group>/ keyed by the Feishu baseline table's 二级分类 (see
+    # GROUP_LABELS); unclassified engine/chain cases live in tests/engine/.
     "m0_boot_check": {
-        "file": "tests/m0_boot_check.py", "milestone": "m0", "tier": "A",
+        "milestone": "m0", "tier": "A",
         "suite": "smoke", "enabled": True,
     },
     "m0_anchor_health": {
-        "file": "tests/m0_anchor_health.py", "milestone": "m0", "tier": "A",
+        "milestone": "m0", "tier": "A",
         "suite": "smoke", "enabled": True,
     },
     "m1_minimal_loop": {
-        "file": "tests/m1_minimal_loop.py", "milestone": "m1", "tier": "A",
+        "milestone": "m1", "tier": "A",
         "suite": "smoke", "enabled": True,
     },
     "m1b_maa": {
-        "file": "tests/m1b_maa.py", "milestone": "m1", "tier": "A",
+        "milestone": "m1", "tier": "A",
         "suite": None, "enabled": False,  # engine experiment (m0: MaaFw rejected)
     },
     "m2_slice_chain": {
-        "file": "tests/m2_slice_chain.py", "milestone": "m2", "tier": "A",
+        "milestone": "m2", "tier": "A",
         "suite": "smoke", "enabled": True,
     },
     # --- m3a-m3i: early business-path cases (runnable, not in the suite) -----
@@ -150,20 +153,105 @@ CASES: dict[str, dict] = {
     "m7t89": _r("m7", "B"),
     "m7t109": _r("m7", "B", known_limitation=True),
     # --- m8 (2026-09-17 批次: 飞书基线用例 base EDUAbYWcbaL2HOsgFM1cXmBpn5f,
-    #     Fit/官方颜色/温类门/净化器/高流量; GREEN 后转 regression) ---------
+    #     Fit/官方颜色/温类门/净化器/高流量; 2026-09-21 用户确认 b/c/d/f 也挂进
+    #     regression —— 此前 suite=None 导致"实现了却没人跑"，是覆盖盲区) ------
     "m8a_fit_view": _r("m8", "A"),                       # GREEN 09-17 客机
-    "m8b_official_color": _o("m8", "A", known_limitation=True),
-    "m8c_temp_mix_gate": _o("m8", "A", known_limitation=True),
-    "m8d_purifier_gcode": _o("m8", "A", known_limitation=True),
+    "m8b_official_color": _r("m8", "A", known_limitation=True),
+    "m8c_temp_mix_gate": _r("m8", "A", known_limitation=True),
+    "m8d_purifier_gcode": _r("m8", "A", known_limitation=True),
     "m8e_purifier_weakcool": _r("m8", "A"),              # GREEN 09-17 客机
-    "m8f_nozzle_flow": _o("m8", "A", known_limitation=True),
+    "m8f_nozzle_flow": _r("m8", "A", known_limitation=True),
+    # 2026-09-23 拆分: #136 单一变量对比独立成例（同会话连切两次会把客机
+    # 内存吃满 → cv2/tesseract OOM；各流量状态一个会话后不再撞墙）
+    "m8g_flow_single": _r("m8", "A"),
+    # 2026-09-28 新增 #123（软化温度 → 温类归类 → GCode 更新）: 编辑器里
+    # 'Softening temperature' 就是 temperature_vitrification；改它并走
+    # "Save Filament as" 保存后重切，顶盖 SET_PURIFIER_MODE 的分支翻转
+    # （vitr<=50 → 强冷 MODE=1，>50 → 保温 MODE=3）。
+    "m8x_123_softening_temp": _r("m8", "A"),
+    # 2026-09-29 新增 #137（三类配置带流量喷嘴标志的参数对比）: 面在**0.4 喷嘴机型的
+    # 0.20mm Standard 工艺预设**里——工艺参数面板会出现 Standard / High Flow 两个 tab；
+    # 喷嘴区那个 Flow 组合框不是这条用例的面（0.8 喷嘴机型上它不可交互）。
+    "m8x_137_flow_param_tabs": _r("m8", "A"),
+    # 2026-09-29 新增 #125（工艺全局辅材冲突，打开偏好后可切片）: 测试方口径
+    # **主材 = 对象的耗材丝、辅材 = 涂色**；面在准备页耗材列 + 涂色 gizmo +
+    # 切片按钮门禁 + Preferences 的 "Allow high/low temperature filament mixing"。
+    "m8x_125_aux_mix_pref": _r("m8", "A"),
 }
 
 
-# fill file= from the key (stem == file stem by construction) AFTER the _r/_o calls
+# 分组目录的 slug ↔ 飞书基线表「二级分类」中文名（目录命名用 slug，避开非 ASCII
+# 路径在这条 PowerShell/PSDirect 工具链上的编码坑；中文名只作展示与映射）。
+GROUP_LABELS: dict[str, str] = {
+    "mixing_match": "混色匹配映射",
+    "mixing": "混色功能",
+    "mainflow": "主流程-用例",
+    "gui": "GUI业务",
+    "topcap": "顶盖1.4.0",
+    "filament": "耗材管理",
+    "fit_view": "一键还原视图",
+    "high_flow": "高流量热端",
+    "engine": "(无基线映射 / 引擎与链路用例)",
+}
+
+# 归属特例（迁移时人工判定，2026-09-21）：用例覆盖的飞书记录跨多个二级分类，或某条
+# 映射只是 PARTIAL 交叉引用 —— 此时用例的实际分组与记录的分组不同，校验器
+# （tools/check_feishu_map.py）把这些登记为已知例外。
+GROUP_OVERRIDES: dict[str, str] = {
+    "m4d_mixing_filops": "记录跨「混色功能」+「主流程-用例」→ 归更具体的功能组",
+    "m4i_mixing_slice": "记录跨「混色功能」+「主流程-用例」→ 归更具体的功能组",
+    "m4e_mixing_paint": "仅一条 PARTIAL 主流程引用 → 留在混色功能组",
+    "m2_slice_chain": "仅一条 PARTIAL 耗材管理引用 → 留在 engine（核心切片引擎）",
+}
+
+
+def _group_of(stem: str) -> str | None:
+    """tests/ 下持有该用例脚本的分组目录名（None = 还没归组）。"""
+    tdir = HERE / "tests"
+    for d in sorted(tdir.iterdir()):
+        if d.is_dir() and not d.name.startswith("__") and (d / f"{stem}.py").exists():
+            return d.name
+    return None
+
+
+# file= 由磁盘布局推导（键名 == 脚本 stem）：tests/<group>/<key>.py。移动脚本
+# 只需挪文件，注册表自动跟随。
 for _k, _v in CASES.items():
-    if _v["file"] is None:
-        _v["file"] = f"tests/{_k}.py"
+    if _v.get("file") is None:
+        _g = _group_of(_k)
+        _v["file"] = f"tests/{_g}/{_k}.py" if _g else f"tests/{_k}.py"
+    _v["group"] = _group_of(_k) or "engine"
+
+
+def group_label(name: str) -> str:
+    """用例所属分组的飞书二级分类中文名（无映射的为 engine 的说明文案）。"""
+    g = CASES.get(name, {}).get("group", "engine")
+    return GROUP_LABELS.get(g, g)
+
+
+# 每个用例脚本头部声明其飞书来源，形如：
+#     # feishu: baseline#164 baseline#156      （多条用空格分隔）
+#     # feishu: none                            （引擎/链路用例，无基线记录）
+# 注解是"代码 → 飞书"的唯一权威来源；tools/check_feishu_map.py 做双向校验。
+_FEISHU_RE = re.compile(r"^#\s*feishu:\s*(.+?)\s*$")
+
+
+def feishu_refs(name: str) -> list[str] | None:
+    """脚本注解里声明的飞书引用。
+
+    None = 没有注解（校验器会报错：新用例漏加注解）
+    []   = 显式 none
+    else = ["baseline#164", ...]
+    """
+    path = case_path(name)
+    if not path or not path.exists():
+        return None
+    for ln in path.read_text(encoding="utf-8", errors="replace").splitlines()[:8]:
+        m = _FEISHU_RE.match(ln.strip())
+        if m:
+            val = m.group(1).strip()
+            return [] if val.lower().startswith("none") else val.split()
+    return None
 
 
 def summary(name: str) -> str:
@@ -185,9 +273,22 @@ def summary(name: str) -> str:
 
 
 def enabled_cases(suite: str | None = None) -> list[str]:
-    """Enabled case names, optionally filtered to a suite (None = all enabled)."""
+    """Enabled case names, optionally filtered to a suite (None = all enabled).
+
+    suite="baseline" = 只在飞书基线表里有映射的用例（注解 `# feishu: baseline#N`），
+    即"基线用例文档里"的那些 —— 日常只跑它们即可，其余引擎/链路用例按需再跑。
+    """
+    if suite == "baseline":
+        return baseline_cases()
     return [k for k, v in CASES.items()
             if v["enabled"] and (suite is None or v["suite"] == suite)]
+
+
+def baseline_cases() -> list[str]:
+    """启用的、在飞书基线表里有用例映射的用例（按注册表顺序）。"""
+    return [k for k, v in CASES.items()
+            if v["enabled"] and any(r.startswith("baseline#")
+                                    for r in (feishu_refs(k) or []))]
 
 
 def case_path(name: str) -> Path | None:

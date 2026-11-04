@@ -676,6 +676,13 @@ def find_process_preset_combo(session):
     return (None, None, None)
 
 
+def _norm_preset(s: str) -> str:
+    """Normalise a preset label for matching: drop the layer-height 'mm'
+    suffix and collapse whitespace. 2.4.0 labels read '0.24mm Standard @...'
+    while callers pass '0.24 Standard' (measured 09-22)."""
+    return " ".join(s.replace("mm", " ").split()).lower()
+
+
 def switch_process_preset(session, target_substr, tries=6):
     """Switch the process preset to the popup row containing
     `target_substr`. The row popup is a self-drawn 'panel' top-level; rows
@@ -685,7 +692,7 @@ def switch_process_preset(session, target_substr, tries=6):
     r, ch, txt = find_process_preset_combo(session)
     if not ch:
         return False
-    if target_substr in txt:
+    if _norm_preset(target_substr) in _norm_preset(txt):
         return True
     cx, cy = (r[0] + r[2]) // 2, (r[1] + r[3]) // 2
     for attempt in range(tries):
@@ -719,10 +726,23 @@ def switch_process_preset(session, target_substr, tries=6):
         words = mdu.ocr_words_img(img, scale=3)
         print(f"[panel] preset popup {pr} ocr: "
               f"{' | '.join(t for t, *_ in words)[:160]!r}")
-        for t_w, x, y, w_w, w_h in words:
-            if target_substr in t_w:
-                sx = pr[0] + x + w_w // 2
-                sy = pr[1] + y + w_h // 2
+        # 2.4.0 preset labels carry the 'mm' layer-height suffix ('0.40mm
+        # Standard @Snapmaker U1 (0.8 nozzle)') and OCR splits a row into
+        # separate tokens — a single-word substring match for '0.40
+        # Standard' therefore never hit and the blind 28px pitch walk
+        # clicked the wrong rows (measured 09-22: m5a 'switched=False').
+        # Group tokens into rows by y, normalise ('mm' -> space), match.
+        norm = _norm_preset
+        row_toks: dict = {}
+        for tok in words:
+            row_toks.setdefault(round(tok[2] / 8), []).append(tok)
+        clicked = False
+        for key in sorted(row_toks):
+            row = sorted(row_toks[key], key=lambda v: v[1])
+            if norm(target_substr) in norm(" ".join(v[0] for v in row)):
+                anchor = row[0]
+                sx = pr[0] + anchor[1] + anchor[3] // 2
+                sy = pr[1] + anchor[2] + anchor[4] // 2
                 winutil.msg_click_screen(sx, sy)  # popup: no root piercing
                 clicked = True
                 break
@@ -732,7 +752,7 @@ def switch_process_preset(session, target_substr, tries=6):
         time.sleep(0.8)
         buf = ctypes.create_unicode_buffer(256)
         user32.GetWindowTextW(ch, buf, 256)
-        if target_substr in buf.value:
+        if _norm_preset(target_substr) in _norm_preset(buf.value):
             return True
     return False
 

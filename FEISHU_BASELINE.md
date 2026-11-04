@@ -56,13 +56,13 @@
 
 | # | 用例标题 | 优先级 | 处置 | 映射/备注 |
 |---|---|---|---|---|
-| 44 | 官方耗材颜色列表展示 | P0 | GREEN(m8b) | 名称/SKU/Official Filaments 文本 + 21 色卡(窗口文本'panel') |
-| 46 | 更改颜色后点击确定颜色生效 | P0 | GREEN(m8b) | 选卡->名称即变(Mint Lemonade->Ice Lake)->OK->chip 像素变 |
-| 47 | 更改颜色后点击取消不登记新颜色 | P0 | GREEN(m8b) | 选卡->Cancel->颜色不变 |
-| 48 | 模态弹窗基本布局展示 | P0 | GREEN(m8b) | 模态✓(ShowModal 实证,撤回 09-19'非模态'伪测量); 卡+名+SKU 窗口文本 |
-| 55 | 用户可选择双拼/渐变色作为耗材类型 | P0 | GREEN(m8b) | 下拉=OrcaFilamentLibrary 全序无 Snapmaker 行,Rainbow 不可达->PolyLite Dual PLA 双拼替代 |
-| 56 | 模型渲染显示双拼/渐变耗材主色 | P0 | GREEN(m8b) | chip 色度弱断言 |
-| 58 | 混色耗材切片生成对应Gcode | P0 | GREEN(m8b) | 槽1 同步 Dual 后 slice+export 落盘 |
+| 44 | 官方耗材颜色列表展示 | P0 | NEW->m8b | 官方颜色列表 FilamentColorDialog 分类卡 |
+| 46 | 更改颜色后点击确定颜色生效 | P0 | NEW->m8b | 色盘确定->颜色登记(色块像素) |
+| 47 | 更改颜色后点击取消不登记新颜色 | P0 | NEW->m8b | 色盘取消->颜色不变 |
+| 48 | 模态弹窗基本布局展示 | P0 | NEW->m8b | 模态弹窗布局: 颜色卡片+名称+SKU(OCR) |
+| 55 | 用户可选择双拼/渐变色作为耗材类型 | P0 | NEW->m8b | 渐变耗材 PLA Rainbow 预设切换 |
+| 56 | 模型渲染显示双拼/渐变耗材主色 | P0 | NEW->m8b | 渐变主色渲染(模型色度) |
+| 58 | 混色耗材切片生成对应Gcode | P0 | NEW->m8b | 渐变耗材切片 gcode 生成 |
 | 59 | 切片预览展示双拼/渐变色的主色 | P0 | PARTIAL | 切片预览主色=视觉冒烟(与 m2 色度共用) |
 
 ## 同步耗材 (4)
@@ -152,16 +152,16 @@
 |---|---|---|---|---|
 | 108 | 顶盖控件显隐与三端入口 | P0 | MANUAL | 顶盖控件=Control 页设备 |
 | 109 | 待机状态交互 | P0 | MANUAL | 同上 |
-| 111 | 低温+高温耗材混用拦截禁止切片 | P0 | GREEN(m8c) | 槽2->ABS 后 Slice 置灰,点击被吞 45s 不回归(帧差0+late-check);恢复后复跑✓ |
-| 112 | 低温+低温（同类）混用允许切片 | P0 | GREEN(m8c) | 夹具原样切片 done, used=[1..5] |
-| 113 | 保温模式GCode各参数值符合工艺定义 | P0 | BLOCKED->m8d | 实测 ABS->弱冷 DESIRE=0: staged 模板只看 filament[0], 可达预设全 high=0, 保温分支不可达(待产品确认) |
+| 111 | 低温+高温耗材混用拦截禁止切片 | P0 | NEW->m8c | PLA+ABS 混用->Slice 置灰+无法切片 |
+| 112 | 低温+低温（同类）混用允许切片 | P0 | NEW->m8c | PLA+PLA支撑->切片通过 |
+| 113 | 保温模式GCode各参数值符合工艺定义 | P0 | NEW->m8d | ABS->保温: MODE=3 DESIRE_TEMP=45 无 ALARM_TEMP |
 | 114 | 弱冷模式GCode参数值符合工艺定义 | P0 | NEW->m8e | PETG->弱冷: MODE=3 DESIRE_TEMP=0 无 ALARM_TEMP |
-| 122 | 修改耗材槽位类型后切片GCode参数同步更新 | P0 | GREEN(m8d) | 槽位切换(=记录原文黑盒等价): MODE 1->3 同步✓(分支值差异见 #113) |
+| 122 | 修改耗材槽位类型后切片GCode参数同步更新 | P0 | NEW->m8d | 槽位 PLA->ABS: gcode 强冷->保温 |
 | 123 | 修改耗材预设的软化温度改变温类归类后GCode更新 | P0 | PARTIAL | 需预设管理器改软化温度(深层 Tab UI), 首批缓行 |
 | 125 | 工艺全局辅材冲突，打开偏好后，可以正常切片并打印 | P0 | PARTIAL | 2 plate 全局辅材冲突+偏好开关, 用例步骤自相矛盾, 缓行 |
-| 126 | 高温耗材 ABS 被正确识别为保温模式 | P0 | BLOCKED->m8d | 同 #113 build gap: Bambu ABS/Generic ABS 均落弱冷 |
-| 127 | 高温耗材 PC 被正确识别为保温模式 | P0 | BLOCKED->m8d | Generic PC high=0->弱冷, 同 #113 gap |
-| 128 | 保温模式 GCode 参数完整写入起始位置 | P0 | GREEN(m8d) | ABS 切片 MODE/DESIRE_TEMP/FAN_SPEED/DELAY_OFF 全写入(DYNAMIC_FAN_CONTROL 表写 stale, 模板实为 FAN_SPEED) |
+| 126 | 高温耗材 ABS 被正确识别为保温模式 | P0 | NEW->m8d | ABS 识别为保温(与 #113 同链路) |
+| 127 | 高温耗材 PC 被正确识别为保温模式 | P0 | NEW->m8d | PC 识别为保温 |
+| 128 | 保温模式 GCode 参数完整写入起始位置 | P0 | NEW->m8d | 保温参数完整: MODE/DESIRE_TEMP/FAN_SPEED/DELAY_OFF(DYNAMIC_FAN_CONTROL 表写 stale, 模板实为 FAN_SPEED) |
 | 129 | 弱冷模式 GCode 参数完整写入起始位置 | P0 | NEW->m8e | 弱冷参数完整: MODE=3+弱冷风扇 |
 
 ## 高流量热端 (5)
@@ -182,3 +182,88 @@
 | 63 | 【刷新成功-有变化】设备端有新文件和删除文件时刷新，列表更新 | P0 | MANUAL | 同上 |
 | 66 | 【全部成功】3 个文件全部下载成功后，Toast 提示且各文件标记已完成 | P0 | MANUAL | 同上 |
 | 68 | 【全部成功】3 个文件全部删除成功后列表项淡出消失且存储空间更新 | P0 | MANUAL | 同上 |
+
+## 2.4.0 复跑结论（2026-09-28，基线 33 例）
+
+在同一台 Hyper-V 客机上、用 `cases.py` 的 `baseline` 套件（33 例，由各用例头部的
+`# feishu: baseline#N` 注解驱动）跑 2.4.0 portable 构建：
+
+| 结果 | 用例 |
+|---|---|
+| GREEN 33/33 | 混色 17（m3j/k/l/m/r/s/t/u/v/x/y、m4a/b/d/e/i、m2_slice_chain）、界面 4（m7a/b/c/h）、主流程 4（m7t73/74/75/t89）、m8a、顶盖与净化 3（m8c/d/e）、高流量 2（m8f/m8g）、m8b_official_color |
+
+### m8b（#44/#46/#47/#48/#55/#56/#58）在 2.4.0 上的实测差异
+
+1. **取色入口与官方色卡库**：官方色卡库**存在**，入口是侧栏槽位的**编号色块按钮**
+   （`Button` text='2'，底色即耗材颜色）——点它直接弹出官方列表
+   （`Official Filaments` + 当前色名 + `sku NNNNN` + 色卡格 + `+ Other Colors`）。
+   其右侧的 16×25 小按钮走的是 **Edit/Delete/Merge 右键菜单 → Material settings →
+   colourpicker → 传统取色器**（Windows 原生色盘）那条老链。用例曾误点后者，
+   因此一度误判"2.4.0 无官方色卡库"——**该结论已作废**。
+2. **分类映射（测试方口径）**：纯色 = 非官方耗材 → 回退传统色盘；双拼 = 官方
+   PLA Silk → 官方列表（有命名色 + SKU）；渐变 = PLA Rainbow → 官方列表
+   （当前色为自定义色时显示十六进制、无 SKU，列表本身仍在）。三类均有断言。
+3. **侧栏色块恒灰**：老断言读的那个"色块"在 2.4.0 上读出恒定 `[213,213,211]`
+   （它是固定图标，不是实时色块）；真正的颜色面是**编号色块**与**弹窗读数**，
+   两者都已用于断言（#46 观察到色块像素随改色变化）。
+4. **工程覆盖 vs 系统预设**：夹具工程内嵌 50 个 `filament_*` 覆盖项，槽位因此带
+   `*`（Orca 的"预设已修改"标记，只出现在部分窗口文本中）。用例现在会**先把槽位
+   重选回系统预设**，并以"改耗材子菜单里该行无 `*`"作为断言证据。
+5. **预设下拉的滚动**：该弹窗**无视消息级滚轮**，必须用真实滚轮输入才能滚动——
+   否则字母序在打开位置之上的预设（如 PLA Rainbow）无法被搜索到。
+
+### 台架环境说明（跑批沙盒 vs 用户环境）
+
+跑批用 `--datadir artifacts/m3_profile`（由 `harness/profile.py` 现场播种的沙盒）。播种时会从应用
+的 `resources/profiles` 拷入 **Snapmaker + BBL（Bambu Lab）两个厂商包** —— 装第二个厂商包是为了
+让**首次启动向导**不出现（它的门槛是"机器列表里存在非默认打印机"，09-03 实测：只装默认厂商时向导会
+弹出来挡住界面）。**副作用**：我们的耗材/预设下拉里会多出 **Bambu 与第三方（eSUN、Valment 等）**
+条目，而用户自己的配置目录里看不到这些（用户侧多半累积了厂商/机型过滤）。
+
+用例按**名字**匹配预设（`Snapmaker PLA Silk`、`Snapmaker PLA Rainbow` 等），多出的条目不影响判定。
+若以后需要严格贴近用户配置，建议把厂商列表做成**可配置开关**（仅 Snapmaker / Snapmaker+BBL），
+而不是手搓一个桩厂商包（vendor.json + 机型继承的维护成本与风险都不低）。
+
+> 时间戳口径：客机原先时区是 `Pacific Standard Time`（与宿主的 `China Standard Time` 差 15 小时，
+> **UTC 一直是准的**），09-28 已改为 `China Standard Time` 并 resync；此前按客机时间记录的
+> 截图/录像时间戳需要 +15 小时换算。
+
+## 飞书「待实现」逐条落地（2026-09-29）
+
+基线表里标 `待实现` 的行按「跑通一条、写回一条」推进；已落地的三条（均在 Hyper-V 客机
+2.4.0 构建上实测，录像存 `artifacts/videos/`，写回已回读校验）：
+
+| 行 | 用例 | 结果 |
+|---|---|---|
+| #123 修改耗材预设的软化温度改变温类归类后 GCode 更新 | `m8x_123_softening_temp` | GREEN 17/17（含 GCode 里 `MODE/DESIRE_TEMP` 分支翻转） |
+| #137 耗材丝配置、工艺配置有流量喷嘴标志的参数对比 | `m8x_137_flow_param_tabs` | GREEN 15/15 |
+| #125 工艺全局辅材冲突，打开偏好后可以正常切片 | `m8x_125_aux_mix_pref` | GREEN 19/19 |
+
+### #125 的口径与那个"点不动"的坑（2026-09-30）
+
+* 测试方口径：**主材 = 对象的耗材丝；辅材 = 涂色**（painted）。高低温混用门禁对二者生效。
+* 预期链路：冲突时 Slice **置灰 + 红条 `Detected both high and low temperature` + 点击被吞**
+  （无法切片）→ 打开偏好 `Allow high/low temperature filament mixing` → 点 Slice 弹
+  `Confirm slicing`（正文点名 High `[1] Generic ABS` / Low `[2] Snapmaker PLA Silk`）→
+  Confirm → 应用切到 Preview，切片发起。
+* **坑**：偏好里那一行是**复选框**，点它会**立刻弹出** `…Material Mixing Risk`
+  （"Do you want to enable this feature?"），**只有按 Confirm 才真正启用**。把"弹框盖住
+  复选框造成的像素变化"当成开关翻转、接着用 WM_CLOSE 关偏好窗口，会把改动一起丢掉 ——
+  症状是门禁永不解除、点 Slice 毫无反应（排查花了大半天）。
+* 另一个自伤：`page()` 原来按文字取最左的 tab，**永远返回 Prepare**（截图里已在 Preview），
+  于是"切片已发起"被判成超时。现在按"哪个 tab 是高亮绿色"判定。
+
+### #137 的两个面在哪里（测试方两次纠正后的实测结论）
+
+* **耗材侧** = `Material settings` 对话框里的 `[Standard flow] / [High flow]` 子 tab。
+* **工艺侧** = 侧边栏 `Process` 面板 **先把 `Advanced` 开关打开**，才会出现 **`Speed`** tab
+  （默认只有 Quality/Strength/Support/Multimaterial/Others 五个），Speed 页上同样有
+  `[Standard flow] / [High flow]`。预设名右侧三个图标是 `[保存][删除][搜索]`（点中间那个
+  弹的是 `Delete Preset`），右键/双击预设名都没有参数对话框 —— 工艺侧的流量面就在 Speed 页。
+* **带标志参数** = 测试包（`resources/user/default/`）里声明成两档值的键，例如耗材包
+  `nozzle_temperature=['210','220']`、`filament_flow_ratio=['0.95','0.966']`，工艺包
+  `process_flow_support=['standard','high_flow']`、`initial_layer_speed=['60','50']`、
+  `outer_wall_speed=['550','500']`。用例对两侧都做了**动手改值**的验证：改 A 模式后
+  B 模式仍读自己的值、且全页找不到新值；不带标志的参数（Idle temperature）两侧同步。
+* 踩坑：耗材编辑器的 `Cancel` 在 1920×1080 下**在屏幕外**，必须用 `Esc` 关闭并回读确认
+  —— 对话框没关时模态会吃掉后面所有侧边栏点击（工艺侧曾因此整段 FAIL）。
