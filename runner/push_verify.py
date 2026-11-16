@@ -22,7 +22,7 @@ GUEST_USER = os.environ.get("ORCA_BB_GUEST_USER", "test")
 GUEST_PASS = os.environ.get("ORCA_BB_GUEST_PASS", "123456")
 RELAY_CMD = os.path.join(VM_SETUP, "relay_cmd.txt")
 RELAY_OUT = os.path.join(VM_SETUP, "relay_out.txt")
-CRED = (f'New-Object System.Management.Automation.PSCredential("{GUEST_USER}",'
+CRED = (f'$cred = New-Object System.Management.Automation.PSCredential("{GUEST_USER}",'
         f'(ConvertTo-SecureString "{GUEST_PASS}" -AsPlainText -Force))')
 
 
