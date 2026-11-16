@@ -146,12 +146,20 @@ if ($V3) {
 Push-Location (Split-Path $PSScriptRoot -Parent)
 # rev-parse does NOT do range semantics — on 'A..B' it prints BOTH endpoints
 # (sha + ^sha), which once falsely reported "2 commits ahead"; rev-list counts.
-$aheadCount = [int](git rev-list --count 'origin/main..HEAD' 2>$null)
+$hostBranch = git symbolic-ref --quiet --short HEAD
+if ($LASTEXITCODE -ne 0) { throw 'host checkout must be on a branch' }
+$trackingRef = git for-each-ref '--format=%(upstream:short)' "refs/heads/$hostBranch"
+if ($LASTEXITCODE -ne 0) { throw 'cannot read host tracking branch' }
+$aheadCount = 0
+if ($trackingRef) {
+  $aheadCount = [int](git rev-list --count "$trackingRef..HEAD")
+  if ($LASTEXITCODE -ne 0) { throw 'cannot compare host with its tracking branch' }
+}
 # only tracked modifications count as drift — untracked files are never
 # pushed and never executed (the runner's case list comes from the registry)
 $dirty = @(git status --porcelain 2>$null | Where-Object { $_ -notmatch '^\?\?' })
 Pop-Location
-if ($aheadCount -gt 0) { Write-Warning "host is $aheadCount commit(s) ahead of origin/main — guest will NOT see them until pushed" }
+if ($aheadCount -gt 0) { Write-Warning "host is $aheadCount commit(s) ahead of $trackingRef — guest will NOT see them until pushed" }
 if ($dirty) { Write-Warning "host worktree has $($dirty.Count) uncommitted entries — these do not reach the guest either" }
 if (-not $NoSync) {
   Write-Host "[2.5] syncing guest checkout (git pull --ff-only)..."
@@ -326,7 +334,7 @@ Write-Host "    or in guest: Get-Content C:\coil\regress_progress.txt -Tail 5"
 # hv_go only LAUNCHES the batch (it runs for hours on the guest); these
 # lines fire at launch time so the closeout steps are not forgotten later.
 Write-Host "[5] after-batch closeout (batch discipline, README top section):"
-if ($aheadCount -gt 0) { Write-Warning "   host is $aheadCount commit(s) ahead of origin/main — commit+push results/fixes first" }
+if ($aheadCount -gt 0) { Write-Warning "   host is $aheadCount commit(s) ahead of $trackingRef — commit+push results/fixes first" }
 if ($dirty) { Write-Warning "   host worktree has $($dirty.Count) uncommitted entries — stage or commit them" }
 Write-Host "   (1) pull results: & runner\hv_harvest.ps1"
 Write-Host "   (2) feishu writeback (GREEN only, host lark-cli): python tools\feishu_writeback.py --help"
