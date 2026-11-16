@@ -116,10 +116,16 @@ if (-not $NoSync) {
       Where-Object { $_ -notmatch '^\?\?' })
     if ($dirty) { return "DIRTY: " + (($dirty | Select-Object -First 5) -join '; ') }
     $pull = (& $git -C $sb pull --ff-only 2>&1 | ForEach-Object { "$_" }) -join ' | '
-    "PULLED: $pull HEAD: " + (& $git -C $sb log --oneline -1)
+    $pullExit = $LASTEXITCODE
+    if ($pullExit -ne 0) { return "SYNC_FAILED: git pull exit=$pullExit $pull" }
+    $head = & $git -C $sb log --oneline -1
+    if ($LASTEXITCODE -ne 0) { return 'SYNC_FAILED: cannot read guest HEAD' }
+    "SYNC_OK: $pull HEAD: $head"
   } -ArgumentList $guestGit, $guestSandbox
   Write-Host "    $sync"
-  if ("$sync" -match 'DIRTY|fatal|error|conflict|refusing') {
+  # Commit subjects and informational Git output may contain words such as
+  # 'errors'. Only the explicit status produced above determines success.
+  if ("$sync" -notmatch '^SYNC_OK:') {
     throw "guest checkout sync failed — refusing to launch (pass -NoSync to override, e.g. deliberate bisect): $sync"
   }
 }
