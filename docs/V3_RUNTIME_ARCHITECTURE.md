@@ -1,5 +1,7 @@
 # v3 最小运行时架构
 
+后续接口扩展：同一 `run_once` 已新增显式 `execution_mode="guest_script"`，首个真实 Script 仅支持客机 m0 bootstrap，仍为 SHADOW、不开放发布；精确接线与验证边界见 [V3_SCRIPT_ADAPTER.md](V3_SCRIPT_ADAPTER.md)。下文保留最初 synthetic 骨架的设计与验收窗口，不能将其未实现项直接当作后续版本现状。
+
 状态：2026-11-16，单次 synthetic 运行骨架设计与接口说明；本文不代表 GUI 或发布验收通过。实现验收状态见文末。
 
 本批先把契约、调度、执行、独立验证与收尾接成一条可运行主链，再替换真实执行器。验收使用纯 synthetic adapter，不启动 Orca，不调用模型服务，不新增第三方依赖。交付目标是一套 core runtime + ports，避免继续堆没有调用者的 helper。本批不修 m5，不调整旧 launcher、profile 或 farm_runner。

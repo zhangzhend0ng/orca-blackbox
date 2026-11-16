@@ -11,6 +11,7 @@
 #   "FAILED: <name> <name> ..."  -> names written one per line
 #   "SUMMARY: PASS=n FAIL=0"     -> host list cleared (no stale reruns)
 #   no summary file              -> host list untouched (unknown state)
+param([switch]$V3)
 . (Join-Path $PSScriptRoot '_common.ps1')
 
 $repo = Split-Path $PSScriptRoot -Parent
@@ -18,6 +19,21 @@ $artifacts = Join-Path $repo 'artifacts'
 New-Item -ItemType Directory -Force $artifacts | Out-Null
 $ff = Join-Path $artifacts 'failed_cases.txt'
 
+if ($V3) {
+  $payload = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
+    param($sb)
+    $file = Join-Path $sb 'artifacts\v3_suite.json'
+    if (Test-Path $file) { Get-Content $file -Raw -Encoding UTF8 }
+  } -ArgumentList $guestSandbox
+  if (-not $payload) { throw 'V3 suite result missing; no legacy result substituted' }
+  $data = $payload | ConvertFrom-Json
+  if ($data.schema_version -ne 1 -or $data.mode -ne 'script_shadow' -or $data.release_eligible -ne $false) {
+    throw 'Unexpected V3 suite result schema'
+  }
+  $payload | Set-Content (Join-Path $artifacts 'v3_suite.json') -Encoding UTF8
+  'V3 SHADOW suite report harvested; legacy JUnit and failed list unchanged'
+}
+else {
 $remote = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
   param($sb)
   $s = if (Test-Path C:\coil\regress_summary.txt) { Get-Content C:\coil\regress_summary.txt -Raw } else { '' }
@@ -44,4 +60,5 @@ else {
 if ($remote.junit) {
   $remote.junit | Set-Content (Join-Path $artifacts 'junit.xml') -Encoding UTF8
   "junit.xml pulled -> $(Join-Path $artifacts 'junit.xml')"
+}
 }

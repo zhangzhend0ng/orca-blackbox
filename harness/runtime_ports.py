@@ -1,4 +1,4 @@
-"""Nonblocking trusted-adapter contracts for the synthetic runtime only.
+"""Nonblocking trusted-adapter contracts for synthetic and guest script shadow runs.
 
 No DTO grants permissions. Adapters are trusted Python code: every port method
 must return promptly; the coordinator cannot preempt a blocking Python callback.

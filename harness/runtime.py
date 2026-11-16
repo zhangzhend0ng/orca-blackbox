@@ -1,4 +1,4 @@
-"""A synthetic, non-GUI coordinator. This is not a production GUI runner.
+"""Synthetic coordination plus one fixed guest-only m0 script shadow adapter.
 
 Registry and adapters belong to the trusted application, never contract JSON.
 Deadlines bound cooperative poll loops; adapters must obey the nonblocking port
@@ -35,23 +35,37 @@ class _Cancelled(Exception):
 def run_once(contract: CaseContract | dict, executor: ExecutorPort,
              verifier_registry: Mapping[str, VerifierPort], *, root: Path,
              desktop_id: str = "synthetic", run_id: str | None = None,
+             execution_mode: str = "synthetic",
              verify_timeout_s: float = 30, cleanup_timeout_s: float = 10,
              clock: Callable[[], float] = time.monotonic,
              sleep: Callable[[float], None] = time.sleep,
              cancelled: Callable[[], bool] = lambda: False) -> dict:
-    """Execute one trusted synthetic adapter; finalize once, never emit GREEN.
+    """Execute one trusted adapter; finalize once, never emit release GREEN.
 
     Returns persisted result fields plus paths. Adapter exceptions are recorded then
-    re-raised after cleanup. No reopen, retry, promotion, GUI, shell or model API.
+    re-raised after cleanup. No reopen, retry, promotion, shell or model API.
+    The explicit guest_script mode only accepts the fixed m0 ScriptExecutor;
+    default synthetic mode cannot launch that real adapter.
     A partial start without a returned handle quarantines the shared desktop.
     Desktop exclusion covers dispatchers sharing the same canonical evidence root.
     """
     frozen = validate_contract(contract.to_dict() if isinstance(contract, CaseContract) else contract)
-    if getattr(executor, "synthetic", None) is not True or executor.kind != frozen.executor:
-        raise ValueError("runtime: synthetic executor kind must match contract")
+    if execution_mode not in {"synthetic", "guest_script"}:
+        raise ValueError("runtime: unsupported execution mode")
+    synthetic = execution_mode == "synthetic"
+    if not synthetic:
+        from . import host_guard
+        from .script_executor import ScriptExecutor
+        if not host_guard.in_guest():
+            raise PermissionError("runtime: real script execution requires a Hyper-V guest")
+        if (type(executor) is not ScriptExecutor or frozen.case_id != "m0_boot_check"
+                or executor.contract_sha256 != contract_digest(frozen)):
+            raise ValueError("runtime: unregistered real script adapter")
+    if getattr(executor, "synthetic", None) is not synthetic or executor.kind != frozen.executor:
+        raise ValueError("runtime: executor mode/kind must match contract")
     verifier = verifier_registry.get(contract_digest(frozen))
-    if verifier is None or getattr(verifier, "synthetic", None) is not True:
-        raise ValueError("runtime: no synthetic verifier registered for this contract")
+    if verifier is None or getattr(verifier, "synthetic", None) is not synthetic:
+        raise ValueError("runtime: no verifier registered for this exact contract and mode")
     for budget in (verify_timeout_s, cleanup_timeout_s):
         if type(budget) not in (int, float) or not math.isfinite(budget) or not 0 < budget <= 3600:
             raise ValueError("runtime: invalid phase budget")
@@ -103,7 +117,7 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
         writer = RunEvidence.create(root, frozen, run_id=ident)
         artifacts = writer.run_dir / "artifacts"
         artifacts.mkdir()
-        writer.append_event("runtime_started", status="synthetic")
+        writer.append_event("runtime_started", status=execution_mode)
         runtime_status = "executing"
         case_deadline = clock() + frozen.limits.timeout_s
         start_in_progress = True
@@ -202,9 +216,15 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
                                            evidence_complete=verification.evidence_complete,
                                            execution_compliant=verification.execution_compliant)
                 result = verdict.to_dict()
-                result.update(mode="synthetic", release_verdict="SYNTHETIC", gui_executed=False,
+                result.update(mode="synthetic" if synthetic else "script_shadow",
+                              release_verdict="SYNTHETIC" if synthetic else (
+                                  "SHADOW" if verdict.verified_pass else "NON_GREEN"),
                               release_eligible=False, runtime_status=runtime_status,
                               cleanup_confirmed=cleanup_confirmed)
+                if synthetic:
+                    result["gui_executed"] = False
+                else:
+                    result["gui_execution_requested"] = True
                 writer.append_event("runtime_finished", status=runtime_status)
                 result_path = writer.finalize(result)
                 output = {**result, "run_id": writer.run_id, "run_dir": str(writer.run_dir),

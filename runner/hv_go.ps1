@@ -7,7 +7,7 @@
 # Ported from C:\coil\vm_setup\hv_go.ps1 (un-versioned); parameters now come
 # from runner\_common.ps1 (env-overridable). Case list comes from cases.py —
 # do NOT hardcode case names here (see docs/STRUCTURING_PLAN.md).
-param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$Warmup, [switch]$NoSync, [string]$Suite = 'regression')
+param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$Warmup, [switch]$NoSync, [string]$Suite = 'regression', [switch]$V3)
 . (Join-Path $PSScriptRoot '_common.ps1')
 
 # Guest passthrough gate: ONLY caller-supplied selections (-Cases, -OnlyFailed)
@@ -68,6 +68,21 @@ if ($OnlyFailed) {
 # rerun does not pay the throwaway pass.
 $warmup = if ($Warmup) { $true } elseif ($NoWarmup) { $false } else { -not $explicitCases }
 
+if ($V3) {
+  if (-not $explicitCases) { throw 'V3 requires an explicit approved case selection' }
+  if ($Warmup) { throw 'V3 does not run unrecorded warmup cases' }
+  Push-Location (Split-Path $PSScriptRoot -Parent)
+  try {
+    $approved = & python -B -c "from harness.script_session import registered_script_cases; print(' '.join(registered_script_cases()))"
+    if ($LASTEXITCODE -ne 0) { throw 'cannot read V3 Script capabilities' }
+    $allowed = @($approved -split '\s+')
+    foreach ($selected in $Cases) {
+      if ($allowed -notcontains $selected) { throw "V3 Script case is not approved: $selected" }
+    }
+  } finally { Pop-Location }
+  $warmup = $false
+}
+
 # Batch discipline preflight — this block IS the PITFALLS_0901.md §15
 # checklist printout (README top section points here; keep in sync by hand).
 Write-Host "[preflight] PITFALLS 0901 §15 checklist:"
@@ -93,6 +108,19 @@ do {
 } while (-not ($q -match $guestUser) -and (Get-Date) -lt $deadline)
 if ($q -notmatch $guestUser) { throw "guest not logged on after 6 min (autologon broken?)" }
 Write-Host "    logged on."
+
+if ($V3) {
+  # Legacy scripts do not hold the v3 runtime lease. Refuse their active
+  # desktop instead of unregistering a running task or killing its app.
+  $desktopGate = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
+    $running = @(Get-ScheduledTask -ErrorAction Stop | Where-Object {
+      $_.TaskName -eq 'suite' -and $_.State -eq 'Running'
+    })
+    $apps = @(Get-Process snapmaker-orca -ErrorAction SilentlyContinue)
+    if ($running.Count -or $apps.Count) { 'DESKTOP_BUSY' } else { 'DESKTOP_READY' }
+  } -ErrorAction Stop
+  if ("$desktopGate" -ne 'DESKTOP_READY') { throw 'V3 desktop busy; existing work left untouched' }
+}
 
 # 2.5) sync the guest checkout — the guest tracks ORIGIN (git clone since
 # 09-03), so unpushed host work never reaches it. Warn on host drift, pull
@@ -178,7 +206,7 @@ Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
   # NOTE: this scriptblock runs ON THE GUEST — everything it needs must be
   # marshaled via param/-ArgumentList (host-side $warmup is not visible here;
   # measured 09-03 night: silent $false, warmup block never emitted).
-  param($caseStr, $sb, $py, $warmup, $suite)
+  param($caseStr, $sb, $py, $warmup, $suite, $v3)
   # full run: the guest derives the list from cases.py itself (single
   # source of truth); explicit subset: split the passed string.
   # warmup fragment — the host-side decision ($warmup) must be baked into
@@ -236,6 +264,31 @@ if (`$failed) { "FAILED: `$(`$failed -join ' ')" | Add-Content C:\coil\regress_s
 `$junit = & "$py" harness\junit_report.py --batch artifacts\junit.xml `$specs 2>&1
 "junit: `$junit" | Add-Content C:\coil\regress_progress.txt
 "@
+  if ($v3) {
+    # A separate report prevents SHADOW results from entering legacy GREEN/JUnit
+    # or baseline writeback paths. The only GUI entry remains this hv_go task.
+    $runner = @"
+`$ErrorActionPreference = 'Continue'
+Set-Location '$sb'
+New-Item -ItemType Directory -Force artifacts | Out-Null
+Remove-Item artifacts\v3_suite.json -ErrorAction SilentlyContinue
+'V3 SCRIPT SHADOW RUN' | Set-Content C:\coil\v3_progress.txt
+`$cases = @( (`$args -join ' ') -split '\s+' | Where-Object { `$_ })
+`$rows = @()
+foreach (`$c in `$cases) {
+  "=== `$c ===" | Add-Content C:\coil\v3_progress.txt
+  `$env:PYTHONIOENCODING = 'utf-8'
+  `$log = "artifacts\v3_suite_`$c.log"
+  & '$py' -B tools\v3_session.py run-script `$c --root '$sb\artifacts\v3' 2>&1 | Out-File -FilePath `$log -Encoding utf8
+  `$rc = `$LASTEXITCODE
+  `$verdict = if (`$rc -eq 0) { 'SHADOW' } else { 'NON_GREEN' }
+  "`$c `$verdict rc=`$rc" | Add-Content C:\coil\v3_progress.txt
+  `$rows += @{ case_id=`$c; exit_code=`$rc; verdict=`$verdict; log=`$log }
+}
+@{ schema_version=1; mode='script_shadow'; release_eligible=`$false; cases=`$rows } | ConvertTo-Json -Depth 6 | Set-Content artifacts\v3_suite.json -Encoding utf8
+'V3 COMPLETE' | Add-Content C:\coil\v3_progress.txt
+"@
+  }
   [IO.File]::WriteAllText('C:\coil\run_suite.ps1', $runner)
   Unregister-ScheduledTask -TaskName suite -Confirm:$false -ErrorAction SilentlyContinue
   $a = New-ScheduledTaskAction -Execute "powershell.exe" -Argument ("-NoProfile -ExecutionPolicy Bypass -File C:\coil\run_suite.ps1 " + $caseStr)
@@ -244,7 +297,7 @@ if (`$failed) { "FAILED: `$(`$failed -join ' ')" | Add-Content C:\coil\regress_s
   Register-ScheduledTask -TaskName "suite" -Action $a -Settings $st -Principal $p -Force | Out-Null
   Start-ScheduledTask -TaskName "suite"
   "suite launched: " + (Get-ScheduledTask suite).State
-} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite
+} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, ([bool]$V3)
 Write-Host "[4] DONE. Poll progress any time (admin window):"
 Write-Host "    Get-Content C:\coil\vm_setup\poll_rerun.txt | Set-Content C:\coil\vm_setup\relay_cmd.txt   # via relay"
 Write-Host "    or in guest: Get-Content C:\coil\regress_progress.txt -Tail 5"
