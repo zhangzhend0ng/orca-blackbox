@@ -95,6 +95,27 @@ def test_fault_audit_can_inspect_unchanged_point_four_without_weakening_default(
     assert inspect_project(fixture, fixture, layer_height="0.4")["geometry_unchanged"]
 
 
+@pytest.mark.parametrize("printer,accepted", [
+    ("Snapmaker U1 (0.8 nozzle)(fixture.3mf)", True),
+    ("Snapmaker U1 (0.8 nozzle)(another.3mf)", False),
+    ("Snapmaker U1 (0.8 nozzle)(fixture.3mf)(0001.3mf)", False),
+    ("Snapmaker U1 (0.4 nozzle)(fixture.3mf)", False),
+    ("Snapmaker U1 (0.8 nozzle)-1(fixture.3mf)", False),
+    ("Snapmaker U1 (0.8 nozzle)(fixture.3mf)extra", False)])
+def test_only_exact_fixed_fixture_printer_alias_is_accepted(project_evidence, printer, accepted):
+    snapshot, trace, receipts = project_evidence
+    def change(members):
+        name = "Metadata/project_settings.config"
+        config = json.loads(members[name]); config["printer_settings_id"] = printer
+        members[name] = json.dumps(config).encode()
+    raw = project_bytes((snapshot.artifact_dir / "input/fixture.3mf").read_bytes(), change)
+    replace_saved(snapshot, receipts, raw); persist(snapshot, trace, receipts)
+    result = verify_project(snapshot)
+    assert result.evidence_complete is accepted
+    if not accepted:
+        assert result.checks["business"].detail == "project_slicing_scope"
+
+
 @pytest.mark.parametrize("field,value", [("sha256", "0" * 64), ("size_bytes", 1), ("datadir", "profile"),
     ("old_exit_code", True), ("old_exit_code", 1), ("old_pid", 999), ("new_pid", 999),
     ("driver_pid", 999), ("new_started_at_ns", 1), ("old_closed_at_ns", 40_000_000_000)])

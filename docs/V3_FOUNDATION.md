@@ -4,7 +4,7 @@
 
 后续已接入 `agent_mcp` 页签和层高任务：codex_chat 与无人值守 codex_cli 的页签正例 SHADOW / 无变化反例 NON_GREEN，见 [AI adapter](V3_AGENT_ADAPTER.md) 与 [运行记录](runs/v3-agent-2026-11-16.md)。层高任务由 CLI 看图编辑、GUI 切片导出，独立核对实际对象层序并确认正常退出；冻结版本 5/5 新 profile SHADOW，三个固定故障实验均获相关拒绝，见 [业务架构](V3_AGENT_LAYER.md) 与 [评估记录](runs/v3-layer-evaluation-2026-11-16.md)。Midscene、其他业务、跨版本可靠性与发布集成仍需验收。
 
-`m3g_export_3mf / ai-project-1` 的保存、跨进程重开与重切整链已实现并通过源码/纯测试检查；前两批首槽均为 NON_GREEN、各余四槽未执行；窄诊断已定位保存标题有无冒号的兼容差异，修复后的新批次待验。[整链接口](V3_PROJECT_CONTRACT.md) 与 [运行记录](runs/v3-project-2026-11-17.md) 集中维护路径、身份和验收边界，不以保存文件本身代替切片生效证明。
+`m3g_export_3mf / ai-project-1` 的保存、跨进程重开与重切整链已实现并通过源码/纯测试检查；前两批保存标题问题已定位；第三批首槽 GUI 整链自然完成、path pass，但预设名称业务检查失败，仍为 NON_GREEN；各批余四槽未执行，第四批待验。[整链接口](V3_PROJECT_CONTRACT.md) 与 [运行记录](runs/v3-project-2026-11-17.md) 集中维护路径、身份和验收边界，不以保存文件本身代替切片生效证明。
 
 ## 接口
 

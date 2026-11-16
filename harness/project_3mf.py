@@ -12,6 +12,7 @@ from .script_verify import _check_cancel, _json
 
 _CORE = "{http://schemas.microsoft.com/3dmanufacturing/core/2015/02}"
 _PROD = "{http://schemas.microsoft.com/3dmanufacturing/production/2015/06}"
+_PRINTER_IDS = {"Snapmaker U1 (0.8 nozzle)", "Snapmaker U1 (0.8 nozzle)(fixture.3mf)"}
 
 
 def _numbers(text, count):
@@ -135,7 +136,10 @@ def inspect_project(raw, fixture, *, layer_height="0.24", cancelled=lambda: Fals
     _require(type(config) is dict and type(config.get("layer_height")) is str and Decimal(config["layer_height"]) == Decimal(layer_height)
              and type(config.get("initial_layer_print_height")) is str and Decimal(config["initial_layer_print_height"]) == Decimal("0.4"), "project_layer_config")
     _require(config.get("enable_support") == config.get("raft_layers") == config.get("spiral_mode") == "0"
-             and config.get("printer_settings_id") == "Snapmaker U1 (0.8 nozzle)"
+             # External import names the preset original_name + '(' + basename
+             # + ')' (PresetBundle.cpp:2944, Preset.cpp:2284). Only this fixed
+             # fixture alias is in scope, never an arbitrary prefix/suffix match.
+             and config.get("printer_settings_id") in _PRINTER_IDS
              and type(config.get("nozzle_diameter")) is list and config["nozzle_diameter"]
              and all(Decimal(x) == Decimal("0.8") for x in config["nozzle_diameter"]), "project_slicing_scope")
     geometry, object_id, transform = _geometry(files)

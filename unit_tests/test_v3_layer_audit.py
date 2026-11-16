@@ -208,6 +208,19 @@ def test_unknown_usage_and_unrecorded_versions_stay_unknown(audited):
     assert all(value is None for value in result["version_metadata"].values())
 
 
+def test_native_host_can_start_waiting_before_the_guest_manifest(audited):
+    root, host = audited
+    path = host / "host_run.json"; value = data(path); value["started_at_ns"] = 600_000_000; write_json(path, value)
+    assert audit_run(root, host)["audit_ok"]
+
+
+def test_native_inference_before_its_guest_observation_is_still_rejected(audited):
+    root, host = audited
+    path = host / "host_run.json"; value = data(path); value["started_at_ns"] = 600_000_000; write_json(path, value)
+    path = summary(host); value = data(path); value["started_at_ns"] = 10_999_999_999; write_json(path, value)
+    assert audit_run(root, host)["error"] == "model_image_identity_or_time"
+
+
 @pytest.mark.parametrize("name", ["../private.json", "C:/private.json", "/private.json", "a\\private.json", "a/./private.json"])
 def test_evidence_reader_does_not_accept_untrusted_paths(audited, name):
     with pytest.raises(AuditError, match="unsafe_evidence_path"):
@@ -360,6 +373,14 @@ def test_missing_reslice_export_not_ready_is_a_related_tool_rejection(audited):
     assert result["audit_ok"], result
     assert result["tool_rejection"] == "export_not_ready" and not result["natural_cleanup"]
     assert result["checks"]["path"]["status"] != "pass"
+
+
+def test_fixed_probe_host_can_wait_before_guest_start_but_action_cannot_precede_frame(audited):
+    root, host = make_fault(audited, "missing_reslice")
+    path = host / "host_run.json"; value = data(path); value["started_at_ns"] = 600_000_000; write_json(path, value)
+    assert audit_run(root, host, expected_fault="missing_reslice")["audit_ok"]
+    path = host / "model_0001/summary.json"; value = data(path); value["created_at_ns"] = 10_999_999_999; write_json(path, value)
+    assert audit_run(root, host, expected_fault="missing_reslice")["error"] == "probe_action_lineage"
 
 
 @pytest.mark.parametrize("part", ["sentinel", "ack", "request-hash"])

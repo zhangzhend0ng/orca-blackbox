@@ -130,7 +130,7 @@ def _model_lineage(host, trace, run_id, case_id, start):
           and report["run_id"] == run_id and report["case_id"] == case_id and report["model_source"] == "codex_cli"
           and report["finished"] is True and report["release_eligible"] is False and report["dollar_cost"] is None
           and _integer(count, 1, 8) and len(trace) == count + 1 and type(report["actions"]) is list
-          and len(report["actions"]) == count and _integer(report["started_at_ns"], start)
+          and len(report["actions"]) == count and _integer(report["started_at_ns"], 1)
           and _integer(report["finished_at_ns"], report["started_at_ns"])
           and report["finished_at_ns"] - report["started_at_ns"] <= 600_000_000_000, "host_identity_or_budget")
     children = list(islice(host.iterdir(), 65))
@@ -203,7 +203,7 @@ def _probe_lineage(host, artifacts, manifest, ready, process, fault):
           and probe["schema_version"] == report["schema_version"] == 1
           and type(report["finished"]) is bool and probe["host_finished"] is report["finished"]
           and report["release_eligible"] is False and report["dollar_cost"] is None
-          and _integer(report["started_at_ns"], start) and _integer(report["finished_at_ns"], report["started_at_ns"])
+          and _integer(report["started_at_ns"], 1) and _integer(report["finished_at_ns"], report["started_at_ns"])
           and report["finished_at_ns"] - report["started_at_ns"] <= 600_000_000_000
           and probe.get("expected_release_verdict") == "NON_GREEN", "fault_source_identity")
     raw = _read_at(artifacts, "trace.ndjson", 1024 * 1024, start)
@@ -293,7 +293,7 @@ def _probe_lineage(host, artifacts, manifest, ready, process, fault):
               and record["observation_id"] == observation["id"] and action == expected == _data(host, f"action_{i:04d}.json", start)
               and record["image_sha256"] == observation["image"]["sha256"] == hashlib.sha256(
                   _read_at(host, f"observation_{i:04d}.png", 16 * 1024 * 1024, start)).hexdigest()
-              and _integer(record["created_at_ns"], observation["frames"][-1]["captured_at_ns"],
+              and _integer(record["created_at_ns"], max(report["started_at_ns"], observation["frames"][-1]["captured_at_ns"]),
                            upper_time), "probe_action_lineage")
         actions.append(action)
     _need(("actions" not in report or report["actions"] == actions) and ("model_calls" not in report or

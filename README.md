@@ -26,7 +26,7 @@ v3 运行骨架入口见 [架构设计](docs/V3_RUNTIME_ARCHITECTURE.md) 和 [�
 
 首个 AI 业务闭环见 [层高架构](docs/V3_AGENT_LAYER.md) 与 [首次运行记录](docs/runs/v3-layer-2026-11-16.md)：无人值守 AI 看图编辑 0.40→0.24 mm，经 GUI 切片导出 A/B，独立检查实际对象层序 68→112 层、初层保持 0.40 mm，并确认正常退出与 Job 清空。后续冻结版本的 5 次新 profile AI 运行均为 SHADOW；改错参数、漏重切、导出目标冲突三个固定故障探针均被相关检查拒绝，详见 [评估记录](docs/runs/v3-layer-evaluation-2026-11-16.md)。历史失败保留，不代表 87 条回归、跨版本可靠性或发布验收完成。
 
-第二项业务已实现“参数编辑 → 保存 3mf → 关闭并以新 profile 重开 → GUI 重切导出”的整链，复用同一运行骨架；[接口与边界](docs/V3_PROJECT_CONTRACT.md)。前两批均在首槽保存门禁失败后停止，已定位实际标题无冒号的兼容差异；各批 NON_GREEN 与四个未执行槽位保留，修复后的新批次待验，见 [本批记录](docs/runs/v3-project-2026-11-17.md)；不把代码实现或纯测试通过写成 GUI 通过，结果仍限定 SHADOW/NON_GREEN。
+第二项业务已实现“参数编辑 → 保存 3mf → 关闭并以新 profile 重开 → GUI 重切导出”的整链，复用同一运行骨架；[接口与边界](docs/V3_PROJECT_CONTRACT.md)。前两批保存标题问题已定位；第三批首槽 GUI 整链自然完成，但保存配置的预设名称被业务 oracle 拒绝，原结果仍为 NON_GREEN，各批四个未执行槽位保留，第四批待验，见 [本批记录](docs/runs/v3-project-2026-11-17.md)；不把代码实现或纯测试通过写成 GUI 通过，结果仍限定 SHADOW/NON_GREEN。
 
 - 范式参照：[MaaAssistantArknights](https://github.com/MaaAssistantArknights/MaaAssistantArknights) /
   [ok-wuthering-waves](https://github.com/ok-oldking/ok-wuthering-waves)
