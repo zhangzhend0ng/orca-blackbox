@@ -2,7 +2,7 @@
 
 第一批实现提供契约验证、独立运行记录、产物事实检查和结果聚合；后续运行骨架将这些原语串成单次生命周期。现已扩展真实 Script 及固定 AI 页签 adapter；m0 见 [接入说明](V3_SCRIPT_ADAPTER.md) 与 [运行记录](runs/v3-script-2026-11-16.md)。生产权限隔离、Midscene 和发布系统尚未接通，不能据此宣称完整 v3 已落地或当前 GUI 回归为 GREEN。
 
-后续已接入 `agent_mcp` 页签和层高任务：codex_chat 与无人值守 codex_cli 的页签正例 SHADOW / 无变化反例 NON_GREEN，见 [AI adapter](V3_AGENT_ADAPTER.md) 与 [运行记录](runs/v3-agent-2026-11-16.md)。层高任务由 CLI 看图编辑、GUI 切片导出，独立核对实际对象层序并确认正常退出，首次完整 SHADOW，见 [业务架构](V3_AGENT_LAYER.md) 与 [运行记录](runs/v3-layer-2026-11-16.md)。Midscene、其他业务、重复稳定性与发布集成仍需验收。
+后续已接入 `agent_mcp` 页签和层高任务：codex_chat 与无人值守 codex_cli 的页签正例 SHADOW / 无变化反例 NON_GREEN，见 [AI adapter](V3_AGENT_ADAPTER.md) 与 [运行记录](runs/v3-agent-2026-11-16.md)。层高任务由 CLI 看图编辑、GUI 切片导出，独立核对实际对象层序并确认正常退出；冻结版本 5/5 新 profile SHADOW，三个固定故障实验均获相关拒绝，见 [业务架构](V3_AGENT_LAYER.md) 与 [评估记录](runs/v3-layer-evaluation-2026-11-16.md)。Midscene、其他业务、跨版本可靠性与发布集成仍需验收。
 
 ## 接口
 

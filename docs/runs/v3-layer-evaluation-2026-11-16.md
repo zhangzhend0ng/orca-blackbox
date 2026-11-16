@@ -1,6 +1,6 @@
 # v3 层高业务重复运行与故障检错记录
 
-状态：本批 **A1–A5 已独立核证为完整 SHADOW（5/5 已完成）**。三类故障探针尚无已核证结果。本记录保留预先冻结的五槽分母；历史 6bfe 正例和固定故障动作不计入。
+状态：本批 **A1–A5 已独立核证为完整 SHADOW（5/5 已完成）**。三个固定故障探针均已实际命中并被相关业务规则/工具门禁拒绝（3/3 合格检错）。执行跨至 2026-11-17（Asia/Shanghai），沿用 11 月 16 日冻结的批次名与 guest source，不重命名或重开分母。本记录保留预先冻结的五槽分母；历史 6bfe 正例和固定故障动作不计入。
 
 ## 冻结范围与分母
 
@@ -39,13 +39,41 @@ A1–A5 均为 6 次实际 CLI 看图决策、7 次工具：observe → slice �
 
 | 探针 | run_id | 来源 / 状态 |
 |---|---|---|
-| N1 改错相似参数 | `f71361067b3c48b48bc3eb2a5507405a` | fault_probe_wrong_parameter，未执行/未核证 |
-| N2 漏重切（observe 替代第二 slice） | `98053dc9877a456b961efc5fea635b34` | fault_probe_missing_reslice，未执行/未核证 |
-| N3 导出目标占位冲突 | `053062a751b74a49b1911dc495a75c5d` | fault_probe_export_collision，未执行/未核证 |
+| N1 改错相似参数 | `f71361067b3c48b48bc3eb2a5507405a` | fault_probe_wrong_parameter，命中并正确拒绝 |
+| N2 漏重切（observe 替代第二 slice） | `98053dc9877a456b961efc5fea635b34` | fault_probe_missing_reslice，命中并正确拒绝 |
+| N3 导出目标占位冲突 | `053062a751b74a49b1911dc495a75c5d` | fault_probe_export_collision，命中并正确拒绝 |
 
 N3 使用已版本化的限定实验脚本 `runner/experiments/layer_collision_20261116.ps1`，SHA-256 `4a0588f5acc7c6ce713993163d1f029f6e0e21a07e04cbc5ad453884d604794d`；其内容已与审阅的本地副本逐字节比对，仍只绑定固定 run/path，raw 证据不因此变成长期归档。
 
-故障来源是固定 ModelPort 动作，不是 AI 推理，也不是三个 AI 成功。必须核对实际故障命中及相关拒绝理由；任意 NON_GREEN、异常清理或缺报告都不足以算检错成功。N3 仅挑战防覆盖，不称 GUI 保存或 OS 写盘失败。所有结果、取消与清理方式待真实证据到达后填写。
+故障来源是固定 ModelPort 动作，不是 AI 推理，也不是三个 AI 成功。必须核对实际故障命中及相关拒绝理由；任意 NON_GREEN、异常清理或缺报告都不足以算检错成功。N3 仅挑战防覆盖，不称 GUI 保存或 OS 写盘失败。三项实际结果与清理方式如下，保持各自 guest NON_GREEN 裁决。
+
+### N1：改错初层参数，命中且正确拒绝
+
+宿主工具提交 `108939e5db1fdc619c98ec99044c2f20c6e947ce`，guest 生产仍为 ac0306a；故障批 `host_source.json` 绑定 probe、audit、限定注入脚本三文件 hash，架构师已核对当前文件一致。setup/harvest 另绑定 guest source 与 SUT。
+
+固定 6 次决策 / 7 次真实工具走完整 slice/export/edit/reslice/export/finish；实际 edit `(298,794,"0.24")` 改变 First layer height，常规层高仍 .40。A 为 .40/初层 .40、68 层、首/末 Z=.40/27.20、1907 次正 XY/E；B 为 .40/初层 .24、68 层、首/末 Z=.24/27.04、1903 次运动，均对象 T0。由实际 G-code 证实“改错相似字段”，不是应用吞掉正确参数。
+
+完整 guest 结果 NON_GREEN，path pass / business fail，detail=`gcode_layer_height_mismatch`；只读 fault audit 为 EXPECTED_NON_GREEN，ai_trial=false，不是业务通过。自然 exit=0、forced=false、cancel=null、Job active=0、cleanup_confirmed=true；host 73.115 秒 / guest process 124.097 秒。没有模型推理，不填 token usage。
+
+ZIP `artifacts/v3/layer_faults_20261116_01_1.zip`：3,923,861 bytes / 48 文件，SHA-256 `d5acc38ef5092cff16560c40fae84ab9dd7f913ead68d33839f4408032fcc8f8`；架构师逐文件比对并重放 full/fault checker、9 阶段事件和固定动作/图片关联。raw 不修改，N1 不加入五槽 AI 分母。
+
+### N2：漏第二次 slice，导出门禁拒绝
+
+真实序列 observe → slice → export A → edit `(298,764,"0.24")` → observe → export（seq6），最后返回 `export_not_ready`，没有第二次 slice、没有 B，也未执行 finish。原计划用 observe 保持可到达完整 7 工具的路径，但实际在第 6 工具已命中相关门禁，因此只有 5 次固定决策；不为凑数量继续发动作。
+
+guest execution/runtime=`failed`、NON_GREEN、verified_pass=false，path/business 原结果为 unknown/not checked；独立 full checker 的 unknown/detail=`process_not_quiescent` 来自 exit=1 的完整成功门槛，不表示有残留进程。实际 Job active=0、forced_termination=false、cancel_reason=null、cleanup_confirmed=true：worker 失败退出后清空，既不是自然完整完成，也不是 Job 强杀。host 记录 cancel_request_written=true 只证明发过取消请求，不推导 process 已因 cancel 终止。
+
+fault audit 为 EXPECTED_NON_GREEN：实际漏 slice 和相关 export_not_ready 有独立 trace、prefix 图片/操作收据/固定动作关联，5 阶段失败/cleanup 事件链完整。baseline A 为 .40/初层 .40、68 层、1907 次正 XY/E、T0。host 54.878 秒 / guest process 126.809 秒。ZIP `artifacts/v3/layer_faults_20261116_01_2.zip`：2,252,902 bytes / 40 文件，SHA-256 `1560e8da459886fdaa035b1f38646bf4df1761b6dcc6e04ebd86931e4e8059d3`，已逐字节比对及重放；guest ac0306a/SUT 未变。该结果检验工具路径门禁，不声称验证了不存在的 B 或“旧文件被导出”。
+
+### N3：导出目标占位冲突，实际注入并拒覆盖
+
+协调者执行版本化脚本（SHA `4a0588f5…`），注入日志为 `collision_created_and_acknowledged`。独立核对真实 request 为 Windows CRLF bytes，SHA `7397d53fcbcd25749b6cf54622ee3a3211fa44b0ffdfa2efd37172017f7a535e`；host ACK/accepted 与 guest `fault_injection.json` 的 run、case、contract、slice5 observation、路径、创建时刻与 hash 一致。当前 run 的 `exports/0002.gcode` 为独占创建的 28-byte sentinel，收割时仍为 SHA `4cf9a39ebecd994965f4a78505383bf804da98713c9e87e580e22d58a9eb1230`。
+
+真实序列完成 baseline/export/edit/reslice，在 seq6 第二 export 返回 `export_exists`，未执行 finish、没有业务 B。fixed probe 为 5 次决策/6 工具，无模型推理；fault audit EXPECTED_NON_GREEN。此例证明“目标存在时拒绝覆盖”，不声称 GUI 保存对话框或任意 OS 写盘失败，也不把 sentinel 当 G-code。
+
+guest execution/runtime=failed、NON_GREEN，exit=1、forced=false、cancel=null、Job active=0、cleanup=true；worker 失败退出后清空，未强杀。完整业务 checker 仍 unknown/process_not_quiescent（exit1 成功门槛），没有借故障检错改成业务 pass。5 阶段失败/cleanup 事件与故障特定证据完整。host 107.587 秒 / guest process 130.804 秒。
+
+ZIP `artifacts/v3/layer_faults_20261116_01_3.zip`：2,634,840 bytes / 42 文件，SHA-256 `de8dd6da24d85787a480ce63e7f0a889f6974a4dee776f2b7c9b82345d3df9c6`；已逐字节比对，重放故障审计并核对 setup/harvest 的 ac0306a 与固定 SUT。注入与取证均由协调者串行执行，审阅者未操作客机。
 
 ## 原始证据与当前结论
 
@@ -59,4 +87,6 @@ raw ZIP/截图/G-code 为本地忽略产物，未声称长期上传。正例 ZIP
 | A4 | 3,898,459 / 48 | `6661cffe03bb452422a2492fdadf48886a2bc2d55d5ff386dcc8e1757cee0c45` |
 | A5 | 3,882,130 / 48 | `ba9f7a0b7d3df2c01e151b534fe68621fd19562933ba0c8c7dff79f32463edd7` |
 
-当前已达到“五槽完成且 5/5 SHADOW”的重复运行门槛；三类真实故障命中与检错仍待验证，整个批次评估尚未完成，不能提前进入第二业务或发布 GREEN。全部验证仍限固定单材 cube 的参数/切片/导出流程，不代表其他业务、固件或实物打印。
+本批已满足冻结的工程门槛：五槽 5/5 完整 SHADOW，三个固定故障 3/3 实际命中并被相关规则拒绝，八个 run 均确认 Job 清空与 cleanup。允许进入第二业务的设计与验证；不开放发布 GREEN，不把负例计入 AI 成功，也不从五次样本推导通用可靠性。全部验证仍限固定单材 cube 的参数/切片/导出流程，不代表其他业务、完整几何、固件或实物打印。
+
+协调者最终全套纯测 558 passed / 1 skipped；架构师已独立执行本批相关 78 tests，最终证据收尾未重复跑测试。raw ZIP 仍仅本地，报告中的 hash 不等于已长期归档。

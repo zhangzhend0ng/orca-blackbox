@@ -4,7 +4,7 @@
 
 固定任务为 `m1_minimal_loop`，契约版本 `ai-tabs-1`，executor=`agent_mcp`：由模型观察实际截图，选择点击，使界面完成 Prepare → Preview → Prepare。只证明页签状态切换与路径，不证明切片、渲染质量或完整产品正确性。始终不可发布。
 
-同一主链已扩展固定业务 `m3d_param_reslice / ai-layer-1`，其 GUI 层高编辑、切片导出和实际对象层序独立检查首次完整 SHADOW；详见 [业务架构](V3_AGENT_LAYER.md) 与 [运行记录](runs/v3-layer-2026-11-16.md)。本页的 ai-tabs-1 工具、契约和验证范围保持独立，不据此扩大页签结果。
+同一主链已扩展固定业务 `m3d_param_reslice / ai-layer-1`，其 GUI 层高编辑、切片导出和实际对象层序独立检查已完成冻结版本 5/5 新 profile SHADOW，以及三类固定故障的相关拒绝；详见 [业务架构](V3_AGENT_LAYER.md) 与 [评估记录](runs/v3-layer-evaluation-2026-11-16.md)。固定故障不是 AI 成功；本页的 ai-tabs-1 工具、契约和验证范围保持独立，不据此扩大页签结果。
 
 ## 最小架构与复用边界
 

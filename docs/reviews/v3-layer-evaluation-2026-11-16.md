@@ -1,6 +1,6 @@
 # v3 层高评估工具与故障探针审阅（2026-11-16）
 
-结论：**APPROVE（限定实验范围）**。本批宿主固定探针、只读审计器和限定 N3 注入脚本无未关闭的阻断发现；允许协调者按冻结计划执行。此结论不代表三个真实故障已检出。当前 A1–A5 已独立核证完整 SHADOW（5/5），故障结果仍待实际执行与收割。
+结论：**APPROVE（限定实验范围）**。本批宿主固定探针、只读审计器和限定 N3 注入脚本无未关闭的阻断发现；允许协调者按冻结计划执行。A1–A5 已独立核证完整 SHADOW（5/5），N1–N3 均实际命中并被相关规则拒绝（3/3 合格检错，guest 仍 NON_GREEN）。工程 gate 允许进入第二业务，不开放发布或推导通用可靠性。实际执行跨至 2026-11-17（Asia/Shanghai），保留原 11 月 16 日冻结批次及源码基线。
 
 ## 范围与独立性
 
@@ -52,14 +52,20 @@ Items 1–5 — PASS (C/A)：架构师独立执行 `python -B -m pytest unit_tes
 
 最终脚本 SHA-256：`4a0588f5acc7c6ce713993163d1f029f6e0e21a07e04cbc5ad453884d604794d`。只允许固定 N3 run `053062a751b74a49b1911dc495a75c5d` 与 guest checkout，核固定 plan/HEAD/契约、当前 slice5、未发 request6、无 cancel/result/process；逐级拒绝 reparse。只用 CreateNew 写当前 run 的 `exports/0002.gcode`，内容为 28 bytes sentinel，回读 hash 后独占写 guest receipt，再发布 typed ack，不覆盖/删除既有文件、不重试/kill。
 
-真实请求 bytes SHA 为 `7397d53fcbcd25749b6cf54622ee3a3211fa44b0ffdfa2efd37172017f7a535e`；sentinel SHA 为 `4cf9a39ebecd994965f4a78505383bf804da98713c9e87e580e22d58a9eb1230`。脚本只做静态审阅与 PowerShell AST ParseFile、生产 _once raw-byte 自检；未假造 OS 行为单测，尚无真实注入结果。脚本已作为限定实验资产版本化，协调者执行该副本；固定 run/path 不提供通用注入接口。raw 证据仍只在本地。
+真实请求 bytes SHA 为 `7397d53fcbcd25749b6cf54622ee3a3211fa44b0ffdfa2efd37172017f7a535e`；sentinel SHA 为 `4cf9a39ebecd994965f4a78505383bf804da98713c9e87e580e22d58a9eb1230`。执行前脚本经静态审阅、PowerShell AST ParseFile 和生产 _once raw-byte 自检；随后由协调者实际运行 N3，已收割并独立核对注入/拒绝/清理证据。审阅者未执行脚本或操作 VM，未假造 OS 行为单测。脚本已作为限定实验资产版本化，协调者执行该副本；固定 run/path 不提供通用注入接口。raw 证据仍只在本地。
 
 ## 已核证结果与剩余边界
 
-A1–A5 的每个 ZIP 48 文件已与提取目录逐字节比较；完整 verifier、9 阶段事件链、CLI 图/hash/action/usage→guest 请求重放通过。另与冻结 plan/setup/harvest 绑定 source、SUT、CLI hash。明细见 [运行记录](../runs/v3-layer-evaluation-2026-11-16.md)。五槽共 30 次模型调用、35 次工具调用；N1–N3 的结论等待实际证据，未提前补齐。
+A1–A5 的每个 ZIP 48 文件已与提取目录逐字节比较；完整 verifier、9 阶段事件链、CLI 图/hash/action/usage→guest 请求重放通过。另与冻结 plan/setup/harvest 绑定 source、SUT、CLI hash。明细见 [运行记录](../runs/v3-layer-evaluation-2026-11-16.md)。五槽共 30 次模型调用、35 次工具调用。
+
+N1 已独立核证：真实 B 常规 .40/初层 .24，68 层，path pass/business fail（gcode_layer_height_mismatch），自然 exit0/Job0；fault audit EXPECTED_NON_GREEN，固定 6 决策/7 工具，非 AI。ZIP 48 文件逐字节一致（SHA d5acc38e…），host 三工具 hash 与冻结 host_source 一致，guest ac0306a/SUT 未变。
+
+N2 已独立核证：observe 替代第二 slice 后 seq6 export_not_ready，实际无 B；5 固定决策/6 工具、5 阶段失败/cleanup 事件链，ZIP 40 文件逐字节一致（SHA 1560e8da…）。runtime failed，exit1/forcedfalse/cancelnull/Job0/cleanuptrue；是失败退出后清空，不是自然完整完成或强杀。full checker 的 process_not_quiescent 这里由 exit1 门槛触发，不能推断进程残留。fault audit EXPECTED_NON_GREEN 依据实际漏 slice 与相关工具拒绝，未升级业务 unknown。
+
+N3 已独立核证：请求 raw CRLF hash=7397d53f…，版本化脚本执行日志、host ACK/accepted、guest 注入 receipt 及 slice5 归属完整；28-byte sentinel 收割 hash=4cf9a39e…未变，seq6 export_exists。5 固定决策/6 工具、5 阶段失败/cleanup 链，ZIP 42 文件逐字节一致（SHA de8dd6da…）。exit1/forcedfalse/cancelnull/Job0/cleanuptrue，是失败退出后清空；完整业务 unknown 保留。三项故障独立分账，均非模型推理。
 
 audit 本身只证明可信本地收据一致性，不提供密码学来源认证/同权限对抗隔离；外部版本绑定仍需 plan 与同步日志，原 manifest 未记录的版本保持 unknown。prompt_hash 不重算并明确标记；不声称完整几何、固件或实物打印验证。N3 只检验目标已存在时拒覆盖，不证明任意 OS 保存失败。所有运行仍限制 SHADOW/NON_GREEN，不开放发布 GREEN。
 
 ## Verdict: APPROVE
 
-无未关闭 (N)/(C) 项；真实评估状态独立于代码审阅，按冻结分母及故障命中证据更新。B6 信号检查使用 --dry-run，保持 dev-guidelines 只读。
+无未关闭 (N)/(C) 项。五槽 5/5 与三故障 3/3 均已按冻结身份独立核证，八个 run 清理确认；允许下一业务验证，仍不具发布资格。协调者全套 558 passed / 1 skipped；本审阅相关 78 tests 已独立通过，最终文档更新未重复测试。B6 信号检查使用 --dry-run，保持 dev-guidelines 只读。
