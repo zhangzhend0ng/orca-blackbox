@@ -98,18 +98,35 @@ def _id(value):
     return value is None or (type(value) is str and re.fullmatch(r"[A-Za-z0-9_-]{1,128}", value))
 
 
-def _action(value, observation_id, width, height):
-    if type(value) is not dict or set(value) != _ACTION_FIELDS:
+def _action(value, observation_id, width, height, *, case_id="m1_minimal_loop"):
+    from .agent_protocol import agent_profile, validate_request, ProtocolError
+    profile = agent_profile(case_id)
+    layer = case_id == "m3d_param_reslice"
+    fields = _ACTION_FIELDS | ({"text"} if layer else set())
+    if type(value) is not dict or set(value) != fields:
         raise ModelError("model: action fields do not match schema")
     tool = value["tool"]
-    if tool not in ("observe", "click", "finish") or value["observation_id"] != observation_id:
+    if tool not in profile["tools"] or value["observation_id"] != observation_id:
         raise ModelError("model: invalid tool or stale observation")
-    if tool == "click":
+    if tool in ("click", "edit"):
         if (type(value["x"]) is not int or type(value["y"]) is not int
                 or not 0 <= value["x"] < width or not 0 <= value["y"] < height):
             raise ModelError("model: invalid click coordinates")
     elif value["x"] is not None or value["y"] is not None:
         raise ModelError("model: non-click coordinates must be null")
+    if layer:
+        if tool != "edit" and value["text"] is not None:
+            raise ModelError("model: text is only allowed for edit")
+        arguments = {"x": value["x"], "y": value["y"]} if tool in ("click", "edit") else {}
+        if tool == "edit":
+            arguments["text"] = value["text"]
+        try:
+            validate_request({"schema_version": 1, "run_id": "model-validation", "seq": 2,
+                              "method": tool, "arguments": arguments,
+                              "observation_id": observation_id}, run_id="model-validation",
+                             expected_seq=2, observation_id=observation_id, case_id=case_id)
+        except ProtocolError as exc:
+            raise ModelError("model: action outside registered capability") from exc
     return dict(value)
 
 
@@ -147,7 +164,10 @@ def _parse_output(raw):
 
 
 class CodexModel:
-    def __init__(self, executable: Path | None = None, *, timeout_s=90, model: str | None = None):
+    def __init__(self, executable: Path | None = None, *, timeout_s=90, model: str | None = None,
+                 case_id="m1_minimal_loop"):
+        from .agent_protocol import agent_profile
+        agent_profile(case_id)
         executable = default_codex_executable() if executable is None else Path(executable)
         if not executable.is_absolute() or not executable.is_file():
             raise ValueError("model: expected an existing absolute native executable")
@@ -156,6 +176,7 @@ class CodexModel:
         if model is not None and (type(model) is not str or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}", model) is None):
             raise ValueError("model: invalid fixed model name")
         self.executable, self.timeout_s, self.model = executable, timeout_s, model
+        self.case_id = case_id
 
     def next_action(self, image: Path, observation: dict, history: list,
                     remaining_calls: int, output_dir: Path, deadline: float) -> dict:
@@ -172,7 +193,8 @@ class CodexModel:
         for previous in history:
             if type(previous) is not dict or not _id(previous.get("observation_id")):
                 raise ValueError("model: invalid action history")
-            clean_history.append(_action(previous, previous["observation_id"], width, height))
+            clean_history.append(_action(previous, previous["observation_id"], width, height,
+                                         case_id=self.case_id))
         if type(remaining_calls) is not int or not 1 <= remaining_calls <= 12:
             raise ValueError("model: invalid remaining call budget")
         if type(deadline) not in (int, float) or not math.isfinite(deadline):
@@ -190,15 +212,28 @@ class CodexModel:
         output_dir.mkdir(parents=True, exist_ok=True)
         call_dir = output_dir / ("call-" + uuid.uuid4().hex)
         call_dir.mkdir()
+        from .agent_protocol import agent_profile
+        layer = self.case_id == "m3d_param_reslice"
+        action_fields = _ACTION_FIELDS | ({"text"} if layer else set())
         schema = {"type": "object", "additionalProperties": False,
-                  "required": sorted(_ACTION_FIELDS), "properties": {
-                      "tool": {"type": "string", "enum": ["observe", "click", "finish"]},
+                  "required": sorted(action_fields), "properties": {
+                      "tool": {"type": "string", "enum": list(agent_profile(self.case_id)["tools"])},
                       "observation_id": {"type": ["string", "null"], "enum": [observation["id"]]},
                       "x": {"type": ["integer", "null"]}, "y": {"type": ["integer", "null"]}}}
+        if layer:
+            schema["properties"]["text"] = {"type": ["string", "null"]}
         schema_path = call_dir / "action-schema.json"
         schema_path.write_text(json.dumps(schema), encoding="utf-8")
-        prompt = ("You control only the provided application's Prepare/Preview tabs through external tools. "
-                  "First select Preview, then return to Prepare, then finish. Use the current screenshot "
+        goal = ("You test the loaded 27 mm cube through the GUI. First call slice and export_gcode for a baseline. "
+                "Then find the regular Layer height numeric field in the Quality settings and use edit at its image "
+                "coordinates with text 0.24. Keep First layer height at 0.40 and do not switch the process preset. "
+                "Call slice and export_gcode again, then finish. If needed click Prepare to see the settings. "
+                "slice clicks the GUI Slice button once and waits; export_gcode uses the GUI Save dialog with a "
+                "fixed run-owned path. Do not supply paths. edit requires x/y/text; click requires x/y and null text; "
+                "all other tools require null x/y/text. " if layer else
+                "You control only the provided application's Prepare/Preview tabs through external tools. "
+                "First select Preview, then return to Prepare, then finish. ")
+        prompt = (goal + "Use the current screenshot "
                   "and prior actions to identify the next step. Do not execute code, invoke tools, read files, "
                   "or claim pass/fail. Output only one JSON action matching the schema. "
                   "Coordinates are image/client pixels. observe and finish require null x/y; click requires integers. "
@@ -285,7 +320,7 @@ class CodexModel:
         if process.returncode != 0:
             raise ModelError("model: CLI failed; inspect bounded call diagnostics")
         action, usage = _parse_output(raw_stdout.read_bytes())
-        result = _action(action, observation["id"], width, height)
+        result = _action(action, observation["id"], width, height, case_id=self.case_id)
         with (call_dir / "summary.json").open("x", encoding="utf-8") as stream:
             json.dump({"provider": "codex", "model": self.model, "usage": usage,
                        "dollar_cost": None, "action": result, "proxy_source": proxy_source,

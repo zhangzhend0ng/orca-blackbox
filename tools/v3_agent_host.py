@@ -24,12 +24,13 @@ from runner.agent_bridge import MAX_IMAGE_BYTES, RelayMailbox, decode_json, vali
 
 
 class McpClient:
-    def __init__(self, guest_root, run_id, root, deadline):
+    def __init__(self, guest_root, run_id, root, deadline, case_id="m1_minimal_loop"):
         self.deadline, self.ident = deadline, 0
+        self.case_id = case_id
         self.errors = (root / "bridge_stderr.log").open("xb")
         self.process = subprocess.Popen(
             [sys.executable, "-B", str(REPO / "runner" / "agent_bridge.py"),
-             "--guest-root", guest_root, "--run-id", run_id, "--deadline", str(deadline)],
+             "--guest-root", guest_root, "--run-id", run_id, "--deadline", str(deadline), "--case", case_id],
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self.errors,
             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         self.incoming = queue.Queue(maxsize=2)
@@ -47,7 +48,7 @@ class McpClient:
         except (OSError, ValueError, queue.Full):
             return
 
-    def request(self, method, params=None):
+    def request(self, method, params=None, *, timeout_s=90):
         if time.monotonic() >= self.deadline:
             raise TimeoutError("host_deadline")
         self.ident += 1
@@ -56,7 +57,7 @@ class McpClient:
             request["params"] = params
         self.process.stdin.write((json.dumps(request) + "\n").encode())
         self.process.stdin.flush()
-        remaining = min(90, self.deadline-time.monotonic())
+        remaining = min(timeout_s, self.deadline-time.monotonic())
         if remaining <= 0:
             raise TimeoutError("host_deadline")
         try:
@@ -81,11 +82,13 @@ class McpClient:
         self.process.stdin.write(b'{"jsonrpc":"2.0","method":"notifications/initialized"}\n')
         self.process.stdin.flush()
         listed = self.request("tools/list")
-        if {tool["name"] for tool in listed["tools"]} != {"observe", "click", "finish"}:
+        from harness.agent_protocol import agent_profile
+        if {tool["name"] for tool in listed["tools"]} != set(agent_profile(self.case_id)["tools"]):
             raise ValueError("mcp_tools_changed")
 
     def call(self, name, arguments):
-        return self.request("tools/call", {"name": name, "arguments": arguments})
+        return self.request("tools/call", {"name": name, "arguments": arguments},
+                            timeout_s=230 if name == "slice" else 120 if name == "export_gcode" else 90)
 
     def close(self):
         try:
@@ -126,7 +129,7 @@ def unpack_observation(result, root: Path, index: int):
     return meta, path
 
 
-def control_loop(client, model, root, deadline):
+def control_loop(client, model, root, deadline, case_id="m1_minimal_loop"):
     """Initial observe is mechanical. All subsequent tool choices come from model."""
     history, calls = [], 0
     if time.monotonic() >= deadline:
@@ -147,12 +150,16 @@ def control_loop(client, model, root, deadline):
         if time.monotonic() >= deadline:
             raise TimeoutError("host_deadline")
         # The model module validates the schema. Revalidate at the tool boundary.
-        if (type(action) is not dict or set(action) != {"tool", "observation_id", "x", "y"}
-                or action["observation_id"] != observation["observation_id"]):
-            raise ValueError("model_action_identity")
+        from harness.agent_model import _action
+        action = _action(action, observation["observation_id"], observation["width"],
+                         observation["height"], case_id=case_id)
         tool = action["tool"]
-        if tool == "click":
+        if tool in {"click", "edit"}:
             args = {"observation_id": action["observation_id"], "x": action["x"], "y": action["y"]}
+            if tool == "edit":
+                args["text"] = action["text"]
+        elif tool in {"slice", "export_gcode"}:
+            args = {"observation_id": action["observation_id"]}
         elif tool in {"observe", "finish"} and action["x"] is None and action["y"] is None:
             args = {}
         else:
@@ -172,6 +179,11 @@ class ChatDecisionModel:
     """
     source = "codex_chat"
 
+    def __init__(self, case_id="m1_minimal_loop"):
+        from harness.agent_protocol import agent_profile
+        agent_profile(case_id)
+        self.case_id = case_id
+
     def next_action(self, image, observation, history, remaining_calls, output_dir, deadline):
         from harness.agent_model import _action
         output_dir.mkdir(exist_ok=False)
@@ -190,7 +202,8 @@ class ChatDecisionModel:
                 if len(raw) > 4096:
                     raise ValueError("chat_decision_size")
                 action = _action(decode_json(raw), observation["id"],
-                                 observation["window"]["width"], observation["window"]["height"])
+                                 observation["window"]["width"], observation["window"]["height"],
+                                 case_id=self.case_id)
                 with (output_dir / "summary.json").open("x", encoding="utf-8") as f:
                     json.dump({"source": self.source, "action": action, "usage": None,
                                "dollar_cost": None, "received_at_ns": time.time_ns()}, f)
@@ -199,25 +212,29 @@ class ChatDecisionModel:
         raise TimeoutError("chat_decision_deadline")
 
 
-def run_host(run_id, guest_root, model):
+def run_host(run_id, guest_root, model, case_id="m1_minimal_loop"):
     validate_identity(guest_root, run_id)
+    from harness.agent_session import agent_contract
+    from harness.run_verdict import contract_digest
+    digest = contract_digest(agent_contract(case_id))
+    if getattr(model, "case_id", case_id) != case_id:
+        raise ValueError("model_task_mismatch")
     root = REPO / "artifacts" / "v3_host" / run_id
     root.mkdir(parents=True, exist_ok=False)
     deadline = time.monotonic()+600
     control = RelayMailbox(guest_root, run_id, deadline=deadline, channel="control")
     client, completed = None, False
     report = {"schema_version": 1, "run_id": run_id, "model_source": getattr(model, "source", "codex_cli"),
+              "case_id": case_id,
               "finished": False, "release_eligible": False, "dollar_cost": None, "started_at_ns": time.time_ns()}
     try:
         ready = control.wait_json("ready.json", seconds=120)
-        from harness.agent_session import agent_contract
-        from harness.run_verdict import contract_digest
-        if (ready.get("run_id") != run_id or ready.get("case_id") != "m1_minimal_loop"
-                or ready.get("contract_sha256") != contract_digest(agent_contract("m1_minimal_loop"))):
+        if (ready.get("run_id") != run_id or ready.get("case_id") != case_id
+                or ready.get("contract_sha256") != digest):
             raise ValueError("guest_ready_identity")
-        client = McpClient(guest_root, run_id, root, deadline)
+        client = McpClient(guest_root, run_id, root, deadline, case_id)
         client.initialize()
-        result = control_loop(client, model, root, deadline)
+        result = control_loop(client, model, root, deadline, case_id)
         report.update(result)
         completed = True
     except (OSError, ValueError, RuntimeError, KeyError, TypeError) as exc:
@@ -255,11 +272,13 @@ def main():
     p.add_argument("--run-id", required=True)
     p.add_argument("--guest-root", default=r"C:\coil\orca-blackbox-v3-r1")
     p.add_argument("--model-source", choices=("codex_cli", "codex_chat"), default="codex_cli")
+    p.add_argument("--case", default="m1_minimal_loop")
     p.add_argument("--codex", type=Path, help="Explicit native Codex; otherwise prefer the installed desktop native")
     args = p.parse_args()
     from harness.agent_model import CodexModel, default_codex_executable
-    model = ChatDecisionModel() if args.model_source == "codex_chat" else CodexModel(args.codex or default_codex_executable())
-    report = run_host(args.run_id, args.guest_root, model)
+    model = ChatDecisionModel(args.case) if args.model_source == "codex_chat" else CodexModel(
+        args.codex or default_codex_executable(), case_id=args.case)
+    report = run_host(args.run_id, args.guest_root, model, args.case)
     print(json.dumps({"run_id": report["run_id"], "finished": report["finished"],
                       "model_calls": report["model_calls"], "release_eligible": False}))
 

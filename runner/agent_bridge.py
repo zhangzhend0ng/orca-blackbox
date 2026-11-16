@@ -34,6 +34,22 @@ TOOLS = [
      "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False}},
 ]
 
+_OBS_ID_SCHEMA = {"type": "string", "maxLength": 128}
+LAYER_TOOLS = [*TOOLS,
+    {"name": "edit", "description": "Edit the owned visible numeric GUI Edit at client pixels and commit.",
+     "inputSchema": {"type": "object", "properties": {
+         "observation_id": _OBS_ID_SCHEMA, "x": {"type": "integer", "minimum": 0, "maximum": 4095},
+         "y": {"type": "integer", "minimum": 0, "maximum": 2159},
+         "text": {"type": "string", "maxLength": 7, "pattern": r"^(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?$"}},
+         "required": ["observation_id", "x", "y", "text"], "additionalProperties": False}},
+    *[{"name": name, "description": description,
+       "inputSchema": {"type": "object", "properties": {"observation_id": _OBS_ID_SCHEMA},
+                       "required": ["observation_id"], "additionalProperties": False}}
+      for name, description in (
+          ("slice", "Click the owned GUI Slice button once, then wait up to 180 seconds."),
+          ("export_gcode", "Export through the owned GUI dialog to a new fixed run output; no supplied path."))],
+]
+
 
 def decode_json(raw):
     if not isinstance(raw, (str, bytes)) or len(raw) > 4_000_000:
@@ -175,7 +191,8 @@ class RelayMailbox:
                            "payload": base64.b64encode(raw).decode()})
         if out.get("written") is not True:
             raise RuntimeError("guest_write_unconfirmed_stop")
-        return self.wait_json(f"mailbox/response_{seq:04d}.json")
+        timeout = 210 if request["method"] == "slice" else 90 if request["method"] == "export_gcode" else 45
+        return self.wait_json(f"mailbox/response_{seq:04d}.json", seconds=timeout)
 
     def cancel(self):
         raw = json.dumps({"schema_version": 1, "run_id": self.run_id,
@@ -208,12 +225,18 @@ class RelayMailbox:
 
 
 class ScopedTools:
-    def __init__(self, mailbox, run_id):
+    def __init__(self, mailbox, run_id, case_id="m1_minimal_loop"):
+        from harness.agent_protocol import agent_profile
+        profile = agent_profile(case_id)
         self.mailbox, self.run_id = mailbox, run_id
+        self.case_id = case_id
+        self.tool_definitions = [t for t in LAYER_TOOLS if t["name"] in profile["tools"]]
         self.seq, self.clicks, self.observation_id = 0, 0, None
+        self.special_counts = {"edit": 0, "slice": 0, "export_gcode": 0}
         self.finished = False
 
     def call(self, name, args):
+        from harness.agent_protocol import validate_request
         if self.finished or self.seq >= 12 or type(args) is not dict:
             raise ValueError("tool_budget_or_state")
         if name in {"observe", "finish"}:
@@ -227,14 +250,25 @@ class ScopedTools:
                     or type(args["y"]) is not int or not 31 <= args["y"] <= 67):
                 raise ValueError("click_arguments_or_budget")
             arguments = {"x": args["x"], "y": args["y"]}
-            self.clicks += 1
+        elif name in self.special_counts and self.case_id == "m3d_param_reslice":
+            fields = {"observation_id", "x", "y", "text"} if name == "edit" else {"observation_id"}
+            if (set(args) != fields or args["observation_id"] != self.observation_id
+                    or self.observation_id is None or self.special_counts[name] >= 2):
+                raise ValueError("business_tool_arguments_or_budget")
+            arguments = {key: args[key] for key in ("x", "y", "text")} if name == "edit" else {}
         else:
             raise ValueError("unregistered_tool")
         if self.seq == 0 and name != "observe":
             raise ValueError("initial_observation_required")
-        self.seq += 1  # consumed before transport; never re-execute ambiguous input.
-        request = {"schema_version": 1, "run_id": self.run_id, "seq": self.seq,
+        request = {"schema_version": 1, "run_id": self.run_id, "seq": self.seq + 1,
                    "method": name, "arguments": arguments, "observation_id": self.observation_id}
+        validate_request(request, run_id=self.run_id, expected_seq=self.seq + 1,
+                         observation_id=self.observation_id, case_id=self.case_id)
+        self.seq += 1  # consumed before transport; never re-execute ambiguous input.
+        if name == "click":
+            self.clicks += 1
+        elif name in self.special_counts:
+            self.special_counts[name] += 1
         response = self.mailbox.call(request)
         if (type(response) is not dict or response.get("schema_version") != 1
                 or response.get("run_id") != self.run_id or response.get("seq") != self.seq
@@ -284,7 +318,7 @@ def serve(tools, source, output):
                 result = {"protocolVersion": "2025-06-18", "capabilities": {"tools": {}},
                           "serverInfo": {"name": "orca-v3-scoped", "version": "1"}}
             elif method == "tools/list" and ready:
-                result = {"tools": TOOLS}
+                result = {"tools": tools.tool_definitions}
             elif method == "ping":
                 result = {}
             elif method == "tools/call" and ready:
@@ -311,14 +345,17 @@ def main():
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--guest-root", default=r"C:\coil\orca-blackbox-v3-r1")
     parser.add_argument("--deadline", type=float)
+    parser.add_argument("--case", default="m1_minimal_loop")
     args = parser.parse_args()
+    from harness.agent_protocol import agent_profile
+    agent_profile(args.case)
     deadline = time.monotonic()+600
     if args.deadline is not None:
         if not math.isfinite(args.deadline):
             raise ValueError("invalid_host_deadline")
         deadline = min(deadline, args.deadline)
     mailbox = RelayMailbox(args.guest_root, args.run_id, deadline=deadline)
-    serve(ScopedTools(mailbox, args.run_id), sys.stdin, sys.stdout)
+    serve(ScopedTools(mailbox, args.run_id, args.case), sys.stdin, sys.stdout)
 
 
 if __name__ == "__main__":

@@ -125,3 +125,31 @@ def test_chat_model_receipt_binds_input_hash_and_strict_action(tmp_path, monkeyp
     assert request["image_sha256"] == hashlib.sha256(PNG).hexdigest()
     summary = json.loads((output / "summary.json").read_text())
     assert summary["source"] == "codex_chat" and summary["usage"] is None
+
+
+def test_layer_host_routes_model_numeric_edit_and_path_free_exports(tmp_path):
+    class LayerModel:
+        index = 0
+        def next_action(self, image, observation, history, remaining, output, deadline):
+            tool = ("slice", "export_gcode", "edit", "slice", "export_gcode", "finish")[self.index]
+            self.index += 1
+            return {"tool": tool, "observation_id": observation["id"],
+                    "x": 290 if tool == "edit" else None,
+                    "y": 610 if tool == "edit" else None,
+                    "text": "0.24" if tool == "edit" else None}
+    client = Client()
+    result = host.control_loop(client, LayerModel(), tmp_path, time.monotonic()+60,
+                               case_id="m3d_param_reslice")
+    assert result["finished"] and result["model_calls"] == 6
+    assert [c[0] for c in client.calls] == [
+        "observe", "slice", "export_gcode", "edit", "slice", "export_gcode", "finish"]
+    assert client.calls[3][1]["text"] == "0.24"
+    assert all(set(args) == {"observation_id"} for name, args in client.calls if name == "export_gcode")
+
+
+def test_slice_wait_has_phase_headroom_without_extending_run_deadline():
+    from unittest.mock import Mock
+    client = host.McpClient.__new__(host.McpClient)
+    client.request = Mock(return_value={})
+    client.call("slice", {"observation_id": "obs_1"})
+    assert client.request.call_args.kwargs["timeout_s"] == 230

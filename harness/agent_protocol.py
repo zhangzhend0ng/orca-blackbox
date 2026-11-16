@@ -3,12 +3,28 @@ from __future__ import annotations
 
 import json
 import os
+from decimal import Decimal
 from pathlib import Path
 import re
 
 MAX_CALLS = 12
 MAX_CLICKS = 6
 MAX_RUNTIME_S = 900
+LAYER_CASE = "m3d_param_reslice"
+LAYER_FIXTURE = "fixtures/agent_layer_cube.3mf"
+LAYER_FIXTURE_SHA256 = "a468c33bda6c79cd4edb3a4d134db50024f7283211452de3640cce7530993513"
+
+
+def agent_profile(case_id: str) -> dict:
+    """Code-owned capabilities; never derive authority from model text."""
+    profiles = {
+        "m1_minimal_loop": ("ai-tabs-1", ("observe", "click", "finish")),
+        LAYER_CASE: ("ai-layer-1", ("observe", "click", "edit", "slice", "export_gcode", "finish")),
+    }
+    if type(case_id) is not str or case_id not in profiles:
+        raise ProtocolError("unknown_case")
+    version, tools = profiles[case_id]
+    return {"contract_version": version, "tools": tools}
 
 
 class ProtocolError(ValueError):
@@ -55,7 +71,8 @@ def check_cancel(artifact_dir: Path, run_id: str) -> None:
     raise ProtocolError("host_cancelled")
 
 
-def validate_request(value, *, run_id: str, expected_seq: int, observation_id: str | None):
+def validate_request(value, *, run_id: str, expected_seq: int, observation_id: str | None,
+                     case_id: str = "m1_minimal_loop"):
     if (type(value) is not dict or set(value) != {
             "schema_version", "run_id", "seq", "method", "arguments", "observation_id"}):
         raise ProtocolError("invalid_fields")
@@ -66,7 +83,7 @@ def validate_request(value, *, run_id: str, expected_seq: int, observation_id: s
     if type(value["seq"]) is not int or value["seq"] != expected_seq or not 1 <= expected_seq <= MAX_CALLS:
         raise ProtocolError("invalid_sequence")
     method, arguments = value["method"], value["arguments"]
-    if type(method) is not str or method not in {"observe", "click", "finish"}:
+    if type(method) is not str or method not in agent_profile(case_id)["tools"]:
         raise ProtocolError("unknown_tool")
     if value["observation_id"] != observation_id or type(value["observation_id"]) not in (str, type(None)):
         raise ProtocolError("stale_observation")
@@ -79,6 +96,15 @@ def validate_request(value, *, run_id: str, expected_seq: int, observation_id: s
                 or type(arguments["x"]) is not int or type(arguments["y"]) is not int
                 or not 40 <= arguments["x"] <= 312 or not 31 <= arguments["y"] <= 67):
             raise ProtocolError("click_outside_tab_scope")
+    elif method == "edit":
+        if (set(arguments) != {"x", "y", "text"} or observation_id is None
+                or type(arguments["x"]) is not int or type(arguments["y"]) is not int
+                or not 0 <= arguments["x"] < 4096 or not 0 <= arguments["y"] < 2160
+                or type(arguments["text"]) is not str
+                or re.fullmatch(r"(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?", arguments["text"]) is None):
+            raise ProtocolError("invalid_numeric_edit")
+        if not Decimal("0.16") <= Decimal(arguments["text"]) <= Decimal("0.56"):
+            raise ProtocolError("numeric_edit_out_of_range")
     elif arguments:
         raise ProtocolError("invalid_arguments")
     return {**value, "arguments": dict(arguments)}

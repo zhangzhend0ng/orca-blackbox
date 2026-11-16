@@ -54,3 +54,17 @@ def test_wrong_contract_or_existing_output_never_starts(tmp_path, contract, monk
     (tmp_path / "ready.json").write_text("{}", encoding="utf-8")
     with pytest.raises(FileExistsError):
         module.AgentExecutor(contract_digest(contract)).start(ExecutionContext(contract, "run1", tmp_path))
+
+
+def test_business_case_requires_its_exact_registered_digest(tmp_path, contract, monkeypatch):
+    mapping = contract.to_dict()
+    mapping.update(case_id="m3d_param_reslice", contract_version="ai-layer-1")
+    business = validate_contract(mapping)
+    monkeypatch.setattr(module.host_guard, "in_guest", lambda: True)
+    started = []
+    monkeypatch.setattr(module.OwnedJobProcess, "start", lambda *args, **kwargs: started.append(args) or object())
+    with pytest.raises(ValueError, match="exact"):
+        module.AgentExecutor(contract_digest(contract)).start(ExecutionContext(business, "run1", tmp_path))
+    assert not started
+    module.AgentExecutor(contract_digest(business)).start(ExecutionContext(business, "run1", tmp_path))
+    assert len(started) == 1

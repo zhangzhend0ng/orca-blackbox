@@ -70,6 +70,31 @@ def call(provider, **kwargs):
     return model.next_action(image, OBS, [], 8, out, time.monotonic() + 10, **kwargs)
 
 
+def test_layer_model_has_separate_schema_and_gui_goal(provider):
+    old, image, out, settings, processes, arguments = provider
+    model = CodexModel(old.executable, case_id="m3d_param_reslice")
+    action = {"tool": "edit", "observation_id": OBS["id"], "x": 200, "y": 70, "text": "0.24"}
+    settings["output"] = events(action)
+    assert model.next_action(image, OBS, [], 8, out, time.monotonic()+10) == action
+    schema = json.loads(next(out.glob("call-*/action-schema.json")).read_text())
+    assert "text" in schema["required"]
+    assert set(schema["properties"]["tool"]["enum"]) == {
+        "observe", "click", "edit", "slice", "export_gcode", "finish"}
+    prompt = processes[0].stdin.payload.decode()
+    assert "baseline" in prompt and "First layer height at 0.40" in prompt
+    assert "do not switch" in prompt.lower()
+
+
+@pytest.mark.parametrize("changes", [{"text": "0.24;command"}, {"x": True}, {"text": None}])
+def test_layer_model_rejects_invalid_edit(provider, changes):
+    old, image, out, settings, *_ = provider
+    model = CodexModel(old.executable, case_id="m3d_param_reslice")
+    action = {"tool": "edit", "observation_id": OBS["id"], "x": 200, "y": 70, "text": "0.24", **changes}
+    settings["output"] = events(action)
+    with pytest.raises(ModelError):
+        model.next_action(image, OBS, [], 8, out, time.monotonic()+10)
+
+
 def test_only_strict_action_is_returned_and_logs_are_unique(provider):
     model, image, out, settings, processes, arguments = provider
     assert call(provider) == ACTION

@@ -6,6 +6,7 @@ import sys
 import time
 
 from . import host_guard
+from .agent_protocol import agent_profile
 from .run_verdict import contract_digest
 from .script_executor import REPO, _ScriptHandle
 from .win32_job import OwnedJobProcess
@@ -24,11 +25,10 @@ class AgentExecutor:
     def start(self, context):
         if not host_guard.in_guest():
             raise PermissionError("agent executor requires Hyper-V guest")
-        if (context.contract.case_id != "m1_minimal_loop"
-                or context.contract.contract_version != "ai-tabs-1"
+        if (context.contract.contract_version != agent_profile(context.contract.case_id)["contract_version"]
                 or context.contract.executor != "agent_mcp"
                 or contract_digest(context.contract) != self.contract_sha256):
-            raise ValueError("agent executor supports only this exact tab contract")
+            raise ValueError("agent executor supports only this exact registered contract")
         artifacts = context.artifact_dir.resolve(strict=True)
         if any(artifacts.iterdir()):
             raise FileExistsError("agent artifacts must start empty")

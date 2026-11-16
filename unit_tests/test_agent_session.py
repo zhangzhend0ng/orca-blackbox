@@ -12,16 +12,35 @@ from harness.runtime_ports import ExecutionOutcome, VerificationOutcome
 from harness.runtime_smoke import SyntheticHandle
 
 RUN_ID = "a" * 32
+CASES = ("m1_minimal_loop", "m3d_param_reslice")
 
 
-def test_registered_intent_is_tabs_only():
-    assert agent_session.registered_agent_cases() == ("m1_minimal_loop",)
+def verifier_type(case_id):
+    if case_id == "m1_minimal_loop":
+        return AgentTabVerifier
+    from harness.agent_layer_verify import AgentLayerVerifier
+    return AgentLayerVerifier
+
+
+def test_registered_intent_preserves_tabs_and_adds_only_layer_change():
+    assert agent_session.registered_agent_cases() == CASES
     contract = agent_session.agent_contract("m1_minimal_loop")
     assert contract.executor == "agent_mcp" and contract.contract_version == "ai-tabs-1"
     assert [s.id for s in contract.steps] == ["boot", "preview", "prepare", "close"]
     assert contract.limits.timeout_s == 900 and contract.limits.max_actions == 12
+    assert contract_digest(contract) == "4fe2d56332c5525524cceed2dccdc3a212995d742c98f828a86fcd15964c0901"
     with pytest.raises(ValueError, match="approved"):
         agent_session.agent_contract("../../arbitrary.py")
+
+
+def test_layer_contract_binds_fixed_fixture_and_actual_slice_goal():
+    from harness.agent_protocol import LAYER_FIXTURE_SHA256
+    contract = agent_session.agent_contract("m3d_param_reslice")
+    assert contract.contract_version == "ai-layer-1" and contract.executor == "agent_mcp"
+    assert [s.id for s in contract.steps] == ["boot", "baseline", "edit", "reslice", "close"]
+    assert LAYER_FIXTURE_SHA256 in contract.steps[0].goal
+    assert "0.24" in contract.steps[2].goal and "0.40" in contract.steps[2].goal
+    assert contract.limits.timeout_s == 900 and contract.limits.max_actions == 12
 
 
 def test_host_override_cannot_start_agent(monkeypatch, tmp_path):
@@ -51,16 +70,17 @@ def test_agent_root_cannot_split_desktop_lock(monkeypatch, tmp_path):
     assert not (tmp_path / "other").exists()
 
 
-def test_composition_uses_fixed_ports_digest_and_shared_desktop(monkeypatch, tmp_path):
+@pytest.mark.parametrize("case_id", CASES)
+def test_composition_uses_fixed_ports_digest_and_shared_desktop(monkeypatch, tmp_path, case_id):
     monkeypatch.setattr(host_guard, "in_guest", lambda: True)
     monkeypatch.setattr(agent_session, "SCRIPT_ROOT", tmp_path)
     dispatch = Mock(return_value={"mode": "agent_shadow"})
     monkeypatch.setattr(agent_session, "run_once", dispatch)
-    agent_session.run_agent("m1_minimal_loop", tmp_path, RUN_ID)
+    agent_session.run_agent(case_id, tmp_path, RUN_ID)
     contract, executor, registry = dispatch.call_args.args
     assert type(executor) is AgentExecutor
     assert executor.contract_sha256 == contract_digest(contract)
-    assert type(registry[contract_digest(contract)]) is AgentTabVerifier
+    assert type(registry[contract_digest(contract)]) is verifier_type(case_id)
     assert dispatch.call_args.kwargs == {"root": tmp_path, "run_id": RUN_ID,
                                          "desktop_id": "guest-console",
                                          "execution_mode": "guest_agent"}
@@ -75,17 +95,19 @@ def test_real_agent_runtime_cannot_be_entered_on_host(monkeypatch, tmp_path):
     assert not list(tmp_path.iterdir())
 
 
-def test_guest_agent_result_cannot_emit_release_green(monkeypatch, tmp_path):
+@pytest.mark.parametrize("case_id", CASES)
+def test_guest_agent_result_cannot_emit_release_green(monkeypatch, tmp_path, case_id):
     monkeypatch.setattr(host_guard, "in_guest", lambda: True)
-    contract = agent_session.agent_contract("m1_minimal_loop")
+    contract = agent_session.agent_contract(case_id)
     monkeypatch.setattr(AgentExecutor, "start", lambda _self, _ctx:
                         SyntheticHandle(ExecutionOutcome("completed")))
     checks = {name: CheckResult("pass", "test-only evidence", ("test-only",))
               for name in contract.required_checks}
-    monkeypatch.setattr(AgentTabVerifier, "start", lambda _self, _snapshot:
+    checker = verifier_type(case_id)
+    monkeypatch.setattr(checker, "start", lambda _self, _snapshot:
                         SyntheticHandle(VerificationOutcome(checks, True, True)))
     result = run_once(contract, AgentExecutor(contract_digest(contract)),
-                      {contract_digest(contract): AgentTabVerifier()}, root=tmp_path,
+                      {contract_digest(contract): checker()}, root=tmp_path,
                       run_id=RUN_ID, execution_mode="guest_agent")
     assert result["mode"] == "agent_shadow"
     assert result["release_verdict"] == "SHADOW" and not result["release_eligible"]
@@ -100,4 +122,28 @@ def test_agent_runtime_rejects_unregistered_verifier(monkeypatch, tmp_path):
         run_once(contract, AgentExecutor(contract_digest(contract)),
                  {contract_digest(contract): verifier}, root=tmp_path, run_id=RUN_ID,
                  execution_mode="guest_agent")
+    assert not list(tmp_path.iterdir())
+
+
+@pytest.mark.parametrize("case_id", CASES)
+def test_verifier_cannot_cross_case_boundary(monkeypatch, tmp_path, case_id):
+    monkeypatch.setattr(host_guard, "in_guest", lambda: True)
+    contract = agent_session.agent_contract(case_id)
+    other = CASES[1] if case_id == CASES[0] else CASES[0]
+    with pytest.raises(ValueError, match="unregistered agent verifier"):
+        run_once(contract, AgentExecutor(contract_digest(contract)),
+                 {contract_digest(contract): verifier_type(other)()}, root=tmp_path,
+                 run_id=RUN_ID, execution_mode="guest_agent")
+    assert not list(tmp_path.iterdir())
+
+
+def test_layer_contract_cannot_relabel_old_tab_version(monkeypatch, tmp_path):
+    from harness.run_contract import validate_contract
+    monkeypatch.setattr(host_guard, "in_guest", lambda: True)
+    data = agent_session.agent_contract("m3d_param_reslice").to_dict()
+    data["contract_version"] = "ai-tabs-1"
+    contract = validate_contract(data)
+    with pytest.raises(ValueError, match="invalid fixed agent contract"):
+        run_once(contract, AgentExecutor(contract_digest(contract)), {}, root=tmp_path,
+                 run_id=RUN_ID, execution_mode="guest_agent")
     assert not list(tmp_path.iterdir())

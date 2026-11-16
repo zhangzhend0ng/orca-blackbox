@@ -44,7 +44,7 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
 
     Returns persisted result fields plus paths. Adapter exceptions are recorded then
     re-raised after cleanup. No reopen, retry, promotion, shell or model API.
-    Explicit guest modes accept only their fixed m0 script or m1 agent adapter;
+    Explicit guest modes accept only their fixed script or registered agent cases;
     default synthetic mode cannot launch either real adapter.
     A partial start without a returned handle quarantines the shared desktop.
     Desktop exclusion covers dispatchers sharing the same canonical evidence root.
@@ -62,9 +62,11 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
             expected_type, expected_case = ScriptExecutor, "m0_boot_check"
         else:
             from .agent_executor import AgentExecutor
-            expected_type, expected_case = AgentExecutor, "m1_minimal_loop"
+            from .agent_protocol import agent_profile
+            profile = agent_profile(frozen.case_id)
+            expected_type, expected_case = AgentExecutor, frozen.case_id
             if (type(run_id) is not str or not re.fullmatch(r"[0-9a-f]{32}", run_id)
-                    or frozen.contract_version != "ai-tabs-1"):
+                    or frozen.contract_version != profile["contract_version"]):
                 raise ValueError("runtime: invalid fixed agent contract/run identity")
         if (type(executor) is not expected_type or frozen.case_id != expected_case
                 or executor.contract_sha256 != contract_digest(frozen)):
@@ -75,8 +77,13 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
     if verifier is None or getattr(verifier, "synthetic", None) is not synthetic:
         raise ValueError("runtime: no verifier registered for this exact contract and mode")
     if execution_mode == "guest_agent":
-        from .agent_verify import AgentTabVerifier
-        if type(verifier) is not AgentTabVerifier:
+        if frozen.case_id == "m1_minimal_loop":
+            from .agent_verify import AgentTabVerifier
+            expected_verifier = AgentTabVerifier
+        else:
+            from .agent_layer_verify import AgentLayerVerifier
+            expected_verifier = AgentLayerVerifier
+        if type(verifier) is not expected_verifier:
             raise ValueError("runtime: unregistered agent verifier")
     for budget in (verify_timeout_s, cleanup_timeout_s):
         if type(budget) not in (int, float) or not math.isfinite(budget) or not 0 < budget <= 3600:

@@ -16,7 +16,7 @@ if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
 from harness import host_guard
-from harness.agent_protocol import (MAX_CALLS, MAX_CLICKS, MAX_RUNTIME_S, ProtocolError,
+from harness.agent_protocol import (MAX_CALLS, MAX_CLICKS, MAX_RUNTIME_S, LAYER_CASE, ProtocolError, agent_profile,
                                     check_cancel, read_json, valid_run_id, validate_request, write_json_once)
 from harness.run_contract import load_contract
 from harness.run_verdict import contract_digest
@@ -51,14 +51,14 @@ def _encode_capture(capture):
 
 
 class _WindowsUI:
-    def __init__(self, artifacts):
+    def __init__(self, artifacts, model=None):
         from harness import launcher, profile, winutil
         self.winutil = winutil
         target = artifacts / "profile"
         if target.exists():
             raise FileExistsError("profile already exists")
         profile.seed_profile(target, fresh=False)
-        self.app = launcher.launch(datadir=target, dismiss_wizard=True)
+        self.app = launcher.launch(datadir=target, model=model, dismiss_wizard=True)
         self.shape = None
 
     def identity(self):
@@ -95,11 +95,12 @@ def run_guest(artifact_dir: Path, run_id: str, digest: str) -> int:
     valid_run_id(run_id)
     artifacts = artifact_dir.resolve(strict=True)
     contract = load_contract(artifacts.parent / "contract.json")
-    if (contract.case_id != "m1_minimal_loop" or contract.contract_version != "ai-tabs-1"
+    if (contract.contract_version != agent_profile(contract.case_id)["contract_version"]
             or contract.executor != "agent_mcp" or contract_digest(contract) != digest):
         raise ProtocolError("wrong_contract")
     for path in (artifacts / "mailbox", artifacts / "frames", artifacts / "ready.json",
-                 artifacts / "agent_report.json", artifacts / "trace.ndjson"):
+                 artifacts / "agent_report.json", artifacts / "trace.ndjson",
+                 artifacts / "operation_receipts.ndjson"):
         if path.exists():
             raise FileExistsError("agent artifacts must start empty")
     mailbox, frames = artifacts / "mailbox", artifacts / "frames"
@@ -108,12 +109,35 @@ def run_guest(artifact_dir: Path, run_id: str, digest: str) -> int:
     started_ns, deadline = time.time_ns(), time.monotonic() + MAX_RUNTIME_S
     calls, clicks, last_observation, status, ui = 0, 0, None, "failed", None
     driver_pid, app_pid, hwnd = os.getpid(), None, None
+    def guard():
+        check_cancel(artifacts, run_id)
+        if time.monotonic() >= deadline:
+            raise ProtocolError("worker_deadline")
+    def receipt(seq, method, request, start_ns, details):
+        raw = None if request is None else json.dumps(request, sort_keys=True, separators=(",", ":"),
+            ensure_ascii=False, allow_nan=False).encode("utf-8")
+        row = {"schema_version": 1, "run_id": run_id, "seq": seq, "method": method,
+            "request_sha256": None if raw is None else hashlib.sha256(raw).hexdigest(),
+            "started_at_ns": start_ns, "finished_at_ns": time.time_ns(),
+            "window": {"hwnd": hwnd, "pid": app_pid}, "details": details}
+        with (artifacts / "operation_receipts.ndjson").open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps(row, sort_keys=True, allow_nan=False) + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+    operations = {"edit": 0, "slice": 0, "export_gcode": 0}
     with (artifacts / "trace.ndjson").open("x", encoding="utf-8") as trace:
         try:
             check_cancel(artifacts, run_id)
-            ui = _WindowsUI(artifacts)
+            if contract.case_id == LAYER_CASE:
+                from harness.agent_business_ui import BusinessUI
+                _bytes_once(artifacts / "operation_receipts.ndjson", b"")
+                ui = BusinessUI(artifacts, guard)
+            else:
+                ui = _WindowsUI(artifacts)
             window, _capture = ui.identity()
             app_pid, hwnd = window["pid"], window["hwnd"]
+            if contract.case_id == LAYER_CASE:
+                receipt(0, "boot", None, started_ns, ui.boot_details)
             write_json_once(artifacts / "ready.json", {"schema_version": 1, "run_id": run_id,
                 "case_id": contract.case_id, "driver_pid": driver_pid, "app_pid": app_pid,
                 "hwnd": hwnd, "contract_sha256": digest})
@@ -131,7 +155,8 @@ def run_guest(artifact_dir: Path, run_id: str, digest: str) -> int:
                             "observation": None, "finished": False}
                 try:
                     request = validate_request(read_json(request_path), run_id=run_id,
-                                               expected_seq=seq, observation_id=last_observation)
+                                               expected_seq=seq, observation_id=last_observation,
+                                               case_id=contract.case_id)
                     calls += 1
                     method = request["method"]
                     response["tool"] = method
@@ -141,6 +166,15 @@ def run_guest(artifact_dir: Path, run_id: str, digest: str) -> int:
                             raise ProtocolError("click_budget")
                         clicks += 1
                         ui.click(**request["arguments"])
+                    elif method in operations:
+                        guard()
+                        if operations[method] >= 2:
+                            raise ProtocolError("operation_budget")
+                        operations[method] += 1
+                        operation_start = time.time_ns()
+                        details = ui.perform(method, request["arguments"])
+                        guard()
+                        receipt(seq, method, request, operation_start, details)
                     captured = []
                     for suffix in ("a", "b"):
                         check_cancel(artifacts, run_id)

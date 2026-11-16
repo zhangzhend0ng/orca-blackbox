@@ -8,7 +8,8 @@ import zlib
 import pytest
 
 from harness import agent_guest as worker
-from harness.agent_protocol import ProtocolError, check_cancel, read_json, validate_request, write_json_once
+from harness.agent_protocol import (LAYER_CASE, LAYER_FIXTURE, LAYER_FIXTURE_SHA256, ProtocolError,
+    agent_profile, check_cancel, read_json, validate_request, write_json_once)
 from harness.run_contract import validate_contract
 from harness.run_verdict import contract_digest
 
@@ -41,6 +42,52 @@ def test_click_boundary_and_fresh_observation_are_accepted():
     assert validate_request(value, run_id="run1", expected_seq=2, observation_id="previous") == value
     with pytest.raises(ProtocolError, match="stale"):
         validate_request(value, run_id="run1", expected_seq=2, observation_id="new")
+
+
+def test_case_capabilities_do_not_grant_business_tools_to_tabs():
+    value = request(2, "slice", obs="previous")
+    with pytest.raises(ProtocolError, match="unknown_tool"):
+        validate_request(value, run_id="run1", expected_seq=2, observation_id="previous")
+    assert validate_request(value, run_id="run1", expected_seq=2, observation_id="previous", case_id=LAYER_CASE) == value
+    assert agent_profile(LAYER_CASE)["contract_version"] == "ai-layer-1"
+    with pytest.raises(ProtocolError, match="unknown_case"):
+        agent_profile("untrusted")
+
+
+@pytest.mark.parametrize("text", ["0.16", "0.24", "0.40", "0.56"])
+def test_numeric_edit_allows_machine_range_without_encoding_target(text):
+    value = request(2, "edit", {"x": 400, "y": 600, "text": text}, "previous")
+    assert validate_request(value, run_id="run1", expected_seq=2, observation_id="previous", case_id=LAYER_CASE) == value
+
+
+@pytest.mark.parametrize("change", [
+    {"text": "0"}, {"text": "0.15"}, {"text": "0.57"}, {"text": "99"},
+    {"text": "nan"}, {"text": "0.24\n"}, {"text": ".24"}, {"text": 0.24},
+    {"x": True}, {"x": -1}, {"y": 2160}, {"extra": "forbidden"},
+])
+def test_business_edit_rejects_coercion_unknown_fields_and_extreme_values(change):
+    arguments = {"x": 400, "y": 600, "text": "0.24", **change}
+    with pytest.raises(ProtocolError):
+        validate_request(request(2, "edit", arguments, "previous"), run_id="run1", expected_seq=2,
+                         observation_id="previous", case_id=LAYER_CASE)
+
+
+def test_layer_fixture_only_remaps_object_and_removes_source_paths():
+    import hashlib
+    import re
+    import zipfile
+    repo = Path(__file__).resolve().parents[1]
+    fixture = repo / LAYER_FIXTURE
+    assert hashlib.sha256(fixture.read_bytes()).hexdigest() == LAYER_FIXTURE_SHA256
+    with zipfile.ZipFile(repo / "fixtures/mixed_filament_test.3mf") as source, zipfile.ZipFile(fixture) as derived:
+        assert source.namelist() == derived.namelist()
+        for name in source.namelist():
+            raw = source.read(name)
+            if name == "Metadata/model_settings.config":
+                raw = raw.replace(b'<metadata key="extruder" value="6"/>', b'<metadata key="extruder" value="1"/>')
+                raw = re.sub(rb'^[ \t]*<metadata key="source_file" value="[^"\r\n]*"/>\r?\n', b'', raw, flags=re.M)
+                assert b'key="source_file"' not in derived.read(name)
+            assert derived.read(name) == raw
 
 
 def test_mailbox_json_rejects_duplicates_and_does_not_replace(tmp_path):
@@ -146,3 +193,77 @@ def test_real_worker_loop_observes_clicks_finishes_with_run_owned_trace(tmp_path
         assert frames[1]["captured_at_ns"] - frames[0]["captured_at_ns"] >= 1_000_000_000
         assert all((artifacts / frame["path"]).exists() for frame in frames)
     assert instances[0].clicks == [(100, 50)] and instances[0].closed
+
+
+@pytest.mark.parametrize("flow", ["complete", "too-many-edits", "cancel-in-operation"])
+def test_business_worker_keeps_observation_chain_receipts_and_operation_limits(tmp_path, monkeypatch, flow):
+    import hashlib
+    from harness import agent_business_ui
+    contract = validate_contract({"schema_version": 1, "case_id": LAYER_CASE,
+        "contract_version": "ai-layer-1", "executor": "agent_mcp", "required_checks": ["path", "business"],
+        "steps": [{"id": "layer", "goal": "Edit then reslice"}],
+        "limits": {"timeout_s": 900, "max_actions": 12, "max_retries": 0, "max_cost_usd": 0}})
+    (tmp_path / "contract.json").write_text(json.dumps(contract.to_dict()), encoding="utf-8")
+    artifacts = tmp_path / "artifacts"
+    artifacts.mkdir()
+    now = [0.0]
+    monkeypatch.setattr(worker, "time", SimpleNamespace(monotonic=lambda: now[0],
+        time_ns=lambda: 10**18 + int(now[0] * 10**9), sleep=lambda seconds: now.__setitem__(0, now[0] + seconds)))
+    monkeypatch.setattr(worker.host_guard, "in_guest", lambda: True)
+    instances = []
+    class UI:
+        def __init__(self, _artifacts, guard):
+            self.guard, self.performed, self.closed, self.exports = guard, [], False, 0
+            self.boot_details = {"fixture_path": "input/fixture.3mf", "fixture_sha256": LAYER_FIXTURE_SHA256,
+                                 "datadir": "profile", "driver_pid": worker.os.getpid()}
+            instances.append(self)
+        def identity(self):
+            return {"hwnd": 9, "pid": 8, "width": 313, "height": 68, "dpi": 96}, (313, 68, bytes(313 * 68 * 4))
+        def perform(self, method, arguments):
+            self.guard()
+            self.performed.append(method)
+            if flow == "cancel-in-operation":
+                write_json_once(artifacts / "control_cancel.json", {"schema_version": 1,
+                    "run_id": "run1", "reason": "host_stopped"})
+                self.guard()
+            if method == "slice":
+                return {"button_hwnd": 21, "done_observed": True}
+            if method == "edit":
+                return {"target_hwnd": 22, "control_class": "Edit", "before_text": "0.4", "after_text": arguments["text"]}
+            self.exports += 1
+            return {"dialog_hwnd": 23, "edit_hwnd": 24, "path": f"exports/{self.exports:04d}.gcode",
+                    "sha256": "a" * 64, "size_bytes": 100}
+        def close(self):
+            self.closed = True
+    monkeypatch.setattr(agent_business_ui, "BusinessUI", UI)
+    sequence = (["edit", "edit", "edit"] if flow == "too-many-edits" else
+                ["slice", "export_gcode", "edit", "slice", "export_gcode", "finish"])
+    values = [request()]
+    for seq, method in enumerate(sequence, 2):
+        values.append(request(seq, method, {"x": 10, "y": 20, "text": "0.24"} if method == "edit" else {},
+                              f"run1_{seq - 1:04d}"))
+    original = worker.write_json_once
+    def write(path, value):
+        original(path, value)
+        if path.name == "ready.json":
+            for item in values:
+                original(artifacts / "mailbox" / f"request_{item['seq']:04d}.json", item)
+    monkeypatch.setattr(worker, "write_json_once", write)
+    assert worker.run_guest(artifacts, "run1", contract_digest(contract)) == (0 if flow == "complete" else 1)
+    receipts = [json.loads(row) for row in (artifacts / "operation_receipts.ndjson").read_text().splitlines()]
+    assert receipts[0]["seq"] == 0 and receipts[0]["method"] == "boot" and receipts[0]["request_sha256"] is None
+    for row in receipts[1:]:
+        req = values[row["seq"] - 1]
+        canonical = json.dumps(req, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False).encode()
+        assert row["request_sha256"] == hashlib.sha256(canonical).hexdigest()
+        assert row["window"] == {"hwnd": 9, "pid": 8}
+    if flow == "complete":
+        assert [row["method"] for row in receipts] == ["boot", "slice", "export_gcode", "edit", "slice", "export_gcode"]
+    elif flow == "too-many-edits":
+        assert instances[0].performed == ["edit", "edit"]
+        response = read_json(artifacts / "mailbox/response_0004.json")
+        assert response["error_code"] == "operation_budget"
+    else:
+        assert len(receipts) == 1
+        assert read_json(artifacts / "mailbox/response_0002.json")["error_code"] == "host_cancelled"
+    assert instances[0].closed

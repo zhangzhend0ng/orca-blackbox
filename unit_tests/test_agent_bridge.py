@@ -139,3 +139,54 @@ def test_detached_response_uses_base64_not_remoting_string_metadata(tmp_path, mo
         return "12345"
     monkeypatch.setattr(relay_run, "relay_transact", launch)
     assert mailbox.remote({"op": "json", "path": "ready.json"}) == {"exists": False}
+
+
+def test_layer_capability_dispatches_only_registered_business_arguments():
+    backend = Mailbox()
+    tools = ScopedTools(backend, RUN, "m3d_param_reslice")
+    assert {t["name"] for t in tools.tool_definitions} == {
+        "observe", "click", "edit", "slice", "export_gcode", "finish"}
+    tools.call("observe", {})
+    for tool in ("slice", "export_gcode", "edit", "slice", "export_gcode"):
+        args = {"observation_id": tools.observation_id}
+        if tool == "edit":
+            args.update(x=290, y=610, text="0.24")
+        tools.call(tool, args)
+    tools.call("finish", {})
+    assert backend.requests[3]["arguments"] == {"x": 290, "y": 610, "text": "0.24"}
+    assert [r["method"] for r in backend.requests] == [
+        "observe", "slice", "export_gcode", "edit", "slice", "export_gcode", "finish"]
+
+
+@pytest.mark.parametrize("name,args", [
+    ("export_gcode", {"path": "C:/outside.gcode"}),
+    ("edit", {"x": 290, "y": 610, "text": "0.24; command"}),
+    ("edit", {"x": True, "y": 610, "text": "0.24"}),
+])
+def test_layer_invalid_input_never_reaches_transport(name, args):
+    backend = Mailbox()
+    tools = ScopedTools(backend, RUN, "m3d_param_reslice")
+    tools.call("observe", {})
+    with pytest.raises(ValueError):
+        tools.call(name, {"observation_id": tools.observation_id, **args})
+    assert len(backend.requests) == 1
+
+
+def test_third_slice_is_rejected_before_dispatch():
+    backend = Mailbox()
+    tools = ScopedTools(backend, RUN, "m3d_param_reslice")
+    tools.call("observe", {})
+    for _ in range(2):
+        tools.call("slice", {"observation_id": tools.observation_id})
+    with pytest.raises(ValueError, match="budget"):
+        tools.call("slice", {"observation_id": tools.observation_id})
+    assert len(backend.requests) == 3
+
+
+def test_tab_capability_cannot_invoke_business_tools():
+    backend = Mailbox()
+    tools = ScopedTools(backend, RUN)
+    tools.call("observe", {})
+    with pytest.raises(ValueError):
+        tools.call("edit", {"observation_id": tools.observation_id, "x": 290, "y": 610, "text": "0.24"})
+    assert len(backend.requests) == 1
