@@ -181,7 +181,9 @@ def test_close_checks_dialog_owner_and_retains_first_bounded_diagnostic(tmp_path
     ui.wu = SimpleNamespace(_window_pid=lambda hwnd: 12 if hwnd in {11,20,21} else 88,
         close_window=lambda hwnd: None, enum_windows=lambda: [(20, 12), (30, 88)],
         window_title=lambda hwnd: caption, window_class=lambda hwnd: "#32770",
-        msg_click_screen=click, user32=SimpleNamespace(GetWindow=lambda hwnd, command: owner if hwnd == 20 else 0))
+        msg_click_screen=click, user32=SimpleNamespace(GetWindow=lambda hwnd, command: owner if hwnd == 20 else 0,
+        GetParent=lambda hwnd: owner if hwnd == 20 else 0, GetAncestor=lambda hwnd,flag: 11,
+        IsChild=lambda root,child: False, IsWindowVisible=lambda hwnd: True, IsWindowEnabled=lambda hwnd: True))
     children = ([("", (0,0,1,1), 22), ("Yes", (0,0,1,1), 23), ("No", (2,2,4,4), 21),
         ("Cancel", (0,0,1,1), 24), ("htmlWindow", (0,0,1,1), 25),
         ("", (0,0,1,1), 26), ("Remember my choice.", (0,0,1,1), 27)] if message == "htmlWindow" else [
@@ -207,3 +209,20 @@ def test_close_checks_dialog_owner_and_retains_first_bounded_diagnostic(tmp_path
     with pytest.raises(ProtocolError, match="graceful_close_unconfirmed"):
         ui.close()
     assert path.read_bytes() == first
+
+
+@pytest.mark.parametrize("owner_pid,is_descendant,owner_parent,accepted", [
+    (12, True, 0, True),  # Plater child owns its close confirmation.
+    (12, False, 0, False),  # Same PID and shared hidden root-owner are insufficient.
+    (88, True, 0, False),  # A foreign-PID edge is never traversed.
+    (12, False, 11, True),  # Existing GW_OWNER chain to MainFrame remains accepted.
+    (12, False, 30, False),  # Cyclic owner links fail closed.
+])
+def test_close_owner_accepts_main_descendant_but_rejects_unrelated_or_foreign_windows(owner_pid, is_descendant, owner_parent, accepted):
+    ui = ui_shell()
+    ui.owned = lambda hwnd: hwnd == 20
+    ui.wu = SimpleNamespace(window_class=lambda hwnd: "#32770",
+        _window_pid=lambda hwnd: owner_pid,
+        user32=SimpleNamespace(GetWindow=lambda hwnd,command: 30 if hwnd == 20 else owner_parent,
+                              IsChild=lambda root,hwnd: root == 11 and hwnd == 30 and is_descendant))
+    assert ui.owned_dialog(20) is accepted

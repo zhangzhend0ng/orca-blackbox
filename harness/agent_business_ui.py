@@ -46,6 +46,12 @@ class BusinessUI:
             import ctypes
             self.wu.user32.GetWindow.argtypes = [ctypes.c_void_p, ctypes.c_uint]
             self.wu.user32.GetWindow.restype = ctypes.c_void_p
+            self.wu.user32.GetParent.argtypes = [ctypes.c_void_p]
+            self.wu.user32.GetParent.restype = ctypes.c_void_p
+            self.wu.user32.GetAncestor.argtypes = [ctypes.c_void_p, ctypes.c_uint]
+            self.wu.user32.GetAncestor.restype = ctypes.c_void_p
+            self.wu.user32.IsChild.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+            self.wu.user32.IsChild.restype = ctypes.c_int
             self.pause(12)  # CLI fixture load must remain hands-off.
             self.wu.user32.ShowWindow(self.app.hwnd, 3)
             self.pause(1)
@@ -244,6 +250,11 @@ class BusinessUI:
                 return True
             if not owner or owner in seen or self.wu._window_pid(owner) != self.app.pid:
                 return False
+            # Plater::close_with_confirm parents its query to Plater, a
+            # MainFrame descendant. A child HWND is a direct, verifiable
+            # association; sharing a hidden owner with MainFrame is not.
+            if self.wu.user32.IsChild(self.app.hwnd, owner):
+                return True
             seen.add(owner)
             owner = self.wu.user32.GetWindow(owner, 2)
         return False
@@ -261,10 +272,29 @@ class BusinessUI:
                 "owner_hwnd": self.wu.user32.GetWindow(hwnd, 2), "children": children})
             if len(windows) == 16:
                 break
+        pending = [window["hwnd"] for window in windows]
+        relations, seen = [], set()
+        while pending and len(relations) < 32:
+            hwnd = pending.pop(0)
+            if not hwnd or hwnd in seen or self.wu._window_pid(hwnd) != self.app.pid:
+                continue
+            seen.add(hwnd)
+            owner = self.wu.user32.GetWindow(hwnd, 2)
+            parent = self.wu.user32.GetParent(hwnd)
+            relations.append({"hwnd": hwnd, "pid": self.app.pid,
+                "class": self.wu.window_class(hwnd)[:128], "title": self.wu.window_title(hwnd)[:128],
+                "visible": bool(self.wu.user32.IsWindowVisible(hwnd)),
+                "enabled": bool(self.wu.user32.IsWindowEnabled(hwnd)),
+                "owner_hwnd": owner, "parent_hwnd": parent,
+                "root_hwnd": self.wu.user32.GetAncestor(hwnd, 2),
+                "root_owner_hwnd": self.wu.user32.GetAncestor(hwnd, 3),
+                "is_main_descendant": bool(self.wu.user32.IsChild(self.app.hwnd, hwnd))})
+            pending.extend((owner, parent))
         write_json_once(self.artifacts / "close_windows.json", {"schema_version": 1,
             "diagnostic_only": True, "oracle_evidence": False, "app_pid": self.app.pid,
             "main_hwnd": self.app.hwnd, "captured_at_ns": time.time_ns(),
-            "reason": "graceful_close_unconfirmed", "windows": windows})
+            "reason": "graceful_close_unconfirmed", "windows": windows, "relations": relations,
+            "close_attempts": getattr(self, "_close_attempts", [])[:16]})
 
     def close(self):
         if self.base is None or not self.app.alive():
@@ -288,7 +318,12 @@ class BusinessUI:
                 if chosen is not None and hwnd not in handled and self.owned(chosen[2]):
                     handled.add(hwnd)
                     rect = chosen[1]
-                    self.wu.msg_click_screen((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2, hwnd)
+                    target = self.wu.msg_click_screen((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2, hwnd)
+                    if not hasattr(self, "_close_attempts"):
+                        self._close_attempts = []
+                    if len(self._close_attempts) < 16:
+                        self._close_attempts.append({"dialog_hwnd": hwnd, "button_hwnd": chosen[2],
+                            "target_hwnd": target, "at_ns": time.time_ns()})
             time.sleep(0.1)
         if self.app.alive():
             try:

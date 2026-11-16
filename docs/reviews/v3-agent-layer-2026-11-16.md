@@ -74,6 +74,14 @@ AI Evaluation Items 1–4 (C) — PASS（格式兼容）：只读上游 `src/lib
 
 真实生成器还使用不含 E 的 G2/G3 抬头移动。兼容分支只接受数值参数 XYZ/IJK/R/P/F，清空 XYZ，后续对象正向挤出之前必须由直线指令重新建立明确坐标；不推导弧线轨迹，带 E（包括 E0）、未知/重复参数仍拒绝。59 项 layer oracle 测试通过（1.68 秒），包含缺失坐标恢复及带 E 弧线反例。以上均为有限格式兼容，没有扩大业务通过条件。
 
+## 59b7 产物与关闭 owner 关系复核
+
+完整 CLI run `59b7bfbd23024db98cf62ff70a0b6cdd` 仍为 NON_GREEN/cancelled：finish 返回 graceful_close_unconfirmed，runtime 自动回收 owned Job（active=0、forced_termination=true、cleanup_confirmed=true），原包缺少 agent_report.json。本审阅者独立复算 ZIP SHA `26f24bf5830da86c38f14ba758e729e923165442b238e4491e9aa7ac0b3093ad`、49 文件，并纯重放 A/B 的对象运动：68 层×0.40 → 112 层×0.24，首层均 0.40，末 Z 27.20/27.04、正 XY/E 运动 1907/2882，对象工具均 T0。6 次宿主输入图 hash、原始 CLI action/usage、action 文件和 guest 请求链一致。产物检查成立不改变原始失败裁决，详细运行记录另存 docs/runs/v3-layer-2026-11-16.md。
+
+Tool Control Items 3–5 / Input Validation Items 1–4 (C) — PASS（修复进入再试验）：保存窗的直接 owner 不是 main，本次新增规则只接受 GW_OWNER 有界链中同 PID 且 `IsChild(bound_main, owner)` 成立的真实主窗后代。只读开发检出 Plater.cpp 的 close_with_confirm 使用 this/Plater 作为对话框 parent，与该关系相符。仍要求 own #32770、精确保存结构、close_requested；同 PID 旁支、共享隐藏 root-owner、外部 PID、循环链均拒绝，不以共享祖先作为授权。
+
+GetParent/GetAncestor 及点击返回目标仅增加有界诊断（最多 32 关系节点、16 次点击记录），不参与 oracle 或扩大许可。审阅者运行 88 项 business UI/protocol/executor 测试通过（0.66 秒）；协调者报告全套 488 passed / 1 skipped、diff --check 通过。代码审阅无新增阻断，真实关闭兼容性仍须新 run 证明；不追认 59b7 为 SHADOW。
+
 ## 尚待真实验证
 
 实际 Quality/Edit 定位、wx 字段提交、Slice/Export 控件状态、保存对话框及关闭提示尚未通过本批客机运行。导出按钮 enabled 只是工具等待条件，最终 G-code oracle 才决定层高是否生效。首个真实 run 必须记录 CLI 图像输入/结构动作与 guest 请求 hash 关联，以及 Job 空、无强制终止/取消和确认 cleanup；后续负例须与正例、离线篡改重放分别标注。
