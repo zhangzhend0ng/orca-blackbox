@@ -178,10 +178,17 @@ def test_close_checks_dialog_owner_and_retains_first_bounded_diagnostic(tmp_path
     def click(*args):
         clicks.append(args)
         alive[0] = False
+    commands = []
+    def get_window(hwnd, command):
+        commands.append(command)
+        if command == 2:
+            return 11  # Z-order trap: the next window may coincidentally be MainFrame.
+        assert command == 4
+        return owner if hwnd == 20 else 0
     ui.wu = SimpleNamespace(_window_pid=lambda hwnd: 12 if hwnd in {11,20,21} else 88,
         close_window=lambda hwnd: None, enum_windows=lambda: [(20, 12), (30, 88)],
         window_title=lambda hwnd: caption, window_class=lambda hwnd: "#32770",
-        msg_click_screen=click, user32=SimpleNamespace(GetWindow=lambda hwnd, command: owner if hwnd == 20 else 0,
+        msg_click_screen=click, user32=SimpleNamespace(GetWindow=get_window,
         GetParent=lambda hwnd: owner if hwnd == 20 else 0, GetAncestor=lambda hwnd,flag: 11,
         IsChild=lambda root,child: False, IsWindowVisible=lambda hwnd: True, IsWindowEnabled=lambda hwnd: True))
     children = ([("", (0,0,1,1), 22), ("Yes", (0,0,1,1), 23), ("No", (2,2,4,4), 21),
@@ -195,6 +202,7 @@ def test_close_checks_dialog_owner_and_retains_first_bounded_diagnostic(tmp_path
         ui.close()
         assert clicks == [(3, 3, 20)] and not alive[0]
         assert not (tmp_path / "close_windows.json").exists()
+        assert commands and set(commands) == {4}
         return
     with pytest.raises(ProtocolError, match="graceful_close_unconfirmed"):
         ui.close()
@@ -209,6 +217,7 @@ def test_close_checks_dialog_owner_and_retains_first_bounded_diagnostic(tmp_path
     with pytest.raises(ProtocolError, match="graceful_close_unconfirmed"):
         ui.close()
     assert path.read_bytes() == first
+    assert commands and set(commands) == {4}
 
 
 @pytest.mark.parametrize("owner_pid,is_descendant,owner_parent,accepted", [
@@ -221,8 +230,16 @@ def test_close_checks_dialog_owner_and_retains_first_bounded_diagnostic(tmp_path
 def test_close_owner_accepts_main_descendant_but_rejects_unrelated_or_foreign_windows(owner_pid, is_descendant, owner_parent, accepted):
     ui = ui_shell()
     ui.owned = lambda hwnd: hwnd == 20
+    commands = []
+    def get_window(hwnd, command):
+        commands.append(command)
+        if command == 2:
+            return 31  # Same-PID unrelated next window: never a valid owner edge.
+        assert command == 4
+        return 30 if hwnd == 20 else owner_parent
     ui.wu = SimpleNamespace(window_class=lambda hwnd: "#32770",
         _window_pid=lambda hwnd: owner_pid,
-        user32=SimpleNamespace(GetWindow=lambda hwnd,command: 30 if hwnd == 20 else owner_parent,
+        user32=SimpleNamespace(GetWindow=get_window,
                               IsChild=lambda root,hwnd: root == 11 and hwnd == 30 and is_descendant))
     assert ui.owned_dialog(20) is accepted
+    assert module.GW_OWNER == 4 and commands and set(commands) == {4}

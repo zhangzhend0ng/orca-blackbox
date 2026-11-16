@@ -10,6 +10,8 @@ import time
 
 from .agent_protocol import LAYER_FIXTURE, LAYER_FIXTURE_SHA256, ProtocolError, write_json_once
 
+GW_OWNER = 4  # winuser.h: 2 is GW_HWNDNEXT (Z order), not window ownership.
+
 
 def _discard_choice(caption, children, *, close_requested=False):
     labels = [text.replace("&", "").strip() for text, _rect, _child in children if text.strip()]
@@ -244,7 +246,7 @@ class BusinessUI:
         if not self.owned(hwnd) or self.wu.window_class(hwnd) != "#32770":
             return False
         seen = set()
-        owner = self.wu.user32.GetWindow(hwnd, 2)  # GW_OWNER, not a same-name process lookup
+        owner = self.wu.user32.GetWindow(hwnd, GW_OWNER)
         for _ in range(8):
             if owner == self.app.hwnd:
                 return True
@@ -256,7 +258,7 @@ class BusinessUI:
             if self.wu.user32.IsChild(self.app.hwnd, owner):
                 return True
             seen.add(owner)
-            owner = self.wu.user32.GetWindow(owner, 2)
+            owner = self.wu.user32.GetWindow(owner, GW_OWNER)
         return False
 
     def diagnose_close(self):
@@ -269,7 +271,7 @@ class BusinessUI:
                 for text, _rect, child in self.eu._children_texts(hwnd)[:32]]
             windows.append({"hwnd": hwnd, "class": self.wu.window_class(hwnd)[:128],
                 "title": self.wu.window_title(hwnd)[:128],
-                "owner_hwnd": self.wu.user32.GetWindow(hwnd, 2), "children": children})
+                "owner_hwnd": self.wu.user32.GetWindow(hwnd, GW_OWNER), "children": children})
             if len(windows) == 16:
                 break
         pending = [window["hwnd"] for window in windows]
@@ -279,7 +281,7 @@ class BusinessUI:
             if not hwnd or hwnd in seen or self.wu._window_pid(hwnd) != self.app.pid:
                 continue
             seen.add(hwnd)
-            owner = self.wu.user32.GetWindow(hwnd, 2)
+            owner = self.wu.user32.GetWindow(hwnd, GW_OWNER)
             parent = self.wu.user32.GetParent(hwnd)
             relations.append({"hwnd": hwnd, "pid": self.app.pid,
                 "class": self.wu.window_class(hwnd)[:128], "title": self.wu.window_title(hwnd)[:128],
