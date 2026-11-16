@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "case_id": "m0_boot_check",
+  "contract_version": "1",
+  "executor": "script",
+  "required_checks": ["path", "business"],
+  "steps": [
+    {"id": "boot", "goal": "Launch the app in the isolated guest and locate its main window"},
+    {"id": "capture", "goal": "Capture evidence belonging to this run"},
+    {"id": "close", "goal": "Close the owned app and verify cleanup"}
+  ],
+  "limits": {"timeout_s": 180, "max_actions": 20, "max_retries": 0, "max_cost_usd": 0}
+}
