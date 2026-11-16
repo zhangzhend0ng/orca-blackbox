@@ -1,6 +1,6 @@
 # v3 首个 AI 执行切片：页签往返
 
-状态：2026-11-16，已完成首个 codex_chat 真实 AI/GUI 正例 SHADOW，以及无状态变化的客机反例 NON_GREEN；[运行记录](runs/v3-agent-2026-11-16.md)。CLI 无人值守状态另行验证，上一批 m0 的 SHADOW 不作为本批证据。
+状态：2026-11-16，codex_chat 和无人值守 codex_cli 真实 AI/GUI 正例均为 SHADOW，无状态变化的客机反例 NON_GREEN；[运行记录](runs/v3-agent-2026-11-16.md)。上一批 m0 的 SHADOW 不作为本批证据。
 
 固定任务为 `m1_minimal_loop`，契约版本 `ai-tabs-1`，executor=`agent_mcp`：由模型观察实际截图，选择点击，使界面完成 Prepare → Preview → Prepare。只证明页签状态切换与路径，不证明切片、渲染质量或完整产品正确性。始终不可发布。
 
@@ -17,7 +17,19 @@
 
 模型、登录态与凭据留在宿主；客机只接收结构化工具动作。CLI 子进程禁用 shell、文件编辑、浏览器、apps、plugins、computer-use 或多 agent 功能，模型输出仍在宿主严格校验。这里真实使用 MCP 工具协议，但调用者是受控 host loop，不宣称 Codex 原生工具循环已接入 MCP。
 
-本轮 CLI 登录已确认，但最小无工具推理在限时内未完成，不能据此声称无人值守 CLI 通道可用。允许 `model_source=codex_chat`：当前聊天 agent 实际查看本 run 的 PNG，再向 controller 独占写入严格下一动作；controller 校验 run/obs、预算与 deadline 后走同一 MCP 链。该路径不要求用户点击 GUI，也不能预填 scripted 坐标冒充推理。记录应明确来源，chat 的 token/USD 为 unknown；不能将该结果写成 CLI 接入完成。
+两个模型来源分账：`codex_chat` 由当前聊天 agent 实际查看本 run PNG，再独占写入严格下一动作；`codex_cli` 由受限 CLI 图像推理返回动作，controller 自动调用 MCP。本轮两者已分别验证，后者不是聊天动作回放；chat 的 token/USD 为 unknown，CLI 记录实际 token 字段、美元未知。controller 校验 run/obs、预算与 deadline，模型不能预填 scripted 坐标冒充推理。
+
+默认优先发现已安装 App 最新 native CLI，缺失再用 npm native，支持 `--codex` 显式指定。仅在 Windows 推理子进程中、环境没有显式 HTTP/HTTPS 代理时继承系统既有配置，不改全局配置，不记录代理值。本机旧 CLI 与代理路径问题及对照证据见运行记录；默认模型未取得精确 ID 时保留 null，不能虚构固定模型版本。
+
+实际入口（先经现有管理员 relay/通道启动客机，再在宿主运行控制器）：
+
+```powershell
+# ORCA_BB_GUEST_SANDBOX 须指向已同步且干净的独立客机检出。
+$run = [guid]::NewGuid().ToString('N')
+& runner/hv_go.ps1 -V3 -V3Executor agent_mcp -V3RunId $run -Cases m1_minimal_loop
+python -B tools/v3_agent_host.py --run-id $run --guest-root 'C:\coil\orca-blackbox-v3-r1'
+& runner/hv_harvest.ps1 -V3
+```
 
 不建立常驻网络服务或命名管道。宿主标准 stdio bridge 实现 initialize、notifications/initialized、tools/list、tools/call；底层 mailbox 是本项目传输，不冒充标准 MCP transport。PSDirect/relay 只执行固定的短读写操作，单槽串行，不在 relay 内等待整个模型调用。大 PNG 按有界分块取回并验证大小/hash；不依赖有损的 PowerShell byte[] 回传。
 
@@ -75,7 +87,7 @@ agent_verify 从客机原始帧与可信 trace 重算状态，不接受模型/br
 
 结果保留初态、每次操作两帧、给模型的 PNG、请求/响应、宿主模型事件摘要及客机 Job 退出收据。path/business 只表达本页签任务；错误操作及无变化不得从轨迹中删除。结果使用 SHADOW 或 NON_GREEN，release_eligible=false；不得混入旧 GREEN/飞书覆盖写回。
 
-验收必须包含一次真实宿主模型推理驱动真实客机页签切换，不能以 scripted action replay 或 fake model 当作 AI 接入完成。正式 GUI run 前先做无 GUI 的 CLI 通道检查，确认隔离配置、严格 JSON 输出、token 元数据与取消可用；登录状态本身不证明推理可调用。
+验收必须包含真实宿主图像推理驱动真实客机页签切换，不能以 scripted action replay 或 fake model 当作 AI 接入完成。本轮已取得真实 CLI 图片、结构输出和 token 元数据；实际取消/失联与权限隔离仍未用本轮正例证明，保留专项反例与验证缺口。登录状态本身不证明推理可调用。
 
 反例至少验证：立即 finish 不能通过；过期观测、越界点击、重复 seq 被拒绝；中间 Preview 帧缺失/篡改不能通过；丢响应不会重复点击；模型/宿主中止后 guest deadline 与 Job 清理有效。纯单元测试、MCP 协议测试和真实 GUI 证据分别报告。
 

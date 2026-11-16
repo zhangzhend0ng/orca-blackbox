@@ -2,7 +2,7 @@
 
 第一批实现提供契约验证、独立运行记录、产物事实检查和结果聚合；后续运行骨架将这些原语串成单次生命周期。现已扩展真实 Script 及固定 AI 页签 adapter；m0 见 [接入说明](V3_SCRIPT_ADAPTER.md) 与 [运行记录](runs/v3-script-2026-11-16.md)。生产权限隔离、Midscene 和发布系统尚未接通，不能据此宣称完整 v3 已落地或当前 GUI 回归为 GREEN。
 
-后续已接入首个 `agent_mcp` 页签任务：当前 Codex agent 真实看图，经标准 stdio MCP 操作客机，独立正例 SHADOW / 无变化反例 NON_GREEN；详见 [AI adapter](V3_AGENT_ADAPTER.md) 与 [运行记录](runs/v3-agent-2026-11-16.md)。这里的模型来源是 codex_chat；无人值守 CLI、Midscene、切片与发布集成仍单独验收。
+后续已接入首个 `agent_mcp` 页签任务：codex_chat 与无人值守 codex_cli 真实看图，经标准 stdio MCP 操作客机，两个正例 SHADOW / 无变化反例 NON_GREEN；详见 [AI adapter](V3_AGENT_ADAPTER.md) 与 [运行记录](runs/v3-agent-2026-11-16.md)。Midscene、切片与发布集成仍单独验收。
 
 ## 接口
 
