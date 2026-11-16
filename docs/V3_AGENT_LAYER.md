@@ -1,6 +1,6 @@
 # v3 AI 层高修改与 G-code 产物闭环
 
-状态：2026-11-16，接口冻结并实施中，真实 GUI 尚未验证。固定能力为 `m3d_param_reslice / ai-layer-1`，继续使用 `agent_mcp` 执行器和 SHADOW 判定，不运行或包装旧 m3d/m5a 用例的 main。
+状态：2026-11-16，首次无人值守 CLI 完整业务验证为 SHADOW；[运行记录](runs/v3-layer-2026-11-16.md) 保留四次失败探针及最终正例。固定能力为 `m3d_param_reslice / ai-layer-1`，复用 `agent_mcp` 执行器，不运行或包装旧 m3d/m5a 用例的 main。当前只证明固定夹具的层高修改、GUI 切片导出和正常退出，不代表稳定性、其他业务或发布验收。
 
 任务是让模型从实际截图定位 Layer height，将 0.40 改成 0.24 mm，初层保持 0.40 mm，再通过 GUI 切片和导出，独立证明设置进入实际对象挤出层序。只保存 3mf 或只检查 G-code 配置注释均不能完成此契约；若只做到持久化，必须作为另一个明确范围的结果，不能将本任务改记通过。
 
@@ -43,6 +43,8 @@
 - worker、应用及 checker 静止后才确认 cleanup；未知/skip 仍不能通过，结果不开放发布 GREEN。
 
 首个真实正例必须由 Codex CLI 实际看图并自动选择 edit 坐标/文本及后续工具。反例至少覆盖仅改 header、只改原生控件文本未提交、无效/陈旧产物、缺少 reslice、A/B 颠倒、参数没改而正常退出。真实 GUI 与离线篡改重放分别报告，不把 fake UI 测试当业务能力证明。
+
+首次完整正例 `6bfe7cb6c9d54994a0106247bab08294`：6 次真实图像推理、7 次工具调用，GUI 导出的实际对象层序由 68×0.40 变为 112×0.24 mm，初层均为 0.40 mm、对象工具均为 T0。独立路径/业务检查通过，process exit=0、forced_termination=false、cancel_reason=null、Job active=0。真实 A 仅伪改回显/Z 注释的内存重放被拒绝；其他故障主要由纯测试覆盖，不能计作真实 GUI 挑战。精确模型 ID 和美元费用未知，SHADOW 不进入原 GREEN 覆盖表。
 
 ## 文件分工和实现边界
 

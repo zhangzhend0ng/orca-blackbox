@@ -1,6 +1,6 @@
 # Review: v3 AI 层高修改与 G-code 闭环（2026-11-16）
 
-结论：APPROVE，限独立审阅范围内的修复进入受控客机再试验；新增 session 取消接线由协调者独立复核。首次真实探针暴露的夹具前提缺失已在夹具与 oracle 两侧补齐；此前和本次 APPROVE 均不是业务通过。`m3d_param_reslice / ai-layer-1` 尚无接受的真实 GUI 成功证据；本报告不将 fake UI 或生成的测试 G-code 记为业务通过。对外继续仅 SHADOW/NON_GREEN，release_eligible=false。
+结论：APPROVE，限 `m3d_param_reslice / ai-layer-1` 固定试点。真实无人值守 CLI run `6bfe7cb6c9d54994a0106247bab08294` 首次取得完整 SHADOW，本审阅者独立重放核证 path/business pass、evidence_complete/execution_compliant true，模型动作、实际层序与自然清理证据完整。自写 session 接线由协调者独立复核。四次历史 NON_GREEN 及审阅漏查面着色/API 常量的勘误保留；此前代码批准不追认为业务通过。单次 SHADOW 不证明通用能力、跨版本稳定性或发布资格，release_eligible=false。
 
 ## 范围与独立性
 
@@ -66,9 +66,9 @@ PASS：测试隔离 fake Win32/模型/传输，不启动应用；关键反例断
 
 关闭专项 run `a708ca48076b4348aa8586fb1dc491fd` 未执行基线/重切业务，不计 AI 正例。本审阅者只读核对 `artifacts/v3/guest_layer_close_a708_evidence.zip`，SHA-256 为 `8486271e259ec1015f4875af7584236b3f2f8055e4313ef01f95165de81faa91`。原始 result 为 NON_GREEN、execution/runtime=cancelled、cleanup_confirmed=true；process 为 active_processes=0、forced_termination=true、cancel_reason=cancelled。这证明新控制回调触发了有记录的强制回收，不是自然关闭通过。
 
-诊断 `close_windows.json` 明确标注 diagnostic_only=true/oracle_evidence=false：应用 PID 6828 的 #32770 窗口 `Snapmaker Orca - Save` 由 main HWND 396874 拥有，文本为 Yes/No/Cancel/htmlWindow 与可选 Remember my choice。正文位于 HTML，不能靠普通窗口文本包含 save changes 来识别。
+诊断 `close_windows.json` 明确标注 diagnostic_only=true/oracle_evidence=false：应用 PID 6828 的 #32770 窗口标题 `Snapmaker Orca - Save`，文本为 Yes/No/Cancel/htmlWindow 与可选 Remember my choice。旧 owner_hwnd=396874 由错误 GetWindow(...,2) 取得，实际为 Z-order NEXT，撤回其作为 owner 证据的解释。正文位于 HTML，不能靠普通窗口文本包含 save changes 来识别。
 
-Tool Control Items 3–5 / Input Validation Items 1–4 (C) — PASS：关闭补丁只在已发 close_requested、精确标题且上述四项各唯一、没有其他非空文案时选择 No；仍先核对同 PID、#32770 与最多 8 层 GW_OWNER 链到当前 main。错误标题、未请求关闭、缺 HTML/Cancel、重复 No、未知文本及其他 owner 均拒绝。没有泛化为任意保存弹窗或任意 No，诊断不参与业务 pass。相关 175 项 business UI/protocol/layer/session/runtime 无 GUI 测试通过（2.36 秒）。
+Tool Control Items 3–5 / Input Validation Items 1–4 (C) — 历史结构检查通过，但 owner API 审阅存在遗漏（见下述勘误）：关闭补丁只在已发 close_requested、精确标题且上述四项各唯一、没有其他非空文案时选择 No。错误标题、未请求关闭、缺 HTML/Cancel、重复 No、未知文本均拒绝；当时所谓 GW_OWNER 链实际错误查询 NEXT，不能保留该部分 PASS。相关 175 项 pure tests 曾通过，但 fake 忽略 command 参数，没有检出此错误。
 
 AI Evaluation Items 1–4 (C) — PASS（格式兼容）：只读上游 `src/libslic3r/GCode.cpp` 的 gcode_label_objects 分支确实在对象实例挤出前后成对发射 `; printing object NAME id:N copy N` / `; stop printing object ...`。新增解析以 name/id/copy 精确配对，禁止嵌套、第二对象及清料塔范围重叠；有 EXCLUDE_OBJECT 指令时保持原模式。注释只定义生成器的对象范围，层高和工具仍由范围内真实运动重算，没有扩为整文件 E 统计或相信 Z 注释。
 
@@ -78,13 +78,27 @@ AI Evaluation Items 1–4 (C) — PASS（格式兼容）：只读上游 `src/lib
 
 完整 CLI run `59b7bfbd23024db98cf62ff70a0b6cdd` 仍为 NON_GREEN/cancelled：finish 返回 graceful_close_unconfirmed，runtime 自动回收 owned Job（active=0、forced_termination=true、cleanup_confirmed=true），原包缺少 agent_report.json。本审阅者独立复算 ZIP SHA `26f24bf5830da86c38f14ba758e729e923165442b238e4491e9aa7ac0b3093ad`、49 文件，并纯重放 A/B 的对象运动：68 层×0.40 → 112 层×0.24，首层均 0.40，末 Z 27.20/27.04、正 XY/E 运动 1907/2882，对象工具均 T0。6 次宿主输入图 hash、原始 CLI action/usage、action 文件和 guest 请求链一致。产物检查成立不改变原始失败裁决，详细运行记录另存 docs/runs/v3-layer-2026-11-16.md。
 
-Tool Control Items 3–5 / Input Validation Items 1–4 (C) — PASS（修复进入再试验）：保存窗的直接 owner 不是 main，本次新增规则只接受 GW_OWNER 有界链中同 PID 且 `IsChild(bound_main, owner)` 成立的真实主窗后代。只读开发检出 Plater.cpp 的 close_with_confirm 使用 this/Plater 作为对话框 parent，与该关系相符。仍要求 own #32770、精确保存结构、close_requested；同 PID 旁支、共享隐藏 root-owner、外部 PID、循环链均拒绝，不以共享祖先作为授权。
+Tool Control Items 3–5 / Input Validation Items 1–4 (C) — 历史判断勘误：撤回“保存窗直接 owner 不是 main”及“wx 中间 owner 是根因”的结论；当时依据的 owner_hwnd 实际是 Z-order NEXT。Plater.cpp 的 this parent 不能补足 Win32 常量验证。IsChild 的限制方向没有扩大到共享隐藏祖先，但执行中的边来自错误命令，前次批准漏查了 API 语义，不能以纯测试通过证明正确。
 
 GetParent/GetAncestor 及点击返回目标仅增加有界诊断（最多 32 关系节点、16 次点击记录），不参与 oracle 或扩大许可。审阅者运行 88 项 business UI/protocol/executor 测试通过（0.66 秒）；协调者报告全套 488 passed / 1 skipped、diff --check 通过。代码审阅无新增阻断，真实关闭兼容性仍须新 run 证明；不追认 59b7 为 SHADOW。
 
-## 尚待真实验证
+## b0 根因与 API 常量勘误
 
-实际 Quality/Edit 定位、wx 字段提交、Slice/Export 控件状态、保存对话框及关闭提示尚未通过本批客机运行。导出按钮 enabled 只是工具等待条件，最终 G-code oracle 才决定层高是否生效。首个真实 run 必须记录 CLI 图像输入/结构动作与 guest 请求 hash 关联，以及 Job 空、无强制终止/取消和确认 cleanup；后续负例须与正例、离线篡改重放分别标注。
+本审阅者独立核对 [微软 GetWindow 文档](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindow)：GW_HWNDNEXT=2，GW_OWNER=4。原代码四处 GetWindow(...,2) 与错误注释被作者、协调者和本审阅者共同漏检；fake 根据 hwnd 返回预设 owner 而不验证 command，复制了错误前提。该失误不是 wx owner 布局差异。
+
+真实 run `b0d46bb81b004814a7e985f9a2d70431` 再次 NON_GREEN/cancelled、强制 Job 清理。独立计算 ZIP SHA 为 `d7f1ddce0b6b34a3041f2abe08e491071f673686bde88dd222cf83f50a7280b0`，49 文件。close_attempts=[]；正确 GetParent 与 GA_ROOTOWNER 均为 main 525700，而错误 owner_hwnd 沿 Z-order 遍历隐藏窗口。a708/59b7/b0 的原始 owner_hwnd 及 relations.owner_hwnd 全部保留但按 NEXT 解读，不重写历史 JSON；GetAncestor 的参数 2 是另一个 API 的正确 GA_ROOT，不能一并替换。
+
+Tool Control Items 3–5 / Input Validation Items 1–4 / Review Checklist Items 1–8 (C) — 原 FAIL 已闭合：四处调用统一具名 GW_OWNER=4；测试对字面值 4 断言，并令 command=2 返回同 PID 无关窗口或恰好 main 的陷阱，最后断言调用集合仅 {4}，不再依赖同一个错误常量自证。独立审阅及 88 项专项通过（0.47 秒），协调者报告全套 488 passed / 1 skipped。修复未扩大同 PID/保存结构/有界遍历限制，可进入新试验；不追认旧 run 通过。
+
+## 首次完整正例独立核证与剩余边界
+
+代码 `636a080b91958c62ff938ec30011daa495987d65` 的 run `6bfe7cb6c9d54994a0106247bab08294` 已补齐先前缺失的真实业务与自然关闭证据。独立计算 ZIP SHA `d0265310fd3cf814c4cd82d7a99650024d44b602fdf3fda06943690ede70bd87`（3,923,953 bytes），48 文件与提取内容一致；契约/fixture 摘要匹配可信注册，9 条 runtime event 序号与 hash 链完整。只读完整 verifier 重放即使接收 ExecutionOutcome('failed') 诊断上下文，仍从原始证据得出 path/business pass、完整性/合规 true。
+
+模型 6 次实际 CLI 图像调用选择 slice/export/edit(286,764,0.24)/slice/export/finish；初始 observe 后共 7 工具，无 chat decision 文件、无直接 tab 点击。输入 PNG hash、原始 stdout 的结构动作/usage、summary、action 与 guest 最新观测/请求逐条匹配，未出现模型工具执行事件。usage input=101824、output=385、reasoning=55、cached=0，model/USD unknown；host 157.214 秒、guest process 172.556 秒。
+
+A/B 分别 68 层×0.40 和 112 层×0.24，初层均 0.40，末 Z=27.20/27.04，正 XY/E 运动 1895/2866，对象工具均 T0。process driver=9268、app=5096，exit=0、Job active=0、forced_termination=false、cancel_reason=null；完整 agent_report 与 runtime result 均 completed，cleanup_confirmed=true，最终 SHADOW/verified_pass=true。SUT 与代码来自同步/收割日志补证，manifest.metadata 为空；原包仅在本地忽略 artifacts，未声称已长期上传。
+
+真实 Quality/Edit 提交、两次 GUI 切片/导出与自然关闭现有一次通过。导出按钮 enabled 仍只是等待信号，实际层序才是业务证据。真实 A 的内存 header-only/header+Z注释伪改均被独立 oracle 拒绝，但不计实际 GUI 故障挑战。跨版本重复性、其他几何/参数、固件/实印和发布晋级仍未验证；详细证据和全部失败历史保留在 docs/runs/v3-layer-2026-11-16.md。
 
 ## 首次真实探针暴露的单材前提缺失
 

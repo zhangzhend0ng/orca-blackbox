@@ -22,7 +22,9 @@ v3 运行骨架入口见 [架构设计](docs/V3_RUNTIME_ARCHITECTURE.md) 和 [�
 
 首个真实 Script 的接入与验证方式见 [m0 Script adapter](docs/V3_SCRIPT_ADAPTER.md)，客机入口为 `runner/hv_go.ps1 -V3 -Cases m0_boot_check`；结果单独记 SHADOW，不进入发布 GREEN。
 
-首个真实 AI 页签闭环见 [AI adapter](docs/V3_AGENT_ADAPTER.md) 与 [正反例运行记录](docs/runs/v3-agent-2026-11-16.md)：codex_chat 和无人值守 codex_cli 看图，经受限 stdio MCP 操作客机，独立检查通过；无变化反例被拒绝。仅为页签范围的 SHADOW，尚未接入完整业务与发布。
+首个真实 AI 页签闭环见 [AI adapter](docs/V3_AGENT_ADAPTER.md) 与 [正反例运行记录](docs/runs/v3-agent-2026-11-16.md)：codex_chat 和无人值守 codex_cli 看图，经受限 stdio MCP 操作客机，独立检查通过；无变化反例被拒绝。页签能力仅为 SHADOW。
+
+首个 AI 业务闭环见 [层高架构](docs/V3_AGENT_LAYER.md) 与 [运行记录](docs/runs/v3-layer-2026-11-16.md)：无人值守 AI 看图编辑 0.40→0.24 mm，经 GUI 切片导出 A/B，独立检查实际对象层序 68→112 层、初层保持 0.40 mm，并确认正常退出与 Job 清空。一次完整 SHADOW，历史失败原样保留；不代表 87 条回归或发布验收完成。
 
 - 范式参照：[MaaAssistantArknights](https://github.com/MaaAssistantArknights/MaaAssistantArknights) /
   [ok-wuthering-waves](https://github.com/ok-oldking/ok-wuthering-waves)
