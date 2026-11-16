@@ -145,10 +145,29 @@ def test_close_no_is_limited_to_the_owned_app_save_question(caption, message, bu
     assert (module._discard_choice(caption, children) == candidate) is accepted
 
 
+@pytest.mark.parametrize("caption,close_requested,extra,omit,accepted", [
+    ("Snapmaker Orca - Save", True, "Remember my choice.", None, True),
+    ("Snapmaker Orca - Save", True, "", None, True),
+    ("Snapmaker Orca - Save", False, "", None, False),
+    ("Snapmaker Orca - Delete all", True, "", None, False),
+    ("Snapmaker Orca - Save", True, "Delete all printers?", None, False),
+    ("Snapmaker Orca - Save", True, "", "htmlWindow", False),
+    ("Snapmaker Orca - Save", True, "", "Cancel", False),
+    ("Snapmaker Orca - Save", True, "No", None, False),
+])
+def test_html_save_matches_observed_close_dialog_only(caption, close_requested, extra, omit, accepted):
+    labels = ["", "Yes", "No", "Cancel", "htmlWindow", "", extra]
+    children = [(label, (0,0,1,1), 100+i) for i, label in enumerate(labels) if label != omit]
+    selected = module._discard_choice(caption, children, close_requested=close_requested)
+    assert (selected is not None and selected[0] == "No") is accepted
+
+
 @pytest.mark.parametrize("owner,caption,message,accepted", [
     (11, "Snapmaker Orca 2.3.6", "Do you want to save changes?", True),
     (99, "Snapmaker Orca 2.3.6", "Do you want to save changes?", False),
     (11, "Snapmaker Orca 2.3.6", "Delete all printers?", False),
+    (11, "Snapmaker Orca - Save", "htmlWindow", True),
+    (99, "Snapmaker Orca - Save", "htmlWindow", False),
 ])
 def test_close_checks_dialog_owner_and_retains_first_bounded_diagnostic(tmp_path, monkeypatch, owner, caption, message, accepted):
     import json
@@ -163,8 +182,11 @@ def test_close_checks_dialog_owner_and_retains_first_bounded_diagnostic(tmp_path
         close_window=lambda hwnd: None, enum_windows=lambda: [(20, 12), (30, 88)],
         window_title=lambda hwnd: caption, window_class=lambda hwnd: "#32770",
         msg_click_screen=click, user32=SimpleNamespace(GetWindow=lambda hwnd, command: owner if hwnd == 20 else 0))
-    ui.eu = SimpleNamespace(_children_texts=lambda hwnd: [
+    children = ([("", (0,0,1,1), 22), ("Yes", (0,0,1,1), 23), ("No", (2,2,4,4), 21),
+        ("Cancel", (0,0,1,1), 24), ("htmlWindow", (0,0,1,1), 25),
+        ("", (0,0,1,1), 26), ("Remember my choice.", (0,0,1,1), 27)] if message == "htmlWindow" else [
         (message, (0,0,1,1), 22), ("No", (2,2,4,4), 21)] + [("X" * 1000, (0,0,1,1), 23)] * 40)
+    ui.eu = SimpleNamespace(_children_texts=lambda hwnd: children)
     monkeypatch.setattr(module, "time", SimpleNamespace(monotonic=lambda: now[0],
         time_ns=lambda: 10**18 + int(now[0] * 10**9), sleep=lambda seconds: now.__setitem__(0, now[0]+seconds)))
     if accepted:
@@ -180,7 +202,7 @@ def test_close_checks_dialog_owner_and_retains_first_bounded_diagnostic(tmp_path
     diagnostic = json.loads(first)
     assert diagnostic["diagnostic_only"] is True and diagnostic["oracle_evidence"] is False
     assert len(diagnostic["windows"]) == 1 and diagnostic["windows"][0]["owner_hwnd"] == owner
-    assert len(diagnostic["windows"][0]["children"]) == 32
+    assert len(diagnostic["windows"][0]["children"]) == min(32, len(children))
     assert max(len(row["text"]) for row in diagnostic["windows"][0]["children"]) <= 160
     with pytest.raises(ProtocolError, match="graceful_close_unconfirmed"):
         ui.close()

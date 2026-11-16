@@ -62,6 +62,18 @@ PASS：测试隔离 fake Win32/模型/传输，不启动应用；关键反例断
 - (C) 新 slice 的 180 秒等待超过旧 bridge/client 上限。已按工具扩展有界等待，仍受整体 host deadline 限制。
 - (C) 编辑数值最初过宽。已收敛为固定夹具允许的 0.16–0.56 范围，并覆盖端点及越界值；模型仍自行选择目标值。
 
+## 关闭专项与真实生成器格式补充
+
+关闭专项 run `a708ca48076b4348aa8586fb1dc491fd` 未执行基线/重切业务，不计 AI 正例。本审阅者只读核对 `artifacts/v3/guest_layer_close_a708_evidence.zip`，SHA-256 为 `8486271e259ec1015f4875af7584236b3f2f8055e4313ef01f95165de81faa91`。原始 result 为 NON_GREEN、execution/runtime=cancelled、cleanup_confirmed=true；process 为 active_processes=0、forced_termination=true、cancel_reason=cancelled。这证明新控制回调触发了有记录的强制回收，不是自然关闭通过。
+
+诊断 `close_windows.json` 明确标注 diagnostic_only=true/oracle_evidence=false：应用 PID 6828 的 #32770 窗口 `Snapmaker Orca - Save` 由 main HWND 396874 拥有，文本为 Yes/No/Cancel/htmlWindow 与可选 Remember my choice。正文位于 HTML，不能靠普通窗口文本包含 save changes 来识别。
+
+Tool Control Items 3–5 / Input Validation Items 1–4 (C) — PASS：关闭补丁只在已发 close_requested、精确标题且上述四项各唯一、没有其他非空文案时选择 No；仍先核对同 PID、#32770 与最多 8 层 GW_OWNER 链到当前 main。错误标题、未请求关闭、缺 HTML/Cancel、重复 No、未知文本及其他 owner 均拒绝。没有泛化为任意保存弹窗或任意 No，诊断不参与业务 pass。相关 175 项 business UI/protocol/layer/session/runtime 无 GUI 测试通过（2.36 秒）。
+
+AI Evaluation Items 1–4 (C) — PASS（格式兼容）：只读上游 `src/libslic3r/GCode.cpp` 的 gcode_label_objects 分支确实在对象实例挤出前后成对发射 `; printing object NAME id:N copy N` / `; stop printing object ...`。新增解析以 name/id/copy 精确配对，禁止嵌套、第二对象及清料塔范围重叠；有 EXCLUDE_OBJECT 指令时保持原模式。注释只定义生成器的对象范围，层高和工具仍由范围内真实运动重算，没有扩为整文件 E 统计或相信 Z 注释。
+
+真实生成器还使用不含 E 的 G2/G3 抬头移动。兼容分支只接受数值参数 XYZ/IJK/R/P/F，清空 XYZ，后续对象正向挤出之前必须由直线指令重新建立明确坐标；不推导弧线轨迹，带 E（包括 E0）、未知/重复参数仍拒绝。59 项 layer oracle 测试通过（1.68 秒），包含缺失坐标恢复及带 E 弧线反例。以上均为有限格式兼容，没有扩大业务通过条件。
+
 ## 尚待真实验证
 
 实际 Quality/Edit 定位、wx 字段提交、Slice/Export 控件状态、保存对话框及关闭提示尚未通过本批客机运行。导出按钮 enabled 只是工具等待条件，最终 G-code oracle 才决定层高是否生效。首个真实 run 必须记录 CLI 图像输入/结构动作与 guest 请求 hash 关联，以及 Job 空、无强制终止/取消和确认 cleanup；后续负例须与正例、离线篡改重放分别标注。

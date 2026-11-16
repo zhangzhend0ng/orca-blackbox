@@ -58,6 +58,70 @@ def test_nonobject_tools_do_not_count_as_object_materials():
     assert analyze_gcode(raw, layer_height="0.24")["object_tools"] == [0]
 
 
+def labels(raw):
+    return raw.replace(b"EXCLUDE_OBJECT_START NAME=cube", "; printing object 立方体 id:2137657494784 copy 0".encode()).replace(
+        b"EXCLUDE_OBJECT_END NAME=cube", "; stop printing object 立方体 id:2137657494784 copy 0".encode())
+
+
+def test_actual_generator_label_format_uses_real_moves_not_z_comments():
+    # Minimal body excerpt from guest-layer-probe-6640e019.../0001.gcode
+    # lines 2414ff; GCode.cpp:6915 and 7076 emit these name/id/copy labels.
+    raw = labels(gcode("0.24")).replace(b"G1 X21 Y20 E1", b"G1 E-1.47507 F1800\nG1 X147.706 Y148.206 Z.8\nG1 Z.4\nG1 E1.5\nG1 X123.294 Y148.206 E2.83143", 1)
+    summary = analyze_gcode(raw, layer_height="0.24")
+    assert summary["layer_count"] == 112 and summary["object_tools"] == [0]
+    with pytest.raises(ValueError, match="actual_layer_step"):
+        analyze_gcode(labels(gcode(echo="0.24")), layer_height="0.24")
+
+
+@pytest.mark.parametrize("mutation", ["mismatched-id", "missing-end", "nested", "second-object", "tower-inside", "object-inside-tower"])
+def test_label_scope_cannot_include_unmatched_other_objects_or_prime_tower(mutation):
+    raw = labels(gcode("0.24"))
+    start = "; printing object 立方体 id:2137657494784 copy 0".encode()
+    stop = "; stop printing object 立方体 id:2137657494784 copy 0".encode()
+    if mutation == "mismatched-id":
+        raw = raw.replace(stop, stop.replace(b"2137657494784", b"999"), 1)
+    elif mutation == "missing-end":
+        raw = raw.replace(stop, b"", 1)
+    elif mutation == "nested":
+        raw = raw.replace(start, start + b"\n" + start, 1)
+    elif mutation == "second-object":
+        raw = raw.replace(start, start.replace(b"2137657494784", b"999"), 1).replace(stop, stop.replace(b"2137657494784", b"999"), 1)
+    elif mutation == "tower-inside":
+        raw = raw.replace(start, start + b"\n; WIPE_TOWER_START", 1)
+    else:
+        raw = raw.replace(start, b"; WIPE_TOWER_START\n" + start, 1)
+    with pytest.raises(ValueError, match="gcode_(object|tower|missing_object)"):
+        analyze_gcode(raw, layer_height="0.24")
+
+
+def test_prime_tower_extrusion_outside_label_scope_is_excluded():
+    raw = labels(gcode("0.24")).replace(b"G1 X10 E2", b"; WIPE_TOWER_START\nT1\nG1 X10 E2\n; WIPE_TOWER_END\nT0")
+    assert analyze_gcode(raw, layer_height="0.24")["object_tools"] == [0]
+
+
+@pytest.mark.parametrize("arc", ["G2", "G3"])
+def test_generator_nonextruding_spiral_lift_requires_explicit_xyz_recovery(arc):
+    marker = "; printing object 立方体 id:2137657494784 copy 0".encode()
+    raw = labels(gcode("0.24")).replace(marker, marker + f"\nG17\n{arc} Z.8 I1.204 J-.175 P1 F30000\nG1 X5 Y5 Z.8\nG1 Z.4".encode(), 1)
+    assert analyze_gcode(raw, layer_height="0.24")["layer_count"] == 112
+
+
+@pytest.mark.parametrize("recovery", ["G1 X5 Y5", "G1 Z.4", ""])
+def test_arc_cannot_reuse_pre_arc_unknown_xyz(recovery):
+    marker = "; printing object 立方体 id:2137657494784 copy 0".encode()
+    raw = labels(gcode("0.24")).replace(marker, marker + ("\nG17\nG3 Z.8 I1.204 J-.175 P1\n" + recovery).encode(), 1)
+    with pytest.raises(ValueError, match="unknown_object"):
+        analyze_gcode(raw, layer_height="0.24")
+
+
+@pytest.mark.parametrize("word", ["E0", "E1", "Q1", "I1 I2"])
+def test_extruding_or_unsupported_arc_never_counts_as_known_object_motion(word):
+    marker = "; printing object 立方体 id:2137657494784 copy 0".encode()
+    raw = labels(gcode("0.24")).replace(marker, marker + ("\nG3 Z.8 " + word).encode(), 1)
+    with pytest.raises(ValueError, match="unsupported_arc_motion"):
+        analyze_gcode(raw, layer_height="0.24")
+
+
 def test_echo_only_and_comment_only_edits_do_not_change_real_layers():
     fake = gcode(echo="0.24").replace(b";Z:0.8", b";Z:0.64")
     with pytest.raises(ValueError, match="actual_layer_step"):

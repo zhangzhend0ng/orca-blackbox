@@ -11,9 +11,16 @@ import time
 from .agent_protocol import LAYER_FIXTURE, LAYER_FIXTURE_SHA256, ProtocolError, write_json_once
 
 
-def _discard_choice(caption, children):
+def _discard_choice(caption, children, *, close_requested=False):
+    labels = [text.replace("&", "").strip() for text, _rect, _child in children if text.strip()]
+    # Plater::close_with_confirm uses this exact HTML-backed query. Its
+    # message body is not exposed by GetWindowText, so require the observed
+    # structure as well as the owner's shutdown state instead of any "No".
+    html_save = (close_requested and caption.strip() == "Snapmaker Orca - Save"
+        and all(labels.count(label) == 1 for label in ("Yes", "No", "Cancel", "htmlWindow"))
+        and set(labels) <= {"Yes", "No", "Cancel", "htmlWindow", "Remember my choice."})
     save_question = (re.fullmatch(r"Snapmaker Orca(?: [0-9][0-9A-Za-z.+_-]{0,40})?", caption.strip()) is not None and
-                     any("save changes" in text.lower() for text, _rect, _child in children))
+                     any("save changes" in text.lower() for text, _rect, _child in children)) or html_save
     choices = [child for child in children if child[0].replace("&", "").strip() in
                {"Don't save", "Don't Save", "Discard"} or
                (save_question and child[0].replace("&", "").strip() == "No")]
@@ -276,7 +283,8 @@ class BusinessUI:
                 if pid != self.app.pid or not self.owned_dialog(hwnd):
                     continue
                 children = self.eu._children_texts(hwnd)
-                chosen = _discard_choice(self.wu.window_title(hwnd), children)
+                chosen = _discard_choice(self.wu.window_title(hwnd), children,
+                                         close_requested=getattr(self, "_close_requested", False))
                 if chosen is not None and hwnd not in handled and self.owned(chosen[2]):
                     handled.add(hwnd)
                     rect = chosen[1]

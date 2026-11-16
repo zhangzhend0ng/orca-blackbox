@@ -27,6 +27,7 @@ _PROCESS = {"schema_version", "run_id", "case_id", "backend", "pid", "started_at
             "finished_at_ns", "exit_code", "active_processes", "job_assigned", "forced_termination", "cancel_reason"}
 _RECEIPT = {"schema_version", "run_id", "seq", "method", "request_sha256", "started_at_ns", "finished_at_ns", "window", "details"}
 _NUMBER = re.compile(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)\Z")
+_LABEL = re.compile(r"; (printing|stop printing) object (.{1,512}) id:(\d{1,24}) copy (\d{1,12})\Z")
 _TOL = Decimal("0.001")
 
 
@@ -64,18 +65,39 @@ def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", ca
         _require(lines.count(start) == lines.count(end) == 1 and lines.index(start) < lines.index(end),
                  "gcode_incomplete_blocks")
     lo, hi = lines.index("; EXECUTABLE_BLOCK_START"), lines.index("; EXECUTABLE_BLOCK_END")
+    # GCode.cpp emits these labels around the same object-instance body when
+    # gcode_label_objects is enabled and EXCLUDE_OBJECT is disabled. The label
+    # identifies scope only; layer values still come exclusively from moves.
+    exclude_mode = any(line.startswith("EXCLUDE_OBJECT_") and not line.startswith("EXCLUDE_OBJECT_DEFINE")
+                       for line in lines[lo + 1:hi])
     position = {k: None for k in "XYZE"}
     absolute_xyz, relative_e, active, objects = None, None, None, set()
-    z_layers, moves, active_tool, object_tools = [], 0, None, set()
+    z_layers, moves, active_tool, object_tools, tower = [], 0, None, set(), False
     for i, line in enumerate(lines[lo + 1:hi]):
         if i % 256 == 0:
             _check_cancel(cancelled)
+        if line in ("; WIPE_TOWER_START", "; WIPE_TOWER_END"):
+            _require(active is None and tower == (line == "; WIPE_TOWER_END"), "gcode_tower_scope")
+            tower = line == "; WIPE_TOWER_START"
+        if not exclude_mode and line.startswith(("; printing object", "; stop printing object", "; start printing object")):
+            label = _LABEL.fullmatch(line)
+            _require(label is not None, "gcode_object_label")
+            direction, name, object_id, copy_id = label.groups()
+            identity = (name, object_id, copy_id)
+            if direction == "printing":
+                _require(active is None and not tower, "gcode_object_start")
+                active = identity
+                objects.add(identity)
+            else:
+                _require(active == identity, "gcode_object_end")
+                active = None
+            continue
         command = line.split(";", 1)[0].strip()
         if not command:
             continue
         if command.startswith("EXCLUDE_OBJECT_START NAME="):
             name = command.split("NAME=", 1)[1]
-            _require(active is None and 1 <= len(name) <= 512, "gcode_object_start")
+            _require(active is None and not tower and 1 <= len(name) <= 512, "gcode_object_start")
             active = name
             objects.add(name)
             continue
@@ -105,10 +127,20 @@ def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", ca
             position["E"] = None  # Absolute E needs a new explicit baseline after a tool switch.
             continue
         if opcode not in ("G0", "G1", "G92"):
-            if opcode in ("G2", "G3", "G28"):
+            if opcode in ("G2", "G3"):
+                # The generator uses non-extruding spiral Z-hop. Do not infer
+                # arc geometry; require a later straight move to establish XYZ.
+                arc_parameters = set()
+                for word in words:
+                    _require(len(word) > 1 and word[0] in "XYZIJKRPF" and word[0] not in arc_parameters,
+                             "unsupported_arc_motion")
+                    arc_parameters.add(word[0])
+                    _number(word[1:])
+                for axis in "XYZ":
+                    position[axis] = None
+            elif opcode == "G28":
                 _require(active is None, "unsupported_object_motion")
-                # Startup homing/end arcs are outside the object. Subsequent
-                # object motion must re-establish explicit coordinates.
+                # Startup homing must not leave stale known coordinates.
                 position = {k: None for k in "XYZE"}
             elif opcode.startswith("G"):
                 _require(opcode in ("G4", "G17"), "unsupported_coordinate_mode")
@@ -152,7 +184,7 @@ def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", ca
                 _require(not z_layers or z > z_layers[-1], "gcode_object_z_not_monotonic")
                 z_layers.append(z)
             moves += 1
-    _require(active is None and len(objects) == 1 and moves >= 2 and len(z_layers) >= 2, "gcode_missing_object_extrusion")
+    _require(active is None and not tower and len(objects) == 1 and moves >= 2 and len(z_layers) >= 2, "gcode_missing_object_extrusion")
     _require(abs(z_layers[0] - first) <= _TOL, "gcode_first_actual_layer_mismatch")
     _require(all(abs(b - a - wanted) <= _TOL for a, b in zip(z_layers, z_layers[1:])), "gcode_actual_layer_step_mismatch")
     # The frozen fixture is a 27mm cube; allow one layer of slicer boundary rounding.
