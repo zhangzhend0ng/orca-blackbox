@@ -164,6 +164,26 @@ def test_git_keeps_porcelain_first_line_leading_space(monkeypatch):
     assert batch.git("status","--porcelain")==" M harness/launcher.py"
 
 
+def test_phase_error_keeps_safe_stage_and_code_instead_of_only_remoteexception(prepared,monkeypatch):
+    from runner import relay_run
+    root,plan=prepared;slot=plan["slots"][0]
+    code=("& "+batch.ps_quote(batch.REPO/"runner/v3_project_batch_phase.ps1")+" -BatchId "+batch.ps_quote("test01")+
+        " -Slot 1 -Phase 'harvest' -PlanSha256 "+batch.ps_quote(batch.sha(root/"plan.json"))+"\n")
+    (root/"1_harvest.ps1").write_text(code,encoding="utf-8",newline="\n")
+    monkeypatch.setattr(relay_run,"RELAY_CMD",str(root/"absent_relay_command"))
+    def launch(*args,**kwargs):
+        batch.once(root/"1_harvest.json",{"ok":False,"phase":"harvest","run_id":slot["run_id"],
+            "stage":"harvest_zip","error_type":"RemoteException","error_code":"compression_type_unavailable",
+            "error_id":"TypeNotFound","category":"InvalidOperation","line_numbers":[8],
+            "raw_exception_message":"must not be forwarded"})
+        return "spawned"
+    monkeypatch.setattr(relay_run,"relay_transact",launch)
+    with pytest.raises(RuntimeError) as raised:batch.phase(root,plan,slot,"harvest")
+    assert raised.value.phase_details["stage"]=="harvest_zip"
+    assert raised.value.phase_details["error_code"]=="compression_type_unavailable"
+    assert "raw_exception_message" not in raised.value.phase_details
+
+
 @pytest.mark.parametrize("kind",["success","timeout","poll_error","unconfirmed","interrupt"])
 def test_owned_controller_tree_lifecycle_is_bounded_and_only_quiescent_can_close(tmp_path,monkeypatch,kind):
     from harness import win32_job

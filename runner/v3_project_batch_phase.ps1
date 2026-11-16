@@ -11,7 +11,7 @@ function Safe([string]$path) {
 }
 function Once([string]$path,[byte[]]$bytes) { Safe $path; $f=[IO.File]::Open($path,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None); try{$f.Write($bytes,0,$bytes.Length);$f.Flush($true)}finally{$f.Dispose()} }
 function Publish($data) { $pending=$status+'.pending'; Once $pending ([Text.Encoding]::UTF8.GetBytes(($data|ConvertTo-Json -Depth 10 -Compress)+"`n"));[IO.File]::Move($pending,$status) }
-$row=$null; $session=$null
+$row=$null; $session=$null; $stage='plan_validation'
 try {
   Safe $planPath; Safe $status
   if((Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant() -cne $PlanSha256){throw 'plan_hash'}
@@ -20,8 +20,10 @@ try {
   $env:ORCA_BB_GUEST_SANDBOX='C:\coil\orca-blackbox-v3-r1'
   . (Join-Path $PSScriptRoot '_common.ps1')
   if($vm -cne 'win11-test'){throw 'vm_identity'}
+  $stage='psdirect_connect'
   $session=New-PSSession -VMName $vm -Credential $cred -ErrorAction Stop
   if($Phase -eq 'setup') {
+    $stage='setup_bundle'
     $bundle=Join-Path $batch 'update.bundle'; Safe $bundle
     if((Get-Item -LiteralPath $bundle).Length -gt 314572800 -or (Get-FileHash -LiteralPath $bundle -Algorithm SHA256).Hash.ToLowerInvariant() -cne $plan.bundle_sha256){throw 'bundle_hash'}
     $encoded=[Convert]::ToBase64String([IO.File]::ReadAllBytes($bundle))
@@ -51,9 +53,11 @@ try {
       if($LASTEXITCODE-ne 0 -or $actual -cne $contractSha){throw 'guest_contract_identity'}
       [pscustomobject]@{head=$head;sut_sha256=$sutHash}
     } -ArgumentList $BatchId,$Slot,$row.run_id,$plan.guest_base_ref,$plan.head,$plan.bundle_sha256,$encoded,$plan.fixture_sha256,$plan.contract_sha256
+    $stage='official_hv_go'
     & (Join-Path $PSScriptRoot 'hv_go.ps1') -V3 -NoSync -V3Executor agent_mcp -V3RunId $row.run_id -Cases m3g_export_3mf | Out-Null
     Publish @{ok=$true;phase=$Phase;run_id=$row.run_id;head=$facts.head;sut_sha256=$facts.sut_sha256}
   } elseif($Phase -eq 'cancel') {
+    $stage='owned_run_cancel'
     $facts=Invoke-Command -Session $session -ScriptBlock {param($run)
       $ErrorActionPreference='Stop';$checkout='C:\coil\orca-blackbox-v3-r1';$root=Join-Path $checkout ('artifacts\v3\'+$run)
       $manifest=[IO.File]::ReadAllText((Join-Path $root 'manifest.json'))|ConvertFrom-Json
@@ -67,6 +71,7 @@ try {
     } -ArgumentList $row.run_id
     Publish @{ok=$true;phase=$Phase;run_id=$row.run_id;head=$facts.head;sut_sha256=$facts.sut_sha256}
   } else {
+    $stage='harvest_wait'
     $end=[DateTime]::UtcNow.AddSeconds(960)
     do {
       $idle=Invoke-Command -Session $session -ScriptBlock {param($run)
@@ -75,11 +80,13 @@ try {
       } -ArgumentList $row.run_id
       if(-not$idle){if([DateTime]::UtcNow-ge$end){throw 'guest_cleanup_unconfirmed'};Start-Sleep -Milliseconds 500}
     } until($idle)
+    $stage='harvest_zip'
     $info=Invoke-Command -Session $session -ScriptBlock {param($run,$batch,$index)
       $ErrorActionPreference='Stop';$checkout='C:\coil\orca-blackbox-v3-r1';$root=Join-Path $checkout ('artifacts\v3\'+$run)
       function Safe([string]$p){while($p){if((Test-Path -LiteralPath $p)-and((Get-Item -LiteralPath $p -Force).Attributes-band[IO.FileAttributes]::ReparsePoint)){throw 'reparse_rejected'};$p=[IO.Path]::GetDirectoryName($p)}}
-      $names=@('contract.json','manifest.json','events.ndjson','result.json','artifacts/agent.log','artifacts/ready.json','artifacts/agent_report.json','artifacts/process.json','artifacts/operation_receipts.ndjson','artifacts/trace.ndjson','artifacts/control_cancel.json','artifacts/close_windows.json','artifacts/input/fixture.3mf','artifacts/projects/0001.3mf','artifacts/exports/0001.gcode')
+      $names=@('contract.json','manifest.json','events.ndjson','result.json','artifacts/agent.log','artifacts/ready.json','artifacts/agent_report.json','artifacts/process.json','artifacts/operation_receipts.ndjson','artifacts/trace.ndjson','artifacts/control_cancel.json','artifacts/close_windows.json','artifacts/project_save_dialog.json','artifacts/input/fixture.3mf','artifacts/projects/0001.3mf','artifacts/exports/0001.gcode')
       1..12|ForEach-Object{$n='{0:0000}'-f$_;$names+=@("artifacts/mailbox/request_$n.json","artifacts/mailbox/response_$n.json","artifacts/frames/${n}_a.bmp","artifacts/frames/${n}_b.bmp","artifacts/frames/$n.png")}
+      Add-Type -AssemblyName System.IO.Compression
       Add-Type -AssemblyName System.IO.Compression.FileSystem
       $zipPath='C:\coil\v3_'+$batch+'_'+$index+'.zip';Safe $zipPath
       $zip=[IO.Compression.ZipFile]::Open($zipPath,[IO.Compression.ZipArchiveMode]::Create);$total=0
@@ -87,13 +94,24 @@ try {
       $head=& 'C:\coil\tools\mingit\cmd\git.exe' -C $checkout rev-parse HEAD;if($LASTEXITCODE-ne 0){throw 'git_failed'}
       [pscustomobject]@{path=$zipPath;length=(Get-Item -LiteralPath $zipPath).Length;zip_sha256=(Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant();head=$head;sut_sha256=(Get-FileHash -LiteralPath 'C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe' -Algorithm SHA256).Hash.ToLowerInvariant()}
     } -ArgumentList $row.run_id,$BatchId,$Slot
+    $stage='harvest_transfer'
     if($info.length -gt 314572800 -or $info.path -cne ('C:\coil\v3_'+$BatchId+'_'+$Slot+'.zip') -or $info.head -cne $plan.head -or $info.sut_sha256 -cne $plan.sut_sha256){throw 'archive_identity'}
     $target=Join-Path $batch ($Slot.ToString()+'_evidence.zip');Safe $target
     $stream=[IO.File]::Open($target,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
     try {for($offset=0;$offset-lt$info.length;$offset+=196608){$chunk=Invoke-Command -Session $session -ScriptBlock{param($p,$o)$f=[IO.File]::OpenRead($p);try{[void]$f.Seek($o,[IO.SeekOrigin]::Begin);$b=New-Object byte[] 196608;$n=$f.Read($b,0,$b.Length);[Convert]::ToBase64String($b,0,$n)}finally{$f.Dispose()}} -ArgumentList $info.path,$offset;$bytes=[Convert]::FromBase64String($chunk);$stream.Write($bytes,0,$bytes.Length)};$stream.Flush($true)}finally{$stream.Dispose()}
     if((Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash.ToLowerInvariant() -cne $info.zip_sha256){throw 'host_zip_hash'}
+    $stage='official_hv_harvest'
     & (Join-Path $PSScriptRoot 'hv_harvest.ps1') -V3 | Out-Null
     Publish @{ok=$true;phase=$Phase;run_id=$row.run_id;head=$info.head;sut_sha256=$info.sut_sha256;zip_sha256=$info.zip_sha256}
   }
-} catch { Publish @{ok=$false;phase=$Phase;run_id=$(if($null-ne$row){$row.run_id}else{''});error_type=$_.Exception.GetType().Name}; exit 2 }
+} catch {
+  $failure=$_; $code='unclassified_phase_error'; $message=[string]$failure.Exception.Message
+  $known=@('plan_hash','plan_identity','vm_identity','bundle_hash','reparse_rejected','desktop_busy','run_already_exists','guest_dirty','guest_branch','unexpected_guest_head','guest_bundle_hash','git_failed','guest_source_identity','sut_drift','fixture_drift','guest_contract_identity','cancel_identity','cancel_link','cancel_conflict','guest_cleanup_unconfirmed','evidence_size','archive_identity','host_zip_hash')
+  if($message.Trim() -cin $known){$code=$message.Trim()}
+  elseif($message -match 'Unable to find type \[IO\.Compression\.'){$code='compression_type_unavailable'}
+  elseif($message -match 'already exists'){$code='exclusive_target_exists'}
+  $id=([string]$failure.FullyQualifiedErrorId -replace '[^A-Za-z0-9_.:,-]','');if($id.Length-gt160){$id=$id.Substring(0,160)}
+  $lines=@([regex]::Matches([string]$failure.ScriptStackTrace,'line (\d+)')|Select-Object -First 8|ForEach-Object{[int]$_.Groups[1].Value})
+  Publish @{ok=$false;phase=$Phase;run_id=$(if($null-ne$row){$row.run_id}else{''});stage=$stage;error_type=$failure.Exception.GetType().Name;error_code=$code;error_id=$id;category=$failure.CategoryInfo.Category.ToString();line_numbers=$lines}; exit 2
+}
 finally {if($null-ne$session){Remove-PSSession $session}}

@@ -26,7 +26,7 @@ FAULTS = (None, "save_before_edit", "missing_reopen", "missing_slice", None)
 LEGACY_DIRTY = {"harness/launcher.py", "harness/profile.py"}
 SEQ = r"(?:000[1-9]|001[0-2])"
 ALLOWED = re.compile(r"(?:contract\.json|manifest\.json|events\.ndjson|result\.json|artifacts/(?:"
-    r"agent\.log|ready\.json|agent_report\.json|process\.json|operation_receipts\.ndjson|trace\.ndjson|control_cancel\.json|close_windows\.json|"
+    r"agent\.log|ready\.json|agent_report\.json|process\.json|operation_receipts\.ndjson|trace\.ndjson|control_cancel\.json|close_windows\.json|project_save_dialog\.json|"
     r"input/fixture\.3mf|projects/0001\.3mf|exports/0001\.gcode|mailbox/(?:request|response)_" + SEQ +
     r"\.json|frames/" + SEQ + r"(?:_[ab]\.bmp|\.png)))")
 MAX_TOTAL, MAX_FILE, MAX_PROJECT = 300*1024**2, 64*1024**2, 16*1024**2
@@ -215,7 +215,9 @@ def phase(root, plan, slot, name):
         time.sleep(.5)
     data=read_json(receipt)
     if data.get("ok") is not True or data.get("run_id")!=slot["run_id"] or data.get("phase")!=name:
-        raise RuntimeError("phase_failed")
+        error=RuntimeError("phase_failed")
+        error.phase_details={key:data[key] for key in ("phase","run_id","stage","error_type","error_code","error_id","category","line_numbers") if key in data}
+        raise error
     if data.get("head")!=plan["head"] or data.get("sut_sha256")!=SUT_SHA:
         raise ValueError("phase_identity")
     return data
@@ -345,7 +347,9 @@ def run_batch(batch_id):
             if slot["state"]=="planned": slot["state"]="not_executed"
             elif slot["state"]=="started": slot["state"]="stopped"
         progress("stopped")
-        once(root/"batch_result.json",{"completed":False,"error_type":type(exc).__name__,"slots":state,"release_eligible":False})
+        failure={"completed":False,"error_type":type(exc).__name__,"slots":state,"release_eligible":False}
+        if hasattr(exc,"phase_details"): failure["phase_error"]=exc.phase_details
+        once(root/"batch_result.json",failure)
         raise
 
 

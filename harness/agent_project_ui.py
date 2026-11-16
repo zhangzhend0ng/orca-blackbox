@@ -5,10 +5,11 @@ import hashlib
 import os
 from pathlib import Path
 import stat
+import sys
 import time
 
-from .agent_business_ui import BusinessUI
-from .agent_protocol import ProtocolError
+from .agent_business_ui import BusinessUI, GW_OWNER
+from .agent_protocol import ProtocolError, write_json_once
 
 PROJECT_PATH = "projects/0001.3mf"
 MAX_PROJECT_BYTES = 16 * 1024 * 1024
@@ -74,6 +75,22 @@ class ProjectUI(BusinessUI):
             if self.owned(menu_hwnd):
                 self.wu._send_msg(menu_hwnd, 0x001F, 0, 0)
 
+    def _save_dialog_diagnostic(self, dialog, owned_dialog):
+        """First rejected save-dialog census; SUT metadata only, not an oracle."""
+        hwnd=dialog[3]
+        pid=self.wu._window_pid(hwnd)
+        candidate={"hwnd":hwnd,"pid":pid}
+        if pid==self.app.pid:
+            candidate.update(caption=self.wu.window_title(hwnd)[:128],wait_caption=dialog[1][:128],
+                window_class=self.wu.window_class(hwnd)[:128],
+                owner_hwnd=self.wu.user32.GetWindow(hwnd,GW_OWNER),
+                parent_hwnd=self.wu.user32.GetParent(hwnd),
+                root_owner_hwnd=self.wu.user32.GetAncestor(hwnd,3))
+        write_json_once(self.artifacts/"project_save_dialog.json",{"schema_version":1,
+            "diagnostic_only":True,"oracle_evidence":False,"reason":"project_save_dialog_identity",
+            "captured_at_ns":time.time_ns(),"main_hwnd":self.app.hwnd,"app_pid":self.app.pid,
+            "owned_dialog":bool(owned_dialog),"candidate":candidate})
+
     def save_project(self):
         self.main_input()
         if self.saved is not None:
@@ -85,7 +102,14 @@ class ProjectUI(BusinessUI):
         self._project_path()
         self._save_command()
         dialog = self.wait(lambda: self.eu.wait_save_dialog(self.app.pid, timeout_s=.2), 10)
-        if not self.owned_dialog(dialog[3]) or dialog[1].strip() != "Save file as:":
+        owned_dialog=self.owned_dialog(dialog[3])
+        if not owned_dialog or dialog[1].strip() != "Save file as:":
+            try:
+                self._save_dialog_diagnostic(dialog,owned_dialog)
+            except FileExistsError:
+                pass  # Preserve the first rejected window instead of replacing evidence.
+            except Exception as diagnostic_error:
+                print(f"[project_ui] save diagnosis: {type(diagnostic_error).__name__}",file=sys.stderr)
             raise ProtocolError("project_save_dialog_identity")
         edit = self.eu.find_edit(dialog[3])
         if (not edit or not self.owned(edit) or self.wu.window_class(edit) != "Edit"

@@ -4,6 +4,8 @@
 
 后续已接入 `agent_mcp` 页签和层高任务：codex_chat 与无人值守 codex_cli 的页签正例 SHADOW / 无变化反例 NON_GREEN，见 [AI adapter](V3_AGENT_ADAPTER.md) 与 [运行记录](runs/v3-agent-2026-11-16.md)。层高任务由 CLI 看图编辑、GUI 切片导出，独立核对实际对象层序并确认正常退出；冻结版本 5/5 新 profile SHADOW，三个固定故障实验均获相关拒绝，见 [业务架构](V3_AGENT_LAYER.md) 与 [评估记录](runs/v3-layer-evaluation-2026-11-16.md)。Midscene、其他业务、跨版本可靠性与发布集成仍需验收。
 
+`m3g_export_3mf / ai-project-1` 的保存、跨进程重开与重切整链已实现并通过源码/纯测试检查；首批首槽因保存对话框身份门禁失败而为 NON_GREEN，其余四槽未执行，修复后的新批次待冻结。[整链接口](V3_PROJECT_CONTRACT.md) 与 [运行记录](runs/v3-project-2026-11-17.md) 集中维护路径、身份和验收边界，不以保存文件本身代替切片生效证明。
+
 ## 接口
 
 - `harness.run_contract.load_contract(path)` / `validate_contract(mapping)`：严格校验版本、字段、类型、重复键和资源限制，生成不可变契约。
@@ -28,9 +30,9 @@ python -B tools/v3_session.py smoke
 
 ## 单次运行骨架
 
-精确设计与当前边界见 [V3_RUNTIME_ARCHITECTURE.md](V3_RUNTIME_ARCHITECTURE.md)。`harness/runtime.py` 的 `run_once` 是唯一生命周期入口，依赖 `runtime_ports.py` 的执行与验证端口，不导入具体 GUI／模型实现。`runtime_smoke.py` 在应用组合层注入独立的模拟执行器和文件检查器，实际经过排他锁、运行、验证、清理、聚合和一次证据收尾。
+精确设计与当前边界见 [V3_RUNTIME_ARCHITECTURE.md](V3_RUNTIME_ARCHITECTURE.md)。`harness/runtime.py` 的 `run_once` 是唯一生命周期入口，依赖 `runtime_ports.py` 的执行与验证端口；真实模式额外检查固定注册契约摘要及 exact executor/verifier 类型，不加载任意插件或模型 SDK。`runtime_smoke.py` 在应用组合层注入独立的模拟执行器和文件检查器，实际经过排他锁、运行、验证、清理、聚合和一次证据收尾。
 
-`smoke` 成功仅证明这条 synthetic 调用链及其固定模拟产物通过检查，始终输出 `SYNTHETIC`、`gui_executed=false`、`release_eligible=false`。契约中的 script／agent_mcp／midscene 表示端口类型；当前真实后端注册固定 m0 Script、ai-tabs-1 页签和 ai-layer-1 层高任务，Midscene 尚未接通。桌面锁只在共用的 canonical root 下排他；非阻塞端口是可信合作式接口，不是可强制抢占任意 Python 回调的沙箱。
+`smoke` 成功仅证明这条 synthetic 调用链及其固定模拟产物通过检查，始终输出 `SYNTHETIC`、`gui_executed=false`、`release_eligible=false`。契约中的 script／agent_mcp／midscene 表示端口类型；当前真实后端注册固定 m0 Script、ai-tabs-1 页签、ai-layer-1 层高及待实测验收的 ai-project-1 保存重开任务，Midscene 尚未接通。桌面锁只在共用的 canonical root 下排他；非阻塞端口是可信合作式接口，不是可强制抢占任意 Python 回调的沙箱。
 
 ## 可信边界
 

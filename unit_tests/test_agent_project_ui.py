@@ -193,3 +193,25 @@ def test_file_menu_is_clicked_once_and_menu_command_is_bounded(ui):
     ui._save_command()
     assert clicks == [(120,215,11)]
     assert messages == [(11,0x0111,987,0),(60,0x001F,0,0)]
+
+
+def test_rejected_dialog_records_first_sut_identity_without_relaxing_gate(ui):
+    import json
+    ui._save_command=lambda:None
+    ui.wait=lambda predicate,seconds:predicate()
+    ui.eu=SimpleNamespace(wait_save_dialog=lambda *a,**k:("#32770","Unexpected save title",(0,0,1,1),20))
+    ui.owned_dialog=lambda hwnd:True
+    def owner(hwnd,command):
+        assert command==4
+        return 11
+    ui.wu=SimpleNamespace(_window_pid=lambda hwnd:10,window_title=lambda hwnd:"Current title",
+        window_class=lambda hwnd:"#32770",user32=SimpleNamespace(GetWindow=owner,
+        GetParent=lambda hwnd:11,GetAncestor=lambda hwnd,kind:11))
+    with pytest.raises(ProtocolError,match="project_save_dialog_identity"):ui.save_project()
+    path=ui.artifacts/"project_save_dialog.json";first=path.read_bytes();data=json.loads(first)
+    assert data["owned_dialog"] is True and data["diagnostic_only"] is True and data["oracle_evidence"] is False
+    assert data["candidate"]=={"hwnd":20,"pid":10,"caption":"Current title","wait_caption":"Unexpected save title",
+                               "window_class":"#32770","owner_hwnd":11,"parent_hwnd":11,"root_owner_hwnd":11}
+    ui.wu.window_title=lambda hwnd:"Later title"
+    with pytest.raises(ProtocolError,match="project_save_dialog_identity"):ui.save_project()
+    assert path.read_bytes()==first
