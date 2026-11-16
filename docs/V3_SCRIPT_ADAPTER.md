@@ -2,6 +2,8 @@
 
 本批将 v3 同一运行时主链接到真实注册用例 `m0_boot_check`。真实模式只在 Hyper-V 客机运行；通过也只记 `script_shadow / SHADOW / release_eligible=false`。这不是发布门禁，不证明切片、GL 内部语义或完整 AI 测试体系已完成。
 
+2026-11-16 已完成首个真实客机 m0，独立检查 SHADOW 通过，证据已收割并在宿主重放文件检查。版本、运行标识、哈希及验证边界见 [运行记录](runs/v3-script-2026-11-16.md)。
+
 ## 调用链
 
 ```text
