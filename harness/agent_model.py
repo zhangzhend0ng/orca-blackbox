@@ -6,6 +6,7 @@ enforce action budgets and execute permitted actions. Dollar cost is unknown.
 from __future__ import annotations
 
 import json
+import hashlib
 import math
 import os
 from pathlib import Path
@@ -15,6 +16,7 @@ import tempfile
 import threading
 import time
 import uuid
+import urllib.request
 
 MAX_STDOUT, MAX_STDERR = 2 * 1024 * 1024, 1024 * 1024
 _ACTION_FIELDS = {"tool", "observation_id", "x", "y"}
@@ -26,6 +28,52 @@ _DISABLED = ("shell_tool", "apps", "plugins", "computer_use", "browser_use",
 
 class ModelError(RuntimeError):
     """Inference failure; raw diagnostics stay in the bounded call directory."""
+
+
+def default_codex_executable() -> Path:
+    """Prefer the newest installed desktop native CLI, then npm's native CLI."""
+    local = Path(os.environ.get("LOCALAPPDATA", str(Path.home() / "AppData" / "Local")))
+    app_bin = local / "OpenAI" / "Codex" / "bin"
+    candidates = []
+    for path in app_bin.glob("*/codex.exe"):
+        try:
+            if path.is_file():
+                candidates.append((path.stat().st_mtime_ns, str(path), path))
+        except OSError:
+            continue
+    if candidates:
+        return max(candidates)[2].resolve()
+    roaming = Path(os.environ.get("APPDATA", str(Path.home() / "AppData" / "Roaming")))
+    npm = (roaming / "npm" / "node_modules" / "@openai" / "codex" / "node_modules"
+           / "@openai" / "codex-win32-x64" / "vendor" / "x86_64-pc-windows-msvc" / "bin" / "codex.exe")
+    if npm.is_file():
+        return npm.resolve()
+    raise ModelError("model: no installed native Codex executable found")
+
+
+def _child_environment():
+    """Use existing proxy settings only in this child, without recording values."""
+    env = os.environ.copy()
+    present = {key.upper() for key in env}
+    explicit = any(key in present for key in ("HTTP_PROXY", "HTTPS_PROXY"))
+    filled = False
+    if os.name == "nt":
+        missing = [scheme for scheme in ("http", "https") if scheme.upper() + "_PROXY" not in present]
+        proxies = urllib.request.getproxies() if missing else {}
+        for scheme in missing:
+            value = proxies.get(scheme)
+            if type(value) is str and value and len(value) <= 8192:
+                env[scheme.upper() + "_PROXY"] = value
+                filled = True
+    return env, "system" if filled else ("environment" if explicit else "none")
+
+
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
 
 
 def _pairs(pairs):
@@ -99,8 +147,8 @@ def _parse_output(raw):
 
 
 class CodexModel:
-    def __init__(self, executable: Path, *, timeout_s=90, model: str | None = None):
-        executable = Path(executable)
+    def __init__(self, executable: Path | None = None, *, timeout_s=90, model: str | None = None):
+        executable = default_codex_executable() if executable is None else Path(executable)
         if not executable.is_absolute() or not executable.is_file():
             raise ValueError("model: expected an existing absolute native executable")
         if type(timeout_s) not in (int, float) or not math.isfinite(timeout_s) or not 0 < timeout_s <= 300:
@@ -166,6 +214,11 @@ class CodexModel:
         if self.model is not None:
             args.extend(["--model", self.model])
         args.append("-")
+        child_env, proxy_source = _child_environment()
+        image_sha256 = _file_sha256(image)
+        executable_sha256 = _file_sha256(self.executable)
+        prompt_bytes = prompt.encode("utf-8")
+        started_at_ns = time.time_ns()
         limited = threading.Event()
         errors = []
         raw_stdout = call_dir / "stdout.jsonl"
@@ -198,13 +251,14 @@ class CodexModel:
             try:
                 process = subprocess.Popen(args, cwd=cwd, stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    env=child_env,
                     creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
                 for pipe, path, limit in ((process.stdout, raw_stdout, MAX_STDOUT),
                                            (process.stderr, raw_stderr, MAX_STDERR)):
                     thread = threading.Thread(target=drain, args=(pipe, path, limit), daemon=True)
                     thread.start()
                     readers.append(thread)
-                process.stdin.write(prompt.encode("utf-8"))
+                process.stdin.write(prompt_bytes)
                 process.stdin.close()
                 call_deadline = min(deadline, time.monotonic() + timeout)
                 while process.poll() is None:
@@ -234,5 +288,10 @@ class CodexModel:
         result = _action(action, observation["id"], width, height)
         with (call_dir / "summary.json").open("x", encoding="utf-8") as stream:
             json.dump({"provider": "codex", "model": self.model, "usage": usage,
-                       "dollar_cost": None, "action": result}, stream, allow_nan=False)
+                       "dollar_cost": None, "action": result, "proxy_source": proxy_source,
+                       "input_image_sha256": image_sha256,
+                       "prompt_sha256": hashlib.sha256(prompt_bytes).hexdigest(),
+                       "cli_executable_sha256": executable_sha256,
+                       "started_at_ns": started_at_ns, "finished_at_ns": time.time_ns()},
+                      stream, allow_nan=False)
         return result

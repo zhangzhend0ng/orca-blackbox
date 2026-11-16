@@ -1,6 +1,6 @@
 # v3 首个 AI 执行切片：页签往返
 
-状态：2026-11-16，实施接口冻结；真实 AI/GUI 闭环尚待本批验证。上一批 m0 的 SHADOW 不能替代本批结果。
+状态：2026-11-16，已完成首个 codex_chat 真实 AI/GUI 正例 SHADOW，以及无状态变化的客机反例 NON_GREEN；[运行记录](runs/v3-agent-2026-11-16.md)。CLI 无人值守状态另行验证，上一批 m0 的 SHADOW 不作为本批证据。
 
 固定任务为 `m1_minimal_loop`，契约版本 `ai-tabs-1`，executor=`agent_mcp`：由模型观察实际截图，选择点击，使界面完成 Prepare → Preview → Prepare。只证明页签状态切换与路径，不证明切片、渲染质量或完整产品正确性。始终不可发布。
 

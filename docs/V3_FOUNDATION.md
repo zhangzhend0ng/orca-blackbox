@@ -1,6 +1,8 @@
 # v3 第一批底座
 
-第一批实现提供契约验证、独立运行记录、产物事实检查和结果聚合；后续运行骨架将这些原语串成单次生命周期。现已扩展首个真实 Script adapter，m0 在客机完成 SHADOW 验证，见 [接入说明](V3_SCRIPT_ADAPTER.md) 与 [运行记录](runs/v3-script-2026-11-16.md)。生产权限隔离、模型执行器与发布系统尚未接通，不能据此宣称完整 v3 已落地或当前 GUI 回归为 GREEN。
+第一批实现提供契约验证、独立运行记录、产物事实检查和结果聚合；后续运行骨架将这些原语串成单次生命周期。现已扩展真实 Script 及固定 AI 页签 adapter；m0 见 [接入说明](V3_SCRIPT_ADAPTER.md) 与 [运行记录](runs/v3-script-2026-11-16.md)。生产权限隔离、Midscene 和发布系统尚未接通，不能据此宣称完整 v3 已落地或当前 GUI 回归为 GREEN。
+
+后续已接入首个 `agent_mcp` 页签任务：当前 Codex agent 真实看图，经标准 stdio MCP 操作客机，独立正例 SHADOW / 无变化反例 NON_GREEN；详见 [AI adapter](V3_AGENT_ADAPTER.md) 与 [运行记录](runs/v3-agent-2026-11-16.md)。这里的模型来源是 codex_chat；无人值守 CLI、Midscene、切片与发布集成仍单独验收。
 
 ## 接口
 
@@ -28,7 +30,7 @@ python -B tools/v3_session.py smoke
 
 精确设计与当前边界见 [V3_RUNTIME_ARCHITECTURE.md](V3_RUNTIME_ARCHITECTURE.md)。`harness/runtime.py` 的 `run_once` 是唯一生命周期入口，依赖 `runtime_ports.py` 的执行与验证端口，不导入具体 GUI／模型实现。`runtime_smoke.py` 在应用组合层注入独立的模拟执行器和文件检查器，实际经过排他锁、运行、验证、清理、聚合和一次证据收尾。
 
-`smoke` 成功仅证明这条 synthetic 调用链及其固定模拟产物通过检查，始终输出 `SYNTHETIC`、`gui_executed=false`、`release_eligible=false`。契约中的 script／agent_mcp／midscene 表示端口类型；当前真实后端仅注册固定 m0 Script，agent_mcp／midscene 尚未接通。桌面锁只在共用的 canonical root 下排他；非阻塞端口是可信合作式接口，不是可强制抢占任意 Python 回调的沙箱。
+`smoke` 成功仅证明这条 synthetic 调用链及其固定模拟产物通过检查，始终输出 `SYNTHETIC`、`gui_executed=false`、`release_eligible=false`。契约中的 script／agent_mcp／midscene 表示端口类型；当前真实后端仅注册固定 m0 Script 和 ai-tabs-1 页签任务，Midscene 尚未接通。桌面锁只在共用的 canonical root 下排他；非阻塞端口是可信合作式接口，不是可强制抢占任意 Python 回调的沙箱。
 
 ## 可信边界
 

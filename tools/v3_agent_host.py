@@ -255,10 +255,10 @@ def main():
     p.add_argument("--run-id", required=True)
     p.add_argument("--guest-root", default=r"C:\coil\orca-blackbox-v3-r1")
     p.add_argument("--model-source", choices=("codex_cli", "codex_chat"), default="codex_cli")
-    p.add_argument("--codex", type=Path, default=Path.home() / "AppData/Roaming/npm/node_modules/@openai/codex/node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe")
+    p.add_argument("--codex", type=Path, help="Explicit native Codex; otherwise prefer the installed desktop native")
     args = p.parse_args()
-    from harness.agent_model import CodexModel
-    model = ChatDecisionModel() if args.model_source == "codex_chat" else CodexModel(args.codex)
+    from harness.agent_model import CodexModel, default_codex_executable
+    model = ChatDecisionModel() if args.model_source == "codex_chat" else CodexModel(args.codex or default_codex_executable())
     report = run_host(args.run_id, args.guest_root, model)
     print(json.dumps({"run_id": report["run_id"], "finished": report["finished"],
                       "model_calls": report["model_calls"], "release_eligible": False}))

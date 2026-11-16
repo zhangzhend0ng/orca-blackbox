@@ -22,6 +22,8 @@ v3 运行骨架入口见 [架构设计](docs/V3_RUNTIME_ARCHITECTURE.md) 和 [�
 
 首个真实 Script 的接入与验证方式见 [m0 Script adapter](docs/V3_SCRIPT_ADAPTER.md)，客机入口为 `runner/hv_go.ps1 -V3 -Cases m0_boot_check`；结果单独记 SHADOW，不进入发布 GREEN。
 
+首个真实 AI 页签闭环见 [AI adapter](docs/V3_AGENT_ADAPTER.md) 与 [正反例运行记录](docs/runs/v3-agent-2026-11-16.md)：当前 Codex agent 看图，经受限 stdio MCP 操作客机，独立检查通过；无变化反例被拒绝。仅为页签范围的 SHADOW，CLI 无人值守状态单独记录。
+
 - 范式参照：[MaaAssistantArknights](https://github.com/MaaAssistantArknights/MaaAssistantArknights) /
   [ok-wuthering-waves](https://github.com/ok-oldking/ok-wuthering-waves)
 - 引擎选型：**MaaFramework (pip MaaFw) 优先**，其 Win32 控制器消息注入若无法路由到
