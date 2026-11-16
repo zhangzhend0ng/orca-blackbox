@@ -131,6 +131,8 @@ def test_export_passes_screen_rectangle_once_and_writes_fixed_filename(tmp_path,
 
 @pytest.mark.parametrize("caption,message,button,accepted", [
     ("Snapmaker Orca", "Do you want to save changes to fixture?", "&No", True),
+    ("Snapmaker Orca 2.3.6", "Do you want to save changes to fixture?", "&No", True),
+    ("Snapmaker Orca - Delete all", "Do you want to save changes?", "No", False),
     ("Snapmaker Orca", "Delete printer?", "&No", False),
     ("Unexpected", "Do you want to save changes?", "No", False),
     ("Snapmaker Orca", "Do you want to save changes?", "Cancel", False),
@@ -141,3 +143,45 @@ def test_close_no_is_limited_to_the_owned_app_save_question(caption, message, bu
     candidate = (button, (0, 0, 10, 10), 40)
     children = [(message, (0, 0, 10, 10), 39), candidate]
     assert (module._discard_choice(caption, children) == candidate) is accepted
+
+
+@pytest.mark.parametrize("owner,caption,message,accepted", [
+    (11, "Snapmaker Orca 2.3.6", "Do you want to save changes?", True),
+    (99, "Snapmaker Orca 2.3.6", "Do you want to save changes?", False),
+    (11, "Snapmaker Orca 2.3.6", "Delete all printers?", False),
+])
+def test_close_checks_dialog_owner_and_retains_first_bounded_diagnostic(tmp_path, monkeypatch, owner, caption, message, accepted):
+    import json
+    ui, alive, clicks, now = ui_shell(), [True], [], [0]
+    ui.artifacts, ui.base = tmp_path, object()
+    ui.app.alive = lambda: alive[0]
+    ui.owned = lambda hwnd: hwnd in {11, 20, 21}
+    def click(*args):
+        clicks.append(args)
+        alive[0] = False
+    ui.wu = SimpleNamespace(_window_pid=lambda hwnd: 12 if hwnd in {11,20,21} else 88,
+        close_window=lambda hwnd: None, enum_windows=lambda: [(20, 12), (30, 88)],
+        window_title=lambda hwnd: caption, window_class=lambda hwnd: "#32770",
+        msg_click_screen=click, user32=SimpleNamespace(GetWindow=lambda hwnd, command: owner if hwnd == 20 else 0))
+    ui.eu = SimpleNamespace(_children_texts=lambda hwnd: [
+        (message, (0,0,1,1), 22), ("No", (2,2,4,4), 21)] + [("X" * 1000, (0,0,1,1), 23)] * 40)
+    monkeypatch.setattr(module, "time", SimpleNamespace(monotonic=lambda: now[0],
+        time_ns=lambda: 10**18 + int(now[0] * 10**9), sleep=lambda seconds: now.__setitem__(0, now[0]+seconds)))
+    if accepted:
+        ui.close()
+        assert clicks == [(3, 3, 20)] and not alive[0]
+        assert not (tmp_path / "close_windows.json").exists()
+        return
+    with pytest.raises(ProtocolError, match="graceful_close_unconfirmed"):
+        ui.close()
+    assert not clicks
+    path = tmp_path / "close_windows.json"
+    first = path.read_bytes()
+    diagnostic = json.loads(first)
+    assert diagnostic["diagnostic_only"] is True and diagnostic["oracle_evidence"] is False
+    assert len(diagnostic["windows"]) == 1 and diagnostic["windows"][0]["owner_hwnd"] == owner
+    assert len(diagnostic["windows"][0]["children"]) == 32
+    assert max(len(row["text"]) for row in diagnostic["windows"][0]["children"]) <= 160
+    with pytest.raises(ProtocolError, match="graceful_close_unconfirmed"):
+        ui.close()
+    assert path.read_bytes() == first

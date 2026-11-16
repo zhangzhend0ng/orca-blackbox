@@ -72,7 +72,7 @@ def test_business_edit_rejects_coercion_unknown_fields_and_extreme_values(change
                          observation_id="previous", case_id=LAYER_CASE)
 
 
-def test_layer_fixture_only_remaps_object_and_removes_source_paths():
+def test_layer_fixture_only_remaps_object_removes_source_paths_and_facet_paint():
     import hashlib
     import re
     import zipfile
@@ -87,7 +87,35 @@ def test_layer_fixture_only_remaps_object_and_removes_source_paths():
                 raw = raw.replace(b'<metadata key="extruder" value="6"/>', b'<metadata key="extruder" value="1"/>')
                 raw = re.sub(rb'^[ \t]*<metadata key="source_file" value="[^"\r\n]*"/>\r?\n', b'', raw, flags=re.M)
                 assert b'key="source_file"' not in derived.read(name)
+            if name.endswith(".model"):
+                def triangle(match):
+                    return re.sub(rb'\s+([^\s=/>]+)="[^"]*"',
+                        lambda attribute: attribute.group() if attribute.group(1) in
+                        {b"v1", b"v2", b"v3"} else b"", match.group())
+                raw = re.sub(rb"<triangle\b[^>]*>", triangle, raw)
             assert derived.read(name) == raw
+
+
+def test_layer_fixture_has_no_painted_facets_and_keeps_geometry_and_placement():
+    import xml.etree.ElementTree as ET
+    import zipfile
+    repo = Path(__file__).resolve().parents[1]
+    with zipfile.ZipFile(repo / "fixtures/mixed_filament_test.3mf") as source, zipfile.ZipFile(repo / LAYER_FIXTURE) as derived:
+        original_painted_faces = 0
+        for name in source.namelist():
+            if not name.endswith(".model"):
+                continue
+            before, after = ET.fromstring(source.read(name)), ET.fromstring(derived.read(name))
+            def items(tree, tag):
+                return [element.attrib for element in tree.iter() if element.tag.rsplit("}", 1)[-1] == tag]
+            for kind in ("vertex", "component", "item"):
+                assert items(before, kind) == items(after, kind)
+            before_triangles, after_triangles = items(before, "triangle"), items(after, "triangle")
+            original_painted_faces += sum("paint_color" in attributes for attributes in before_triangles)
+            assert [{key: attributes[key] for key in ("v1", "v2", "v3")} for attributes in before_triangles] == after_triangles
+            assert all(set(attributes) == {"v1", "v2", "v3"} for attributes in after_triangles)
+        assert original_painted_faces == 2  # Regression: remapping object extruder alone leaves facet paint active.
+        assert source.read("Metadata/project_settings.config") == derived.read("Metadata/project_settings.config")
 
 
 def test_mailbox_json_rejects_duplicates_and_does_not_replace(tmp_path):

@@ -66,7 +66,7 @@ def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", ca
     lo, hi = lines.index("; EXECUTABLE_BLOCK_START"), lines.index("; EXECUTABLE_BLOCK_END")
     position = {k: None for k in "XYZE"}
     absolute_xyz, relative_e, active, objects = None, None, None, set()
-    z_layers, moves = [], 0
+    z_layers, moves, active_tool, object_tools = [], 0, None, set()
     for i, line in enumerate(lines[lo + 1:hi]):
         if i % 256 == 0:
             _check_cancel(cancelled)
@@ -100,6 +100,8 @@ def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", ca
             relative_e = opcode == "M83"
             continue
         if re.fullmatch(r"T\d+", opcode):
+            _require(not words, "unknown_tool_selection")
+            active_tool = int(opcode[1:])
             position["E"] = None  # Absolute E needs a new explicit baseline after a tool switch.
             continue
         if opcode not in ("G0", "G1", "G92"):
@@ -140,6 +142,9 @@ def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", ca
                 position["E"] = values["E"]
         moving_xy = any(axis in values and (old[axis] is None or position[axis] != old[axis]) for axis in "XY")
         if active is not None and moving_xy and delta_e > 0:
+            _require(active_tool is not None, "unknown_object_tool")
+            object_tools.add(active_tool)
+            _require(len(object_tools) == 1, "gcode_multiple_object_tools")
             _require(all(old[axis] is not None and position[axis] is not None for axis in "XY"), "unknown_object_xy")
             z = position["Z"]
             _require(z is not None and z > 0, "unknown_object_z")
@@ -154,7 +159,7 @@ def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", ca
     _require(Decimal(27) - wanted <= z_layers[-1] <= Decimal(27) + wanted, "gcode_fixture_height_mismatch")
     return {"layer_height": str(wanted), "first_layer_height": str(first),
             "layer_count": len(z_layers), "first_z": str(z_layers[0]), "last_z": str(z_layers[-1]),
-            "positive_xy_e_moves": moves, "sha256": hashlib.sha256(raw).hexdigest()}
+            "positive_xy_e_moves": moves, "object_tools": sorted(object_tools), "sha256": hashlib.sha256(raw).hexdigest()}
 
 
 def _frame(raw, width, height, cancelled):
@@ -329,6 +334,7 @@ def verify_layer(snapshot, *, cancelled=lambda: False) -> VerificationOutcome:
         path_checked = True
         baseline = analyze_gcode(exports[0], layer_height="0.4", cancelled=cancelled)
         target = analyze_gcode(exports[1], layer_height="0.24", cancelled=cancelled)
+        _require(target["object_tools"] == baseline["object_tools"], "gcode_object_tool_changed")
         _require(target["layer_count"] > baseline["layer_count"] and target["sha256"] != baseline["sha256"], "reslice_did_not_change_object_layers")
         refs = tuple(references)
         return VerificationOutcome({"path": CheckResult("pass", "GUI slice/export/edit/reslice/export observed", refs),

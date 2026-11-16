@@ -62,6 +62,7 @@ def run_agent(case_id: str, root: Path, run_id: str) -> dict:
         verifier = AgentLayerVerifier()
     root.mkdir(parents=True, exist_ok=True)
     digest = contract_digest(contract)
+    cancel_path = root / run_id / "artifacts" / "control_cancel.json"
     return run_once(contract, AgentExecutor(digest), {digest: verifier},
                     root=root, run_id=run_id, desktop_id="guest-console",
-                    execution_mode="guest_agent")
+                    execution_mode="guest_agent", cancelled=cancel_path.exists)

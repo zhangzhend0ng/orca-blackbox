@@ -8,9 +8,9 @@
 
 沿用 `hv_go → run-agent → run_once → AgentExecutor → OwnedJob worker`，宿主继续 `CodexModel → controller → stdio MCP bridge → mailbox`。不增加 runtime 模式或平行执行框架。`agent_protocol.agent_profile` 只登记两个固定 case；原 `m1_minimal_loop / ai-tabs-1` 的工具、四字段模型动作和契约摘要保持不变。新 case 使用 `AgentLayerVerifier`，runtime 拒绝跨 case 替换检查器。
 
-派生输入 `fixtures/agent_layer_cube.3mf` 来自已提交 mixed_filament_test.3mf：仅把 model_settings 中对象 extruder 6 改为 1，并删除 source_file 私有路径；保留全部几何、27 mm 立方体放置、U1 0.8 mm 喷嘴、layer_height=0.4、initial_layer_print_height=0.4 等设置。project_settings 字节不变，所有几何成员不变。该离线派生是可审查测试输入，不是在 run 中修改目标配置。
+派生输入 `fixtures/agent_layer_cube.3mf` 来自已提交 mixed_filament_test.3mf：把 model_settings 中对象 extruder 6 改为 1，删除 source_file 私有路径，并去除三角面上的 paint_color 属性。仅改对象 extruder 不能消除面级多材着色，首次真实探针已暴露这一点。保留全部顶点、三角索引、component/build transform、27 mm 立方体放置、U1 0.8 mm 喷嘴、layer_height=0.4、initial_layer_print_height=0.4 等设置。project_settings 字节不变；几何 XML 的着色属性改变，物理几何语义不变。该离线派生是可审查测试输入，不是在 run 中修改目标配置。
 
-固定 SHA-256：`a468c33bda6c79cd4edb3a4d134db50024f7283211452de3640cce7530993513`。摘要写进契约 boot goal；worker 启动前核对并复制到 run-owned 输入路径，GUI 加载该副本。保留 fresh=False 的独占新 profile，不调用旧全局同名清理。启动仍遵守 hands-off 期，既有 tab 路径不改启动方式。
+固定 SHA-256：`ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef`。摘要写进契约 boot goal；worker 启动前核对并复制到 run-owned 输入路径，GUI 加载该副本。旧带着色夹具及其 run 不能被接受为此摘要对应的执行。保留 fresh=False 的独占新 profile，不调用旧全局同名清理。启动仍遵守 hands-off 期，既有 tab 路径不改启动方式。
 
 ## 模型职责与窄工具
 
@@ -27,7 +27,7 @@
 
 模型层仅新 case 增加 `text` 字段：edit 时为字符串，其余动作必须 null；tabs 保留原四字段 schema。mailbox 外层字段不变，edit arguments 为 `{x,y,text}`，slice/export_gcode arguments 为 `{}`；桥将 observation_id 单独附入原请求字段。响应和 observation 不增加字段，原 tab 严格解析器无需兼容宽松新格式。
 
-权限上限保持 12 次工具、8 次模型调用、6 次直接 tab 点击、宿主 600 秒、客机 900 秒；业务工具另限 edit/slice/export 各最多 2 次。一次 slice 最长 180 秒且仍受整体 deadline 限制。此处次数是受限工具调用次数，不把复合 GUI 原语内部每条窗口消息冒称独立模型动作。保存对话框等内部操作有固定步骤和有界等待，不允许自动扩大权限或无限重试。取消继续使用独立 control_cancel，不消耗模型额度。
+权限上限保持 12 次工具、8 次模型调用、6 次直接 tab 点击、宿主 600 秒、客机 900 秒；业务工具另限 edit/slice/export 各最多 2 次。一次 slice 最长 180 秒且仍受整体 deadline 限制。此处次数是受限工具调用次数，不把复合 GUI 原语内部每条窗口消息冒称独立模型动作。保存对话框等内部操作有固定步骤和有界等待，不允许自动扩大权限或无限重试。取消继续使用独立 control_cancel，不消耗模型额度；同一 run 的控制文件同时触发 worker 协作取消和 runtime OwnedJob 取消，即使 worker 已退出但应用仍存活，也不会仅等待 900 秒。畸形控制文件同样停止，不视为清理完成。
 
 ## 副作用证据与独立裁决
 
@@ -38,6 +38,7 @@
 - 必须有本 run 的初始夹具、基线切片导出、模型 GUI edit、再次切片导出和关闭顺序，不能以直接写配置或旧文件替代；A/B 均唯一、完整、新鲜且 hash 关联。
 - G-code 配置回显分别为 layer_height 0.40 / 0.24，初层值保持 0.40；使用精确数值解析，不采用旧 startswith 判定。
 - 重算实际对象的正向 XY 挤出运动 Z 层序，处理 G90/G91、M82/M83、G92 和工具状态；用对象边界区分起始线/prime tower，排除 Z-hop。只看 LAYER_CHANGE/Z/HEIGHT 注释或文件 hash 不够。
+- 单材前提必须同时在实际产物成立：对象范围内正向 XY/E 挤出使用唯一已知工具，A/B 的对象工具相同。对象外的起始线、清料塔和结束工具命令不直接计入对象耗材集合；模型或配置名称中的“单材”不是证据。
 - 实际对象层序必须支持 A/B 的预期层高变化；不能用 `; layer_height=0.24` 注释掩盖仍为 0.40 的运动。未支持的 G-code 语义或不完整对象范围记未知，不能默认通过。
 - worker、应用及 checker 静止后才确认 cleanup；未知/skip 仍不能通过，结果不开放发布 GREEN。
 

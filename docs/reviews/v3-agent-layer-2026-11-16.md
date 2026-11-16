@@ -1,6 +1,6 @@
 # Review: v3 AI 层高修改与 G-code 闭环（2026-11-16）
 
-结论：APPROVE，限独立审阅范围内的代码进入受控客机试验。`m3d_param_reslice / ai-layer-1` 尚无真实 GUI 成功证据；本报告不将 fake UI 或生成的测试 G-code 记为业务通过。对外继续仅 SHADOW/NON_GREEN，release_eligible=false。
+结论：APPROVE，限独立审阅范围内的修复进入受控客机再试验；新增 session 取消接线由协调者独立复核。首次真实探针暴露的夹具前提缺失已在夹具与 oracle 两侧补齐；此前和本次 APPROVE 均不是业务通过。`m3d_param_reslice / ai-layer-1` 尚无接受的真实 GUI 成功证据；本报告不将 fake UI 或生成的测试 G-code 记为业务通过。对外继续仅 SHADOW/NON_GREEN，release_eligible=false。
 
 ## 范围与独立性
 
@@ -12,7 +12,7 @@
 
 本审阅者执行 `python -B -m pytest unit_tests/test_agent_protocol.py unit_tests/test_agent_business_ui.py unit_tests/test_agent_executor.py unit_tests/test_agent_layer_verify.py unit_tests/test_agent_verify.py unit_tests/test_agent_model.py unit_tests/test_agent_bridge.py unit_tests/test_agent_host.py unit_tests/test_agent_session.py unit_tests/test_runtime.py unit_tests/test_v3_session.py -q`：269 passed，3.74 秒。该结果仅为无 GUI 验证。因 dev-guidelines 只读，反馈检查使用 `check_review_signals.py --dry-run`，结果 No signals detected。
 
-独立比较原始 mixed_filament_test.3mf 与派生 agent_layer_cube.3mf：ZIP 成员列表相同，只有 `Metadata/model_settings.config` 内容不同；其余成员字节相同。派生文件 SHA-256 为 `a468c33bda6c79cd4edb3a4d134db50024f7283211452de3640cce7530993513`，匹配可信注册常量。原 tab 契约摘要保留 `4fe2d56332c5525524cceed2dccdc3a212995d742c98f828a86fcd15964c0901`，有回归断言。
+初版独立比较原始 mixed_filament_test.3mf 与派生 agent_layer_cube.3mf：ZIP 成员列表相同，只有 `Metadata/model_settings.config` 内容不同；其余成员字节相同。初版派生文件 SHA-256 为 `a468c33bda6c79cd4edb3a4d134db50024f7283211452de3640cce7530993513`，当时匹配注册常量，但未去除面着色，已被下述修订替代。原 tab 契约摘要保留 `4fe2d56332c5525524cceed2dccdc3a212995d742c98f828a86fcd15964c0901`，有回归断言。
 
 ## Harness: Tool Calling and Agent Control
 
@@ -65,3 +65,17 @@ PASS：测试隔离 fake Win32/模型/传输，不启动应用；关键反例断
 ## 尚待真实验证
 
 实际 Quality/Edit 定位、wx 字段提交、Slice/Export 控件状态、保存对话框及关闭提示尚未通过本批客机运行。导出按钮 enabled 只是工具等待条件，最终 G-code oracle 才决定层高是否生效。首个真实 run 必须记录 CLI 图像输入/结构动作与 guest 请求 hash 关联，以及 Job 空、无强制终止/取消和确认 cleanup；后续负例须与正例、离线篡改重放分别标注。
+
+## 首次真实探针暴露的单材前提缺失
+
+协调者在 run `6640e019fa05428ba641dee6fdd192b1` 的实际切片预览发现多耗材、换料和清料塔，未接受该 run 为本契约通过。本审阅者随后只读解析原始及派生 3mf：`3D/Objects/立方体_1.model` 的 12 个三角面中均仍有 2 个含 `paint_color`。先前 ZIP 字节对比正确，但由“对象 extruder=1”推导“单材”不成立，预审漏查面级着色语义。
+
+AI Evaluation Items 1–3、Requirements Gap Items 1–3 (C) — 原 FAIL 已闭合：旧 fixture 的 single-material 契约前提未经 oracle 验证。修复限定为离线去除三角面着色属性，保留物理几何和 project_settings，更新固定 SHA/契约摘要；独立 G-code 检查已要求对象范围内正向 XY/E 挤出使用唯一已知工具，A/B 工具相同，不把对象外塔/起始线算成多材对象。旧探针原始记录保留，不重写为新夹具 run。
+
+夹具修订已独立只读核证：仅 `Metadata/model_settings.config` 与 `3D/Objects/立方体_1.model` 改变；原 2 个 paint_color 属性已删除，顶点、三角索引、component/build 属性与源文件相同，project_settings 字节相同。新 SHA-256 为 `ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef`，新契约摘要为 `a84be6d0070374966f50ae053a41fe8779ed483f7863fd2055ce75ce99e81114`。保留项目耗材槽和清料设置，不把 UI 列出多个可选耗材当作对象多材证据。
+
+工具前提补丁已独立审阅：Tn 显式选择绑定后续对象正向 XY/E 挤出，未知工具拒绝、对象多工具失败，`analyze_gcode` 返回 object_tools 并核对 A/B 一致。反例覆盖对象双工具、缺失工具选择、A/B 各单工具但不同，以及对象外第二工具/结束 T999 不误计入集合。没有未取证就硬编码 T0。固定生成器范围内检验导出文件的显式工具命令，不模拟固件宏。
+
+协调者另报告旧探针 finish 时 graceful_close_unconfirmed，worker 已退出但 owned app 仍存活；仅由 worker 读取 control_cancel 会延迟至整体超时。按授权在 session 向 runtime 传入当前 run 控制路径的 exists 回调，复用已有 OwnedJob 取消与归零确认，不新增清理框架。合法及畸形控制均触发停止，其他 run 控制不触发；协调者已独立核对固定 root/run_id 路径、回调在 worker 退出后仍有效及对应反例，无阻塞。135 项 fixture/protocol/oracle/session/runtime 无 GUI 测试通过（2.22 秒）。旧探针的外部操作者终止必须单独记录，不宣称自然退出或改写旧运行收据。
+
+协调者最终整套纯检查：456 passed / 1 skipped（符号链接权限），diff --check 通过。首次探针 `6640e019fa05428ba641dee6fdd192b1` 最终 NON_GREEN；关闭失败后仅在核对 PID 4580、父 PID 7100、可执行名及该 run 唯一 profile 后强制停止残留应用，外部操作留在独占 operator_recovery.json。此强制收尾不能当作自然关闭。归档 SHA-256 `90b3e3ff972e9c0073f36cb76dbb772502e15338e576407b0368788fb06c658a`；旧 probe 输入 SHA 仍为 a468c33b，不能替代新夹具验证。关闭兼容性仍需有界实测，新增 close_windows.json 只用于诊断。

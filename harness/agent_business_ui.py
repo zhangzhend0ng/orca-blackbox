@@ -4,14 +4,15 @@ from __future__ import annotations
 import hashlib
 import os
 from pathlib import Path
+import re
 import sys
 import time
 
-from .agent_protocol import LAYER_FIXTURE, LAYER_FIXTURE_SHA256, ProtocolError
+from .agent_protocol import LAYER_FIXTURE, LAYER_FIXTURE_SHA256, ProtocolError, write_json_once
 
 
 def _discard_choice(caption, children):
-    save_question = (caption.strip() == "Snapmaker Orca" and
+    save_question = (re.fullmatch(r"Snapmaker Orca(?: [0-9][0-9A-Za-z.+_-]{0,40})?", caption.strip()) is not None and
                      any("save changes" in text.lower() for text, _rect, _child in children))
     choices = [child for child in children if child[0].replace("&", "").strip() in
                {"Don't save", "Don't Save", "Discard"} or
@@ -35,6 +36,9 @@ class BusinessUI:
         try:
             self.base = _WindowsUI(artifacts, model=fixture)
             self.wu, self.app = self.base.winutil, self.base.app
+            import ctypes
+            self.wu.user32.GetWindow.argtypes = [ctypes.c_void_p, ctypes.c_uint]
+            self.wu.user32.GetWindow.restype = ctypes.c_void_p
             self.pause(12)  # CLI fixture load must remain hands-off.
             self.wu.user32.ShowWindow(self.app.hwnd, 3)
             self.pause(1)
@@ -223,6 +227,38 @@ class BusinessUI:
             return self.export_gcode()
         raise ProtocolError("unknown_business_tool")
 
+    def owned_dialog(self, hwnd):
+        if not self.owned(hwnd) or self.wu.window_class(hwnd) != "#32770":
+            return False
+        seen = set()
+        owner = self.wu.user32.GetWindow(hwnd, 2)  # GW_OWNER, not a same-name process lookup
+        for _ in range(8):
+            if owner == self.app.hwnd:
+                return True
+            if not owner or owner in seen or self.wu._window_pid(owner) != self.app.pid:
+                return False
+            seen.add(owner)
+            owner = self.wu.user32.GetWindow(owner, 2)
+        return False
+
+    def diagnose_close(self):
+        """Bounded first-failure census. This is diagnostic data, never an oracle."""
+        windows = []
+        for hwnd, pid in self.wu.enum_windows():
+            if pid != self.app.pid or not self.owned(hwnd):
+                continue
+            children = [{"hwnd": child, "text": text[:160]}
+                for text, _rect, child in self.eu._children_texts(hwnd)[:32]]
+            windows.append({"hwnd": hwnd, "class": self.wu.window_class(hwnd)[:128],
+                "title": self.wu.window_title(hwnd)[:128],
+                "owner_hwnd": self.wu.user32.GetWindow(hwnd, 2), "children": children})
+            if len(windows) == 16:
+                break
+        write_json_once(self.artifacts / "close_windows.json", {"schema_version": 1,
+            "diagnostic_only": True, "oracle_evidence": False, "app_pid": self.app.pid,
+            "main_hwnd": self.app.hwnd, "captured_at_ns": time.time_ns(),
+            "reason": "graceful_close_unconfirmed", "windows": windows})
+
     def close(self):
         if self.base is None or not self.app.alive():
             return
@@ -237,7 +273,7 @@ class BusinessUI:
         handled = set()
         while self.app.alive() and time.monotonic() < end:
             for hwnd, pid in self.wu.enum_windows():
-                if pid != self.app.pid or not self.owned(hwnd) or self.wu.window_class(hwnd) != "#32770":
+                if pid != self.app.pid or not self.owned_dialog(hwnd):
                     continue
                 children = self.eu._children_texts(hwnd)
                 chosen = _discard_choice(self.wu.window_title(hwnd), children)
@@ -247,4 +283,10 @@ class BusinessUI:
                     self.wu.msg_click_screen((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2, hwnd)
             time.sleep(0.1)
         if self.app.alive():
+            try:
+                self.diagnose_close()
+            except FileExistsError:
+                pass  # Retain the first census; finally cleanup must never replace it.
+            except Exception as diagnostic_error:
+                print(f"[business_ui] close diagnosis: {type(diagnostic_error).__name__}", file=sys.stderr)
             raise ProtocolError("graceful_close_unconfirmed")

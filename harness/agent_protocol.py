@@ -12,7 +12,7 @@ MAX_CLICKS = 6
 MAX_RUNTIME_S = 900
 LAYER_CASE = "m3d_param_reslice"
 LAYER_FIXTURE = "fixtures/agent_layer_cube.3mf"
-LAYER_FIXTURE_SHA256 = "a468c33bda6c79cd4edb3a4d134db50024f7283211452de3640cce7530993513"
+LAYER_FIXTURE_SHA256 = "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef"
 
 
 def agent_profile(case_id: str) -> dict:

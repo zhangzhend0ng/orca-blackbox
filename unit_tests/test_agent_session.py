@@ -81,9 +81,33 @@ def test_composition_uses_fixed_ports_digest_and_shared_desktop(monkeypatch, tmp
     assert type(executor) is AgentExecutor
     assert executor.contract_sha256 == contract_digest(contract)
     assert type(registry[contract_digest(contract)]) is verifier_type(case_id)
-    assert dispatch.call_args.kwargs == {"root": tmp_path, "run_id": RUN_ID,
+    options = dict(dispatch.call_args.kwargs)
+    cancelled = options.pop("cancelled")
+    assert callable(cancelled) and not cancelled()
+    assert options == {"root": tmp_path, "run_id": RUN_ID,
                                          "desktop_id": "guest-console",
                                          "execution_mode": "guest_agent"}
+
+
+@pytest.mark.parametrize("payload", [
+    ('{"schema_version":1,"run_id":"' + RUN_ID + '","reason":"host_stopped"}').encode(), b'not JSON'])
+def test_host_control_cancel_reaches_runtime_after_worker_exit(monkeypatch, tmp_path, payload):
+    monkeypatch.setattr(host_guard, "in_guest", lambda: True)
+    monkeypatch.setattr(agent_session, "SCRIPT_ROOT", tmp_path)
+    dispatch = Mock(return_value={"mode": "agent_shadow"})
+    monkeypatch.setattr(agent_session, "run_once", dispatch)
+    agent_session.run_agent("m3d_param_reslice", tmp_path, RUN_ID)
+    cancelled = dispatch.call_args.kwargs["cancelled"]
+    other = tmp_path / ("b" * 32) / "artifacts" / "control_cancel.json"
+    other.parent.mkdir(parents=True)
+    other.write_bytes(payload)
+    assert not cancelled()
+    current = tmp_path / RUN_ID / "artifacts" / "control_cancel.json"
+    current.parent.mkdir(parents=True)
+    current.write_bytes(payload)
+    # Any control record stops the coordinator too; a dead worker is not
+    # needed to parse it, and malformed input cannot defer owned Job cleanup.
+    assert cancelled()
 
 
 def test_real_agent_runtime_cannot_be_entered_on_host(monkeypatch, tmp_path):

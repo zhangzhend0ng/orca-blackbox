@@ -16,7 +16,7 @@ from harness.runtime_ports import Done, Pending
 
 
 def gcode(layer="0.4", first="0.4", *, e_mode="M83", objects=True, positive=True, echo=None):
-    lines = ["; EXECUTABLE_BLOCK_START", "G90", e_mode, "G92 E0", "G1 X0 Y0 Z0"]
+    lines = ["; EXECUTABLE_BLOCK_START", "G90", e_mode, "T0", "G92 E0", "G1 X0 Y0 Z0"]
     z, step, n = Decimal(first), Decimal(layer), 0
     while z < Decimal(27) + step:
         n += 1
@@ -42,6 +42,20 @@ def test_physical_object_layer_schedule_distinguishes_baseline_and_target():
 @pytest.mark.parametrize("mode", ["M82", "M83"])
 def test_absolute_and_relative_extrusion_with_g92_are_supported(mode):
     assert analyze_gcode(gcode("0.24", e_mode=mode), layer_height="0.24")["layer_count"] == 112
+
+
+def test_object_extrusion_must_use_one_explicitly_selected_tool():
+    raw = gcode("0.24").replace(b";Z:0.64", b"T1\n;Z:0.64", 1)
+    with pytest.raises(ValueError, match="multiple_object_tools"):
+        analyze_gcode(raw, layer_height="0.24")
+    with pytest.raises(ValueError, match="unknown_object_tool"):
+        analyze_gcode(gcode("0.24").replace(b"T0\n", b"", 1), layer_height="0.24")
+
+
+def test_nonobject_tools_do_not_count_as_object_materials():
+    raw = gcode("0.24").replace(b"G1 X10 E2", b"T1\nG1 X10 E2\nT0")
+    raw = raw.replace(b"; EXECUTABLE_BLOCK_END", b"T999\n; EXECUTABLE_BLOCK_END")
+    assert analyze_gcode(raw, layer_height="0.24")["object_tools"] == [0]
 
 
 def test_echo_only_and_comment_only_edits_do_not_change_real_layers():
@@ -216,6 +230,18 @@ def test_export_copy_reuse_requires_actual_new_file_hash(evidence):
     snapshot, *_ = evidence
     (snapshot.artifact_dir / "exports/0002.gcode").write_bytes(gcode())
     assert not verify_layer(snapshot).evidence_complete
+
+
+def test_baseline_and_target_must_preserve_the_same_object_tool(evidence):
+    snapshot, trace, receipts = evidence
+    raw = gcode("0.24").replace(b"T0\n", b"T1\n", 1)
+    (snapshot.artifact_dir / "exports/0002.gcode").write_bytes(raw)
+    receipts[-1]["details"].update(sha256=hashlib.sha256(raw).hexdigest(), size_bytes=len(raw))
+    persist(snapshot, trace, receipts)
+    result = verify_layer(snapshot)
+    assert result.checks["path"].status == "pass"
+    assert result.checks["business"].status == "fail"
+    assert result.checks["business"].detail == "gcode_object_tool_changed"
 
 
 def test_edit_control_and_requested_text_are_not_model_success_claims(evidence):
