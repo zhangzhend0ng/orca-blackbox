@@ -46,3 +46,27 @@ def test_invalid_input_does_not_echo_payload_or_create_run(tmp_path):
     assert json.loads(result.stderr)["status"] == "error"
     assert "do-not-echo-this" not in result.stderr + result.stdout
     assert not (tmp_path / "runs").exists()
+
+
+def test_smoke_runs_complete_lifecycle_without_claiming_gui_or_release(tmp_path):
+    result = invoke("smoke", "--root", tmp_path)
+    assert result.returncode == 0, result.stderr
+    value = json.loads(result.stdout)
+    assert value["verified_pass"] is True
+    assert value["mode"] == "synthetic"
+    assert value["gui_executed"] is False
+    assert value["release_eligible"] is False
+    assert "GREEN" not in result.stdout
+    directory = Path(value["run_dir"])
+    assert (directory / "manifest.json").is_file()
+    assert (directory / "events.ndjson").is_file()
+    saved = json.loads((directory / "result.json").read_text(encoding="utf-8"))
+    assert saved["mode"] == "synthetic"
+    assert saved["release_eligible"] is False
+    assert "GREEN" not in json.dumps(saved)
+
+
+def test_smoke_rejects_contract_instead_of_silently_ignoring_it(tmp_path):
+    result = invoke("smoke", EXAMPLE, "--root", tmp_path / "runs")
+    assert result.returncode == 2
+    assert not (tmp_path / "runs").exists()

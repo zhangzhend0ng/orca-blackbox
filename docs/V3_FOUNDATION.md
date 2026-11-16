@@ -1,6 +1,6 @@
 # v3 第一批底座
 
-这批实现提供契约验证、独立运行记录、产物事实检查和结果聚合。它尚未接入 GUI 执行器、可信调度器或发布系统，不能据此宣称 v3 已落地或当前 GUI 回归为 GREEN。
+第一批实现提供契约验证、独立运行记录、产物事实检查和结果聚合；后续运行骨架将这些原语串成单次生命周期。它尚未接入真实 GUI 执行器、生产权限隔离或发布系统，不能据此宣称完整 v3 已落地或当前 GUI 回归为 GREEN。
 
 ## 接口
 
@@ -19,9 +19,16 @@
 python -B -m pytest unit_tests -q
 python -B tools/v3_session.py validate contracts/examples/m0_boot_check.json
 python -B tools/v3_session.py init contracts/examples/m0_boot_check.json
+python -B tools/v3_session.py smoke
 ```
 
 `validate` 不创建运行目录；`init` 创建唯一目录及 manifest，不启动 Orca，也不生成通过结果。显式使用 `--root` 可选择记录根目录。默认位置为 gitignored 的 `artifacts/v3/`。纯单元测试在仓库根 `unit_tests/`，不会载入 GUI 用例专用的 `tests/conftest.py`，也没有关闭或修改其环境门禁。
+
+## 单次运行骨架
+
+精确设计与当前边界见 [V3_RUNTIME_ARCHITECTURE.md](V3_RUNTIME_ARCHITECTURE.md)。`harness/runtime.py` 的 `run_once` 是唯一生命周期入口，依赖 `runtime_ports.py` 的执行与验证端口，不导入具体 GUI／模型实现。`runtime_smoke.py` 在应用组合层注入独立的模拟执行器和文件检查器，实际经过排他锁、运行、验证、清理、聚合和一次证据收尾。
+
+`smoke` 成功仅证明这条 synthetic 调用链及其固定模拟产物通过检查，始终输出 `SYNTHETIC`、`gui_executed=false`、`release_eligible=false`。契约中的 script／agent_mcp／midscene 表示端口类型；真实后端尚未注册或接通。桌面锁只在共用的 canonical root 下排他；非阻塞端口是可信合作式接口，不是可强制抢占任意 Python 回调的沙箱。
 
 ## 可信边界
 

@@ -70,7 +70,9 @@ class VerdictResult:
     recovery_used: bool
 
     def to_dict(self) -> dict:
-        return asdict(self)
+        # Persistence accepts data-only JSON values; dataclasses.asdict keeps
+        # tuples, so normalize at this output boundary rather than weakening it.
+        return json.loads(json.dumps(asdict(self), allow_nan=False))
 
 
 def aggregate_result(contract: Mapping | CaseContract, execution_status: str,
