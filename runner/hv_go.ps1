@@ -7,8 +7,12 @@
 # Ported from C:\coil\vm_setup\hv_go.ps1 (un-versioned); parameters now come
 # from runner\_common.ps1 (env-overridable). Case list comes from cases.py —
 # do NOT hardcode case names here (see docs/STRUCTURING_PLAN.md).
-param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$Warmup, [switch]$NoSync, [string]$Suite = 'regression', [switch]$V3)
+param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$Warmup, [switch]$NoSync, [string]$Suite = 'regression', [switch]$V3,
+      [ValidateSet('script', 'agent_mcp')][string]$V3Executor = 'script', [string]$V3RunId = '')
 . (Join-Path $PSScriptRoot '_common.ps1')
+if (-not $V3 -and ($V3Executor -ne 'script' -or $V3RunId)) {
+  throw 'V3 executor/run identity requires -V3'
+}
 
 # Guest passthrough gate: ONLY caller-supplied selections (-Cases, -OnlyFailed)
 # may go on the scheduled-task command line. A registry-derived default list
@@ -71,13 +75,22 @@ $warmup = if ($Warmup) { $true } elseif ($NoWarmup) { $false } else { -not $expl
 if ($V3) {
   if (-not $explicitCases) { throw 'V3 requires an explicit approved case selection' }
   if ($Warmup) { throw 'V3 does not run unrecorded warmup cases' }
+  if ($V3Executor -eq 'agent_mcp') {
+    if (@($Cases).Count -ne 1 -or $V3RunId -cnotmatch '^[0-9a-f]{32}$') {
+      throw 'V3 agent requires exactly one approved case and a host-supplied 32-hex -V3RunId'
+    }
+  } elseif ($V3RunId) { throw '-V3RunId is only valid for agent_mcp' }
   Push-Location (Split-Path $PSScriptRoot -Parent)
   try {
-    $approved = & python -B -c "from harness.script_session import registered_script_cases; print(' '.join(registered_script_cases()))"
-    if ($LASTEXITCODE -ne 0) { throw 'cannot read V3 Script capabilities' }
+    if ($V3Executor -eq 'agent_mcp') {
+      $approved = & python -B -c "from harness.agent_session import registered_agent_cases; print(' '.join(registered_agent_cases()))"
+    } else {
+      $approved = & python -B -c "from harness.script_session import registered_script_cases; print(' '.join(registered_script_cases()))"
+    }
+    if ($LASTEXITCODE -ne 0) { throw 'cannot read V3 executor capabilities' }
     $allowed = @($approved -split '\s+')
     foreach ($selected in $Cases) {
-      if ($allowed -notcontains $selected) { throw "V3 Script case is not approved: $selected" }
+      if ($allowed -notcontains $selected) { throw "V3 executor case is not approved: $selected" }
     }
   } finally { Pop-Location }
   $warmup = $false
@@ -87,7 +100,11 @@ if ($V3) {
 # checklist printout (README top section points here; keep in sync by hand).
 Write-Host "[preflight] PITFALLS 0901 §15 checklist:"
 Write-Host "   (1) relay heartbeat: relay_alive.txt fresh (it refreshes on command completion only)"
-Write-Host "   (2) guest orphan sweep: relay Stop-Process snapmaker-orca,python before the batch"
+if ($V3) {
+  Write-Host "   (2) V3 requires an idle desktop; cleanup targets only this run's owned Job"
+} else {
+  Write-Host "   (2) guest orphan sweep: relay Stop-Process snapmaker-orca,python before the batch"
+}
 Write-Host "   (3) guest interactive resolution = 1920x1080 (hv_go -Cases setres_1080 to check)"
 Write-Host "   (4) no residual 'suite' scheduled-task instance ((Get-ScheduledTask suite).State)"
 Write-Host "   (5) long waits go to background tasks (single bash <= 10 min); recordings/large files via base64 relay"
@@ -206,7 +223,7 @@ Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
   # NOTE: this scriptblock runs ON THE GUEST — everything it needs must be
   # marshaled via param/-ArgumentList (host-side $warmup is not visible here;
   # measured 09-03 night: silent $false, warmup block never emitted).
-  param($caseStr, $sb, $py, $warmup, $suite, $v3)
+  param($caseStr, $sb, $py, $warmup, $suite, $v3, $v3Executor, $v3RunId)
   # full run: the guest derives the list from cases.py itself (single
   # source of truth); explicit subset: split the passed string.
   # warmup fragment — the host-side decision ($warmup) must be baked into
@@ -267,25 +284,28 @@ if (`$failed) { "FAILED: `$(`$failed -join ' ')" | Add-Content C:\coil\regress_s
   if ($v3) {
     # A separate report prevents SHADOW results from entering legacy GREEN/JUnit
     # or baseline writeback paths. The only GUI entry remains this hv_go task.
+    $v3Command = if ($v3Executor -eq 'agent_mcp') { 'run-agent' } else { 'run-script' }
+    $v3Mode = if ($v3Executor -eq 'agent_mcp') { 'agent_shadow' } else { 'script_shadow' }
+    $runIdArgs = if ($v3Executor -eq 'agent_mcp') { " --run-id '$v3RunId'" } else { '' }
     $runner = @"
 `$ErrorActionPreference = 'Continue'
 Set-Location '$sb'
 New-Item -ItemType Directory -Force artifacts | Out-Null
 Remove-Item artifacts\v3_suite.json -ErrorAction SilentlyContinue
-'V3 SCRIPT SHADOW RUN' | Set-Content C:\coil\v3_progress.txt
+'V3 $v3Mode RUN' | Set-Content C:\coil\v3_progress.txt
 `$cases = @( (`$args -join ' ') -split '\s+' | Where-Object { `$_ })
 `$rows = @()
 foreach (`$c in `$cases) {
   "=== `$c ===" | Add-Content C:\coil\v3_progress.txt
   `$env:PYTHONIOENCODING = 'utf-8'
   `$log = "artifacts\v3_suite_`$c.log"
-  & '$py' -B tools\v3_session.py run-script `$c --root '$sb\artifacts\v3' 2>&1 | Out-File -FilePath `$log -Encoding utf8
+  & '$py' -B tools\v3_session.py $v3Command `$c --root '$sb\artifacts\v3'$runIdArgs 2>&1 | Out-File -FilePath `$log -Encoding utf8
   `$rc = `$LASTEXITCODE
   `$verdict = if (`$rc -eq 0) { 'SHADOW' } else { 'NON_GREEN' }
   "`$c `$verdict rc=`$rc" | Add-Content C:\coil\v3_progress.txt
-  `$rows += @{ case_id=`$c; exit_code=`$rc; verdict=`$verdict; log=`$log }
+  `$rows += @{ case_id=`$c; run_id='$v3RunId'; exit_code=`$rc; verdict=`$verdict; log=`$log }
 }
-@{ schema_version=1; mode='script_shadow'; release_eligible=`$false; cases=`$rows } | ConvertTo-Json -Depth 6 | Set-Content artifacts\v3_suite.json -Encoding utf8
+@{ schema_version=1; mode='$v3Mode'; release_eligible=`$false; cases=`$rows } | ConvertTo-Json -Depth 6 | Set-Content artifacts\v3_suite.json -Encoding utf8
 'V3 COMPLETE' | Add-Content C:\coil\v3_progress.txt
 "@
   }
@@ -297,7 +317,7 @@ foreach (`$c in `$cases) {
   Register-ScheduledTask -TaskName "suite" -Action $a -Settings $st -Principal $p -Force | Out-Null
   Start-ScheduledTask -TaskName "suite"
   "suite launched: " + (Get-ScheduledTask suite).State
-} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, ([bool]$V3)
+} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, ([bool]$V3), $V3Executor, $V3RunId
 Write-Host "[4] DONE. Poll progress any time (admin window):"
 Write-Host "    Get-Content C:\coil\vm_setup\poll_rerun.txt | Set-Content C:\coil\vm_setup\relay_cmd.txt   # via relay"
 Write-Host "    or in guest: Get-Content C:\coil\regress_progress.txt -Tail 5"

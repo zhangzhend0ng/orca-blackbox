@@ -27,7 +27,7 @@ if ($V3) {
   } -ArgumentList $guestSandbox
   if (-not $payload) { throw 'V3 suite result missing; no legacy result substituted' }
   $data = $payload | ConvertFrom-Json
-  if ($data.schema_version -ne 1 -or $data.mode -ne 'script_shadow' -or $data.release_eligible -ne $false) {
+  if ($data.schema_version -ne 1 -or $data.mode -notin @('script_shadow', 'agent_shadow') -or $data.release_eligible -ne $false) {
     throw 'Unexpected V3 suite result schema'
   }
   $payload | Set-Content (Join-Path $artifacts 'v3_suite.json') -Encoding UTF8

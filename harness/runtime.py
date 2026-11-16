@@ -1,4 +1,4 @@
-"""Synthetic coordination plus one fixed guest-only m0 script shadow adapter.
+"""Synthetic coordination plus fixed guest-only script and agent shadow adapters.
 
 Registry and adapters belong to the trusted application, never contract JSON.
 Deadlines bound cooperative poll loops; adapters must obey the nonblocking port
@@ -44,28 +44,40 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
 
     Returns persisted result fields plus paths. Adapter exceptions are recorded then
     re-raised after cleanup. No reopen, retry, promotion, shell or model API.
-    The explicit guest_script mode only accepts the fixed m0 ScriptExecutor;
-    default synthetic mode cannot launch that real adapter.
+    Explicit guest modes accept only their fixed m0 script or m1 agent adapter;
+    default synthetic mode cannot launch either real adapter.
     A partial start without a returned handle quarantines the shared desktop.
     Desktop exclusion covers dispatchers sharing the same canonical evidence root.
     """
     frozen = validate_contract(contract.to_dict() if isinstance(contract, CaseContract) else contract)
-    if execution_mode not in {"synthetic", "guest_script"}:
+    if execution_mode not in {"synthetic", "guest_script", "guest_agent"}:
         raise ValueError("runtime: unsupported execution mode")
     synthetic = execution_mode == "synthetic"
     if not synthetic:
         from . import host_guard
-        from .script_executor import ScriptExecutor
         if not host_guard.in_guest():
-            raise PermissionError("runtime: real script execution requires a Hyper-V guest")
-        if (type(executor) is not ScriptExecutor or frozen.case_id != "m0_boot_check"
+            raise PermissionError("runtime: real execution requires a Hyper-V guest")
+        if execution_mode == "guest_script":
+            from .script_executor import ScriptExecutor
+            expected_type, expected_case = ScriptExecutor, "m0_boot_check"
+        else:
+            from .agent_executor import AgentExecutor
+            expected_type, expected_case = AgentExecutor, "m1_minimal_loop"
+            if (type(run_id) is not str or not re.fullmatch(r"[0-9a-f]{32}", run_id)
+                    or frozen.contract_version != "ai-tabs-1"):
+                raise ValueError("runtime: invalid fixed agent contract/run identity")
+        if (type(executor) is not expected_type or frozen.case_id != expected_case
                 or executor.contract_sha256 != contract_digest(frozen)):
-            raise ValueError("runtime: unregistered real script adapter")
+            raise ValueError("runtime: unregistered real adapter")
     if getattr(executor, "synthetic", None) is not synthetic or executor.kind != frozen.executor:
         raise ValueError("runtime: executor mode/kind must match contract")
     verifier = verifier_registry.get(contract_digest(frozen))
     if verifier is None or getattr(verifier, "synthetic", None) is not synthetic:
         raise ValueError("runtime: no verifier registered for this exact contract and mode")
+    if execution_mode == "guest_agent":
+        from .agent_verify import AgentTabVerifier
+        if type(verifier) is not AgentTabVerifier:
+            raise ValueError("runtime: unregistered agent verifier")
     for budget in (verify_timeout_s, cleanup_timeout_s):
         if type(budget) not in (int, float) or not math.isfinite(budget) or not 0 < budget <= 3600:
             raise ValueError("runtime: invalid phase budget")
@@ -216,7 +228,8 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
                                            evidence_complete=verification.evidence_complete,
                                            execution_compliant=verification.execution_compliant)
                 result = verdict.to_dict()
-                result.update(mode="synthetic" if synthetic else "script_shadow",
+                result.update(mode=("synthetic" if synthetic else
+                                    "agent_shadow" if execution_mode == "guest_agent" else "script_shadow"),
                               release_verdict="SYNTHETIC" if synthetic else (
                                   "SHADOW" if verdict.verified_pass else "NON_GREEN"),
                               release_eligible=False, runtime_status=runtime_status,

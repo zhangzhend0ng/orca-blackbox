@@ -70,3 +70,16 @@ def test_smoke_rejects_contract_instead_of_silently_ignoring_it(tmp_path):
     result = invoke("smoke", EXAMPLE, "--root", tmp_path / "runs")
     assert result.returncode == 2
     assert not (tmp_path / "runs").exists()
+
+
+def test_run_agent_requires_explicit_run_id_before_dispatch(tmp_path):
+    result = invoke("run-agent", "m1_minimal_loop", "--root", tmp_path / "runs")
+    assert result.returncode == 2
+    assert "requires a host-supplied" in result.stderr
+    assert not (tmp_path / "runs").exists()
+
+
+def test_run_id_is_not_silently_ignored_by_other_commands(tmp_path):
+    result = invoke("smoke", "--run-id", "a" * 32, "--root", tmp_path / "runs")
+    assert result.returncode == 2
+    assert not (tmp_path / "runs").exists()
