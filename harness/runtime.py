@@ -43,7 +43,7 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
     """Execute one trusted adapter; finalize once, never emit release GREEN.
 
     Returns persisted result fields plus paths. Adapter exceptions are recorded then
-    re-raised after cleanup. No reopen, retry, promotion, shell or model API.
+    re-raised after cleanup. No runtime retry, promotion, shell or model API.
     Explicit guest modes accept only their fixed script or registered agent cases;
     default synthetic mode cannot launch either real adapter.
     A partial start without a returned handle quarantines the shared desktop.
@@ -63,10 +63,12 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
         else:
             from .agent_executor import AgentExecutor
             from .agent_protocol import agent_profile
+            from .agent_session import agent_contract
             profile = agent_profile(frozen.case_id)
             expected_type, expected_case = AgentExecutor, frozen.case_id
             if (type(run_id) is not str or not re.fullmatch(r"[0-9a-f]{32}", run_id)
-                    or frozen.contract_version != profile["contract_version"]):
+                    or frozen.contract_version != profile["contract_version"]
+                    or contract_digest(frozen) != contract_digest(agent_contract(frozen.case_id))):
                 raise ValueError("runtime: invalid fixed agent contract/run identity")
         if (type(executor) is not expected_type or frozen.case_id != expected_case
                 or executor.contract_sha256 != contract_digest(frozen)):
@@ -80,9 +82,14 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
         if frozen.case_id == "m1_minimal_loop":
             from .agent_verify import AgentTabVerifier
             expected_verifier = AgentTabVerifier
-        else:
+        elif frozen.case_id == "m3d_param_reslice":
             from .agent_layer_verify import AgentLayerVerifier
             expected_verifier = AgentLayerVerifier
+        elif frozen.case_id == "m3g_export_3mf":
+            from .agent_project_verify import AgentProjectVerifier
+            expected_verifier = AgentProjectVerifier
+        else:
+            raise ValueError("runtime: unregistered agent case")
         if type(verifier) is not expected_verifier:
             raise ValueError("runtime: unregistered agent verifier")
     for budget in (verify_timeout_s, cleanup_timeout_s):

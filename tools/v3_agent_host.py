@@ -88,7 +88,8 @@ class McpClient:
 
     def call(self, name, arguments):
         return self.request("tools/call", {"name": name, "arguments": arguments},
-                            timeout_s=230 if name == "slice" else 120 if name == "export_gcode" else 90)
+                            timeout_s=230 if name in {"slice", "reopen_project"} else
+                            170 if name == "save_project" else 120 if name == "export_gcode" else 90)
 
     def close(self):
         try:
@@ -158,7 +159,7 @@ def control_loop(client, model, root, deadline, case_id="m1_minimal_loop"):
             args = {"observation_id": action["observation_id"], "x": action["x"], "y": action["y"]}
             if tool == "edit":
                 args["text"] = action["text"]
-        elif tool in {"slice", "export_gcode"}:
+        elif tool in {"slice", "export_gcode", "save_project", "reopen_project"}:
             args = {"observation_id": action["observation_id"]}
         elif tool in {"observe", "finish"} and action["x"] is None and action["y"] is None:
             args = {}

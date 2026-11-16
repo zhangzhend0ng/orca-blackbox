@@ -153,3 +153,31 @@ def test_slice_wait_has_phase_headroom_without_extending_run_deadline():
     client.request = Mock(return_value={})
     client.call("slice", {"observation_id": "obs_1"})
     assert client.request.call_args.kwargs["timeout_s"] == 230
+
+
+def test_project_host_routes_whole_chain_without_exposing_paths(tmp_path):
+    class ProjectModel:
+        index = 0
+        def next_action(self, image, observation, history, remaining, output, deadline):
+            tool = ("edit", "save_project", "reopen_project", "slice", "export_gcode", "finish")[self.index]
+            self.index += 1
+            return {"tool": tool, "observation_id": observation["id"],
+                    "x": 290 if tool == "edit" else None, "y": 610 if tool == "edit" else None,
+                    "text": "0.24" if tool == "edit" else None}
+    client = Client()
+    report = host.control_loop(client, ProjectModel(), tmp_path, time.monotonic()+60,
+                               case_id="m3g_export_3mf")
+    assert report["finished"] and report["model_calls"] == 6
+    assert [name for name, _args in client.calls] == [
+        "observe", "edit", "save_project", "reopen_project", "slice", "export_gcode", "finish"]
+    assert all(set(args) == {"observation_id"} for name, args in client.calls
+               if name in {"save_project", "reopen_project", "slice", "export_gcode"})
+
+
+@pytest.mark.parametrize("tool,limit", [("save_project", 170), ("reopen_project", 230)])
+def test_project_tool_wait_preserves_phase_headroom(tool, limit):
+    from unittest.mock import Mock
+    client = host.McpClient.__new__(host.McpClient)
+    client.request = Mock(return_value={})
+    client.call(tool, {"observation_id": "obs_1"})
+    assert client.request.call_args.kwargs["timeout_s"] == limit

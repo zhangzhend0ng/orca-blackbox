@@ -190,3 +190,52 @@ def test_tab_capability_cannot_invoke_business_tools():
     with pytest.raises(ValueError):
         tools.call("edit", {"observation_id": tools.observation_id, "x": 290, "y": 610, "text": "0.24"})
     assert len(backend.requests) == 1
+
+
+class ProjectMailbox(Mailbox):
+    pid, hwnd = 20, 30
+    unexpected = False
+    def call(self, request):
+        if request["method"] == "reopen_project" or self.unexpected:
+            self.pid, self.hwnd = 21, 31
+        response = super().call(request)
+        response["observation"]["window"].update(pid=self.pid, hwnd=self.hwnd, dpi=96)
+        response["observation"]["frames"] = []  # Bitmap evidence is checked independently after execution.
+        return response
+
+
+def test_project_bridge_binds_initial_window_and_only_transitions_at_reopen():
+    backend = ProjectMailbox()
+    tools = ScopedTools(backend, RUN, "m3g_export_3mf", initial_identity={"pid": 20, "hwnd": 30})
+    tools.call("observe", {})
+    for name in ("save_project", "reopen_project", "slice", "export_gcode"):
+        tools.call(name, {"observation_id": tools.observation_id})
+    tools.call("finish", {})
+    assert tools.window_identity == {"pid": 21, "hwnd": 31}
+    assert all(not request["arguments"] for request in backend.requests)
+
+
+def test_project_unexpected_window_change_stops_before_next_model_action():
+    backend = ProjectMailbox()
+    tools = ScopedTools(backend, RUN, "m3g_export_3mf", initial_identity={"pid": 20, "hwnd": 30})
+    tools.call("observe", {})
+    backend.unexpected = True
+    with pytest.raises(ValueError, match="unexpected_window_change"):
+        tools.call("observe", {})
+
+
+@pytest.mark.parametrize("name", ["save_project", "reopen_project", "slice", "export_gcode"])
+def test_project_business_operation_cannot_be_replayed(name):
+    backend = ProjectMailbox()
+    tools = ScopedTools(backend, RUN, "m3g_export_3mf", initial_identity={"pid": 20, "hwnd": 30})
+    tools.call("observe", {})
+    tools.call(name, {"observation_id": tools.observation_id})
+    with pytest.raises(ValueError, match="budget"):
+        tools.call(name, {"observation_id": tools.observation_id})
+    assert len(backend.requests) == 2
+
+
+@pytest.mark.parametrize("initial", [None, {"pid": True, "hwnd": 30}, {"pid": 20, "hwnd": 0}])
+def test_project_requires_typed_initial_window_identity(initial):
+    with pytest.raises(ValueError, match="initial_identity"):
+        ScopedTools(ProjectMailbox(), RUN, "m3g_export_3mf", initial_identity=initial)

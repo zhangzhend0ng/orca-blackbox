@@ -1,4 +1,4 @@
-"""Two fixed guest AI capabilities; model credentials stay on the host."""
+"""Fixed guest AI capabilities; model credentials stay on the host."""
 from pathlib import Path
 import re
 
@@ -10,7 +10,7 @@ from .script_session import SCRIPT_ROOT
 
 
 def registered_agent_cases() -> tuple[str, ...]:
-    return ("m1_minimal_loop", "m3d_param_reslice")
+    return ("m1_minimal_loop", "m3d_param_reslice", "m3g_export_3mf")
 
 
 def agent_contract(case_id: str):
@@ -25,12 +25,21 @@ def agent_contract(case_id: str):
                   {"id": "preview", "goal": "Use model-selected click to reach stable Preview"},
                   {"id": "prepare", "goal": "Use model-selected click to return to stable Prepare"},
                   {"id": "close", "goal": "Close and confirm the owned Job is empty"}]
-    else:
+    elif case_id == "m3d_param_reslice":
         from .agent_protocol import LAYER_FIXTURE_SHA256
         steps = [{"id": "boot", "goal": "Load the fixed single-material 27 mm cube; fixture sha256=" + LAYER_FIXTURE_SHA256},
                  {"id": "baseline", "goal": "GUI slice and export baseline with layer height 0.40 mm"},
                  {"id": "edit", "goal": "Use screenshot-selected native Edit to change layer height to 0.24 mm; preserve first layer 0.40 mm"},
                  {"id": "reslice", "goal": "GUI reslice and export modified G-code; prove actual object extrusion layer spacing"},
+                 {"id": "close", "goal": "Close and confirm the owned Job is empty"}]
+    else:
+        from .agent_protocol import LAYER_FIXTURE_SHA256
+        steps = [{"id": "boot", "goal": "Load the fixed single-material 27 mm cube; fixture sha256=" + LAYER_FIXTURE_SHA256},
+                 {"id": "edit", "goal": "Use screenshot-selected native Edit to change layer height to 0.24 mm; preserve first layer 0.40 mm"},
+                 {"id": "save", "goal": "GUI save the edited project to run-owned projects/0001.3mf"},
+                 {"id": "reopen", "goal": "Confirm the owned app exits, then reopen the same saved project in a new profile_reopen within the same Job"},
+                 {"id": "slice", "goal": "GUI slice the reopened project without another parameter edit"},
+                 {"id": "export", "goal": "GUI export exports/0001.gcode; independently verify saved project parameters and actual object extrusion layer spacing"},
                  {"id": "close", "goal": "Close and confirm the owned Job is empty"}]
     return validate_contract({
         "schema_version": 1, "case_id": case_id,
@@ -57,9 +66,12 @@ def run_agent(case_id: str, root: Path, run_id: str) -> dict:
     if case_id == "m1_minimal_loop":
         from .agent_verify import AgentTabVerifier
         verifier = AgentTabVerifier()
-    else:
+    elif case_id == "m3d_param_reslice":
         from .agent_layer_verify import AgentLayerVerifier
         verifier = AgentLayerVerifier()
+    else:
+        from .agent_project_verify import AgentProjectVerifier
+        verifier = AgentProjectVerifier()
     root.mkdir(parents=True, exist_ok=True)
     digest = contract_digest(contract)
     cancel_path = root / run_id / "artifacts" / "control_cancel.json"

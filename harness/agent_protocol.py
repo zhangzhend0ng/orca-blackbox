@@ -11,6 +11,7 @@ MAX_CALLS = 12
 MAX_CLICKS = 6
 MAX_RUNTIME_S = 900
 LAYER_CASE = "m3d_param_reslice"
+PROJECT_CASE = "m3g_export_3mf"
 LAYER_FIXTURE = "fixtures/agent_layer_cube.3mf"
 LAYER_FIXTURE_SHA256 = "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef"
 
@@ -20,6 +21,8 @@ def agent_profile(case_id: str) -> dict:
     profiles = {
         "m1_minimal_loop": ("ai-tabs-1", ("observe", "click", "finish")),
         LAYER_CASE: ("ai-layer-1", ("observe", "click", "edit", "slice", "export_gcode", "finish")),
+        PROJECT_CASE: ("ai-project-1", ("observe", "click", "edit", "save_project",
+                                      "reopen_project", "slice", "export_gcode", "finish")),
     }
     if type(case_id) is not str or case_id not in profiles:
         raise ProtocolError("unknown_case")

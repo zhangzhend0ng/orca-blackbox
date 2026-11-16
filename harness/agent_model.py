@@ -101,8 +101,8 @@ def _id(value):
 def _action(value, observation_id, width, height, *, case_id="m1_minimal_loop"):
     from .agent_protocol import agent_profile, validate_request, ProtocolError
     profile = agent_profile(case_id)
-    layer = case_id == "m3d_param_reslice"
-    fields = _ACTION_FIELDS | ({"text"} if layer else set())
+    business = case_id in ("m3d_param_reslice", "m3g_export_3mf")
+    fields = _ACTION_FIELDS | ({"text"} if business else set())
     if type(value) is not dict or set(value) != fields:
         raise ModelError("model: action fields do not match schema")
     tool = value["tool"]
@@ -114,7 +114,7 @@ def _action(value, observation_id, width, height, *, case_id="m1_minimal_loop"):
             raise ModelError("model: invalid click coordinates")
     elif value["x"] is not None or value["y"] is not None:
         raise ModelError("model: non-click coordinates must be null")
-    if layer:
+    if business:
         if tool != "edit" and value["text"] is not None:
             raise ModelError("model: text is only allowed for edit")
         arguments = {"x": value["x"], "y": value["y"]} if tool in ("click", "edit") else {}
@@ -214,17 +214,26 @@ class CodexModel:
         call_dir.mkdir()
         from .agent_protocol import agent_profile
         layer = self.case_id == "m3d_param_reslice"
-        action_fields = _ACTION_FIELDS | ({"text"} if layer else set())
+        project = self.case_id == "m3g_export_3mf"
+        action_fields = _ACTION_FIELDS | ({"text"} if layer or project else set())
         schema = {"type": "object", "additionalProperties": False,
                   "required": sorted(action_fields), "properties": {
                       "tool": {"type": "string", "enum": list(agent_profile(self.case_id)["tools"])},
                       "observation_id": {"type": ["string", "null"], "enum": [observation["id"]]},
                       "x": {"type": ["integer", "null"]}, "y": {"type": ["integer", "null"]}}}
-        if layer:
+        if layer or project:
             schema["properties"]["text"] = {"type": ["string", "null"]}
         schema_path = call_dir / "action-schema.json"
         schema_path.write_text(json.dumps(schema), encoding="utf-8")
-        goal = ("You test the loaded 27 mm cube through the GUI. First call slice and export_gcode for a baseline. "
+        goal = ("You test saving and reopening the loaded 27 mm cube project. Find the regular Layer height "
+                "numeric field in Quality and use edit at its screenshot coordinates with text 0.24. "
+                "Keep First layer height at 0.40 and do not switch the process preset. Then call save_project. "
+                "Call reopen_project to close this app and open that saved project in a new isolated profile. "
+                "After reopening, do not edit again: call slice, export_gcode, then finish. "
+                "There is no baseline slice/export in this task. save_project and reopen_project take no paths; "
+                "the trusted tools use fixed run-owned files. edit requires x/y/text; click requires x/y and null text; "
+                "all other tools require null x/y/text. " if project else
+                "You test the loaded 27 mm cube through the GUI. First call slice and export_gcode for a baseline. "
                 "Then find the regular Layer height numeric field in the Quality settings and use edit at its image "
                 "coordinates with text 0.24. Keep First layer height at 0.40 and do not switch the process preset. "
                 "Call slice and export_gcode again, then finish. If needed click Prepare to see the settings. "

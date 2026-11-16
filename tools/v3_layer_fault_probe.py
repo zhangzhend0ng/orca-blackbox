@@ -43,14 +43,16 @@ def _once(path, value):
 class FaultProbeModel:
     """ModelPort-shaped deterministic controller. It never calls a model."""
     case_id = CASE
+    sequences = _SEQUENCES
+    source_prefix = "fault_probe_"
 
     def __init__(self, fault: str, run_id: str):
-        if type(fault) is not str or fault not in FAULTS:
+        if type(fault) is not str or fault not in self.sequences:
             raise ValueError("unknown_fault")
         if type(run_id) is not str or re.fullmatch(r"[0-9a-f]{32}", run_id) is None:
             raise ValueError("invalid_run_id")
         self.fault, self.run_id = fault, run_id
-        self.source = "fault_probe_" + fault
+        self.source = self.source_prefix + fault
         self.actions, self.observations = [], set()
 
     def _collision_ack(self, root, deadline):
@@ -87,7 +89,7 @@ class FaultProbeModel:
     def next_action(self, image, observation, history, remaining_calls, output_dir, deadline):
         if time.monotonic() >= deadline:
             raise TimeoutError("fault_probe_deadline")
-        if history != self.actions or len(self.actions) >= len(_SEQUENCES[self.fault]):
+        if history != self.actions or len(self.actions) >= len(self.sequences[self.fault]):
             raise ValueError("fault_sequence_changed")
         if type(remaining_calls) is not int or remaining_calls <= 0:
             raise ValueError("fault_probe_budget")
@@ -112,14 +114,14 @@ class FaultProbeModel:
         if not 8 <= len(raw) <= host.MAX_IMAGE_BYTES or not raw.startswith(b"\x89PNG\r\n\x1a\n"):
             raise ValueError("fault_probe_image")
         output_dir.mkdir(exist_ok=False)
-        tool = _SEQUENCES[self.fault][index - 1]
+        tool = self.sequences[self.fault][index - 1]
         if self.fault == "export_collision" and index == 5:
             self._collision_ack(root, deadline)
         action = {"tool": tool, "observation_id": ident,
             "x": 298 if tool == "edit" else None,
             "y": (794 if self.fault == "wrong_parameter" else 764) if tool == "edit" else None,
             "text": "0.24" if tool == "edit" else None}
-        action = _action(action, ident, 1920, 1032, case_id=CASE)
+        action = _action(action, ident, 1920, 1032, case_id=self.case_id)
         if time.monotonic() >= deadline:
             raise TimeoutError("fault_probe_deadline")
         _once(output_dir / "summary.json", {"source": self.source, "model_inference": False,
@@ -131,18 +133,22 @@ class FaultProbeModel:
 
 
 def run_probe(run_id, guest_root, fault):
+    return _run_probe(run_id, guest_root, FaultProbeModel(fault, run_id))
+
+
+def _run_probe(run_id, guest_root, model):
+    """Shared host lifecycle for code-owned fixed ModelPort implementations."""
     validate_identity(guest_root, run_id)
-    model = FaultProbeModel(fault, run_id)
     root = host.REPO / "artifacts" / "v3_host" / run_id
     if root.exists():
         raise FileExistsError("fault_probe_requires_new_run")
-    report = {"schema_version": 1, "run_id": run_id, "case_id": CASE, "fault": fault,
+    report = {"schema_version": 1, "run_id": run_id, "case_id": model.case_id, "fault": model.fault,
         "source": model.source, "ai_trial": False, "model_inference": False,
         "expected_release_verdict": "NON_GREEN", "release_eligible": False,
         "observed_release_verdict": None, "cleanup_confirmed": None,
         "disposition": "awaiting_independent_guest_evidence"}
     try:
-        result = host.run_host(run_id, guest_root, model, CASE)
+        result = host.run_host(run_id, guest_root, model, model.case_id)
         report.update(host_finished=result["finished"], host_error_type=None)
         return report
     except (OSError, ValueError, RuntimeError, KeyError, TypeError) as exc:

@@ -16,7 +16,7 @@ if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
 from harness import host_guard
-from harness.agent_protocol import (MAX_CALLS, MAX_CLICKS, MAX_RUNTIME_S, LAYER_CASE, ProtocolError, agent_profile,
+from harness.agent_protocol import (MAX_CALLS, MAX_CLICKS, MAX_RUNTIME_S, LAYER_CASE, PROJECT_CASE, ProtocolError, agent_profile,
                                     check_cancel, read_json, valid_run_id, validate_request, write_json_once)
 from harness.run_contract import load_contract
 from harness.run_verdict import contract_digest
@@ -51,10 +51,12 @@ def _encode_capture(capture):
 
 
 class _WindowsUI:
-    def __init__(self, artifacts, model=None):
+    def __init__(self, artifacts, model=None, profile_name="profile"):
         from harness import launcher, profile, winutil
         self.winutil = winutil
-        target = artifacts / "profile"
+        if type(profile_name) is not str or profile_name not in {"profile", "profile_reopen"}:
+            raise ProtocolError("unknown_profile")
+        target = artifacts / profile_name
         if target.exists():
             raise FileExistsError("profile already exists")
         profile.seed_profile(target, fresh=False)
@@ -125,18 +127,26 @@ def run_guest(artifact_dir: Path, run_id: str, digest: str) -> int:
             stream.flush()
             os.fsync(stream.fileno())
     operations = {"edit": 0, "slice": 0, "export_gcode": 0}
+    operation_limit = 2
+    if contract.case_id == PROJECT_CASE:
+        operations.update(save_project=0, reopen_project=0)
+        operation_limit = 1
     with (artifacts / "trace.ndjson").open("x", encoding="utf-8") as trace:
         try:
             check_cancel(artifacts, run_id)
-            if contract.case_id == LAYER_CASE:
-                from harness.agent_business_ui import BusinessUI
+            if contract.case_id in {LAYER_CASE, PROJECT_CASE}:
                 _bytes_once(artifacts / "operation_receipts.ndjson", b"")
-                ui = BusinessUI(artifacts, guard)
+                if contract.case_id == PROJECT_CASE:
+                    from harness.agent_project_ui import ProjectUI
+                    ui = ProjectUI(artifacts, guard)
+                else:
+                    from harness.agent_business_ui import BusinessUI
+                    ui = BusinessUI(artifacts, guard)
             else:
                 ui = _WindowsUI(artifacts)
             window, _capture = ui.identity()
             app_pid, hwnd = window["pid"], window["hwnd"]
-            if contract.case_id == LAYER_CASE:
+            if contract.case_id in {LAYER_CASE, PROJECT_CASE}:
                 receipt(0, "boot", None, started_ns, ui.boot_details)
             write_json_once(artifacts / "ready.json", {"schema_version": 1, "run_id": run_id,
                 "case_id": contract.case_id, "driver_pid": driver_pid, "app_pid": app_pid,
@@ -168,12 +178,15 @@ def run_guest(artifact_dir: Path, run_id: str, digest: str) -> int:
                         ui.click(**request["arguments"])
                     elif method in operations:
                         guard()
-                        if operations[method] >= 2:
+                        if operations[method] >= operation_limit:
                             raise ProtocolError("operation_budget")
                         operations[method] += 1
                         operation_start = time.time_ns()
                         details = ui.perform(method, request["arguments"])
                         guard()
+                        if method == "reopen_project":
+                            window, _capture = ui.identity()
+                            app_pid, hwnd = window["pid"], window["hwnd"]
                         receipt(seq, method, request, operation_start, details)
                     captured = []
                     for suffix in ("a", "b"):
@@ -220,6 +233,8 @@ def run_guest(artifact_dir: Path, run_id: str, digest: str) -> int:
             print(f"[agent_guest] stopped: {type(exc).__name__}", file=sys.stderr)
         finally:
             if ui is not None:
+                if contract.case_id == PROJECT_CASE:
+                    app_pid, hwnd = ui.app.pid, ui.app.hwnd
                 try:
                     ui.close()
                 except Exception:

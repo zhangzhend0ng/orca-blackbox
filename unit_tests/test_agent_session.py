@@ -12,17 +12,20 @@ from harness.runtime_ports import ExecutionOutcome, VerificationOutcome
 from harness.runtime_smoke import SyntheticHandle
 
 RUN_ID = "a" * 32
-CASES = ("m1_minimal_loop", "m3d_param_reslice")
+CASES = ("m1_minimal_loop", "m3d_param_reslice", "m3g_export_3mf")
 
 
 def verifier_type(case_id):
     if case_id == "m1_minimal_loop":
         return AgentTabVerifier
-    from harness.agent_layer_verify import AgentLayerVerifier
-    return AgentLayerVerifier
+    if case_id == "m3d_param_reslice":
+        from harness.agent_layer_verify import AgentLayerVerifier
+        return AgentLayerVerifier
+    from harness.agent_project_verify import AgentProjectVerifier
+    return AgentProjectVerifier
 
 
-def test_registered_intent_preserves_tabs_and_adds_only_layer_change():
+def test_registered_intent_preserves_tabs_and_adds_only_fixed_business_cases():
     assert agent_session.registered_agent_cases() == CASES
     contract = agent_session.agent_contract("m1_minimal_loop")
     assert contract.executor == "agent_mcp" and contract.contract_version == "ai-tabs-1"
@@ -41,6 +44,21 @@ def test_layer_contract_binds_fixed_fixture_and_actual_slice_goal():
     assert LAYER_FIXTURE_SHA256 in contract.steps[0].goal
     assert "0.24" in contract.steps[2].goal and "0.40" in contract.steps[2].goal
     assert contract.limits.timeout_s == 900 and contract.limits.max_actions == 12
+    assert contract_digest(contract) == "a84be6d0070374966f50ae053a41fe8779ed483f7863fd2055ce75ce99e81114"
+
+
+def test_project_contract_is_one_save_reopen_slice_chain_with_fixed_limits():
+    from harness.agent_protocol import LAYER_FIXTURE_SHA256
+    contract = agent_session.agent_contract("m3g_export_3mf")
+    assert contract.contract_version == "ai-project-1"
+    assert [s.id for s in contract.steps] == ["boot", "edit", "save", "reopen", "slice", "export", "close"]
+    assert LAYER_FIXTURE_SHA256 in contract.steps[0].goal
+    assert "projects/0001.3mf" in contract.steps[2].goal
+    assert "profile_reopen" in contract.steps[3].goal
+    assert "exports/0001.gcode" in contract.steps[5].goal
+    assert contract.limits.timeout_s == 900 and contract.limits.max_actions == 12
+    assert contract.limits.max_retries == 0 and contract.limits.max_cost_usd == 0
+    assert contract_digest(contract) == "85e34108df31cd0a79c8de86c7f2b4d6af3b3ecef3c5e5b8d1cdbb5f2c921bbd"
 
 
 def test_host_override_cannot_start_agent(monkeypatch, tmp_path):
@@ -149,15 +167,34 @@ def test_agent_runtime_rejects_unregistered_verifier(monkeypatch, tmp_path):
     assert not list(tmp_path.iterdir())
 
 
-@pytest.mark.parametrize("case_id", CASES)
-def test_verifier_cannot_cross_case_boundary(monkeypatch, tmp_path, case_id):
+@pytest.mark.parametrize("case_id,other", [(a, b) for a in CASES for b in CASES if a != b])
+def test_verifier_cannot_cross_case_boundary(monkeypatch, tmp_path, case_id, other):
     monkeypatch.setattr(host_guard, "in_guest", lambda: True)
     contract = agent_session.agent_contract(case_id)
-    other = CASES[1] if case_id == CASES[0] else CASES[0]
     with pytest.raises(ValueError, match="unregistered agent verifier"):
         run_once(contract, AgentExecutor(contract_digest(contract)),
                  {contract_digest(contract): verifier_type(other)()}, root=tmp_path,
                  run_id=RUN_ID, execution_mode="guest_agent")
+    assert not list(tmp_path.iterdir())
+
+
+@pytest.mark.parametrize("case_id", CASES)
+@pytest.mark.parametrize("mutation", ["goal", "budget"])
+def test_matching_adapter_digest_cannot_authorize_changed_registered_contract(monkeypatch, tmp_path, case_id, mutation):
+    from harness.run_contract import validate_contract
+    monkeypatch.setattr(host_guard, "in_guest", lambda: True)
+    data = agent_session.agent_contract(case_id).to_dict()
+    if mutation == "goal":
+        data["steps"][0]["goal"] = "Accept a different fixture"
+    else:
+        data["limits"]["timeout_s"] = 901
+    altered = validate_contract(data)
+    start = Mock()
+    monkeypatch.setattr(AgentExecutor, "start", start)
+    with pytest.raises(ValueError, match="invalid fixed agent contract"):
+        run_once(altered, AgentExecutor(contract_digest(altered)), {}, root=tmp_path,
+                 run_id=RUN_ID, execution_mode="guest_agent")
+    start.assert_not_called()
     assert not list(tmp_path.iterdir())
 
 

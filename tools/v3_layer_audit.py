@@ -182,7 +182,13 @@ def _model_lineage(host, trace, run_id, case_id, start):
 
 def _probe_lineage(host, artifacts, manifest, ready, process, fault):
     """Fixed experiment actions are separately attributed, never counted as AI."""
-    start, run_id, source = manifest["started_at_ns"], manifest["run_id"], "fault_probe_" + fault
+    project = manifest["case_id"] == "m3g_export_3mf"
+    if project:
+        from harness.agent_session import agent_contract
+        _need(manifest["contract_sha256"] == contract_digest(agent_contract("m3g_export_3mf")), "unregistered_contract")
+        _need(fault in ("save_before_edit", "missing_reopen", "missing_slice"), "expected_fault_not_registered")
+    start, run_id = manifest["started_at_ns"], manifest["run_id"]
+    source = ("fault_probe_project_" if project else "fault_probe_") + fault
     probe, report = _data(host, "fault_probe.json", start), _data(host, "host_run.json", start)
     _fields(probe, {"schema_version", "run_id", "case_id", "fault", "source", "ai_trial", "model_inference",
         "expected_release_verdict", "release_eligible", "observed_release_verdict", "cleanup_confirmed",
@@ -205,6 +211,21 @@ def _probe_lineage(host, artifacts, manifest, ready, process, fault):
     _need(raw.endswith(b"\n") and 6 <= len(trace) <= 7, "fault_trace_count")
     sequence = ["observe", "slice", "export_gcode", "edit",
                 "observe" if fault == "missing_reslice" else "slice", "export_gcode", "finish"]
+    transition = None
+    if project:
+        sequence = {"save_before_edit": ["observe", "save_project", "edit", "reopen_project", "slice", "export_gcode", "finish"],
+                    "missing_reopen": ["observe", "edit", "save_project", "observe", "slice", "export_gcode", "finish"],
+                    "missing_slice": ["observe", "edit", "save_project", "reopen_project", "observe", "export_gcode", "finish"]}[fault]
+        transition = _fault_receipts(artifacts, manifest, ready, trace)
+        _need((transition["reopen_seq"] is None) == (fault == "missing_reopen"), "fault_reopen_not_hit")
+        if (artifacts / "agent_report.json").exists():
+            completion = _data(artifacts, "agent_report.json", start)
+            _fields(completion, {"schema_version", "run_id", "case_id", "driver_pid", "app_pid", "hwnd", "started_at_ns", "finished_at_ns", "status", "calls", "clicks"}, "fault_report_schema")
+            _need(type(completion["schema_version"]) is int and completion["schema_version"] == 1
+                  and completion["run_id"] == run_id and completion["case_id"] == manifest["case_id"]
+                  and type(completion["driver_pid"]) is int and completion["driver_pid"] == process["pid"]
+                  and all(type(completion[k]) is int for k in ("app_pid", "hwnd"))
+                  and completion["app_pid"] == transition["final"]["pid"] and completion["hwnd"] == transition["final"]["hwnd"], "fault_report_identity")
     prior, last_time = None, start
     for seq, pair in enumerate(trace, 1):
         _fields(pair, {"request", "response"}, "fault_trace_schema")
@@ -218,13 +239,15 @@ def _probe_lineage(host, artifacts, manifest, ready, process, fault):
         if res["is_error"]:
             _need(seq == len(trace) == 6 and req["method"] == "export_gcode" and res["finished"] is False
                   and res["error_code"] == ("export_exists" if fault == "export_collision" else "export_not_ready")
-                  and fault != "wrong_parameter" and res["observation"] is None, "unrelated_fault_error")
+                  and fault != "wrong_parameter" and (not project or fault == "missing_slice")
+                  and res["observation"] is None, "unrelated_fault_error")
             continue
         _need(res["error_code"] is None and res["finished"] == (req["method"] == "finish"), "fault_response_status")
         obs = res["observation"]
         _fields(obs, {"id", "window", "frames", "image"}, "fault_observation_schema")
+        identity = transition["final"] if project and transition["reopen_seq"] is not None and seq >= transition["reopen_seq"] else {"hwnd": ready["hwnd"], "pid": ready["app_pid"]}
         _need(type(obs["window"]) is dict and all(type(v) is int for v in obs["window"].values())
-              and obs["id"] == f"{run_id}_{seq:04d}" and obs["window"] == {"hwnd": ready["hwnd"], "pid": ready["app_pid"],
+              and obs["id"] == f"{run_id}_{seq:04d}" and obs["window"] == {"hwnd": identity["hwnd"], "pid": identity["pid"],
               "width": 1920, "height": 1032, "dpi": 96}, "fault_window_identity")
         prior = obs["id"]
         _need(type(obs["frames"]) is list and len(obs["frames"]) == 2, "fault_frame_pair")
@@ -282,22 +305,30 @@ def _probe_lineage(host, artifacts, manifest, ready, process, fault):
 
 def _fault_receipts(artifacts, manifest, ready, trace):
     start, run_id = manifest["started_at_ns"], manifest["run_id"]
+    project = manifest["case_id"] == "m3g_export_3mf"
     raw = _read_at(artifacts, "operation_receipts.ndjson", 1024 * 1024, start)
     records = [_json(x) for x in raw.splitlines()]
-    successful = [pair for pair in trace if pair["request"]["method"] in ("edit", "slice", "export_gcode")
+    methods = ("edit", "slice", "export_gcode", "save_project", "reopen_project") if project else ("edit", "slice", "export_gcode")
+    successful = [pair for pair in trace if pair["request"]["method"] in methods
                   and pair["response"]["is_error"] is False]
     _need(raw.endswith(b"\n") and len(records) == len(successful) + 1, "fault_receipts_missing")
     for record in records:
         _fields(record, _RECEIPT, "fault_receipt_schema")
         _need(type(record["schema_version"]) is int and record["schema_version"] == 1 and record["run_id"] == run_id
-              and record["window"] == {"hwnd": ready["hwnd"], "pid": ready["app_pid"]}, "fault_receipt_identity")
+              and (project or record["window"] == {"hwnd": ready["hwnd"], "pid": ready["app_pid"]}), "fault_receipt_identity")
+        if project:
+            _fields(record["window"], {"hwnd", "pid"}, "fault_receipt_identity")
+            _need(all(_integer(x, 1) for x in record["window"].values()), "fault_receipt_identity")
     boot = records[0]
     _need(type(boot["seq"]) is int and boot["seq"] == 0 and boot["method"] == "boot" and boot["request_sha256"] is None
           and _integer(boot["started_at_ns"], start) and _integer(boot["finished_at_ns"], boot["started_at_ns"],
               trace[0]["response"]["observation"]["frames"][0]["captured_at_ns"])
           and boot["details"] == {"datadir": "profile", "driver_pid": ready["driver_pid"],
               "fixture_path": "input/fixture.3mf", "fixture_sha256": LAYER_FIXTURE_SHA256}, "fault_boot_receipt")
-    exports = 0
+    exports, saved, reopen_seq = 0, None, None
+    current = {"hwnd": ready["hwnd"], "pid": ready["app_pid"]}
+    if project:
+        _need(boot["window"] == current, "fault_boot_receipt")
     for record, pair in zip(records[1:], successful):
         request, response = pair["request"], pair["response"]
         seq, method = request["seq"], request["method"]
@@ -307,6 +338,20 @@ def _fault_receipts(artifacts, manifest, ready, trace):
               and _integer(record["finished_at_ns"], record["started_at_ns"],
                   response["observation"]["frames"][0]["captured_at_ns"]), "fault_receipt_lineage")
         details = record["details"]
+        if project and method == "reopen_project":
+            _fields(details, {"path", "sha256", "size_bytes", "datadir", "old_pid", "old_hwnd", "old_exit_code",
+                "old_closed_at_ns", "new_pid", "new_hwnd", "new_started_at_ns", "driver_pid"}, "fault_reopen_receipt")
+            _need(saved is not None and reopen_seq is None and all(type(details[k]) is type(saved[k]) and details[k] == saved[k]
+                  for k in ("path", "sha256", "size_bytes")) and details["datadir"] == "profile_reopen"
+                  and all(type(details[k]) is int for k in ("old_pid", "old_hwnd", "old_exit_code", "driver_pid"))
+                  and details["old_pid"] == current["pid"] and details["old_hwnd"] == current["hwnd"]
+                  and details["old_exit_code"] == 0 and details["driver_pid"] == ready["driver_pid"]
+                  and _integer(details["new_pid"], 1) and details["new_pid"] != ready["driver_pid"] and _integer(details["new_hwnd"], 1)
+                  and _integer(details["old_closed_at_ns"], record["started_at_ns"])
+                  and _integer(details["new_started_at_ns"], details["old_closed_at_ns"], record["finished_at_ns"]), "fault_reopen_binding")
+            current, reopen_seq = {"hwnd": details["new_hwnd"], "pid": details["new_pid"]}, seq
+        if project:
+            _need(record["window"] == current and all(response["observation"]["window"][k] == current[k] for k in current), "fault_receipt_identity")
         if method == "edit":
             _fields(details, {"target_hwnd", "control_class", "before_text", "after_text"}, "fault_edit_receipt")
             _need(_integer(details["target_hwnd"], 1) and details["control_class"] == "Edit"
@@ -314,13 +359,21 @@ def _fault_receipts(artifacts, manifest, ready, trace):
         elif method == "slice":
             _fields(details, {"button_hwnd", "done_observed"}, "fault_slice_receipt")
             _need(_integer(details["button_hwnd"], 1) and details["done_observed"] is True, "fault_slice_receipt")
-        else:
-            exports += 1
+        elif method != "reopen_project":
+            if method == "export_gcode":
+                exports += 1
             _fields(details, {"dialog_hwnd", "edit_hwnd", "path", "sha256", "size_bytes"}, "fault_export_receipt")
             _need(_integer(details["dialog_hwnd"], 1) and _integer(details["edit_hwnd"], 1)
-                  and details["path"] == f"exports/{exports:04d}.gcode" and _integer(details["size_bytes"], 1, 64 * 1024 * 1024), "fault_export_receipt")
+                  and details["path"] == ("projects/0001.3mf" if method == "save_project" else f"exports/{exports:04d}.gcode")
+                  and _integer(details["size_bytes"], 1, 16 * 1024 * 1024 if method == "save_project" else 64 * 1024 * 1024), "fault_export_receipt")
             content = _read_at(artifacts, details["path"], 64 * 1024 * 1024, start)
             _need(len(content) == details["size_bytes"] and hashlib.sha256(content).hexdigest() == details["sha256"], "fault_export_hash")
+            if method == "save_project":
+                _need(saved is None, "fault_duplicate_save")
+                saved = details
+    if project:
+        _need(saved is not None, "fault_save_missing")
+        return {"reopen_seq": reopen_seq, "final": current}
 
 
 def _collision(host, artifacts, manifest, trace):

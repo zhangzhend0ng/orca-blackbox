@@ -85,6 +85,21 @@ def test_layer_model_has_separate_schema_and_gui_goal(provider):
     assert "do not switch" in prompt.lower()
 
 
+def test_project_inference_uses_save_reopen_goal_and_path_free_tools(provider):
+    old, image, out, settings, processes, _arguments = provider
+    model = CodexModel(old.executable, case_id="m3g_export_3mf")
+    action = {"tool": "save_project", "observation_id": OBS["id"], "x": None, "y": None, "text": None}
+    settings["output"] = events(action)
+    assert model.next_action(image, OBS, [], 8, out, time.monotonic()+10) == action
+    schema = json.loads(next(out.glob("call-*/action-schema.json")).read_text())
+    assert {"save_project", "reopen_project"} <= set(schema["properties"]["tool"]["enum"])
+    assert set(schema["properties"]) == {"tool", "observation_id", "x", "y", "text"}
+    prompt = processes[0].stdin.payload.decode()
+    assert "After reopening, do not edit again" in prompt
+    assert "There is no baseline slice/export" in prompt
+    assert "First layer height at 0.40" in prompt
+
+
 @pytest.mark.parametrize("changes", [{"text": "0.24;command"}, {"x": True}, {"text": None}])
 def test_layer_model_rejects_invalid_edit(provider, changes):
     old, image, out, settings, *_ = provider

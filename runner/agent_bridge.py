@@ -49,6 +49,14 @@ LAYER_TOOLS = [*TOOLS,
           ("slice", "Click the owned GUI Slice button once, then wait up to 180 seconds."),
           ("export_gcode", "Export through the owned GUI dialog to a new fixed run output; no supplied path."))],
 ]
+PROJECT_TOOLS = [*LAYER_TOOLS,
+    *[{"name": name, "description": description,
+       "inputSchema": {"type": "object", "properties": {"observation_id": _OBS_ID_SCHEMA},
+                       "required": ["observation_id"], "additionalProperties": False}}
+      for name, description in (
+          ("save_project", "Save the current project through its GUI to the new fixed run-owned 3mf; no supplied path."),
+          ("reopen_project", "Confirm the old app exits, then reopen that saved project with a new isolated profile."))],
+]
 
 
 def decode_json(raw):
@@ -191,7 +199,9 @@ class RelayMailbox:
                            "payload": base64.b64encode(raw).decode()})
         if out.get("written") is not True:
             raise RuntimeError("guest_write_unconfirmed_stop")
-        timeout = 210 if request["method"] == "slice" else 90 if request["method"] == "export_gcode" else 45
+        method = request["method"]
+        timeout = (210 if method in {"slice", "reopen_project"} else
+                   150 if method == "save_project" else 90 if method == "export_gcode" else 45)
         return self.wait_json(f"mailbox/response_{seq:04d}.json", seconds=timeout)
 
     def cancel(self):
@@ -225,14 +235,24 @@ class RelayMailbox:
 
 
 class ScopedTools:
-    def __init__(self, mailbox, run_id, case_id="m1_minimal_loop"):
+    def __init__(self, mailbox, run_id, case_id="m1_minimal_loop", *, initial_identity=None):
         from harness.agent_protocol import agent_profile
         profile = agent_profile(case_id)
         self.mailbox, self.run_id = mailbox, run_id
         self.case_id = case_id
-        self.tool_definitions = [t for t in LAYER_TOOLS if t["name"] in profile["tools"]]
+        self.tool_definitions = [t for t in PROJECT_TOOLS if t["name"] in profile["tools"]]
         self.seq, self.clicks, self.observation_id = 0, 0, None
         self.special_counts = {"edit": 0, "slice": 0, "export_gcode": 0}
+        self.special_limit = 2
+        self.window_identity = None
+        self.window_geometry = None
+        if case_id == "m3g_export_3mf":
+            if (type(initial_identity) is not dict or set(initial_identity) != {"pid", "hwnd"}
+                    or any(type(v) is not int or v <= 0 for v in initial_identity.values())):
+                raise ValueError("project_initial_identity")
+            self.window_identity = dict(initial_identity)
+            self.special_counts.update(save_project=0, reopen_project=0)
+            self.special_limit = 1
         self.finished = False
 
     def call(self, name, args):
@@ -250,10 +270,10 @@ class ScopedTools:
                     or type(args["y"]) is not int or not 31 <= args["y"] <= 67):
                 raise ValueError("click_arguments_or_budget")
             arguments = {"x": args["x"], "y": args["y"]}
-        elif name in self.special_counts and self.case_id == "m3d_param_reslice":
+        elif name in self.special_counts and self.case_id in {"m3d_param_reslice", "m3g_export_3mf"}:
             fields = {"observation_id", "x", "y", "text"} if name == "edit" else {"observation_id"}
             if (set(args) != fields or args["observation_id"] != self.observation_id
-                    or self.observation_id is None or self.special_counts[name] >= 2):
+                    or self.observation_id is None or self.special_counts[name] >= self.special_limit):
                 raise ValueError("business_tool_arguments_or_budget")
             arguments = {key: args[key] for key in ("x", "y", "text")} if name == "edit" else {}
         else:
@@ -276,6 +296,8 @@ class ScopedTools:
                 or response.get("error_code") is not None or response.get("finished") is not (name == "finish")):
             raise ValueError("guest_response_rejected_stop")
         obs = response["observation"]
+        if self.case_id == "m3g_export_3mf":
+            self._project_observation(response, name)
         if type(obs["id"]) is not str or not 1 <= len(obs["id"]) <= 128:
             raise ValueError("observation_identity")
         self.observation_id = obs["id"]
@@ -287,6 +309,30 @@ class ScopedTools:
         return {"content": [{"type": "text", "text": json.dumps(text)},
                             {"type": "image", "mimeType": "image/png",
                              "data": base64.b64encode(image).decode()}], "isError": False}
+
+    def _project_observation(self, response, name):
+        if (type(response.get("schema_version")) is not int or type(response.get("seq")) is not int
+                or set(response) != {"schema_version", "run_id", "seq", "tool", "is_error", "error_code", "observation", "finished"}):
+            raise ValueError("project_response_schema")
+        obs = response["observation"]
+        if (type(obs) is not dict or set(obs) != {"id", "window", "frames", "image"}
+                or obs["id"] != f"{self.run_id}_{self.seq:04d}"):
+            raise ValueError("project_observation_identity")
+        window = obs["window"]
+        if (type(window) is not dict or set(window) != {"pid", "hwnd", "width", "height", "dpi"}
+                or any(type(v) is not int or v <= 0 for v in window.values())
+                or window["dpi"] != 96 or not 313 <= window["width"] <= 4096
+                or not 68 <= window["height"] <= 2160):
+            raise ValueError("project_window_identity")
+        current = {k: window[k] for k in ("pid", "hwnd")}
+        geometry = tuple(window[k] for k in ("width", "height", "dpi"))
+        if name != "reopen_project" and current != self.window_identity:
+            raise ValueError("project_unexpected_window_change")
+        if self.window_geometry is not None and geometry != self.window_geometry:
+            raise ValueError("project_unexpected_geometry_change")
+        if name == "reopen_project":
+            self.window_identity = current
+        self.window_geometry = geometry
 
 
 def serve(tools, source, output):
@@ -355,7 +401,16 @@ def main():
             raise ValueError("invalid_host_deadline")
         deadline = min(deadline, args.deadline)
     mailbox = RelayMailbox(args.guest_root, args.run_id, deadline=deadline)
-    serve(ScopedTools(mailbox, args.run_id, args.case), sys.stdin, sys.stdout)
+    initial = None
+    if args.case == "m3g_export_3mf":
+        from harness.agent_session import agent_contract
+        from harness.run_verdict import contract_digest
+        ready = mailbox.wait_json("ready.json")
+        if (ready.get("run_id") != args.run_id or ready.get("case_id") != args.case
+                or ready.get("contract_sha256") != contract_digest(agent_contract(args.case))):
+            raise ValueError("project_ready_identity")
+        initial = {"pid": ready.get("app_pid"), "hwnd": ready.get("hwnd")}
+    serve(ScopedTools(mailbox, args.run_id, args.case, initial_identity=initial), sys.stdin, sys.stdout)
 
 
 if __name__ == "__main__":
