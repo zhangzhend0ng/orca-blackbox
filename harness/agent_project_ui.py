@@ -103,7 +103,7 @@ class ProjectUI(BusinessUI):
         self._save_command()
         dialog = self.wait(lambda: self.eu.wait_save_dialog(self.app.pid, timeout_s=.2), 10)
         owned_dialog=self.owned_dialog(dialog[3])
-        if not owned_dialog or dialog[1].strip() != "Save file as:":
+        if not owned_dialog or dialog[1] not in {"Save file as:", "Save file as"}:
             try:
                 self._save_dialog_diagnostic(dialog,owned_dialog)
             except FileExistsError:

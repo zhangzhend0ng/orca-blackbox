@@ -142,7 +142,8 @@ def test_project_snapshot_rejects_invalid_or_unverifiable_size(ui, kind, error):
         ui._snapshot()
 
 
-def test_save_uses_owned_dialog_fixed_path_and_records_snapshot(ui, monkeypatch):
+@pytest.mark.parametrize("caption", ["Save file as:", "Save file as"])
+def test_save_uses_owned_dialog_fixed_path_and_records_snapshot(ui, monkeypatch, caption):
     clock, closed, writes = [0.], [False], []
     monkeypatch.setattr(module, "time", SimpleNamespace(monotonic=lambda:clock[0]))
     def wait(predicate, seconds):
@@ -156,7 +157,7 @@ def test_save_uses_owned_dialog_fixed_path_and_records_snapshot(ui, monkeypatch)
     ui._save_command = lambda: writes.append("menu")
     ui.owned_dialog = lambda hwnd: hwnd == 20
     ui.owned = lambda hwnd: hwnd == 21
-    ui.eu = SimpleNamespace(wait_save_dialog=lambda *args,**kwargs:("#32770","Save file as:",(0,0,1,1),20),
+    ui.eu = SimpleNamespace(wait_save_dialog=lambda *args,**kwargs:("#32770",caption,(0,0,1,1),20),
                             find_edit=lambda hwnd:21)
     def message(hwnd, msg, wp, lp):
         writes.append((hwnd,msg,wp,lp))
@@ -195,12 +196,16 @@ def test_file_menu_is_clicked_once_and_menu_command_is_bounded(ui):
     assert messages == [(11,0x0111,987,0),(60,0x001F,0,0)]
 
 
-def test_rejected_dialog_records_first_sut_identity_without_relaxing_gate(ui):
+@pytest.mark.parametrize("wait_caption,owned_dialog", [
+    ("Unexpected save title",True),("Save file as...",True),("Save file as backup",True),
+    (" Save file as",True),("Save file as",False),("Save file as:",False),
+])
+def test_rejected_dialog_records_first_sut_identity_without_relaxing_gate(ui, wait_caption, owned_dialog):
     import json
     ui._save_command=lambda:None
     ui.wait=lambda predicate,seconds:predicate()
-    ui.eu=SimpleNamespace(wait_save_dialog=lambda *a,**k:("#32770","Unexpected save title",(0,0,1,1),20))
-    ui.owned_dialog=lambda hwnd:True
+    ui.eu=SimpleNamespace(wait_save_dialog=lambda *a,**k:("#32770",wait_caption,(0,0,1,1),20))
+    ui.owned_dialog=lambda hwnd:owned_dialog
     def owner(hwnd,command):
         assert command==4
         return 11
@@ -209,8 +214,8 @@ def test_rejected_dialog_records_first_sut_identity_without_relaxing_gate(ui):
         GetParent=lambda hwnd:11,GetAncestor=lambda hwnd,kind:11))
     with pytest.raises(ProtocolError,match="project_save_dialog_identity"):ui.save_project()
     path=ui.artifacts/"project_save_dialog.json";first=path.read_bytes();data=json.loads(first)
-    assert data["owned_dialog"] is True and data["diagnostic_only"] is True and data["oracle_evidence"] is False
-    assert data["candidate"]=={"hwnd":20,"pid":10,"caption":"Current title","wait_caption":"Unexpected save title",
+    assert data["owned_dialog"] is owned_dialog and data["diagnostic_only"] is True and data["oracle_evidence"] is False
+    assert data["candidate"]=={"hwnd":20,"pid":10,"caption":"Current title","wait_caption":wait_caption,
                                "window_class":"#32770","owner_hwnd":11,"parent_hwnd":11,"root_owner_hwnd":11}
     ui.wu.window_title=lambda hwnd:"Later title"
     with pytest.raises(ProtocolError,match="project_save_dialog_identity"):ui.save_project()

@@ -6,7 +6,7 @@
 
 同一主链已扩展固定业务 `m3d_param_reslice / ai-layer-1`，其 GUI 层高编辑、切片导出和实际对象层序独立检查已完成冻结版本 5/5 新 profile SHADOW，以及三类固定故障的相关拒绝；详见 [业务架构](V3_AGENT_LAYER.md) 与 [评估记录](runs/v3-layer-evaluation-2026-11-16.md)。固定故障不是 AI 成功；本页的 ai-tabs-1 工具、契约和验证范围保持独立，不据此扩大页签结果。
 
-下一整链 `m3g_export_3mf / ai-project-1` 已复用上述主链实现参数编辑、保存、关闭、新 profile 重开及 GUI 重切导出；唯一合法重开边界可切换 app 身份，worker/Job/deadline 保持连续。具体工具与收据只在 [项目契约](V3_PROJECT_CONTRACT.md) 定义。整组口径为两个 CLI 正例与三个固定故障；首批在首槽保存门禁失败后停止，保留 NON_GREEN 与四个未执行槽位，下一批待冻结，见 [运行记录](runs/v3-project-2026-11-17.md)；原页签和层高结果不作为这项业务的通过证据。
+下一整链 `m3g_export_3mf / ai-project-1` 已复用上述主链实现参数编辑、保存、关闭、新 profile 重开及 GUI 重切导出；唯一合法重开边界可切换 app 身份，worker/Job/deadline 保持连续。具体工具与收据只在 [项目契约](V3_PROJECT_CONTRACT.md) 定义。整组口径为两个 CLI 正例与三个固定故障；前两批各在首槽保存门禁失败后停止，保留 NON_GREEN 与四个未执行槽位，已定位标题有无冒号的兼容差异，修复后的新批次待验，见 [运行记录](runs/v3-project-2026-11-17.md)；原页签和层高结果不作为这项业务的通过证据。
 
 ## 最小架构与复用边界
 
