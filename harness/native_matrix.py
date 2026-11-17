@@ -11,8 +11,11 @@ SCENARIOS = {
     "safety_cancel": ("Quality", "cancel"),
     "safety_timeout": ("Quality", "timeout"),
     "safety_guard_disconnect": ("Quality", "guard_disconnect"),
+    "pilot_strength": ("Quality", None),
+    "pilot_transform": ("Quality", None),
+    "pilot_material": ("Quality", None),
 }
-BUSINESS = tuple(k for k in SCENARIOS if k != "base" and not k.startswith("safety_"))
+BUSINESS = ("quality_a", "quality_b", "strength_a", "strength_b", "others_a", "others_b", "save_dialog", "overwrite")
 SAFETY = tuple(k for k in SCENARIOS if k.startswith("safety_"))
 
 

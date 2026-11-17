@@ -128,8 +128,14 @@ def _geometry(files):
     return meshes[0], build.get("objectid"), transform
 
 
-def inspect_project(raw, fixture, *, layer_height="0.24", cancelled=lambda: False):
+def inspect_project(raw, fixture, *, layer_height="0.24", expected_extruder="1",
+                    expected_assembly_transform=None, cancelled=lambda: False):
     """Compare physical triangles and fixed slicing semantics, not ZIP byte order."""
+    _require(type(expected_extruder) is str and expected_extruder in {"1", "2"}, "project_expected_tool")
+    _require(expected_assembly_transform is None or
+             (type(expected_assembly_transform) is tuple and len(expected_assembly_transform) == 12
+              and all(type(x) is Decimal and x.is_finite() and abs(x) < 10**6 for x in expected_assembly_transform)),
+             "project_expected_assembly")
     files, original = _archive(raw, cancelled), _archive(fixture, cancelled)
     config = _json(files["Metadata/project_settings.config"])
     _require(type(layer_height) is str and layer_height in ("0.24", "0.4"), "project_expected_layer")
@@ -156,12 +162,13 @@ def inspect_project(raw, fixture, *, layer_height="0.24", cancelled=lambda: Fals
         _require(len(set(keys)) == len(keys) and set(keys) <= allowed, "project_object_override")
         values = {x.get("key"): x.get("value") for x in records}
         if obj is objects[0]:
-            _require(values.get("extruder") == "1", "project_object_tool")
+            _require(values.get("extruder") == expected_extruder, "project_object_tool")
         else:
             _require(_numbers(values.get("matrix", ""), 16) == tuple(Decimal(x) for x in (1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)), "project_part_matrix")
     assembly = settings.findall("assemble/assemble_item")
+    wanted_assembly = original_transform if expected_assembly_transform is None else expected_assembly_transform
     _require(len(assembly) == 1 and assembly[0].get("object_id") == object_id
-             and _numbers(assembly[0].get("transform", ""), 12) == original_transform
+             and _numbers(assembly[0].get("transform", ""), 12) == wanted_assembly
              and _numbers(assembly[0].get("offset", ""), 3) == (0, 0, 0), "project_assembly_transform")
     return {"sha256": hashlib.sha256(raw).hexdigest(), "layer_height": layer_height, "initial_layer_print_height": "0.4",
             "vertices": 8, "triangles": 12, "geometry_unchanged": True}

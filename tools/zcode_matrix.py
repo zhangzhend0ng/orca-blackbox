@@ -58,15 +58,18 @@ def grade(scenario, host, result, process, teardown, trace):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--batch-id", default=None)
+    p.add_argument("--suite", choices=("stability", "pilots"), default="stability")
     args = p.parse_args()
     batch = args.batch_id or uuid.uuid4().hex
     from harness.agent_protocol import valid_run_id
     valid_run_id(batch)
     head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip()
-    root = REPO/"artifacts/zcode_matrix"/batch
+    root = REPO/("artifacts/zcode_matrix" if args.suite == "stability" else "artifacts/zcode_pilots")/batch
     root.mkdir(parents=True, exist_ok=False)
-    slots = [{"scenario": s, "run_id": uuid.uuid4().hex, "status": "not_run"} for s in (*SAFETY, *BUSINESS)]
-    plan = {"batch_id": batch, "source_sha": head, "slots": slots, "release_eligible": False}
+    from harness.native_pilots import PILOTS
+    scenarios = (*SAFETY, *BUSINESS) if args.suite == "stability" else ("quality_a", *PILOTS)
+    slots = [{"scenario": s, "run_id": uuid.uuid4().hex, "status": "not_run"} for s in scenarios]
+    plan = {"batch_id": batch, "suite": args.suite, "source_sha": head, "slots": slots, "release_eligible": False}
     (root/"plan.json").write_text(json.dumps(plan, indent=2), encoding="utf-8")
 
     def event(record):
@@ -97,7 +100,11 @@ def main():
             event(slot)
             # Safety failures block the business batch; ordinary goal failures
             # remain in the denominator and may continue only after known cleanup.
-            if not passed and (scenario in SAFETY or not result.get("cleanup_confirmed")
+            terminal_authority_error = any(
+                code in str(row.get("error", "")) for row in trace
+                for code in ("native_target_not_owned", "native_foreground_not_owned",
+                             "native_app_identity_changed", "native_interactive_session_changed"))
+            if not passed and (scenario in SAFETY or terminal_authority_error or not result.get("cleanup_confirmed")
                                or process.get("active_processes") != 0 or not host.get("sources_unchanged")):
                 break
         except Exception as exc:

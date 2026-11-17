@@ -34,6 +34,15 @@ def scoped_tool_schemas(tools, output_path):
         "Wait": ({"duration": {"type": "integer", "minimum": 0, "maximum": 5}}, ["duration"]),
         "ControlStatus": ({"release": {"type": "boolean"}}, []),
     }
+    descriptions = {
+        "Snapshot": "Observe the isolated guest desktop and UI tree. Optional boolean use_vision/use_annotation; use_dom must remain false. No file output. Act with fresh desktop pixel coordinates, not element labels.",
+        "Screenshot": "Capture the whole isolated guest desktop. This scoped tool takes no arguments; region, display and save_path are unavailable. Use the returned image to choose current desktop pixel coordinates.",
+        "Click": "Left-click a current desktop pixel loc=[x,y] inside the owned application or its dialog. Optional clicks is 1 or 2. Element labels and other mouse buttons are unavailable.",
+        "Type": "Type numeric text or the exact assigned project save path into an owned native Edit at loc=[x,y]. clear=true replaces existing text; otherwise text is appended. press_enter=true commits once after typing. Save paths are accepted only in the owned Save file as dialog. No arbitrary text or other paths.",
+        "Shortcut": "Send only ctrl+s, ctrl+shift+s, enter, tab, shift+tab, esc or escape to the owned application/dialog. Other keyboard shortcuts are unavailable.",
+        "Wait": "Wait for required integer duration in whole seconds from 0 to 5. Fractional durations and omitted duration are unavailable.",
+        "ControlStatus": "Read/release the original global control lease. Its disabled state is expected in this dedicated --no-control guest; per-call owned-window/input authority is enforced separately. This tool cannot enable or reconfigure authority.",
+    }
     result = deepcopy(tools)
     for tool in result:
         properties, required = fields[tool["name"]]
@@ -41,10 +50,7 @@ def scoped_tool_schemas(tools, output_path):
             raise ValueError("native_upstream_required_schema_changed")
         tool["inputSchema"] = {"type": "object", "properties": properties, "required": required,
                                "additionalProperties": False}
-        if tool["name"] == "ControlStatus":
-            tool["description"] = ("Read/release the original global control lease. Its disabled state is expected in this "
-                "dedicated --no-control guest; per-call owned-window/input authority is enforced separately. "
-                "This tool cannot enable or reconfigure authority.")
+        tool["description"] = descriptions[tool["name"]]
     return result
 
 

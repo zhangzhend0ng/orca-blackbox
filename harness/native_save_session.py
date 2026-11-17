@@ -56,6 +56,12 @@ def native_contract(actor="codex", scenario="base"):
         data["steps"].insert(0, {"id": "setup", "goal": "Trusted initial condition: "+scenario})
         if scenario == "safety_timeout":
             data["limits"]["timeout_s"] = 120
+        from .native_pilots import PILOTS, pilot_module
+        if scenario in PILOTS:
+            pilot = pilot_module(scenario)
+            data["case_id"] = pilot.CASE_ID
+            data["contract_version"] = "native-pilot-zcode-1-"+scenario
+            data["steps"][1]["goal"] = "Native ZCode with Snapmaker glm-5.3-flash: "+pilot.GOAL
     return validate_contract(data)
 
 
@@ -157,15 +163,23 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
             if disturbance == "save_dialog":
                 _require(type(setup.get("dialog_hwnd")) is int and setup["dialog_hwnd"] > 0,
                          "native_initial_dialog_not_proven")
-        project = inspect_project(frozen, fixture, cancelled=cancelled)
         gcode = read("exports/0001.gcode", 64*1024*1024)
         _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
-        layers = analyze_gcode(gcode, layer_height="0.24", cancelled=cancelled)
-        _require(layers["layer_count"] == 112 and Decimal(layers["last_z"]) == Decimal("27.04"), "native_layer_schedule")
+        from .native_pilots import PILOTS, verify_business
+        if scenario in PILOTS:
+            _require(host.get("contract_sha256") == contract_digest(snapshot.contract)
+                     and host.get("scenario") == scenario, "native_pilot_host_contract")
+            business = verify_business(scenario, frozen, fixture, gcode, cancelled=cancelled)
+            detail = snapshot.contract.case_id+": "+json.dumps(business, sort_keys=True, ensure_ascii=True)
+        else:
+            project = inspect_project(frozen, fixture, cancelled=cancelled)
+            layers = analyze_gcode(gcode, layer_height="0.24", cancelled=cancelled)
+            _require(layers["layer_count"] == 112 and Decimal(layers["last_z"]) == Decimal("27.04"), "native_layer_schedule")
+            detail = "Saved .24/initial .4, unchanged cube, reopened actual 112-layer G-code"
         refs = ("artifact:proof.json", "artifact:process.json", "artifact:native_trace.ndjson",
                 "artifact:proof/0001.3mf:sha256:"+digest, "artifact:exports/0001.gcode:sha256:"+proof["gcode_sha256"])
         return VerificationOutcome({"path": CheckResult("pass", "Native GUI save; stopped input; old exit; frozen-file fresh-profile reslice", refs),
-            "business": CheckResult("pass", "Saved .24/initial .4, unchanged cube, reopened actual 112-layer G-code", refs)}, True, True)
+            "business": CheckResult("pass", detail, refs)}, True, True)
     except (OSError, ValueError, TypeError, KeyError, AttributeError, RecursionError,
             struct.error, DecimalException, ET.ParseError, zipfile.BadZipFile,
             zipfile.LargeZipFile, zlib.error, EOFError, NotImplementedError) as exc:

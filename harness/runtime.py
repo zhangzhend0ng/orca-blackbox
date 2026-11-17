@@ -62,8 +62,8 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
             expected_type, expected_case = ScriptExecutor, "m0_boot_check"
         elif execution_mode == "guest_native":
             from .native_save_session import NativeSaveExecutor, native_actor
-            expected_type, expected_case = NativeSaveExecutor, "m3g_export_3mf"
             native_actor(contract_digest(frozen))
+            expected_type, expected_case = NativeSaveExecutor, frozen.case_id
             if type(run_id) is not str or not re.fullmatch(r"[0-9a-f]{32}", run_id):
                 raise ValueError("runtime: invalid native save contract/run identity")
         else:

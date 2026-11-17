@@ -97,6 +97,11 @@ def main(argv=None):
             time.sleep(2)
         else:
             raise TimeoutError("zcode_guest_not_ready")
+        from harness.native_save_session import native_contract
+        from harness.run_verdict import contract_digest
+        expected_contract = contract_digest(native_contract("zcode", args.scenario))
+        if ready.get("contract_sha256") != expected_contract:
+            raise ValueError("zcode_guest_contract_mismatch")
         ready_received = time.monotonic()
         remaining = ready.get("remaining_s")
         if type(remaining) not in (int, float) or not 0 < remaining <= 900:
@@ -105,10 +110,10 @@ def main(argv=None):
         output = r"C:\coil\orca-blackbox-v3-r1\artifacts\v3"+"\\"+args.run_id+r"\artifacts\projects\0001.3mf"
         if ready.get("output_path") != output:
             raise ValueError("zcode_guest_output_mismatch")
+        from harness.native_pilots import business_goal
         prompt = ("Use only windows_mcp tools in the isolated Windows guest to achieve this goal in the already loaded Snapmaker Orca: "
-            "set regular Layer height to 0.24 mm, preserve First layer height 0.40 mm and the cube model, "
-            "and save the whole project as a 3MF at this exact absolute path: "+output+". "
-            "Do not switch printer/filament/process presets or change other settings. "
+            +business_goal(args.scenario)+" Save the whole project as a 3MF at this exact absolute path: "+output+". "
+            "Do not switch global printer/filament/process presets. Preserve settings not expressly targeted in the goal. "
             "Choose the UI route and coordinates yourself from fresh screenshots. "
             "Click and Type use loc=[x,y] desktop pixels; label inputs are unavailable. "
             "Screenshot takes no arguments: cropping/region/display/save_path options are unavailable. "
@@ -210,6 +215,8 @@ def main(argv=None):
                 "provider_id": "new-provider", "model_id": "glm-5.3-flash",
                 "guard_checked": report["guard_checked"], "sources_unchanged": report["sources_unchanged"],
                 "toolset_verified": report["toolset_verified"]}
+            if "expected_contract" in locals():
+                receipt.update(contract_sha256=expected_contract, scenario=args.scenario)
             if report.get("host_job", {}).get("forced_termination"):
                 # Let the final single-slot relay launch return; its detached
                 # HTTP ferry never submits further relay commands.
