@@ -137,6 +137,10 @@ def main():
             names = {t["name"] for t in response.get("result", {}).get("tools", [])}
             if names != (NATIVE_TOOLS if args.goal_save else TOOLS):
                 raise ValueError("server_toolset_changed")
+            if args.goal_save:
+                from harness.native_save_policy import scoped_tool_schemas
+                output = str(Path(args.guest_root)/"artifacts/v3"/args.run_id/"artifacts/projects/0001.3mf")
+                response["result"]["tools"] = scoped_tool_schemas(response["result"]["tools"], output)
         print(json.dumps(response, separators=(",", ":")), flush=True)
 
 

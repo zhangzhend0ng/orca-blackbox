@@ -16,6 +16,25 @@ from tools.windows_mcp_zcode_probe import model_io_summary, provider_metadata
 from unit_tests.test_native_save import native_evidence
 
 
+def test_transport_schema_rejects_observed_string_coordinates_and_matches_valid_authority():
+    from harness.native_save_policy import scoped_tool_schemas, NATIVE_TOOLS, validate_input
+    import importlib.util
+    if not importlib.util.find_spec("jsonschema"):
+        pytest.skip("jsonschema unavailable")
+    from jsonschema import validate, ValidationError
+    output=r"C:\owned\0001.3mf"
+    original=[{"name":n,"inputSchema":{"type":"object","properties":{"loc":{"type":"string"}}}} for n in NATIVE_TOOLS]
+    tools={t["name"]:t["inputSchema"] for t in scoped_tool_schemas(original,output)}
+    for tool, args in [("Click",{"loc":"[264, 765]"}),("Snapshot",{"use_vision":"true"}),
+                       ("Type",{"loc":[264,765],"text":"powershell"})]:
+        with pytest.raises(ValidationError):validate(args,tools[tool])
+        with pytest.raises(ValueError):validate_input(tool,args,output)
+    for tool,args in [("Click",{"loc":[264,765]}),("Type",{"loc":[264,765],"text":"0.24","clear":True}),
+                      ("Type",{"loc":[264,765],"text":output}),("Snapshot",{"use_vision":True})]:
+        validate(args,tools[tool]);validate_input(tool,args,output)
+    assert all(t["inputSchema"]["properties"]["loc"]["type"]=="string" for t in original)
+
+
 def status():
     return dict(ready=True, state="OK", time=100, last_us_age=3, evidence_ttl=1800,
                 guard_pid=123, hosts_block_active=False, group_on_reject=False)

@@ -25,4 +25,8 @@
 
 随后先做真实原生传输验证`artifacts/zcode_probe/20261117-snapmaker-transport-1`：使用同一个正式driver、真实ZCode、真实公司Flash及静态MCP夹具，完成一次Snapshot调用及两次模型请求，回复PROTOCOL_TRANSPORT_OK；actual model-io均为new-provider/glm-5.3-flash、每次恰好七项GUI工具，exit0/active0/未强杀，三份个人配置hash保持。静态夹具不操作桌面、不算GUI覆盖；此验证先于下一轮真实GUI，避免继续用客机发现基础协议差异。
 
+第四轮 `3464272d1bc84ad4a7d5fffc71c4b302`（cea30fe）完成真实模型交互及九次MCP调用，但三个Click的loc是字符串，被客机整数数组门禁拒绝；无Type/保存动作，模型明确报告未完成，独立业务链拒绝，结果NON_GREEN、清理确认。原生调用事件的completed只表示返回，不等于GUI动作成功，应以native_trace中的error为准。模型将原版ControlStatus disabled误诊成输入通道关闭；实际为既定--no-control全局租约配置，阻断原因是loc类型。
+
+修复为传输tools/list只暴露与authority一致的窄schema（loc整数数组、标志bool、数值/本run保存路径、快捷键白名单），不改原版MCP源码、不放宽门禁，也不预置GUI坐标；ControlStatus说明补充专用客机的租约语义。Snapshot同步拒绝字符串bool及未知参数。真实静态传输验证transport-2已得到Click loc=[264,765]、Snapshot use_vision=true，两次参数门禁均通过，exit0/active0、个人配置未改；该坐标只用于静态fixture参数测试，不进入业务prompt或真实动作脚本。新回归用JSON Schema验证观察到的错误包被拒绝、合法输入与原门禁一致。
+
 残余边界：用户已启用的插件仍可能在ZCode bootstrap初始化；会话过滤不构成同权限攻击的沙箱。guard检查既有OpenAI组，不证明Snapmaker网关实际出口国家。模型服务真实版本与USD不可见记unknown。实际中途取消、稳定性矩阵与跨版本可靠性尚未验收，单个正例不得推广为87条覆盖。

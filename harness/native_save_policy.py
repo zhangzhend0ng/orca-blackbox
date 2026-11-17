@@ -3,10 +3,47 @@ from __future__ import annotations
 
 import math
 import re
+from copy import deepcopy
 
 NATIVE_TOOLS = frozenset({"Snapshot", "Screenshot", "Click", "Type", "Shortcut", "Wait", "ControlStatus"})
 INPUT_TOOLS = frozenset({"Click", "Type", "Shortcut"})
 SHORTCUTS = frozenset({"ctrl+s", "ctrl+shift+s", "enter", "tab", "shift+tab", "esc", "escape"})
+
+
+def scoped_tool_schemas(tools, output_path):
+    """Advertise the same narrow types accepted by the authority middleware.
+
+    Upstream coordinate/string unions otherwise invite stringified locations.
+    This edits transport metadata only, never the original MCP implementation.
+    """
+    if len(tools) != len(NATIVE_TOOLS) or {t["name"] for t in tools} != NATIVE_TOOLS:
+        raise ValueError("native_toolset_changed")
+    loc = {"type": "array", "items": {"type": "integer", "minimum": 0, "maximum": 1919},
+           "minItems": 2, "maxItems": 2, "description": "Desktop [x,y] as two JSON integers. x<1920 and y<1080. Do not stringify."}
+    numeric = {"type": "string", "pattern": r"^(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?$"}
+    fields = {
+        "Snapshot": ({"use_vision": {"type": "boolean"}, "use_annotation": {"type": "boolean"},
+                      "use_dom": {"type": "boolean", "enum": [False]}}, []),
+        "Screenshot": ({}, []),
+        "Click": ({"loc": loc, "button": {"type": "string", "enum": ["left"]},
+                   "clicks": {"type": "integer", "enum": [1, 2]}}, ["loc"]),
+        "Type": ({"loc": loc, "text": {"anyOf": [numeric, {"type": "string", "enum": [output_path]}], "maxLength": 1024},
+                  "clear": {"type": "boolean"}, "press_enter": {"type": "boolean"},
+                  "caret_position": {"type": "string", "enum": ["idle", "start", "end"]}}, ["loc", "text"]),
+        "Shortcut": ({"shortcut": {"type": "string", "enum": sorted(SHORTCUTS)}}, ["shortcut"]),
+        "Wait": ({"duration": {"type": "number", "minimum": 0, "maximum": 5}}, []),
+        "ControlStatus": ({"release": {"type": "boolean"}}, []),
+    }
+    result = deepcopy(tools)
+    for tool in result:
+        properties, required = fields[tool["name"]]
+        tool["inputSchema"] = {"type": "object", "properties": properties, "required": required,
+                               "additionalProperties": False}
+        if tool["name"] == "ControlStatus":
+            tool["description"] = ("Read/release the original global control lease. Its disabled state is expected in this "
+                "dedicated --no-control guest; per-call owned-window/input authority is enforced separately. "
+                "This tool cannot enable or reconfigure authority.")
+    return result
 
 
 def validate_input(name, args, output_path):
@@ -15,6 +52,9 @@ def validate_input(name, args, output_path):
     if name in {"Snapshot", "Screenshot"}:
         if args.get("save_path") is not None or args.get("use_dom", False) is not False:
             raise ValueError("native_capture_write_or_dom_rejected")
+        permitted = {"use_vision", "use_annotation", "use_dom"} if name == "Snapshot" else set()
+        if set(args)-permitted or any(type(v) is not bool for v in args.values()):
+            raise ValueError("native_capture_options_rejected")
     elif name in {"Click", "Type"}:
         loc = args.get("loc")
         if ("label" in args or type(loc) is not list or len(loc) != 2
