@@ -2,6 +2,8 @@
 
 2026-11-17，按用户要求核对使用既有 ZCode 套餐替换 GUI demo 的原生 Codex actor。结论：模型与产品能力适合，但本机内置 CLI 尚未通过连接验收；未切换现有 GUI demo，也没有发起新的 GUI run。
 
+后续更新：用户明确改为使用ZCode已配置的 **Snapmaker供应商**，不继续独立编程套餐。公司Flash路线现已通过原生app-server、受限MCP和独立3MF/G-code真实业务验证，见[最终运行记录](zcode-snapmaker-2026-11-17.md)。下文保留早期套餐探针的原始失败结论，不代表公司供应商路线仍被阻断。
+
 ## 已确认
 
 - 本机 ZCode 桌面正在运行，安装在 `C:\Program Files\ZCode`；捆绑的 `resources/glm/zcode.cjs --help` 返回 CLI 0.17.1，支持 `--prompt`、JSON、会话、MCP 与进程级禁用工具。

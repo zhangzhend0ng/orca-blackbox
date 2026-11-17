@@ -1,6 +1,6 @@
 # ZCode Snapmaker actor 自检
 
-结论：允许固定客机SHADOW受控试验；实际GUI尚待验证。此次是原生ZCode会话协议客户端，未自建agent循环。用户已明确指定Snapmaker供应商，固定new-provider/glm-5.3-flash，不继续BigModel个人套餐。
+结论：已取得一次完整客机SHADOW，前五次开发失败保留；仅允许受控试验，不作为发布GREEN。此次是原生ZCode会话协议客户端，未自建agent循环。用户已明确指定Snapmaker供应商，固定new-provider/glm-5.3-flash，不继续BigModel个人套餐。
 
 ## Harness 条件、动作与tier
 
@@ -32,5 +32,9 @@
 第五轮 `d5f41d1f6cff4e83a2598c235d44e062`（f394ea3）在进度actor.json替换时遭遇Windows EPERM，共享读取与rename竞争导致客户端退出并取消尚在生成的模型请求，无GUI工具输入。host/guest均收尾归零，保留NON_GREEN。已将进度改为append-only progress.ndjson，actor.json仅在会话和server收尾后以CreateNew写一次；结果消费者在Job退出后读取，不再替换正在被监控读取的文件。回归检查两类协议失败仍产生可解析进度与最终单次结果。
 
 schema修复后的全仓796 passed、1 skipped（31.35秒）；随后进度修复按受影响的ZCode协议测试复核。所有真实run保持在分母，不能以静态夹具或单测抵消失败。
+
+最终进度修复专项29 passed（10.55秒）。第六轮 `4ba6b094412d435398826502d94f69e9` / 02a6201：16个native_trace均error=null，17个原生模型请求均绑定Snapmaker Flash和七项工具，原生日志含实际图片消息；host/guest自然退出、owned Job归零，无强杀收据。独立3MF/G-code验证.24/初层.4、模型不变、112层/末Z27.04，verified_pass与cleanup_confirmed均true、release_eligible=false，SHADOW。AI在保存错误提示后自行改另存为，是观测到的GUI内恢复，不等同runtime恢复计数。guest收尾复核clean、apps0、suite Ready、临时token删除；三份个人配置hash未变。详见[完整运行记录](../runs/zcode-snapmaker-2026-11-17.md)。
+
+守卫目标间隔3秒，但本轮收据time来自守卫发布快照，不是客户端采样时间；不得宣称硬性≤5秒或已经通过运行中撤销测试。守卫对公司网关的地理出口覆盖仍不作扩大解释。当前仅证明接入与单个业务闭环，八次矩阵/真实取消/跨版本维护验收后续另做。
 
 残余边界：用户已启用的插件仍可能在ZCode bootstrap初始化；会话过滤不构成同权限攻击的沙箱。guard检查既有OpenAI组，不证明Snapmaker网关实际出口国家。模型服务真实版本与USD不可见记unknown。实际中途取消、稳定性矩阵与跨版本可靠性尚未验收，单个正例不得推广为87条覆盖。
