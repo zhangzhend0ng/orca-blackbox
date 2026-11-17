@@ -28,7 +28,27 @@ while ($probe -and $probe.Length -ge $sb.Length) {
 }
 if ($spec.op -eq 'ready') {
  $p=Join-Path $root 'ready.json'
- if(Test-Path -LiteralPath $p){[IO.File]::ReadAllText($p)}else{'{"ready":false}'}
+ if(Test-Path -LiteralPath $p){
+  $r=[IO.File]::ReadAllText($p)|ConvertFrom-Json
+  if($spec.goal_save){
+   $parent=Split-Path $root -Parent
+   $m=[IO.File]::ReadAllText((Join-Path $parent 'manifest.json'))|ConvertFrom-Json
+   $c=[IO.File]::ReadAllText((Join-Path $parent 'contract.json'))|ConvertFrom-Json
+   $now=([DateTime]::UtcNow.Ticks-621355968000000000)*100
+   $remaining=[Math]::Max(0,([double]$m.started_at_ns/1e9)+[double]$c.limits.timeout_s-([double]$now/1e9))
+   $r|Add-Member -NotePropertyName remaining_s -NotePropertyValue $remaining
+  }
+  $r|ConvertTo-Json -Depth 8 -Compress
+ }else{'{"ready":false}'}
+ return
+}
+if($spec.op -eq 'cancel' -and $spec.goal_save){
+ $file=Join-Path $root 'control_cancel.json'
+ $now=([DateTime]::UtcNow.Ticks-621355968000000000)*100
+ $body=@{reason='host_stop';revoked_at_ns=$now;run_id=$run}|ConvertTo-Json -Compress
+ $f=[IO.File]::Open($file,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+ try{$bytes=[Text.Encoding]::UTF8.GetBytes($body);$f.Write($bytes,0,$bytes.Length);$f.Flush()}finally{$f.Dispose()}
+ @{cancelled=$true;revoked_at_ns=$now}|ConvertTo-Json -Compress
  return
 }
 if ($spec.op -eq 'done') {

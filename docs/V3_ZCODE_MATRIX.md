@@ -1,0 +1,9 @@
+# ZCode 稳定性验收入口
+
+固定使用已有Snapmaker供应商 new-provider / glm-5.3-flash，不改个人配置、代理或全局守卫。
+
+先提交代码并通过Git bundle同步客机到相同clean HEAD。管理员relay后台执行 `python -B tools/zcode_matrix.py --batch-id <32hex>`；入口逐次调用native_save_demo → hv_go，禁止宿主跑GUI。
+
+固定计划先安全三轮：真实输入后取消、120秒guest运行时超时、本轮守卫HTTP通路断开。三轮均需正式拒绝且清理确认；然后Quality/Strength/Others各两次，初始保存对话框与已存在目标文件各一次。每个run独立profile/产物，业务prompt不含导航路线或坐标，无重试。整个计划冻结一个HEAD，失败和未运行槽位均保留。
+
+证据：artifacts/zcode_matrix/<batch>/plan.json、events.ndjson、summary.json；每轮保留windows_mcp_host及windows_mcp_harvest。先核对实际初态截图，再解释业务矩阵结果。SHADOW只代表数字保存/重开/实际切片闭环，不表示发布GREEN或实物验证。安全用例的pass只表示预期拒绝得到验证。

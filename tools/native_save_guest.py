@@ -14,7 +14,7 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 
-def worker(run_id, actor="codex"):
+def worker(run_id, actor="codex", scenario="base"):
     from harness import host_guard
     from harness.agent_protocol import valid_run_id, write_json_once
     from harness.agent_project_ui import ProjectUI
@@ -32,7 +32,7 @@ def worker(run_id, actor="codex"):
             raise TimeoutError("native_worker_deadline_or_cancel")
     ui, server = None, None
     report = {"run_id": run_id, "error": None, "app_closed": False,
-              "release_eligible": False, "contract_sha256": contract_digest(native_contract(actor))}
+              "release_eligible": False, "contract_sha256": contract_digest(native_contract(actor, scenario))}
     def atomic_json(path, data):
         pending = path.with_name(path.name+".pending")
         write_json_once(pending, data)
@@ -60,10 +60,30 @@ def worker(run_id, actor="codex"):
         (root / "projects").mkdir()
         (root / "proof").mkdir()
         output = root / "projects/0001.3mf"
+        from harness.native_matrix import scenario_spec
+        tab, disturbance = scenario_spec(actor, scenario)
+        target = ui.wait(lambda: ui.named_child(tab), 15)
+        ui.click_rect(target[1])
+        ui.pause(2)
+        setup = {"run_id": run_id, "scenario": scenario, "app_pid": ui.app.pid, "tab_clicked": tab}
+        if disturbance == "overwrite":
+            raw = (root / "input/fixture.3mf").read_bytes()
+            with output.open("xb") as stream:
+                stream.write(raw)
+            setup["baseline_sha256"] = hashlib.sha256(raw).hexdigest()
+        if disturbance == "save_dialog":
+            ui._save_command()
+            dialog = ui.wait(lambda: ui.eu.wait_save_dialog(ui.app.pid, timeout_s=.2), 10)
+            if not ui.owned_dialog(dialog[3]):
+                raise RuntimeError("native_initial_dialog_not_owned")
+            setup["dialog_hwnd"] = dialog[3]
         window, capture = ui.identity()
-        if not ui.wu.force_set_foreground(ui.app.hwnd):
+        if not ui.wu.force_set_foreground(setup.get("dialog_hwnd", ui.app.hwnd)):
             raise RuntimeError("native_initial_foreground_failed")
         (root / "initial.png").write_bytes(_encode_capture(capture)[1])
+        setup.update(initial_sha256=hashlib.sha256((root / "initial.png").read_bytes()).hexdigest(),
+                     finished_at_ns=time.time_ns())
+        atomic_json(root / "setup.json", setup)
         atomic_json(root / "scope.json", {"run_id": run_id, "app_pid": ui.app.pid,
             "hwnd": ui.app.hwnd, "output_path": str(output)})
         (root / "token").write_text(secrets.token_hex(32), encoding="ascii")
@@ -156,5 +176,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--run-id", required=True)
     p.add_argument("--actor", choices=("codex", "zcode"), default="codex")
+    from harness.native_matrix import SCENARIOS
+    p.add_argument("--scenario", choices=tuple(SCENARIOS), default="base")
     a = p.parse_args()
-    raise SystemExit(worker(a.run_id, a.actor))
+    raise SystemExit(worker(a.run_id, a.actor, a.scenario))

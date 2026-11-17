@@ -94,7 +94,7 @@ class InputGuard:
 
     def check(self, name, args):
         validate_input(name, args, self.scope["output_path"])
-        if (self.root / "input_revoked").exists():
+        if (self.root / "input_revoked").exists() or (self.root / "control_cancel.json").exists():
             raise ValueError("native_input_revoked")
         if name not in INPUT_TOOLS:
             return {}

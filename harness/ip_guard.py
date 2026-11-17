@@ -24,7 +24,10 @@ def validate_status(data, now):
 
 
 class IPGuard:
-    def __init__(self):
+    def __init__(self, *, status_port=39772):
+        if type(status_port) is not int or not 1024 <= status_port <= 65535:
+            raise ValueError("ip_guard_invalid_port")
+        self._url = "http://127.0.0.1:"+str(status_port)+"/status"
         path = Path.home()/"clash-guard/status-token"
         if not 1 <= path.stat().st_size <= 256:
             raise ValueError("ip_guard_invalid_credential")
@@ -34,12 +37,12 @@ class IPGuard:
         self._opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
     def check(self):
-        request = urllib.request.Request("http://127.0.0.1:39772/status", headers={"X-Guard-Token": self._token})
+        request = urllib.request.Request(self._url, headers={"X-Guard-Token": self._token})
         try:
             with self._opener.open(request, timeout=1) as response:
                 raw = response.read(16385)
             if len(raw) > 16384:
                 raise ValueError("ip_guard_response_limit")
-            return validate_status(json.loads(raw), time.time())
+            return {**validate_status(json.loads(raw), time.time()), "client_checked_at_ns": time.time_ns()}
         except Exception as exc:
             raise RuntimeError("ip_guard_unverified:"+type(exc).__name__) from None

@@ -64,7 +64,10 @@ def model_io_summary(root):
 def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-id", required=True)
+    from harness.native_matrix import SCENARIOS, scenario_spec, completed_progress
+    parser.add_argument("--scenario", choices=tuple(SCENARIOS), default="base")
     args = parser.parse_args(argv)
+    _, disturbance = scenario_spec("zcode", args.scenario)
     valid_run_id(args.run_id)
     root = REPO/"artifacts/windows_mcp_host"/args.run_id
     root.mkdir(parents=True, exist_ok=False)
@@ -76,11 +79,15 @@ def main(argv=None):
     control = GuestHTTP(r"C:\coil\orca-blackbox-v3-r1", args.run_id,
                         deadline=time.monotonic()+1000, channel="control", goal_save=True)
     report = {"run_id": args.run_id, "actor": "zcode", "error": None, "release_eligible": False,
-              "native_tool_calls": [], "toolset_verified": False, "guard_checked": False}
-    process = None
+              "native_tool_calls": [], "toolset_verified": False, "guard_checked": False, "scenario": args.scenario}
+    process, transport = None, None
+    timeout_stop = False
     try:
         report.update(provider_metadata(provider))
-        guard = IPGuard()
+        if disturbance == "guard_disconnect":
+            from harness.guard_fault import GuardTransport
+            transport = GuardTransport()
+        guard = IPGuard(status_port=transport.port) if transport else IPGuard()
         report["guard_checks"] = [guard.check()]
         report["guard_checked"] = True
         for _ in range(50):
@@ -90,6 +97,11 @@ def main(argv=None):
             time.sleep(2)
         else:
             raise TimeoutError("zcode_guest_not_ready")
+        ready_received = time.monotonic()
+        remaining = ready.get("remaining_s")
+        if type(remaining) not in (int, float) or not 0 < remaining <= 900:
+            raise ValueError("zcode_guest_deadline_missing")
+        case_cutoff = ready_received+remaining
         output = r"C:\coil\orca-blackbox-v3-r1\artifacts\v3"+"\\"+args.run_id+r"\artifacts\projects\0001.3mf"
         if ready.get("output_path") != output:
             raise ValueError("zcode_guest_output_mismatch")
@@ -123,6 +135,22 @@ def main(argv=None):
             str(root/"spec.json")], cwd=workspace, env=env, log_path=root/"zcode.log")
         cutoff, next_guard = time.monotonic()+630, 0
         while True:
+            calls = completed_progress(root/"progress.ndjson")
+            inputs = [c for c in calls if c.get("tool") in {"Click", "Type", "Shortcut"}]
+            if disturbance in {"cancel", "timeout", "guard_disconnect"} and inputs and "fault_event" not in report:
+                report["fault_event"] = {"kind": disturbance, "observed_at_ns": time.time_ns(),
+                    "completed_input_tools": [c["tool"] for c in inputs]}
+                if disturbance == "cancel":
+                    raise RuntimeError("zcode_injected_cancellation")
+                if disturbance == "guard_disconnect":
+                    transport.close()
+                    # Same fail-closed path as an actual unreachable status service.
+                    guard.check()
+                    raise RuntimeError("zcode_guard_disconnect_did_not_fail_closed")
+            if disturbance == "timeout" and time.monotonic() >= case_cutoff:
+                timeout_stop = True
+                report["timeout_observed_at_ns"] = time.time_ns()
+                raise TimeoutError("zcode_contract_deadline")
             if time.monotonic() >= next_guard:
                 report["guard_checks"].append(guard.check())
                 next_guard = time.monotonic()+3
@@ -152,11 +180,23 @@ def main(argv=None):
                 if active == 0:
                     break
                 time.sleep(.1)
-            report["host_job"] = {"active_processes": active, "forced_termination": forced}
+            report["host_job"] = {"active_processes": active, "forced_termination": forced, "stopped_at_ns": time.time_ns()}
             if active == 0:
                 process.close()
             else:
                 report["error"] = "zcode_cleanup_unconfirmed"
+        if report.get("fault_event"):
+            try:
+                report["model_io"] = model_io_summary(root)
+                report["toolset_verified"] = True
+            except Exception as exc:
+                report["fault_model_io_error"] = type(exc).__name__
+        if transport:
+            transport.close()
+            try:
+                report["global_guard_after"] = IPGuard().check()
+            except Exception as exc:
+                report["global_guard_after_error"] = type(exc).__name__
         report["sources_unchanged"] = all(hashlib.sha256(p.read_bytes()).hexdigest() == hashes[p] for p in sources)
         if not report["sources_unchanged"]:
             report["error"] = report["error"] or "zcode_personal_sources_changed"
@@ -168,7 +208,20 @@ def main(argv=None):
                 "provider_id": "new-provider", "model_id": "glm-5.3-flash",
                 "guard_checked": report["guard_checked"], "sources_unchanged": report["sources_unchanged"],
                 "toolset_verified": report["toolset_verified"]}
-            report["done"] = control.remote({"op": "done", "receipt": receipt})
+            if report.get("host_job", {}).get("forced_termination"):
+                # Let the final single-slot relay launch return; its detached
+                # HTTP ferry never submits further relay commands.
+                time.sleep(3)
+            if report.get("host_job", {}).get("active_processes", 0) != 0:
+                raise RuntimeError("zcode_control_requires_empty_host_job")
+            # The relay is single-slot. Control resumes only after every actor
+            # descendant (including the data ferry) has stopped.
+            if disturbance in {"cancel", "guard_disconnect"} and report.get("fault_event"):
+                report["cancel"] = control.remote({"op": "cancel"})
+            elif disturbance == "timeout" and timeout_stop:
+                pass  # Guest runtime owns this deadline; cancellation would mask it.
+            else:
+                report["done"] = control.remote({"op": "done", "receipt": receipt})
             cutoff = min(control.deadline, time.monotonic()+240)
             while time.monotonic() < cutoff:
                 result = control.remote({"op": "result"})

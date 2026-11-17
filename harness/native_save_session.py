@@ -39,30 +39,44 @@ class NativeSaveHandle(_ScriptHandle):
         return super().poll()
 
 
-def native_contract(actor="codex"):
+def native_contract(actor="codex", scenario="base"):
+    from .native_matrix import scenario_spec
+    scenario_spec(actor, scenario)
     if actor not in {"codex", "zcode"}:
         raise ValueError("native_actor_not_registered")
-    return validate_contract({"schema_version": 1, "case_id": "m3g_export_3mf",
+    data = {"schema_version": 1, "case_id": "m3g_export_3mf",
         "contract_version": "native-save-1" if actor == "codex" else "native-save-zcode-1", "executor": "agent_mcp",
         "required_checks": ["path", "business"], "steps": [
             {"id": "goal", "goal": ("Native Codex" if actor == "codex" else "Native ZCode with Snapmaker glm-5.3-flash")+" independently edits regular layer height to .24, preserves initial .4 and cube, then GUI saves."},
             {"id": "proof", "goal": "After MCP stops and old SUT exits, freeze saved bytes, reopen with an independent profile and GUI reslice/export."},
             {"id": "close", "goal": "Independently inspect 3MF/G-code and confirm owned Job is empty."}],
-        "limits": {"timeout_s": 900, "max_actions": 40, "max_retries": 0, "max_cost_usd": 0}})
+        "limits": {"timeout_s": 900, "max_actions": 40, "max_retries": 0, "max_cost_usd": 0}}
+    if scenario != "base":
+        data["contract_version"] = "native-save-zcode-matrix-1-"+scenario
+        data["steps"].insert(0, {"id": "setup", "goal": "Trusted initial condition: "+scenario})
+        if scenario == "safety_timeout":
+            data["limits"]["timeout_s"] = 120
+    return validate_contract(data)
+
+
+def native_spec(digest):
+    from .native_matrix import SCENARIOS
+    for actor in ("codex", "zcode"):
+        for scenario in (("base",) if actor == "codex" else SCENARIOS):
+            if digest == contract_digest(native_contract(actor, scenario)):
+                return actor, scenario
+    raise ValueError("native_contract_digest")
 
 
 def native_actor(digest):
-    for actor in ("codex", "zcode"):
-        if digest == contract_digest(native_contract(actor)):
-            return actor
-    raise ValueError("native_contract_digest")
+    return native_spec(digest)[0]
 
 
 class NativeSaveExecutor:
     synthetic, kind = False, "agent_mcp"
 
     def __init__(self, digest):
-        self.actor = native_actor(digest)
+        self.actor, self.scenario = native_spec(digest)
         self.contract_sha256 = digest
 
     def start(self, context):
@@ -79,7 +93,7 @@ class NativeSaveExecutor:
         env["PYTHONIOENCODING"] = "utf-8"
         started = time.time_ns()
         process = OwnedJobProcess.start([sys.executable, "-B", str(REPO / "tools/native_save_guest.py"),
-            "--run-id", context.run_id, "--actor", self.actor], cwd=REPO, log_path=artifacts / "native_worker.log", env=env)
+            "--run-id", context.run_id, "--actor", self.actor, "--scenario", self.scenario], cwd=REPO, log_path=artifacts / "native_worker.log", env=env)
         return NativeSaveHandle(process, context, started)
 
 
@@ -91,7 +105,7 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
     from decimal import Decimal
     refs = []
     try:
-        actor = native_actor(contract_digest(snapshot.contract))
+        actor, scenario = native_spec(contract_digest(snapshot.contract))
         read = lambda n, limit: _read(snapshot.artifact_dir, n, snapshot.manifest["started_at_ns"], limit, cancelled)
         process, proof = _json(read("process.json", 65536)), _json(read("proof.json", 65536))
         host = _json(read("host_done.json", 65536))
@@ -127,6 +141,22 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
         for x in trace:
             if x["tool"] in {"Click", "Type", "Shortcut"}:
                 _require(x["window"]["app_pid"] == proof["old_pid"], "native_input_ownership")
+        if scenario != "base":
+            setup = _json(read("setup.json", 65536))
+            initial = read("initial.png", 16*1024*1024)
+            from .native_matrix import scenario_spec
+            tab, disturbance = scenario_spec(actor, scenario)
+            _require(setup.get("run_id") == snapshot.run_id and setup.get("scenario") == scenario
+                     and setup.get("app_pid") == proof["old_pid"] and setup.get("tab_clicked") == tab
+                     and setup.get("initial_sha256") == hashlib.sha256(initial).hexdigest()
+                     and type(setup.get("finished_at_ns")) is int
+                     and setup["finished_at_ns"] <= min(x["started_at_ns"] for x in trace), "native_initial_setup")
+            if disturbance == "overwrite":
+                _require(setup.get("baseline_sha256") == LAYER_FIXTURE_SHA256
+                         and digest != setup["baseline_sha256"], "native_overwrite_not_proven")
+            if disturbance == "save_dialog":
+                _require(type(setup.get("dialog_hwnd")) is int and setup["dialog_hwnd"] > 0,
+                         "native_initial_dialog_not_proven")
         project = inspect_project(frozen, fixture, cancelled=cancelled)
         gcode = read("exports/0001.gcode", 64*1024*1024)
         _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
@@ -152,13 +182,13 @@ class NativeSaveVerifier:
         return _Handle(snapshot, check=verify_saved)
 
 
-def run_native_save(run_id, actor="codex"):
+def run_native_save(run_id, actor="codex", scenario="base"):
     from .runtime import run_once
     from .script_session import SCRIPT_ROOT
     valid_run_id(run_id)
     root = SCRIPT_ROOT.resolve()
     root.mkdir(parents=True, exist_ok=True)
-    contract = native_contract(actor)
+    contract = native_contract(actor, scenario)
     digest = contract_digest(contract)
     return run_once(contract, NativeSaveExecutor(digest), {digest: NativeSaveVerifier()},
         root=root, run_id=run_id, desktop_id="guest-console", execution_mode="guest_native",

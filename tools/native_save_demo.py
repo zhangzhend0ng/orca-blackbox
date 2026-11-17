@@ -20,7 +20,7 @@ HOST_SOURCES = ("tools/native_save_demo.py", "tools/windows_mcp_codex_probe.py",
     "runner/windows_mcp_bridge.py", "runner/agent_bridge.py", "runner/relay_run.py",
     "harness/agent_model.py", "harness/win32_job.py", "harness/native_save_policy.py",
     "runner/hv_go.ps1", "runner/hv_harvest.ps1", "runner/_common.ps1",
-    "tools/windows_mcp_zcode_probe.py", "tools/zcode_session_driver.mjs", "harness/ip_guard.py")
+    "harness/native_matrix.py", "harness/guard_fault.py", "tools/zcode_matrix.py", "tools/windows_mcp_zcode_probe.py", "tools/zcode_session_driver.mjs", "harness/ip_guard.py")
 
 
 def quoted(value):
@@ -52,7 +52,11 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--run-id", default=None)
     p.add_argument("--actor", choices=("codex", "zcode"), default="codex")
+    from harness.native_matrix import SCENARIOS
+    p.add_argument("--scenario", choices=tuple(SCENARIOS), default="base")
     args = p.parse_args()
+    from harness.native_matrix import scenario_spec
+    scenario_spec(args.actor, args.scenario)
     run_id = args.run_id or uuid.uuid4().hex
     if not re.fullmatch(r"[0-9a-f]{32}", run_id):
         raise ValueError("invalid_demo_run_id")
@@ -79,7 +83,7 @@ def main():
         r"runtime=(Test-Path 'C:\coil\tools\windows-mcp-0.8.9\python.exe')} } -ArgumentList $guestSandbox,$guestGit"+"\n"
         "if($state.head.Trim() -ne "+quoted(head)+" -or $state.dirty.Count -or -not $state.runtime){throw 'demo_guest_sync_or_runtime_required'}\n"
         "& "+quoted(REPO / "runner/hv_go.ps1")+" -NoSync -WindowsMcpProbe -NativeSave -ProbeRunId "+quoted(run_id)
-        +" -NativeActor "+args.actor+" *> "+quoted(root / "launch.log")+"\n"
+        +" -NativeActor "+args.actor+" -NativeScenario "+args.scenario+" *> "+quoted(root / "launch.log")+"\n"
         "$r=@{ok=$true;head="+quoted(head)+"}\n"
         "}catch{$r=@{ok=$false;error_type=$_.Exception.GetType().Name;message=$_.Exception.Message}}\n"
         "$r|ConvertTo-Json|Set-Content "+quoted(launch_done)+" -Encoding UTF8\n", encoding="utf-8")
@@ -89,7 +93,7 @@ def main():
     try:
         if args.actor == "zcode":
             from tools.windows_mcp_zcode_probe import main as run_actor
-            code = run_actor(["--run-id", run_id])
+            code = run_actor(["--run-id", run_id, "--scenario", args.scenario])
         else:
             from tools.windows_mcp_codex_probe import main as run_actor
             code = run_actor(["--run-id", run_id, "--goal-save"])
@@ -115,7 +119,7 @@ def main():
     detached(harvest, harvest_done, 120)
     result_path = REPO / "artifacts/windows_mcp_harvest" / run_id / "result.json"
     result = json.loads(result_path.read_text()) if result_path.exists() else {"verified_pass": False}
-    summary = {"run_id": run_id, "source_sha": head, "actor": args.actor, "actor_exit": code,
+    summary = {"run_id": run_id, "source_sha": head, "actor": args.actor, "scenario": args.scenario, "actor_exit": code,
                "actor_error": error, "result": result, "release_eligible": False}
     (root / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(json.dumps(summary), flush=True)

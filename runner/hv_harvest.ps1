@@ -29,7 +29,7 @@ if ($WindowsMcpRunId) {
     $root=if($nativeSave){Join-Path $sb ('artifacts\v3\'+$id+'\artifacts')}else{Join-Path $sb ('artifacts\windows_mcp_runs\'+$id)}
     # Never harvest the run's authentication token or config/profile files.
     $names=@('process.json','worker.json','worker.log','server.log','ready.json')
-    if($nativeSave){$names=@('process.json','proof.json','native_worker.json','native_worker.log','native_trace.ndjson','host_done.json','scope.json','server.log','ready.json','initial.png','agent_final.png','proof_final.png','projects/0001.3mf','proof/0001.3mf','exports/0001.gcode')}
+    if($nativeSave){$names=@('setup.json','control_cancel.json','process.json','proof.json','native_worker.json','native_worker.log','native_trace.ndjson','host_done.json','scope.json','server.log','ready.json','initial.png','agent_final.png','proof_final.png','projects/0001.3mf','proof/0001.3mf','exports/0001.gcode')}
     $names+=@(Get-ChildItem -LiteralPath $root -Filter 'state_*.png' | Where-Object {$_.Name -cmatch '^state_[0-9]{2}_(prepare|preview)\.png$'} | ForEach-Object Name)
     foreach($name in $names) {
       $p=Join-Path $root $name
@@ -41,6 +41,22 @@ if ($WindowsMcpRunId) {
       }
     }
     if($nativeSave){
+      $parent=Split-Path $root -Parent
+      $resultPath=Join-Path $parent 'result.json'
+      $processPath=Join-Path $root 'process.json'
+      if((Test-Path -LiteralPath $resultPath) -and (Test-Path -LiteralPath $processPath)){
+        $r=[IO.File]::ReadAllText($resultPath)|ConvertFrom-Json
+        $p=[IO.File]::ReadAllText($processPath)|ConvertFrom-Json
+        if($p.run_id -ne $id -or $p.active_processes -ne 0 -or $r.cleanup_confirmed -ne $true){throw 'native_cleanup_unconfirmed'}
+        $token=Join-Path $root 'token'
+        if(Test-Path -LiteralPath $token){
+          $item=Get-Item -LiteralPath $token -Force
+          if($item.Attributes -band [IO.FileAttributes]::ReparsePoint){throw 'token_link_rejected'}
+          Remove-Item -LiteralPath $token -Force
+        }
+        $receipt=@{run_id=$id;active_processes=$p.active_processes;token_exists=(Test-Path -LiteralPath $token);cleanup_confirmed=$r.cleanup_confirmed}
+        @{name='teardown.json';data=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes(($receipt|ConvertTo-Json -Compress)))}
+      }
       foreach($name in @('result.json','manifest.json','contract.json')){
         $p=Join-Path (Split-Path $root -Parent) $name
         if(Test-Path -LiteralPath $p){@{name=$name;data=[Convert]::ToBase64String([IO.File]::ReadAllBytes($p))}}
