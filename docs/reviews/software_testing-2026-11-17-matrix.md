@@ -18,3 +18,5 @@
 验证：unit_tests 全量 808 passed、1 skipped（33.97s），Node语法、hv_go/hv_harvest PowerShell parser通过。新增反例覆盖不完整进度尾、超时伪通过、缺失清理、token残留、无真实输入、守卫进程被替换及本轮端口关闭。legacy Codex合同摘要不变。
 
 残余边界：只在固定SUT/1920x1080/96dpi验收。全局guard仍不证明公司网关出口国家。临时token删除是停止后的诊断收尾，不参与业务内容oracle。启动可信setup不计AI能力；模型如何导航以真实trace为证。外观与实印未验收。
+
+首批5c590369420c4c9a9536f41ec92892b4 / 91080e5：首轮e2feee790ee94c108146a9b107c57e57在管理启动阶段失败，未创建actor/未调用模型。客机实际已启动，但relay秒级RUN标记19:41:49重复，客户端无法确认。批次其余槽位not_run，保留原分母。已单独取消并harvest：NON_GREEN/cancelled、guest Job0、cleanup_confirmed、token不存在。修复relay提交前等待与上一RUN不同的秒级时间戳，新增实测故障回归；不修改全局relay服务。
