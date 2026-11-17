@@ -10,9 +10,9 @@ const names=['Snapshot','Screenshot','Click','Type','Shortcut','Wait','ControlSt
 const allowed=new Set(names.map(n=>'mcp__windows_mcp__'+n));
 const report={actor:'zcode',provider_id:'new-provider',model_id:'glm-5.3-flash',error:null,
  native_tool_calls:[],permissions:[],event_counts:{},stage:'starting'};
-const save=()=>{
- const p=path.join(spec.root,'actor.json');
- fs.writeFileSync(p+'.pending',JSON.stringify(report,null,2));fs.renameSync(p+'.pending',p);
+const save=(final=false)=>{
+ if(final)fs.writeFileSync(path.join(spec.root,'actor.json'),JSON.stringify(report,null,2),{flag:'wx'});
+ else fs.appendFileSync(path.join(spec.root,'progress.ndjson'),JSON.stringify(report)+'\n');
 };
 const server=spawn(process.execPath,[spec.bundle,'app-server','--cwd',spec.workspace,'--no-color'],
  {cwd:spec.workspace,env:process.env,stdio:['pipe','pipe','pipe'],windowsHide:true});
@@ -122,7 +122,8 @@ finally{
  report.native_tool_calls=[...calls.values()];save();
  server.stdin.end();
  const exited=await Promise.race([new Promise(resolve=>server.on('exit',()=>resolve(true))),delay(5000).then(()=>false)]);
- if(!exited){report.error||='server_exit_unconfirmed';server.kill();save();}
+ if(!exited){report.error||='server_exit_unconfirmed';server.kill();}
  fs.closeSync(stderr);
+ save(true);
  process.exitCode=report.error?1:0;
 }

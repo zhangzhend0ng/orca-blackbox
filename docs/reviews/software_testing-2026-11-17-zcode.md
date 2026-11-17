@@ -29,4 +29,8 @@
 
 修复为传输tools/list只暴露与authority一致的窄schema（loc整数数组、标志bool、数值/本run保存路径、快捷键白名单），不改原版MCP源码、不放宽门禁，也不预置GUI坐标；ControlStatus说明补充专用客机的租约语义。Snapshot同步拒绝字符串bool及未知参数。真实静态传输验证transport-2已得到Click loc=[264,765]、Snapshot use_vision=true，两次参数门禁均通过，exit0/active0、个人配置未改；该坐标只用于静态fixture参数测试，不进入业务prompt或真实动作脚本。新回归用JSON Schema验证观察到的错误包被拒绝、合法输入与原门禁一致。
 
+第五轮 `d5f41d1f6cff4e83a2598c235d44e062`（f394ea3）在进度actor.json替换时遭遇Windows EPERM，共享读取与rename竞争导致客户端退出并取消尚在生成的模型请求，无GUI工具输入。host/guest均收尾归零，保留NON_GREEN。已将进度改为append-only progress.ndjson，actor.json仅在会话和server收尾后以CreateNew写一次；结果消费者在Job退出后读取，不再替换正在被监控读取的文件。回归检查两类协议失败仍产生可解析进度与最终单次结果。
+
+schema修复后的全仓796 passed、1 skipped（31.35秒）；随后进度修复按受影响的ZCode协议测试复核。所有真实run保持在分母，不能以静态夹具或单测抵消失败。
+
 残余边界：用户已启用的插件仍可能在ZCode bootstrap初始化；会话过滤不构成同权限攻击的沙箱。guard检查既有OpenAI组，不证明Snapmaker网关实际出口国家。模型服务真实版本与USD不可见记unknown。实际中途取消、稳定性矩阵与跨版本可靠性尚未验收，单个正例不得推广为87条覆盖。

@@ -157,6 +157,8 @@ def test_protocol_client_stops_model_drift_and_denies_non_gui_permission(tmp_pat
     assert (tmp_path/"actor.json").exists(), result.stderr.decode(errors="replace")
     report=json.loads((tmp_path/"actor.json").read_text())
     assert result.returncode==1
+    progress=[json.loads(line) for line in (tmp_path/"progress.ndjson").read_text().splitlines()]
+    assert progress and progress[-1]["provider_id"]=="new-provider"
     preferences=json.loads(Path(str(decision)+".preferences").read_text())
     assert preferences["memoryEnabled"] is False and preferences["subagentRuntimeConfigEnabled"] is False
     assert preferences["toolSearchMode"]=="off"
