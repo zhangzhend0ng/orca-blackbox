@@ -28,3 +28,9 @@
 run 7078bc61be5b4f5aac4fb755a9d6e03d，host/guest source 7222f88。Orca/MCP 服务正常启动；Codex MCP initialize 被 401 拒绝，未发生输入。server.log 显示 `/mcp/` 返回 307 → `/mcp` 返回 401；PowerShell 5.1 redirect 丢失 Authorization。桥改用 canonical `/mcp` 并禁重定向；不改上游服务或关闭认证。
 
 worker 无错误、自然关闭 SUT，MCP server 已停止；guest Job ActiveProcesses=0，forced=false；host Job ActiveProcesses=0，forced=false。worker 自身 exit 0 仅表示生命周期完成，不表示任务通过。已由 hv_harvest -WindowsMcpRunId 回收原始报告及初始截图。保留本轮失败，不计入 GREEN，也不写飞书基线。
+
+## 第二轮真实联调（NON_GREEN）
+
+run 42203831e02244778f60e59567543d45，source f2eb317。认证与 MCP initialize/tools/list 已成功；原版 Snapshot 在 pillow 后端返回真实 Orca 1920×1080 PNG（180864 字符 base64），但桥收到的 SSE 文本被 PowerShell 默认编码误解码，产生 U+0085；Python splitlines 又把 JSON 字符串中的合法 Unicode 分隔符当作 SSE 边界，导致 JSONDecodeError。修复为从 RawContentStream 严格 UTF-8 解码、仅按 ASCII LF 切 SSE；新增三个 Unicode 回归反例。
+
+本轮 CLI exit 0，但原生事件明确记录 Snapshot/ControlStatus failed；因此整轮是 NON_GREEN。宿主新增按原生 completed tool events 审计，禁止仅按 CLI exit 判断工具成功。worker/process 原始报告及截图已经 hv_harvest 回收；guest/host Job 均 active=0、forced=false；无输入动作、SUT 自然关闭。

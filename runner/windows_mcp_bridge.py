@@ -44,7 +44,8 @@ $body=[Text.Encoding]::UTF8.GetBytes([string]$spec.body)
 if($body.Length -gt 65536){throw 'request_too_large'}
 # Use the canonical endpoint: PS 5 strips Authorization on a trailing-slash redirect.
 $r=Invoke-WebRequest -UseBasicParsing -Uri 'http://127.0.0.1:18789/mcp' -MaximumRedirection 0 -Method Post -Headers $headers -ContentType 'application/json' -Body $body -TimeoutSec 18
-$text=[string]$r.Content
+$utf8=New-Object Text.UTF8Encoding($false,$true)
+$text=$utf8.GetString($r.RawContentStream.ToArray())
 if($text.Length -gt 3800000){throw 'response_too_large'}
 @{status=[int]$r.StatusCode;body=$text}|ConvertTo-Json -Compress
 """
@@ -72,7 +73,9 @@ def response_json(body):
     if body.lstrip().startswith("{"):
         return decode_json(body)
     # Stateless MCP emits exactly one JSON-RPC result as an SSE data event.
-    events = [line[5:].lstrip() for line in body.splitlines() if line.startswith("data:")]
+    # SSE is framed by ASCII LF. str.splitlines also splits legal JSON U+0085,
+    # U+2028/U+2029 inside strings and can truncate a real UI tree response.
+    events = [line[5:].lstrip(" ").rstrip("\r") for line in body.split("\n") if line.startswith("data:")]
     if len(events) != 1:
         raise ValueError("unsupported_sse_response")
     return decode_json(events[0])

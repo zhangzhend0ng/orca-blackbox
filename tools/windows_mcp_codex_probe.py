@@ -19,6 +19,20 @@ from harness.agent_model import _child_environment, _DISABLED, default_codex_exe
 from harness.win32_job import OwnedJobProcess
 
 
+def native_calls(path):
+    calls = []
+    for line in path.read_text(encoding="utf-8", errors="replace").split("\n"):
+        if not line.startswith("{"):
+            continue  # Native stderr shares the owned Job diagnostic log.
+        event = json.loads(line)
+        item = event.get("item", {})
+        if event.get("type") == "item.completed" and item.get("type") == "mcp_tool_call":
+            calls.append({"tool": item.get("tool"), "status": item.get("status"),
+                          "arguments": item.get("arguments"), "error": item.get("error"),
+                          "is_error": (item.get("result") or {}).get("isError", False)})
+    return calls
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--run-id", required=True)
@@ -74,6 +88,10 @@ def main():
         report["codex_exit"] = code
         if code:
             raise RuntimeError("codex_failed")
+        calls = native_calls(root / "codex.log")
+        report["native_tool_calls"] = calls
+        if (not calls or any(c["status"] != "completed" or c["error"] or c["is_error"] for c in calls)):
+            raise RuntimeError("native_tools_failed_or_unused")
         time.sleep(2)  # Allow two independent stable final-state captures.
     except Exception as exc:
         report["error"] = type(exc).__name__+":"+str(exc)[:160]
