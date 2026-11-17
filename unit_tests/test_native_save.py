@@ -138,3 +138,32 @@ def test_native_runtime_rejects_unregistered_verifier_before_gui(tmp_path, monke
     with pytest.raises(ValueError, match="unregistered native verifier"):
         run_once(contract, NativeSaveExecutor(digest), {digest: SimpleNamespace(synthetic=False)},
                  root=tmp_path, run_id="b"*32, execution_mode="guest_native")
+
+
+def test_native_cleanup_waits_for_natural_helpers_then_completes(tmp_path, monkeypatch):
+    from harness.native_save_session import NativeSaveHandle
+    from harness.runtime_ports import Pending, Done
+    ticks = [0.0]
+    monkeypatch.setattr("harness.native_save_session.time.monotonic", lambda: ticks[0])
+    class Job:
+        pid, active, terminated = 123, 1, False
+        def poll(self):return 0,self.active
+        def terminate(self):self.terminated=True;self.active=0
+    job=Job();ctx=SimpleNamespace(run_id="c"*32,contract=native_contract(),artifact_dir=tmp_path)
+    h=NativeSaveHandle(job,ctx,1)
+    assert isinstance(h.poll(),Pending) and not job.terminated
+    ticks[0]=2;job.active=0
+    assert isinstance(h.poll(),Done) and not h.forced
+
+
+def test_native_cleanup_stops_only_owned_helpers_after_grace(tmp_path, monkeypatch):
+    from harness.native_save_session import NativeSaveHandle
+    ticks=[0.0]
+    monkeypatch.setattr("harness.native_save_session.time.monotonic",lambda:ticks[0])
+    class Job:
+        pid,active,terminated=123,1,False
+        def poll(self):return 0,self.active
+        def terminate(self):self.terminated=True;self.active=0
+    job=Job();ctx=SimpleNamespace(run_id="c"*32,contract=native_contract(),artifact_dir=tmp_path)
+    h=NativeSaveHandle(job,ctx,1);h.poll();ticks[0]=11;h.poll()
+    assert job.terminated and h.forced

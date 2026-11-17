@@ -31,3 +31,9 @@ GPT-6 Astra独立只读审阅本次源码，原提出三项C/HIGH，协调者修
 - 真实GUI：NOT VERIFIED，下一步冻结提交、同步后运行唯一入口 tools/native_save_demo.py。
 
 最终提交前全仓纯单测：765 passed, 1 skipped（22.10秒）。独立审查三项修复后再次复核：允许固定客机单次受控试验，无残余阻断。拒绝参数日志另已收紧；本阶段仍不作为生产日志/权限隔离认证。
+
+## 首轮真实执行：NON_GREEN（保留）
+
+run 61746aad8bb94c6381a7c96693eb4139，源码 c9f86aa。原生Codex九次工具调用全部成功，GUI编辑并另存工程；MCP Job停止后，旧SUT自然exit0，冻结同hash文件，新profile重开后可信GUI切片导出，新SUT也exit0。worker error=null；宿主独立离线检查确认3MF层高.24/初层.4、8顶点12三角形几何不变，G-code实际112层、首Z.4、末Z27.04。
+
+整轮仍为NON_GREEN：NativeHandle在worker exit0而Job active>0的短暂窗口立即cancel，process收据forced=true，runtime正确阻止晋级。尚未识别具体辅助进程或Job记账延迟，不归因SUT缺陷。修复为exit0时给10秒自然清理窗口，非0或逾期仅终止本Job。新增两条可控时钟回归验证自然退出不强杀、持续残留有界终止（58项受影响测试通过）。原始结果不重标；下一轮新run重测。

@@ -17,9 +17,26 @@ from .agent_protocol import LAYER_FIXTURE_SHA256, valid_run_id
 from .run_contract import validate_contract
 from .run_verdict import CheckResult, contract_digest
 from .runtime_ports import VerificationOutcome
+from .script_executor import _ScriptHandle
 
 REPO = Path(__file__).resolve().parents[1]
 NATIVE_SUT_SHA256 = "5c48644d7da18b50636ceeee4ef9fd2eaf6d4e8ac05bd88752f40e3717fc47bf"
+
+
+class NativeSaveHandle(_ScriptHandle):
+    """Allow natural helper teardown, then bound an orphaned owned tree."""
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.worker_exited_at = None
+
+    def poll(self):
+        code, active = self.process.poll()
+        if code is not None and active:
+            if self.worker_exited_at is None:
+                self.worker_exited_at = time.monotonic()
+            if code != 0 or time.monotonic()-self.worker_exited_at >= 10:
+                self.cancel("adapter_error")
+        return super().poll()
 
 
 def native_contract():
@@ -42,7 +59,6 @@ class NativeSaveExecutor:
 
     def start(self, context):
         from . import host_guard
-        from .script_executor import _ScriptHandle
         from .win32_job import OwnedJobProcess
         if not host_guard.in_guest() or contract_digest(context.contract) != self.contract_sha256:
             raise PermissionError("native_registered_guest_only")
@@ -56,13 +72,7 @@ class NativeSaveExecutor:
         started = time.time_ns()
         process = OwnedJobProcess.start([sys.executable, "-B", str(REPO / "tools/native_save_guest.py"),
             "--run-id", context.run_id], cwd=REPO, log_path=artifacts / "native_worker.log", env=env)
-        class NativeHandle(_ScriptHandle):
-            def poll(self):
-                code, active = self.process.poll()
-                if code is not None and active:
-                    self.cancel("adapter_error")
-                return super().poll()
-        return NativeHandle(process, context, started)
+        return NativeSaveHandle(process, context, started)
 
 
 def verify_saved(snapshot, *, cancelled=lambda: False):
