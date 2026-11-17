@@ -74,7 +74,7 @@ try{
  report.selection=snapshot.settings?.model?.current;
  report.thought_level=snapshot.settings?.thoughtLevel?.current;
  if(report.selection?.providerId!==report.provider_id||report.selection?.modelId!==report.model_id||report.thought_level!=='low')throw new Error('selected_model_mismatch');
- session=snapshot.session?.id;
+ session=snapshot.session?.sessionId;
  if(!session)throw new Error('session_id_missing');
  report.session_id=session;report.stage='ready';save();
  await request('session/send',{sessionId:session,content:spec.prompt});

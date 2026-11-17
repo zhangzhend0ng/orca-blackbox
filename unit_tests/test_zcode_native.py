@@ -109,7 +109,7 @@ rl.on('line',line=>{
    process.stdout.write(JSON.stringify({id:q.id,error:{code:-32602,message:'Both model reasoning and thoughtLevel are required'}})+'\n');return;
   }
   process.stdout.write(JSON.stringify({id:'preferences',method:'session/requestRuntimePreferences',params:{}})+'\n');
-  result={session:{id:'sess_test'},settings:{model:{current:{providerId:fault==='wrong_model'?'other':'new-provider',modelId:'glm-5.3-flash'}},thoughtLevel:{current:'low'}}};
+  result={session:{sessionId:'sess_test'},settings:{model:{current:{providerId:fault==='wrong_model'?'other':'new-provider',modelId:'glm-5.3-flash'}},thoughtLevel:{current:'low'}}};
  }
  if(q.method==='session/send'){
   process.stdout.write(JSON.stringify({id:'permission',method:'interaction/requestPermission',params:{toolName:'Bash',input:{command:'DO_NOT_EXECUTE'}}})+'\n');

@@ -21,4 +21,8 @@
 
 第二轮 `2ac0a1c371a0417cb81e6487113222f2`（e879187）在ZCode session/create阶段被模型初始化拒绝：正式driver漏传最小探针已有的model.options.reasoningLevel。协议需要它和thoughtLevel同时存在；仅后者不足以在bootstrap时创建模型。补齐low/low，并让假server拒绝漏传任一字段以覆盖该差异。该轮没有GUI工具调用、无业务模型请求，host Job自然清空，guest统一结果NON_GREEN且cleanup_confirmed=true，保留原记录。
 
+第三轮 `5efb10ab5c37487c9cf68761490c8370`（0ed9f78）已创建原生会话，但正式driver读取session.id，实际原生协议字段为session.sessionId；最小探针保留了兼容fallback，假server初版则错误返回id，导致漏检。现按原版schema修正driver和假server。该轮未发session/send、无GUI输入，保留NON_GREEN及清理收据。
+
+随后先做真实原生传输验证`artifacts/zcode_probe/20261117-snapmaker-transport-1`：使用同一个正式driver、真实ZCode、真实公司Flash及静态MCP夹具，完成一次Snapshot调用及两次模型请求，回复PROTOCOL_TRANSPORT_OK；actual model-io均为new-provider/glm-5.3-flash、每次恰好七项GUI工具，exit0/active0/未强杀，三份个人配置hash保持。静态夹具不操作桌面、不算GUI覆盖；此验证先于下一轮真实GUI，避免继续用客机发现基础协议差异。
+
 残余边界：用户已启用的插件仍可能在ZCode bootstrap初始化；会话过滤不构成同权限攻击的沙箱。guard检查既有OpenAI组，不证明Snapmaker网关实际出口国家。模型服务真实版本与USD不可见记unknown。实际中途取消、稳定性矩阵与跨版本可靠性尚未验收，单个正例不得推广为87条覆盖。
