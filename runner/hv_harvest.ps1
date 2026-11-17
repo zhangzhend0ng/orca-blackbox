@@ -11,8 +11,9 @@
 #   "FAILED: <name> <name> ..."  -> names written one per line
 #   "SUMMARY: PASS=n FAIL=0"     -> host list cleared (no stale reruns)
 #   no summary file              -> host list untouched (unknown state)
-param([switch]$V3, [string]$WindowsMcpRunId = '')
+param([switch]$V3, [string]$WindowsMcpRunId = '', [switch]$NativeSave)
 . (Join-Path $PSScriptRoot '_common.ps1')
+if($NativeSave -and -not $WindowsMcpRunId){throw '-NativeSave requires -WindowsMcpRunId'}
 
 $repo = Split-Path $PSScriptRoot -Parent
 $artifacts = Join-Path $repo 'artifacts'
@@ -24,21 +25,33 @@ if ($WindowsMcpRunId) {
   $target = Join-Path $artifacts ('windows_mcp_harvest\' + $WindowsMcpRunId)
   New-Item -ItemType Directory -Force $target | Out-Null
   $remote = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
-    param($sb,$id)
-    $root=Join-Path $sb ('artifacts\windows_mcp_runs\'+$id)
+    param($sb,$id,$nativeSave)
+    $root=if($nativeSave){Join-Path $sb ('artifacts\v3\'+$id+'\artifacts')}else{Join-Path $sb ('artifacts\windows_mcp_runs\'+$id)}
     # Never harvest the run's authentication token or config/profile files.
     $names=@('process.json','worker.json','worker.log','server.log','ready.json')
+    if($nativeSave){$names=@('process.json','proof.json','native_worker.json','native_worker.log','native_trace.ndjson','host_done.json','scope.json','server.log','ready.json','initial.png','agent_final.png','proof_final.png','projects/0001.3mf','proof/0001.3mf','exports/0001.gcode')}
     $names+=@(Get-ChildItem -LiteralPath $root -Filter 'state_*.png' | Where-Object {$_.Name -cmatch '^state_[0-9]{2}_(prepare|preview)\.png$'} | ForEach-Object Name)
     foreach($name in $names) {
       $p=Join-Path $root $name
       if(Test-Path -LiteralPath $p) {
         $file=Get-Item -LiteralPath $p
-        if($file.Length -gt 2000000 -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)){throw 'probe_artifact_rejected'}
+        $limit=if($nativeSave){67108864}else{2000000}
+        if($file.Length -gt $limit -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)){throw 'probe_artifact_rejected'}
         @{name=$name;data=[Convert]::ToBase64String([IO.File]::ReadAllBytes($p))}
       }
     }
-  } -ArgumentList $guestSandbox,$WindowsMcpRunId
-  foreach($file in $remote){[IO.File]::WriteAllBytes((Join-Path $target $file.name),[Convert]::FromBase64String($file.data))}
+    if($nativeSave){
+      foreach($name in @('result.json','manifest.json','contract.json')){
+        $p=Join-Path (Split-Path $root -Parent) $name
+        if(Test-Path -LiteralPath $p){@{name=$name;data=[Convert]::ToBase64String([IO.File]::ReadAllBytes($p))}}
+      }
+    }
+  } -ArgumentList $guestSandbox,$WindowsMcpRunId,([bool]$NativeSave)
+  foreach($file in $remote){
+    $destination=Join-Path $target $file.name
+    New-Item -ItemType Directory -Force (Split-Path $destination -Parent)|Out-Null
+    [IO.File]::WriteAllBytes($destination,[Convert]::FromBase64String($file.data))
+  }
   "Windows-MCP probe diagnostics harvested -> $target (no GREEN/baseline update)"
 }
 elseif ($V3) {

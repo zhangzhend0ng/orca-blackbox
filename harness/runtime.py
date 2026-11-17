@@ -50,7 +50,7 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
     Desktop exclusion covers dispatchers sharing the same canonical evidence root.
     """
     frozen = validate_contract(contract.to_dict() if isinstance(contract, CaseContract) else contract)
-    if execution_mode not in {"synthetic", "guest_script", "guest_agent"}:
+    if execution_mode not in {"synthetic", "guest_script", "guest_agent", "guest_native"}:
         raise ValueError("runtime: unsupported execution mode")
     synthetic = execution_mode == "synthetic"
     if not synthetic:
@@ -60,6 +60,12 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
         if execution_mode == "guest_script":
             from .script_executor import ScriptExecutor
             expected_type, expected_case = ScriptExecutor, "m0_boot_check"
+        elif execution_mode == "guest_native":
+            from .native_save_session import NativeSaveExecutor, native_contract
+            expected_type, expected_case = NativeSaveExecutor, "m3g_export_3mf"
+            if (type(run_id) is not str or not re.fullmatch(r"[0-9a-f]{32}", run_id)
+                    or contract_digest(frozen) != contract_digest(native_contract())):
+                raise ValueError("runtime: invalid native save contract/run identity")
         else:
             from .agent_executor import AgentExecutor
             from .agent_protocol import agent_profile
@@ -92,6 +98,10 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
             raise ValueError("runtime: unregistered agent case")
         if type(verifier) is not expected_verifier:
             raise ValueError("runtime: unregistered agent verifier")
+    if execution_mode == "guest_native":
+        from .native_save_session import NativeSaveVerifier
+        if type(verifier) is not NativeSaveVerifier:
+            raise ValueError("runtime: unregistered native verifier")
     for budget in (verify_timeout_s, cleanup_timeout_s):
         if type(budget) not in (int, float) or not math.isfinite(budget) or not 0 < budget <= 3600:
             raise ValueError("runtime: invalid phase budget")
@@ -243,7 +253,7 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
                                            execution_compliant=verification.execution_compliant)
                 result = verdict.to_dict()
                 result.update(mode=("synthetic" if synthetic else
-                                    "agent_shadow" if execution_mode == "guest_agent" else "script_shadow"),
+                                    "agent_shadow" if execution_mode in {"guest_agent", "guest_native"} else "script_shadow"),
                               release_verdict="SYNTHETIC" if synthetic else (
                                   "SHADOW" if verdict.verified_pass else "NON_GREEN"),
                               release_eligible=False, runtime_status=runtime_status,

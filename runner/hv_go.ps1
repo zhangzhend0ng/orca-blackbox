@@ -9,8 +9,9 @@
 # do NOT hardcode case names here (see docs/STRUCTURING_PLAN.md).
 param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$Warmup, [switch]$NoSync, [string]$Suite = 'regression', [switch]$V3,
       [ValidateSet('script', 'agent_mcp')][string]$V3Executor = 'script', [string]$V3RunId = '',
-      [switch]$WindowsMcpProbe, [string]$ProbeRunId = '')
+      [switch]$WindowsMcpProbe, [string]$ProbeRunId = '', [switch]$NativeSave)
 . (Join-Path $PSScriptRoot '_common.ps1')
+if ($NativeSave -and -not $WindowsMcpProbe) { throw '-NativeSave requires -WindowsMcpProbe' }
 if ($WindowsMcpProbe) {
   if ($V3 -or $Cases -or $args -or $OnlyFailed -or $Warmup -or $V3RunId -or
       $V3Executor -ne 'script' -or $ProbeRunId -cnotmatch '^[0-9a-f]{32}$') {
@@ -239,7 +240,7 @@ Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
   # NOTE: this scriptblock runs ON THE GUEST — everything it needs must be
   # marshaled via param/-ArgumentList (host-side $warmup is not visible here;
   # measured 09-03 night: silent $false, warmup block never emitted).
-  param($caseStr, $sb, $py, $warmup, $suite, $v3, $v3Executor, $v3RunId, $mcpProbe, $probeRunId)
+  param($caseStr, $sb, $py, $warmup, $suite, $v3, $v3Executor, $v3RunId, $mcpProbe, $probeRunId, $nativeSave)
   # full run: the guest derives the list from cases.py itself (single
   # source of truth); explicit subset: split the passed string.
   # warmup fragment — the host-side decision ($warmup) must be baked into
@@ -326,10 +327,11 @@ foreach (`$c in `$cases) {
 "@
   }
   if ($mcpProbe) {
+    $probeScript = if ($nativeSave) { 'tools\native_save_run.py' } else { 'tools\windows_mcp_probe.py' }
     $runner = @"
 Set-Location '$sb'
 `$env:PYTHONIOENCODING='utf-8'
-& '$py' -B tools\windows_mcp_probe.py --run-id '$probeRunId' 2>&1 | Out-File 'artifacts\windows_mcp_probe.log' -Encoding utf8
+& '$py' -B '$probeScript' --run-id '$probeRunId' 2>&1 | Out-File 'artifacts\windows_mcp_probe.log' -Encoding utf8
 exit `$LASTEXITCODE
 "@
   }
@@ -341,7 +343,7 @@ exit `$LASTEXITCODE
   Register-ScheduledTask -TaskName "suite" -Action $a -Settings $st -Principal $p -Force | Out-Null
   Start-ScheduledTask -TaskName "suite"
   "suite launched: " + (Get-ScheduledTask suite).State
-} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, ([bool]$V3), $V3Executor, $V3RunId, ([bool]$WindowsMcpProbe), $ProbeRunId
+} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, ([bool]$V3), $V3Executor, $V3RunId, ([bool]$WindowsMcpProbe), $ProbeRunId, ([bool]$NativeSave)
 Write-Host "[4] DONE. Poll progress any time (admin window):"
 Write-Host "    Get-Content C:\coil\vm_setup\poll_rerun.txt | Set-Content C:\coil\vm_setup\relay_cmd.txt   # via relay"
 Write-Host "    or in guest: Get-Content C:\coil\regress_progress.txt -Tail 5"
