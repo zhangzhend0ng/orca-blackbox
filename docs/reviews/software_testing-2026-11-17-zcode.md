@@ -19,4 +19,6 @@
 
 首轮真实run `77cf7e8ec1724e63b80fe96635b3eace`（27a55ca）因客户端误把既有公司HTTP地址限定成HTTPS，被provider校验拒绝，未发模型请求；guest收到失败收据后自然exit1、active=0、forced=false、cleanup_confirmed=true，保留NON_GREEN。修复为精确匹配用户现有`http://ai-gateway.s.com/v1`，补充真实配置形状正例及Key不输出检查；并把供应商/守卫前置校验移到GUI启动之前。没有修改公司网关地址或凭据。下一轮必须使用新run。
 
+第二轮 `2ac0a1c371a0417cb81e6487113222f2`（e879187）在ZCode session/create阶段被模型初始化拒绝：正式driver漏传最小探针已有的model.options.reasoningLevel。协议需要它和thoughtLevel同时存在；仅后者不足以在bootstrap时创建模型。补齐low/low，并让假server拒绝漏传任一字段以覆盖该差异。该轮没有GUI工具调用、无业务模型请求，host Job自然清空，guest统一结果NON_GREEN且cleanup_confirmed=true，保留原记录。
+
 残余边界：用户已启用的插件仍可能在ZCode bootstrap初始化；会话过滤不构成同权限攻击的沙箱。guard检查既有OpenAI组，不证明Snapmaker网关实际出口国家。模型服务真实版本与USD不可见记unknown。实际中途取消、稳定性矩阵与跨版本可靠性尚未验收，单个正例不得推广为87条覆盖。

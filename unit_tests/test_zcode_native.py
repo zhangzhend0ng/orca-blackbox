@@ -105,6 +105,9 @@ rl.on('line',line=>{
  }
  if(q.method==='runtime/capabilities')result={};
  if(q.method==='session/create'){
+  if(q.params.model?.options?.reasoningLevel!=='low'||q.params.thoughtLevel!=='low'){
+   process.stdout.write(JSON.stringify({id:q.id,error:{code:-32602,message:'Both model reasoning and thoughtLevel are required'}})+'\n');return;
+  }
   process.stdout.write(JSON.stringify({id:'preferences',method:'session/requestRuntimePreferences',params:{}})+'\n');
   result={session:{id:'sess_test'},settings:{model:{current:{providerId:fault==='wrong_model'?'other':'new-provider',modelId:'glm-5.3-flash'}},thoughtLevel:{current:'low'}}};
  }

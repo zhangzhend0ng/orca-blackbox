@@ -65,7 +65,7 @@ try{
  await request('runtime/capabilities',{});
  const snapshot=await request('session/create',{
   workspace:{workspacePath:spec.workspace,workspaceKey:'orca-native-'+spec.run_id},
-  model:{providerId:report.provider_id,modelId:report.model_id},thoughtLevel:'low',
+  model:{providerId:report.provider_id,modelId:report.model_id,options:{reasoningLevel:'low'}},thoughtLevel:'low',
   mode:'guarded',persistence:'deferred',titleGenerationEnabled:false,
   toolAllowlist:[...allowed],dynamicWorkflowEnabled:false,offPeakToolEnabled:false,
   mcpServers:[{name:'windows_mcp',scope:'user',command:spec.python,
