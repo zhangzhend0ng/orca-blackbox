@@ -15,6 +15,8 @@ def verify_responses(responses, run_id):
             raise ValueError("authority_probe_not_rejected")
     if responses[0]["result"]["structuredContent"]["authority"].get("error_code") != "native_target_not_owned":
         raise ValueError("authority_probe_wrong_first_refusal")
+    if responses[1]["result"]["structuredContent"]["authority"].get("error_code") != "native_authority_already_revoked":
+        raise ValueError("authority_probe_stop_latch_not_proven")
     return {"fatal_latched": True, "subsequent_input_dispatched": False,
             "attempts": 2, "model_used": False, "business_verified": False}
 
@@ -54,8 +56,15 @@ def run_probe(root, run_id, app_pid, main_hwnd):
     request({"jsonrpc": "2.0", "id": "init", "method": "initialize", "params": {
         "protocolVersion": "2025-06-18", "capabilities": {},
         "clientInfo": {"name": "owned-authority-negative-probe", "version": "1"}}})
-    responses = [request({"jsonrpc": "2.0", "id": seq, "method": "tools/call", "params": {
-        "name": "Click", "arguments": {"loc": loc}}}) for seq, loc in enumerate((foreign, owned), 1)]
+    responses = [request({"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {
+        "name": "Click", "arguments": {"loc": foreign}}})]
+    if not (root / "input_revoked").exists() or not (root / "authority_abort.json").exists():
+        raise ValueError("authority_probe_durable_latch_missing")
+    if (wu._window_pid(wu.user32.GetForegroundWindow()) != app_pid
+            or wu._window_pid(wu.window_from_screen_point(*owned)) != app_pid):
+        raise ValueError("authority_probe_second_point_not_owned")
+    responses.append(request({"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {
+        "name": "Click", "arguments": {"loc": owned}}}))
     summary = verify_responses(responses, run_id)
     return {"run_id": run_id, **summary, "foreign_loc": foreign, "owned_loc": owned,
             "responses": responses}

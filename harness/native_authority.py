@@ -51,6 +51,8 @@ class AuthorityController:
         self.guard.last_window, self.guard.arguments_validated = {}, False
         self.guard.last_canvas_evidence = None
         try:
+            if self.gate.fatal:
+                raise ValueError("native_authority_already_revoked")
             if self.calls > 40:
                 raise ValueError("native_tool_budget")
             if name in INPUT_TOOLS:
