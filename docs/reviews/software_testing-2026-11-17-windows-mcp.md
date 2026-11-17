@@ -42,3 +42,9 @@ run 50d3d4d34395492385c10b15f3d88ecf，source 1144897。原生 Snapshot、Screen
 按官方配置 https://learn.chatgpt.com/docs/extend/mcp 的 tools.<tool>.approval_mode，给本次固定 guest bridge 的 Click 增加仅子进程有效的 approve 设置。用户已授权隔离 GUI 测试及可逆输入；这不是 auto-review 拒绝，不涉及修改全局策略或放开宿主 shell。服务端/桥的五工具白名单、单客机、20 调用预算及只读 shell sandbox 继续适用。原始失败已 harvest，guest/host Job 均 0 且无强杀。
 
 修复后纯单测累计 734 passed, 1 skipped（22.60 秒），PS 两入口 parser 无错误。
+
+## 第四轮真实联调（NON_GREEN，原版控制锁兼容性）
+
+run fabe9936b2324b7dbcd497fed0eb603d，source 50a568f。全部接线/审批已通过，原生 Agent 两次自行选择 Preview 坐标，原版 MCP 均返回 CONTROL_UNAVAILABLE，ControlStatus 却为 ready/enabled/relaxed，截图始终 Prepare；执行未发生。不是成功点击，不以截图成功替代输入验证。已 harvest；双端 Job=0、forced=false、SUT 自然关闭。
+
+源码定位到 Windows-MCP 的 desktop/control.py begin_call 及 ControlToolGate 的 desktop ownership gate；当前尚不能证明具体哪个 hook/recovery 内部标志导致拒绝。第五轮采用原版 CLI 明确支持的 --no-control，限定专用 win11-test、hv_go idle desktop gate、单次 owned Job、只开放五个 GUI 工具。该选项关闭物理输入接管监控/指示，不等于认证或工具权限；不能用于共享宿主桌面。原版默认控制锁的失败仍作为独立兼容性限制保留，不修改第三方源码，不宣称修复其默认模式。

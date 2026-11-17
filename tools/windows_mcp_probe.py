@@ -48,10 +48,14 @@ def worker(root):
                    WINDOWS_MCP_SCREENSHOT_SCALE="1.0", PYTHONIOENCODING="utf-8")
         server = subprocess.Popen([str(RUNTIME), "-m", "windows_mcp", "serve",
             "--transport", "streamable-http", "--host", "127.0.0.1", "--port", "18789",
-            "--stateless-http", "--tools", TOOLSET, "--config", str(root / "config.toml")],
+            # Dedicated, idle-gated test VM only: original 0.8.9 ownership hooks
+            # reject all inputs with CONTROL_UNAVAILABLE on this guest. Use its
+            # supported explicit opt-out, never silently weaken a shared host.
+            "--stateless-http", "--no-control", "--tools", TOOLSET, "--config", str(root / "config.toml")],
             cwd=root, env=env, stdout=log, stderr=log,
             creationflags=subprocess.CREATE_NO_WINDOW)
         report["server_pid"] = server.pid
+        report["desktop_ownership_hooks"] = False
         # HTTP readiness only; this does not execute UI tools.
         for _ in range(60):
             guard()
