@@ -9,6 +9,17 @@ PROTOCOL = "native-authority-1"
 RECOVERY_SCENARIOS = frozenset({"recovery_owned_edit", "canvas_trial"})
 
 
+def attach_authority(original, receipt):
+    """Retain upstream outputSchema fields; add metadata without nesting them."""
+    if original is not None and type(original) is not dict:
+        raise ValueError("native_original_structured_result_schema")
+    result = dict(original or {})
+    if "authority" in result:
+        raise ValueError("native_original_authority_collision")
+    result["authority"] = receipt
+    return result
+
+
 def validate_scope(scope, manifest, contract, *, run_id, output_path):
     from .run_contract import validate_contract
     from .run_verdict import contract_digest

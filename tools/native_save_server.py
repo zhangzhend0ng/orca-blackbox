@@ -26,7 +26,7 @@ def main():
     from fastmcp.server.middleware import Middleware
     from fastmcp.tools.base import ToolResult
     from mcp.types import TextContent
-    from harness.native_authority import AuthorityController, validate_scope
+    from harness.native_authority import AuthorityController, validate_scope, attach_authority
     recovery_enabled = validate_scope(scope,
         json.loads((root.parent / "manifest.json").read_text()),
         json.loads((root.parent / "contract.json").read_text()),
@@ -44,9 +44,13 @@ def main():
                 name, arguments = context.message.name, context.message.arguments or {}
                 payload, receipt = await self.controller.call(name, arguments, lambda: call_next(context))
                 if receipt["decision"] == "completed":
-                    return ToolResult(content=payload.content,
-                        structured_content={"authority": receipt, "data": payload.structured_content},
-                        meta=payload.meta)
+                    try:
+                        return ToolResult(content=payload.content,
+                            structured_content=attach_authority(payload.structured_content, receipt),
+                            meta=payload.meta)
+                    except Exception:
+                        self.controller.abort("native_result_envelope_failed")
+                        raise
                 explanation = ("Input was NOT dispatched. Observe the current screen before correcting the numeric field."
                     if receipt["decision"] == "recoverable" else "Authority revoked. Stop this run.")
                 return ToolResult(content=[TextContent(type="text", text=explanation)],

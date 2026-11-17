@@ -84,6 +84,16 @@ def test_legacy_contract_does_not_gain_recovery(tmp_path):
     assert execute(controller, "Type", {"text": "10"}, [])[1]["decision"] == "fatal"
 
 
+def test_output_schema_fields_survive_authority_attachment():
+    from harness.native_authority import attach_authority
+    original = {"result": "Waited 0 seconds"}
+    metadata = {"protocol": "native-authority-1"}
+    assert attach_authority(original, metadata) == {**original, "authority": metadata}
+    assert original == {"result": "Waited 0 seconds"}
+    with pytest.raises(ValueError):
+        attach_authority({"authority": "not ours"}, metadata)
+
+
 def test_journal_write_failure_stops_all_later_dispatches(tmp_path):
     (tmp_path / "native_trace.ndjson").mkdir()
     controller = AuthorityController(Guard(tmp_path), tmp_path, RUN)
