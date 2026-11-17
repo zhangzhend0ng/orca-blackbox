@@ -2,7 +2,7 @@
 
 入口：`python -B tools/native_save_demo.py --actor zcode`。仅在 Hyper-V `win11-test` 执行 GUI，仍由 `hv_go.ps1` 启动同一 `run_once` / owned Job / canonical 桌面锁。两端须同步同一已提交HEAD、客机空闲，已有relay和Windows-MCP运行时可用。
 
-模型固定为本机 ZCode 已配置的 `Snapmaker` 供应商：`new-provider / glm-5.3-flash`，HTTPS端点 `ai-gateway.s.com/v1`，Anthropic协议，thoughtLevel=low。使用原版ZCode app-server的会话模型选择、MCP和agent循环；客户端只创建会话、给目标、批准受限GUI权限、观察原生事件及回收，不替模型产生下一动作。不导出API Key、不复制认证、不修改全局默认模型，运行前后核对三份个人配置hash。
+模型固定为本机 ZCode 已配置的 `Snapmaker` 供应商：`new-provider / glm-5.3-flash`，现有地址 `http://ai-gateway.s.com/v1`，Anthropic协议，thoughtLevel=low。精确沿用公司配置，不将其写成HTTPS，也不改网关或认证设置。使用原版ZCode app-server的会话模型选择、MCP和agent循环；客户端只创建会话、给目标、批准受限GUI权限、观察原生事件及回收，不替模型产生下一动作。不导出API Key、不复制认证、不修改全局默认模型，运行前后核对三份个人配置hash。
 
 原版Windows-MCP七项通用工具仍通过既有桥连接客机；native toolAllowlist只准本轮七个完整工具名，权限回调拒绝其他工具。会话关闭搜索、记忆、子agent配置、动态工作流和闲时执行；未使用的官方插件认证请求被拒绝。已有用户插件可能在原生bootstrap中初始化，不能把会话工具过滤称为完整OS沙箱。原生model-io收据的实际provider/model及每次request.toolNames必须精确匹配；缺记录、模型漂移或出现其他工具均不晋级。
 

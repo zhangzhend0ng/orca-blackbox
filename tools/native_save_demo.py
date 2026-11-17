@@ -63,6 +63,11 @@ def main():
         subprocess.check_output(["git", "ls-files", "--error-unmatch", source], cwd=REPO, stderr=subprocess.DEVNULL)
     if subprocess.run(["git", "diff", "--quiet", "HEAD", "--", *HOST_SOURCES], cwd=REPO).returncode:
         raise ValueError("demo_executed_host_source_not_committed")
+    if args.actor == "zcode":
+        from tools.windows_mcp_zcode_probe import provider_metadata
+        from harness.ip_guard import IPGuard
+        provider_metadata(Path.home()/".zcode/v2/provider_config.json")
+        IPGuard().check()
     root = REPO / "artifacts/native_save_demo" / run_id
     root.mkdir(parents=True, exist_ok=False)
     launch_done = root / "launch.json"

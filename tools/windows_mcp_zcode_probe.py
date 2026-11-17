@@ -24,14 +24,14 @@ def provider_metadata(path):
     config = row["config"]
     endpoint = urlsplit(config["api"]["baseUrl"])
     if (row.get("providerName") != "Snapmaker" or config["api"]["type"] != "anthropic-messages"
-            or endpoint.scheme != "https" or endpoint.hostname != "ai-gateway.s.com"
-            or endpoint.port not in (None, 443) or endpoint.path.rstrip("/") != "/v1"
+            or endpoint.scheme != "http" or endpoint.hostname != "ai-gateway.s.com"
+            or endpoint.port not in (None, 80) or endpoint.path.rstrip("/") != "/v1"
             or endpoint.query or endpoint.fragment or endpoint.username or endpoint.password
             or config["access"]["type"] != "api-key" or not config["access"].get("apiKey")
             or "glm-5.3-flash" not in config["personalModelIds"]):
         raise ValueError("zcode_snapmaker_provider_changed")
     return {"provider_id": "new-provider", "provider_name": "Snapmaker", "model_id": "glm-5.3-flash",
-            "endpoint_host": endpoint.hostname, "protocol": "anthropic-messages"}
+            "endpoint_scheme": endpoint.scheme, "endpoint_host": endpoint.hostname, "protocol": "anthropic-messages"}
 
 
 def model_io_summary(root):

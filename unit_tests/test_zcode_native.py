@@ -63,10 +63,22 @@ def test_provider_metadata_rejects_a_different_company_endpoint(tmp_path, host, 
     p=tmp_path/"provider.json"
     p.write_text(json.dumps({"config":{"providerConfigRules":{"providerRules":[{
         "providerId":"new-provider","providerName":"Snapmaker","config":{
-            "api":{"type":protocol,"baseUrl":"https://"+host+"/v1"},
+            "api":{"type":protocol,"baseUrl":"http://"+host+"/v1"},
             "access":{"type":"api-key","apiKey":"test-placeholder"},
             "personalModelIds":["glm-5.3-flash"]}}]}}}))
     with pytest.raises(ValueError, match="provider_changed"):provider_metadata(p)
+
+
+def test_provider_metadata_accepts_existing_company_address_without_exposing_key(tmp_path):
+    p=tmp_path/"provider.json"
+    p.write_text(json.dumps({"config":{"providerConfigRules":{"providerRules":[{
+        "providerId":"new-provider","providerName":"Snapmaker","config":{
+            "api":{"type":"anthropic-messages","baseUrl":"http://ai-gateway.s.com/v1"},
+            "access":{"type":"api-key","apiKey":"test-placeholder-secret"},
+            "personalModelIds":["glm-5.3-flash"]}}]}}}))
+    metadata=provider_metadata(p)
+    assert metadata["endpoint_scheme"]=="http" and metadata["provider_name"]=="Snapmaker"
+    assert "test-placeholder-secret" not in json.dumps(metadata)
 
 
 @pytest.mark.parametrize("fault", [None,"provider","tools"])
