@@ -42,7 +42,8 @@ $token=[IO.File]::ReadAllText($tokenPath)
 $headers=@{Authorization=('Bearer '+$token);Accept='application/json, text/event-stream';'MCP-Protocol-Version'='2025-06-18'}
 $body=[Text.Encoding]::UTF8.GetBytes([string]$spec.body)
 if($body.Length -gt 65536){throw 'request_too_large'}
-$r=Invoke-WebRequest -UseBasicParsing -Uri 'http://127.0.0.1:18789/mcp/' -Method Post -Headers $headers -ContentType 'application/json' -Body $body -TimeoutSec 18
+# Use the canonical endpoint: PS 5 strips Authorization on a trailing-slash redirect.
+$r=Invoke-WebRequest -UseBasicParsing -Uri 'http://127.0.0.1:18789/mcp' -MaximumRedirection 0 -Method Post -Headers $headers -ContentType 'application/json' -Body $body -TimeoutSec 18
 $text=[string]$r.Content
 if($text.Length -gt 3800000){throw 'response_too_large'}
 @{status=[int]$r.StatusCode;body=$text}|ConvertTo-Json -Compress

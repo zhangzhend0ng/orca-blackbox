@@ -22,3 +22,9 @@
 - hv_go.ps1 / hv_harvest.ps1 PowerShell parser：无解析错误。
 - 客机 Python 3.14.10 + windows-mcp 0.8.9 serve --help：exit 0；runtime ZIP 双端 SHA256 9b8fd5d91cab3c6bcbff201d37d9c535fb0c65fcc18c6da779c56ee056c690de。
 - 真实 GUI：NOT VERIFIED，下一步仅通过 hv_go -WindowsMcpProbe 启动。
+
+## 首轮真实联调（NON_GREEN）
+
+run 7078bc61be5b4f5aac4fb755a9d6e03d，host/guest source 7222f88。Orca/MCP 服务正常启动；Codex MCP initialize 被 401 拒绝，未发生输入。server.log 显示 `/mcp/` 返回 307 → `/mcp` 返回 401；PowerShell 5.1 redirect 丢失 Authorization。桥改用 canonical `/mcp` 并禁重定向；不改上游服务或关闭认证。
+
+worker 无错误、自然关闭 SUT，MCP server 已停止；guest Job ActiveProcesses=0，forced=false；host Job ActiveProcesses=0，forced=false。worker 自身 exit 0 仅表示生命周期完成，不表示任务通过。已由 hv_harvest -WindowsMcpRunId 回收原始报告及初始截图。保留本轮失败，不计入 GREEN，也不写飞书基线。
