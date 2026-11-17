@@ -1,5 +1,7 @@
 # 原生 Codex 业务 demo：编辑保存与独立恢复证明
 
+当前主用路线已转为ZCode原生agent和公司Snapmaker供应商，GUI业务actor未启动Codex CLI业务请求。此文保留早期Codex demo记录；最新稳定性结果为安全3/3、业务严格7/8，尚未晋级，见[ZCode验收](runs/zcode-matrix-2026-11-17.md)。
+
 2026-11-17 冻结目标：Codex 仅凭目标将固定 cube 的常规层高改为 0.24，初层保持 0.40、模型不变，GUI 保存到本 run 的 `projects/0001.3mf`。不提供坐标或菜单清单。此版本只准 SHADOW，不进入 GREEN 基线。
 
 ## 唯一主链

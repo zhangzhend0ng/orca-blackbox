@@ -22,3 +22,5 @@
 首批5c590369420c4c9a9536f41ec92892b4 / 91080e5：首轮e2feee790ee94c108146a9b107c57e57在管理启动阶段失败，未创建actor/未调用模型。客机实际已启动，但relay秒级RUN标记19:41:49重复，客户端无法确认。批次其余槽位not_run，保留原分母。已单独取消并harvest：NON_GREEN/cancelled、guest Job0、cleanup_confirmed、token不存在。修复relay提交前等待与上一RUN不同的秒级时间戳，新增实测故障回归；不修改全局relay服务。
 
 0278e58完整批次安全3/3、业务5/8。反例揭示Wait schema误声明，以及客户端忽略原生tool.updated/error。已修复必填整数、原生error事件明确failed；required漂移检查避免删掉上游必填字段。原始失败不重标。全仓820 passed、1 skipped（39.34s），Node语法及diff whitespace通过。Screenshot region继续禁止，仅增加工具格式提示，不放宽authority；修改后必须新冻结批次验收。详见docs/runs/zcode-matrix-2026-11-17.md。
+
+最终29f567e完整复验：安全3/3、业务严格7/8。剩余Type落点非Edit由调用前门禁拒绝，AI随后恢复并得到正确3MF/G-code；原合同严格拒绝，不为通过而放宽trace。没有观察到实际跨PID/HWND输入或假通过，但不把未检查的全部参数宣称已验证。11轮Job0、清理确认、token删除、个人配置未变；客机clean/Orca0/MCP监听0/suite Ready。活跃客户端guard采样最大3.081秒，全局guard仍ready。验收结论：严格投入门槛未过；不扩大87条，不发布GREEN，不写回飞书覆盖。C级后续项：工具描述与收窄schema统一；任何恢复合同必须证明未派发/无输入副作用，再单独验收，不重标旧结果。详见两份逐文件SHA256 JSON。
