@@ -29,7 +29,7 @@ if ($WindowsMcpRunId) {
     $root=if($nativeSave){Join-Path $sb ('artifacts\v3\'+$id+'\artifacts')}else{Join-Path $sb ('artifacts\windows_mcp_runs\'+$id)}
     # Never harvest the run's authentication token or config/profile files.
     $names=@('process.json','worker.json','worker.log','server.log','ready.json')
-    if($nativeSave){$names=@('setup.json','control_cancel.json','process.json','proof.json','native_worker.json','native_worker.log','native_trace.ndjson','host_done.json','scope.json','server.log','ready.json','initial.png','agent_final.png','proof_final.png','projects/0001.3mf','proof/0001.3mf','exports/0001.gcode')}
+    if($nativeSave){$names=@('canvas_diagnostic.json','setup.json','control_cancel.json','process.json','proof.json','native_worker.json','native_worker.log','native_trace.ndjson','host_done.json','scope.json','server.log','ready.json','initial.png','agent_final.png','proof_final.png','projects/0001.3mf','proof/0001.3mf','exports/0001.gcode')}
     $names+=@(Get-ChildItem -LiteralPath $root -Filter 'state_*.png' | Where-Object {$_.Name -cmatch '^state_[0-9]{2}_(prepare|preview)\.png$'} | ForEach-Object Name)
     foreach($name in $names) {
       $p=Join-Path $root $name

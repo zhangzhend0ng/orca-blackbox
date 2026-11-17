@@ -62,6 +62,11 @@ def native_contract(actor="codex", scenario="base"):
             data["case_id"] = pilot.CASE_ID
             data["contract_version"] = "native-pilot-zcode-1-"+scenario
             data["steps"][1]["goal"] = "Native ZCode with Snapmaker glm-5.3-flash: "+pilot.GOAL
+        elif scenario == "canvas_probe":
+            data["case_id"] = "diagnostic_canvas_input"
+            data["contract_version"] = "native-canvas-probe-1"
+            data["steps"] = [{"id": "probe", "goal": "Trusted guest-only read-only window/pixel-format census; no MCP or model."},
+                             {"id": "close", "goal": "Close the diagnostic SUT and confirm owned cleanup; never business GREEN."}]
     return validate_contract(data)
 
 

@@ -86,6 +86,13 @@ def worker(run_id, actor="codex", scenario="base"):
         atomic_json(root / "setup.json", setup)
         atomic_json(root / "scope.json", {"run_id": run_id, "app_pid": ui.app.pid,
             "hwnd": ui.app.hwnd, "output_path": str(output)})
+        if scenario == "canvas_probe":
+            from harness.canvas_input import collect_window_evidence
+            atomic_json(root / "canvas_diagnostic.json", collect_window_evidence(run_id, ui.app.pid, ui.app.hwnd))
+            ui.close()
+            report["app_closed"] = not ui.app.alive()
+            report["diagnostic_only"] = True
+            return 0 if report["app_closed"] else 1
         (root / "token").write_text(secrets.token_hex(32), encoding="ascii")
         (root / "config.toml").write_text("", encoding="utf-8")
         env = os.environ.copy()

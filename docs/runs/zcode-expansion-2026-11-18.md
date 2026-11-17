@@ -1,0 +1,5 @@
+# 扩样恢复记录 2026-11-18
+
+afc2ac8后台批次ce6b388018724a65841b7f63b81f4e62已结束：quality_a / 54e4db45a2af4cb08ee8a2acce5bdcf8在3次MCP调用（含1次输入）后因ip_guard_unverified:ValueError安全停止，正式NON_GREEN、cleanup_confirmed、Job0、token删除；下一项39a45e533c524975be2e35081330d642在IPGuard启动前校验失败，未启动GUI/actor，没有正式host结果；matrix因此记录FileNotFoundError，真实根因见其协调器日志。材料a3d210998fdb4ce9b610de87ed8e44f9未执行，平移76a1ef1ec9f449af8e4cfd23b5844f8c预检blocked。保留全部原分母，不把基础设施失败算作新业务验证。
+
+当前guard已恢复ready，PID仍22040；未修改guard/Clash或绕过门禁。坏状态仅保留ValueError，不能断言具体是过期/阻断哪项字段。源码扩样先补齐两个新目标：infill15%→30%与逻辑槽3；目前纯测试通过，真实GUI待验。画布先单独只读probe，确定PFD/class后再接限权输入。

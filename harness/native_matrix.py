@@ -14,6 +14,9 @@ SCENARIOS = {
     "pilot_strength": ("Quality", None),
     "pilot_transform": ("Quality", None),
     "pilot_material": ("Quality", None),
+    "pilot_infill": ("Others", None),
+    "pilot_material3": ("Quality", None),
+    "canvas_probe": ("Quality", None),
 }
 BUSINESS = ("quality_a", "quality_b", "strength_a", "strength_b", "others_a", "others_b", "save_dialog", "overwrite")
 SAFETY = tuple(k for k in SCENARIOS if k.startswith("safety_"))

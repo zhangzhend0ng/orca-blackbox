@@ -5,7 +5,7 @@ import json
 
 import pytest
 
-from harness.native_matrix import BUSINESS, SCENARIOS
+from harness.native_matrix import BUSINESS, SCENARIOS, scenario_spec
 from harness.native_pilots import PILOTS, business_goal, pilot_module
 from harness.native_save_session import native_contract, native_spec
 from harness.run_verdict import contract_digest
@@ -56,6 +56,8 @@ def test_shared_custody_envelope_dispatches_only_the_bound_business_oracle(nativ
     from unit_tests.test_pilot_strength import saved as strength_saved, sliced
     from unit_tests.test_pilot_material import saved as material_saved, tool1
     from unit_tests.test_pilot_transform import project as moved, moves
+    from unit_tests.test_pilot_infill import saved as infill_saved, sliced as infill_sliced
+    from unit_tests.test_pilot_material3 import tool2
     snapshot = native_evidence
     root = snapshot.artifact_dir
     fixture = (root/"input/fixture.3mf").read_bytes()
@@ -63,6 +65,8 @@ def test_shared_custody_envelope_dispatches_only_the_bound_business_oracle(nativ
         "pilot_strength": (strength_saved(fixture), sliced()),
         "pilot_transform": (moved(), moves()),
         "pilot_material": (material_saved(fixture), tool1()),
+        "pilot_infill": (infill_saved(fixture), infill_sliced()),
+        "pilot_material3": (material_saved(fixture, slot="3"), tool2()),
     }
     project, gcode = products[scenario]
     if fault == "wrong_business":
@@ -88,6 +92,6 @@ def test_shared_custody_envelope_dispatches_only_the_bound_business_oracle(nativ
     png = b"synthetic setup frame; not GUI coverage"
     (root/"initial.png").write_bytes(png)
     (root/"setup.json").write_text(json.dumps({"run_id":snapshot.run_id, "scenario":scenario,
-        "app_pid":123, "tab_clicked":"Quality", "finished_at_ns":70,
+        "app_pid":123, "tab_clicked":scenario_spec("zcode", scenario)[0], "finished_at_ns":70,
         "initial_sha256":hashlib.sha256(png).hexdigest()}))
     assert verify_saved(snapshot).evidence_complete is (fault is None)

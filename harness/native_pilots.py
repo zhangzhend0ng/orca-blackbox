@@ -5,6 +5,8 @@ PILOTS = {
     "pilot_strength": "pilot_strength",
     "pilot_transform": "pilot_transform",
     "pilot_material": "pilot_material",
+    "pilot_infill": "pilot_infill",
+    "pilot_material3": "pilot_material3",
 }
 PILOT_BLOCKS = {
     "pilot_transform": "scene_numeric_range_and_canvas_edit_authority_not_ready",

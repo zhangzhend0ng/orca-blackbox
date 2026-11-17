@@ -65,7 +65,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-id", required=True)
     from harness.native_matrix import SCENARIOS, scenario_spec, completed_progress
-    parser.add_argument("--scenario", choices=tuple(SCENARIOS), default="base")
+    parser.add_argument("--scenario", choices=tuple(s for s in SCENARIOS if s != "canvas_probe"), default="base")
     args = parser.parse_args(argv)
     _, disturbance = scenario_spec("zcode", args.scenario)
     from harness.native_pilots import require_pilot_ready

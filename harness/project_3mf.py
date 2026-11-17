@@ -131,7 +131,7 @@ def _geometry(files):
 def inspect_project(raw, fixture, *, layer_height="0.24", expected_extruder="1",
                     expected_assembly_transform=None, cancelled=lambda: False):
     """Compare physical triangles and fixed slicing semantics, not ZIP byte order."""
-    _require(type(expected_extruder) is str and expected_extruder in {"1", "2"}, "project_expected_tool")
+    _require(type(expected_extruder) is str and expected_extruder in {"1", "2", "3"}, "project_expected_tool")
     _require(expected_assembly_transform is None or
              (type(expected_assembly_transform) is tuple and len(expected_assembly_transform) == 12
               and all(type(x) is Decimal and x.is_finite() and abs(x) < 10**6 for x in expected_assembly_transform)),
