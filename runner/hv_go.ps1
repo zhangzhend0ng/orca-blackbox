@@ -8,8 +8,15 @@
 # from runner\_common.ps1 (env-overridable). Case list comes from cases.py —
 # do NOT hardcode case names here (see docs/STRUCTURING_PLAN.md).
 param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$Warmup, [switch]$NoSync, [string]$Suite = 'regression', [switch]$V3,
-      [ValidateSet('script', 'agent_mcp')][string]$V3Executor = 'script', [string]$V3RunId = '')
+      [ValidateSet('script', 'agent_mcp')][string]$V3Executor = 'script', [string]$V3RunId = '',
+      [switch]$WindowsMcpProbe, [string]$ProbeRunId = '')
 . (Join-Path $PSScriptRoot '_common.ps1')
+if ($WindowsMcpProbe) {
+  if ($V3 -or $Cases -or $args -or $OnlyFailed -or $Warmup -or $V3RunId -or
+      $V3Executor -ne 'script' -or $ProbeRunId -cnotmatch '^[0-9a-f]{32}$') {
+    throw 'Windows-MCP probe requires only a fresh 32-hex -ProbeRunId, no cases/V3/warmup'
+  }
+} elseif ($ProbeRunId) { throw '-ProbeRunId requires -WindowsMcpProbe' }
 if (-not $V3 -and ($V3Executor -ne 'script' -or $V3RunId)) {
   throw 'V3 executor/run identity requires -V3'
 }
@@ -44,7 +51,7 @@ $Cases = @($Cases + @($args)) | Where-Object { $_ }
 $explicitCases = $PSBoundParameters.ContainsKey('Cases') -or @($args).Count -gt 0
 
 # default list: cases.py registry (host python; fall back to guest layout note)
-if (-not $Cases) {
+if (-not $Cases -and -not $WindowsMcpProbe) {
   $repoRoot = Split-Path $PSScriptRoot -Parent
   $py = (Get-Command python -ErrorAction SilentlyContinue).Source
   if (-not $py) { $py = $guestPython }  # guest binary as last resort on the host
@@ -71,6 +78,7 @@ if ($OnlyFailed) {
 # and skip it — computed AFTER the -OnlyFailed override so a failed-case
 # rerun does not pay the throwaway pass.
 $warmup = if ($Warmup) { $true } elseif ($NoWarmup) { $false } else { -not $explicitCases }
+if ($WindowsMcpProbe) { $warmup = $false }
 
 if ($V3) {
   if (-not $explicitCases) { throw 'V3 requires an explicit approved case selection' }
@@ -100,7 +108,7 @@ if ($V3) {
 # checklist printout (README top section points here; keep in sync by hand).
 Write-Host "[preflight] PITFALLS 0901 §15 checklist:"
 Write-Host "   (1) relay heartbeat: relay_alive.txt fresh (it refreshes on command completion only)"
-if ($V3) {
+if ($V3 -or $WindowsMcpProbe) {
   Write-Host "   (2) V3 requires an idle desktop; cleanup targets only this run's owned Job"
 } else {
   Write-Host "   (2) guest orphan sweep: relay Stop-Process snapmaker-orca,python before the batch"
@@ -126,7 +134,7 @@ do {
 if ($q -notmatch $guestUser) { throw "guest not logged on after 6 min (autologon broken?)" }
 Write-Host "    logged on."
 
-if ($V3) {
+if ($V3 -or $WindowsMcpProbe) {
   # Legacy scripts do not hold the v3 runtime lease. Refuse their active
   # desktop instead of unregistering a running task or killing its app.
   $desktopGate = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
@@ -231,7 +239,7 @@ Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
   # NOTE: this scriptblock runs ON THE GUEST — everything it needs must be
   # marshaled via param/-ArgumentList (host-side $warmup is not visible here;
   # measured 09-03 night: silent $false, warmup block never emitted).
-  param($caseStr, $sb, $py, $warmup, $suite, $v3, $v3Executor, $v3RunId)
+  param($caseStr, $sb, $py, $warmup, $suite, $v3, $v3Executor, $v3RunId, $mcpProbe, $probeRunId)
   # full run: the guest derives the list from cases.py itself (single
   # source of truth); explicit subset: split the passed string.
   # warmup fragment — the host-side decision ($warmup) must be baked into
@@ -317,6 +325,14 @@ foreach (`$c in `$cases) {
 'V3 COMPLETE' | Add-Content C:\coil\v3_progress.txt
 "@
   }
+  if ($mcpProbe) {
+    $runner = @"
+Set-Location '$sb'
+`$env:PYTHONIOENCODING='utf-8'
+& '$py' -B tools\windows_mcp_probe.py --run-id '$probeRunId' 2>&1 | Out-File 'artifacts\windows_mcp_probe.log' -Encoding utf8
+exit `$LASTEXITCODE
+"@
+  }
   [IO.File]::WriteAllText('C:\coil\run_suite.ps1', $runner)
   Unregister-ScheduledTask -TaskName suite -Confirm:$false -ErrorAction SilentlyContinue
   $a = New-ScheduledTaskAction -Execute "powershell.exe" -Argument ("-NoProfile -ExecutionPolicy Bypass -File C:\coil\run_suite.ps1 " + $caseStr)
@@ -325,7 +341,7 @@ foreach (`$c in `$cases) {
   Register-ScheduledTask -TaskName "suite" -Action $a -Settings $st -Principal $p -Force | Out-Null
   Start-ScheduledTask -TaskName "suite"
   "suite launched: " + (Get-ScheduledTask suite).State
-} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, ([bool]$V3), $V3Executor, $V3RunId
+} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, ([bool]$V3), $V3Executor, $V3RunId, ([bool]$WindowsMcpProbe), $ProbeRunId
 Write-Host "[4] DONE. Poll progress any time (admin window):"
 Write-Host "    Get-Content C:\coil\vm_setup\poll_rerun.txt | Set-Content C:\coil\vm_setup\relay_cmd.txt   # via relay"
 Write-Host "    or in guest: Get-Content C:\coil\regress_progress.txt -Tail 5"

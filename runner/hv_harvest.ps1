@@ -11,7 +11,7 @@
 #   "FAILED: <name> <name> ..."  -> names written one per line
 #   "SUMMARY: PASS=n FAIL=0"     -> host list cleared (no stale reruns)
 #   no summary file              -> host list untouched (unknown state)
-param([switch]$V3)
+param([switch]$V3, [string]$WindowsMcpRunId = '')
 . (Join-Path $PSScriptRoot '_common.ps1')
 
 $repo = Split-Path $PSScriptRoot -Parent
@@ -19,7 +19,29 @@ $artifacts = Join-Path $repo 'artifacts'
 New-Item -ItemType Directory -Force $artifacts | Out-Null
 $ff = Join-Path $artifacts 'failed_cases.txt'
 
-if ($V3) {
+if ($WindowsMcpRunId) {
+  if ($V3 -or $WindowsMcpRunId -cnotmatch '^[0-9a-f]{32}$') { throw 'Invalid probe harvest selection' }
+  $target = Join-Path $artifacts ('windows_mcp_harvest\' + $WindowsMcpRunId)
+  New-Item -ItemType Directory -Force $target | Out-Null
+  $remote = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
+    param($sb,$id)
+    $root=Join-Path $sb ('artifacts\windows_mcp_runs\'+$id)
+    # Never harvest the run's authentication token or config/profile files.
+    $names=@('process.json','worker.json','worker.log','server.log','ready.json')
+    $names+=@(Get-ChildItem -LiteralPath $root -Filter 'state_*.png' | Where-Object {$_.Name -cmatch '^state_[0-9]{2}_(prepare|preview)\.png$'} | ForEach-Object Name)
+    foreach($name in $names) {
+      $p=Join-Path $root $name
+      if(Test-Path -LiteralPath $p) {
+        $file=Get-Item -LiteralPath $p
+        if($file.Length -gt 2000000 -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)){throw 'probe_artifact_rejected'}
+        @{name=$name;data=[Convert]::ToBase64String([IO.File]::ReadAllBytes($p))}
+      }
+    }
+  } -ArgumentList $guestSandbox,$WindowsMcpRunId
+  foreach($file in $remote){[IO.File]::WriteAllBytes((Join-Path $target $file.name),[Convert]::FromBase64String($file.data))}
+  "Windows-MCP probe diagnostics harvested -> $target (no GREEN/baseline update)"
+}
+elseif ($V3) {
   $payload = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
     param($sb)
     $file = Join-Path $sb 'artifacts\v3_suite.json'

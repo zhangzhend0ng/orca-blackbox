@@ -131,6 +131,8 @@ try {
 
 
 class RelayMailbox:
+    guest_io = _GUEST_IO
+
     def __init__(self, guest_root: str, run_id: str, *, deadline: float, channel="transport"):
         validate_identity(guest_root, run_id)
         if channel not in {"transport", "control"}:
@@ -153,7 +155,7 @@ class RelayMailbox:
             return "'" + str(p).replace("'", "''") + "'"
         code = ("$ErrorActionPreference='Stop'\n$stage='common'\ntry {\n. " + quoted(REPO / "runner" / "_common.ps1")
                 + "\n$stage='invoke'\n$data=Invoke-Command -VMName $vm -Credential $cred -ErrorAction Stop -ScriptBlock {\n"
-                + _GUEST_IO + "\n} -ArgumentList " + quoted(self.guest_root) + "," + quoted(self.run_id)
+                + self.guest_io + "\n} -ArgumentList " + quoted(self.guest_root) + "," + quoted(self.run_id)
                 + "," + quoted(payload) + "\n$wire=@{ok=$true; data_b64=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes([string]$data))}|ConvertTo-Json -Depth 8 -Compress\n"
                 + "} catch { $wire=@{ok=$false;error='ps_direct_failed';stage=$stage;error_type=$_.Exception.GetType().Name;category=$_.CategoryInfo.Category.ToString();error_id=$_.FullyQualifiedErrorId}|ConvertTo-Json -Compress }\n"
                 + "[IO.File]::WriteAllText(" + quoted(output) + ",$wire,(New-Object Text.UTF8Encoding($false)))\n")
