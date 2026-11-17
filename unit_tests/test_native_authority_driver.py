@@ -120,6 +120,14 @@ def test_completed_receipt_allows_clean_turn(tmp_path):
     assert code == 0 and report["error"] is None
 
 
+def test_informational_tool_update_without_call_id_does_not_abort_clean_tool(tmp_path):
+    events = tool_events("c1", "Screenshot")
+    events.append(dict(type="tool.updated", payload=dict(kind="progress")))
+    code, report = run_driver(tmp_path, [receipt()], events, count=1)
+    assert code == 0 and report["error"] is None
+    assert report["informational_tool_event_kinds"] == {"progress": 1}
+
+
 def test_recoverable_error_followed_by_result_consumes_receipt_once(tmp_path):
     events = tool_events("c1", "Type", error=True)
     events.append(tool_events("c1", "Type")[-1])

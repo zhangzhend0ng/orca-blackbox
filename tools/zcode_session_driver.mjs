@@ -124,6 +124,11 @@ try{
    report.event_counts[event.type]=(report.event_counts[event.type]||0)+1;
    const p=event.payload||{};
    if(event.type==='tool.updated'){
+    if(!['scheduled','error','result'].includes(p.kind)){
+     report.informational_tool_event_kinds||={};
+     report.informational_tool_event_kinds[String(p.kind)]=(report.informational_tool_event_kinds[String(p.kind)]||0)+1;
+     continue;
+    }
     if(authorityMode&&(typeof p.toolCallId!=='string'||!p.toolCallId))throw new Error('native_tool_call_identity_missing');
     const call=calls.get(p.toolCallId)||{tool_call_id:p.toolCallId,status:'pending'};
     if(authorityMode&&p.kind!=='scheduled'&&!calls.has(p.toolCallId))throw new Error('native_unscheduled_tool_event');
