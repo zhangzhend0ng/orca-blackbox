@@ -1,6 +1,6 @@
 # Native Codex 编辑保存 demo：实现审阅
 
-结论：APPROVE for controlled guest trial；尚未取得真实业务通过。仅单次固定 win11-test、SHADOW，不宣称生产安全隔离或已覆盖87用例。
+结论：APPROVE for controlled guest trial；实现后两轮真实执行中，首轮 NON_GREEN 保留，修复收尾宽限后第二轮完整 SHADOW。范围仍为固定 win11-test、单个业务目标，不宣称生产安全隔离或已覆盖87用例。
 
 ## 范围与 harness
 
@@ -24,7 +24,7 @@ GPT-6 Astra独立只读审阅本次源码，原提出三项C/HIGH，协调者修
 
 残余边界：启动确认超时可能已开始，禁止直接重跑，需检查该run与owned进程。现有canonical-root锁不隔离同权限恶意进程；焦点check→SendInput存在TOCTOU；--no-control仅用于独占客机，不能推广共享宿主。只读verifier不能代替输入前的权限限制。费用/实际模型ID未返回则unknown。登录态/凭据目录隔离与后续稳定性矩阵不在本次正例完成声明内。
 
-## 验证状态
+## 实测前验证状态（历史）
 
 - python -B -m pytest unit_tests -q：760 passed, 1 skipped（23.74秒）。
 - 后续受影响专项：73 passed；Python compile与hv_go/hv_harvest PS parser通过。
@@ -37,3 +37,9 @@ GPT-6 Astra独立只读审阅本次源码，原提出三项C/HIGH，协调者修
 run 61746aad8bb94c6381a7c96693eb4139，源码 c9f86aa。原生Codex九次工具调用全部成功，GUI编辑并另存工程；MCP Job停止后，旧SUT自然exit0，冻结同hash文件，新profile重开后可信GUI切片导出，新SUT也exit0。worker error=null；宿主独立离线检查确认3MF层高.24/初层.4、8顶点12三角形几何不变，G-code实际112层、首Z.4、末Z27.04。
 
 整轮仍为NON_GREEN：NativeHandle在worker exit0而Job active>0的短暂窗口立即cancel，process收据forced=true，runtime正确阻止晋级。尚未识别具体辅助进程或Job记账延迟，不归因SUT缺陷。修复为exit0时给10秒自然清理窗口，非0或逾期仅终止本Job。新增两条可控时钟回归验证自然退出不强杀、持续残留有界终止（58项受影响测试通过）。原始结果不重标；下一轮新run重测。
+
+## 第二轮真实执行：SHADOW
+
+run f3efeea0073b4e488c6d00e42acd1382，冻结源码5b378ccc06a2232b2102965fada5d176f28791eb。原生Codex十次MCP调用完成编辑及GUI保存，本轮点击Save，首轮使用Enter；检查器未限制唯一合法动作序列。独立验证path/business=pass，verified_pass=true，cleanup_confirmed=true；进程exit0、Job active=0、forced_termination=false，旧/新SUT均自然exit0。visual=unknown，release_eligible=false，结果仅SHADOW。
+
+最终全仓纯单测767 passed、1 skipped（22.45秒），Python compile和两份PowerShell parser通过；单测不计真实GUI分母。harvest完成后客机复核：源码仍为冻结提交且clean、Orca进程0、suite Ready、本轮临时MCP token已删除。报告与原始产物hash见[运行记录](../runs/native-save-2026-11-17.md)。依据收尾规则，SHADOW/NON_GREEN不写入飞书GREEN基线。八次真实矩阵、真实中途取消与身份隔离仍未验收。

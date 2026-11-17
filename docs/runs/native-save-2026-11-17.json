@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-17",
+  "scope": "single fixed native Codex GUI edit/save demo; SHADOW only",
+  "model_id": null,
+  "usd_cost": null,
+  "runs": [
+    {
+      "run_id": "61746aad8bb94c6381a7c96693eb4139",
+      "source_sha": "c9f86aa2573501b0698b79dd4ae4414aaa9d5403",
+      "result": {
+        "checks": {
+          "business": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          },
+          "path": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          },
+          "visual": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          }
+        },
+        "cleanup_confirmed": true,
+        "execution_status": "failed",
+        "gui_execution_requested": true,
+        "mode": "agent_shadow",
+        "reasons": [
+          "execution_not_completed",
+          "evidence_incomplete",
+          "execution_noncompliant",
+          "business_unknown",
+          "path_unknown"
+        ],
+        "recovery_used": false,
+        "release_eligible": false,
+        "release_verdict": "NON_GREEN",
+        "runtime_status": "failed",
+        "verified_pass": false
+      },
+      "native_tool_calls": 9,
+      "artifact_hashes": [
+        {
+          "path": "artifacts/native_save_demo/61746aad8bb94c6381a7c96693eb4139/harvest.json",
+          "bytes": 26,
+          "sha256": "47942a736f7609021e6c8334cffa0b04d1f586b6c78abd87bb46c0dc26420551"
+        },
+        {
+          "path": "artifacts/native_save_demo/61746aad8bb94c6381a7c96693eb4139/launch.json",
+          "bytes": 84,
+          "sha256": "f9e8f5315ac33d9aa6ad3ef6a334ffb7c9882c42574378d039e3f6bbf4808646"
+        },
+        {
+          "path": "artifacts/native_save_demo/61746aad8bb94c6381a7c96693eb4139/summary.json",
+          "bytes": 1048,
+          "sha256": "1485c07789181ba5d60e84b1bc0445b727953b83f92484b98edaa7d2c08c3620"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/61746aad8bb94c6381a7c96693eb4139/codex.log",
+          "bytes": 740327,
+          "sha256": "28e90d20916cffdc75beb05564480eba1266b09d196795e3b77d23146b74a791"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/61746aad8bb94c6381a7c96693eb4139/host.json",
+          "bytes": 3539,
+          "sha256": "b8cfd50ddd2c13624f33e318721bbe033e28d9a26600a62ade45fa7f2ca8463a"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/61746aad8bb94c6381a7c96693eb4139/prompt.txt",
+          "bytes": 1124,
+          "sha256": "5b0c5a6acf7010700fe7e578b3d0b78932a15d7012427070c92f116cb71e6813"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/61746aad8bb94c6381a7c96693eb4139/agent_final.png",
+          "bytes": 97895,
+          "sha256": "5f9a90e09209291db41e2f40a2ddf851fbe3b2c77a0bbfdee82c9270b6d74bb7"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/61746aad8bb94c6381a7c96693eb4139/contract.json",
+          "bytes": 592,
+          "sha256": "ee2dd9ed8b78898962450b9f3c540ad41ad8e19196ce8bc4ef3f25a7d33e2517"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/61746aad8bb94c6381a7c96693eb4139/exports/0001.gcode",
+          "bytes": 234658,
+          "sha256": "2be4655a69c94e270279214c1f2d47c8684f59ecb347e2e0c243148031627db1"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/61746aad8bb94c6381a7c96693eb4139/host_done.json",
+          "bytes": 123,
+          "sha256": "e65e58467398c795dbf4e9246e85be90d10f503d18389b6f87acd72a7193e09b"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/61746aad8bb94c6381a7c96693eb4139/initial.png",
+          "bytes": 96896,
+          "sha256": "71790f9b642af304719bcf5a944e50adbf641a294648e32710e1067187c10cc4"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/61746aad8bb94c6381a7c96693eb4139/manifest.json",
+          "bytes": 298,
+          "sha256": "f0d3210cb113ba45b16ac021b31fd0acf344c58e75cd0ad0ab09c270bd37d43b"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/61746aad8bb94c6381a7c96693eb4139/native_trace.ndjson",
+          "bytes": 2754,
+          "sha256": "754d349338fca627135809c7653944c60558c65739b53f5020b9221e47e5446b"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/61746aad8bb94c6381a7c96693eb4139/native_worker.json",
+          "bytes": 196,
+          "sha256": "b66fdde34f088c75ee54838c246583fb03ae5bfd90a08f8bc9432e6e64f3febc"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/61746aad8bb94c6381a7c96693eb4139/process.json",
+          "bytes": 335,
+          "sha256": "35eaba809dda8882c3645c4cc441f364fe1b533229de87364eae1d12c00ff5e7"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/61746aad8bb94c6381a7c96693eb4139/projects/0001.3mf",
+          "bytes": 34363,
+          "sha256": "361c1c859bcf2d11051f8d81edbec97d6916c254a997084d6a35b71d4d9aa8ef"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/61746aad8bb94c6381a7c96693eb4139/proof/0001.3mf",
+          "bytes": 34363,
+          "sha256": "361c1c859bcf2d11051f8d81edbec97d6916c254a997084d6a35b71d4d9aa8ef"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/61746aad8bb94c6381a7c96693eb4139/proof.json",
+          "bytes": 856,
+          "sha256": "9dfe1ce628eee8de50cbedfc95dec36cd0ad597a6cb059042ee7117e0cd09424"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/61746aad8bb94c6381a7c96693eb4139/proof_final.png",
+          "bytes": 217183,
+          "sha256": "240d5c3d4b61368362e28ddc19553ed1a888febe36501358e76bf48dacc2e3cb"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/61746aad8bb94c6381a7c96693eb4139/ready.json",
+          "bytes": 361,
+          "sha256": "c9fa228802766543377b9179e16e2f1f86c589b25f485de9799b6a119b9b5d3c"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/61746aad8bb94c6381a7c96693eb4139/result.json",
+          "bytes": 564,
+          "sha256": "1885c35a4ee9dd512fb77ef0bdac9633b503550d1c26aa176f54374a4d2b4aa6"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/61746aad8bb94c6381a7c96693eb4139/scope.json",
+          "bytes": 209,
+          "sha256": "b1e57027315df2b9aaeb1d8f23fe068fbc22ae5d3afb65dd539784d14c06f3ef"
+        }
+      ]
+    },
+    {
+      "run_id": "f3efeea0073b4e488c6d00e42acd1382",
+      "source_sha": "5b378ccc06a2232b2102965fada5d176f28791eb",
+      "result": {
+        "checks": {
+          "business": {
+            "detail": "Saved .24/initial .4, unchanged cube, reopened actual 112-layer G-code",
+            "evidence": [
+              "artifact:proof.json",
+              "artifact:process.json",
+              "artifact:native_trace.ndjson",
+              "artifact:proof/0001.3mf:sha256:31dcf6da4352cdd35f3c37a66a66effc65858ad86653cde33cb7b0fa895cc0b5",
+              "artifact:exports/0001.gcode:sha256:6c70436d1eefd02a5e01eb8889e131bf962f124c5702bcdea7d7a6423ee028bc"
+            ],
+            "status": "pass"
+          },
+          "path": {
+            "detail": "Native GUI save; stopped input; old exit; frozen-file fresh-profile reslice",
+            "evidence": [
+              "artifact:proof.json",
+              "artifact:process.json",
+              "artifact:native_trace.ndjson",
+              "artifact:proof/0001.3mf:sha256:31dcf6da4352cdd35f3c37a66a66effc65858ad86653cde33cb7b0fa895cc0b5",
+              "artifact:exports/0001.gcode:sha256:6c70436d1eefd02a5e01eb8889e131bf962f124c5702bcdea7d7a6423ee028bc"
+            ],
+            "status": "pass"
+          },
+          "visual": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          }
+        },
+        "cleanup_confirmed": true,
+        "execution_status": "completed",
+        "gui_execution_requested": true,
+        "mode": "agent_shadow",
+        "reasons": [],
+        "recovery_used": false,
+        "release_eligible": false,
+        "release_verdict": "SHADOW",
+        "runtime_status": "completed",
+        "verified_pass": true
+      },
+      "native_tool_calls": 10,
+      "artifact_hashes": [
+        {
+          "path": "artifacts/native_save_demo/f3efeea0073b4e488c6d00e42acd1382/harvest.json",
+          "bytes": 26,
+          "sha256": "47942a736f7609021e6c8334cffa0b04d1f586b6c78abd87bb46c0dc26420551"
+        },
+        {
+          "path": "artifacts/native_save_demo/f3efeea0073b4e488c6d00e42acd1382/launch.json",
+          "bytes": 84,
+          "sha256": "8cb45291fa2357d1c2c2cbc6dc8a53ab11094ce5f48a738bbe9cff07a60b2482"
+        },
+        {
+          "path": "artifacts/native_save_demo/f3efeea0073b4e488c6d00e42acd1382/summary.json",
+          "bytes": 1707,
+          "sha256": "fd10798bd216aaa0dcfb4ea06d3475b71a98ebdf141740637428d1ccbd14ed48"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/f3efeea0073b4e488c6d00e42acd1382/codex.log",
+          "bytes": 740941,
+          "sha256": "74e2cff1c5a9837d17ab0f53f33b3661c9132bc9527377b883e19e39f155829c"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/f3efeea0073b4e488c6d00e42acd1382/host.json",
+          "bytes": 4347,
+          "sha256": "9dab62d6eb428a4fdc0ce0ccceb85a43bc5d83682afe2f04dc50b2e15c58b186"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/f3efeea0073b4e488c6d00e42acd1382/prompt.txt",
+          "bytes": 1124,
+          "sha256": "90d07fbc6347ff6b3f3862c50997380aa62685344f5f637d2545166334380aa7"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/f3efeea0073b4e488c6d00e42acd1382/agent_final.png",
+          "bytes": 97925,
+          "sha256": "c0987b9ee29e5dc250cf5f7775dfeb7fc654254318acc9107414d29771d72c6c"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/f3efeea0073b4e488c6d00e42acd1382/contract.json",
+          "bytes": 592,
+          "sha256": "ee2dd9ed8b78898962450b9f3c540ad41ad8e19196ce8bc4ef3f25a7d33e2517"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/f3efeea0073b4e488c6d00e42acd1382/exports/0001.gcode",
+          "bytes": 233022,
+          "sha256": "6c70436d1eefd02a5e01eb8889e131bf962f124c5702bcdea7d7a6423ee028bc"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/f3efeea0073b4e488c6d00e42acd1382/host_done.json",
+          "bytes": 124,
+          "sha256": "6493b189a572d978fd2a45a6287862c163bfc620b3d4d3dc533f4aa0c44e210e"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/f3efeea0073b4e488c6d00e42acd1382/initial.png",
+          "bytes": 96896,
+          "sha256": "71790f9b642af304719bcf5a944e50adbf641a294648e32710e1067187c10cc4"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/f3efeea0073b4e488c6d00e42acd1382/manifest.json",
+          "bytes": 298,
+          "sha256": "a93ba6573ff71fd056d68d7ad895af07f3356ab1fb97d8e1c57d7b279169aeb1"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/f3efeea0073b4e488c6d00e42acd1382/native_trace.ndjson",
+          "bytes": 3064,
+          "sha256": "27afb882a324887e4be0bd5efb12b7647bb18edb69f33a37c88dcd01b9a98691"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/f3efeea0073b4e488c6d00e42acd1382/native_worker.json",
+          "bytes": 196,
+          "sha256": "a850325cccbf5211d9f6f76c6d1c6899c2b75b32d27295434f1a99fa667eaab1"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/f3efeea0073b4e488c6d00e42acd1382/process.json",
+          "bytes": 325,
+          "sha256": "bec96547a3b87dae871d37b93b7d2dd1db5b92c62cf5d9590ee9527d67232c78"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/f3efeea0073b4e488c6d00e42acd1382/projects/0001.3mf",
+          "bytes": 34361,
+          "sha256": "31dcf6da4352cdd35f3c37a66a66effc65858ad86653cde33cb7b0fa895cc0b5"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/f3efeea0073b4e488c6d00e42acd1382/proof/0001.3mf",
+          "bytes": 34361,
+          "sha256": "31dcf6da4352cdd35f3c37a66a66effc65858ad86653cde33cb7b0fa895cc0b5"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/f3efeea0073b4e488c6d00e42acd1382/proof.json",
+          "bytes": 856,
+          "sha256": "84174c737972255dc073dbefa7aa9f56d20a94acce0370af16bd8a3d49c7afe8"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/f3efeea0073b4e488c6d00e42acd1382/proof_final.png",
+          "bytes": 215748,
+          "sha256": "c6cb38ca673a0a649c1daf35fa9800f308c92b32801d1975dbbe7ea9b0973727"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/f3efeea0073b4e488c6d00e42acd1382/ready.json",
+          "bytes": 361,
+          "sha256": "e821172cd863a65f4e2c24eda3c79be4bfdb1ffb0fd025ed77ce1dc78e46a2ff"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/f3efeea0073b4e488c6d00e42acd1382/result.json",
+          "bytes": 1129,
+          "sha256": "d0b43dc6f114ecc63507d13c2a6a9918fbccb1009e9d483b9db3f8a9d5eff944"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/f3efeea0073b4e488c6d00e42acd1382/scope.json",
+          "bytes": 209,
+          "sha256": "5b0ccba71ae77d5b544cf81e4a573ca71feef4d8b01bb7da0b867067ff08f383"
+        }
+      ]
+    }
+  ],
+  "postflight": {
+    "head": "5b378ccc06a2232b2102965fada5d176f28791eb",
+    "apps": 0,
+    "suite": "Ready",
+    "dirty": [],
+    "token_exists": false
+  }
+}

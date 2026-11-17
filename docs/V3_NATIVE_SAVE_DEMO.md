@@ -26,7 +26,9 @@ AI 负责定位、编辑和保存；独立重开与切片由可信检查阶段�
 
 `python -B tools/native_save_demo.py` 为宿主协调入口；要求已有提权 relay、两端同一已提交 HEAD、客机原版运行时已安装且桌面空闲。只通过 hv_go 启动 GUI；PS Direct 只同步/读写数据。
 
-运行状态写入 `artifacts/native_save_demo/<run>/`；模型记录仍在 `artifacts/windows_mcp_host/<run>/`；正式合同、runtime 结果与原始业务证据在 guest `artifacts/v3/<run>/`。收尾通过 `hv_harvest` 回收。真实运行结果另附记录，本文不宣称已经通过。
+运行状态写入 `artifacts/native_save_demo/<run>/`；模型记录仍在 `artifacts/windows_mcp_host/<run>/`；正式合同、runtime 结果与原始业务证据在 guest `artifacts/v3/<run>/`。收尾通过 `hv_harvest` 回收。
+
+2026-11-17 已真实执行两轮：首轮业务证据成立但收尾触发强杀，保留 NON_GREEN；修复自然退出宽限后，新 run `f3efeea0073b4e488c6d00e42acd1382` 完整通过独立验证，结果 SHADOW、cleanup_confirmed=true、release_eligible=false。AI 未获得预置坐标，用十次原版 MCP 调用完成编辑保存；可信阶段独立重开生成实际 112 层 G-code。详细证据、版本、首次失败和费用边界见 [运行记录](runs/native-save-2026-11-17.md)。单个固定目标的通过不代表八次矩阵、87 条回归或跨版本可靠性。
 
 ## 后续晋级路线（尚未执行）
 
