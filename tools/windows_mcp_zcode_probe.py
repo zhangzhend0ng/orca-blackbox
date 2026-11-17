@@ -111,6 +111,8 @@ def main(argv=None):
             "Do not switch printer/filament/process presets or change other settings. "
             "Choose the UI route and coordinates yourself from fresh screenshots. "
             "Click and Type use loc=[x,y] desktop pixels; label inputs are unavailable. "
+            "Screenshot takes no arguments: cropping/region/display/save_path options are unavailable. "
+            "Wait requires duration as whole seconds from 0 to 5; fractional waits are unavailable. "
             "Type supports clear=true and press_enter=true. Only numeric strings and the full assigned save path are permitted. "
             "Shortcuts allowed: ctrl+s, ctrl+shift+s, enter, tab, shift+tab, esc. "
             "Only the owned application and its dialogs may receive input. Never open other apps or use other tools. "

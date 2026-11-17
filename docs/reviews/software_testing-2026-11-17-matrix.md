@@ -20,3 +20,5 @@
 残余边界：只在固定SUT/1920x1080/96dpi验收。全局guard仍不证明公司网关出口国家。临时token删除是停止后的诊断收尾，不参与业务内容oracle。启动可信setup不计AI能力；模型如何导航以真实trace为证。外观与实印未验收。
 
 首批5c590369420c4c9a9536f41ec92892b4 / 91080e5：首轮e2feee790ee94c108146a9b107c57e57在管理启动阶段失败，未创建actor/未调用模型。客机实际已启动，但relay秒级RUN标记19:41:49重复，客户端无法确认。批次其余槽位not_run，保留原分母。已单独取消并harvest：NON_GREEN/cancelled、guest Job0、cleanup_confirmed、token不存在。修复relay提交前等待与上一RUN不同的秒级时间戳，新增实测故障回归；不修改全局relay服务。
+
+0278e58完整批次安全3/3、业务5/8。反例揭示Wait schema误声明，以及客户端忽略原生tool.updated/error。已修复必填整数、原生error事件明确failed；required漂移检查避免删掉上游必填字段。原始失败不重标。全仓820 passed、1 skipped（39.34s），Node语法及diff whitespace通过。Screenshot region继续禁止，仅增加工具格式提示，不放宽authority；修改后必须新冻结批次验收。详见docs/runs/zcode-matrix-2026-11-17.md。

@@ -31,12 +31,14 @@ def scoped_tool_schemas(tools, output_path):
                   "clear": {"type": "boolean"}, "press_enter": {"type": "boolean"},
                   "caret_position": {"type": "string", "enum": ["idle", "start", "end"]}}, ["loc", "text"]),
         "Shortcut": ({"shortcut": {"type": "string", "enum": sorted(SHORTCUTS)}}, ["shortcut"]),
-        "Wait": ({"duration": {"type": "number", "minimum": 0, "maximum": 5}}, []),
+        "Wait": ({"duration": {"type": "integer", "minimum": 0, "maximum": 5}}, ["duration"]),
         "ControlStatus": ({"release": {"type": "boolean"}}, []),
     }
     result = deepcopy(tools)
     for tool in result:
         properties, required = fields[tool["name"]]
+        if not set(tool.get("inputSchema", {}).get("required", [])) <= set(required):
+            raise ValueError("native_upstream_required_schema_changed")
         tool["inputSchema"] = {"type": "object", "properties": properties, "required": required,
                                "additionalProperties": False}
         if tool["name"] == "ControlStatus":
@@ -79,9 +81,9 @@ def validate_input(name, args, output_path):
                 or args["shortcut"].lower() not in SHORTCUTS):
             raise ValueError("native_shortcut_rejected")
     elif name == "Wait":
-        duration = args.get("duration", 1)
+        duration = args.get("duration")
         if (set(args) - {"duration"} or type(duration) not in (int, float)
-                or not math.isfinite(duration) or not 0 <= duration <= 5):
+                or not math.isfinite(duration) or not 0 <= duration <= 5 or duration != int(duration)):
             raise ValueError("native_wait_rejected")
     elif set(args) - {"release"} or ("release" in args and type(args["release"]) is not bool):
         raise ValueError("native_control_status_rejected")

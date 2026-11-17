@@ -90,6 +90,10 @@ try{
    const p=event.payload||{};
    if(event.type==='tool.updated'){
     const call=calls.get(p.toolCallId)||{tool_call_id:p.toolCallId,status:'pending'};
+    if(p.kind==='error'){
+     call.status='failed';call.error_event=true;calls.set(p.toolCallId,call);
+     throw new Error('native_tool_error_event');
+    }
     if(p.kind==='scheduled'){
      if(!allowed.has(p.toolName))throw new Error('native_tool_out_of_scope');
      call.tool=p.toolName.slice('mcp__windows_mcp__'.length);

@@ -130,10 +130,10 @@ rl.on('line',line=>{
   process.stdout.write(JSON.stringify({id:'preferences',method:'session/requestRuntimePreferences',params:{}})+'\n');
   result={session:{sessionId:'sess_test'},settings:{model:{current:{providerId:fault==='wrong_model'?'other':'new-provider',modelId:'glm-5.3-flash'}},thoughtLevel:{current:'low'}}};
  }
- if(q.method==='session/send'){
+ if(q.method==='session/send' && fault!=='tool_error'){
   process.stdout.write(JSON.stringify({id:'permission',method:'interaction/requestPermission',params:{toolName:'Bash',input:{command:'DO_NOT_EXECUTE'}}})+'\n');
  }
- if(q.method==='session/events')result={events:[]};
+ if(q.method==='session/events')result={events:fault==='tool_error'?[{seq:1,type:'tool.updated',payload:{kind:'scheduled',toolCallId:'call_test',toolName:'mcp__windows_mcp__Screenshot'}},{seq:2,type:'tool.updated',payload:{kind:'error',toolCallId:'call_test',error:{type:'InputValidationError',message:'unexpected region'}}}]:[]};
  if(q.id==='permission')require('node:fs').writeFileSync(process.env.ZCODE_TEST_DECISION,JSON.stringify(q.result));
  else process.stdout.write(JSON.stringify({id:q.id,result})+'\n');
 });
@@ -141,7 +141,7 @@ rl.on('close',()=>process.exit(0));
 """
 
 
-@pytest.mark.parametrize("fault", ["wrong_model","permission"])
+@pytest.mark.parametrize("fault", ["wrong_model","permission","tool_error"])
 def test_protocol_client_stops_model_drift_and_denies_non_gui_permission(tmp_path, monkeypatch, fault):
     node=shutil.which("node")
     if not node:pytest.skip("Node runtime unavailable")
@@ -163,6 +163,10 @@ def test_protocol_client_stops_model_drift_and_denies_non_gui_permission(tmp_pat
     assert preferences["memoryEnabled"] is False and preferences["subagentRuntimeConfigEnabled"] is False
     assert preferences["toolSearchMode"]=="off"
     if fault=="wrong_model":assert report["error"]=="selected_model_mismatch" and not decision.exists()
+    elif fault=="tool_error":
+        assert report["error"]=="native_tool_error_event"
+        assert report["native_tool_calls"][0]["status"]=="failed"
+        assert report["native_tool_calls"][0]["error_event"] is True
     else:
         assert report["error"]=="unexpected_permission_tool"
         assert json.loads(decision.read_text())["decision"]=="deny"
