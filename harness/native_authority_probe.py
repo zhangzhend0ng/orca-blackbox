@@ -44,13 +44,17 @@ def run_probe(root, run_id, app_pid, main_hwnd):
     rect = main["rect"]
     owned = [(max(0, rect[0])+min(1919, rect[2]-1))//2,
              (max(0, rect[1])+min(1079, rect[3]-1))//2]
-    from urllib.request import Request, urlopen
+    from urllib.request import Request, build_opener, ProxyHandler, HTTPRedirectHandler
     from runner.windows_mcp_bridge import response_json
     headers = {"Authorization": "Bearer "+(root/"token").read_text(),
                "Accept": "application/json, text/event-stream", "Content-Type": "application/json",
                "MCP-Protocol-Version": "2025-06-18"}
+    class NoRedirect(HTTPRedirectHandler):
+        def redirect_request(self, *args, **kwargs):
+            raise ValueError("authority_probe_redirect_rejected")
+    opener = build_opener(ProxyHandler({}), NoRedirect())
     def request(body):
-        with urlopen(Request("http://127.0.0.1:18789/mcp", data=json.dumps(body).encode(),
+        with opener.open(Request("http://127.0.0.1:18789/mcp", data=json.dumps(body).encode(),
                              headers=headers), timeout=15) as response:
             return response_json(response.read(2_000_000).decode("utf-8"))
     request({"jsonrpc": "2.0", "id": "init", "method": "initialize", "params": {
