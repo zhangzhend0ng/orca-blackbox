@@ -10,7 +10,7 @@ INPUT_TOOLS = frozenset({"Click", "Type", "Shortcut"})
 SHORTCUTS = frozenset({"ctrl+s", "ctrl+shift+s", "enter", "tab", "shift+tab", "esc", "escape"})
 
 
-def scoped_tool_schemas(tools, output_path):
+def scoped_tool_schemas(tools, output_path, scenario="base"):
     """Advertise the same narrow types accepted by the authority middleware.
 
     Upstream coordinate/string unions otherwise invite stringified locations.
@@ -21,6 +21,8 @@ def scoped_tool_schemas(tools, output_path):
     loc = {"type": "array", "items": {"type": "integer", "minimum": 0, "maximum": 1919},
            "minItems": 2, "maxItems": 2, "description": "Desktop [x,y] as two JSON integers. x<1920 and y<1080. Do not stringify."}
     numeric = {"type": "string", "pattern": r"^(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?$"}
+    if scenario == "canvas_trial":
+        numeric = {"type": "string", "pattern": r"^(?:[1-9][0-9]{0,2}(?:\.[0-9]{1,4})?|0\.(?=[0-9]{0,3}[1-9])[0-9]{1,4})$"}
     fields = {
         "Snapshot": ({"use_vision": {"type": "boolean"}, "use_annotation": {"type": "boolean"},
                       "use_dom": {"type": "boolean", "enum": [False]}}, []),
@@ -43,6 +45,8 @@ def scoped_tool_schemas(tools, output_path):
         "Wait": "Wait for required integer duration in whole seconds from 0 to 5. Fractional durations and omitted duration are unavailable.",
         "ControlStatus": "Read/release the original global control lease. Its disabled state is expected in this dedicated --no-control guest; per-call owned-window/input authority is enforced separately. This tool cannot enable or reconfigure authority.",
     }
+    if scenario == "canvas_trial":
+        descriptions["Type"] = ("Type positive numeric text below 1000 (at most 4 decimals) into the explicitly bound canvas only after your successful Click at the same loc within 30 seconds. Canvas Type requires clear=false, caret_position=idle, press_enter=false; it does not prove an internal field is active and its own Click can alter selection. Stop and inspect if it appends or does not land. The exact assigned save path remains allowed only in native Save file as Edit, with normal Edit options. No other strings or paths.")
     result = deepcopy(tools)
     for tool in result:
         properties, required = fields[tool["name"]]
@@ -50,11 +54,16 @@ def scoped_tool_schemas(tools, output_path):
             raise ValueError("native_upstream_required_schema_changed")
         tool["inputSchema"] = {"type": "object", "properties": properties, "required": required,
                                "additionalProperties": False}
+        if scenario == "canvas_trial" and tool["name"] == "Type":
+            tool["inputSchema"]["anyOf"] = [
+                {"properties": {"text": {"const": output_path}}},
+                {"properties": {"text": numeric, "clear": {"enum": [False]},
+                                "press_enter": {"enum": [False]}, "caret_position": {"enum": ["idle"]}}}]
         tool["description"] = descriptions[tool["name"]]
     return result
 
 
-def validate_input(name, args, output_path):
+def validate_input(name, args, output_path, scenario="base"):
     if type(name) is not str or name not in NATIVE_TOOLS or type(args) is not dict:
         raise ValueError("native_tool_rejected")
     if name in {"Snapshot", "Screenshot"}:
@@ -75,13 +84,19 @@ def validate_input(name, args, output_path):
                 raise ValueError("native_click_rejected")
         else:
             text = args.get("text")
-            if (type(text) is not str or len(text) > 1024 or
-                    not (text == output_path or re.fullmatch(r"(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?", text))):
+            from .canvas_input import numeric_text_allowed
+            numeric_ok = numeric_text_allowed("pilot_transform", text) if scenario == "canvas_trial" else bool(
+                type(text) is str and re.fullmatch(r"(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?", text))
+            if (type(text) is not str or len(text) > 1024 or not (text == output_path or numeric_ok)):
                 raise ValueError("native_type_text_rejected")
             if (set(args) - {"loc", "text", "clear", "caret_position", "press_enter"}
                     or any(type(args[k]) is not bool for k in ("clear", "press_enter") if k in args)
                     or args.get("caret_position", "idle") not in {"idle", "start", "end"}):
                 raise ValueError("native_type_options_rejected")
+            if scenario == "canvas_trial" and text != output_path and (
+                    args.get("clear", False) is not False or args.get("press_enter", False) is not False
+                    or args.get("caret_position", "idle") != "idle"):
+                raise ValueError("canvas_trial_type_options")
     elif name == "Shortcut":
         if (set(args) != {"shortcut"} or type(args["shortcut"]) is not str
                 or args["shortcut"].lower() not in SHORTCUTS):
@@ -99,10 +114,66 @@ class InputGuard:
     """Trusted guest check, executed in the same INTERACTIVE MCP process."""
     def __init__(self, scope, root):
         self.scope, self.root = scope, root
+        self.last_window, self.arguments_validated = {}, False
+        self.last_canvas_evidence = None
+        self._last_click = None
+
+    def record_click(self, loc):
+        """Controller calls only after a successful original Click; not a field proof."""
+        if self.scope.get("scenario", "base") != "canvas_trial":
+            return
+        import time
+        if (type(loc) is not list or len(loc) != 2 or any(type(v) is not int for v in loc)
+                or not 0 <= loc[0] < 1920 or not 0 <= loc[1] < 1080):
+            raise ValueError("canvas_click_location")
+        target = self.last_window.get("target_hwnd")
+        if type(target) is not int or target <= 0:
+            raise ValueError("canvas_click_target_missing")
+        finished_ns = time.monotonic_ns()
+        self._last_click = (tuple(loc), finished_ns, target)
+        self.last_window["click_finished_monotonic_ns"] = finished_ns
+
+    def _canvas_trial_type(self, args):
+        import time
+        from .canvas_approval import resolve_approval
+        from .canvas_input import collect_window_evidence, load_canvas_binding, decide_type
+        evidence = collect_window_evidence(self.scope["run_id"], self.scope["app_pid"], self.scope["hwnd"], args["loc"])
+        self.last_canvas_evidence = evidence
+        approval = resolve_approval(self.scope["canvas_approval_profile"],
+            diagnostic_sha256=self.scope["canvas_diagnostic_sha256"], sut_sha256=self.scope["canvas_sut_sha256"])
+        binding = load_canvas_binding(self.scope["canvas_binding_json"], run_id=self.scope["run_id"],
+            app_pid=self.scope["app_pid"], process_created=evidence["process_created"],
+            main_hwnd=self.scope["hwnd"], approval=approval)
+        checked_ns = time.monotonic_ns()
+        decision = decide_type("pilot_transform", args["text"], args["loc"], evidence,
+            output_path=self.scope["output_path"], now_ns=checked_ns, binding=binding)
+        if decision["route"] == "canvas_numeric":
+            click, self._last_click = self._last_click, None
+            if (args.get("clear", False) is not False or args.get("press_enter", False) is not False
+                    or args.get("caret_position", "idle") != "idle"):
+                raise ValueError("canvas_trial_type_options")
+            if (click is None or click[0] != tuple(args["loc"]) or click[2] != binding.hwnd
+                    or not 0 <= time.monotonic_ns()-click[1] <= 30_000_000_000):
+                raise ValueError("canvas_trial_recent_click_required")
+        windows = {w["hwnd"]:w for w in evidence["windows"]}
+        target = windows[evidence["target_hwnd"]]
+        self.last_window.update(decision)
+        self.last_window.update(foreground_hwnd=evidence["foreground_hwnd"], focus_hwnd=evidence["focus_hwnd"],
+            process_created=evidence["process_created"], guard_checked_monotonic_ns=checked_ns,
+            target_class=target["class"], target_title=target.get("title", ""),
+            captured_monotonic_ns=evidence["captured_monotonic_ns"],
+            canvas_diagnostic_sha256=approval.diagnostic_sha256, canvas_profile=approval.profile_id,
+            pfd_index=target.get("pixel_format", {}).get("index", 0),
+            pfd_verified=False, internal_numeric_field_verified=False)
+        if (self.root / "input_revoked").exists() or (self.root / "control_cancel.json").exists() or (self.root / "authority_abort.json").exists():
+            raise ValueError("native_input_revoked")
+        return self.last_window
 
     def check(self, name, args):
-        validate_input(name, args, self.scope["output_path"])
-        if (self.root / "input_revoked").exists() or (self.root / "control_cancel.json").exists():
+        self.last_canvas_evidence, self.last_window, self.arguments_validated = None, {}, False
+        validate_input(name, args, self.scope["output_path"], self.scope.get("scenario", "base"))
+        self.arguments_validated = True
+        if (self.root / "input_revoked").exists() or (self.root / "control_cancel.json").exists() or (self.root / "authority_abort.json").exists():
             raise ValueError("native_input_revoked")
         if name not in INPUT_TOOLS:
             return {}
@@ -126,6 +197,11 @@ class InputGuard:
         target = wu.window_from_screen_point(*args["loc"]) if "loc" in args else foreground
         if not target or wu._window_pid(target) != self.scope["app_pid"]:
             raise ValueError("native_target_not_owned")
+        self.last_window = {"foreground_hwnd": foreground, "target_hwnd": target,
+                            "app_pid": self.scope["app_pid"], "foreground_pid": wu._window_pid(foreground),
+                            "target_pid": wu._window_pid(target), "target_class": wu.window_class(target)}
+        if name == "Type" and self.scope.get("scenario") == "canvas_trial":
+            return self._canvas_trial_type(args)
         if name == "Type":
             if wu.window_class(target) != "Edit":
                 raise ValueError("native_type_requires_owned_edit")
@@ -133,5 +209,4 @@ class InputGuard:
                 caption = wu.window_title(foreground)
                 if caption not in {"Save file as", "Save file as:"}:
                     raise ValueError("native_path_requires_save_dialog")
-        return {"foreground_hwnd": foreground, "target_hwnd": target,
-                "app_pid": self.scope["app_pid"]}
+        return self.last_window

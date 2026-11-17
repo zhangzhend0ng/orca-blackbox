@@ -1,0 +1,2 @@
+# Reviewed diagnostic provenance is bound to exact bytes on both Windows hosts.
+contracts/evidence/canvas-diagnostic-bb64.json -text

@@ -1,7 +1,8 @@
 """Read-only window census and pure input authority; never sends GUI input.
 
-No canvas class is built in. A trusted diagnostic reviewer must supply the
-observed class before a run-owned HWND can be bound. Not a security sandbox.
+Default admission requires PFD evidence. An explicit reviewed diagnostic
+profile can bind observed wxGLCanvas identity with PFD still unknown. Neither
+mode proves an internal text field is active. Not a security sandbox.
 """
 from dataclasses import dataclass
 from decimal import Decimal
@@ -51,6 +52,12 @@ class CanvasBinding:
     desktop: str
     session_id: int
     diagnostic_id: str
+    mode: str = "pfd"
+    approval_profile: str | None = None
+    approval_version: int | None = None
+    diagnostic_sha256: str | None = None
+    sut_sha256: str | None = None
+    window_title: str | None = None
 
 
 def _environment(evidence):
@@ -108,6 +115,7 @@ def _parent_chain(row, windows, evidence):
     chain, seen = [], set()
     current = row
     for _ in range(32):
+        _owned(current, evidence)
         hwnd = current.get("hwnd")
         _need(hwnd not in seen and current.get("pid") == evidence["app_pid"]
               and type(current.get("pid")) is int and current.get("exists") is True
@@ -123,7 +131,7 @@ def _parent_chain(row, windows, evidence):
     raise CanvasInputRejected("canvas_parent_chain_limit")
 
 
-def bind_canvas(evidence, canvas_hwnd, *, approved_class, diagnostic_id):
+def bind_canvas(evidence, canvas_hwnd, *, approved_class, diagnostic_id, approval=None):
     """Trusted setup only: explicit diagnostic selection, never model arguments."""
     _need(type(approved_class) is str and 1 <= len(approved_class) <= 256
           and approved_class != "Edit", "canvas_class_not_approved")
@@ -135,13 +143,33 @@ def bind_canvas(evidence, canvas_hwnd, *, approved_class, diagnostic_id):
     _need(row["class"] == approved_class and row.get("is_main_child") is True
           and _positive_int(row.get("parent")), "canvas_binding_mismatch")
     main = windows[evidence["main_hwnd"]]
-    _opengl(row)
+    if approval is None:
+        _opengl(row)
+    else:
+        from .canvas_approval import validate_approval
+        try:
+            validate_approval(approval)
+        except ValueError as exc:
+            raise CanvasInputRejected("canvas_approval_not_registered") from exc
+        _need(row["class"] == approval.window_class and row.get("title") == approval.window_title
+              and diagnostic_id == approval.diagnostic_run_id, "canvas_observed_identity")
+        candidates = [r for r in windows.values() if r.get("pid") == evidence["app_pid"]
+            and r.get("exists") is True and r.get("visible") is True and r.get("is_main_child") is True
+            and r.get("class") == approval.window_class and r.get("title") == approval.window_title]
+        _need(len(candidates) == 1 and candidates[0]["hwnd"] == canvas_hwnd,
+              "canvas_observed_candidate_ambiguous")
     _canvas_geometry(row, main)
     chain = _parent_chain(row, windows, evidence)
     return CanvasBinding(evidence["run_id"], evidence["app_pid"], evidence["process_created"],
         evidence["main_hwnd"], canvas_hwnd, approved_class, row["parent"], row["thread_id"],
         tuple(main["rect"]), chain,
-        evidence["thread_desktop"], evidence["session_id"], diagnostic_id)
+        evidence["thread_desktop"], evidence["session_id"], diagnostic_id,
+        "pfd" if approval is None else approval.mode,
+        None if approval is None else approval.profile_id,
+        None if approval is None else approval.version,
+        None if approval is None else approval.diagnostic_sha256,
+        None if approval is None else approval.sut_sha256,
+        None if approval is None else approval.window_title)
 
 
 def decide_type(scenario, text, loc, evidence, *, output_path, now_ns, binding=None, revoked=False):
@@ -185,7 +213,15 @@ def decide_type(scenario, text, loc, evidence, *, output_path, now_ns, binding=N
            evidence["thread_desktop"], evidence["session_id"]), "canvas_run_binding_changed")
     _need(target["hwnd"] == focus["hwnd"] == binding.hwnd
           and foreground["hwnd"] == binding.main_hwnd, "canvas_focus_or_foreground_changed")
-    _opengl(target)
+    if binding.mode == "pfd":
+        _need(all(getattr(binding, key) is None for key in
+                  ("approval_profile", "approval_version", "diagnostic_sha256", "sut_sha256", "window_title")),
+              "canvas_pfd_binding_metadata")
+        _opengl(target)
+    else:
+        approval = _binding_approval(binding)
+        _need(target["class"] == approval.window_class and target.get("title") == approval.window_title,
+              "canvas_observed_identity")
     _canvas_geometry(target, windows[binding.main_hwnd])
     _need(target.get("is_main_child") is True and
           (target["class"], target.get("parent"), target["thread_id"],
@@ -193,7 +229,100 @@ def decide_type(scenario, text, loc, evidence, *, output_path, now_ns, binding=N
           (binding.window_class, binding.parent, binding.thread_id,
            binding.parent_chain, binding.main_rect), "canvas_window_binding_changed")
     return {"route": "canvas_numeric", "target_hwnd": target["hwnd"],
-            "diagnostic_id": binding.diagnostic_id}
+            "diagnostic_id": binding.diagnostic_id, "approval_mode": binding.mode}
+
+
+def _binding_approval(binding):
+    from .canvas_approval import resolve_approval
+    _need(binding.mode == "observed_wxglcanvas", "canvas_approval_mode")
+    try:
+        approval = resolve_approval(binding.approval_profile, diagnostic_sha256=binding.diagnostic_sha256,
+                                    sut_sha256=binding.sut_sha256)
+    except ValueError as exc:
+        raise CanvasInputRejected("canvas_approval_provenance") from exc
+    _need(type(binding.approval_version) is int and binding.approval_version == approval.version
+          and binding.window_class == approval.window_class and binding.window_title == approval.window_title
+          and binding.diagnostic_id == approval.diagnostic_run_id, "canvas_approval_metadata")
+    return approval
+
+
+def binding_to_json(binding):
+    from dataclasses import asdict
+    import json
+    _need(type(binding) is CanvasBinding, "canvas_binding_type")
+    return json.dumps(asdict(binding), separators=(",", ":"), allow_nan=False)
+
+
+def load_canvas_binding(raw, *, run_id, app_pid, process_created, main_hwnd, approval=None):
+    """Load only trusted run-owned storage, with independent expected scope.
+
+    This is strict validation, not authentication or a writable model tool.
+    An observed-mode record additionally needs independently resolved approval.
+    """
+    import json
+    _need(type(raw) in (bytes, str) and 1 <= len(raw) <= 16384, "canvas_binding_json_size")
+    if type(raw) is str:
+        try:
+            _need(len(raw.encode("utf-8")) <= 16384, "canvas_binding_json_size")
+        except UnicodeError as exc:
+            raise CanvasInputRejected("canvas_binding_json_invalid") from exc
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            _need(key not in result, "canvas_binding_duplicate_key")
+            result[key] = value
+        return result
+    def constant(_):
+        raise CanvasInputRejected("canvas_binding_json_constant")
+    try:
+        data = json.loads(raw, object_pairs_hook=pairs, parse_constant=constant)
+    except (ValueError, TypeError, UnicodeError, RecursionError) as exc:
+        raise CanvasInputRejected("canvas_binding_json_invalid") from exc
+    _need(type(data) is dict and set(data) == set(CanvasBinding.__dataclass_fields__),
+          "canvas_binding_fields")
+    _need(type(run_id) is str and re.fullmatch(r"[0-9a-f]{32}", run_id)
+          and all(_positive_int(x) for x in (app_pid, process_created, main_hwnd)), "canvas_binding_scope")
+    _need(type(data["run_id"]) is str and
+          all(_positive_int(data[k]) for k in ("app_pid", "process_created", "main_hwnd", "hwnd", "parent", "thread_id"))
+          and (data["run_id"], data["app_pid"], data["process_created"], data["main_hwnd"]) ==
+          (run_id, app_pid, process_created, main_hwnd), "canvas_binding_scope")
+    _need(data["hwnd"] != main_hwnd and type(data["window_class"]) is str
+          and 1 <= len(data["window_class"]) <= 256 and data["window_class"] != "Edit"
+          and type(data["desktop"]) is str and 1 <= len(data["desktop"]) <= 256
+          and type(data["session_id"]) is int and data["session_id"] >= 0
+          and type(data["diagnostic_id"]) is str
+          and re.fullmatch(r"[A-Za-z0-9_.-]{1,128}", data["diagnostic_id"]), "canvas_binding_values")
+    _need(_rect(data["main_rect"]) and all(-2**31 <= v < 2**31 for v in data["main_rect"]),
+          "canvas_binding_rect")
+    chain = data["parent_chain"]
+    _need(type(chain) is list and 2 <= len(chain) <= 32, "canvas_binding_chain")
+    seen = set()
+    for i, row in enumerate(chain):
+        _need(type(row) is list and len(row) == 5 and _positive_int(row[0])
+              and type(row[1]) is int and row[1] >= 0 and type(row[2]) is int and row[2] == app_pid
+              and type(row[3]) is str and 1 <= len(row[3]) <= 256 and _positive_int(row[4])
+              and row[0] not in seen, "canvas_binding_chain")
+        seen.add(row[0])
+        if i < len(chain)-1:
+            _need(type(chain[i+1]) is list and len(chain[i+1]) == 5 and row[1] == chain[i+1][0],
+                  "canvas_binding_chain")
+    _need(chain[0] == [data["hwnd"], data["parent"], app_pid, data["window_class"], data["thread_id"]]
+          and chain[-1][0] == main_hwnd, "canvas_binding_chain")
+    data["main_rect"] = tuple(data["main_rect"])
+    data["parent_chain"] = tuple(tuple(row) for row in chain)
+    binding = CanvasBinding(**data)
+    if binding.mode == "pfd":
+        _need(approval is None and all(getattr(binding, key) is None for key in
+                  ("approval_profile", "approval_version", "diagnostic_sha256", "sut_sha256", "window_title")),
+              "canvas_pfd_binding_metadata")
+    else:
+        observed = _binding_approval(binding)
+        from .canvas_approval import validate_approval
+        try:
+            _need(validate_approval(approval) == observed, "canvas_binding_approval_required")
+        except ValueError as exc:
+            raise CanvasInputRejected("canvas_binding_approval_required") from exc
+    return binding
 
 
 def collect_window_evidence(run_id, app_pid, main_hwnd, loc=None):

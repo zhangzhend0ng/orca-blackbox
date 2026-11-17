@@ -56,17 +56,27 @@ def native_contract(actor="codex", scenario="base"):
         data["steps"].insert(0, {"id": "setup", "goal": "Trusted initial condition: "+scenario})
         if scenario == "safety_timeout":
             data["limits"]["timeout_s"] = 120
-        from .native_pilots import PILOTS, pilot_module
-        if scenario in PILOTS:
+        from .native_pilots import PILOTS, TRIALS, pilot_module
+        if scenario in {**PILOTS, **TRIALS}:
             pilot = pilot_module(scenario)
             data["case_id"] = pilot.CASE_ID
             data["contract_version"] = "native-pilot-zcode-1-"+scenario
             data["steps"][1]["goal"] = "Native ZCode with Snapmaker glm-5.3-flash: "+pilot.GOAL
-        elif scenario == "canvas_probe":
+            if scenario == "canvas_trial":
+                data["contract_version"] = "native-canvas-trial-zcode-1-observed-wxglcanvas-v1"
+                data["steps"].insert(1, {"id": "canvas_authority", "goal": "Explicit observed-wxglcanvas-v1 numeric-only capability trial; fixed diagnostic/SUT hashes; clear=false/caret=idle/press_enter=false; prior successful same-loc Click. PFD and internal field activation unproven; at most two proven owned numeric pre-dispatch refusals with fresh observation."})
+        elif scenario in {"canvas_probe", "authority_probe"}:
             data["case_id"] = "diagnostic_canvas_input"
             data["contract_version"] = "native-canvas-probe-1"
             data["steps"] = [{"id": "probe", "goal": "Trusted guest-only read-only window/pixel-format census; no MCP or model."},
                              {"id": "close", "goal": "Close the diagnostic SUT and confirm owned cleanup; never business GREEN."}]
+            if scenario == "authority_probe":
+                data["case_id"] = "diagnostic_authority_stop"
+                data["contract_version"] = "native-authority-stop-probe-1"
+                data["steps"][0]["goal"] = "Two negative original-MCP requests: foreign Click refused before dispatch, then owned Click refused by permanent stop latch. No model or successful GUI input; never business GREEN."
+        elif scenario == "recovery_owned_edit":
+            data["contract_version"] = "native-recovery-zcode-1-owned-edit"
+            data["steps"].insert(1, {"id": "recovery", "goal": "At most two proven owned numeric non-Edit refusals before dispatch; fresh observation before any further input; every other refusal durably stops authority."})
     return validate_contract(data)
 
 
@@ -117,6 +127,7 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
     from .agent_layer_verify import analyze_gcode
     from decimal import Decimal
     refs = []
+    recovery_summary = None
     try:
         actor, scenario = native_spec(contract_digest(snapshot.contract))
         read = lambda n, limit: _read(snapshot.artifact_dir, n, snapshot.manifest["started_at_ns"], limit, cancelled)
@@ -149,11 +160,22 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
         _require(saved == frozen and digest == proof["project_sha256"], "native_frozen_file_binding")
         trace = [_json(line) for line in read("native_trace.ndjson", 256000).splitlines() if line]
         _require(1 <= len(trace) <= 40 and len(trace) == host["tool_count"], "native_trace_count")
-        _require(all(x["error"] is None and x["finished_at_ns"] <= times[0] for x in trace), "native_trace_error_or_late_input")
+        _require(all(x["finished_at_ns"] <= times[0] for x in trace), "native_trace_late_input")
+        if scenario in {"recovery_owned_edit", "canvas_trial"}:
+            from .native_recovery import audit_trace
+            recovery_summary = audit_trace(trace, snapshot.run_id, enabled=True)
+        else:
+            _require(all(x["error"] is None for x in trace), "native_trace_error_or_late_input")
         _require(any(x["tool"] == "Type" and x["arguments"].get("text") == proof["output_path"] for x in trace), "native_gui_save_path")
         for x in trace:
-            if x["tool"] in {"Click", "Type", "Shortcut"}:
+            if x["tool"] in {"Click", "Type", "Shortcut"} and x["error"] is None:
                 _require(x["window"]["app_pid"] == proof["old_pid"], "native_input_ownership")
+        canvas_summary = None
+        if scenario == "canvas_trial":
+            from .native_canvas_verify import verify_canvas_trace
+            canvas_summary = verify_canvas_trace(trace, _json(read("scope.json", 65536)),
+                _json(read("canvas_setup.json", 400000)), run_id=snapshot.run_id,
+                contract_sha256=contract_digest(snapshot.contract), read_artifact=read)
         if scenario != "base":
             setup = _json(read("setup.json", 65536))
             initial = read("initial.png", 16*1024*1024)
@@ -172,8 +194,8 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
                          "native_initial_dialog_not_proven")
         gcode = read("exports/0001.gcode", 64*1024*1024)
         _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
-        from .native_pilots import PILOTS, verify_business
-        if scenario in PILOTS:
+        from .native_pilots import PILOTS, TRIALS, verify_business
+        if scenario in {**PILOTS, **TRIALS}:
             _require(host.get("contract_sha256") == contract_digest(snapshot.contract)
                      and host.get("scenario") == scenario, "native_pilot_host_contract")
             business = verify_business(scenario, frozen, fixture, gcode, cancelled=cancelled)
@@ -185,14 +207,22 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
             detail = "Saved .24/initial .4, unchanged cube, reopened actual 112-layer G-code"
         refs = ("artifact:proof.json", "artifact:process.json", "artifact:native_trace.ndjson",
                 "artifact:proof/0001.3mf:sha256:"+digest, "artifact:exports/0001.gcode:sha256:"+proof["gcode_sha256"])
+        if recovery_summary is not None:
+            detail += "; native_recovery="+json.dumps(recovery_summary, sort_keys=True)
+        if canvas_summary is not None:
+            detail += "; canvas_input="+json.dumps(canvas_summary, sort_keys=True)
         return VerificationOutcome({"path": CheckResult("pass", "Native GUI save; stopped input; old exit; frozen-file fresh-profile reslice", refs),
-            "business": CheckResult("pass", detail, refs)}, True, True)
+            "business": CheckResult("pass", detail, refs)}, True, True,
+            recovery_used=bool(recovery_summary and recovery_summary["recoveries"]),
+            recovery_recorded=recovery_summary is not None)
     except (OSError, ValueError, TypeError, KeyError, AttributeError, RecursionError,
             struct.error, DecimalException, ET.ParseError, zipfile.BadZipFile,
             zipfile.LargeZipFile, zlib.error, EOFError, NotImplementedError) as exc:
         detail = str(exc) if isinstance(exc, _InvalidEvidence) else "native_evidence_unavailable"
         return VerificationOutcome({"path": CheckResult("unknown", detail, tuple(refs)),
-                                    "business": CheckResult("unknown", detail, tuple(refs))}, False, False)
+                                    "business": CheckResult("unknown", detail, tuple(refs))}, False, False,
+            recovery_used=bool(recovery_summary and recovery_summary["recoveries"]),
+            recovery_recorded=recovery_summary is not None)
 
 
 class NativeSaveVerifier:

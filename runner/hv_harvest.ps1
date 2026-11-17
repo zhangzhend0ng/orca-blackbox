@@ -30,6 +30,10 @@ if ($WindowsMcpRunId) {
     # Never harvest the run's authentication token or config/profile files.
     $names=@('process.json','worker.json','worker.log','server.log','ready.json')
     if($nativeSave){$names=@('canvas_diagnostic.json','setup.json','control_cancel.json','process.json','proof.json','native_worker.json','native_worker.log','native_trace.ndjson','host_done.json','scope.json','server.log','ready.json','initial.png','agent_final.png','proof_final.png','projects/0001.3mf','proof/0001.3mf','exports/0001.gcode')}
+    if($nativeSave){
+      $names+=@('canvas_setup.json','authority_abort.json','authority_probe.json')
+      $names+=@(Get-ChildItem -LiteralPath $root -Filter 'canvas_input_*.json' | Where-Object {$_.Name -cmatch '^canvas_input_([1-9]|[1-3][0-9]|40)\.json$'} | ForEach-Object Name)
+    }
     $names+=@(Get-ChildItem -LiteralPath $root -Filter 'state_*.png' | Where-Object {$_.Name -cmatch '^state_[0-9]{2}_(prepare|preview)\.png$'} | ForEach-Object Name)
     foreach($name in $names) {
       $p=Join-Path $root $name

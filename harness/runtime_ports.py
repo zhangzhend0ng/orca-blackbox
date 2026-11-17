@@ -52,6 +52,8 @@ class VerificationOutcome:
     checks: Mapping[str, CheckResult]
     evidence_complete: bool
     execution_compliant: bool
+    recovery_used: bool = False
+    recovery_recorded: bool = False
 
 
 @dataclass(frozen=True)

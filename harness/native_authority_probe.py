@@ -1,0 +1,61 @@
+"""Guest-only negative MCP probe. Both attempts must be rejected pre-dispatch."""
+import json
+
+
+def verify_responses(responses, run_id):
+    if type(responses) is not list or len(responses) != 2:
+        raise ValueError("authority_probe_response_count")
+    for seq, response in enumerate(responses, 1):
+        result = response.get("result", {})
+        receipt = result.get("structuredContent", {}).get("authority", {})
+        if (result.get("isError") is not True or receipt.get("protocol") != "native-authority-1"
+                or receipt.get("run_id") != run_id or receipt.get("seq") != seq
+                or receipt.get("tool") != "Click" or receipt.get("decision") != "fatal"
+                or receipt.get("dispatched") is not False):
+            raise ValueError("authority_probe_not_rejected")
+    if responses[0]["result"]["structuredContent"]["authority"].get("error_code") != "native_target_not_owned":
+        raise ValueError("authority_probe_wrong_first_refusal")
+    return {"fatal_latched": True, "subsequent_input_dispatched": False,
+            "attempts": 2, "model_used": False, "business_verified": False}
+
+
+def run_probe(root, run_id, app_pid, main_hwnd):
+    from . import host_guard, winutil as wu
+    from .canvas_input import collect_window_evidence
+    if not host_guard.in_guest():
+        raise PermissionError("authority_probe_guest_only")
+    # Locate an actually foreign window by read-only hit testing; no guessed
+    # location is ever dispatched to an original input tool in a passing probe.
+    foreign = None
+    for y in (1070, 1050, 5):
+        for x in (10, 300, 960, 1800):
+            hwnd = wu.window_from_screen_point(x, y)
+            if hwnd and wu._window_pid(hwnd) != app_pid:
+                foreign = [x, y]
+                break
+        if foreign is not None:
+            break
+    if foreign is None:
+        raise ValueError("authority_probe_foreign_point_not_found")
+    evidence = collect_window_evidence(run_id, app_pid, main_hwnd)
+    main = next(w for w in evidence["windows"] if w["hwnd"] == main_hwnd)
+    rect = main["rect"]
+    owned = [(max(0, rect[0])+min(1919, rect[2]-1))//2,
+             (max(0, rect[1])+min(1079, rect[3]-1))//2]
+    from urllib.request import Request, urlopen
+    from runner.windows_mcp_bridge import response_json
+    headers = {"Authorization": "Bearer "+(root/"token").read_text(),
+               "Accept": "application/json, text/event-stream", "Content-Type": "application/json",
+               "MCP-Protocol-Version": "2025-06-18"}
+    def request(body):
+        with urlopen(Request("http://127.0.0.1:18789/mcp", data=json.dumps(body).encode(),
+                             headers=headers), timeout=15) as response:
+            return response_json(response.read(2_000_000).decode("utf-8"))
+    request({"jsonrpc": "2.0", "id": "init", "method": "initialize", "params": {
+        "protocolVersion": "2025-06-18", "capabilities": {},
+        "clientInfo": {"name": "owned-authority-negative-probe", "version": "1"}}})
+    responses = [request({"jsonrpc": "2.0", "id": seq, "method": "tools/call", "params": {
+        "name": "Click", "arguments": {"loc": loc}}}) for seq, loc in enumerate((foreign, owned), 1)]
+    summary = verify_responses(responses, run_id)
+    return {"run_id": run_id, **summary, "foreign_loc": foreign, "owned_loc": owned,
+            "responses": responses}

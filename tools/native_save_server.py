@@ -24,35 +24,33 @@ def main():
     scope = json.loads((root / "scope.json").read_text())
     guard = InputGuard(scope, root)
     from fastmcp.server.middleware import Middleware
-    from fastmcp.exceptions import ToolError
+    from fastmcp.tools.base import ToolResult
+    from mcp.types import TextContent
+    from harness.native_authority import AuthorityController, validate_scope
+    recovery_enabled = validate_scope(scope,
+        json.loads((root.parent / "manifest.json").read_text()),
+        json.loads((root.parent / "contract.json").read_text()),
+        run_id=args.run_id, output_path=str(root / "projects/0001.3mf"))
     from windows_mcp import __main__ as original
 
     class Authority(Middleware):
         def __init__(self):
-            self.calls, self.lock = 0, asyncio.Lock()
+            self.lock = asyncio.Lock()
+            self.controller = AuthorityController(guard, root, args.run_id,
+                recovery_enabled=recovery_enabled)
 
         async def on_call_tool(self, context, call_next):
             async with self.lock:
-                self.calls += 1
                 name, arguments = context.message.name, context.message.arguments or {}
-                row = {"seq": self.calls, "tool": name if name in NATIVE_TOOLS else "rejected_tool", "arguments": {},
-                       "run_id": args.run_id, "level": "INFO", "message": "native_tool_call",
-                       "started_at_ns": time.time_ns(), "error": None}
-                try:
-                    if self.calls > 40:
-                        raise ValueError("native_tool_budget")
-                    row["window"] = guard.check(name, arguments)
-                    row["arguments"] = arguments  # Only validated numeric/path/key data is logged.
-                    return await call_next(context)
-                except Exception as exc:
-                    code = str(exc) if isinstance(exc, ValueError) and str(exc).startswith("native_") else "native_tool_failed"
-                    row["error"] = type(exc).__name__+":"+code[:120]
-                    row["level"] = "ERROR"
-                    raise ToolError(row["error"]) from exc
-                finally:
-                    row["finished_at_ns"] = time.time_ns()
-                    with (root / "native_trace.ndjson").open("a", encoding="utf-8") as stream:
-                        stream.write(json.dumps(row, ensure_ascii=True)+"\n")
+                payload, receipt = await self.controller.call(name, arguments, lambda: call_next(context))
+                if receipt["decision"] == "completed":
+                    return ToolResult(content=payload.content,
+                        structured_content={"authority": receipt, "data": payload.structured_content},
+                        meta=payload.meta)
+                explanation = ("Input was NOT dispatched. Observe the current screen before correcting the numeric field."
+                    if receipt["decision"] == "recoverable" else "Authority revoked. Stop this run.")
+                return ToolResult(content=[TextContent(type="text", text=explanation)],
+                                  structured_content={"authority": receipt}, is_error=True)
 
     original._build_mcp().add_middleware(Authority())
     original.main(["serve", "--transport", "streamable-http", "--host", "127.0.0.1",

@@ -266,3 +266,51 @@ def test_verification_uses_remaining_case_budget_not_a_fresh_timeout(tmp_path):
     assert clock.now <= contract["limits"]["timeout_s"]
     assert verifier.handle.cancel_reasons
 
+
+class RecoveryReportingVerifier(SyntheticVerifier):
+    """Keep the independent real-file check, adding its audited recovery facts."""
+    def __init__(self, *, used, recorded, **kwargs):
+        super().__init__(**kwargs)
+        self.used, self.recorded = used, recorded
+
+    def start(self, snapshot):
+        from dataclasses import replace
+        handle = super().start(snapshot)
+        handle.value = replace(handle.value, recovery_used=self.used,
+                               recovery_recorded=self.recorded)
+        return handle
+
+
+@pytest.mark.parametrize("used,recorded,passed", [
+    (False, False, True), (True, True, True), (True, False, False),
+])
+def test_independent_recovery_facts_reach_the_persisted_verdict(tmp_path, used, recorded, passed):
+    result = run(tmp_path, verifier=RecoveryReportingVerifier(used=used, recorded=recorded))
+    assert result["recovery_used"] is used
+    assert result["verified_pass"] is passed
+    assert ("recovery_not_recorded" in result["reasons"]) is (used and not recorded)
+    persisted = json.loads(open(result["result_path"], encoding="utf-8").read())
+    assert persisted["recovery_used"] is used and persisted["verified_pass"] is passed
+
+
+@pytest.mark.parametrize("cleanup_owner", ["executor", "verifier"])
+def test_cleanup_failure_blocks_pass_without_erasing_recorded_recovery(tmp_path, cleanup_owner):
+    executor = SyntheticExecutor(cleanup_confirmed=cleanup_owner != "executor")
+    verifier = RecoveryReportingVerifier(used=True, recorded=True,
+                                        cleanup_confirmed=cleanup_owner != "verifier")
+    result = run(tmp_path, executor=executor, verifier=verifier)
+    assert result["recovery_used"] is True
+    assert result["verified_pass"] is False and result["cleanup_confirmed"] is False
+    assert "recovery_not_recorded" not in result["reasons"]
+    assert "evidence_incomplete" in result["reasons"]
+    assert lock_path(tmp_path).exists()
+    persisted = json.loads(open(result["result_path"], encoding="utf-8").read())
+    assert persisted["recovery_used"] is True and persisted["verified_pass"] is False
+
+
+def test_recorded_recovery_does_not_heal_a_failed_business_check(tmp_path):
+    result = run(tmp_path, verifier=RecoveryReportingVerifier(
+        used=True, recorded=True, forced_status="fail"))
+    assert result["recovery_used"] is True and result["verified_pass"] is False
+    assert result["checks"]["business"]["status"] == "fail"
+

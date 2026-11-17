@@ -187,6 +187,8 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
                 if (not isinstance(verification, VerificationOutcome)
                         or type(verification.evidence_complete) is not bool
                         or type(verification.execution_compliant) is not bool
+                        or type(verification.recovery_used) is not bool
+                        or type(verification.recovery_recorded) is not bool
                         or not isinstance(verification.checks, Mapping)
                         or any(k not in CHECK_NAMES or not isinstance(v, CheckResult)
                                for k, v in verification.checks.items())):
@@ -247,10 +249,13 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
         try:
             if writer is not None:
                 if not cleanup_confirmed or runtime_status != "completed":
-                    verification = VerificationOutcome(verification.checks, False, False)
+                    verification = VerificationOutcome(verification.checks, False, False,
+                        verification.recovery_used, verification.recovery_recorded)
                 verdict = aggregate_result(frozen, execution.status, verification.checks,
                                            evidence_complete=verification.evidence_complete,
-                                           execution_compliant=verification.execution_compliant)
+                                           execution_compliant=verification.execution_compliant,
+                                           recovery_used=verification.recovery_used,
+                                           recovery_recorded=verification.recovery_recorded)
                 result = verdict.to_dict()
                 result.update(mode=("synthetic" if synthetic else
                                     "agent_shadow" if execution_mode in {"guest_agent", "guest_native"} else "script_shadow"),

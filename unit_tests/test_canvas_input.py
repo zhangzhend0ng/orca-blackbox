@@ -170,3 +170,109 @@ def test_guest_gate_precedes_any_win32_call(monkeypatch):
     monkeypatch.setattr(host_guard, "in_guest", lambda: False)
     with pytest.raises(CanvasInputRejected, match="guest_only"):
         collect_window_evidence(RUN, 123, 10)
+
+
+def observed_binding(e):
+    from unit_tests.test_canvas_approval import approved
+    a = approved()
+    e["windows"][2].update({"class": a.window_class, "title": a.window_title,
+                           "pixel_format": {"index": 0, "describe_count": 0, "flags": 0}})
+    return bind_canvas(e, 30, approved_class=a.window_class, diagnostic_id=a.diagnostic_run_id, approval=a)
+
+
+def test_parent_becoming_disabled_is_rejected_before_canvas_admission(evidence):
+    b = binding(evidence)
+    evidence["windows"][1]["enabled"] = False
+    with pytest.raises(CanvasInputRejected, match="not_owned"):
+        decide(evidence, b)
+    with pytest.raises(CanvasInputRejected, match="not_owned"):
+        binding(evidence)
+
+
+def test_observed_mode_is_explicit_and_does_not_claim_pfd(evidence):
+    from unit_tests.test_canvas_approval import approved
+    b = observed_binding(evidence)
+    assert decide(evidence, b)["approval_mode"] == "observed_wxglcanvas"
+    assert evidence["windows"][2]["pixel_format"]["index"] == 0
+    a = approved()
+    with pytest.raises(CanvasInputRejected, match="opengl_unproven"):
+        bind_canvas(evidence, 30, approved_class=a.window_class, diagnostic_id=a.diagnostic_run_id)
+
+
+@pytest.mark.parametrize("key,value", [("class", "OtherCanvas"), ("title", "Other")])
+def test_observed_class_or_title_drift_is_rejected(evidence, key, value):
+    b = observed_binding(evidence)
+    evidence["windows"][2][key] = value
+    with pytest.raises(CanvasInputRejected): decide(evidence, b)
+
+
+def test_observed_binding_cannot_be_given_a_different_review_id(evidence):
+    from unit_tests.test_canvas_approval import approved
+    a = approved(); observed_binding(evidence)
+    with pytest.raises(CanvasInputRejected, match="observed_identity"):
+        bind_canvas(evidence, 30, approved_class=a.window_class, diagnostic_id="other", approval=a)
+
+
+def test_multiple_visible_observed_candidates_cannot_be_chosen_implicitly(evidence):
+    from unit_tests.test_canvas_approval import approved
+    a = approved(); observed_binding(evidence)
+    other = deepcopy(evidence["windows"][2]); other["hwnd"] = 31
+    evidence["windows"].append(other)
+    with pytest.raises(CanvasInputRejected, match="candidate_ambiguous"):
+        bind_canvas(evidence, 30, approved_class=a.window_class, diagnostic_id=a.diagnostic_run_id, approval=a)
+
+
+def test_approval_does_not_unblock_transform_or_allow_save_path_to_canvas(evidence):
+    from harness.native_pilots import require_pilot_ready
+    b = observed_binding(evidence)
+    with pytest.raises(RuntimeError, match="capability_blocked"): require_pilot_ready("pilot_transform")
+    with pytest.raises(CanvasInputRejected): decide(evidence, b, text=OUTPUT)
+    with pytest.raises(CanvasInputRejected): decide(evidence, b, scenario="pilot_material", text="10")
+
+
+@pytest.mark.parametrize("observed", [False, True])
+def test_binding_json_roundtrip_requires_independent_expected_scope(evidence, observed):
+    from harness.canvas_input import binding_to_json, load_canvas_binding
+    from unit_tests.test_canvas_approval import approved
+    b = observed_binding(evidence) if observed else binding(evidence)
+    raw = binding_to_json(b)
+    a = approved() if observed else None
+    got = load_canvas_binding(raw, run_id=RUN, app_pid=123, process_created=9876, main_hwnd=10, approval=a)
+    assert got == b and type(got.parent_chain) is tuple and type(got.parent_chain[0]) is tuple
+    assert decide(evidence, got)["route"] == "canvas_numeric"
+    with pytest.raises(CanvasInputRejected, match="scope"):
+        load_canvas_binding(raw, run_id="b"*32, app_pid=123, process_created=9876, main_hwnd=10, approval=a)
+
+
+def test_observed_binding_json_needs_independent_approval(evidence):
+    from harness.canvas_input import binding_to_json, load_canvas_binding
+    raw = binding_to_json(observed_binding(evidence))
+    with pytest.raises(CanvasInputRejected, match="approval_required"):
+        load_canvas_binding(raw, run_id=RUN, app_pid=123, process_created=9876, main_hwnd=10)
+
+
+@pytest.mark.parametrize("fault", ["extra", "missing", "bool_pid", "ctime", "broken_chain", "duplicate_chain",
+                                 "float_rect", "bad_mode", "unknown_profile", "bool_version"])
+def test_binding_json_cannot_change_identity_or_provenance(evidence, fault):
+    from harness.canvas_input import binding_to_json, load_canvas_binding
+    from unit_tests.test_canvas_approval import approved
+    data = json.loads(binding_to_json(observed_binding(evidence)))
+    if fault == "extra": data["surprise"] = 1
+    elif fault == "missing": data.pop("desktop")
+    elif fault == "bool_pid": data["app_pid"] = True
+    elif fault == "ctime": data["process_created"] += 1
+    elif fault == "broken_chain": data["parent_chain"][0][1] = 10
+    elif fault == "duplicate_chain": data["parent_chain"].append(data["parent_chain"][0])
+    elif fault == "float_rect": data["main_rect"][0] = 0.0
+    elif fault == "bad_mode": data["mode"] = "automatic"
+    elif fault == "unknown_profile": data["approval_profile"] = "any"
+    elif fault == "bool_version": data["approval_version"] = True
+    with pytest.raises(CanvasInputRejected):
+        load_canvas_binding(json.dumps(data), run_id=RUN, app_pid=123, process_created=9876, main_hwnd=10, approval=approved())
+
+
+@pytest.mark.parametrize("raw", [b'{"x":1,"x":2}', b'NaN', b'{"x":Infinity}', b'{', b'0'*17000, b'\xff'])
+def test_malformed_binding_json_is_rejected(raw):
+    from harness.canvas_input import load_canvas_binding
+    with pytest.raises(CanvasInputRejected):
+        load_canvas_binding(raw, run_id=RUN, app_pid=123, process_created=9876, main_hwnd=10)

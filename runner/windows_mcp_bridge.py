@@ -127,11 +127,33 @@ def response_json(body):
     return decode_json(events[0])
 
 
+def authority_receipt(response, request, run_id, seq):
+    """Only the authenticated guest response supplies an authority decision."""
+    result = response.get("result", {})
+    receipt = result.get("structuredContent", {}).get("authority")
+    tool = request["params"]["name"]
+    if (type(receipt) is not dict or receipt.get("protocol") != "native-authority-1"
+            or receipt.get("run_id") != run_id or type(receipt.get("seq")) is not int
+            or receipt["seq"] != seq or receipt.get("tool") != tool
+            or receipt.get("decision") not in {"completed", "recoverable", "fatal"}
+            or type(receipt.get("dispatched")) is not bool):
+        raise ValueError("native_authority_receipt_missing_or_mismatched")
+    completed = receipt["decision"] == "completed"
+    if (completed and (receipt["dispatched"] is not True or result.get("isError", False) is not False)
+            or not completed and result.get("isError") is not True
+            or receipt["decision"] == "recoverable" and receipt["dispatched"] is not False):
+        raise ValueError("native_authority_result_conflict")
+    return receipt
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--run-id", required=True)
     p.add_argument("--guest-root", default=r"C:\coil\orca-blackbox-v3-r1")
     p.add_argument("--goal-save", action="store_true")
+    p.add_argument("--authority-log", type=Path)
+    from harness.native_matrix import SCENARIOS
+    p.add_argument("--scenario", choices=tuple(SCENARIOS), default="base")
     args = p.parse_args()
     transport = GuestHTTP(args.guest_root, args.run_id, deadline=time.monotonic()+900, goal_save=args.goal_save)
     calls = 0
@@ -160,7 +182,14 @@ def main():
             if args.goal_save:
                 from harness.native_save_policy import scoped_tool_schemas
                 output = str(Path(args.guest_root)/"artifacts/v3"/args.run_id/"artifacts/projects/0001.3mf")
-                response["result"]["tools"] = scoped_tool_schemas(response["result"]["tools"], output)
+                response["result"]["tools"] = scoped_tool_schemas(response["result"]["tools"], output, scenario=args.scenario)
+        if method == "tools/call" and args.authority_log is not None:
+            receipt = authority_receipt(response, request, args.run_id, calls)
+            # Written completely before forwarding this response. The agent has
+            # no filesystem tool and cannot create its own authority receipts.
+            with args.authority_log.open("a", encoding="utf-8") as stream:
+                stream.write(json.dumps({"request_id": request["id"], "authority": receipt})+"\n")
+                stream.flush()
         print(json.dumps(response, separators=(",", ":")), flush=True)
 
 

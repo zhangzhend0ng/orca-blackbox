@@ -28,7 +28,8 @@ def worker(run_id, actor="codex", scenario="base"):
     root = REPO / "artifacts/v3" / run_id / "artifacts"
     deadline = time.monotonic()+840
     def guard():
-        if time.monotonic() >= deadline or (root / "control_cancel.json").exists():
+        if (time.monotonic() >= deadline or (root / "control_cancel.json").exists()
+                or (root / "authority_abort.json").exists()):
             raise TimeoutError("native_worker_deadline_or_cancel")
     ui, server = None, None
     report = {"run_id": run_id, "error": None, "app_closed": False,
@@ -84,8 +85,29 @@ def worker(run_id, actor="codex", scenario="base"):
         setup.update(initial_sha256=hashlib.sha256((root / "initial.png").read_bytes()).hexdigest(),
                      finished_at_ns=time.time_ns())
         atomic_json(root / "setup.json", setup)
-        atomic_json(root / "scope.json", {"run_id": run_id, "app_pid": ui.app.pid,
-            "hwnd": ui.app.hwnd, "output_path": str(output)})
+        scope = {"run_id": run_id, "app_pid": ui.app.pid, "hwnd": ui.app.hwnd,
+                 "output_path": str(output), "scenario": scenario,
+                 "contract_sha256": report["contract_sha256"], "actor": actor}
+        if scenario == "canvas_trial":
+            from harness.canvas_approval import resolve_approval
+            from harness.canvas_input import collect_window_evidence, bind_canvas, binding_to_json
+            diagnostic = REPO / "contracts/evidence/canvas-diagnostic-bb64.json"
+            diagnostic_sha = hashlib.sha256(diagnostic.read_bytes()).hexdigest()
+            approval = resolve_approval("observed-wxglcanvas-v1", diagnostic_sha256=diagnostic_sha, sut_sha256=sut_sha)
+            evidence = collect_window_evidence(run_id, ui.app.pid, ui.app.hwnd)
+            candidates = [w for w in evidence["windows"] if w.get("pid") == ui.app.pid
+                and w.get("exists") is True and w.get("visible") is True and w.get("is_main_child") is True
+                and w.get("class") == approval.window_class and w.get("title") == approval.window_title]
+            if len(candidates) != 1:
+                raise RuntimeError("canvas_trial_candidate_ambiguous")
+            binding = bind_canvas(evidence, candidates[0]["hwnd"], approved_class=approval.window_class,
+                                  diagnostic_id=approval.diagnostic_run_id, approval=approval)
+            scope.update(canvas_binding_json=binding_to_json(binding), canvas_approval_profile=approval.profile_id,
+                         canvas_diagnostic_sha256=diagnostic_sha, canvas_sut_sha256=sut_sha)
+            atomic_json(root / "canvas_setup.json", {"run_id": run_id, "contract_sha256": report["contract_sha256"],
+                "binding": json.loads(scope["canvas_binding_json"]), "evidence": evidence,
+                "pfd_verified": False, "internal_numeric_field_verified": False})
+        atomic_json(root / "scope.json", scope)
         if scenario == "canvas_probe":
             from harness.canvas_input import collect_window_evidence
             atomic_json(root / "canvas_diagnostic.json", collect_window_evidence(run_id, ui.app.pid, ui.app.hwnd))
@@ -112,6 +134,14 @@ def worker(run_id, actor="codex", scenario="base"):
                 time.sleep(1)
         else:
             raise TimeoutError("native_server_not_ready")
+        if scenario == "authority_probe":
+            from harness.native_authority_probe import run_probe
+            atomic_json(root / "authority_probe.json", run_probe(root, run_id, ui.app.pid, ui.app.hwnd))
+            stop_input()
+            ui.close()
+            report["app_closed"] = not ui.app.alive()
+            report["diagnostic_only"] = True
+            return 0 if report["app_closed"] else 1
         atomic_json(root / "ready.json", {"ready": True, "run_id": run_id,
             "window": window, "output_path": str(output), "contract_sha256": report["contract_sha256"]})
         while not (root / "host_done.json").exists():

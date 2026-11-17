@@ -65,7 +65,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-id", required=True)
     from harness.native_matrix import SCENARIOS, scenario_spec, completed_progress
-    parser.add_argument("--scenario", choices=tuple(s for s in SCENARIOS if s != "canvas_probe"), default="base")
+    parser.add_argument("--scenario", choices=tuple(s for s in SCENARIOS if s not in {"canvas_probe", "authority_probe"}), default="base")
     args = parser.parse_args(argv)
     _, disturbance = scenario_spec("zcode", args.scenario)
     from harness.native_pilots import require_pilot_ready
@@ -126,12 +126,22 @@ def main(argv=None):
             "Inspect screenshots after changes and confirm saving through the UI. "
             "Do not close, reopen, slice or export: independent verification handles that. "
             "Finish with ControlStatus(release=true), then describe observations without claiming test pass.")
+        if args.scenario in {"recovery_owned_edit", "canvas_trial"}:
+            prompt += " A recoverable pre-dispatch refusal requires a fresh Snapshot/Screenshot before any further input. A fatal refusal ends this run."
+        if args.scenario == "canvas_trial":
+            prompt = prompt.replace("Type supports clear=true and press_enter=true.",
+                "For numeric Type use clear=false, caret_position=idle and press_enter=false; ordinary Edit replacement options are available only for the exact SaveAs path.")
+            prompt += (" This is a controlled canvas numeric-input capability trial. For a numeric field drawn in the canvas, first Click the field at a visually chosen loc, then Type at that same loc within 30 seconds."
+                       " On the canvas use clear=false, caret_position=idle, press_enter=false only; the field must already be ready to replace its current value."
+                       " Inspect the actual result; do not assume typing replaced existing text. Only the exact SaveAs path retains ordinary Edit replacement options.")
         (root/"prompt.txt").write_text(prompt, encoding="utf-8")
         bundle = Path(r"C:\Program Files\ZCode\resources\glm\zcode.cjs")
         report["bundle_sha256"] = hashlib.sha256(bundle.read_bytes()).hexdigest()
         spec = {"root": str(root), "workspace": str(workspace), "run_id": args.run_id,
                 "bundle": str(bundle), "python": sys.executable,
-                "bridge": str(REPO/"runner/windows_mcp_bridge.py"), "prompt": prompt}
+                "bridge": str(REPO/"runner/windows_mcp_bridge.py"), "prompt": prompt,
+                "authority_protocol": "native-authority-1", "authority_log": str(root/"authority.ndjson"),
+                "recovery_enabled": args.scenario in {"recovery_owned_edit", "canvas_trial"}, "scenario": args.scenario}
         (root/"spec.json").write_text(json.dumps(spec), encoding="utf-8")
         env, report["proxy_source"] = _child_environment()
         env.update(ZCODE_PERSONAL_PROVIDER_CONFIG_FILE=str(provider),

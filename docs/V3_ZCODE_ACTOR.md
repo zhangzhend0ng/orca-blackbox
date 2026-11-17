@@ -1,17 +1,17 @@
-# ZCode 原生 actor：Snapmaker Flash
+# ZCode 原生 actor：接口与边界
 
-入口：`python -B tools/native_save_demo.py --actor zcode`。仅在 Hyper-V `win11-test` 执行 GUI，仍由 `hv_go.ps1` 启动同一 `run_once` / owned Job / canonical 桌面锁。两端须同步同一已提交HEAD、客机空闲，已有relay和Windows-MCP运行时可用。
+当前路线、优先级和评估门槛统一见[主方案](V3_PLAN.md)，本页只描述actor。主方案未放发布闸；停止继续相似扩样，先完成恢复/停输和画布能力。
 
-模型固定为本机 ZCode 已配置的 `Snapmaker` 供应商：`new-provider / glm-5.3-flash`，现有地址 `http://ai-gateway.s.com/v1`，Anthropic协议，thoughtLevel=low。精确沿用公司配置，不将其写成HTTPS，也不改网关或认证设置。使用原版ZCode app-server的会话模型选择、MCP和agent循环；客户端只创建会话、给目标、批准受限GUI权限、观察原生事件及回收，不替模型产生下一动作。不导出API Key、不复制认证、不修改全局默认模型，运行前后核对三份个人配置hash。
+入口为`python -B tools/native_save_demo.py --actor zcode`，GUI只在Hyper-V win11-test由hv_go交互任务执行，沿用run_once、owned Job、canonical桌面锁和独立harvest。宿主与客机须为相同已提交HEAD；上游源码只读。
 
-原版Windows-MCP七项通用工具仍通过既有桥连接客机；native toolAllowlist只准本轮七个完整工具名，权限回调拒绝其他工具。会话关闭搜索、记忆、子agent配置、动态工作流和闲时执行；未使用的官方插件认证请求被拒绝。已有用户插件可能在原生bootstrap中初始化，不能把会话工具过滤称为完整OS沙箱。原生model-io收据的实际provider/model及每次request.toolNames必须精确匹配；缺记录、模型漂移或出现其他工具均不晋级。
+供应商固定原有Snapmaker `new-provider/glm-5.3-flash`，原有HTTP地址`http://ai-gateway.s.com/v1`、Anthropic协议、reasoning/thought low。原生ZCode app-server持有模型agent循环；项目客户端只创建会话、给目标、限制权限、收集事件与停止，不替模型生成下一动作。客户端不导出Key、不复制到客机、不修改全局模型/账号/代理；三份个人配置hash在每轮前后核对。实际model-io再次核验provider/model和每次七项工具清单。
 
-桥在tools/list中收紧输入schema以匹配既有门禁：坐标只接受整数数组，开关为bool，禁止其他资源路径和任意文本。原版MCP实现和owned窗口校验保留。ControlStatus的disabled描述全局租约状态，专用客机仍由独立的每调用权限检查约束；不能据此要求开启宿主控制。
+仅开放Snapshot、Screenshot、Click、Type、Shortcut、Wait、ControlStatus。模型不获shell、文件系统、任意路径或全局快捷键。数值/固定保存路径、owned PID/HWND/控件类型由执行端校验。会话关闭搜索/记忆/子agent等额外能力，未使用插件认证请求拒绝；bootstrap仍可能初始化已有插件，不构成完整OS沙箱。tools/list说明必须与收窄schema及权限一致。
 
-宿主先查询本机clash-guard状态；模型运行中每三秒轮询（本地请求超时一秒），不可达/未ready/证据过期时停止本轮owned Job。此守卫的出口检测对象仍是其既有OpenAI分组，**ready不证明Snapmaker网关也走美国出口**；本实现不修改Clash规则或扩大守卫的地理保护声明。
+现有逐调用门禁不等于永久撤销：b6b15eb填充轮次出现foreign拒绝后仍继续调用。**fatal latch尚待修复和真实验收**，不能声称失配后即刻终止或整轮没有任何越权输入。后续必须首次fatal原子锁存、停止actor/MCP；只允许有未派发证据的owned控件类型错误按新合同有限恢复。旧严格合同不放宽、旧失败不重标。
 
-业务目标仍是常规层高0.24、初层0.40、cube不变、GUI保存3MF；模型不负责独立证明。停止原生输入和MCP后，旧Orca自然退出，冻结保存文件，新profile重开GUI切片导出，复用现有只读3MF/G-code verifier。ZCode使用独立固定合同`native-save-zcode-1`，要求额外的模型/供应商/守卫/源配置/工具集收据；原Codex合同摘要保持不变。两条路线均限SHADOW，不计发布GREEN。
+宿主模型期间轮询既有clash-guard；guard不可达或未ready停止本轮owned Job。守卫针对既有OpenAI分组，ready不证明公司网关出口美国；不修改Clash/guard规则。前台失配和原版MCP的ControlStatus disabled不是要求开启宿主控制的理由。
 
-2026-11-17已取得一次完整真实SHADOW：run `4ba6b094412d435398826502d94f69e9`，16次原生工具调用，AI自行处理保存失败提示并另存；冻结工程经新profile重开生成实际112层G-code。前五次开发失败全部保留，详见[运行记录](runs/zcode-snapmaker-2026-11-17.md)。此前BigModel独立套餐试验已停止，不是当前选择。单个正例不证明稳定性矩阵或87条覆盖。
+AI业务保存后，可信阶段撤销输入、停MCP、自然退出旧Orca、冻结同一3MF字节，fresh profile重开GUI切片，再由只读oracle检查目标、几何/配置、实际G-code和运行时来源/时序。模型回复不是通过证据。清理未知、模型/工具集漂移、缺证明均不晋级。
 
-2026-11-17完整稳定性复验：冻结29f567e，安全3/3、业务严格7/8。另1轮由owned非Edit输入拒绝后，AI自主恢复并生成正确产物，但原合同仍判NON_GREEN；不重标成8/8，不扩大87条覆盖。工具合同和原生错误事件缺陷已修复，全部失败样本保留。详见[最新验收及后续边界](runs/zcode-matrix-2026-11-17.md)和[批次入口](V3_ZCODE_MATRIX.md)。
+历史：首个4ba6b094412d435398826502d94f69e9完成16个MCP调用及独立112层G-code，前五个开发失败保留；[原始记录](runs/zcode-snapmaker-2026-11-17.md)。29f567e矩阵安全3/3、业务严格7/8仍不变；[矩阵记录](runs/zcode-matrix-2026-11-17.md)。b6b15eb旧项回归3个SHADOW、填充失败、平移blocked、slot3未运行；[最新扩样记录](runs/zcode-expansion-2026-11-18.md)。这些都不是87条覆盖、跨版本维护或发布GREEN。

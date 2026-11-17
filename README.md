@@ -1,5 +1,7 @@
 # orca-blackbox — Snapmaker Orca 黑盒视觉 GUI 测试套件
 
+当前GUI AI路线与下一阶段统一见[**v3主方案**](docs/V3_PLAN.md)：先修永久撤销/有限恢复与画布能力，再冻结未见任务泛化评估；历史运行结果不重标，发布闸不变。
+
 对 `snapmaker-orca.exe` 做**外部黑盒**驱动：截图 → 模板匹配定位 → 消息级输入注入 →
 截图断言。全程不接触 app 内部 API（与上游仓库 `tests/wx_gui/` 的进程内白盒路线互补）。
 

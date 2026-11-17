@@ -11,6 +11,7 @@ PILOTS = {
 PILOT_BLOCKS = {
     "pilot_transform": "scene_numeric_range_and_canvas_edit_authority_not_ready",
 }
+TRIALS = {"canvas_trial": "pilot_transform"}
 
 
 def require_pilot_ready(scenario):
@@ -22,13 +23,13 @@ def require_pilot_ready(scenario):
 
 
 def pilot_module(scenario):
-    if type(scenario) is not str or scenario not in PILOTS:
+    if type(scenario) is not str or scenario not in {**PILOTS, **TRIALS}:
         raise ValueError("native_pilot_not_registered")
-    return import_module("."+PILOTS[scenario], __package__)
+    return import_module("."+{**PILOTS, **TRIALS}[scenario], __package__)
 
 
 def business_goal(scenario):
-    if scenario in PILOTS:
+    if scenario in {**PILOTS, **TRIALS}:
         return pilot_module(scenario).GOAL
     from .native_matrix import SCENARIOS
     if scenario not in SCENARIOS:
