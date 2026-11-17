@@ -1,6 +1,6 @@
 # Windows-MCP 客机兼容性探针审查
 
-结论：源码自检 APPROVE with documented limits，仅允许隔离兼容性探针。真实 Codex→Windows-MCP→Orca 链路尚未验证，不能计 GREEN。
+结论：源码自检 APPROVE with documented limits，仅允许隔离兼容性探针。真实基础链路已在第五轮通过 COMPATIBILITY_SHADOW；默认控制锁失败保留，仍不能计发布 GREEN。
 
 本次使用已加载的 harness-driven-review Part A/B。范围为数据传输桥、固定探针入口、进程生命周期、纯单测及离线依赖清单；不修改用户 launcher/profile/farm_runner、不改上游、不改全局 Codex 配置。作者自检，不冒充独立审查。
 
@@ -48,3 +48,13 @@ run 50d3d4d34395492385c10b15f3d88ecf，source 1144897。原生 Snapshot、Screen
 run fabe9936b2324b7dbcd497fed0eb603d，source 50a568f。全部接线/审批已通过，原生 Agent 两次自行选择 Preview 坐标，原版 MCP 均返回 CONTROL_UNAVAILABLE，ControlStatus 却为 ready/enabled/relaxed，截图始终 Prepare；执行未发生。不是成功点击，不以截图成功替代输入验证。已 harvest；双端 Job=0、forced=false、SUT 自然关闭。
 
 源码定位到 Windows-MCP 的 desktop/control.py begin_call 及 ControlToolGate 的 desktop ownership gate；当前尚不能证明具体哪个 hook/recovery 内部标志导致拒绝。第五轮采用原版 CLI 明确支持的 --no-control，限定专用 win11-test、hv_go idle desktop gate、单次 owned Job、只开放五个 GUI 工具。该选项关闭物理输入接管监控/指示，不等于认证或工具权限；不能用于共享宿主桌面。原版默认控制锁的失败仍作为独立兼容性限制保留，不修改第三方源码，不宣称修复其默认模式。
+
+## 第五轮真实联调（COMPATIBILITY_SHADOW）
+
+run 9c95fb4b95bc447294534fbe77b5e70a，host/guest source 40ecf3327a66075a4a13d386fca1c2424d04572a。原版包不改源码，使用专用客机 --no-control。原生 Codex 一次 exec：Snapshot→Click([258,49])→Screenshot→Click([115,49])→Screenshot→ControlStatus(release=true)，六次均 completed，无 tool error；坐标由模型根据现场图片选出，prompt 不包含坐标。
+
+独立 observer（不读取模型文字）连续双帧确认 prepare/preview/prepare，三张 PNG 已回收并逐一核 SHA256；人工查看 Preview 截图确认页签高亮与预览面板，但不据此宣称 G-code 业务验证。worker error=null、app_closed=true、server_stopped=true；host/guest Job ActiveProcesses=0、forced=false。宿主断言对状态顺序、原生调用数/成功、图片哈希与双端收尾全部通过。摘要与原始证据哈希保存 docs/research/windows-mcp-probe-results.json。
+
+**最终结论：APPROVE with limits，仅准进入专用客机业务试点。** 此轮只证明基础协议、视觉决策、可逆点击与清理；默认控制锁、Type/Shortcut、参数重切/导出、保存重开、负例及稳定性尚未验证。没有新增业务 GREEN，不执行飞书 GREEN 基线 writeback。选型调研及旧 adapter 文档已指向该现成 Agent 方向；旧结果不改写。
+
+最终只读 postflight：guest HEAD=40ecf33、dirty=[]、Orca 进程数 0、suite=Ready；SUT SHA256=5c48644d7da18b50636ceeee4ef9fd2eaf6d4e8ac05bd88752f40e3717fc47bf。未改上游或宿主全局配置。

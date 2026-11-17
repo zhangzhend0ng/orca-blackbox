@@ -4,11 +4,11 @@
 
 ## 决策结论
 
-推荐停止扩展当前手写的模型动作循环；采用现成 AI 测试系统做执行层。首个可执行的开源候选是 **Midscene Test 1.18.0 + Computer 平台**，商业产品只保留 **AskUI Desktop** 作为第一对照。现有 Hyper-V 隔离、run 身份、独立 3MF/G-code 检查和失败记录继续保留。
+推荐停止扩展手写的模型动作循环，优先推进 **原生 Codex Agent + Windows-MCP 0.8.9** 的业务试点。2026-11-17 已在专用 `win11-test` 完成真实页签环：6 次原生 MCP 调用全部成功，独立双帧确认 Prepare→Preview→Prepare，双端 Job 清空。没有给 Agent 坐标、没有逐步 JSON 决策壳。配置、五轮原始结果与限制见 [试点记录](../WINDOWS_MCP_PROBE.md)。
 
-这是有证据支持的选型方向，不是已经完成 Orca 兼容性验收或采购的结论。本次完成公开资料、官方部署/限制文档、源码说明、许可证及发布元数据核验；没有安装候选、注册试用、联系供应商、购买许可证或将项目上传到第三方。
+这证明基础工具链可用，尚不证明复杂业务或回归稳定性。原版默认桌面控制锁在该客机返回 CONTROL_UNAVAILABLE；成功配置使用官方 `--no-control`，限定独占客机。其他候选仍为资料研究，未安装、试用或采购。现有 Hyper-V 隔离、run 身份、独立 3MF/G-code 检查和失败记录继续保留。
 
-直接选择 Midscene 完整测试 runner，避免再用 Deep Agents/LangGraph 拼装另一个 agent，也避免只取 Midscene 的定位 API 后继续自建循环。若团队明确愿意用商业平台换取更低维护负担，AskUI 是优先试用的成品应用；正式采购必须先通过下述同一组 Orca 验收。
+**Midscene Test 1.18.0 + Computer** 调整为完整测试 runner 的备选，**AskUI Desktop** 保留为商业成品对照。Windows-MCP 是桌面工具，Codex 提供现成 Agent；测试生成、探索、报告与业务判定仍分别验收。先利用现有 Codex 登录与 harness 验证业务，不再用 Deep Agents/LangGraph 拼装另一套 Agent。
 
 ## 1. 本项目真正需要解决的问题
 
@@ -27,7 +27,7 @@
 ## 2. 证据方法与边界
 
 - 优先使用官方产品手册、已发布包、源码和限制页面；市场宣传仅作为能力声明。
-- 将“官方声明支持”“源码/包可确认”“本项目已实测”分开。本次第三方候选均未取得 Orca 实测结果。
+- 将“官方声明支持”“源码/包可确认”“本项目已实测”分开。Windows-MCP 已有上述基础客机实测，其他第三方候选尚未取得 Orca 实测结果。
 - 对冲突资料优先使用当前打开的官方价格页和版本化文档，保留需要供应商澄清的部分；不引用搜索摘要中的旧价格作采购依据。
 - 没有找到原生 Windows 支持证据，记为未确认，不能直接断言产品永远不支持。
 - 星数用于说明社区规模，不作为可靠性评分。第三方成功率和厂商基准不转换成 Orca 通过率。
@@ -38,7 +38,8 @@
 
 | 候选 | 实际定位及核实情况 | 本项目处理 |
 |---|---|---|
-| **Midscene Test / Computer** | MIT；现成自然语言 E2E runner、目标动作、断言、报告与桌面平台 | 开源主选，优先做 Orca 试点 |
+| **原生 Codex + Windows-MCP** | 复用原生 Agent；MCP 包 MIT，提供 UIA/截图/通用输入，需 Python 3.14+ | 基础客机环已实测，优先扩展业务试点；默认控制锁失败仍保留 |
+| **Midscene Test / Computer** | MIT；现成自然语言 E2E runner、目标动作、断言、报告与桌面平台 | 完整测试 runner 备选，尚未实测 |
 | **AskUI Desktop** | 商业成品应用；编写/运行/查看自然语言测试，Windows、CLI、调度与部署选项 | 商业第一对照 |
 | **testRigor** | 商业平台；明确支持 Windows Remote Desktop；桌面 teardown 需显式处理 | 第二梯队，RDP/GL 与清理成本先核验 |
 | **QA Wolf** | 商业平台/服务；已公布原生 Windows runner、干净 VM、应用投递、录像 | 如考虑托管测试团队再评估；GPU/自绘适配未证明 |
@@ -148,7 +149,7 @@
 
 ### 第一步：模型与桌面能力烟测
 
-固定 Midscene 1.18.0、模型与配置，先只确认客机截图、鼠标键盘、取消、文件对话框、GL 画面和报告可取。所有 GUI/探针仍由 `win11-test / hv_go` 正式入口运行，不在宿主试点。
+原生 Codex + Windows-MCP 已完成截图、可逆点击、独立观察与收尾的基础验证。继续固定版本与配置，补键盘输入、取消、文件对话框和业务产物验证；所有 GUI/探针仍由 `win11-test / hv_go` 正式入口运行。Midscene 如开展对照，固定 1.18.0，采用同样边界。
 
 这一步不生成业务通过率；若不能用现有交互客机工作，先记录具体限制，不同时改模型、显示通道和业务用例来掩盖原因。
 
@@ -168,7 +169,7 @@
 
 AskUI 如开展试用，使用同一目标、夹具、初态、构建、负例和独立 oracle。获取试用和报价需要组织身份/合同范围；本次未注册或联系供应商。不得为了对照把产品源码、真实用户数据或上游仓库擅自上传到云端。
 
-若 Midscene 达标且维护投入可接受，采用其 runner 作为主线，保留当前框架作为回退；若 AskUI 达标并显著降低人工维护，总成本及数据部署条款可接受，则采用成品平台。两者都不达标时按失败部位选择 TestComplete 或 Eggplant 做有范围的桌面回归，不回到无限扩张自写 agent。
+若原生 Codex 链路通过上述业务门槛，优先保留现成 Agent 与已有 harness。若需要完整自然语言测试 runner，再对照 Midscene；若 AskUI 达标并显著降低人工维护，且总成本与部署条款可接受，再考虑成品平台。候选不达标时按具体失败部位选择有范围的桌面回归，不回到无限扩张自写 Agent。
 
 探索生成测试资产要单独验收：给同一需求区域，不预列操作步骤，检查系统是否产出新增状态、候选测试和可复现缺陷。先核实真实新增覆盖和误报，再接 CI；不能拿三个固定任务的成功声称已完成探索测试员。
 
@@ -178,6 +179,7 @@ AskUI 如开展试用，使用同一目标、夹具、初态、构建、负例�
 
 | 主题 | 官方证据 |
 |---|---|
+| Codex / Windows-MCP | [Codex MCP 与工具级配置](https://learn.chatgpt.com/docs/extend/mcp)、[Windows-MCP 仓库](https://github.com/CursorTouch/Windows-MCP)、[0.8.9 发布包](https://pypi.org/project/windows-mcp/0.8.9/)；本项目实测见试点记录 |
 | Midscene runner | [框架概览](https://www.midscenejs.com/midscene-test/overview)、[创建与运行](https://www.midscenejs.com/midscene-test/use)、[更新日志](https://www.midscenejs.com/changelog) |
 | Midscene agent/桌面 | [目标执行、deepThink、预算 API](https://www.midscenejs.com/reference/)、[Desktop SDK 与 destroy 边界](https://www.midscenejs.com/sdk/desktop)、[桌面环境](https://www.midscenejs.com/platforms/desktop) |
 | Midscene 发布与许可 | [test registry](https://registry.npmjs.org/@midscene/test)、[computer registry](https://registry.npmjs.org/@midscene/computer)、[GitHub](https://github.com/web-infra-dev/midscene) |

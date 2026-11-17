@@ -1,5 +1,7 @@
 # v3 首个 AI 执行切片：页签往返
 
+2026-11-17 更新：下文是旧逐步 JSON 执行器的冻结接口，保留既有结果。后续执行层优先采用已实测的 [原生 Codex + Windows-MCP](WINDOWS_MCP_PROBE.md)，不再扩展本页的手写决策循环。该新试点目前只证明专用客机中的基础页签环，未替代正式业务合同与发布门禁。
+
 状态：2026-11-16，codex_chat 和无人值守 codex_cli 真实 AI/GUI 正例均为 SHADOW，无状态变化的客机反例 NON_GREEN；[运行记录](runs/v3-agent-2026-11-16.md)。上一批 m0 的 SHADOW 不作为本批证据。
 
 固定任务为 `m1_minimal_loop`，契约版本 `ai-tabs-1`，executor=`agent_mcp`：由模型观察实际截图，选择点击，使界面完成 Prepare → Preview → Prepare。只证明页签状态切换与路径，不证明切片、渲染质量或完整产品正确性。始终不可发布。
