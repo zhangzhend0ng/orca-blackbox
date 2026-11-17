@@ -34,3 +34,11 @@ worker 无错误、自然关闭 SUT，MCP server 已停止；guest Job ActivePro
 run 42203831e02244778f60e59567543d45，source f2eb317。认证与 MCP initialize/tools/list 已成功；原版 Snapshot 在 pillow 后端返回真实 Orca 1920×1080 PNG（180864 字符 base64），但桥收到的 SSE 文本被 PowerShell 默认编码误解码，产生 U+0085；Python splitlines 又把 JSON 字符串中的合法 Unicode 分隔符当作 SSE 边界，导致 JSONDecodeError。修复为从 RawContentStream 严格 UTF-8 解码、仅按 ASCII LF 切 SSE；新增三个 Unicode 回归反例。
 
 本轮 CLI exit 0，但原生事件明确记录 Snapshot/ControlStatus failed；因此整轮是 NON_GREEN。宿主新增按原生 completed tool events 审计，禁止仅按 CLI exit 判断工具成功。worker/process 原始报告及截图已经 hv_harvest 回收；guest/host Job 均 active=0、forced=false；无输入动作、SUT 自然关闭。
+
+## 第三轮真实联调（NON_GREEN）
+
+run 50d3d4d34395492385c10b15f3d88ecf，source 1144897。原生 Snapshot、Screenshot、ControlStatus 已成功；Codex 自行看图选择 Click(loc=[253,49])，但 Click 在 CLI 默认 noninteractive approval_policy=never 下被拒，根本未送达 MCP 服务。宿主审计正确判 native_tools_failed_or_unused，未将 CLI exit 0 写成成功。
+
+按官方配置 https://learn.chatgpt.com/docs/extend/mcp 的 tools.<tool>.approval_mode，给本次固定 guest bridge 的 Click 增加仅子进程有效的 approve 设置。用户已授权隔离 GUI 测试及可逆输入；这不是 auto-review 拒绝，不涉及修改全局策略或放开宿主 shell。服务端/桥的五工具白名单、单客机、20 调用预算及只读 shell sandbox 继续适用。原始失败已 harvest，guest/host Job 均 0 且无强杀。
+
+修复后纯单测累计 734 passed, 1 skipped（22.60 秒），PS 两入口 parser 无错误。

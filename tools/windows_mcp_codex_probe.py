@@ -65,7 +65,11 @@ def main():
               "startup_timeout_sec": 90, "tool_timeout_sec": 60, "required": True}
     # Inline TOML table, with JSON string escaping for Windows paths.
     encoded = "{"+", ".join(key+"="+json.dumps(value) for key, value in config.items())+"}"
-    command.extend(["-c", "mcp_servers.windows_mcp="+encoded, prompt])
+    # User-authorized reversible clicks in this isolated guest only. A native
+    # noninteractive `never` approval policy otherwise rejects this write tool.
+    # Keep this per-tool and per-process; do not grant shell/full host access.
+    command.extend(["-c", "mcp_servers.windows_mcp="+encoded,
+                    "-c", 'mcp_servers.windows_mcp.tools.Click.approval_mode="approve"', prompt])
     env, report["proxy_source"] = _child_environment()
     try:
         for _ in range(50):
