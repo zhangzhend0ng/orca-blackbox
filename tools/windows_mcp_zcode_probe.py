@@ -1,0 +1,190 @@
+"""Native ZCode actor, explicitly pinned to the existing Snapmaker provider."""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import sys
+import time
+from urllib.parse import urlsplit
+
+REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO))
+from harness.agent_model import _child_environment
+from harness.agent_protocol import valid_run_id
+from harness.ip_guard import IPGuard
+from harness.native_save_policy import NATIVE_TOOLS
+from harness.win32_job import OwnedJobProcess
+from runner.windows_mcp_bridge import GuestHTTP
+
+
+def provider_metadata(path):
+    data = json.loads(path.read_text(encoding="utf-8-sig"))
+    rows = data["config"]["providerConfigRules"]["providerRules"]
+    row = next(r for r in rows if r["providerId"] == "new-provider")
+    config = row["config"]
+    endpoint = urlsplit(config["api"]["baseUrl"])
+    if (row.get("providerName") != "Snapmaker" or config["api"]["type"] != "anthropic-messages"
+            or endpoint.scheme != "https" or endpoint.hostname != "ai-gateway.s.com"
+            or endpoint.port not in (None, 443) or endpoint.path.rstrip("/") != "/v1"
+            or endpoint.query or endpoint.fragment or endpoint.username or endpoint.password
+            or config["access"]["type"] != "api-key" or not config["access"].get("apiKey")
+            or "glm-5.3-flash" not in config["personalModelIds"]):
+        raise ValueError("zcode_snapmaker_provider_changed")
+    return {"provider_id": "new-provider", "provider_name": "Snapmaker", "model_id": "glm-5.3-flash",
+            "endpoint_host": endpoint.hostname, "protocol": "anthropic-messages"}
+
+
+def model_io_summary(root):
+    records = []
+    allowed = {"mcp__windows_mcp__"+name for name in NATIVE_TOOLS}
+    for path in sorted((root/"storage/cli/rollout").glob("model-io-*.jsonl")):
+        if path.stat().st_size > 64*1024*1024:
+            raise ValueError("zcode_model_io_limit")
+        for line in path.read_text(encoding="utf-8").splitlines():
+            data = json.loads(line)
+            if data.get("type") != "model.request.completed":
+                # Installed builds use a different event label; identify the
+                # native completed provider receipt by its explicit fields.
+                if not all(k in data for k in ("request", "response", "model")):
+                    continue
+            model = data["model"]
+            if model.get("providerId") != "new-provider" or model.get("modelId") != "glm-5.3-flash":
+                raise ValueError("zcode_native_model_changed")
+            names = data["request"].get("toolNames")
+            if type(names) is not list or set(names) != allowed or len(names) != len(allowed):
+                raise ValueError("zcode_native_toolset_mismatch")
+            records.append({"model": model, "tool_names": names,
+                "usage": data["response"].get("usage"), "duration_ms": data.get("durationMs"),
+                "response_model": data["response"].get("modelId")})
+    if not records:
+        raise ValueError("zcode_model_io_missing")
+    return records
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--run-id", required=True)
+    args = parser.parse_args(argv)
+    valid_run_id(args.run_id)
+    root = REPO/"artifacts/windows_mcp_host"/args.run_id
+    root.mkdir(parents=True, exist_ok=False)
+    workspace = root/"workspace"
+    workspace.mkdir()
+    provider = Path.home()/".zcode/v2/provider_config.json"
+    sources = [provider, Path.home()/".zcode/cli/config.json", Path.home()/".zcode/v2/config.json"]
+    hashes = {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in sources}
+    control = GuestHTTP(r"C:\coil\orca-blackbox-v3-r1", args.run_id,
+                        deadline=time.monotonic()+1000, channel="control", goal_save=True)
+    report = {"run_id": args.run_id, "actor": "zcode", "error": None, "release_eligible": False,
+              "native_tool_calls": [], "toolset_verified": False, "guard_checked": False}
+    process = None
+    try:
+        report.update(provider_metadata(provider))
+        guard = IPGuard()
+        report["guard_checks"] = [guard.check()]
+        report["guard_checked"] = True
+        for _ in range(50):
+            ready = control.remote({"op": "ready"})
+            if ready.get("ready") is True:
+                break
+            time.sleep(2)
+        else:
+            raise TimeoutError("zcode_guest_not_ready")
+        output = r"C:\coil\orca-blackbox-v3-r1\artifacts\v3"+"\\"+args.run_id+r"\artifacts\projects\0001.3mf"
+        if ready.get("output_path") != output:
+            raise ValueError("zcode_guest_output_mismatch")
+        prompt = ("Use only windows_mcp tools in the isolated Windows guest to achieve this goal in the already loaded Snapmaker Orca: "
+            "set regular Layer height to 0.24 mm, preserve First layer height 0.40 mm and the cube model, "
+            "and save the whole project as a 3MF at this exact absolute path: "+output+". "
+            "Do not switch printer/filament/process presets or change other settings. "
+            "Choose the UI route and coordinates yourself from fresh screenshots. "
+            "Click and Type use loc=[x,y] desktop pixels; label inputs are unavailable. "
+            "Type supports clear=true and press_enter=true. Only numeric strings and the full assigned save path are permitted. "
+            "Shortcuts allowed: ctrl+s, ctrl+shift+s, enter, tab, shift+tab, esc. "
+            "Only the owned application and its dialogs may receive input. Never open other apps or use other tools. "
+            "Inspect screenshots after changes and confirm saving through the UI. "
+            "Do not close, reopen, slice or export: independent verification handles that. "
+            "Finish with ControlStatus(release=true), then describe observations without claiming test pass.")
+        (root/"prompt.txt").write_text(prompt, encoding="utf-8")
+        bundle = Path(r"C:\Program Files\ZCode\resources\glm\zcode.cjs")
+        report["bundle_sha256"] = hashlib.sha256(bundle.read_bytes()).hexdigest()
+        spec = {"root": str(root), "workspace": str(workspace), "run_id": args.run_id,
+                "bundle": str(bundle), "python": sys.executable,
+                "bridge": str(REPO/"runner/windows_mcp_bridge.py"), "prompt": prompt}
+        (root/"spec.json").write_text(json.dumps(spec), encoding="utf-8")
+        env, report["proxy_source"] = _child_environment()
+        env.update(ZCODE_PERSONAL_PROVIDER_CONFIG_FILE=str(provider),
+            ZCODE_BUILTIN_PROVIDER_CONFIG_FILE=r"C:\Program Files\ZCode\resources\config\provider\zcode-builtin.json",
+            ZCODE_STORAGE_DIR=str(root/"storage"), ZCODE_SESSION_DB_PATH=str(root/"storage/sessions.sqlite"),
+            ZCODE_LOG_DIR=str(root/"storage/logs"), ZCODE_HTTP_PROXY=env.get("HTTPS_PROXY", ""),
+            ZCODE_NO_PROXY="127.0.0.1,localhost")
+        report["guard_checks"].append(guard.check())
+        process = OwnedJobProcess.start([r"C:\Program Files\nodejs\node.exe", str(REPO/"tools/zcode_session_driver.mjs"),
+            str(root/"spec.json")], cwd=workspace, env=env, log_path=root/"zcode.log")
+        cutoff, next_guard = time.monotonic()+630, 0
+        while True:
+            if time.monotonic() >= next_guard:
+                report["guard_checks"].append(guard.check())
+                next_guard = time.monotonic()+3
+            code, active = process.poll()
+            if code is not None and active == 0:
+                report["zcode_exit"] = code
+                break
+            if time.monotonic() >= cutoff or (root/"zcode.log").stat().st_size > 2_000_000:
+                raise TimeoutError("zcode_deadline_or_output_limit")
+            time.sleep(.2)
+        actor = json.loads((root/"actor.json").read_text(encoding="utf-8"))
+        report["native_tool_calls"] = actor.get("native_tool_calls", [])
+        report["selection"] = actor.get("selection")
+        if code or actor.get("error"):
+            raise RuntimeError("zcode_actor_failed:"+str(actor.get("error")))
+        report["model_io"] = model_io_summary(root)
+        report["toolset_verified"] = True
+    except Exception as exc:
+        report["error"] = type(exc).__name__+":"+str(exc)[:240]
+    finally:
+        if process:
+            forced = process.poll()[1] != 0
+            if forced:
+                process.terminate()
+            for _ in range(100):
+                code, active = process.poll()
+                if active == 0:
+                    break
+                time.sleep(.1)
+            report["host_job"] = {"active_processes": active, "forced_termination": forced}
+            if active == 0:
+                process.close()
+            else:
+                report["error"] = "zcode_cleanup_unconfirmed"
+        report["sources_unchanged"] = all(hashlib.sha256(p.read_bytes()).hexdigest() == hashes[p] for p in sources)
+        if not report["sources_unchanged"]:
+            report["error"] = report["error"] or "zcode_personal_sources_changed"
+        try:
+            receipt = {"run_id": args.run_id, "native_ok": report["error"] is None,
+                "host_active_processes": report.get("host_job", {}).get("active_processes", 0),
+                "host_forced": report.get("host_job", {}).get("forced_termination", False),
+                "tool_count": len(report["native_tool_calls"]), "actor": "zcode",
+                "provider_id": "new-provider", "model_id": "glm-5.3-flash",
+                "guard_checked": report["guard_checked"], "sources_unchanged": report["sources_unchanged"],
+                "toolset_verified": report["toolset_verified"]}
+            report["done"] = control.remote({"op": "done", "receipt": receipt})
+            cutoff = min(control.deadline, time.monotonic()+240)
+            while time.monotonic() < cutoff:
+                result = control.remote({"op": "result"})
+                if result.get("pending") is not True:
+                    report["guest_result"] = result
+                    if result.get("verified_pass") is not True:
+                        report["error"] = report["error"] or "zcode_independent_proof_failed"
+                    break
+                time.sleep(2)
+            else:
+                report["error"] = report["error"] or "zcode_result_timeout"
+        except Exception as exc:
+            report["error"] = report["error"] or "zcode_completion_unconfirmed:"+type(exc).__name__
+        (root/"host.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    return 1 if report["error"] else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

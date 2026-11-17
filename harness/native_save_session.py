@@ -39,22 +39,30 @@ class NativeSaveHandle(_ScriptHandle):
         return super().poll()
 
 
-def native_contract():
+def native_contract(actor="codex"):
+    if actor not in {"codex", "zcode"}:
+        raise ValueError("native_actor_not_registered")
     return validate_contract({"schema_version": 1, "case_id": "m3g_export_3mf",
-        "contract_version": "native-save-1", "executor": "agent_mcp",
+        "contract_version": "native-save-1" if actor == "codex" else "native-save-zcode-1", "executor": "agent_mcp",
         "required_checks": ["path", "business"], "steps": [
-            {"id": "goal", "goal": "Native Codex independently edits regular layer height to .24, preserves initial .4 and cube, then GUI saves."},
+            {"id": "goal", "goal": ("Native Codex" if actor == "codex" else "Native ZCode with Snapmaker glm-5.3-flash")+" independently edits regular layer height to .24, preserves initial .4 and cube, then GUI saves."},
             {"id": "proof", "goal": "After MCP stops and old SUT exits, freeze saved bytes, reopen with an independent profile and GUI reslice/export."},
             {"id": "close", "goal": "Independently inspect 3MF/G-code and confirm owned Job is empty."}],
         "limits": {"timeout_s": 900, "max_actions": 40, "max_retries": 0, "max_cost_usd": 0}})
+
+
+def native_actor(digest):
+    for actor in ("codex", "zcode"):
+        if digest == contract_digest(native_contract(actor)):
+            return actor
+    raise ValueError("native_contract_digest")
 
 
 class NativeSaveExecutor:
     synthetic, kind = False, "agent_mcp"
 
     def __init__(self, digest):
-        if digest != contract_digest(native_contract()):
-            raise ValueError("native_contract_digest")
+        self.actor = native_actor(digest)
         self.contract_sha256 = digest
 
     def start(self, context):
@@ -71,7 +79,7 @@ class NativeSaveExecutor:
         env["PYTHONIOENCODING"] = "utf-8"
         started = time.time_ns()
         process = OwnedJobProcess.start([sys.executable, "-B", str(REPO / "tools/native_save_guest.py"),
-            "--run-id", context.run_id], cwd=REPO, log_path=artifacts / "native_worker.log", env=env)
+            "--run-id", context.run_id, "--actor", self.actor], cwd=REPO, log_path=artifacts / "native_worker.log", env=env)
         return NativeSaveHandle(process, context, started)
 
 
@@ -83,7 +91,7 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
     from decimal import Decimal
     refs = []
     try:
-        _require(contract_digest(snapshot.contract) == contract_digest(native_contract()), "native_contract")
+        actor = native_actor(contract_digest(snapshot.contract))
         read = lambda n, limit: _read(snapshot.artifact_dir, n, snapshot.manifest["started_at_ns"], limit, cancelled)
         process, proof = _json(read("process.json", 65536)), _json(read("proof.json", 65536))
         host = _json(read("host_done.json", 65536))
@@ -94,6 +102,11 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
         _require(type(host["host_active_processes"]) is int and type(host["tool_count"]) is int
                  and host["run_id"] == snapshot.run_id and host["native_ok"] is True
                  and host["host_active_processes"] == 0 and host["host_forced"] is False, "native_host_receipt")
+        if actor == "zcode":
+            _require(host.get("actor") == "zcode" and host.get("provider_id") == "new-provider"
+                     and host.get("model_id") == "glm-5.3-flash"
+                     and host.get("guard_checked") is True and host.get("sources_unchanged") is True
+                     and host.get("toolset_verified") is True, "native_zcode_identity_or_gate")
         _require(all(type(proof[k]) is int for k in ("mcp_active_processes", "old_exit_code", "reopened_exit_code", "old_pid"))
                  and proof["old_pid"] > 0 and proof["sut_sha256"] == NATIVE_SUT_SHA256
                  and proof["run_id"] == snapshot.run_id and proof["contract_sha256"] == contract_digest(snapshot.contract)
@@ -139,13 +152,13 @@ class NativeSaveVerifier:
         return _Handle(snapshot, check=verify_saved)
 
 
-def run_native_save(run_id):
+def run_native_save(run_id, actor="codex"):
     from .runtime import run_once
     from .script_session import SCRIPT_ROOT
     valid_run_id(run_id)
     root = SCRIPT_ROOT.resolve()
     root.mkdir(parents=True, exist_ok=True)
-    contract = native_contract()
+    contract = native_contract(actor)
     digest = contract_digest(contract)
     return run_once(contract, NativeSaveExecutor(digest), {digest: NativeSaveVerifier()},
         root=root, run_id=run_id, desktop_id="guest-console", execution_mode="guest_native",

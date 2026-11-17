@@ -14,7 +14,7 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 
-def worker(run_id):
+def worker(run_id, actor="codex"):
     from harness import host_guard
     from harness.agent_protocol import valid_run_id, write_json_once
     from harness.agent_project_ui import ProjectUI
@@ -32,7 +32,7 @@ def worker(run_id):
             raise TimeoutError("native_worker_deadline_or_cancel")
     ui, server = None, None
     report = {"run_id": run_id, "error": None, "app_closed": False,
-              "release_eligible": False, "contract_sha256": contract_digest(native_contract())}
+              "release_eligible": False, "contract_sha256": contract_digest(native_contract(actor))}
     def atomic_json(path, data):
         pending = path.with_name(path.name+".pending")
         write_json_once(pending, data)
@@ -155,5 +155,6 @@ def worker(run_id):
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--run-id", required=True)
+    p.add_argument("--actor", choices=("codex", "zcode"), default="codex")
     a = p.parse_args()
-    raise SystemExit(worker(a.run_id))
+    raise SystemExit(worker(a.run_id, a.actor))
