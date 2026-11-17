@@ -68,6 +68,8 @@ def main(argv=None):
     parser.add_argument("--scenario", choices=tuple(SCENARIOS), default="base")
     args = parser.parse_args(argv)
     _, disturbance = scenario_spec("zcode", args.scenario)
+    from harness.native_pilots import require_pilot_ready
+    require_pilot_ready(args.scenario)
     valid_run_id(args.run_id)
     root = REPO/"artifacts/windows_mcp_host"/args.run_id
     root.mkdir(parents=True, exist_ok=False)

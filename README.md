@@ -24,6 +24,8 @@ v3 运行骨架入口见 [架构设计](docs/V3_RUNTIME_ARCHITECTURE.md) 和 [�
 
 当前指定的 **ZCode / Snapmaker glm-5.3-flash** 路线入口为 `python -B tools/native_save_demo.py --actor zcode`；[接口与边界](docs/V3_ZCODE_ACTOR.md)。已通过一次真实客机编辑保存、新profile重开及112层G-code独立验证；五个开发失败run保留，详见[运行记录](docs/runs/zcode-snapmaker-2026-11-17.md)。使用现有公司供应商配置，仅计SHADOW，不进入发布GREEN。
 
+三业务线并行探索入口见[业务pilot](docs/V3_BUSINESS_PILOTS.md)：检查器并行开发、客机GUI串行试跑，工艺壁环数与逻辑材料槽各取得一次SHADOW，模型平移因输入能力不足已预检阻塞；详见[首批记录](docs/runs/zcode-business-pilots-2026-11-17.md)。不替换[旧稳定性7/8结果](docs/runs/zcode-matrix-2026-11-17.md)，不计87条或发布GREEN。
+
 首个真实 Script 的接入与验证方式见 [m0 Script adapter](docs/V3_SCRIPT_ADAPTER.md)，客机入口为 `runner/hv_go.ps1 -V3 -Cases m0_boot_check`；结果单独记 SHADOW，不进入发布 GREEN。
 
 首个真实 AI 页签闭环见 [AI adapter](docs/V3_AGENT_ADAPTER.md) 与 [正反例运行记录](docs/runs/v3-agent-2026-11-16.md)：codex_chat 和无人值守 codex_cli 看图，经受限 stdio MCP 操作客机，独立检查通过；无变化反例被拒绝。页签能力仅为 SHADOW。

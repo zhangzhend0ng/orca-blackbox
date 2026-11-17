@@ -1,5 +1,9 @@
 # 材料槽 2 独立业务线
 
+最新root试跑（cc2ae83）：真实SHADOW：对象槽2、实际逻辑T1与68层通过，非物理喷头映射证明。run `91933c76b0cc4064ab0e581dd08883a2`；见[完整记录](../runs/zcode-business-pilots-2026-11-17.md)。
+
+以下保留子agent初始交付记录，其中NOT VERIFIED/尚未GUI描述交付当时状态，最新实际状态以上述run为准。
+
 状态：纯检查器与合成正反例已实现；本业务尚未在真实 GUI 中验证。case 为 `pilot_material_slot2`。没有安装、运行模型/GUI/VM/relay、提交或推送。
 
 目标：AI 自主把已加载的唯一 cube 分配给 **filament slot 2** 并保存，保持几何、常规/首层 0.40 mm、全局材料/喷嘴映射及其他工艺不变。英文 `GOAL` 不含坐标、菜单路线或点击次序。后续由公共入口执行停输、自然退出、冻结文件、独立 profile 重开及真实 GUI 切片；本模块只读接收原始 3MF、固定 fixture、导出 G-code，不能自行证明上述来源链。

@@ -39,6 +39,16 @@ def test_unregistered_goal_cannot_choose_a_module_or_checker(name):
         business_goal(name)
 
 
+def test_known_missing_input_capability_blocks_before_a_process_can_start():
+    from harness.native_pilots import require_pilot_ready
+    from harness.native_save_session import NativeSaveExecutor
+    with pytest.raises(RuntimeError, match="capability_blocked"):
+        NativeSaveExecutor(contract_digest(native_contract("zcode", "pilot_transform")))
+    require_pilot_ready("pilot_strength")
+    require_pilot_ready("pilot_material")
+    require_pilot_ready("quality_a")
+
+
 @pytest.mark.parametrize("scenario", tuple(PILOTS))
 @pytest.mark.parametrize("fault", [None, "host_contract", "wrong_business"])
 def test_shared_custody_envelope_dispatches_only_the_bound_business_oracle(native_evidence, scenario, fault):

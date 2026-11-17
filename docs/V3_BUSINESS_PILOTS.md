@@ -10,8 +10,8 @@
 
 仍用原生ZCode agent与Snapmaker new-provider/glm-5.3-flash，七项原版Windows-MCP工具；不提供操作路线或坐标。唯一新增的是固定业务合同和检查器，不自建agent规划循环。
 
-准备：提交/push；Git bundle同步客机同一clean HEAD。后台管理员relay启动：`python -B tools/zcode_matrix.py --suite pilots --batch-id <32hex>`。该入口先跑quality_a旧目标一次回归，再依次三个pilot。每轮仍通过native_save_demo→hv_go，独立profile，AI保存后停输、退出、冻结、新profile重开实际切片。
+准备：提交/push；Git bundle同步客机同一clean HEAD。后台管理员relay启动：`python -B tools/zcode_matrix.py --suite pilots --batch-id <32hex>`。该入口先跑quality_a旧目标一次回归，再依次三个pilot；当前pilot_transform能力阻塞，在plan中记blocked并跳过，其余两条可运行。每轮仍通过native_save_demo→hv_go，独立profile，AI保存后停输、退出、冻结、新profile重开实际切片。
 
 产物：artifacts/zcode_pilots/<batch>/plan.json、events.ndjson、summary.json；每轮host与harvest证据沿用原路径。普通业务失败清理已知才继续；身份越界/配置漂移/清理不明停批。没有自动重跑，失败和not_run保留。新业务只能SHADOW/NON_GREEN，禁止覆盖飞书GREEN或87条基线。
 
-当前只有纯测试完成，真实试跑待执行。源代码自检及范围限制见[审查记录](reviews/software_testing-2026-11-17-pilots.md)，各线细节见business-lines/三个文件。
+首批实际结果：旧业务回归1/1，新业务工艺/材料2条各一次SHADOW，模型平移因输入能力不足失败并在后续入口标blocked。未达到三线全部通过，不作全量或发布放行；见[运行记录](runs/zcode-business-pilots-2026-11-17.md)。源代码自检及范围限制见[审查记录](reviews/software_testing-2026-11-17-pilots.md)，各线细节见business-lines/三个文件。

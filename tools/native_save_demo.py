@@ -57,6 +57,8 @@ def main():
     args = p.parse_args()
     from harness.native_matrix import scenario_spec
     scenario_spec(args.actor, args.scenario)
+    from harness.native_pilots import require_pilot_ready
+    require_pilot_ready(args.scenario)
     run_id = args.run_id or uuid.uuid4().hex
     if not re.fullmatch(r"[0-9a-f]{32}", run_id):
         raise ValueError("invalid_demo_run_id")

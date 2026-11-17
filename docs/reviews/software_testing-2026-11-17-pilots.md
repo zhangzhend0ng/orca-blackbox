@@ -21,3 +21,14 @@
 全量纯测试896 passed、1 skipped（40.58s）；受影响pilot/合同/来源包装测试76 passed；Node语法、hv_go PowerShell parser和diff whitespace通过。纯测试不计GUI覆盖。上述表中的GUI待验在真实run后另行追加，不能提前写通过。
 
 C级范围限制：pilot共同配置比较不声称对任意新SUT版本自动兼容；模型变换XY只验证固定cube范围/跨度；材料不证明物理硬件路由或实印；壁环数不证明逐层物理轮廓数；板级非映射工艺覆盖未全面审核。允许作为用户已授权的受控探索，不满足发布GREEN。未引入外部依赖/认证变更/上游源码修改。
+
+
+## 真实首批与交叉审查收尾
+
+cc2ae83首批：旧QA回归SHADOW；strength、material各一次SHADOW；transform因两位整数/原生Edit能力限制触及40动作，NON_GREEN。原始run/分母保留，未放宽输入权限。transform后续入口增加预检阻塞，批次显式blocked跳过，避免重复消耗额度。
+
+交叉审查发现一项C/HIGH：grade忽略host.error/coordinator_exit，会将宿主完成异常洗成pass。冻结试验先保留，逐轮人工加强审计；正例均error=None、exit0，未观察到实际假通过。收尾后修复为非SAFETY必须明确error=None且实际int0；缺失退出码不默认成功，调用点传实际退出码。4个反例/正例覆盖。该修复只涉及纯汇总逻辑和未来预检，不重跑/重标旧GUI结果。阻塞已消除。
+
+最终全仓901 passed、1 skipped（42.27s）；四轮host/guest owned Job0、清理确认、token不存在、配置未变；客机clean/Orca0/MCP监听0/suite Ready。详情与逐文件摘要见docs/runs/zcode-business-pilots-2026-11-17.md及JSON。发布结论仍限SHADOW；平移能力未就绪，不把原失败解释成AI业务能力已失败。
+
+独立只读复核已确认：汇总明确拒绝host错误/非int0退出，blocked槽保留且不计pass；预检在目录/凭据/模型启动之前拒绝。两处修复无残余N/C阻断，不等于平移业务已通过。

@@ -1,5 +1,9 @@
 # 工艺业务试点：Wall loops
 
+最新root试跑（cc2ae83）：真实SHADOW：壁环数3保存、独立重开和实际68层切片通过。run `74d5b3e9f21545af8dc4856e29566571`；见[完整记录](../runs/zcode-business-pilots-2026-11-17.md)。
+
+以下保留子agent初始交付记录，其中NOT VERIFIED/尚未GUI描述交付当时状态，最新实际状态以上述run为准。
+
 状态：只读业务oracle与纯反例验证已实现，**GUI、模型调用、重开切片尚未验证**。不是原m5c稀疏填充用例的覆盖或GREEN。父任务负责提交、共享接线和唯一客机执行，本子任务没有操作GUI/relay/VM或认证。
 
 目标：固定27 mm cube的Wall loops从2改成3；常规层高0.4、初层0.4、形状、位置、材料与其他设置保持。AI只收到目标和保存路径，自主选择GUI路线。CASE_ID为`pilot_strength_wallloops`，预期scenario为`pilot_strength`，Quality初态，原始夹具SHA256固定。

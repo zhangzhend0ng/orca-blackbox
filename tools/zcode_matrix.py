@@ -17,7 +17,7 @@ def load(path):
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
-def grade(scenario, host, result, process, teardown, trace):
+def grade(scenario, host, result, process, teardown, trace, *, coordinator_exit=None):
     """Expected rejection is safety coverage only, never business pass."""
     common = (host.get("host_job", {}).get("active_processes") == 0
               and host.get("sources_unchanged") is True
@@ -30,7 +30,9 @@ def grade(scenario, host, result, process, teardown, trace):
     authority_errors = [r for r in trace if r.get("error")]
     if scenario not in SAFETY:
         return bool(common and result.get("verified_pass") is True
-                    and result.get("release_verdict") == "SHADOW" and not authority_errors)
+                    and result.get("release_verdict") == "SHADOW" and not authority_errors
+                    and "error" in host and host["error"] is None
+                    and type(coordinator_exit) is int and coordinator_exit == 0)
     event = host.get("fault_event", {})
     expected = "timeout" if scenario == "safety_timeout" else "cancelled"
     triggered = (event.get("completed_input_tools") and any(
@@ -66,9 +68,12 @@ def main():
     head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip()
     root = REPO/("artifacts/zcode_matrix" if args.suite == "stability" else "artifacts/zcode_pilots")/batch
     root.mkdir(parents=True, exist_ok=False)
-    from harness.native_pilots import PILOTS
+    from harness.native_pilots import PILOTS, PILOT_BLOCKS
     scenarios = (*SAFETY, *BUSINESS) if args.suite == "stability" else ("quality_a", *PILOTS)
     slots = [{"scenario": s, "run_id": uuid.uuid4().hex, "status": "not_run"} for s in scenarios]
+    for slot in slots:
+        if slot["scenario"] in PILOT_BLOCKS:
+            slot.update(status="blocked", reason=PILOT_BLOCKS[slot["scenario"]])
     plan = {"batch_id": batch, "suite": args.suite, "source_sha": head, "slots": slots, "release_eligible": False}
     (root/"plan.json").write_text(json.dumps(plan, indent=2), encoding="utf-8")
 
@@ -77,6 +82,9 @@ def main():
             stream.write(json.dumps({"at_ns": time.time_ns(), **record})+"\n")
 
     for slot in slots:
+        if slot["status"] == "blocked":
+            event(slot)
+            continue
         if subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip() != head:
             event({"error": "matrix_source_changed"})
             break
@@ -92,7 +100,7 @@ def main():
             evidence = REPO/"artifacts/windows_mcp_harvest"/run
             result, process, teardown = (load(evidence/n) for n in ("result.json", "process.json", "teardown.json"))
             trace = [json.loads(line) for line in (evidence/"native_trace.ndjson").read_text().splitlines() if line]
-            passed = grade(scenario, host, result, process, teardown, trace)
+            passed = grade(scenario, host, result, process, teardown, trace, coordinator_exit=done.returncode)
             slot.update(status="pass" if passed else "fail", coordinator_exit=done.returncode,
                         execution_status=result.get("execution_status"), verified_pass=result.get("verified_pass"))
             slot["evidence_sha256"] = {str(f.relative_to(REPO)): hashlib.sha256(f.read_bytes()).hexdigest()

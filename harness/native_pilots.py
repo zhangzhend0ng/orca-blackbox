@@ -6,6 +6,17 @@ PILOTS = {
     "pilot_transform": "pilot_transform",
     "pilot_material": "pilot_material",
 }
+PILOT_BLOCKS = {
+    "pilot_transform": "scene_numeric_range_and_canvas_edit_authority_not_ready",
+}
+
+
+def require_pilot_ready(scenario):
+    from .native_matrix import SCENARIOS
+    if type(scenario) is not str or scenario not in SCENARIOS:
+        raise ValueError("native_scenario_not_registered")
+    if scenario in PILOT_BLOCKS:
+        raise RuntimeError("native_pilot_capability_blocked:"+PILOT_BLOCKS[scenario])
 
 
 def pilot_module(scenario):

@@ -83,6 +83,8 @@ class NativeSaveExecutor:
 
     def __init__(self, digest):
         self.actor, self.scenario = native_spec(digest)
+        from .native_pilots import require_pilot_ready
+        require_pilot_ready(self.scenario)
         self.contract_sha256 = digest
 
     def start(self, context):
