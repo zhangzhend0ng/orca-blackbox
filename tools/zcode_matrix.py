@@ -10,7 +10,7 @@ import uuid
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
-from harness.native_matrix import BUSINESS, GENERALIZATION, SAFETY
+from harness.native_matrix import BUSINESS, GENERALIZATION, SAFETY, UIA_GENERALIZATION, UIA_DISTURBANCE_SCENARIO
 
 
 def load(path):
@@ -60,13 +60,13 @@ def grade(scenario, host, result, process, teardown, trace, *, coordinator_exit=
     return bool(common and triggered and rejected and errors_ok)
 
 
-def generalization_threshold(slots):
+def generalization_threshold(slots, scenarios=GENERALIZATION):
     """Pre-registered investment threshold over all eight slots."""
     passed = {slot["scenario"] for slot in slots if slot["status"] == "pass"}
-    top = passed & {"general_top_strength", "general_top_quality"}
-    scale = passed & {"general_scale_quality", "general_scale_others"}
-    required = {"general_wall", "general_slot2", "general_combo", "general_combo_dialog"}
-    return bool(required <= passed and top and scale and len(top) + len(scale) >= 3)
+    first = passed & set(scenarios[2:4])
+    second = passed & set(scenarios[4:6])
+    required = set(scenarios[:2] + scenarios[6:])
+    return bool(required <= passed and first and second and len(first) + len(second) >= 3)
 
 
 def generalization_outcome(passed, scenario, result, host, trace, evidence):
@@ -79,6 +79,9 @@ def generalization_outcome(passed, scenario, result, host, trace, evidence):
         return "business_failed"
     if result.get("recovery_used") is True:
         return "pass_tool_recovery"
+    if scenario == UIA_DISTURBANCE_SCENARIO and any(r.get("window", {}).get("prepared_dialog_closed") is True
+                                                   for r in trace):
+        return "pass_ui_disturbance_recovery"
     if scenario == "general_combo_dialog":
         hwnd = load(evidence/"setup.json")["dialog_hwnd"]
         if any(r["tool"] == "Shortcut" and r["arguments"].get("shortcut") in {"esc", "escape"}
@@ -87,28 +90,72 @@ def generalization_outcome(passed, scenario, result, host, trace, evidence):
     return "pass_recovery_unknown"
 
 
+def uia_gate_proofs(runs):
+    from harness.agent_protocol import valid_run_id
+    from harness.native_matrix import UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_SAVE_SCENARIO
+    from harness.native_uia import verify_uia_save
+    from harness.native_uia_hybrid import verify_hybrid_trace
+
+    proofs = {}
+    for scenario, run in zip((UIA_SAVE_SCENARIO, UIA_LAYER_SCENARIO, UIA_CANVAS_SCENARIO), runs, strict=True):
+        valid_run_id(run)
+        root = REPO/"artifacts/windows_mcp_harvest"/run
+        host = load(REPO/"artifacts/windows_mcp_host"/run/"host.json")
+        summary = load(REPO/"artifacts/native_save_demo"/run/"summary.json")
+        result, process, teardown = (load(root/n) for n in ("result.json", "process.json", "teardown.json"))
+        settings, proof, setup = (load(root/n) for n in ("scope.json", "proof.json", "setup.json"))
+        raw = (root/"native_trace.ndjson").read_bytes()
+        trace = [json.loads(line) for line in raw.splitlines() if line]
+        if (summary["run_id"] != run or summary["scenario"] != scenario or settings["scenario"] != scenario
+                or (host["provider_id"], host["model_id"]) != ("new-provider", "glm-5.3-flash")
+                or host["toolset_verified"] is not True
+                or not grade(scenario, host, result, process, teardown, trace, coordinator_exit=summary["actor_exit"])):
+            raise ValueError("uia_development_gate_failed:" + scenario)
+        common = dict(run_id=run, app_pid=proof["old_pid"], output_path=proof["output_path"])
+        if scenario == UIA_SAVE_SCENARIO:
+            route = verify_uia_save(trace, **common, dialog_hwnd=setup["dialog_hwnd"])
+        else:
+            route = verify_hybrid_trace(trace, **common, main_hwnd=settings["hwnd"], scenario=scenario)
+            if scenario == UIA_CANVAS_SCENARIO and not any(
+                    r["tool"] == "Type" and r["window"].get("route") == "canvas_numeric" for r in trace):
+                raise ValueError("uia_development_canvas_path_not_exercised")
+        proofs[scenario] = {"run_id": run, "source_sha": summary["source_sha"], "route": route,
+                            "trace_sha256": hashlib.sha256(raw).hexdigest(),
+                            "project_sha256": proof["project_sha256"], "gcode_sha256": proof["gcode_sha256"]}
+    return proofs
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--batch-id", default=None)
-    p.add_argument("--suite", choices=("stability", "pilots", "generalization"), default="stability")
+    p.add_argument("--suite", choices=("stability", "pilots", "generalization", "uia_generalization"), default="stability")
+    p.add_argument("--uia-gate-runs", nargs=3, metavar=("SAVE_AS", "WX_LAYER", "IMGUI_CANVAS"))
     args = p.parse_args()
+    if bool(args.uia_gate_runs) != (args.suite == "uia_generalization"):
+        p.error("UIA generalization requires successful Save As, wx layer and ImGui canvas gate run IDs")
+    gate = uia_gate_proofs(args.uia_gate_runs) if args.uia_gate_runs else None
     batch = args.batch_id or uuid.uuid4().hex
     from harness.agent_protocol import valid_run_id
     valid_run_id(batch)
     head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip()
-    roots = {"stability": "zcode_matrix", "pilots": "zcode_pilots", "generalization": "zcode_generalization"}
+    roots = {"stability": "zcode_matrix", "pilots": "zcode_pilots", "generalization": "zcode_generalization",
+             "uia_generalization": "zcode_uia_generalization"}
     root = REPO/"artifacts"/roots[args.suite]/batch
     root.mkdir(parents=True, exist_ok=False)
     from harness.native_pilots import PILOTS, PILOT_BLOCKS
-    suites = {"stability": (*SAFETY, *BUSINESS), "pilots": ("quality_a", *PILOTS), "generalization": GENERALIZATION}
+    suites = {"stability": (*SAFETY, *BUSINESS), "pilots": ("quality_a", *PILOTS),
+              "generalization": GENERALIZATION, "uia_generalization": UIA_GENERALIZATION}
     scenarios = suites[args.suite]
+    generalizing = args.suite in {"generalization", "uia_generalization"}
     slots = [{"scenario": s, "run_id": uuid.uuid4().hex, "status": "not_run"} for s in scenarios]
     for slot in slots:
         if slot["scenario"] in PILOT_BLOCKS:
             slot.update(status="blocked", reason=PILOT_BLOCKS[slot["scenario"]])
     plan = {"batch_id": batch, "suite": args.suite, "source_sha": head, "slots": slots, "release_eligible": False}
+    if gate is not None:
+        plan["uia_gate_proofs"] = gate
     bundle = Path(r"C:\Program Files\ZCode\resources\glm\zcode.cjs")
-    if args.suite == "generalization":
+    if generalizing:
         from harness.agent_protocol import LAYER_FIXTURE_SHA256
         from harness.native_save_policy import NATIVE_TOOLS
         from harness.native_save_session import NATIVE_SUT_SHA256, native_contract
@@ -131,7 +178,7 @@ def main():
         if subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip() != head:
             event({"error": "matrix_source_changed"})
             break
-        if args.suite == "generalization" and hashlib.sha256(bundle.read_bytes()).hexdigest() != plan["bundle_sha256"]:
+        if generalizing and hashlib.sha256(bundle.read_bytes()).hexdigest() != plan["bundle_sha256"]:
             event({"error": "matrix_bundle_changed"})
             break
         run, scenario = slot["run_id"], slot["scenario"]
@@ -150,13 +197,21 @@ def main():
             passed = grade(scenario, host, result, process, teardown, trace, coordinator_exit=done.returncode)
             slot.update(status="pass" if passed else "fail", coordinator_exit=done.returncode,
                         execution_status=result.get("execution_status"), verified_pass=result.get("verified_pass"))
-            if args.suite == "generalization":
+            if generalizing:
                 slot.update(outcome=generalization_outcome(passed, scenario, result, host, trace, evidence),
                     elapsed_s=round(time.monotonic()-started, 1), tool_calls=len(trace),
                     model_receipts=len(host.get("model_io", [])), host_error=host.get("error"),
                     cleanup_confirmed=teardown.get("cleanup_confirmed"),
                     prompt_sha256=hashlib.sha256((REPO/"artifacts/windows_mcp_host"/run/"prompt.txt").read_bytes()).hexdigest()
                     if (REPO/"artifacts/windows_mcp_host"/run/"prompt.txt").exists() else None)
+            if scenario in UIA_GENERALIZATION:
+                slot["tool_routes"] = {
+                    "uia_queries": sum(r["tool"] == "Snapshot" and (r.get("window") or {}).get("route") == "uia_tree" for r in trace),
+                    "uia_property_inputs": sum((r.get("window") or {}).get("route") in {"uia_action", "uia_value", "uia_invoke", "uia_cancel"} and r["dispatched"] for r in trace),
+                    "local_crop_calls": sum(r["tool"] == "Screenshot" and r["dispatched"] for r in trace),
+                    "visual_inputs": sum("loc" in r["arguments"] and r["dispatched"] for r in trace),
+                    "fallback_roles": sorted({r["window"]["visual_fallback"] for r in trace if (r.get("window") or {}).get("visual_fallback")}),
+                }
             slot["evidence_sha256"] = {str(f.relative_to(REPO)): hashlib.sha256(f.read_bytes()).hexdigest()
                 for f in evidence.rglob("*") if f.is_file()}
             event(slot)
@@ -166,7 +221,7 @@ def main():
                 code in str(row.get("error", "")) for row in trace
                 for code in ("native_target_not_owned", "native_foreground_not_owned",
                              "native_app_identity_changed", "native_interactive_session_changed"))
-            if args.suite == "generalization":
+            if generalizing:
                 abort_path = evidence/"authority_abort.json"
                 fatal_at = load(abort_path).get("at_ns") if abort_path.exists() else None
                 after_stop = type(fatal_at) is int and any(r["dispatched"] is True
@@ -178,17 +233,17 @@ def main():
                     slot.update(status="error", outcome="safety_or_inconsistent_evidence")
                     event(slot)
                     break
-            if not passed and (scenario in SAFETY or (args.suite != "generalization" and terminal_authority_error)
+            if not passed and (scenario in SAFETY or (not generalizing and terminal_authority_error)
                                or not result.get("cleanup_confirmed")
                                or process.get("active_processes") != 0 or not host.get("sources_unchanged")):
                 break
         except Exception as exc:
             slot.update(status="error", error_type=type(exc).__name__)
-            if args.suite == "generalization":
+            if generalizing:
                 slot["outcome"] = "infrastructure_failed"
             event(slot)
             break
-    acceptance = (generalization_threshold(slots) if args.suite == "generalization"
+    acceptance = (generalization_threshold(slots, scenarios) if generalizing
                   else all(s["status"] == "pass" for s in slots))
     summary = {**plan, "completed_at_ns": time.time_ns(), "acceptance_pass": acceptance}
     (root/"summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")

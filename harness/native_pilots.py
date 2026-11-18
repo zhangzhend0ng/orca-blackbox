@@ -1,6 +1,6 @@
 """Finite business experiments; never a model-selected verifier or import path."""
 from importlib import import_module
-from .native_matrix import CANVAS_REPLACE_SCENARIO, SCALE_SCENARIOS, UIA_CANVAS_SCENARIO
+from .native_matrix import CANVAS_REPLACE_SCENARIO, SCALE_SCENARIOS, UIA_CANVAS_SCENARIO, UIA_DISTURBANCE_SCENARIO, UIA_Y_SCENARIOS
 
 PILOTS = {
     "pilot_strength": "pilot_strength",
@@ -19,6 +19,10 @@ TRIALS = {
     "general_top_strength": "pilot_top_layers", "general_top_quality": "pilot_top_layers",
     **dict.fromkeys(SCALE_SCENARIOS, "pilot_scale_x"),
     "general_combo": "pilot_infill_material", "general_combo_dialog": "pilot_infill_material",
+    "uia_general_wall": "pilot_strength", "uia_general_slot2": "pilot_material",
+    "uia_general_bottom_strength": "bottom", "uia_general_bottom_quality": "bottom",
+    **dict.fromkeys(UIA_Y_SCENARIOS, "move_y"),
+    "uia_general_combo": "combo", UIA_DISTURBANCE_SCENARIO: "combo",
 }
 
 
@@ -33,7 +37,10 @@ def require_pilot_ready(scenario):
 def pilot_module(scenario):
     if type(scenario) is not str or scenario not in {**PILOTS, **TRIALS}:
         raise ValueError("native_pilot_not_registered")
-    return import_module("."+{**PILOTS, **TRIALS}[scenario], __package__)
+    module = {**PILOTS, **TRIALS}[scenario]
+    if module in {"bottom", "move_y", "combo"}:
+        return import_module(".pilot_uia_goals", __package__).GOALS[module]
+    return import_module("."+module, __package__)
 
 
 def business_goal(scenario):

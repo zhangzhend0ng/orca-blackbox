@@ -27,3 +27,25 @@ seq1 用 UIA 属性找到 `File name:`（EditControl、AutomationId=1001）和 `
 同源画布 run `ab480a1a3efe230b861c82240d0a1c3a`。结构化工具参数已传过 ZCode，Click 在 guest 被 `native_uia_save_dialog_required` 拒绝且未派发。根因是局部视觉 Click 经过裁图与控件检查后，误调了父类 Save As 门禁。改为复用普通 owned-window 门禁，再走已绑定的画布能力。该次保留 NON_GREEN，清理确认。
 
 源 `6c5cfa8`，画布 run `cee7a86c1fb6e16e02178e50f989d73d`。成功派发 seq6 的画布选择。seq7 最近裁图的 X 范围 `[426,1100)`，seq8 试点 X=1477，守卫在输入前停住。NON_GREEN，清理确认。明确模型可以一次观察整个已登记画布区域以保留场景和工具的空间关系，点击必须落在最新裁图内，仍无全桌面视觉通道。
+
+源 `6b3bfbae8b599a7f3e8ad37b1083e05016bb9603`，画布 run `52a21e14b5e0456bf5e965cb98970cf4`。16 次工具调用，画布裁图 4 张，3 次像素 Click，1 次受限画布数值 Type，Save As 全程为属性操作。正式 SHADOW，清理确认。冻结 3MF 证明全局 X+10 mm，其余设置、Y/Z 与形状保持。独立重开导出 68 层，实际物体挤出范围 X=132.41–158.59、Y=122.91–149.09 mm。PFD 与 ImGui 内部编辑器焦点仍未独立证明。
+
+- 3MF SHA256 `be355d81ea9f388fe5d26525fdd0e1b988e241cd3ed64c62cc0c3ad30d775061`
+- G-code SHA256 `00fad745db327c6a43db64514731ffccbe50e1be3cc185dce1a4585fa1887209`
+
+## UIA 优先泛化预登记
+
+三道开发闸通过后冻结。`tools/zcode_matrix.py --suite uia_generalization` 根据三份通过收据复核轨迹与清理，在首槽前写入源 SHA、模型 bundle、fixture、SUT、合同摘要和全部 run ID。各槽仅运行一次。用另一个批次记录[历史视觉坐标轮](zcode-generalization-2026-11-18.md)。
+
+| 槽位 | 目标与初态 |
+|---|---|
+| `uia_general_wall` | 开发锚点。Quality，Wall loops=3 |
+| `uia_general_slot2` | 开发锚点。Quality，给立方体分配逻辑材料槽 2 |
+| `uia_general_bottom_strength` | 新目标。Strength，Bottom shell layers=6 |
+| `uia_general_bottom_quality` | 同一新目标，Quality |
+| `uia_general_y_quality` | 新目标。Quality，全局 Y+8 mm，保留 X/Z |
+| `uia_general_y_others` | 同一新目标，Others |
+| `uia_general_combo` | 新组合。Quality，Wall loops=3 和逻辑材料槽 2 |
+| `uia_general_combo_dialog` | 同一组合，附加预打开的 owned Save As 对话框，需先用 Cancel 属性恢复 |
+
+底层目标检查 3MF、G-code 配置与真实 Bottom surface 挤出。Y 平移检查世界三角面、保留项与重切物体挤出范围。组合同时核验配置、分配和 T1 物体挤出。仅用合成正反例预检新目标。沿用 [V3 规划](../V3_PLAN.md) 的八槽分母、投入阈值及停止条件。

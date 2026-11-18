@@ -3,6 +3,7 @@ import json
 import time
 
 from .agent_verify import _require
+from .native_matrix import UIA_DISTURBANCE_SCENARIO
 from .native_save_policy import InputGuard, validate_input, validate_uia_selector
 from .native_uia import SAVE_DIALOG_TITLES, UiaSaveGuard, value_digest, verify_uia_save
 
@@ -30,6 +31,9 @@ class UiaHybridGuard(UiaSaveGuard):
         self.visual_regions = {}
         self.last_crop = None
         self.canvas_hwnd = json.loads(scope["canvas_binding_json"])["hwnd"]
+        self.prepared_dialog = scope.get("dialog_hwnd") if scope["scenario"] == UIA_DISTURBANCE_SCENARIO else None
+        self.allow_cancel = self.prepared_dialog is not None
+        self.cancel_invoked = False
 
     def _main_window(self, wu, hwnd):
         if hwnd != self.scope["hwnd"]:
@@ -125,7 +129,7 @@ class UiaHybridGuard(UiaSaveGuard):
                 and element.IsEnabled and self._pattern(element)[0] is not None):
             raise ValueError("native_uia_target_available")
         target = wu.window_from_screen_point(*args["loc"])
-        expected_classes = {"wxPanel", "wxWindowNR", "wxWindow"} if kind == "wx_sidebar" else {"wxGLCanvas"}
+        expected_classes = {"wxPanel", "wxWindowNR", "wxWindow", "wxDataView"} if kind == "wx_sidebar" else {"wxGLCanvas"}
         if (not target or wu._window_pid(target) != self.scope["app_pid"]
                 or wu.window_class(target) not in expected_classes
                 or kind == "imgui_canvas" and target != self.canvas_hwnd):
@@ -139,6 +143,23 @@ class UiaHybridGuard(UiaSaveGuard):
         if name in {"ControlStatus", "Wait"}:
             return super().check(name, args)
         wu, hwnd = self.owned_foreground()
+        if self.prepared_dialog is not None and self.allow_cancel:
+            if not self.cancel_invoked:
+                self._dialog(hwnd, wu)
+                self.last_window = dict(route="uia_tree", prepared_dialog=True, app_pid=self.scope["app_pid"],
+                    foreground_pid=self.scope["app_pid"], foreground_hwnd=hwnd)
+                if name == "Click" and "target" in args:
+                    _, record = self._prepared_cancel(wu, hwnd, args)
+                    self.last_window.update(route="uia_cancel", target=record["target"], target_hwnd=record["hwnd"],
+                                            target_pid=self.scope["app_pid"], pattern="InvokePattern")
+                elif name != "Snapshot":
+                    raise ValueError("native_uia_prepared_dialog_requires_cancel")
+                return self.last_window
+            from win32gui import IsWindowVisible
+            if name != "Snapshot" or hwnd != self.scope["hwnd"] or IsWindowVisible(self.prepared_dialog):
+                raise ValueError("native_uia_prepared_dialog_closure_required")
+            self.allow_cancel = False
+            self.last_window["prepared_dialog_closed"] = True
         if name == "Snapshot" and wu.window_title(hwnd) in SAVE_DIALOG_TITLES:
             from win32gui import GetAncestor
             if GetAncestor(hwnd, 3) != self.scope["hwnd"]:
@@ -151,7 +172,7 @@ class UiaHybridGuard(UiaSaveGuard):
             self.last_window = super().check(name, args)
             self.last_window["uia_save"] = True
             return self.last_window
-        self.last_window = self._main_window(wu, hwnd)
+        self.last_window.update(self._main_window(wu, hwnd))
         if name == "Snapshot":
             self.last_window["route"] = "uia_tree"
         elif "target" in args:
@@ -178,7 +199,27 @@ class UiaHybridGuard(UiaSaveGuard):
     def complete_view(self, arguments):
         self.last_crop = (self.last_window["visual_fallback"], arguments["region"], time.monotonic_ns())
 
+    def _prepared_cancel(self, wu, hwnd, arguments):
+        element, record = self._controls(wu, hwnd).get("cancel", (None, None))
+        if record is None or record != self.observed.get("cancel") or arguments["target"] != record["target"]:
+            raise ValueError("native_uia_prepared_cancel_target_not_observed")
+        return element, record
+
     def perform(self, name, arguments):
+        if self.last_window.get("prepared_dialog"):
+            if name == "Snapshot":
+                return super().perform(name, arguments)
+            wu, hwnd = self.owned_foreground()
+            self._dialog(hwnd, wu)
+            element, record = self._prepared_cancel(wu, hwnd, arguments)
+            if record["hwnd"] != self.last_window["target_hwnd"]:
+                raise ValueError("native_uia_target_changed")
+            self.check_revocation()
+            invoke = element.GetInvokePattern()
+            if invoke is None or not invoke.Invoke():
+                raise ValueError("native_uia_prepared_cancel_failed")
+            self.cancel_invoked = True
+            return {"target": record["target"], "pattern": "InvokePattern", "invoked": True}
         if self.last_window.get("uia_save"):
             return super().perform(name, arguments)
         wu, hwnd = self.owned_foreground()
@@ -223,22 +264,41 @@ class UiaHybridGuard(UiaSaveGuard):
         return {"target": record["target"], "pattern": record["pattern"]}
 
 
-def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scenario):
+def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scenario, prepared_dialog=None):
     regions, crop, targets = {}, None, []
     counts = dict(uia_tree_calls=0, uia_actions=0, cropped_visual_calls=0, visual_inputs=0)
+    cancel, cancelled, closed = None, False, prepared_dialog is None
+    _require((scenario == UIA_DISTURBANCE_SCENARIO) == (prepared_dialog is not None), "native_uia_prepared_dialog_contract")
     for index, row in enumerate(trace):
         window, args, name = row["window"], row["arguments"], row["tool"]
         _require(row["seq"] == index + 1 and row["run_id"] == run_id and row["dispatched"] is True
                  and row["error"] is None, "native_uia_hybrid_identity")
         validate_input(name, args, output_path, scenario)
+        if window.get("prepared_dialog"):
+            _require(not closed and not cancelled and window.get("foreground_hwnd") == prepared_dialog
+                     and window.get("app_pid") == window.get("foreground_pid") == app_pid,
+                     "native_uia_prepared_dialog_binding")
+            if name == "Snapshot":
+                cancel = window["controls"]["cancel"]
+            else:
+                _require(name == "Click" and window.get("route") == "uia_cancel" and window.get("pattern") == "InvokePattern"
+                         and window.get("target_pid") == app_pid and cancel == {"target": args["target"], "hwnd": window["target_hwnd"]},
+                         "native_uia_prepared_cancel_proof")
+                cancelled = True
+            continue
+        if window.get("prepared_dialog_closed"):
+            _require(not closed and cancelled and name == "Snapshot" and window["foreground_hwnd"] == main_hwnd,
+                     "native_uia_prepared_dialog_closure_proof")
+            closed = True
+        if name in {"ControlStatus", "Wait"}:
+            continue
+        _require(closed, "native_uia_prepared_dialog_not_closed")
         if window.get("uia_save"):
             _require(counts["uia_tree_calls"] and window["foreground_hwnd"] != main_hwnd,
                      "native_uia_hybrid_main_not_observed")
             save = verify_uia_save(trace[index:], run_id=run_id, app_pid=app_pid,
                 dialog_hwnd=window["foreground_hwnd"], output_path=output_path, first_seq=index + 1)
             return {"save_as": save, **counts}
-        if name in {"ControlStatus", "Wait"}:
-            continue
         _require(window.get("app_pid") == window.get("foreground_pid") == app_pid
                  and window.get("foreground_hwnd") == main_hwnd, "native_uia_hybrid_main_identity")
         if name == "Snapshot":

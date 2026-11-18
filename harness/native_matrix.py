@@ -7,9 +7,14 @@ CANVAS_REPLACE_SCENARIO = "canvas_replace_trial"
 UIA_SAVE_SCENARIO = "uia_save_as"
 UIA_LAYER_SCENARIO = "uia_hybrid_layer"
 UIA_CANVAS_SCENARIO = "uia_hybrid_canvas"
-UIA_HYBRID_SCENARIOS = frozenset({UIA_LAYER_SCENARIO, UIA_CANVAS_SCENARIO})
+UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
+UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
+UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
+    "uia_general_bottom_strength", "uia_general_bottom_quality", *UIA_Y_SCENARIOS,
+    "uia_general_combo", UIA_DISTURBANCE_SCENARIO)
+UIA_HYBRID_SCENARIOS = frozenset((UIA_LAYER_SCENARIO, UIA_CANVAS_SCENARIO, *UIA_GENERALIZATION))
 SCALE_SCENARIOS = ("general_scale_quality", "general_scale_others")
-CANVAS_REPLACE_SCENARIOS = frozenset((CANVAS_REPLACE_SCENARIO, UIA_CANVAS_SCENARIO, *SCALE_SCENARIOS))
+CANVAS_REPLACE_SCENARIOS = frozenset((CANVAS_REPLACE_SCENARIO, UIA_CANVAS_SCENARIO, *SCALE_SCENARIOS, *UIA_Y_SCENARIOS))
 CANVAS_SCENARIOS = CANVAS_REPLACE_SCENARIOS | {"canvas_trial"}
 GENERALIZATION = (
     "general_wall", "general_slot2", "general_top_strength", "general_top_quality",
@@ -49,6 +54,14 @@ SCENARIOS = {
     "general_scale_others": ("Others", None),
     "general_combo": ("Quality", None),
     "general_combo_dialog": ("Quality", "save_dialog"),
+    "uia_general_wall": ("Quality", None),
+    "uia_general_slot2": ("Quality", None),
+    "uia_general_bottom_strength": ("Strength", None),
+    "uia_general_bottom_quality": ("Quality", None),
+    "uia_general_y_quality": ("Quality", None),
+    "uia_general_y_others": ("Others", None),
+    "uia_general_combo": ("Quality", None),
+    UIA_DISTURBANCE_SCENARIO: ("Quality", "save_dialog"),
     "authority_probe": ("Quality", None),
 }
 BUSINESS = ("quality_a", "quality_b", "strength_a", "strength_b", "others_a", "others_b", "save_dialog", "overwrite")

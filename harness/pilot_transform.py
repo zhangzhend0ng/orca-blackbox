@@ -19,11 +19,12 @@ GOAL = ("Move the sole cube exactly 10 mm in the positive global X direction fro
         "Save the whole project at the assigned 3MF path.")
 
 
-def _expected_fixture(fixture, cancelled):
+def _expected_fixture(fixture, cancelled, *, axis="x", distance=10):
     """Derive expected geometry from trusted fixture, never from AI output."""
     files = _archive(fixture, cancelled)
     _, _, original = _geometry(files)
-    wanted = original[:9] + (original[9]+10,) + original[10:]
+    index = {"x": 9, "y": 10}[axis]
+    wanted = original[:index] + (original[index] + distance,) + original[index + 1:]
     return _fixture_with_transform(files, wanted), wanted, original
 
 
@@ -99,9 +100,13 @@ def _object_xy(raw, bounds, cancelled, *, minimum_span=(23, 23)):
 
 
 def verify_business(project: bytes, fixture: bytes, gcode: bytes, *, cancelled=lambda: False) -> dict:
+    return verify_translation(project, fixture, gcode, axis="x", distance=10, cancelled=cancelled)
+
+
+def verify_translation(project, fixture, gcode, *, axis, distance, cancelled):
     _require(type(fixture) is bytes and hashlib.sha256(fixture).hexdigest() == LAYER_FIXTURE_SHA256,
              "transform_fixture_identity")
-    expected, wanted, original_transform = _expected_fixture(fixture, cancelled)
+    expected, wanted, original_transform = _expected_fixture(fixture, cancelled, axis=axis, distance=distance)
     files = _archive(project, cancelled)
     geometry, _, transform = _geometry(files)
     _require(transform == wanted, "transform_build_delta")
@@ -117,5 +122,6 @@ def verify_business(project: bytes, fixture: bytes, gcode: bytes, *, cancelled=l
     xy = _object_xy(gcode, bounds, cancelled)
     summary["geometry_unchanged"] = False  # World placement deliberately changed.
     summary["shape_preserved"] = True
-    return {"detail": "Cube moved +10mm global X; preserved .4/.4 and settings; actual 68-layer extrusion in moved XY bounds",
-            "project": summary, "gcode": layers, "translation_x_mm": "10", "object_xy_bounds": xy, "other_fixture_settings_preserved": True}
+    return {"detail": f"Cube moved +{distance}mm global {axis.upper()}; preserved .4/.4 and settings; actual 68-layer extrusion in moved XY bounds",
+            "project": summary, "gcode": layers, f"translation_{axis}_mm": str(distance),
+            "object_xy_bounds": xy, "other_fixture_settings_preserved": True}

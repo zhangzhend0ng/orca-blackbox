@@ -93,3 +93,40 @@ def test_threshold_preserves_entire_frozen_denominator():
     assert generalization_threshold(slots)
     slots[3]["status"] = "not_run"
     assert not generalization_threshold(slots)
+
+
+def test_uia_bottom_shell_oracle_checks_both_saved_value_and_object_extrusion(fixture):
+    from harness.pilot_uia_goals import bottom_layers
+
+    project = change_settings(fixture, bottom_shell_layers="6")
+    raw = gcode().replace(b";Z:", b";TYPE:Bottom surface\n;Z:").replace(
+        b"; CONFIG_BLOCK_END", b"; bottom_shell_layers = 6\n; CONFIG_BLOCK_END")
+    assert bottom_layers(project, fixture, raw, cancelled=lambda: False)["bottom_shell_layers"] == 6
+    with pytest.raises(ValueError, match="pilot_target_setting_mismatch"):
+        bottom_layers(fixture, fixture, raw, cancelled=lambda: False)
+    with pytest.raises(ValueError, match="bottom_surface_no_extrusion"):
+        bottom_layers(project, fixture, raw.replace(b"Bottom surface", b"Top surface"), cancelled=lambda: False)
+
+
+def test_uia_y_oracle_rejects_wrong_axis_or_stale_slice(fixture):
+    from harness.pilot_uia_goals import move_y
+    from unit_tests.test_pilot_transform import project
+
+    raw = moves(0).replace(b"Y122.9", b"Y130.9").replace(b"Y149.1", b"Y157.1")
+    assert move_y(project(dx=0, dy=8), fixture, raw, cancelled=lambda: False)["translation_y_mm"] == "8"
+    with pytest.raises(ValueError, match="transform_build_delta"):
+        move_y(project(dx=8, dy=0), fixture, raw, cancelled=lambda: False)
+    with pytest.raises(ValueError, match="transform_gcode_outside_moved_cube"):
+        move_y(project(dx=0, dy=8), fixture, moves(0), cancelled=lambda: False)
+
+
+def test_uia_combo_oracle_requires_wall_setting_and_logical_material(fixture):
+    from harness.pilot_uia_goals import walls_and_slot
+
+    project = change_settings(saved(fixture, slot="2"), wall_loops="3")
+    raw = gcode().replace(b"T0\n", b"T1\n", 1).replace(b"; CONFIG_BLOCK_END", b"; wall_loops = 3\n; CONFIG_BLOCK_END")
+    assert walls_and_slot(project, fixture, raw, cancelled=lambda: False)["object_tools"] == [1]
+    with pytest.raises(ValueError, match="material_object_tool_not_T1"):
+        walls_and_slot(project, fixture, raw.replace(b"T1\n", b"T0\n", 1), cancelled=lambda: False)
+    with pytest.raises(ValueError, match="uia_combo_gcode_setting"):
+        walls_and_slot(project, fixture, raw.replace(b"wall_loops = 3", b"wall_loops = 2"), cancelled=lambda: False)

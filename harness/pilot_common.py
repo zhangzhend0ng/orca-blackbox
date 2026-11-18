@@ -45,7 +45,8 @@ def inspect_preserved_settings(actual, expected, *, allowed_changes=None, cancel
     _require(type(actual) is dict and type(expected) is dict, "pilot_config_schema")
     changes = {} if allowed_changes is None else allowed_changes
     _require(type(changes) is dict and (not changes or changes in
-             ({"wall_loops": "3"}, {"sparse_infill_density": "30%"}, {"top_shell_layers": "5"})),
+             ({"wall_loops": "3"}, {"sparse_infill_density": "30%"}, {"top_shell_layers": "5"},
+              {"bottom_shell_layers": "6"})),
              "pilot_config_change_scope")
     if changes == {"wall_loops": "3"}:
         _require(expected.get("wall_loops") == "2" and actual.get("wall_loops") == "3",
@@ -55,6 +56,8 @@ def inspect_preserved_settings(actual, expected, *, allowed_changes=None, cancel
                  and actual.get("sparse_infill_density") == "30%", "pilot_infill_target")
     elif changes == {"top_shell_layers": "5"}:
         _require(expected.get("top_shell_layers") == "3", "pilot_top_layers_baseline")
+    elif changes == {"bottom_shell_layers": "6"}:
+        _require(expected.get("bottom_shell_layers") == "3", "pilot_bottom_layers_baseline")
     _require(set(expected) <= set(actual), "pilot_config_missing")
     for key in set(actual)-set(expected):
         _check_cancel(cancelled)

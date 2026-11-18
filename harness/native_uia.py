@@ -16,6 +16,7 @@ class UiaSaveGuard(InputGuard):
         super().__init__(scope, root)
         self.control_from_handle = control_from_handle
         self.observed = {}
+        self.allow_cancel = False
         self.invoked = False
         self.written = None
 
@@ -50,10 +51,12 @@ class UiaSaveGuard(InputGuard):
             label = name.replace("&", "").strip().rstrip(":").casefold()
             role = "filename" if kind == "EditControl" and label == "file name" else (
                 "save" if kind == "ButtonControl" and label == "save" else None)
+            if role is None and self.allow_cancel and kind == "ButtonControl" and label == "cancel":
+                role = "cancel"
             child = element.NativeWindowHandle
             if role is None or not child or not IsChild(hwnd, child) or wu._window_pid(child) != pid:
                 continue
-            if (wu.window_class(child) != {"filename": "Edit", "save": "Button"}[role]
+            if (wu.window_class(child) != ("Edit" if role == "filename" else "Button")
                     or not element.IsEnabled or element.IsOffscreen):
                 continue
             target = {"control_type": kind, "name": name, "automation_id": element.AutomationId or ""}

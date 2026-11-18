@@ -237,7 +237,8 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
                      and host.get("scenario") == scenario and scope["app_pid"] == proof["old_pid"],
                      "native_uia_host_contract")
             uia_summary = verify_hybrid_trace(trace, run_id=snapshot.run_id, app_pid=proof["old_pid"],
-                main_hwnd=scope["hwnd"], output_path=proof["output_path"], scenario=scenario)
+                main_hwnd=scope["hwnd"], output_path=proof["output_path"], scenario=scenario,
+                prepared_dialog=setup.get("dialog_hwnd") if disturbance == "save_dialog" else None)
         gcode = read("exports/0001.gcode", 64*1024*1024)
         _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
         from .native_pilots import PILOTS, TRIALS, verify_business

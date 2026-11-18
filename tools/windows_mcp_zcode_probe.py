@@ -169,7 +169,8 @@ def main(argv=None):
                       "the most recent crop: left <= x < right and top <= y < bottom. Send loc as a JSON integer array. "
                       "For an ImGui number, Click once and Type at the same "
                       "location within 30 seconds with press_enter=true, then inspect the new value with a crop. "
-                      "Open Save As with Shortcut ctrl+shift+s. Snapshot the dialog, Type the full path into the Edit target, "
+                      "If work starts with a Save As blocking unfinished edits, invoke its available Cancel target and Snapshot again. "
+                      "After edits, open Save As with Shortcut ctrl+shift+s. Snapshot the dialog, Type the full path into the Edit target, "
                       "read its returned value, Click the Save button target and Snapshot to confirm closure. "
                       "Finish with ControlStatus(release=true). Preserve unrelated settings. Independent verification reopens and slices.")
             if args.scenario in CANVAS_SCENARIOS:

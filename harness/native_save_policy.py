@@ -6,7 +6,7 @@ import re
 from copy import deepcopy
 from .native_diagnostic_recovery import COMMIT_SCENARIO
 from .native_matrix import (CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, SAVE_CLEAR_SCENARIOS,
-    UIA_CANVAS_SCENARIO, UIA_HYBRID_SCENARIOS, UIA_SAVE_SCENARIO)
+    UIA_HYBRID_SCENARIOS, UIA_SAVE_SCENARIO)
 
 NATIVE_TOOLS = frozenset({"Snapshot", "Screenshot", "Click", "Type", "Shortcut", "Wait", "ControlStatus"})
 INPUT_TOOLS = frozenset({"Click", "Type", "Shortcut"})
@@ -76,7 +76,7 @@ def hybrid_tool_schema(tool, output_path, scenario):
     click["oneOf"] = [{"required": ["target"]}, {"required": ["loc"]}]
     value = {"type": "string", "anyOf": [{"const": output_path}, {"pattern": "^" + EDIT_NUMBER + "$"}]}
     edit = exact({"target": uia_selector_schema("EditControl"), "text": value})
-    if scenario == UIA_CANVAS_SCENARIO:
+    if scenario in CANVAS_SCENARIOS:
         edit["required"] = ["text"]
         edit["properties"].update(loc=loc, press_enter={"type": "boolean", "const": True})
         edit["oneOf"] = [
@@ -208,7 +208,7 @@ def validate_input(name, args, output_path, scenario="base"):
             return
         if name == "Click" and set(args) != {"loc"}:
             raise ValueError("native_uia_visual_click_arguments")
-        if name == "Type" and (scenario != UIA_CANVAS_SCENARIO or set(args) != {"loc", "text", "press_enter"}
+        if name == "Type" and (scenario not in CANVAS_SCENARIOS or set(args) != {"loc", "text", "press_enter"}
                                or args["text"] == output_path):
             raise ValueError("native_uia_canvas_arguments")
         if name == "Shortcut" and args != {"shortcut": "ctrl+shift+s"}:
