@@ -44,22 +44,7 @@ def run_probe(root, run_id, app_pid, main_hwnd):
     rect = main["rect"]
     owned = [(max(0, rect[0])+min(1919, rect[2]-1))//2,
              (max(0, rect[1])+min(1079, rect[3]-1))//2]
-    from urllib.request import Request, build_opener, ProxyHandler, HTTPRedirectHandler
-    from runner.windows_mcp_bridge import response_json
-    headers = {"Authorization": "Bearer "+(root/"token").read_text(),
-               "Accept": "application/json, text/event-stream", "Content-Type": "application/json",
-               "MCP-Protocol-Version": "2025-06-18"}
-    class NoRedirect(HTTPRedirectHandler):
-        def redirect_request(self, *args, **kwargs):
-            raise ValueError("authority_probe_redirect_rejected")
-    opener = build_opener(ProxyHandler({}), NoRedirect())
-    def request(body):
-        with opener.open(Request("http://127.0.0.1:18789/mcp", data=json.dumps(body).encode(),
-                             headers=headers), timeout=15) as response:
-            return response_json(response.read(2_000_000).decode("utf-8"))
-    request({"jsonrpc": "2.0", "id": "init", "method": "initialize", "params": {
-        "protocolVersion": "2025-06-18", "capabilities": {},
-        "clientInfo": {"name": "owned-authority-negative-probe", "version": "1"}}})
+    request = loopback_client(root, "owned-authority-negative-probe")
     responses = [request({"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {
         "name": "Click", "arguments": {"loc": foreign}}})]
     if not (root / "input_revoked").exists() or not (root / "authority_abort.json").exists():
@@ -72,3 +57,33 @@ def run_probe(root, run_id, app_pid, main_hwnd):
     summary = verify_responses(responses, run_id)
     return {"run_id": run_id, **summary, "foreign_loc": foreign, "owned_loc": owned,
             "responses": responses}
+
+
+def loopback_client(root, name):
+    from urllib.request import Request, build_opener, ProxyHandler, HTTPRedirectHandler
+    from runner.windows_mcp_bridge import response_json
+
+    headers = {"Authorization": "Bearer "+(root/"token").read_text(),
+               "Accept": "application/json, text/event-stream", "Content-Type": "application/json",
+               "MCP-Protocol-Version": "2025-06-18"}
+
+    class NoRedirect(HTTPRedirectHandler):
+        def redirect_request(self, *args, **kwargs):
+            raise ValueError("native_loopback_redirect_rejected")
+
+    opener = build_opener(ProxyHandler({}), NoRedirect())
+
+    def request(body):
+        with opener.open(Request("http://127.0.0.1:18789/mcp", data=json.dumps(body).encode(),
+                                 headers=headers), timeout=15) as response:
+            reply = response_json(response.read(2_000_000).decode("utf-8"))
+        if reply.get("jsonrpc") != "2.0" or reply.get("id") != body["id"]:
+            raise ValueError("native_loopback_response_identity")
+        return reply
+
+    reply = request({"jsonrpc": "2.0", "id": "init", "method": "initialize", "params": {
+        "protocolVersion": "2025-06-18", "capabilities": {},
+        "clientInfo": {"name": name, "version": "1"}}})
+    if "result" not in reply:
+        raise ValueError("native_loopback_initialization")
+    return request

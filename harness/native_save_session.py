@@ -16,7 +16,8 @@ from decimal import DecimalException
 from .agent_protocol import LAYER_FIXTURE_SHA256, valid_run_id
 from .native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
 from .native_matrix import (CANVAS_REPLACE_SCENARIO, CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS,
-    GENERALIZATION, SCRIPT_COMPARISON_SCENARIOS, UIA_CANVAS_SCENARIO, UIA_HYBRID_SCENARIOS, UIA_SAVE_SCENARIO)
+    GENERALIZATION, SCRIPT_SCENARIOS, UIA_CANVAS_SCENARIO, UIA_HYBRID_SCENARIOS,
+    UIA_LAYER_SCENARIO, UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
 from .run_contract import validate_contract
 from .run_verdict import CheckResult, contract_digest
 from .runtime_ports import VerificationOutcome
@@ -46,7 +47,8 @@ def native_contract(actor="codex", scenario="base"):
     from .native_matrix import scenario_spec
     scenario_spec(actor, scenario)
     if actor == "script":
-        data = native_contract("zcode", scenario).to_dict()
+        recorded = scenario == UIA_REPLAY_SCENARIO
+        data = native_contract("zcode", UIA_LAYER_SCENARIO if recorded else scenario).to_dict()
         data["executor"] = "script"
         version = 3 if scenario == UIA_CANVAS_SCENARIO else 1
         data["contract_version"] = f"native-script-comparison-{version}-{scenario}"
@@ -57,6 +59,11 @@ def native_contract(actor="codex", scenario="base"):
             {"id": "proof", "goal": "GUI save, freeze saved bytes, reopen with an independent profile and GUI reslice/export."},
             {"id": "close", "goal": "Use the shared business verifier and confirm owned Job is empty."},
         ]
+        if recorded:
+            from .native_uia_replay import read_recipe
+            _, digest = read_recipe()
+            data["contract_version"] = "native-uia-recording-1"
+            data["steps"].insert(1, {"id": "recording", "goal": "Run the registered UIA recording with SHA256 " + digest})
         return validate_contract(data)
     data = {"schema_version": 1, "case_id": "m3g_export_3mf",
         "contract_version": "native-save-1" if actor == "codex" else "native-save-zcode-1", "executor": "agent_mcp",
@@ -115,7 +122,8 @@ def native_contract(actor="codex", scenario="base"):
 
 def native_spec(digest):
     from .native_matrix import SCENARIOS
-    for actor, scenarios in (("codex", ("base",)), ("zcode", SCENARIOS), ("script", SCRIPT_COMPARISON_SCENARIOS)):
+    for actor, scenarios in (("codex", ("base",)), ("zcode", (s for s in SCENARIOS if s != UIA_REPLAY_SCENARIO)),
+                             ("script", SCRIPT_SCENARIOS)):
         for scenario in scenarios:
             if digest == contract_digest(native_contract(actor, scenario)):
                 return actor, scenario
@@ -203,6 +211,14 @@ def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, can
     refs = ("artifact:proof.json", "artifact:process.json", "artifact:native_worker.json",
             "artifact:proof/0001.3mf:sha256:"+proof["project_sha256"],
             "artifact:exports/0001.gcode:sha256:"+proof["gcode_sha256"])
+    if scenario == UIA_REPLAY_SCENARIO:
+        from .native_uia_replay import verify_replay_trace
+        trace = [_json(line) for line in read("native_trace.ndjson", 256000).splitlines()]
+        _require(all(phases[2] <= row["started_at_ns"] <= row["finished_at_ns"] <= phases[3] for row in trace),
+                 "native_replay_input_phase")
+        route = verify_replay_trace(trace, snapshot.run_id, scope, receipt["recording_sha256"])
+        detail += "; recorded UIA replay=" + json.dumps(route, sort_keys=True)
+        refs += ("artifact:native_trace.ndjson",)
     return VerificationOutcome({"path": CheckResult("pass", "Script GUI save and fresh-profile reslice", refs),
         "business": CheckResult("pass", detail, refs)}, True, True)
 

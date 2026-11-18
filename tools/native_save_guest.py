@@ -51,6 +51,28 @@ def worker(run_id, actor="codex", scenario="base"):
             server.close()
             server = None
         return time.time_ns()
+
+    def start_server():
+        nonlocal server
+        (root / "token").write_text(secrets.token_hex(32), encoding="ascii")
+        (root / "config.toml").write_text("", encoding="utf-8")
+        env = os.environ.copy()
+        env.update(POSTHOG_API_KEY="", ANONYMIZED_TELEMETRY="false",
+                   WINDOWS_MCP_AUTH_KEY=(root / "token").read_text(), PYTHONIOENCODING="utf-8")
+        server = OwnedJobProcess.start([r"C:\coil\tools\windows-mcp-0.8.9\python.exe", "-B",
+            str(REPO / "tools/native_save_server.py"), "--run-id", run_id],
+            cwd=REPO, env=env, log_path=root / "server.log")
+        for _ in range(60):
+            guard()
+            if server.poll()[0] is not None:
+                raise RuntimeError("native_server_exited")
+            try:
+                socket.create_connection(("127.0.0.1", 18789), timeout=1).close()
+                return
+            except OSError:
+                time.sleep(1)
+        raise TimeoutError("native_server_not_ready")
+
     try:
         from harness.launcher import default_exe
         sut_sha = hashlib.sha256(default_exe().read_bytes()).hexdigest()
@@ -61,7 +83,7 @@ def worker(run_id, actor="codex", scenario="base"):
         (root / "projects").mkdir()
         (root / "proof").mkdir()
         output = root / "projects/0001.3mf"
-        from harness.native_matrix import CANVAS_SCENARIOS, UIA_HYBRID_SCENARIOS, scenario_spec
+        from harness.native_matrix import CANVAS_SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_REPLAY_SCENARIO, scenario_spec
         tab, disturbance = scenario_spec(actor, scenario)
         target = ui.wait(lambda: ui.named_child(tab), 15)
         ui.click_rect(target[1])
@@ -122,34 +144,22 @@ def worker(run_id, actor="codex", scenario="base"):
                           script_action_started_at_ns=time.time_ns())
             measured_start = time.monotonic_ns()
             try:
-                edit_project(ui, scenario, binding.hwnd)
-                report["script_steps"].append("edit")
-                ui.save_project()
-                report["script_steps"].append("save")
+                if scenario == UIA_REPLAY_SCENARIO:
+                    from harness.native_uia_replay import play
+                    start_server()
+                    report["recording_sha256"] = play(ui, run_id, str(output))
+                    report["script_steps"] = ["edit", "save"]
+                else:
+                    edit_project(ui, scenario, binding.hwnd)
+                    report["script_steps"].append("edit")
+                    ui.save_project()
+                    report["script_steps"].append("save")
             finally:
                 report["script_action_elapsed_ns"] = time.monotonic_ns() - measured_start
                 report["script_action_finished_at_ns"] = time.time_ns()
             stopped = stop_input()
         else:
-            (root / "token").write_text(secrets.token_hex(32), encoding="ascii")
-            (root / "config.toml").write_text("", encoding="utf-8")
-            env = os.environ.copy()
-            env.update(POSTHOG_API_KEY="", ANONYMIZED_TELEMETRY="false",
-                       WINDOWS_MCP_AUTH_KEY=(root / "token").read_text(), PYTHONIOENCODING="utf-8")
-            server = OwnedJobProcess.start([r"C:\coil\tools\windows-mcp-0.8.9\python.exe", "-B",
-                str(REPO / "tools/native_save_server.py"), "--run-id", run_id],
-                cwd=REPO, env=env, log_path=root / "server.log")
-            for _ in range(60):
-                guard()
-                if server.poll()[0] is not None:
-                    raise RuntimeError("native_server_exited")
-                try:
-                    socket.create_connection(("127.0.0.1", 18789), timeout=1).close()
-                    break
-                except OSError:
-                    time.sleep(1)
-            else:
-                raise TimeoutError("native_server_not_ready")
+            start_server()
             if scenario == "authority_probe":
                 from harness.native_authority_probe import run_probe
                 atomic_json(root / "authority_probe.json", run_probe(root, run_id, ui.app.pid, ui.app.hwnd))

@@ -6,7 +6,7 @@ import re
 from copy import deepcopy
 from .native_diagnostic_recovery import COMMIT_SCENARIO
 from .native_matrix import (CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, SAVE_CLEAR_SCENARIOS,
-    UIA_HYBRID_SCENARIOS, UIA_SAVE_SCENARIO)
+    UIA_HYBRID_SCENARIOS, UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
 
 NATIVE_TOOLS = frozenset({"Snapshot", "Screenshot", "Click", "Type", "Shortcut", "Wait", "ControlStatus"})
 INPUT_TOOLS = frozenset({"Click", "Type", "Shortcut"})
@@ -19,6 +19,8 @@ CANVAS_NUMBER = r"(?:[1-9][0-9]{0,2}(?:\.[0-9]{1,4})?|0\.(?=[0-9]{0,3}[1-9])[0-9
 
 
 def native_tools(scenario):
+    if scenario == UIA_REPLAY_SCENARIO:
+        return frozenset({"Snapshot", "Click", "Type", "Shortcut"})
     return UIA_SAVE_TOOLS if scenario == UIA_SAVE_SCENARIO else NATIVE_TOOLS
 
 
