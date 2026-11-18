@@ -96,3 +96,5 @@ UIA 优先轮的候选新目标为 Bottom shell layers 3→6（Strength / Qualit
 UIA 优先轮通过原生 Save As、wx 层高和 ImGui X 平移三个开发验收。新冻结八槽正式 1/8，低于投入阈值。Strength 初态的底层数目标通过，其他槽分别卡在裁图范围、前台窗口、UIA 路由、ZCode 串行约束和带干扰的准备顺序。见[UIA 优先轮证据](runs/zcode-uia-first-2026-11-18.md)。
 
 批后开发修订已复验壁环数、ZCode 和脚本的 X 平移，以及 Quality、Strength 两种起点的层高配对。命名裁图、串行调度及原生目标恢复均已在客机验证。材料槽 2 仍受 owned 弹窗阻断。开发复验与配对计时单独登记，维护人时和跨版本变化尚待实测。[执行层与脚本对照证据](runs/zcode-uia-execution-recheck-2026-11-18.md)
+
+层高完成了首次「已验收 AI 轨迹 → 可审查脚本 → 无模型重放」。生成的 8 步脚本在固定初态下两次独立重切通过，仍记 SHADOW。自绘路径录制和跨版本维护收益待验证。[录制入口与实跑证据](V3_UIA_REPLAY.md)
