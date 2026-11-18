@@ -23,8 +23,9 @@ def verify_business(project, fixture, gcode, *, cancelled=lambda: False):
     wanted = tuple(value * Decimal("1.5") if index in {0, 3, 6} else value
                    for index, value in enumerate(transform))
     expected = _fixture_with_transform(baseline, wanted)
+    # Instance scaling also updates the assembly scale in Orca's Selection::scale.
     summary = inspect_project(project, expected, layer_height="0.4",
-                              expected_assembly_transform=transform, cancelled=cancelled)
+                              expected_assembly_transform=wanted, cancelled=cancelled)
     actual = _archive(project, cancelled)
     geometry, _, _ = _geometry(actual)
     points = {point for face in geometry for point in face}

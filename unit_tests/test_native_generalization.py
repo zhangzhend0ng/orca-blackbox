@@ -3,6 +3,7 @@ from decimal import Decimal
 from pathlib import Path
 import io
 import json
+import xml.etree.ElementTree as ET
 import zipfile
 
 import pytest
@@ -56,10 +57,17 @@ def test_scale_requires_same_center_and_extrusion_in_scaled_x_bounds(fixture):
     entries = _archive(fixture, lambda: False)
     transform = list(_geometry(entries)[2])
     transform[0] = Decimal("1.5")
+    previous_assembly = _fixture_with_transform(entries, tuple(transform))
+    model_config = "Metadata/model_settings.config"
+    metadata = ET.fromstring(entries[model_config])
+    metadata.find("assemble/assemble_item").set("transform", " ".join(map(str, transform)))
+    entries[model_config] = ET.tostring(metadata)
     project = _fixture_with_transform(entries, tuple(transform))
     old = moves(0)
     wide = old.replace(b"X122.4", b"X115.65").replace(b"X148.6", b"X155.35")
     assert verify_scale(project, fixture, wide)["dimensions_mm"] == ["40.5", "27", "27"]
+    with pytest.raises(ValueError, match="project_assembly_transform"):
+        verify_scale(previous_assembly, fixture, wide)
     with pytest.raises(ValueError, match="transform_gcode_footprint_too_small"):
         verify_scale(project, fixture, old)
     transform[9] += 1

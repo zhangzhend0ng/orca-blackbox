@@ -70,7 +70,7 @@ def native_contract(actor="codex", scenario="base"):
             elif scenario in CANVAS_REPLACE_SCENARIOS:
                 data["contract_version"] = "native-canvas-replace-zcode-1"
                 if scenario != CANVAS_REPLACE_SCENARIO:
-                    data["contract_version"] += "-" + scenario
+                    data["contract_version"] = "native-canvas-replace-zcode-2-" + scenario
                 data["steps"].insert(1, {"id": "canvas_authority", "goal": "Bound wxGLCanvas numeric replacement using one successful same-position single Click, focused numeric keys without another click, then one Enter. Recheck the owned destination before every key. Confirm using the saved 3MF and new-profile G-code."})
         elif scenario in {"canvas_probe", "authority_probe"}:
             data["case_id"] = "diagnostic_canvas_input"
