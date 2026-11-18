@@ -5,10 +5,10 @@ import re
 import sys
 
 from .agent_protocol import ProtocolError, read_json
-from .native_matrix import UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO
+from .native_matrix import UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO, UIA_PROCESS_COMBO
 
 
-def edit_layer(ui):
+def edit_layer(ui, value="0.24"):
     # Quality is open before locating its regular layer height Edit.
     from .process_panel import float_edits_in_view
 
@@ -20,8 +20,8 @@ def edit_layer(ui):
     rect, edit_hwnd, _ = edits[0]
     origin_x, origin_y = ui.wu.client_to_screen(ui.app.hwnd, 0, 0)
     x, y = (rect[0] + rect[2]) // 2 - origin_x, (rect[1] + rect[3]) // 2 - origin_y
-    receipt = ui.edit(x, y, "0.24")
-    if receipt["target_hwnd"] != edit_hwnd or Decimal(receipt["after_text"]) != Decimal("0.24"):
+    receipt = ui.edit(x, y, value)
+    if receipt["target_hwnd"] != edit_hwnd or Decimal(receipt["after_text"]) != Decimal(value):
         raise ProtocolError("script_layer_readback")
 
 
@@ -101,6 +101,36 @@ def move_x(ui, canvas):
     # The common saved-project and actual-extrusion checks decide success.
 
 
+def edit_process_combo(ui):
+    from . import process_panel as pp
+
+    app = ui.app
+    ui.main_input()
+    pp.ensure_advanced(app, want=True)
+    if not pp.click_tab(app, "Quality", "height"):
+        raise ProtocolError("process_combo_quality_tab")
+    edit_layer(ui, "0.3")
+    ui.pause(6)
+    ui.main_input()
+    if not pp.click_tab(app, "Strength", "loops"):
+        raise ProtocolError("process_combo_strength_tab")
+    updated, _, _ = pp.set_option_float(app, "density", "30", group_substr="Infill")
+    if not updated:
+        raise ProtocolError("process_combo_infill_edit")
+    ui.pause(6)
+    ui.main_input()
+    if not pp.click_tab(app, "Support", "support"):
+        raise ProtocolError("process_combo_support_tab")
+    enabled, _ = pp.set_option_checkbox(app, "Enable", True, group_substr="Support")
+    if enabled is not True:
+        raise ProtocolError("process_combo_support_checkbox")
+    ui.pause(6)
+    ui.main_input()
+    _, updated = pp.set_combo_by_popup(app, "Tree", "Normal", log="[native-script process combo]")
+    if not updated:
+        raise ProtocolError("process_combo_support_type")
+
+
 def edit_project(ui, scenario, canvas):
     if scenario in {UIA_LAYER_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO}:
         if scenario == UIA_LAYER_STRENGTH_SCENARIO:
@@ -110,5 +140,7 @@ def edit_project(ui, scenario, canvas):
         edit_layer(ui)
     elif scenario == UIA_CANVAS_SCENARIO:
         move_x(ui, canvas)
+    elif scenario == UIA_PROCESS_COMBO:
+        edit_process_combo(ui)
     else:
         raise ProtocolError("script_comparison_scenario")

@@ -128,7 +128,7 @@ def _geometry(files):
     return meshes[0], build.get("objectid"), transform
 
 
-def inspect_project(raw, fixture, *, layer_height="0.24", expected_extruder="1",
+def inspect_project(raw, fixture, *, layer_height="0.24", expected_extruder="1", expected_support="0",
                     expected_assembly_transform=None, cancelled=lambda: False):
     """Compare physical triangles and fixed slicing semantics, not ZIP byte order."""
     _require(type(expected_extruder) is str and expected_extruder in {"1", "2", "3"}, "project_expected_tool")
@@ -138,10 +138,12 @@ def inspect_project(raw, fixture, *, layer_height="0.24", expected_extruder="1",
              "project_expected_assembly")
     files, original = _archive(raw, cancelled), _archive(fixture, cancelled)
     config = _json(files["Metadata/project_settings.config"])
-    _require(type(layer_height) is str and layer_height in ("0.24", "0.4"), "project_expected_layer")
+    _require(type(layer_height) is str and layer_height in ("0.24", "0.3", "0.4"), "project_expected_layer")
+    _require(expected_support in {"0", "1"}, "project_expected_support")
     _require(type(config) is dict and type(config.get("layer_height")) is str and Decimal(config["layer_height"]) == Decimal(layer_height)
              and type(config.get("initial_layer_print_height")) is str and Decimal(config["initial_layer_print_height"]) == Decimal("0.4"), "project_layer_config")
-    _require(config.get("enable_support") == config.get("raft_layers") == config.get("spiral_mode") == "0"
+    _require(config.get("enable_support") == expected_support
+             and config.get("raft_layers") == config.get("spiral_mode") == "0"
              # External import names the preset original_name + '(' + basename
              # + ')' (PresetBundle.cpp:2944, Preset.cpp:2284). Only this fixed
              # fixture alias is in scope, never an arbitrary prefix/suffix match.

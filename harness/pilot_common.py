@@ -30,6 +30,8 @@ _ADDED_DEFAULTS = {
     "filament_volume_type": ["standard"] * 5,
     "filament_flow_step_size": ["1"] * 5,
 }
+PROCESS_COMBO = {"layer_height": "0.3", "sparse_infill_density": "30%", "enable_support": "1",
+                 "support_type": "normal(auto)"}
 
 
 def require_gcode_settings(gcode, expected, error_code):
@@ -46,7 +48,7 @@ def inspect_preserved_settings(actual, expected, *, allowed_changes=None, cancel
     changes = {} if allowed_changes is None else allowed_changes
     _require(type(changes) is dict and (not changes or changes in
              ({"wall_loops": "3"}, {"sparse_infill_density": "30%"}, {"top_shell_layers": "5"},
-              {"bottom_shell_layers": "6"})),
+              {"bottom_shell_layers": "6"}, PROCESS_COMBO)),
              "pilot_config_change_scope")
     if changes == {"wall_loops": "3"}:
         _require(expected.get("wall_loops") == "2" and actual.get("wall_loops") == "3",

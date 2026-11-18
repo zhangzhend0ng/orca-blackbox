@@ -17,7 +17,7 @@ from .agent_protocol import LAYER_FIXTURE_SHA256, valid_run_id
 from .native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
 from .native_matrix import (CANVAS_REPLACE_SCENARIO, CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS,
     GENERALIZATION, REPLAY_SOURCES, SCRIPT_SCENARIOS, UIA_CANVAS_SCENARIO, UIA_HYBRID_SCENARIOS,
-    UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
+    UIA_PROCESS_COMBO, UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
 from .run_contract import validate_contract
 from .run_verdict import CheckResult, contract_digest
 from .runtime_ports import VerificationOutcome
@@ -58,6 +58,9 @@ def native_contract(actor="codex", scenario="base"):
             goal = "Move the cube exactly +10 mm in global X."
         elif source_scenario == UIA_SAVE_SCENARIO:
             goal = "Save the loaded project unchanged from the prepared Save As dialog."
+        elif source_scenario == UIA_PROCESS_COMBO:
+            from .pilot_process_combo import GOAL
+            goal = GOAL
         data["steps"] = [
             {"id": "setup", "goal": "Use the same trusted initial state as the corresponding ZCode scenario."},
             {"id": "goal", "goal": goal},
@@ -233,7 +236,7 @@ def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, can
              "native_script_initial_setup")
     gcode = read("exports/0001.gcode", 64*1024*1024)
     _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
-    if source_scenario == UIA_CANVAS_SCENARIO:
+    if source_scenario in {UIA_CANVAS_SCENARIO, UIA_PROCESS_COMBO}:
         detail = json.dumps(verify_business(source_scenario, frozen, fixture, gcode, cancelled=cancelled), sort_keys=True)
     elif source_scenario == UIA_SAVE_SCENARIO:
         _require(type(setup.get("dialog_hwnd")) is int and setup["dialog_hwnd"] > 0
