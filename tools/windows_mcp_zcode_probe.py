@@ -155,7 +155,7 @@ def main(argv=None):
             prompt += (" Activate an inactive numeric field with one left Click chosen from the screenshot, then Type at "
                        "the same loc within 30 seconds. Type sends numeric keys and Enter directly without clicking again. "
                        "Inspect the committed value before saving.")
-        from harness.native_matrix import UIA_MIX_RECIPES
+        from harness.native_matrix import UIA_MIX_RECIPES, UIA_MOVE_LAYER, UIA_QUALITY_ENUMS
         if args.scenario == UIA_MIX_RECIPES:
             prompt = ("Use Windows-MCP to operate the isolated Orca window. " + business_goal(args.scenario)
                       + " Make one tool call at a time, and call Snapshot BETWEEN EVERY pair of Clicks. "
@@ -202,9 +202,21 @@ def main(argv=None):
                       "After edits, open Save As with Shortcut ctrl+shift+s. Snapshot the dialog, Type the full path into the Edit target, "
                       "read its returned value, Click the Save button target and Snapshot to confirm closure. "
                       "Finish with ControlStatus(release=true). Preserve unrelated settings. Independent verification reopens and slices.")
-            if args.scenario in CANVAS_SCENARIOS:
+            if args.scenario in CANVAS_SCENARIOS and args.scenario != UIA_MOVE_LAYER:
                 prompt += (" For a scene-editing goal, start by observing the named imgui_canvas crop. "
                            "After changing selection or opening a gizmo, observe the named canvas again before choosing a new location.")
+            if args.scenario == UIA_MOVE_LAYER:
+                prompt += (" First set and read back regular Layer height with a fresh Snapshot and exact UIA Edit target. "
+                           "Then use fresh imgui_canvas crops to select and move the cube. "
+                           "Call Snapshot again after all canvas work and before Save As. "
+                           "Always observe the current native tree again when returning to a different UI area.")
+            if args.scenario == UIA_QUALITY_ENUMS:
+                prompt += (" On Quality, enable Advanced for Ironing. Use a wx_sidebar crop to locate the combo on the actual row "
+                           "and the vertical scroll track if the row is offscreen. Resolve the click from the crop's actual origin. "
+                           "After clicking the dropdown, use Snapshot to check that an owned popup opened; only then request "
+                           "Screenshot with region_name='wx_process_popup'. If the main window is still active, refresh the sidebar "
+                           "and click the combo arrow, not the row label. Wait for the panel to settle after selection. "
+                           "Re-selecting another process tab and then Quality restores the top of the page for Seam.")
         (root/"prompt.txt").write_text(prompt, encoding="utf-8")
         report["prompt_sha256"] = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
         bundle = Path(r"C:\Program Files\ZCode\resources\glm\zcode.cjs")
