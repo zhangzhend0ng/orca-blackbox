@@ -6,14 +6,15 @@ from .native_diagnostic_recovery import COMMIT_SCENARIO, SCENARIO as DIAGNOSTIC_
 CANVAS_REPLACE_SCENARIO = "canvas_replace_trial"
 UIA_SAVE_SCENARIO = "uia_save_as"
 UIA_LAYER_SCENARIO = "uia_hybrid_layer"
+UIA_LAYER_STRENGTH_SCENARIO = "uia_hybrid_layer_strength"
 UIA_CANVAS_SCENARIO = "uia_hybrid_canvas"
-SCRIPT_COMPARISON_SCENARIOS = (UIA_LAYER_SCENARIO, UIA_CANVAS_SCENARIO)
+SCRIPT_COMPARISON_SCENARIOS = (UIA_LAYER_SCENARIO, UIA_CANVAS_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO)
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
 UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
     "uia_general_bottom_strength", "uia_general_bottom_quality", *UIA_Y_SCENARIOS,
     "uia_general_combo", UIA_DISTURBANCE_SCENARIO)
-UIA_HYBRID_SCENARIOS = frozenset((UIA_LAYER_SCENARIO, UIA_CANVAS_SCENARIO, *UIA_GENERALIZATION))
+UIA_HYBRID_SCENARIOS = frozenset((*SCRIPT_COMPARISON_SCENARIOS, *UIA_GENERALIZATION))
 SCALE_SCENARIOS = ("general_scale_quality", "general_scale_others")
 CANVAS_REPLACE_SCENARIOS = frozenset((CANVAS_REPLACE_SCENARIO, UIA_CANVAS_SCENARIO, *SCALE_SCENARIOS, *UIA_Y_SCENARIOS))
 CANVAS_SCENARIOS = CANVAS_REPLACE_SCENARIOS | {"canvas_trial"}
@@ -31,6 +32,7 @@ SCENARIOS = {
     "save_dialog": ("Quality", "save_dialog"),
     UIA_SAVE_SCENARIO: ("Quality", "save_dialog"),
     UIA_LAYER_SCENARIO: ("Quality", None),
+    UIA_LAYER_STRENGTH_SCENARIO: ("Strength", None),
     UIA_CANVAS_SCENARIO: ("Quality", None),
     "overwrite": ("Quality", "overwrite"),
     "safety_cancel": ("Quality", "cancel"),

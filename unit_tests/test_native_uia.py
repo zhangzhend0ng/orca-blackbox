@@ -9,7 +9,7 @@ import pytest
 from harness.native_matrix import UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_SAVE_SCENARIO
 from harness.native_save_policy import native_tools, scoped_tool_schemas, validate_input
 from harness.native_uia import UiaSaveGuard, value_digest, verify_uia_save
-from harness.native_uia_hybrid import UiaHybridGuard, verify_hybrid_trace
+from harness.native_uia_hybrid import UiaHybridGuard, VisualCrop, verify_hybrid_trace
 
 RUN = "a" * 32
 OUTPUT = r"C:\owned\0001.3mf"
@@ -128,7 +128,8 @@ def test_drawn_canvas_click_uses_the_owned_input_guard(tmp_path, monkeypatch):
                           window_from_screen_point=lambda *_: 21, window_class=lambda _: "wxGLCanvas")
     monkeypatch.setattr(guard, "owned_foreground", lambda: (api, 20))
     box = [100, 150, 900, 800]
-    monkeypatch.setattr(guard, "_visual_route", lambda *_: ("imgui_canvas", box, box, 21))
+    crop = VisualCrop(1, box, box, time.monotonic_ns())
+    monkeypatch.setattr(guard, "_visual_route", lambda *_: ("imgui_canvas", box, box, 21, crop))
     proof = guard.check("Click", {"loc": [120, 480]})
     assert proof["target_hwnd"] == 21 and proof["route"] == "local_visual"
     assert proof["visual_fallback"] == "imgui_canvas"
@@ -142,7 +143,9 @@ def test_named_crop_resolves_live_geometry_after_layout_changes(tmp_path, monkey
     monkeypatch.setattr(guard, "owned_foreground", lambda: (api, 20))
     old, current = [400, 70, 1920, 1032], [460, 70, 1920, 1032]
     guard.visual_regions = {"imgui_canvas": old}
-    guard.last_crop = ("imgui_canvas", old, old, time.monotonic_ns())
+    observed = VisualCrop(1, old, old, time.monotonic_ns())
+    guard.crops = {"imgui_canvas": observed}
+    guard.canvas_click_crop = ((500, 250), observed)
     guard._last_click = [500, 250]
     monkeypatch.setattr(guard, "_regions", lambda _: {"imgui_canvas": current})
     with pytest.raises(ValueError, match="native_uia_visual_region_not_observed"):
@@ -151,6 +154,45 @@ def test_named_crop_resolves_live_geometry_after_layout_changes(tmp_path, monkey
     assert proof["visual_region"] == current and guard.capture_region() == current
     guard.complete_view()
     assert guard._last_click is None
+
+
+def test_per_region_crops_survive_reads_and_preserve_only_the_pending_canvas_type(tmp_path, monkeypatch):
+    scope = {"app_pid": 4, "hwnd": 20, "output_path": OUTPUT, "scenario": UIA_CANVAS_SCENARIO,
+             "canvas_binding_json": '{"hwnd":21}'}
+    guard = UiaHybridGuard(scope, tmp_path, None, lambda *_: None)
+    monkeypatch.setitem(sys.modules, "win32gui", SimpleNamespace(IsChild=lambda p, c: p == 20 and c == 21))
+    api = SimpleNamespace(_window_pid=lambda _: 4, window_title=lambda _: "Orca",
+                          window_from_screen_point=lambda *_: 21, window_class=lambda _: "wxGLCanvas")
+    monkeypatch.setattr(guard, "owned_foreground", lambda: (api, 20))
+    live = {"imgui_canvas": [400, 70, 1920, 1032], "wx_sidebar": [0, 70, 400, 1032]}
+    monkeypatch.setattr(guard, "_regions", lambda _: live)
+
+    def observe(role):
+        checked = guard.check("Screenshot", {"region_name": role})
+        guard.complete_view()
+        return checked["visual_crop_id"]
+
+    def checked_canvas_type(args):
+        assert guard._last_click[0] == tuple(args["loc"])
+        guard._last_click = None
+        guard.last_window["route"] = "canvas_numeric"
+        return guard.last_window
+
+    monkeypatch.setattr(guard, "_canvas_trial_type", checked_canvas_type)
+    canvas_id = observe("imgui_canvas")
+    sidebar_id = observe("wx_sidebar")
+    assert (canvas_id, sidebar_id) == (1, 2)
+    loc = [500, 250]
+    assert guard.check("Click", {"loc": loc})["visual_crop_id"] == canvas_id
+    assert not guard.crops
+    guard.record_click(loc)
+    observe("wx_sidebar")
+    observe("imgui_canvas")
+    numeric = {"loc": loc, "text": "145.5", "press_enter": True}
+    assert guard.check("Type", numeric)["visual_crop_id"] == canvas_id
+    assert not guard.crops and guard._last_click is None and guard.canvas_click_crop is None
+    with pytest.raises(ValueError, match="native_uia_refresh_required"):
+        guard.check("Type", numeric)
 
 
 def test_stale_crop_has_owned_predispatch_facts_and_foreign_target_stops(tmp_path, monkeypatch):
@@ -174,7 +216,8 @@ def test_stale_crop_has_owned_predispatch_facts_and_foreign_target_stops(tmp_pat
     assert "refresh_reason" not in guard.last_window
 
 
-def test_owned_popup_is_read_only_and_requires_main_snapshot(tmp_path, monkeypatch):
+@pytest.mark.parametrize("observation,args", [("Snapshot", {}), ("Screenshot", {"region_name": "imgui_canvas"})])
+def test_owned_popup_is_read_only_and_requires_main_snapshot(tmp_path, monkeypatch, observation, args):
     scope = {"app_pid": 4, "hwnd": 20, "output_path": OUTPUT, "scenario": UIA_CANVAS_SCENARIO,
              "canvas_binding_json": '{"hwnd":21}'}
     guard = UiaHybridGuard(scope, tmp_path, None, None)
@@ -183,8 +226,8 @@ def test_owned_popup_is_read_only_and_requires_main_snapshot(tmp_path, monkeypat
         IsWindowVisible=lambda _: True))
     api = SimpleNamespace(_window_pid=lambda _: 4, window_title=lambda _: "Popup", window_class=lambda _: "wxWindow")
     monkeypatch.setattr(guard, "owned_foreground", lambda: (api, 30))
-    assert guard.check("Snapshot", {})["route"] == "uia_popup"
-    assert guard.perform("Snapshot", {})["popup"]["root_owner_hwnd"] == 20
+    assert guard.check(observation, args)["route"] == "uia_popup"
+    assert guard.perform(observation, args)["popup"]["root_owner_hwnd"] == 20
     with pytest.raises(ValueError, match="native_uia_main_window_required"):
         guard.check("Click", {"loc": [500, 250]})
     monkeypatch.setattr(guard, "owned_foreground", lambda: (api, 20))
@@ -192,7 +235,7 @@ def test_owned_popup_is_read_only_and_requires_main_snapshot(tmp_path, monkeypat
         guard.check("Screenshot", {"region_name": "imgui_canvas"})
     monkeypatch.setattr(guard, "owned_foreground", lambda: (api, 31))
     with pytest.raises(ValueError, match="native_uia_popup_owner_unverified"):
-        guard.check("Snapshot", {})
+        guard.check(observation, args)
 
 
 @pytest.mark.parametrize("box", [[2, 3, 40, 60], [0, 0, 1920, 1080]])
@@ -216,3 +259,42 @@ def test_hybrid_audits_crop_before_save_as(box):
             verify_hybrid_trace(prefix + suffix, **kwargs)
     else:
         assert verify_hybrid_trace(prefix + suffix, **kwargs)["cropped_visual_calls"] == 1
+
+
+@pytest.mark.parametrize("fault", [None, "duplicate_click", "type_after_mutation", "wrong_type_crop"])
+def test_hybrid_audits_separate_crop_ids_and_click_to_type(fault):
+    main = {"app_pid": 4, "foreground_pid": 4, "foreground_hwnd": 20}
+    canvas, sidebar = [400, 70, 1920, 1032], [0, 70, 400, 1032]
+    live = {"imgui_canvas": canvas, "wx_sidebar": sidebar}
+    loc = [500, 250]
+
+    def capture(kind, crop_id):
+        box = live[kind]
+        return "Screenshot", {"region_name": kind}, {"route": "local_visual", "visual_fallback": kind,
+            "visual_region": box, "visual_anchor_region": box, "visual_live_regions": live,
+            "visual_region_name": kind, "visual_crop_id": crop_id}
+
+    click_proof = {"route": "local_visual", "target_pid": 4, "visual_fallback": "imgui_canvas",
+                   "visual_region": canvas, "visual_anchor_region": canvas, "visual_crop_id": 1}
+    rows = [("Snapshot", {}, {"route": "uia_tree", "visual_regions": live, "native_targets": []}),
+            capture("imgui_canvas", 1), capture("wx_sidebar", 2), ("Click", {"loc": loc}, click_proof)]
+    if fault == "duplicate_click":
+        rows.append(rows[-1])
+    if fault == "type_after_mutation":
+        rows.append(("Shortcut", {"shortcut": "ctrl+shift+s"}, {"route": "owned_command"}))
+    rows.append(("Type", {"loc": loc, "text": "145.5", "press_enter": True},
+                 {**click_proof, "route": "canvas_numeric", "visual_crop_id": 2 if fault == "wrong_type_crop" else 1}))
+    prefix = [dict(seq=i, tool=name, arguments=args, window={**main, **evidence},
+                   run_id=RUN, dispatched=True, error=None)
+              for i, (name, args, evidence) in enumerate(rows, 1)]
+    suffix = fake_trace()
+    for row in suffix:
+        row["seq"] += len(prefix)
+    suffix[0]["window"]["uia_save"] = True
+    kwargs = dict(run_id=RUN, app_pid=4, main_hwnd=20, output_path=OUTPUT, scenario=UIA_CANVAS_SCENARIO,
+                  strict_crop_lifetime=True)
+    if fault:
+        with pytest.raises(ValueError, match="native_uia_(crop_lifetime|visual_click)_proof"):
+            verify_hybrid_trace(prefix + suffix, **kwargs)
+    else:
+        assert verify_hybrid_trace(prefix + suffix, **kwargs)["visual_inputs"] == 2

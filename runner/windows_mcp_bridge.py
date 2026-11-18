@@ -227,17 +227,23 @@ def main():
                 if args.scenario in UIA_HYBRID_SCENARIOS and receipt["tool"] == "Screenshot":
                     arguments = request["params"]["arguments"]
                     crop = arguments.get("region")
+                    popup = False
                     if "region_name" in arguments:
                         structured = response["result"]["structuredContent"]
-                        if structured.get("crop_region_name") != arguments["region_name"]:
+                        popup = structured.get("popup_observation") is True
+                        if popup and ("crop_region" in structured or any(item.get("type") == "image"
+                                                                         for item in response["result"].get("content", []))):
+                            raise ValueError("native_observation_popup_image_conflict")
+                        if not popup and structured.get("crop_region_name") != arguments["region_name"]:
                             raise ValueError("native_observation_crop_identity")
                         crop = structured.get("crop_region")
-                    if (type(crop) is not list or len(crop) != 4 or any(type(side) is not int for side in crop)
-                            or not (0 <= crop[0] < crop[2] <= 1920 and 0 <= crop[1] < crop[3] <= 1080)
-                            or crop == [0, 0, 1920, 1080]):
-                        raise ValueError("native_observation_image_geometry")
-                    left, top, right, bottom = crop
-                    size = (right - left, bottom - top)
+                    if not popup:
+                        if (type(crop) is not list or len(crop) != 4 or any(type(side) is not int for side in crop)
+                                or not (0 <= crop[0] < crop[2] <= 1920 and 0 <= crop[1] < crop[3] <= 1080)
+                                or crop == [0, 0, 1920, 1080]):
+                            raise ValueError("native_observation_image_geometry")
+                        left, top, right, bottom = crop
+                        size = (right - left, bottom - top)
                 changes = inline_canvas_observations(response["result"], size)
                 if changes:
                     sidecar["observation_transcode"] = changes

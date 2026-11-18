@@ -4,12 +4,12 @@ from pathlib import Path
 import re
 import sys
 
-from .agent_protocol import ProtocolError
-from .native_matrix import UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO
+from .agent_protocol import ProtocolError, read_json
+from .native_matrix import UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO
 
 
 def edit_layer(ui):
-    # The shared Quality start leaves the option viewport at the top.
+    # Quality is open before locating its regular layer height Edit.
     from .process_panel import float_edits_in_view
 
     edits = ui.wait(lambda: float_edits_in_view(ui.app), 16)
@@ -23,6 +23,22 @@ def edit_layer(ui):
     receipt = ui.edit(x, y, "0.24")
     if receipt["target_hwnd"] != edit_hwnd or Decimal(receipt["after_text"]) != Decimal("0.24"):
         raise ProtocolError("script_layer_readback")
+
+
+def _type_canvas_number(ui, scope, screen_point, text):
+    from . import mix_dialog_util as mdu
+    from .canvas_input import send_canvas_number
+    from .native_save_policy import InputGuard
+
+    def send_key(key, **_):
+        ui.guard()
+        if key == "{Enter}":
+            mdu._send_keys([(mdu.VK_RETURN, False), (mdu.VK_RETURN, True)])
+            ui.pause(0.05)
+        else:
+            mdu._send_chars(key)
+
+    send_canvas_number(InputGuard(scope, ui.artifacts), {"loc": list(screen_point), "text": text}, send_key)
 
 
 def move_x(ui, canvas):
@@ -49,7 +65,8 @@ def move_x(ui, canvas):
         sx, sy = ui.wu.client_to_screen(ui.app.hwnd, *loc)
         if ui.wu.window_from_screen_point(sx, sy) != canvas:
             raise ProtocolError("script_canvas_point_not_owned")
-        ui.wu.real_click_screen(sx, sy)
+        if ui.wu.real_click_screen(sx, sy) != 2:
+            raise ProtocolError("script_canvas_click_not_dispatched")
 
     guard()
     click(ui.wait(lambda: find_model_centroid(ui.app), 15))
@@ -66,22 +83,22 @@ def move_x(ui, canvas):
         raise ProtocolError("script_canvas_original_x")
     click(box)
     ui.pause(0.6)
-    # Deliver to the checked GL recipient, never a fallback main HWND.
-    for char in "\b" * (len(current) + 2) + format(wanted[9], "f"):
-        guard()
-        ui.wu._send_msg(canvas, 0x0102, ord(char), 0)  # WM_CHAR
-        ui.pause(0.05)
-    guard()
-    ui.wu._send_msg(canvas, 0x0100, 0x0D, 0)  # WM_KEYDOWN / VK_RETURN
-    guard()
-    ui.wu._send_msg(canvas, 0x0102, 0x0D, 0)
-    _, actual = position_row_wait(ui.app, expect=format(wanted[9], "f"), timeout_s=12)
+    expected = format(wanted[9], "f")
+    scope = read_json(ui.artifacts / "scope.json")
+    screen_point = ui.wu.client_to_screen(ui.app.hwnd, *box)
+    _type_canvas_number(ui, scope, screen_point, expected)
+    _, actual = position_row_wait(ui.app, expect=expected, timeout_s=12)
+    print(f"[native-script] Position X readback: before={current[:48]!r} expected={expected!r} actual={(actual or '')[:48]!r}")
     if not actual or Decimal(actual.replace(",", ".")) != wanted[9]:
         raise ProtocolError("script_canvas_readback")
 
 
 def edit_project(ui, scenario, canvas):
-    if scenario == UIA_LAYER_SCENARIO:
+    if scenario in {UIA_LAYER_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO}:
+        if scenario == UIA_LAYER_STRENGTH_SCENARIO:
+            quality = ui.wait(lambda: ui.named_child("Quality"), 15)
+            ui.click_rect(quality[1])
+            ui.pause(2)
         edit_layer(ui)
     elif scenario == UIA_CANVAS_SCENARIO:
         move_x(ui, canvas)

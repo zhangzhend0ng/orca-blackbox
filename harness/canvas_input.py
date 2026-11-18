@@ -479,3 +479,12 @@ def collect_window_evidence(run_id, app_pid, main_hwnd, loc=None):
             r["is_main_child"] and r["pixel_format"]["index"] > 0 and
             r["pixel_format"]["describe_count"] >= r["pixel_format"]["index"] and
             r["pixel_format"]["flags"] & 0x24 == 0x24]}
+
+
+def send_canvas_number(guard, arguments, send_keys):
+    """Preserve the ImGui selection made by the preceding guarded Click."""
+    for character in arguments["text"]:
+        guard.recheck_canvas_keys(arguments)
+        send_keys(character, interval=0.04, waitTime=0.05)
+    guard.recheck_canvas_keys(arguments)
+    send_keys("{Enter}", waitTime=0.05)

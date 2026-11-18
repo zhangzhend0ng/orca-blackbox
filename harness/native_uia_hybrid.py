@@ -1,6 +1,7 @@
 """Owned UIA targets with narrowly scoped visual fallback for Orca's drawn UI."""
 import json
 import time
+from dataclasses import dataclass
 
 from .agent_verify import _require
 from .native_matrix import UIA_DISTURBANCE_SCENARIO
@@ -23,13 +24,23 @@ def selector_key(target):
     return target["control_type"], target["name"], target["automation_id"]
 
 
+@dataclass(frozen=True)
+class VisualCrop:
+    crop_id: int
+    region: list[int]
+    anchor: list[int]
+    taken_at_ns: int
+
+
 class UiaHybridGuard(UiaSaveGuard):
     def __init__(self, scope, root, control_from_handle, control_from_point):
         super().__init__(scope, root, control_from_handle)
         self.control_from_point = control_from_point
         self.native_targets = {}
         self.visual_regions = {}
-        self.last_crop = None
+        self.crops = {}
+        self.crop_id = 0
+        self.canvas_click_crop = None
         self.needs_main_snapshot = False
         self.canvas_hwnd = json.loads(scope["canvas_binding_json"])["hwnd"]
         self.prepared_dialog = scope.get("dialog_hwnd") if scope["scenario"] == UIA_DISTURBANCE_SCENARIO else None
@@ -114,15 +125,31 @@ class UiaHybridGuard(UiaSaveGuard):
         from win32gui import GetAncestor, IsWindowVisible
 
         main = self.scope["hwnd"]
-        if (hwnd == main or GetAncestor(hwnd, 3) != main or not IsWindowVisible(hwnd)
-                or wu._window_pid(hwnd) != self.scope["app_pid"]):
+        pid = wu._window_pid(hwnd)
+        if hwnd == main or pid != self.scope["app_pid"]:
             raise ValueError("native_uia_popup_owner_unverified")
-        return {"hwnd": hwnd, "root_owner_hwnd": main, "class": wu.window_class(hwnd), "name": wu.window_title(hwnd)}
+        root_owner = GetAncestor(hwnd, 3)
+        proof = {"hwnd": hwnd, "root_owner_hwnd": root_owner,
+                 "class": wu.window_class(hwnd), "name": wu.window_title(hwnd)}
+        if root_owner != main or not IsWindowVisible(hwnd):
+            self.last_window.update(app_pid=self.scope["app_pid"], foreground_pid=pid,
+                                    foreground_hwnd=hwnd, unapproved_popup=proof)
+            raise ValueError("native_uia_popup_owner_unverified")
+        return proof
+
+    def _clear_visual(self):
+        self.crops.clear()
+        self.canvas_click_crop = self._last_click = None
+
+    def _discard_changed_crops(self, regions):
+        self.crops = {role: crop for role, crop in self.crops.items() if regions.get(role) == crop.anchor}
+        if self.canvas_click_crop is not None and regions.get("imgui_canvas") != self.canvas_click_crop[1].anchor:
+            self.canvas_click_crop = self._last_click = None
 
     def _refresh_visual(self, target, target_class, reason):
         self.last_window.update(target_hwnd=target, target_pid=self.scope["app_pid"], target_class=target_class,
                                 refresh_reason=reason)
-        self.last_crop = self._last_click = None
+        self._clear_visual()
         self.native_targets, self.visual_regions = {}, {}
         raise ValueError("native_uia_refresh_required")
 
@@ -134,13 +161,13 @@ class UiaHybridGuard(UiaSaveGuard):
             if named is not None:
                 if named not in live:
                     raise ValueError("native_uia_visual_region_not_observed")
-                return named, live[named], live[named], None
+                return named, live[named], live[named], None, None
             region = args["region"]
             matches = [key for key, rect in live.items()
                        if self.visual_regions.get(key) == rect and within(rect, region)]
             if len(matches) != 1:
                 raise ValueError("native_uia_visual_region_not_observed")
-            return matches[0], region, live[matches[0]], None
+            return matches[0], region, live[matches[0]], None, None
         from win32gui import IsChild
 
         matches = [kind for kind, box in live.items() if contains(box, args["loc"])]
@@ -164,11 +191,15 @@ class UiaHybridGuard(UiaSaveGuard):
         expected_classes = {"wxPanel", "wxWindowNR", "wxWindow", "wxDataView"} if kind == "wx_sidebar" else {"wxGLCanvas"}
         if target_class not in expected_classes or kind == "imgui_canvas" and target != self.canvas_hwnd:
             raise ValueError("native_uia_drawn_target_required")
-        crop = self.last_crop
-        if (crop is None or crop[0] != kind or crop[2] != live[kind] or not contains(crop[1], args["loc"])
-                or not 0 <= time.monotonic_ns() - crop[3] <= OBSERVATION_LIMIT_NS):
+        if name == "Type":
+            click = self.canvas_click_crop
+            crop = click[1] if click is not None and click[0] == tuple(args["loc"]) else None
+        else:
+            crop = self.crops.get(kind)
+        if (crop is None or crop.anchor != live[kind] or not contains(crop.region, args["loc"])
+                or not 0 <= time.monotonic_ns() - crop.taken_at_ns <= OBSERVATION_LIMIT_NS):
             self._refresh_visual(target, target_class, "stale_crop")
-        return kind, crop[1], live[kind], target
+        return kind, crop.region, live[kind], target, crop
 
     def check(self, name, args):
         self.last_canvas_evidence, self.last_window, self.arguments_validated = None, {}, False
@@ -202,13 +233,14 @@ class UiaHybridGuard(UiaSaveGuard):
         if "dialog_hwnd" in self.scope and (hwnd == self.scope["dialog_hwnd"] or self.invoked):
             if (name in {"Click", "Type"} and "target" not in args) or name in {"Screenshot", "Shortcut"}:
                 raise ValueError("native_uia_dialog_route_required")
-            self.last_crop = self._last_click = None
+            self._clear_visual()
             self.last_window = super().check(name, args)
             self.last_window["uia_save"] = True
             return self.last_window
-        if name == "Snapshot" and hwnd != self.scope["hwnd"]:
+        named_observation = name == "Screenshot" and "region_name" in args
+        if (name == "Snapshot" or named_observation) and hwnd != self.scope["hwnd"]:
             popup = self._popup(wu, hwnd)
-            self.last_crop = self._last_click = None
+            self._clear_visual()
             self.native_targets, self.visual_regions = {}, {}
             self.needs_main_snapshot = True
             self.last_window.update(route="uia_popup", app_pid=self.scope["app_pid"],
@@ -220,7 +252,7 @@ class UiaHybridGuard(UiaSaveGuard):
         if name == "Snapshot":
             self.last_window["route"] = "uia_tree"
         elif "target" in args:
-            self._last_click = None
+            self._clear_visual()
             if name == "Type" and args["text"] == self.scope["output_path"]:
                 raise ValueError("native_path_requires_save_dialog")
             _, _, record = self._find_native(wu, hwnd, args)
@@ -228,17 +260,24 @@ class UiaHybridGuard(UiaSaveGuard):
                 target_hwnd=record["hwnd"], target_pid=self.scope["app_pid"],
                 target_class=wu.window_class(record["hwnd"]), target=record["target"], pattern=record["pattern"])
         elif name == "Screenshot" or "loc" in args:
-            role, region, anchor, target = self._visual_route(wu, hwnd, name, args)
+            role, region, anchor, target, crop = self._visual_route(wu, hwnd, name, args)
             if name != "Screenshot":
                 self.last_window = InputGuard.check(self, name, args)
                 if self.last_window["foreground_hwnd"] != hwnd or self.last_window["target_hwnd"] != target:
                     raise ValueError("native_uia_visual_target_changed")
+                self.last_window["visual_crop_id"] = crop.crop_id
+                # Mutations consume all visual observations. The InputGuard only
+                # records a real click after successful Windows-MCP dispatch.
+                self._clear_visual()
+                if name == "Click" and role == "imgui_canvas":
+                    self.canvas_click_crop = (tuple(args["loc"]), crop)
             self.last_window.setdefault("route", "local_visual")
             self.last_window.update(visual_fallback=role, visual_region=region, visual_anchor_region=anchor)
             if "region_name" in args:
                 self.last_window["visual_region_name"] = args["region_name"]
         else:
             self.last_window = super().check(name, args)
+            self._clear_visual()
             self.last_window["route"] = "owned_command"
         return self.last_window
 
@@ -246,17 +285,20 @@ class UiaHybridGuard(UiaSaveGuard):
         wu, hwnd = self.owned_foreground()
         self._main_window(wu, hwnd)
         role = self.last_window["visual_fallback"]
-        if self._regions(wu).get(role) != self.last_window["visual_anchor_region"]:
+        live = self._regions(wu)
+        self._discard_changed_crops(live)
+        if live.get(role) != self.last_window["visual_anchor_region"]:
             raise ValueError("native_uia_visual_anchor_changed")
+        self.last_window["visual_live_regions"] = live
         return self.last_window["visual_region"]
 
     def complete_view(self):
         region = self.capture_region()
         role = self.last_window["visual_fallback"]
         anchor = self.last_window["visual_anchor_region"]
-        if self.last_crop is None or (self.last_crop[0], self.last_crop[2]) != (role, anchor):
-            self._last_click = None
-        self.last_crop = (role, region, anchor, time.monotonic_ns())
+        self.crop_id += 1
+        self.crops[role] = VisualCrop(self.crop_id, region, anchor, time.monotonic_ns())
+        self.last_window["visual_crop_id"] = self.crop_id
 
     def _prepared_cancel(self, wu, hwnd, arguments):
         element, record = self._controls(wu, hwnd).get("cancel", (None, None))
@@ -292,8 +334,7 @@ class UiaHybridGuard(UiaSaveGuard):
         if name == "Snapshot":
             controls = self._native_controls(wu, hwnd)
             self.visual_regions = self._regions(wu)
-            if self.last_crop is not None and self.visual_regions.get(self.last_crop[0]) != self.last_crop[2]:
-                self.last_crop = self._last_click = None
+            self._discard_changed_crops(self.visual_regions)
             self.native_targets = {key: item[2] for key, item in controls.items()}
             self.needs_main_snapshot = False
             self.last_window.update(native_targets=list(self.native_targets.values()), visual_regions=self.visual_regions)
@@ -333,8 +374,9 @@ class UiaHybridGuard(UiaSaveGuard):
 
 
 def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scenario, prepared_dialog=None,
-                        allow_refresh=False):
+                        allow_refresh=False, strict_crop_lifetime=False):
     regions, crop, targets = {}, None, []
+    crops, canvas_click = {}, None
     popup_open = False
     counts = dict(uia_tree_calls=0, uia_actions=0, cropped_visual_calls=0, visual_inputs=0)
     cancel, cancelled, closed = None, False, prepared_dialog is None
@@ -351,6 +393,8 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
                      and window.get("refresh_reason") in {"stale_crop", "uia_target_available"},
                      "native_uia_refresh_binding")
             regions, crop, targets = {}, None, []
+            crops.clear()
+            canvas_click = None
             continue
         _require(row["dispatched"] is True and row["error"] is None, "native_uia_hybrid_identity")
         if window.get("prepared_dialog"):
@@ -380,11 +424,14 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
             return {"save_as": save, **counts}
         if window.get("route") == "uia_popup":
             popup, hwnd = window["popup"], window["foreground_hwnd"]
-            _require(name == "Snapshot" and not args and type(hwnd) is int and hwnd > 0 and hwnd != main_hwnd
+            observation = (name == "Snapshot" and not args) or (name == "Screenshot" and "region_name" in args)
+            _require(observation and type(hwnd) is int and hwnd > 0 and hwnd != main_hwnd
                      and window.get("app_pid") == window.get("foreground_pid") == app_pid
                      and popup.get("hwnd") == hwnd and popup.get("root_owner_hwnd") == main_hwnd
                      and type(popup.get("class")) is str and popup["class"], "native_uia_popup_binding")
             regions, crop, targets = {}, None, []
+            crops.clear()
+            canvas_click = None
             popup_open = True
             continue
         _require(window.get("app_pid") == window.get("foreground_pid") == app_pid
@@ -393,6 +440,10 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
         if name == "Snapshot":
             _require(not args and window.get("route") == "uia_tree", "native_uia_tree_required")
             regions, targets = window["visual_regions"], window["native_targets"]
+            if strict_crop_lifetime:
+                crops = {role: record for role, record in crops.items() if regions.get(role) == record[3]}
+                if canvas_click is not None and regions.get("imgui_canvas") != canvas_click[1][3]:
+                    canvas_click = None
             popup_open = False
             counts["uia_tree_calls"] += 1
         elif name == "Screenshot":
@@ -407,9 +458,33 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
             else:
                 _require(kind in UIA_VISUAL_REGIONS and kind in regions and box == args["region"]
                          and within(regions[kind], box), "native_uia_cropped_proof")
-            crop = (kind, box)
+            if strict_crop_lifetime:
+                live = window.get("visual_live_regions")
+                anchor = window.get("visual_anchor_region")
+                crop_id = window.get("visual_crop_id")
+                _require(type(crop_id) is int and crop_id == counts["cropped_visual_calls"] + 1
+                         and type(live) is dict and live.get(kind) == anchor and isinstance(anchor, list)
+                         and within(anchor, box), "native_uia_crop_lifetime_proof")
+                crops = {role: record for role, record in crops.items() if live.get(role) == record[3]}
+                if canvas_click is not None and live.get("imgui_canvas") != canvas_click[1][3]:
+                    canvas_click = None
+                crops[kind] = (kind, crop_id, box, anchor)
+            else:
+                crop = (kind, box)
             counts["cropped_visual_calls"] += 1
         elif "loc" in args:
+            kind = window.get("visual_fallback")
+            if strict_crop_lifetime:
+                if name == "Type":
+                    _require(canvas_click is not None and canvas_click[0] == args["loc"], "native_uia_visual_click_proof")
+                    expected = canvas_click[1]
+                else:
+                    expected = crops.get(kind)
+                _require(expected == (kind, window.get("visual_crop_id"), window.get("visual_region"),
+                                      window.get("visual_anchor_region")), "native_uia_crop_lifetime_proof")
+                crop = (expected[0], expected[2])
+                crops.clear()
+                canvas_click = (args["loc"], expected) if name == "Click" and kind == "imgui_canvas" else None
             _require(crop is not None and crop == (window.get("visual_fallback"), window.get("visual_region"))
                      and contains(crop[1], args["loc"])
                      and window.get("target_pid") == app_pid
@@ -417,6 +492,8 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
                      "native_uia_visual_input_proof")
             counts["visual_inputs"] += 1
         elif "target" in args:
+            crops.clear()
+            canvas_click = None
             _require({"target": args["target"], "hwnd": window["target_hwnd"], "pattern": window["pattern"]}
                      in targets and window["target_pid"] == app_pid, "native_uia_target_binding")
             if name == "Type":
@@ -429,4 +506,6 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
             counts["uia_actions"] += 1
         elif name == "Shortcut":
             _require(window.get("route") == "owned_command", "native_uia_owned_command")
+            crops.clear()
+            canvas_click = None
     _require(False, "native_uia_save_trace_missing")

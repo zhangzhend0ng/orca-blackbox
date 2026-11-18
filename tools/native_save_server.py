@@ -10,13 +10,7 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 
-def send_canvas_number(guard, arguments, send_keys):
-    """Preserve the ImGui selection made by the preceding guarded Click."""
-    for character in arguments["text"]:
-        guard.recheck_canvas_keys(arguments)
-        send_keys(character, interval=0.04, waitTime=0.05)
-    guard.recheck_canvas_keys(arguments)
-    send_keys("{Enter}", waitTime=0.05)
+from harness.canvas_input import send_canvas_number
 
 
 def main():
@@ -75,6 +69,10 @@ def main():
                 name, arguments = context.message.name, context.message.arguments or {}
 
                 async def dispatch():
+                    if hybrid and name == "Screenshot" and guard.last_window.get("route") == "uia_popup":
+                        value = json.dumps(guard.perform(name, arguments), ensure_ascii=False)
+                        return ToolResult(content=[TextContent(type="text", text=value)],
+                                          structured_content={"result": value, "popup_observation": True})
                     if ((hybrid or scope["scenario"] == UIA_SAVE_SCENARIO)
                             and (name == "Snapshot" or "target" in arguments)):
                         value = json.dumps(guard.perform(name, arguments), ensure_ascii=False)

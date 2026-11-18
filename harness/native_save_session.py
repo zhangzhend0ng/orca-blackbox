@@ -48,7 +48,8 @@ def native_contract(actor="codex", scenario="base"):
     if actor == "script":
         data = native_contract("zcode", scenario).to_dict()
         data["executor"] = "script"
-        data["contract_version"] = "native-script-comparison-1-" + scenario
+        version = 2 if scenario == UIA_CANVAS_SCENARIO else 1
+        data["contract_version"] = f"native-script-comparison-{version}-{scenario}"
         data["steps"] = [
             {"id": "setup", "goal": "Use the same trusted initial state as the corresponding ZCode scenario."},
             {"id": "goal", "goal": ("Set regular layer height to 0.24 mm, preserving the 0.40 mm initial layer."
@@ -107,8 +108,8 @@ def native_contract(actor="codex", scenario="base"):
                 data["contract_version"] = "native-diagnostic-recovery-zcode-2-commit"
                 data["steps"][1]["goal"] += " Replace and commit the native Edit with clear=true and press_enter=true in the same Type."
         if scenario in UIA_HYBRID_SCENARIOS:
-            data["contract_version"] = "native-uia-hybrid-zcode-2-" + scenario
-            data["steps"].insert(1, {"id": "uia_authority", "goal": "Use owned UIA target properties and readback for native controls. Crop only the named wx or ImGui regions. Allow up to two proven owned, pre-dispatch input refusals followed by fresh observation. Require the UIA Save As trace and independent saved-file verification."})
+            data["contract_version"] = "native-uia-hybrid-zcode-3-" + scenario
+            data["steps"].insert(1, {"id": "uia_authority", "goal": "Use owned UIA target properties and readback for native controls. Use the latest crop of the intended named wx or ImGui region after any mutation. Allow up to two proven owned, pre-dispatch input refusals followed by fresh observation. Require the UIA Save As trace and independent saved-file verification."})
     return validate_contract(data)
 
 
@@ -308,7 +309,7 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
             uia_summary = verify_hybrid_trace(trace, run_id=snapshot.run_id, app_pid=proof["old_pid"],
                 main_hwnd=scope["hwnd"], output_path=proof["output_path"], scenario=scenario,
                 prepared_dialog=setup.get("dialog_hwnd") if disturbance == "save_dialog" else None,
-                allow_refresh=True)
+                allow_refresh=True, strict_crop_lifetime=True)
         gcode = read("exports/0001.gcode", 64*1024*1024)
         _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
         from .native_pilots import PILOTS, TRIALS, verify_business

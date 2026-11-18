@@ -121,7 +121,9 @@ def uia_gate_proofs(runs):
         else:
             from harness.native_recovery import audit_trace
             audit_trace(trace, run, uia_refresh_enabled=True)
-            route = verify_hybrid_trace(trace, **common, main_hwnd=settings["hwnd"], scenario=scenario, allow_refresh=True)
+            strict_crops = any("visual_crop_id" in row["window"] for row in trace)
+            route = verify_hybrid_trace(trace, **common, main_hwnd=settings["hwnd"], scenario=scenario,
+                                        allow_refresh=True, strict_crop_lifetime=strict_crops)
             if scenario == UIA_CANVAS_SCENARIO and not any(
                     r["tool"] == "Type" and r["window"].get("route") == "canvas_numeric" for r in trace):
                 raise ValueError("uia_development_canvas_path_not_exercised")
@@ -220,7 +222,8 @@ def main():
                 slot["tool_routes"] = {
                     "uia_queries": sum(r["tool"] == "Snapshot" and (r.get("window") or {}).get("route") == "uia_tree" for r in trace),
                     "uia_property_inputs": sum((r.get("window") or {}).get("route") in {"uia_action", "uia_value", "uia_invoke", "uia_cancel"} and r["dispatched"] for r in trace),
-                    "local_crop_calls": sum(r["tool"] == "Screenshot" and r["dispatched"] for r in trace),
+                    "local_crop_calls": sum(r["tool"] == "Screenshot" and r["dispatched"]
+                                            and (r.get("window") or {}).get("route") == "local_visual" for r in trace),
                     "visual_inputs": sum("loc" in r["arguments"] and r["dispatched"] for r in trace),
                     "fallback_roles": sorted({r["window"]["visual_fallback"] for r in trace if (r.get("window") or {}).get("visual_fallback")}),
                 }

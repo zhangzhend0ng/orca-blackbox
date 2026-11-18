@@ -146,3 +146,37 @@ def test_canvas_replacement_click_schema_and_gate_require_single_click():
         jsonschema.validate(dict(args, clicks=2), schema)
     with pytest.raises(ValueError, match="native_canvas_single_click_required"):
         validate_input("Click", dict(args, clicks=2), OUTPUT, CANVAS_REPLACE_SCENARIO)
+
+
+def test_script_canvas_sends_only_numeric_text_and_enter_under_live_focus(monkeypatch, tmp_path):
+    from types import SimpleNamespace
+    from harness.native_script_baseline import _type_canvas_number
+    from harness.native_save_policy import InputGuard
+
+    calls = []
+    allow = True
+
+    def recheck(self, args):
+        assert args == {"loc": [611, 307], "text": "12.5"}
+        calls.append("focus")
+        if not allow:
+            raise ValueError("canvas_focus_or_foreground_changed")
+
+    def send_chars(key):
+        nonlocal allow
+        calls.append(key)
+        if key == "2":
+            allow = False
+
+    ui = SimpleNamespace(artifacts=tmp_path, guard=lambda: None, pause=lambda _: None)
+    monkeypatch.setattr(InputGuard, "recheck_canvas_keys", recheck)
+    monkeypatch.setattr("harness.mix_dialog_util._send_chars", send_chars)
+    monkeypatch.setattr("harness.mix_dialog_util._send_keys", lambda _: calls.append("Enter"))
+    with pytest.raises(ValueError, match="canvas_focus_or_foreground_changed"):
+        _type_canvas_number(ui, {}, (611, 307), "12.5")
+    assert calls == ["focus", "1", "focus", "2", "focus"]
+    allow = True
+    calls.clear()
+    monkeypatch.setattr("harness.mix_dialog_util._send_chars", lambda key: calls.append(key))
+    _type_canvas_number(ui, {}, (611, 307), "12.5")
+    assert calls == ["focus", "1", "focus", "2", "focus", ".", "focus", "5", "focus", "Enter"]
