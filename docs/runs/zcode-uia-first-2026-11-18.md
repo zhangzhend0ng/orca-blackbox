@@ -49,3 +49,22 @@ seq1 用 UIA 属性找到 `File name:`（EditControl、AutomationId=1001）和 `
 | `uia_general_combo_dialog` | 同一组合，附加预打开的 owned Save As 对话框，需先用 Cancel 属性恢复 |
 
 底层目标检查 3MF、G-code 配置与真实 Bottom surface 挤出。Y 平移检查世界三角面、保留项与重切物体挤出范围。组合同时核验配置、分配和 T1 物体挤出。仅用合成正反例预检新目标。沿用 [V3 规划](../V3_PLAN.md) 的八槽分母、投入阈值及停止条件。
+
+## 冻结泛化结果
+
+源 `077ea7a7a373e3a29668dc3235d594c7036f305c`，batch `05793ef532d7468374fc9a6332de264a`。八槽均各启动一次。正式通过 **1/8**，开发锚点 0/2，两个新目标共 1/4，组合与干扰 0/2。未达到投入阈值。分类为 1 个业务独立通过、6 个执行未达标、1 个启动基础设施失败。全部回收，八槽清理确认。`artifacts/zcode_uia_generalization/<batch>/` 保留冻结计划、事件和摘要，`artifacts/windows_mcp_harvest/<run>/` 保留各槽原始证据。
+
+| 槽位 | Run | 判定及现场证据 |
+|---|---|---|
+| Wall loops | `c048fb1e978b4fb2b8299c264de434bc` | NON_GREEN。侧栏裁图请求 bottom=1050，已观察边界 bottom=1032，截图未派发。 |
+| 材料槽 2 | `94f0968658444ce4895375e10f67f1e6` | NON_GREEN。一次画布点击后前台变成同 PID 的非主窗 HWND，后续截图被拒。轨迹未记录该窗的标题与类名。 |
+| 底层数 / Strength | `4aab27286416496a86916d5378ff3356` | SHADOW。保存底层数 6，独立重开切出 68 层，实测 88 条 Bottom surface XY/E 挤出。1 张 wx 裁图、3 次 UIA 属性操作、0 次坐标输入。 |
+| 底层数 / Quality | `b0c9944fccb34426a1038f4c76a3a6db` | NON_GREEN。坐标 Click 命中可用 UIA 操作的控件，点击未派发。 |
+| Y 平移 / Quality | `5b1efb54c57c4695895a1eafe9e683ee` | NON_GREEN。ZCode 并行调度违反串行合同，未进入数值编辑。 |
+| Y 平移 / Others | `e5a0739c1e35497fa7f516e9df278ea6` | NON_GREEN。同样在数值编辑前触发串行约束。 |
+| Wall loops + 槽 2 | `61209e632c7e4d83af410d0b5fe5f3a2` | NON_GREEN。裁图请求 `[0,0,1920,130]` 跨出已登记区域，截图未派发。 |
+| 同组合 + Save As | `99ea2866f23b46d794c3b18e30357a39` | NON_GREEN，基础设施失败。先开模态再绑定画布，guest 报 `canvas_window_not_owned_or_ready`，ZCode 未进入工具会话。客机 Job 强制收尾至 0，token 不存在。 |
+
+已回收的工具轨迹共 10 次 UIA 查询、3 次属性输入、13 张局部裁图和 8 次坐标输入，回退区域只有 wx 侧栏、ImGui 画布。跨区裁图未派发。失败槽缺少完整模型收据。Strength 槽 3MF SHA256 `957280db25da19457a6e630d5a4a790073c872985b6c5fb6e1fb6c8209de56bb`，G-code SHA256 `71321010f2ce658be248c13af3275f9a231f0fcea1c1b73eb7e0395345bec120`。冻结提交完整纯测试 1,332 项通过、1 项跳过。
+
+批后将画布绑定移到预开模态之前。修订与单独复验沿用开发记录，冻结分母和判定保留。

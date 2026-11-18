@@ -72,24 +72,10 @@ def worker(run_id, actor="codex", scenario="base"):
             with output.open("xb") as stream:
                 stream.write(raw)
             setup["baseline_sha256"] = hashlib.sha256(raw).hexdigest()
-        if disturbance == "save_dialog":
-            ui._save_command()
-            dialog = ui.wait(lambda: ui.eu.wait_save_dialog(ui.app.pid, timeout_s=.2), 10)
-            if not ui.owned_dialog(dialog[3]):
-                raise RuntimeError("native_initial_dialog_not_owned")
-            setup["dialog_hwnd"] = dialog[3]
-        window, capture = ui.identity()
-        if not ui.wu.force_set_foreground(setup.get("dialog_hwnd", ui.app.hwnd)):
-            raise RuntimeError("native_initial_foreground_failed")
-        (root / "initial.png").write_bytes(_encode_capture(capture)[1])
-        setup.update(initial_sha256=hashlib.sha256((root / "initial.png").read_bytes()).hexdigest(),
-                     finished_at_ns=time.time_ns())
-        atomic_json(root / "setup.json", setup)
         scope = {"run_id": run_id, "app_pid": ui.app.pid, "hwnd": ui.app.hwnd,
                  "output_path": str(output), "scenario": scenario,
                  "contract_sha256": report["contract_sha256"], "actor": actor}
-        if "dialog_hwnd" in setup:
-            scope["dialog_hwnd"] = setup["dialog_hwnd"]
+        # A modal disables the canvas. Bind the enabled child before applying the disturbance.
         if scenario in CANVAS_SCENARIOS | UIA_HYBRID_SCENARIOS:
             from harness.canvas_approval import resolve_approval
             from harness.canvas_input import collect_window_evidence, bind_canvas, binding_to_json
@@ -109,6 +95,19 @@ def worker(run_id, actor="codex", scenario="base"):
             atomic_json(root / "canvas_setup.json", {"run_id": run_id, "contract_sha256": report["contract_sha256"],
                 "binding": json.loads(scope["canvas_binding_json"]), "evidence": evidence,
                 "pfd_verified": False, "internal_numeric_field_verified": False})
+        if disturbance == "save_dialog":
+            ui._save_command()
+            dialog = ui.wait(lambda: ui.eu.wait_save_dialog(ui.app.pid, timeout_s=.2), 10)
+            if not ui.owned_dialog(dialog[3]):
+                raise RuntimeError("native_initial_dialog_not_owned")
+            setup["dialog_hwnd"] = scope["dialog_hwnd"] = dialog[3]
+        window, capture = ui.identity()
+        if not ui.wu.force_set_foreground(setup.get("dialog_hwnd", ui.app.hwnd)):
+            raise RuntimeError("native_initial_foreground_failed")
+        (root / "initial.png").write_bytes(_encode_capture(capture)[1])
+        setup.update(initial_sha256=hashlib.sha256((root / "initial.png").read_bytes()).hexdigest(),
+                     finished_at_ns=time.time_ns())
+        atomic_json(root / "setup.json", setup)
         atomic_json(root / "scope.json", scope)
         if scenario == "canvas_probe":
             from harness.canvas_input import collect_window_evidence
