@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "scenario": "uia_mix_recipes",
+  "initial_tab": "Quality",
+  "fixture_sha256": "ea00678017a7b6d7d65a4280b8f80c2d441493fd15998a924c66998ac946ccf0",
+  "steps": [
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "target": {
+          "automation_id": "-31825",
+          "control_type": "ButtonControl",
+          "name": ""
+        }
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "mix_role": "filament1"
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "mix_role": "filament3"
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "mix_role": "confirm"
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "target": {
+          "automation_id": "-31825",
+          "control_type": "ButtonControl",
+          "name": ""
+        }
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "mix_role": "gradient"
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "mix_role": "filament1"
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "mix_role": "filament3"
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "mix_role": "confirm"
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Shortcut",
+      "arguments": {
+        "shortcut": "ctrl+shift+s"
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Type",
+      "arguments": {
+        "target": {
+          "automation_id": "1001",
+          "control_type": "EditControl",
+          "name": "File name:"
+        },
+        "text": "$OUTPUT_3MF"
+      }
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "target": {
+          "automation_id": "1",
+          "control_type": "ButtonControl",
+          "name": "Save"
+        }
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    }
+  ],
+  "source": {
+    "run_id": "eab535b083eb0d01dd5c4eefaf89ebb1",
+    "source_sha": "69c90f19c753c7a287762b4240eda1fd698ae721",
+    "trace_sha256": "6c985f3346bb472d8c5b72d35a059b74ded92c4514d4360b84660cd901bd8a51"
+  }
+}
