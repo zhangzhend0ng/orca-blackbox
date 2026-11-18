@@ -45,4 +45,6 @@ ZCode 目标式探索 run `ac915b289afd4a76862664232da5171b` 为 NON_GREEN。通
 
 实现首轮 `e74703752b09cf1788cc886563a35332`，源 `9a78efc`，为 NON_GREEN。原版 Windows-MCP 强制保留 `ControlStatus`，本轮混色白名单漏列它，工具列表未交给模型。模型请求有 0 个工具，客机有 0 次 GUI 输入，未保存。已确认相关进程与临时令牌清理。
 
+工具注册修复轮 `ec409e8badaa18b3c4b6002b32c4ee47`，源 `c15650a`，为 NON_GREEN。确认在同一 turn 通过 UIA Invoke 打开 Add Mix，按 UIA 属性定位 Ratio 并点击。模型下一步未重新 Snapshot 就点击材料框，守卫在派发前以 `native_mix_uia_target_not_observed` 拒绝。未打开材料弹层或保存，已回收并确认清理。下一轮提示明确要求每次点击后重新观察，第一轮 Ratio 保持默认。
+
 离线对已验收产物做五项反例检查。过期的填充、支撑开关和支撑类型均被跨页工艺判据拒绝。缺少新比例或渐变定义的 G-code 均被混色判据拒绝。反例只用于校验判据。

@@ -158,11 +158,15 @@ def main(argv=None):
         from harness.native_matrix import UIA_MIX_RECIPES
         if args.scenario == UIA_MIX_RECIPES:
             prompt = ("Use Windows-MCP to operate the isolated Orca window. " + business_goal(args.scenario)
-                      + " Use Snapshot before clicks. Open Add Mix using the visible ButtonControl with an empty name "
-                      "and automation_id -31825 from Snapshot. Inside Add Mix, use Click with the advertised mix_role "
-                      "(ratio or gradient, then filament1). Observe the popup with Snapshot, then choose filament3 "
-                      "when listed. That action reads back both slots. Snapshot the dialog again and click confirm only "
-                      "when ready. Snapshot when the main window returns, and repeat for the other recipe. "
+                      + " Make one tool call at a time, and call Snapshot BETWEEN EVERY pair of Clicks. "
+                      "Consecutive Clicks are refused even when both roles were in an earlier Snapshot. "
+                      "For Ratio, use these individual calls: Snapshot; Click the exact visible ButtonControl "
+                      "with empty name and automation_id -31825 (Add Mix); Snapshot; Click mix_role=filament1; "
+                      "Snapshot; Click mix_role=filament3 when it appears; Snapshot; Click mix_role=confirm; Snapshot. "
+                      "Ratio is already the default in the first new dialog, so leave its mode alone. "
+                      "Repeat those calls for Gradient, inserting Click mix_role=gradient and immediately a Snapshot "
+                      "after opening the second dialog and before Click mix_role=filament1. "
+                      "The filament3 click reads back both slots. Confirm only after readback [3,2]. "
                       "Once both are registered, use Shortcut ctrl+shift+s, Snapshot, Type the exact assigned full path "
                       + output + " through the observed Edit target, verify the returned value, click the observed "
                       "Save button, and Snapshot to confirm closure. Finish your turn. The verifier will reopen and slice.")
