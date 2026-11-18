@@ -258,7 +258,7 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
                                            recovery_recorded=verification.recovery_recorded)
                 result = verdict.to_dict()
                 result.update(mode=("synthetic" if synthetic else
-                                    "agent_shadow" if execution_mode in {"guest_agent", "guest_native"} else "script_shadow"),
+                                    "agent_shadow" if frozen.executor == "agent_mcp" else "script_shadow"),
                               release_verdict="SYNTHETIC" if synthetic else (
                                   "SHADOW" if verdict.verified_pass else "NON_GREEN"),
                               release_eligible=False, runtime_status=runtime_status,

@@ -3,7 +3,7 @@ from copy import deepcopy
 
 import pytest
 
-from harness.native_recovery import RecoveryGate, RecoveryViolation, audit_trace
+from harness.native_recovery import RecoveryGate, RecoveryViolation, UIA_REFRESH_ERROR, audit_trace
 
 RUN = "a" * 32
 
@@ -169,3 +169,38 @@ def test_wrong_run_cannot_borrow_a_live_gate():
 def test_unknown_tool_success_is_not_accepted_by_the_auditor():
     with pytest.raises(RecoveryViolation, match="trace_schema"):
         audit_trace([success(1, "PowerShell")], RUN, enabled=True)
+
+
+def uia_denial():
+    row = denial()
+    row.update(tool="Click", arguments={"loc": [400, 200]}, error="ValueError:" + UIA_REFRESH_ERROR,
+               error_code=UIA_REFRESH_ERROR)
+    row["window"]["refresh_reason"] = "uia_target_available"
+    return row
+
+
+def test_uia_refresh_is_scoped_and_requires_fresh_observation():
+    row = uia_denial()
+    assert RecoveryGate(RUN, enabled=True).reject(row)["decision"] == "fatal"
+    row["recovery"] = RecoveryGate(RUN, uia_refresh_enabled=True).reject(row)
+    next_input = success(3, "Click")
+    receipt = audit_trace([row, success(2, "Snapshot"), next_input], RUN, uia_refresh_enabled=True)
+    assert receipt["recoveries"] == 1
+    with pytest.raises(RecoveryViolation, match="new_observation"):
+        audit_trace([row, success(2, "Wait"), next_input], RUN, uia_refresh_enabled=True)
+
+
+@pytest.mark.parametrize("fault", ["dispatched", "foreign", "unknown_reason", "unbound", "offscreen"])
+def test_uia_refresh_rejects_unsafe_or_unproven_scope(fault):
+    row = uia_denial()
+    if fault == "dispatched":
+        row["dispatched"] = True
+    elif fault == "foreign":
+        row["window"]["target_pid"] = 99
+    elif fault == "unknown_reason":
+        row["window"]["refresh_reason"] = "unknown"
+    elif fault == "unbound":
+        row["window"]["target_hwnd"] = None
+    else:
+        row["arguments"]["loc"] = [400, 1080]
+    assert RecoveryGate(RUN, uia_refresh_enabled=True).reject(row)["decision"] == "fatal"

@@ -190,6 +190,7 @@ def main():
     args = p.parse_args()
     transport = GuestHTTP(args.guest_root, args.run_id, deadline=time.monotonic()+900, goal_save=args.goal_save)
     calls = 0
+    terminal = False
     while True:
         raw = sys.stdin.buffer.readline(65537)
         if not raw:
@@ -224,7 +225,18 @@ def main():
                     and receipt["tool"] in {"Screenshot", "Snapshot"}):
                 size = (1920, 1080)
                 if args.scenario in UIA_HYBRID_SCENARIOS and receipt["tool"] == "Screenshot":
-                    left, top, right, bottom = request["params"]["arguments"]["region"]
+                    arguments = request["params"]["arguments"]
+                    crop = arguments.get("region")
+                    if "region_name" in arguments:
+                        structured = response["result"]["structuredContent"]
+                        if structured.get("crop_region_name") != arguments["region_name"]:
+                            raise ValueError("native_observation_crop_identity")
+                        crop = structured.get("crop_region")
+                    if (type(crop) is not list or len(crop) != 4 or any(type(side) is not int for side in crop)
+                            or not (0 <= crop[0] < crop[2] <= 1920 and 0 <= crop[1] < crop[3] <= 1080)
+                            or crop == [0, 0, 1920, 1080]):
+                        raise ValueError("native_observation_image_geometry")
+                    left, top, right, bottom = crop
                     size = (right - left, bottom - top)
                 changes = inline_canvas_observations(response["result"], size)
                 if changes:
@@ -234,7 +246,10 @@ def main():
             with args.authority_log.open("a", encoding="utf-8") as stream:
                 stream.write(json.dumps(sidecar)+"\n")
                 stream.flush()
+            terminal = args.scenario.startswith("uia_") and receipt["decision"] == "fatal"
         print(json.dumps(response, separators=(",", ":")), flush=True)
+        if terminal:
+            return
 
 
 if __name__ == "__main__":

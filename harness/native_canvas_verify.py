@@ -9,6 +9,7 @@ from .canvas_approval import resolve_approval
 from .canvas_input import bind_canvas, binding_to_json, load_canvas_binding, decide_type
 from .native_save_policy import validate_input
 from .native_matrix import CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, UIA_HYBRID_SCENARIOS
+from .native_recovery import UIA_REFRESH_ERROR
 
 
 def _json(raw):
@@ -69,8 +70,12 @@ def _verify(trace, scope, setup, run_id, contract_sha256, read_artifact):
                  and type(row.get("seq")) is int and row["seq"] == seq
                  and "error" in row and type(row.get("dispatched")) is bool, "canvas_trace_identity")
         if row.get("error") is not None or row.get("dispatched") is not True:
+            if scenario in UIA_HYBRID_SCENARIOS and row.get("error_code") == UIA_REFRESH_ERROR:
+                last_click = None
             continue  # Parent recovery/fatal audit remains mandatory.
         args, window = row.get("arguments"), row.get("window")
+        if scenario in UIA_HYBRID_SCENARIOS and window.get("route") == "uia_popup":
+            last_click = None
         if scenario in UIA_HYBRID_SCENARIOS and row["tool"] in {"Click", "Type"} and "loc" not in args:
             last_click = None
             continue  # Parent hybrid audit checks these property-based actions.

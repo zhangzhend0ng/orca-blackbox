@@ -19,6 +19,7 @@ const path=require('node:path');
 const config=JSON.parse(fs.readFileSync(path.join(process.cwd(),'fake-config.json'),'utf8'));
 const selected={providerId:'new-provider',modelId:'glm-5.3-flash'};
 const settings={model:{current:selected},thoughtLevel:{current:'low'}};
+fs.writeFileSync(path.join(process.cwd(),'fake-concurrency.txt'),process.env.ZCODE_MAX_TOOL_CONCURRENCY??'');
 const rl=require('node:readline').createInterface({input:process.stdin});
 let polls=0;
 rl.on('line',line=>{
@@ -63,7 +64,7 @@ def tool_events(call_id, tool, *, error=False):
 
 
 def run_driver(tmp_path, rows, events, *, enabled=True, suffix="", count=None, request_ids=None,
-               idle_after=None, scenario="base"):
+               idle_after=None, scenario="base", uia_refresh=False):
     node = shutil.which("node")
     if not node:
         pytest.skip("Node runtime unavailable")
@@ -83,7 +84,7 @@ def run_driver(tmp_path, rows, events, *, enabled=True, suffix="", count=None, r
     spec = dict(root=str(tmp_path), bundle=str(server), workspace=str(tmp_path), run_id=RUN_ID,
                 python="MUST_NOT_EXECUTE", bridge="MUST_NOT_EXECUTE", prompt="synthetic protocol test",
                 authority_protocol="native-authority-1", authority_log=str(tmp_path / "authority.ndjson"),
-                recovery_enabled=enabled, scenario=scenario)
+                recovery_enabled=enabled, scenario=scenario, uia_refresh_enabled=uia_refresh)
     spec_file = tmp_path / "spec.json"
     spec_file.write_text(json.dumps(spec))
     result = subprocess.run([node, str(DRIVER), str(spec_file)], capture_output=True, timeout=15)
@@ -222,6 +223,65 @@ def test_extra_receipt_cannot_be_ignored(tmp_path):
 def test_two_scheduled_calls_before_completion_are_rejected(tmp_path):
     one, two = tool_events("c1", "Screenshot"), tool_events("c2", "Type")
     assert_stopped(run_driver(tmp_path, [receipt(), receipt(2, "Type")], [one[0], two[0], one[1], two[1]]))
+
+
+def serial_batch(*calls, concurrent=False):
+    order = [call[0]["payload"]["toolCallId"] for call in calls]
+    groups = [order] if concurrent else [[cid] for cid in order]
+    schedule = dict(executionOrder=order, parallelGroups=groups)
+    announced, executed = [], []
+    for i, (scheduled, terminal) in enumerate(calls):
+        scheduled["payload"].update(schedule=schedule, parallelGroupIndex=0 if concurrent else i)
+        start = dict(type="tool.updated", payload=dict(kind="started", toolCallId=order[i],
+                     toolName=scheduled["payload"]["toolName"]))
+        announced.append(scheduled)
+        executed.extend((start, terminal))
+    return announced + executed
+
+
+def test_uia_can_announce_multiple_serial_observations(tmp_path):
+    events = serial_batch(tool_events("c1", "Snapshot"), tool_events("c2", "Screenshot"))
+    code, report = run_driver(tmp_path, [receipt(1, "Snapshot"), receipt(2)], events, scenario="uia_y_quality")
+    assert code == 0, report
+    assert (tmp_path / "fake-concurrency.txt").read_text() == "1"
+    assert [call["authority"]["seq"] for call in report["native_tool_calls"]] == [1, 2]
+
+
+def test_uia_rejects_genuine_parallel_group(tmp_path):
+    events = serial_batch(tool_events("c1", "Snapshot"), tool_events("c2", "Click"), concurrent=True)
+    code, report = run_driver(tmp_path, [], events, scenario="uia_y_quality")
+    assert code == 1 and report["error"] == "native_serial_schedule_invalid"
+
+
+def test_uia_rejects_out_of_order_tool_start(tmp_path):
+    events = serial_batch(tool_events("c1", "Snapshot"), tool_events("c2", "Screenshot"))
+    events[2], events[4] = events[4], events[2]
+    code, report = run_driver(tmp_path, [], events, scenario="uia_y_quality")
+    assert code == 1 and report["error"] == "native_serial_start_out_of_order"
+
+
+def uia_refresh_receipt():
+    row = receipt(1, "Click", "recoverable")
+    row["error_code"] = row["recovery"]["error_code"] = "native_uia_refresh_required"
+    return row
+
+
+def test_uia_refresh_receipt_continues_after_snapshot(tmp_path):
+    events = serial_batch(tool_events("c1", "Click", error=True))
+    events += serial_batch(tool_events("c2", "Snapshot"))
+    events += serial_batch(tool_events("c3", "Click"))
+    code, report = run_driver(tmp_path, [uia_refresh_receipt(), receipt(2, "Snapshot"), receipt(3, "Click")],
+                              events, enabled=False, scenario="uia_y_quality", uia_refresh=True)
+    assert code == 0, report
+    assert [c["status"] for c in report["native_tool_calls"]] == ["recoverable_rejection", "completed", "completed"]
+
+
+def test_uia_refresh_receipt_does_not_accept_wait_as_observation(tmp_path):
+    events = serial_batch(tool_events("c1", "Click", error=True))
+    events += serial_batch(tool_events("c2", "Wait"), tool_events("c3", "Click"))
+    code, report = run_driver(tmp_path, [uia_refresh_receipt(), receipt(2, "Wait"), receipt(3, "Click")],
+                              events, enabled=False, scenario="uia_y_quality", uia_refresh=True)
+    assert code == 1 and report["error"] == "native_recovery_observation_required"
 
 
 def test_reused_completed_call_id_cannot_reuse_cached_authority(tmp_path):

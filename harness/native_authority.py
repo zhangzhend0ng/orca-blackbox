@@ -41,12 +41,12 @@ def validate_scope(scope, manifest, contract, *, run_id, output_path):
 
 class AuthorityController:
     def __init__(self, guard, root, run_id, *, recovery_enabled=False, diagnostic_enabled=False,
-                 canvas_dispatch=None, record_edit_frames=False):
+                 uia_refresh_enabled=False, canvas_dispatch=None, record_edit_frames=False):
         self.guard, self.root, self.run_id = guard, root, run_id
-        if diagnostic_enabled and recovery_enabled:
+        if diagnostic_enabled and (recovery_enabled or uia_refresh_enabled):
             raise ValueError("native_recovery_contract_conflict")
         self.gate = (DiagnosticOnceGate(run_id, enabled=True) if diagnostic_enabled
-                     else RecoveryGate(run_id, enabled=recovery_enabled))
+                     else RecoveryGate(run_id, enabled=recovery_enabled, uia_refresh_enabled=uia_refresh_enabled))
         self.calls = 0
         self.canvas_dispatch = canvas_dispatch
         self.record_edit_frames = record_edit_frames

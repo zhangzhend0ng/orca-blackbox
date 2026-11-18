@@ -13,6 +13,7 @@ INPUT_TOOLS = frozenset({"Click", "Type", "Shortcut"})
 SHORTCUTS = frozenset({"ctrl+s", "ctrl+shift+s", "enter", "tab", "shift+tab", "esc", "escape"})
 UIA_SAVE_TOOLS = frozenset({"Snapshot", "Click", "Type", "Wait", "ControlStatus"})
 UIA_ACTION_TYPES = ("ButtonControl", "MenuItemControl", "TabItemControl")
+UIA_VISUAL_REGIONS = ("wx_sidebar", "imgui_canvas")
 EDIT_NUMBER = r"(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?"
 CANVAS_NUMBER = r"(?:[1-9][0-9]{0,2}(?:\.[0-9]{1,4})?|0\.(?=[0-9]{0,3}[1-9])[0-9]{1,4})"
 
@@ -69,6 +70,9 @@ def hybrid_tool_schema(tool, output_path, scenario):
         uia_tool_schema(tool, output_path)
         return
     snapshots = exact({})
+    crop = exact({"region_name": {"type": "string", "enum": list(UIA_VISUAL_REGIONS)},
+                  "region": pixels(4)}, [])
+    crop["oneOf"] = [{"required": ["region_name"]}, {"required": ["region"]}]
     loc = {**pixels(2), "description": "Absolute desktop pixel pair as a JSON integer array. Example [120,480]."}
     action = uia_selector_schema("ButtonControl")
     action["properties"]["control_type"] = {"type": "string", "enum": list(UIA_ACTION_TYPES)}
@@ -87,7 +91,7 @@ def hybrid_tool_schema(tool, output_path, scenario):
         value["anyOf"].append({"pattern": "^" + CANVAS_NUMBER + "$"})
     schemas = {
         "Snapshot": (snapshots, "Read the scoped UIA tree, values and anchored regions available for drawn UI."),
-        "Screenshot": (exact({"region": pixels(4)}), "Capture only one crop inside a wx or ImGui region from Snapshot. Use absolute edges [left,top,right,bottom]."),
+        "Screenshot": (crop, "Capture one wx or ImGui area by its region_name from Snapshot. Use the returned crop_region as its live screen rectangle. For a smaller crop, supply region as absolute edges [left,top,right,bottom] instead."),
         "Click": (click, "Invoke or select a native control using its exact Snapshot target. Use loc only for a drawn control in the latest crop; add the crop origin to the pixel coordinates."),
         "Type": (edit, "Set an observed UIA Edit using its exact target and read back its value. On the approved ImGui route only, a same-location Click followed by numeric Type with press_enter=true commits the field."),
         "Shortcut": (exact({"shortcut": {"const": "ctrl+shift+s"}}), "Open Save As in the owned main application."),
@@ -189,6 +193,8 @@ def validate_input(name, args, output_path, scenario="base"):
         if name == "Snapshot" and args:
             raise ValueError("native_uia_snapshot_options")
         if name == "Screenshot":
+            if set(args) == {"region_name"} and args["region_name"] in UIA_VISUAL_REGIONS:
+                return
             box = args.get("region")
             if (set(args) != {"region"} or type(box) is not list or len(box) != 4
                     or any(type(value) is not int for value in box)

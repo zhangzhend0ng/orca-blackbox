@@ -10,7 +10,7 @@
 param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$Warmup, [switch]$NoSync, [string]$Suite = 'regression', [switch]$V3,
       [ValidateSet('script', 'agent_mcp')][string]$V3Executor = 'script', [string]$V3RunId = '',
       [switch]$WindowsMcpProbe, [string]$ProbeRunId = '', [switch]$NativeSave,
-      [ValidateSet('codex','zcode')][string]$NativeActor = 'codex',
+      [ValidateSet('codex','zcode','script')][string]$NativeActor = 'codex',
       [ValidateSet('base','quality_a','quality_b','strength_a','strength_b','others_a','others_b','save_dialog','overwrite',
           'safety_cancel','safety_timeout','safety_guard_disconnect','pilot_strength','pilot_transform','pilot_material','pilot_infill','pilot_material3',
           'canvas_probe','recovery_owned_edit','recovery_diagnostic_once','recovery_diagnostic_commit','canvas_trial','canvas_replace_trial','authority_probe',
@@ -21,7 +21,10 @@ param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$W
 if ($NativeSave -and $NativeActor -eq 'zcode' -and -not $PSBoundParameters.ContainsKey('NativeScenario')) {
     $NativeScenario = 'uia_hybrid_layer'
 }
-if ($NativeScenario -ne 'base' -and (-not $NativeSave -or $NativeActor -ne 'zcode')) { throw 'NativeScenario requires ZCode NativeSave' }
+if ($NativeActor -eq 'script' -and $NativeScenario -notin @('uia_hybrid_layer','uia_hybrid_canvas')) {
+    throw 'Script comparison requires -NativeScenario uia_hybrid_layer or uia_hybrid_canvas'
+}
+if ($NativeScenario -ne 'base' -and (-not $NativeSave -or $NativeActor -eq 'codex')) { throw 'NativeScenario requires ZCode or script NativeSave' }
 if ($NativeSave -and -not $WindowsMcpProbe) { throw '-NativeSave requires -WindowsMcpProbe' }
 if ($NativeActor -ne 'codex' -and -not $NativeSave) { throw '-NativeActor requires -NativeSave' }
 if ($WindowsMcpProbe) {

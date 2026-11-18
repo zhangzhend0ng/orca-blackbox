@@ -9,6 +9,8 @@ import readline from 'node:readline';
 const spec=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
 const names=spec.tools??['Snapshot','Screenshot','Click','Type','Shortcut','Wait','ControlStatus'];
 const allowed=new Set(names.map(n=>'mcp__windows_mcp__'+n));
+const authorityMode=spec.authority_protocol==='native-authority-1';
+const serialScheduler=authorityMode&&typeof spec.scenario==='string'&&spec.scenario.startsWith('uia_');
 const report={actor:'zcode',provider_id:'new-provider',model_id:'glm-5.3-flash',error:null,
  native_tool_calls:[],permissions:[],event_counts:{},stage:'starting'};
 let lastProgress;
@@ -21,7 +23,8 @@ function saveProgress(){
  lastProgress=snapshot;
 }
 const server=spawn(process.execPath,[spec.bundle,'app-server','--cwd',spec.workspace,'--no-color'],
- {cwd:spec.workspace,env:process.env,stdio:['pipe','pipe','pipe'],windowsHide:true});
+ {cwd:spec.workspace,env:serialScheduler?{...process.env,ZCODE_MAX_TOOL_CONCURRENCY:'1'}:process.env,
+  stdio:['pipe','pipe','pipe'],windowsHide:true});
 const stderr=fs.openSync(path.join(spec.root,'server.stderr.log'),'wx');
 let stderrBytes=0,wireBytes=0,sequence=0;
 const pending=new Map();
@@ -68,11 +71,49 @@ function request(method,params,seconds=60){
 }
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const calls=new Map();
-const authorityMode=spec.authority_protocol==='native-authority-1';
 const diagnosticMode=['recovery_diagnostic_once','recovery_diagnostic_commit'].includes(spec.scenario);
+const uiaRefreshMode=serialScheduler&&spec.uia_refresh_enabled===true;
 let authorityConsumed=0;
 let needsObservation=false,recoveryCount=0;
 const requestIds=new Set();
+const inputTools=new Set(['Click','Type','Shortcut']);
+const observationTools=new Set(['Snapshot','Screenshot']);
+let serialBatch;
+
+// ZCode announces a complete native schedule before starting its first group.
+// Check the groups and lifecycle, not how many calls have been announced.
+function registerSerialCall(payload, call){
+ const order=payload.schedule?.executionOrder;
+ const groups=payload.schedule?.parallelGroups;
+ if(!Array.isArray(order)||order.length<1||order.length>40
+   ||order.some(id=>typeof id!=='string'||!id)||new Set(order).size!==order.length
+   ||!Array.isArray(groups)||groups.length!==order.length
+   ||groups.some((group,i)=>!Array.isArray(group)||group.length!==1||group[0]!==order[i]))
+  throw new Error('native_serial_schedule_invalid');
+ if(!serialBatch){
+  if(order.some(id=>calls.has(id)))throw new Error('native_serial_schedule_reused_call');
+  serialBatch={order,announced:new Set(),next:0};
+ }
+ const index=order.indexOf(call.tool_call_id);
+ if(index<0||order.length!==serialBatch.order.length||order.some((id,i)=>id!==serialBatch.order[i])
+   ||serialBatch.next!==0||(payload.parallelGroupIndex!==undefined&&payload.parallelGroupIndex!==index))
+  throw new Error('native_serial_schedule_identity');
+ serialBatch.announced.add(call.tool_call_id);
+}
+function startSerialCall(call, payload){
+ if(!serialBatch||serialBatch.announced.size!==serialBatch.order.length
+   ||call.started_event||call.status!=='pending'||serialBatch.order[serialBatch.next]!==call.tool_call_id
+   ||(payload.toolName!==undefined&&payload.toolName!=='mcp__windows_mcp__'+call.tool))
+  throw new Error('native_serial_start_out_of_order');
+ call.started_event=true;
+ if(needsObservation&&inputTools.has(call.tool))throw new Error('native_recovery_observation_required');
+}
+function finishSerialCall(call){
+ if(!serialBatch||!call.started_event||serialBatch.order[serialBatch.next]!==call.tool_call_id)
+  throw new Error('native_serial_result_out_of_order');
+ serialBatch.next++;
+ if(serialBatch.next===serialBatch.order.length)serialBatch=undefined;
+}
 function takeAuthority(call){
  if(call.authority)return call.authority;
  const raw=fs.existsSync(spec.authority_log)?fs.readFileSync(spec.authority_log,'utf8'):'';
@@ -91,18 +132,21 @@ function takeAuthority(call){
  if(a.decision==='recoverable'){
   const r=a.recovery;
   const protocol=diagnosticMode?'native-diagnostic-recovery-1':'native-recovery-1';
-  const error=diagnosticMode?'native_diagnostic_injected_pre_dispatch':'native_type_requires_owned_edit';
-  if(!(diagnosticMode||spec.recovery_enabled)||a.dispatched!==false||r?.protocol!==protocol||r.run_id!==spec.run_id
+  const error=diagnosticMode?'native_diagnostic_injected_pre_dispatch':
+   uiaRefreshMode?'native_uia_refresh_required':'native_type_requires_owned_edit';
+  const allowedRecovery=diagnosticMode||uiaRefreshMode||spec.recovery_enabled;
+  const canRecover=uiaRefreshMode?['Click','Type'].includes(call.tool):call.tool==='Type';
+  if(!allowedRecovery||!canRecover||a.dispatched!==false||r?.protocol!==protocol||r.run_id!==spec.run_id
     ||r.seq!==a.seq||r.tool!==call.tool||r.decision!=='recoverable'||r.dispatch_state!=='not_dispatched'
-    ||call.tool!=='Type'||a.error_code!==error||r.error_code!==a.error_code
+    ||a.error_code!==error||r.error_code!==a.error_code
     ||typeof r.facts_sha256!=='string'||!/^[0-9a-f]{64}$/.test(r.facts_sha256)
     ||r.requires_observation!==true||!Number.isInteger(r.budget_used)||r.budget_used!==recoveryCount+1
     ||r.budget_used>(diagnosticMode?1:2))
     throw new Error('native_recovery_receipt_invalid');
   recoveryCount++;needsObservation=true;
  }else if(a.dispatched!==true)throw new Error('native_authority_completion_not_dispatched');
- else if(['Snapshot','Screenshot'].includes(call.tool))needsObservation=false;
- else if(needsObservation&&['Click','Type','Shortcut'].includes(call.tool))throw new Error('native_recovery_observation_required');
+ else if(observationTools.has(call.tool))needsObservation=false;
+ else if(needsObservation&&inputTools.has(call.tool))throw new Error('native_recovery_observation_required');
  return a;
 }
 let session,finished=false;
@@ -137,7 +181,7 @@ try{
    report.event_counts[event.type]=(report.event_counts[event.type]||0)+1;
    const p=event.payload||{};
    if(event.type==='tool.updated'){
-    if(!['scheduled','error','result'].includes(p.kind)){
+    if(!['scheduled','error','result'].includes(p.kind)&&!(serialScheduler&&p.kind==='started')){
      report.informational_tool_event_kinds||={};
      report.informational_tool_event_kinds[String(p.kind)]=(report.informational_tool_event_kinds[String(p.kind)]||0)+1;
      continue;
@@ -147,10 +191,12 @@ try{
     if(authorityMode&&(typeof p.toolCallId!=='string'||!p.toolCallId))throw new Error('native_tool_call_identity_missing');
     const call=calls.get(p.toolCallId)||{tool_call_id:p.toolCallId,status:'pending'};
     if(authorityMode&&p.kind!=='scheduled'&&!calls.has(p.toolCallId))throw new Error('native_unscheduled_tool_event');
+    if(serialScheduler&&p.kind==='started')startSerialCall(call,p);
     if(p.kind==='error'){
      if(authorityMode&&call.error_event)throw new Error('native_duplicate_error_event');
      call.status='failed';call.error_event=true;calls.set(p.toolCallId,call);
      if(authorityMode && takeAuthority(call).decision==='recoverable'){
+      if(serialScheduler)finishSerialCall(call);
       call.status='recoverable_rejection';continue;
      }
      throw new Error('native_tool_error_event');
@@ -158,13 +204,15 @@ try{
     if(p.kind==='scheduled'){
      if(!allowed.has(p.toolName))throw new Error('native_tool_out_of_scope');
      if(authorityMode&&calls.has(p.toolCallId))throw new Error('native_duplicate_tool_call_id');
-     if(authorityMode && [...calls.values()].some(c=>c.status==='pending'))throw new Error('native_parallel_tool_calls_rejected');
      call.tool=p.toolName.slice('mcp__windows_mcp__'.length);
+     if(serialScheduler)registerSerialCall(p,call);
+     else if(authorityMode && [...calls.values()].some(c=>c.status==='pending'))throw new Error('native_parallel_tool_calls_rejected');
      calls.set(p.toolCallId,call);
      if(calls.size>40)throw new Error('native_action_budget');
     }
     if(p.kind==='result'){
      if(authorityMode&&call.result_event)throw new Error('native_duplicate_result_event');
+     if(serialScheduler&&!call.authority)finishSerialCall(call);
      call.result_event=true;
      const r=p.result||{};
      if(authorityMode){
@@ -189,6 +237,7 @@ try{
   if(!finished)await delay(500);
  }
  if(!calls.size||[...calls.values()].some(c=>!['completed','recoverable_rejection'].includes(c.status)))throw new Error('native_calls_incomplete');
+ if(serialScheduler&&serialBatch)throw new Error('native_serial_schedule_incomplete');
  if(authorityMode && authorityConsumed!==calls.size)throw new Error('native_authority_count_mismatch');
  if(authorityMode){
   const raw=fs.readFileSync(spec.authority_log,'utf8');

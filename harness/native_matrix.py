@@ -7,6 +7,7 @@ CANVAS_REPLACE_SCENARIO = "canvas_replace_trial"
 UIA_SAVE_SCENARIO = "uia_save_as"
 UIA_LAYER_SCENARIO = "uia_hybrid_layer"
 UIA_CANVAS_SCENARIO = "uia_hybrid_canvas"
+SCRIPT_COMPARISON_SCENARIOS = (UIA_LAYER_SCENARIO, UIA_CANVAS_SCENARIO)
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
 UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
@@ -69,6 +70,10 @@ SAFETY = tuple(k for k in SCENARIOS if k.startswith("safety_"))
 
 
 def scenario_spec(actor, scenario):
+    if actor == "script":
+        if scenario not in SCRIPT_COMPARISON_SCENARIOS:
+            raise ValueError("native_script_scenario_not_registered")
+        return SCENARIOS[scenario]
     if actor not in {"codex", "zcode"} or scenario not in SCENARIOS:
         raise ValueError("native_scenario_not_registered")
     if actor != "zcode" and scenario != "base":

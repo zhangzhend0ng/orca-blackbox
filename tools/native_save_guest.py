@@ -116,44 +116,59 @@ def worker(run_id, actor="codex", scenario="base"):
             report["app_closed"] = not ui.app.alive()
             report["diagnostic_only"] = True
             return 0 if report["app_closed"] else 1
-        (root / "token").write_text(secrets.token_hex(32), encoding="ascii")
-        (root / "config.toml").write_text("", encoding="utf-8")
-        env = os.environ.copy()
-        env.update(POSTHOG_API_KEY="", ANONYMIZED_TELEMETRY="false",
-                   WINDOWS_MCP_AUTH_KEY=(root / "token").read_text(), PYTHONIOENCODING="utf-8")
-        server = OwnedJobProcess.start([r"C:\coil\tools\windows-mcp-0.8.9\python.exe", "-B",
-            str(REPO / "tools/native_save_server.py"), "--run-id", run_id],
-            cwd=REPO, env=env, log_path=root / "server.log")
-        for _ in range(60):
-            guard()
-            if server.poll()[0] is not None:
-                raise RuntimeError("native_server_exited")
+        if actor == "script":
+            from harness.native_script_baseline import edit_project
+            report.update(actor="script", scenario=scenario, script_steps=[],
+                          script_action_started_at_ns=time.time_ns())
+            measured_start = time.monotonic_ns()
             try:
-                socket.create_connection(("127.0.0.1", 18789), timeout=1).close()
-                break
-            except OSError:
-                time.sleep(1)
+                edit_project(ui, scenario, binding.hwnd)
+                report["script_steps"].append("edit")
+                ui.save_project()
+                report["script_steps"].append("save")
+            finally:
+                report["script_action_elapsed_ns"] = time.monotonic_ns() - measured_start
+                report["script_action_finished_at_ns"] = time.time_ns()
+            stopped = stop_input()
         else:
-            raise TimeoutError("native_server_not_ready")
-        if scenario == "authority_probe":
-            from harness.native_authority_probe import run_probe
-            atomic_json(root / "authority_probe.json", run_probe(root, run_id, ui.app.pid, ui.app.hwnd))
-            stop_input()
-            ui.close()
-            report["app_closed"] = not ui.app.alive()
-            report["diagnostic_only"] = True
-            return 0 if report["app_closed"] else 1
-        atomic_json(root / "ready.json", {"ready": True, "run_id": run_id,
-            "window": window, "output_path": str(output), "contract_sha256": report["contract_sha256"]})
-        while not (root / "host_done.json").exists():
-            guard()
-            if server.poll()[0] is not None:
-                raise RuntimeError("native_server_died")
-            time.sleep(.1)
-        stopped = stop_input()
-        host = json.loads((root / "host_done.json").read_text())
-        if not host.get("native_ok") or host.get("run_id") != run_id:
-            raise RuntimeError("native_actor_failed")
+            (root / "token").write_text(secrets.token_hex(32), encoding="ascii")
+            (root / "config.toml").write_text("", encoding="utf-8")
+            env = os.environ.copy()
+            env.update(POSTHOG_API_KEY="", ANONYMIZED_TELEMETRY="false",
+                       WINDOWS_MCP_AUTH_KEY=(root / "token").read_text(), PYTHONIOENCODING="utf-8")
+            server = OwnedJobProcess.start([r"C:\coil\tools\windows-mcp-0.8.9\python.exe", "-B",
+                str(REPO / "tools/native_save_server.py"), "--run-id", run_id],
+                cwd=REPO, env=env, log_path=root / "server.log")
+            for _ in range(60):
+                guard()
+                if server.poll()[0] is not None:
+                    raise RuntimeError("native_server_exited")
+                try:
+                    socket.create_connection(("127.0.0.1", 18789), timeout=1).close()
+                    break
+                except OSError:
+                    time.sleep(1)
+            else:
+                raise TimeoutError("native_server_not_ready")
+            if scenario == "authority_probe":
+                from harness.native_authority_probe import run_probe
+                atomic_json(root / "authority_probe.json", run_probe(root, run_id, ui.app.pid, ui.app.hwnd))
+                stop_input()
+                ui.close()
+                report["app_closed"] = not ui.app.alive()
+                report["diagnostic_only"] = True
+                return 0 if report["app_closed"] else 1
+            atomic_json(root / "ready.json", {"ready": True, "run_id": run_id,
+                "window": window, "output_path": str(output), "contract_sha256": report["contract_sha256"]})
+            while not (root / "host_done.json").exists():
+                guard()
+                if server.poll()[0] is not None:
+                    raise RuntimeError("native_server_died")
+                time.sleep(.1)
+            stopped = stop_input()
+            host = json.loads((root / "host_done.json").read_text())
+            if not host.get("native_ok") or host.get("run_id") != run_id:
+                raise RuntimeError("native_actor_failed")
         _, capture = ui.identity()
         (root / "agent_final.png").write_bytes(_encode_capture(capture)[1])
         old = ui.app
@@ -213,7 +228,7 @@ def worker(run_id, actor="codex", scenario="base"):
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--run-id", required=True)
-    p.add_argument("--actor", choices=("codex", "zcode"), default="codex")
+    p.add_argument("--actor", choices=("codex", "zcode", "script"), default="codex")
     from harness.native_matrix import SCENARIOS
     p.add_argument("--scenario", choices=tuple(SCENARIOS), default="base")
     a = p.parse_args()

@@ -1,7 +1,7 @@
 """Pure bounded recovery protocol. Guest authority owns the persistent stop latch.
 
-Only a proven owned numeric Type rejected before dispatch for not being Edit is
-recoverable. No retries, next-action planning, GUI calls or file writes here.
+Recovery is limited to a proven owned input refused before dispatch. No retries,
+next-action planning, GUI calls or file writes here.
 """
 import hashlib
 import json
@@ -9,6 +9,7 @@ import re
 
 PROTOCOL = "native-recovery-1"
 MAX_RECOVERIES = 2
+UIA_REFRESH_ERROR = "native_uia_refresh_required"
 INPUT_TOOLS = frozenset({"Click", "Type", "Shortcut"})
 OBSERVATION_TOOLS = frozenset({"Snapshot", "Screenshot"})
 TOOLS = INPUT_TOOLS | OBSERVATION_TOOLS | {"Wait", "ControlStatus"}
@@ -41,6 +42,21 @@ def _owned_numeric(row):
             and 1 <= len(window["target_class"]) <= 256 and window["target_class"] != "Edit")
 
 
+def _owned_uia_refresh(row):
+    args, window = row.get("arguments"), row.get("window")
+    if row["tool"] not in {"Click", "Type"} or type(args) is not dict or type(window) is not dict:
+        return False
+    loc = args.get("loc")
+    if (type(loc) is not list or len(loc) != 2 or any(type(x) is not int for x in loc)
+            or not (0 <= loc[0] < 1920 and 0 <= loc[1] < 1080)):
+        return False
+    pids = [window.get(key) for key in ("app_pid", "foreground_pid", "target_pid")]
+    return (all(_positive(pid) for pid in pids) and len(set(pids)) == 1
+            and all(_positive(window.get(key)) for key in ("foreground_hwnd", "target_hwnd"))
+            and type(window.get("target_class")) is str and 1 <= len(window["target_class"]) <= 256
+            and window.get("refresh_reason") in ("stale_crop", "uia_target_available"))
+
+
 def _facts(row):
     _check(type(row) is dict and _positive(row.get("seq")), "recovery_rejection_schema")
     _check(type(row.get("tool")) is str and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]{0,63}", row["tool"]),
@@ -61,10 +77,11 @@ def _facts(row):
 
 
 class RecoveryGate:
-    def __init__(self, run_id, *, enabled=False):
+    def __init__(self, run_id, *, enabled=False, uia_refresh_enabled=False):
         _check(type(run_id) is str and re.fullmatch(r"[0-9a-f]{32}", run_id), "recovery_run_id")
         _check(type(enabled) is bool, "recovery_enabled_type")
-        self.run_id, self.enabled = run_id, enabled
+        _check(type(uia_refresh_enabled) is bool and not (enabled and uia_refresh_enabled), "recovery_mode_conflict")
+        self.run_id, self.enabled, self.uia_refresh_enabled = run_id, enabled, uia_refresh_enabled
         self.recoveries, self.pending_seq, self.fatal = 0, None, False
         self.last_seq = 0
 
@@ -78,10 +95,11 @@ class RecoveryGate:
             self.fatal = True
             raise
         self.last_seq = row["seq"]
-        allowed = (not self.fatal and self.pending_seq is None and self.enabled
-                   and self.recoveries < MAX_RECOVERIES and row["tool"] == "Type"
-                   and row["error_code"] == "native_type_requires_owned_edit"
-                   and row["dispatched"] is False and _owned_numeric(row))
+        eligible = (self.enabled and row["tool"] == "Type"
+                    and row["error_code"] == "native_type_requires_owned_edit" and _owned_numeric(row))
+        eligible_uia = (self.uia_refresh_enabled and row["error_code"] == UIA_REFRESH_ERROR and _owned_uia_refresh(row))
+        allowed = (not self.fatal and self.pending_seq is None and self.recoveries < MAX_RECOVERIES
+                   and row["dispatched"] is False and (eligible or eligible_uia))
         if allowed:
             self.recoveries += 1
             self.pending_seq = row["seq"]
@@ -113,14 +131,14 @@ class RecoveryGate:
                 "first_attempt_success": self.recoveries == 0, "recovery_complete": True}
 
 
-def audit_trace(trace, run_id, *, enabled=False):
+def audit_trace(trace, run_id, *, enabled=False, uia_refresh_enabled=False):
     """Rebuild decisions from trusted guest rows, never actor-declared success.
 
     New protocol rows require seq/tool/error/dispatched; denied rows additionally
     require error_code and the exact recovery receipt. No legacy silent upgrade.
     """
     _check(type(trace) is list and 1 <= len(trace) <= 40, "recovery_trace_budget")
-    gate = RecoveryGate(run_id, enabled=enabled)
+    gate = RecoveryGate(run_id, enabled=enabled, uia_refresh_enabled=uia_refresh_enabled)
     previous = 0
     for row in trace:
         _check(type(row) is dict and row.get("run_id") == run_id

@@ -16,7 +16,7 @@ from decimal import DecimalException
 from .agent_protocol import LAYER_FIXTURE_SHA256, valid_run_id
 from .native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
 from .native_matrix import (CANVAS_REPLACE_SCENARIO, CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS,
-    GENERALIZATION, UIA_HYBRID_SCENARIOS, UIA_SAVE_SCENARIO)
+    GENERALIZATION, SCRIPT_COMPARISON_SCENARIOS, UIA_CANVAS_SCENARIO, UIA_HYBRID_SCENARIOS, UIA_SAVE_SCENARIO)
 from .run_contract import validate_contract
 from .run_verdict import CheckResult, contract_digest
 from .runtime_ports import VerificationOutcome
@@ -45,8 +45,18 @@ class NativeSaveHandle(_ScriptHandle):
 def native_contract(actor="codex", scenario="base"):
     from .native_matrix import scenario_spec
     scenario_spec(actor, scenario)
-    if actor not in {"codex", "zcode"}:
-        raise ValueError("native_actor_not_registered")
+    if actor == "script":
+        data = native_contract("zcode", scenario).to_dict()
+        data["executor"] = "script"
+        data["contract_version"] = "native-script-comparison-1-" + scenario
+        data["steps"] = [
+            {"id": "setup", "goal": "Use the same trusted initial state as the corresponding ZCode scenario."},
+            {"id": "goal", "goal": ("Set regular layer height to 0.24 mm, preserving the 0.40 mm initial layer."
+                                    if scenario != UIA_CANVAS_SCENARIO else "Move the cube exactly +10 mm in global X.")},
+            {"id": "proof", "goal": "GUI save, freeze saved bytes, reopen with an independent profile and GUI reslice/export."},
+            {"id": "close", "goal": "Use the shared business verifier and confirm owned Job is empty."},
+        ]
+        return validate_contract(data)
     data = {"schema_version": 1, "case_id": "m3g_export_3mf",
         "contract_version": "native-save-1" if actor == "codex" else "native-save-zcode-1", "executor": "agent_mcp",
         "required_checks": ["path", "business"], "steps": [
@@ -97,15 +107,15 @@ def native_contract(actor="codex", scenario="base"):
                 data["contract_version"] = "native-diagnostic-recovery-zcode-2-commit"
                 data["steps"][1]["goal"] += " Replace and commit the native Edit with clear=true and press_enter=true in the same Type."
         if scenario in UIA_HYBRID_SCENARIOS:
-            data["contract_version"] = "native-uia-hybrid-zcode-1-" + scenario
-            data["steps"].insert(1, {"id": "uia_authority", "goal": "Use owned UIA target properties and readback for native controls. Use a crop only for drawn wx or ImGui surfaces. Require the UIA Save As trace and independent saved-file verification."})
+            data["contract_version"] = "native-uia-hybrid-zcode-2-" + scenario
+            data["steps"].insert(1, {"id": "uia_authority", "goal": "Use owned UIA target properties and readback for native controls. Crop only the named wx or ImGui regions. Allow up to two proven owned, pre-dispatch input refusals followed by fresh observation. Require the UIA Save As trace and independent saved-file verification."})
     return validate_contract(data)
 
 
 def native_spec(digest):
     from .native_matrix import SCENARIOS
-    for actor in ("codex", "zcode"):
-        for scenario in (("base",) if actor == "codex" else SCENARIOS):
+    for actor, scenarios in (("codex", ("base",)), ("zcode", SCENARIOS), ("script", SCRIPT_COMPARISON_SCENARIOS)):
+        for scenario in scenarios:
             if digest == contract_digest(native_contract(actor, scenario)):
                 return actor, scenario
     raise ValueError("native_contract_digest")
@@ -120,6 +130,8 @@ class NativeSaveExecutor:
 
     def __init__(self, digest):
         self.actor, self.scenario = native_spec(digest)
+        if self.actor == "script":
+            self.kind = "script"
         from .native_pilots import require_pilot_ready
         require_pilot_ready(self.scenario)
         self.contract_sha256 = digest
@@ -142,6 +154,58 @@ class NativeSaveExecutor:
         return NativeSaveHandle(process, context, started)
 
 
+def verify_layer_saved(frozen, fixture, gcode, *, cancelled):
+    from decimal import Decimal
+    from .agent_layer_verify import analyze_gcode
+    from .agent_verify import _require
+    from .project_3mf import inspect_project
+
+    inspect_project(frozen, fixture, cancelled=cancelled)
+    layers = analyze_gcode(gcode, layer_height="0.24", cancelled=cancelled)
+    _require(layers["layer_count"] == 112 and Decimal(layers["last_z"]) == Decimal("27.04"), "native_layer_schedule")
+    return "Saved .24/initial .4, unchanged cube, reopened actual 112-layer G-code"
+
+
+def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, cancelled):
+    from .agent_verify import _require
+    from .native_matrix import scenario_spec
+    from .native_pilots import verify_business
+    from .script_verify import _json
+
+    receipt = _json(read("native_worker.json", 65536))
+    scope = _json(read("scope.json", 65536))
+    setup = _json(read("setup.json", 65536))
+    digest = contract_digest(snapshot.contract)
+    _require(all(evidence.get("run_id") == snapshot.run_id and evidence.get("actor") == "script"
+                 and evidence.get("scenario") == scenario and evidence.get("contract_sha256") == digest
+                 for evidence in (receipt, scope)), "native_script_identity")
+    _require(receipt.get("error") is None and receipt.get("app_closed") is True
+             and receipt.get("script_steps") == ["edit", "save"], "native_script_actions")
+    phases = [snapshot.manifest["started_at_ns"], setup["finished_at_ns"],
+              receipt["script_action_started_at_ns"], receipt["script_action_finished_at_ns"],
+              proof["input_stopped_at_ns"]]
+    _require(all(type(x) is int for x in phases) and phases == sorted(phases)
+             and type(receipt["script_action_elapsed_ns"]) is int and receipt["script_action_elapsed_ns"] > 0,
+             "native_script_time")
+    _require(setup.get("run_id") == snapshot.run_id and setup.get("scenario") == scenario
+             and setup.get("app_pid") == scope.get("app_pid") == proof["old_pid"]
+             and scope.get("output_path") == proof["output_path"]
+             and setup.get("tab_clicked") == scenario_spec("script", scenario)[0]
+             and setup.get("initial_sha256") == hashlib.sha256(read("initial.png", 16*1024*1024)).hexdigest(),
+             "native_script_initial_setup")
+    gcode = read("exports/0001.gcode", 64*1024*1024)
+    _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
+    if scenario == UIA_CANVAS_SCENARIO:
+        detail = json.dumps(verify_business(scenario, frozen, fixture, gcode, cancelled=cancelled), sort_keys=True)
+    else:
+        detail = verify_layer_saved(frozen, fixture, gcode, cancelled=cancelled)
+    refs = ("artifact:proof.json", "artifact:process.json", "artifact:native_worker.json",
+            "artifact:proof/0001.3mf:sha256:"+proof["project_sha256"],
+            "artifact:exports/0001.gcode:sha256:"+proof["gcode_sha256"])
+    return VerificationOutcome({"path": CheckResult("pass", "Script GUI save and fresh-profile reslice", refs),
+        "business": CheckResult("pass", detail, refs)}, True, True)
+
+
 def verify_saved(snapshot, *, cancelled=lambda: False):
     from .script_verify import _read, _json, _InvalidEvidence
     from .agent_verify import _require
@@ -156,19 +220,10 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
         actor, scenario = native_spec(contract_digest(snapshot.contract))
         read = lambda n, limit: _read(snapshot.artifact_dir, n, snapshot.manifest["started_at_ns"], limit, cancelled)
         process, proof = _json(read("process.json", 65536)), _json(read("proof.json", 65536))
-        host = _json(read("host_done.json", 65536))
         _require(all(type(process[k]) is int for k in ("exit_code", "active_processes"))
                  and process["run_id"] == snapshot.run_id and process["exit_code"] == 0
                  and process["active_processes"] == 0 and process["job_assigned"] is True
                  and process["forced_termination"] is False, "native_process_cleanup")
-        _require(type(host["host_active_processes"]) is int and type(host["tool_count"]) is int
-                 and host["run_id"] == snapshot.run_id and host["native_ok"] is True
-                 and host["host_active_processes"] == 0 and host["host_forced"] is False, "native_host_receipt")
-        if actor == "zcode":
-            _require(host.get("actor") == "zcode" and host.get("provider_id") == "new-provider"
-                     and host.get("model_id") == "glm-5.3-flash"
-                     and host.get("guard_checked") is True and host.get("sources_unchanged") is True
-                     and host.get("toolset_verified") is True, "native_zcode_identity_or_gate")
         _require(all(type(proof[k]) is int for k in ("mcp_active_processes", "old_exit_code", "reopened_exit_code", "old_pid"))
                  and proof["old_pid"] > 0 and proof["sut_sha256"] == NATIVE_SUT_SHA256
                  and proof["run_id"] == snapshot.run_id and proof["contract_sha256"] == contract_digest(snapshot.contract)
@@ -182,10 +237,24 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
         _require(hashlib.sha256(fixture).hexdigest() == LAYER_FIXTURE_SHA256, "native_fixture")
         digest = hashlib.sha256(frozen).hexdigest()
         _require(saved == frozen and digest == proof["project_sha256"], "native_frozen_file_binding")
+        if actor == "script":
+            return verify_script_business(snapshot, scenario, read, proof, fixture, frozen, cancelled)
+        host = _json(read("host_done.json", 65536))
+        _require(type(host["host_active_processes"]) is int and type(host["tool_count"]) is int
+                 and host["run_id"] == snapshot.run_id and host["native_ok"] is True
+                 and host["host_active_processes"] == 0 and host["host_forced"] is False, "native_host_receipt")
+        if actor == "zcode":
+            _require(host.get("actor") == "zcode" and host.get("provider_id") == "new-provider"
+                     and host.get("model_id") == "glm-5.3-flash"
+                     and host.get("guard_checked") is True and host.get("sources_unchanged") is True
+                     and host.get("toolset_verified") is True, "native_zcode_identity_or_gate")
         trace = [_json(line) for line in read("native_trace.ndjson", 256000).splitlines() if line]
         _require(1 <= len(trace) <= 40 and len(trace) == host["tool_count"], "native_trace_count")
         _require(all(x["finished_at_ns"] <= times[0] for x in trace), "native_trace_late_input")
-        if scenario in CANVAS_SCENARIOS | set(GENERALIZATION) | {"recovery_owned_edit"}:
+        if scenario in UIA_HYBRID_SCENARIOS:
+            from .native_recovery import audit_trace
+            recovery_summary = audit_trace(trace, snapshot.run_id, uia_refresh_enabled=True)
+        elif scenario in CANVAS_SCENARIOS | set(GENERALIZATION) | {"recovery_owned_edit"}:
             from .native_recovery import audit_trace
             recovery_summary = audit_trace(trace, snapshot.run_id, enabled=True)
         elif scenario in DIAGNOSTIC_SCENARIOS:
@@ -238,7 +307,8 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
                      "native_uia_host_contract")
             uia_summary = verify_hybrid_trace(trace, run_id=snapshot.run_id, app_pid=proof["old_pid"],
                 main_hwnd=scope["hwnd"], output_path=proof["output_path"], scenario=scenario,
-                prepared_dialog=setup.get("dialog_hwnd") if disturbance == "save_dialog" else None)
+                prepared_dialog=setup.get("dialog_hwnd") if disturbance == "save_dialog" else None,
+                allow_refresh=True)
         gcode = read("exports/0001.gcode", 64*1024*1024)
         _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
         from .native_pilots import PILOTS, TRIALS, verify_business
@@ -260,10 +330,7 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
             business = verify_business(scenario, frozen, fixture, gcode, cancelled=cancelled)
             detail = snapshot.contract.case_id+": "+json.dumps(business, sort_keys=True, ensure_ascii=True)
         else:
-            project = inspect_project(frozen, fixture, cancelled=cancelled)
-            layers = analyze_gcode(gcode, layer_height="0.24", cancelled=cancelled)
-            _require(layers["layer_count"] == 112 and Decimal(layers["last_z"]) == Decimal("27.04"), "native_layer_schedule")
-            detail = "Saved .24/initial .4, unchanged cube, reopened actual 112-layer G-code"
+            detail = verify_layer_saved(frozen, fixture, gcode, cancelled=cancelled)
         refs = ("artifact:proof.json", "artifact:process.json", "artifact:native_trace.ndjson",
                 "artifact:proof/0001.3mf:sha256:"+digest, "artifact:exports/0001.gcode:sha256:"+proof["gcode_sha256"])
         if recovery_summary is not None:

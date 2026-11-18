@@ -65,7 +65,8 @@ def main():
         def __init__(self):
             self.lock = asyncio.Lock()
             self.controller = AuthorityController(guard, root, args.run_id,
-                recovery_enabled=recovery_enabled, diagnostic_enabled=scope["scenario"] in DIAGNOSTIC_SCENARIOS,
+                recovery_enabled=recovery_enabled, uia_refresh_enabled=hybrid,
+                diagnostic_enabled=scope["scenario"] in DIAGNOSTIC_SCENARIOS,
                 canvas_dispatch=canvas_dispatch if scope["scenario"] in CANVAS_REPLACE_SCENARIOS else None,
                 record_edit_frames=scope["scenario"] in SAVE_CLEAR_SCENARIOS)
 
@@ -79,12 +80,19 @@ def main():
                         value = json.dumps(guard.perform(name, arguments), ensure_ascii=False)
                         return ToolResult(content=[TextContent(type="text", text=value)],
                                           structured_content={"result": value})
-                    payload = await call_next(context)
-                    if hybrid and name == "Screenshot" and not payload.is_error:
-                        if sum(item.type == "image" for item in payload.content) != 1:
-                            raise ValueError("native_uia_crop_missing")
-                        guard.complete_view(arguments)
-                    return payload
+                    if not hybrid or name != "Screenshot":
+                        return await call_next(context)
+                    region = guard.capture_region()
+                    message = context.message.model_copy(update={"arguments": {"region": region}})
+                    payload = await call_next(context.copy(message=message))
+                    if payload.is_error:
+                        return payload
+                    if sum(item.type == "image" for item in payload.content) != 1:
+                        raise ValueError("native_uia_crop_missing")
+                    guard.complete_view()
+                    structured = dict(payload.structured_content or {}, crop_region=region,
+                                      crop_region_name=guard.last_window["visual_fallback"])
+                    return payload.model_copy(update={"structured_content": structured})
 
                 payload, receipt = await self.controller.call(name, arguments, dispatch)
                 if receipt["decision"] == "completed":
@@ -95,8 +103,13 @@ def main():
                     except Exception:
                         self.controller.abort("native_result_envelope_failed")
                         raise
-                explanation = ("Input was NOT dispatched. Observe the current screen before correcting the numeric field."
-                    if receipt["decision"] == "recoverable" else "Authority revoked. Stop this run.")
+                explanation = "Authority revoked. Stop this run."
+                if receipt["decision"] == "recoverable":
+                    if receipt.get("error_code") == "native_uia_refresh_required":
+                        explanation = ("Input was not dispatched. Refresh with Snapshot. If the intended control is drawn, "
+                                       "request its named Screenshot again before clicking.")
+                    else:
+                        explanation = "Input was not dispatched. Observe the current screen before correcting the numeric field."
                 return ToolResult(content=[TextContent(type="text", text=explanation)],
                                   structured_content={"authority": receipt}, is_error=True)
 

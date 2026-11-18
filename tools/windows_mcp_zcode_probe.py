@@ -163,10 +163,9 @@ def main(argv=None):
                       "Start with Snapshot. For a native control, copy its exact target object from Snapshot. "
                       "If a wx label is drawn and missing from the tree, use a local crop to match the label to its Edit bounds. "
                       "Use Type with that Edit's target object to change the value; no coordinate click is needed for a listed Edit. "
-                      "Use Screenshot with region=[left,top,right,bottom] contained in one listed visual_regions box only "
-                      "when the needed drawn wx or ImGui control is absent from the UIA list. The returned image starts at "
-                      "[left,top]; add that offset once to image-relative pixels. Before Click, verify the final loc lies inside "
-                      "the most recent crop: left <= x < right and top <= y < bottom. Send loc as a JSON integer array. "
+                      "Use Screenshot with region_name='wx_sidebar' or region_name='imgui_canvas' for the relevant drawn UI. "
+                      "Use the returned crop_region origin once to convert image-relative pixels to a desktop loc integer array. "
+                      "A UIA refresh refusal means no input was dispatched. Start again with Snapshot and use a new crop if needed. "
                       "For an ImGui number, Click once and Type at the same "
                       "location within 30 seconds with press_enter=true, then inspect the new value with a crop. "
                       "If work starts with a Save As blocking unfinished edits, invoke its available Cancel target and Snapshot again. "
@@ -174,9 +173,8 @@ def main(argv=None):
                       "read its returned value, Click the Save button target and Snapshot to confirm closure. "
                       "Finish with ControlStatus(release=true). Preserve unrelated settings. Independent verification reopens and slices.")
             if args.scenario in CANVAS_SCENARIOS:
-                prompt += (" For a scene-editing goal, start by observing the listed imgui_canvas rectangle as one crop. "
-                           "When selection changes, the gizmo and scene can redraw. Observe that same canvas region again "
-                           "until you see the target controls, then use a smaller crop if you need more detail.")
+                prompt += (" For a scene-editing goal, start by observing the named imgui_canvas crop. "
+                           "After changing selection or opening a gizmo, observe the named canvas again before choosing a new location.")
         (root/"prompt.txt").write_text(prompt, encoding="utf-8")
         bundle = Path(r"C:\Program Files\ZCode\resources\glm\zcode.cjs")
         report["bundle_sha256"] = hashlib.sha256(bundle.read_bytes()).hexdigest()
@@ -184,7 +182,8 @@ def main(argv=None):
                 "bundle": str(bundle), "python": sys.executable,
                 "bridge": str(REPO/"runner/windows_mcp_bridge.py"), "prompt": prompt,
                 "authority_protocol": "native-authority-1", "authority_log": str(root/"authority.ndjson"),
-                "recovery_enabled": args.scenario in RECOVERY_SCENARIOS, "scenario": args.scenario,
+                "recovery_enabled": args.scenario in RECOVERY_SCENARIOS,
+                "uia_refresh_enabled": args.scenario in UIA_HYBRID_SCENARIOS, "scenario": args.scenario,
                 "tools": sorted(native_tools(args.scenario))}
         (root/"spec.json").write_text(json.dumps(spec), encoding="utf-8")
         env, report["proxy_source"] = _child_environment()

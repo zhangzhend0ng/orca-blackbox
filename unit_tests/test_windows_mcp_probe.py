@@ -1,6 +1,9 @@
 """Probe transport boundaries, independent of Windows/UI/network."""
-import pytest
+import io
 import json
+from types import SimpleNamespace
+
+import pytest
 
 from runner.windows_mcp_bridge import response_json, validate_request
 from tools.windows_mcp_codex_probe import native_calls
@@ -42,3 +45,33 @@ def test_native_tool_result_is_audited_independently_of_cli_exit(tmp_path, statu
     calls = native_calls(log)
     assert calls[0]["status"] == status
     assert calls[0]["error"] == error
+
+
+def test_uia_bridge_does_not_relay_queued_input_after_guest_fatal(tmp_path, monkeypatch, capsys):
+    from runner import windows_mcp_bridge as bridge
+
+    run_id = "a" * 32
+    requests = [dict(jsonrpc="2.0", id=i, method="tools/call", params=dict(name=tool, arguments={}))
+                for i, tool in ((1, "Click"), (2, "Type"))]
+    sent = []
+
+    def relay(spec):
+        request = json.loads(spec["body"])
+        sent.append(request)
+        authority = dict(protocol="native-authority-1", run_id=run_id, seq=1,
+                         tool="Click", decision="fatal", dispatched=False)
+        return dict(status=200, body=json.dumps(dict(jsonrpc="2.0", id=request["id"],
+                    result=dict(isError=True, structuredContent=dict(authority=authority)))))
+
+    log = tmp_path / "authority.ndjson"
+    monkeypatch.setattr(bridge, "GuestHTTP", lambda *args, **kwargs: SimpleNamespace(remote=relay))
+    monkeypatch.setattr(bridge.sys, "argv", ["windows_mcp_bridge", "--run-id", run_id, "--goal-save",
+                                             "--scenario", "uia_hybrid_canvas", "--authority-log", str(log)])
+    lines = "".join(json.dumps(request) + "\n" for request in requests).encode()
+    monkeypatch.setattr(bridge.sys, "stdin", SimpleNamespace(buffer=io.BytesIO(lines)))
+
+    bridge.main()
+
+    assert sent == requests[:1]
+    assert json.loads(capsys.readouterr().out)["id"] == 1
+    assert json.loads(log.read_text())["authority"]["decision"] == "fatal"

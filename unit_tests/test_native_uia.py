@@ -1,5 +1,7 @@
 """Pure UIA contract and evidence checks. No desktop calls."""
 from copy import deepcopy
+import sys
+import time
 from types import SimpleNamespace
 
 import pytest
@@ -111,6 +113,9 @@ def test_hybrid_schema_exposes_typed_properties_for_model_projection():
     jsonschema.validate({"target": SAVE}, schemas["Click"])
     jsonschema.validate({"target": EDIT, "text": OUTPUT}, schemas["Type"])
     jsonschema.validate({"loc": [120, 480], "text": "145.5", "press_enter": True}, schemas["Type"])
+    jsonschema.validate({"region_name": "imgui_canvas"}, schemas["Screenshot"])
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate({"region_name": "desktop"}, schemas["Screenshot"])
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate({"loc": "[120,480]"}, schemas["Click"])
 
@@ -122,10 +127,72 @@ def test_drawn_canvas_click_uses_the_owned_input_guard(tmp_path, monkeypatch):
     api = SimpleNamespace(_window_pid=lambda _: 4, window_title=lambda _: "Orca",
                           window_from_screen_point=lambda *_: 21, window_class=lambda _: "wxGLCanvas")
     monkeypatch.setattr(guard, "owned_foreground", lambda: (api, 20))
-    monkeypatch.setattr(guard, "_visual_route", lambda *_: ("imgui_canvas", [100, 150, 900, 800]))
+    box = [100, 150, 900, 800]
+    monkeypatch.setattr(guard, "_visual_route", lambda *_: ("imgui_canvas", box, box, 21))
     proof = guard.check("Click", {"loc": [120, 480]})
     assert proof["target_hwnd"] == 21 and proof["route"] == "local_visual"
     assert proof["visual_fallback"] == "imgui_canvas"
+
+
+def test_named_crop_resolves_live_geometry_after_layout_changes(tmp_path, monkeypatch):
+    scope = {"app_pid": 4, "hwnd": 20, "output_path": OUTPUT, "scenario": UIA_CANVAS_SCENARIO,
+             "canvas_binding_json": '{"hwnd":21}'}
+    guard = UiaHybridGuard(scope, tmp_path, None, None)
+    api = SimpleNamespace(_window_pid=lambda _: 4, window_title=lambda _: "Orca")
+    monkeypatch.setattr(guard, "owned_foreground", lambda: (api, 20))
+    old, current = [400, 70, 1920, 1032], [460, 70, 1920, 1032]
+    guard.visual_regions = {"imgui_canvas": old}
+    guard.last_crop = ("imgui_canvas", old, old, time.monotonic_ns())
+    guard._last_click = [500, 250]
+    monkeypatch.setattr(guard, "_regions", lambda _: {"imgui_canvas": current})
+    with pytest.raises(ValueError, match="native_uia_visual_region_not_observed"):
+        guard.check("Screenshot", {"region": old})
+    proof = guard.check("Screenshot", {"region_name": "imgui_canvas"})
+    assert proof["visual_region"] == current and guard.capture_region() == current
+    guard.complete_view()
+    assert guard._last_click is None
+
+
+def test_stale_crop_has_owned_predispatch_facts_and_foreign_target_stops(tmp_path, monkeypatch):
+    scope = {"app_pid": 4, "hwnd": 20, "output_path": OUTPUT, "scenario": UIA_CANVAS_SCENARIO,
+             "canvas_binding_json": '{"hwnd":21}'}
+    guard = UiaHybridGuard(scope, tmp_path, None, lambda *_: None)
+    monkeypatch.setitem(sys.modules, "win32gui", SimpleNamespace(IsChild=lambda p, c: p == 20 and c == 21))
+    api = SimpleNamespace(_window_pid=lambda _: 4, window_title=lambda _: "Orca",
+                          window_from_screen_point=lambda *_: 21, window_class=lambda _: "wxGLCanvas")
+    monkeypatch.setattr(guard, "owned_foreground", lambda: (api, 20))
+    monkeypatch.setattr(guard, "_regions", lambda _: {"imgui_canvas": [400, 70, 1920, 1032]})
+    guard._last_click = [500, 250]
+    with pytest.raises(ValueError, match="native_uia_refresh_required"):
+        guard.check("Type", {"loc": [500, 250], "text": "145.5", "press_enter": True})
+    assert guard.last_window["refresh_reason"] == "stale_crop"
+    assert guard.last_window["target_hwnd"] == 21 and guard.last_window["target_pid"] == 4
+    assert guard._last_click is None
+    api._window_pid = lambda hwnd: 4 if hwnd == 20 else 5
+    with pytest.raises(ValueError, match="native_uia_drawn_target_not_owned"):
+        guard.check("Click", {"loc": [500, 250]})
+    assert "refresh_reason" not in guard.last_window
+
+
+def test_owned_popup_is_read_only_and_requires_main_snapshot(tmp_path, monkeypatch):
+    scope = {"app_pid": 4, "hwnd": 20, "output_path": OUTPUT, "scenario": UIA_CANVAS_SCENARIO,
+             "canvas_binding_json": '{"hwnd":21}'}
+    guard = UiaHybridGuard(scope, tmp_path, None, None)
+    monkeypatch.setitem(sys.modules, "win32gui", SimpleNamespace(
+        GetAncestor=lambda hwnd, flag: 20 if hwnd == 30 and flag == 3 else 55,
+        IsWindowVisible=lambda _: True))
+    api = SimpleNamespace(_window_pid=lambda _: 4, window_title=lambda _: "Popup", window_class=lambda _: "wxWindow")
+    monkeypatch.setattr(guard, "owned_foreground", lambda: (api, 30))
+    assert guard.check("Snapshot", {})["route"] == "uia_popup"
+    assert guard.perform("Snapshot", {})["popup"]["root_owner_hwnd"] == 20
+    with pytest.raises(ValueError, match="native_uia_main_window_required"):
+        guard.check("Click", {"loc": [500, 250]})
+    monkeypatch.setattr(guard, "owned_foreground", lambda: (api, 20))
+    with pytest.raises(ValueError, match="native_uia_main_observation_after_popup"):
+        guard.check("Screenshot", {"region_name": "imgui_canvas"})
+    monkeypatch.setattr(guard, "owned_foreground", lambda: (api, 31))
+    with pytest.raises(ValueError, match="native_uia_popup_owner_unverified"):
+        guard.check("Snapshot", {})
 
 
 @pytest.mark.parametrize("box", [[2, 3, 40, 60], [0, 0, 1920, 1080]])
