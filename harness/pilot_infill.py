@@ -18,7 +18,7 @@ GOAL = ("Set Sparse infill density to 30% in the loaded cube project. Preserve i
         "Save the whole project at the assigned 3MF path.")
 
 
-def _sparse_extrusion_moves(raw, cancelled):
+def _feature_extrusion_moves(raw, cancelled, feature):
     """Called only after analyze_gcode validates this exact byte stream.
 
     Feature labels classify the region; actual coordinates and positive E
@@ -46,7 +46,7 @@ def _sparse_extrusion_moves(raw, cancelled):
             active, sparse = label.group(1) == "printing", False
             continue
         if line.startswith(";TYPE:"):
-            sparse = line == ";TYPE:Sparse infill"
+            sparse = line == ";TYPE:" + feature
             continue
         words = line.split(";", 1)[0].split()
         if not words:
@@ -86,6 +86,11 @@ def _sparse_extrusion_moves(raw, cancelled):
             moved = any(a in values and pos[a] != old[a] for a in "XY")
             if active and sparse and known and moved and delta_e > 0:
                 moves += 1
+    return moves
+
+
+def _sparse_extrusion_moves(raw, cancelled):
+    moves = _feature_extrusion_moves(raw, cancelled, "Sparse infill")
     _require(moves > 0, "infill_missing_sparse_xy_extrusion")
     return moves
 

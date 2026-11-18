@@ -8,7 +8,7 @@ from .script_verify import _InvalidEvidence, _unique_pairs
 from .canvas_approval import resolve_approval
 from .canvas_input import bind_canvas, binding_to_json, load_canvas_binding, decide_type
 from .native_save_policy import validate_input
-from .native_matrix import CANVAS_REPLACE_SCENARIO, CANVAS_SCENARIOS
+from .native_matrix import CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS
 
 
 def _json(raw):
@@ -45,7 +45,7 @@ def _verify(trace, scope, setup, run_id, contract_sha256, read_artifact):
     _require(type(scope) is dict and type(setup) is dict and scope.get("scenario") in CANVAS_SCENARIOS,
              "canvas_trial_scope")
     scenario = scope["scenario"]
-    replace = scenario == CANVAS_REPLACE_SCENARIO
+    replace = scenario in CANVAS_REPLACE_SCENARIOS
     for data in (scope, setup):
         _require(data.get("run_id") == run_id and data.get("contract_sha256") == contract_sha256,
                  "canvas_run_contract_mismatch")

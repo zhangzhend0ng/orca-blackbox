@@ -15,7 +15,7 @@ from decimal import DecimalException
 
 from .agent_protocol import LAYER_FIXTURE_SHA256, valid_run_id
 from .native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
-from .native_matrix import CANVAS_REPLACE_SCENARIO, CANVAS_SCENARIOS
+from .native_matrix import CANVAS_REPLACE_SCENARIO, CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, GENERALIZATION
 from .run_contract import validate_contract
 from .run_verdict import CheckResult, contract_digest
 from .runtime_ports import VerificationOutcome
@@ -67,8 +67,10 @@ def native_contract(actor="codex", scenario="base"):
             if scenario == "canvas_trial":
                 data["contract_version"] = "native-canvas-trial-zcode-1-observed-wxglcanvas-v1"
                 data["steps"].insert(1, {"id": "canvas_authority", "goal": "Explicit observed-wxglcanvas-v1 numeric-only capability trial; fixed diagnostic/SUT hashes; clear=false/caret=idle/press_enter=false; prior successful same-loc Click. PFD and internal field activation unproven; at most two proven owned numeric pre-dispatch refusals with fresh observation."})
-            elif scenario == CANVAS_REPLACE_SCENARIO:
+            elif scenario in CANVAS_REPLACE_SCENARIOS:
                 data["contract_version"] = "native-canvas-replace-zcode-1"
+                if scenario != CANVAS_REPLACE_SCENARIO:
+                    data["contract_version"] += "-" + scenario
                 data["steps"].insert(1, {"id": "canvas_authority", "goal": "Bound wxGLCanvas numeric replacement using one successful same-position single Click, focused numeric keys without another click, then one Enter. Recheck the owned destination before every key. Confirm using the saved 3MF and new-profile G-code."})
         elif scenario in {"canvas_probe", "authority_probe"}:
             data["case_id"] = "diagnostic_canvas_input"
@@ -173,7 +175,7 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
         trace = [_json(line) for line in read("native_trace.ndjson", 256000).splitlines() if line]
         _require(1 <= len(trace) <= 40 and len(trace) == host["tool_count"], "native_trace_count")
         _require(all(x["finished_at_ns"] <= times[0] for x in trace), "native_trace_late_input")
-        if scenario in CANVAS_SCENARIOS | {"recovery_owned_edit"}:
+        if scenario in CANVAS_SCENARIOS | set(GENERALIZATION) | {"recovery_owned_edit"}:
             from .native_recovery import audit_trace
             recovery_summary = audit_trace(trace, snapshot.run_id, enabled=True)
         elif scenario in DIAGNOSTIC_SCENARIOS:

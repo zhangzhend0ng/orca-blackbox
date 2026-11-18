@@ -4,6 +4,7 @@ Only reviewed 2.3.6 -> 2.4.0 representation migrations are accepted. The
 caller binds original bytes to LAYER_FIXTURE_SHA256 before this comparison.
 """
 from .agent_verify import _require
+from .gcode_check import config_value_all
 from .script_verify import _check_cancel, _InvalidEvidence
 
 _VECTOR_MIGRATIONS = frozenset("""
@@ -31,11 +32,20 @@ _ADDED_DEFAULTS = {
 }
 
 
+def require_gcode_settings(gcode, expected, error_code):
+    lines = gcode.decode("utf-8").splitlines()
+    lo, hi = lines.index("; CONFIG_BLOCK_START"), lines.index("; CONFIG_BLOCK_END")
+    block = "\n".join(lines[lo + 1:hi]).encode()
+    for key, wanted in expected.items():
+        values = config_value_all(block, key)
+        _require(values and all(value == wanted for value in values), error_code + ":" + key)
+
+
 def inspect_preserved_settings(actual, expected, *, allowed_changes=None, cancelled=lambda: False):
     _require(type(actual) is dict and type(expected) is dict, "pilot_config_schema")
     changes = {} if allowed_changes is None else allowed_changes
     _require(type(changes) is dict and (not changes or changes in
-             ({"wall_loops": "3"}, {"sparse_infill_density": "30%"})),
+             ({"wall_loops": "3"}, {"sparse_infill_density": "30%"}, {"top_shell_layers": "5"})),
              "pilot_config_change_scope")
     if changes == {"wall_loops": "3"}:
         _require(expected.get("wall_loops") == "2" and actual.get("wall_loops") == "3",
@@ -43,6 +53,8 @@ def inspect_preserved_settings(actual, expected, *, allowed_changes=None, cancel
     elif changes == {"sparse_infill_density": "30%"}:
         _require(expected.get("sparse_infill_density") == "15%"
                  and actual.get("sparse_infill_density") == "30%", "pilot_infill_target")
+    elif changes == {"top_shell_layers": "5"}:
+        _require(expected.get("top_shell_layers") == "3", "pilot_top_layers_baseline")
     _require(set(expected) <= set(actual), "pilot_config_missing")
     for key in set(actual)-set(expected):
         _check_cancel(cancelled)

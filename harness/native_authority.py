@@ -6,11 +6,11 @@ import time
 
 from .native_recovery import RecoveryGate, RecoveryViolation
 from .native_diagnostic_recovery import DiagnosticOnceGate, ERROR_CODE
-from .native_matrix import CANVAS_SCENARIOS
+from .native_matrix import CANVAS_SCENARIOS, GENERALIZATION
 from .native_save_policy import INPUT_TOOLS, NATIVE_TOOLS
 
 PROTOCOL = "native-authority-1"
-RECOVERY_SCENARIOS = CANVAS_SCENARIOS | {"recovery_owned_edit"}
+RECOVERY_SCENARIOS = CANVAS_SCENARIOS | set(GENERALIZATION) | {"recovery_owned_edit"}
 
 
 def attach_authority(original, receipt):

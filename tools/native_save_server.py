@@ -36,8 +36,8 @@ def main():
     from fastmcp.tools.base import ToolResult
     from mcp.types import TextContent
     from harness.native_authority import AuthorityController, validate_scope, attach_authority
-    from harness.native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
-    from harness.native_matrix import CANVAS_REPLACE_SCENARIO
+    from harness.native_diagnostic_recovery import DIAGNOSTIC_SCENARIOS
+    from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, SAVE_CLEAR_SCENARIOS
     recovery_enabled = validate_scope(scope,
         json.loads((root.parent / "manifest.json").read_text()),
         json.loads((root.parent / "contract.json").read_text()),
@@ -56,8 +56,8 @@ def main():
             self.lock = asyncio.Lock()
             self.controller = AuthorityController(guard, root, args.run_id,
                 recovery_enabled=recovery_enabled, diagnostic_enabled=scope["scenario"] in DIAGNOSTIC_SCENARIOS,
-                canvas_dispatch=canvas_dispatch if scope["scenario"] == CANVAS_REPLACE_SCENARIO else None,
-                record_edit_frames=scope["scenario"] in {COMMIT_SCENARIO, CANVAS_REPLACE_SCENARIO})
+                canvas_dispatch=canvas_dispatch if scope["scenario"] in CANVAS_REPLACE_SCENARIOS else None,
+                record_edit_frames=scope["scenario"] in SAVE_CLEAR_SCENARIOS)
 
         async def on_call_tool(self, context, call_next):
             async with self.lock:

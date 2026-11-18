@@ -21,7 +21,7 @@ GOAL = ("Assign the existing whole cube to filament slot 3 and save the project.
 _SLOTS = {2: ("pilot_material_slot2", 1), 3: (CASE_ID, 2)}
 
 
-def _verify_logical_slot(project, fixture, gcode, *, slot, cancelled):
+def _verify_logical_slot(project, fixture, gcode, *, slot, cancelled, allowed_changes=None):
     """Trusted finite helper; public entry pins 3, not an actor-selected parameter.
 
     The root may later route the old slot-2 entry here without copying this
@@ -41,7 +41,7 @@ def _verify_logical_slot(project, fixture, gcode, *, slot, cancelled):
         summary = inspect_project(project, fixture, layer_height="0.4", expected_extruder=str(slot),
                                   cancelled=cancelled)
         inspect_preserved_settings(_json(actual["Metadata/project_settings.config"]), original_config,
-                                  cancelled=cancelled)
+                                  allowed_changes=allowed_changes, cancelled=cancelled)
         _require(_plate_mapping(actual) == _plate_mapping(original), "material_plate_mapping_changed")
         layers = analyze_gcode(gcode, layer_height="0.4", cancelled=cancelled)
         _require(layers["object_tools"] == [tool], "material_object_tool_not_T"+str(tool))

@@ -4,7 +4,14 @@ from __future__ import annotations
 from .native_diagnostic_recovery import COMMIT_SCENARIO, SCENARIO as DIAGNOSTIC_SCENARIO
 
 CANVAS_REPLACE_SCENARIO = "canvas_replace_trial"
-CANVAS_SCENARIOS = frozenset({"canvas_trial", CANVAS_REPLACE_SCENARIO})
+SCALE_SCENARIOS = ("general_scale_quality", "general_scale_others")
+CANVAS_REPLACE_SCENARIOS = frozenset((CANVAS_REPLACE_SCENARIO, *SCALE_SCENARIOS))
+CANVAS_SCENARIOS = CANVAS_REPLACE_SCENARIOS | {"canvas_trial"}
+GENERALIZATION = (
+    "general_wall", "general_slot2", "general_top_strength", "general_top_quality",
+    *SCALE_SCENARIOS, "general_combo", "general_combo_dialog",
+)
+SAVE_CLEAR_SCENARIOS = frozenset((COMMIT_SCENARIO, CANVAS_REPLACE_SCENARIO, *GENERALIZATION))
 
 SCENARIOS = {
     "base": ("Quality", None),
@@ -27,6 +34,14 @@ SCENARIOS = {
     COMMIT_SCENARIO: ("Others", None),
     "canvas_trial": ("Quality", None),
     CANVAS_REPLACE_SCENARIO: ("Quality", None),
+    "general_wall": ("Quality", None),
+    "general_slot2": ("Quality", None),
+    "general_top_strength": ("Strength", None),
+    "general_top_quality": ("Quality", None),
+    "general_scale_quality": ("Quality", None),
+    "general_scale_others": ("Others", None),
+    "general_combo": ("Quality", None),
+    "general_combo_dialog": ("Quality", "save_dialog"),
     "authority_probe": ("Quality", None),
 }
 BUSINESS = ("quality_a", "quality_b", "strength_a", "strength_b", "others_a", "others_b", "save_dialog", "overwrite")

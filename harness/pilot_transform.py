@@ -24,6 +24,10 @@ def _expected_fixture(fixture, cancelled):
     files = _archive(fixture, cancelled)
     _, _, original = _geometry(files)
     wanted = original[:9] + (original[9]+10,) + original[10:]
+    return _fixture_with_transform(files, wanted), wanted, original
+
+
+def _fixture_with_transform(files, wanted):
     model = _xml(files["3D/3dmodel.model"])
     item = model.find(_CORE+"build/"+_CORE+"item")
     item.set("transform", " ".join(map(str, wanted)))
@@ -32,10 +36,10 @@ def _expected_fixture(fixture, cancelled):
     with zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) as archive:
         for name, raw in files.items():
             archive.writestr(name, raw)
-    return output.getvalue(), wanted, original
+    return output.getvalue()
 
 
-def _object_xy(raw, bounds, cancelled):
+def _object_xy(raw, bounds, cancelled, *, minimum_span=(23, 23)):
     """Add XY scope to the shared layer/mode validator; ignore purge and travel."""
     lines = raw.decode("utf-8").splitlines()
     lo, hi = lines.index("; EXECUTABLE_BLOCK_START"), lines.index("; EXECUTABLE_BLOCK_END")
@@ -90,7 +94,7 @@ def _object_xy(raw, bounds, cancelled):
                         maximum[a] = point[a] if maximum[a] is None else max(maximum[a], point[a])
     _require(count > 0, "transform_gcode_no_xy")
     extent = list(zip(minimum, maximum))
-    _require(all(b-a >= Decimal(23) for a,b in extent), "transform_gcode_footprint_too_small")
+    _require(all(b-a >= span for (a,b), span in zip(extent, minimum_span)), "transform_gcode_footprint_too_small")
     return [[str(v) for v in pair] for pair in extent]
 
 

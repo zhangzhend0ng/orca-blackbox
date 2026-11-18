@@ -185,7 +185,7 @@ def main():
     p.add_argument("--guest-root", default=r"C:\coil\orca-blackbox-v3-r1")
     p.add_argument("--goal-save", action="store_true")
     p.add_argument("--authority-log", type=Path)
-    from harness.native_matrix import CANVAS_REPLACE_SCENARIO, SCENARIOS
+    from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, GENERALIZATION, SCENARIOS
     p.add_argument("--scenario", choices=tuple(SCENARIOS), default="base")
     args = p.parse_args()
     transport = GuestHTTP(args.guest_root, args.run_id, deadline=time.monotonic()+900, goal_save=args.goal_save)
@@ -219,7 +219,8 @@ def main():
         if method == "tools/call" and args.authority_log is not None:
             receipt = authority_receipt(response, request, args.run_id, calls)
             sidecar = {"request_id": request["id"], "authority": receipt}
-            if (args.scenario == CANVAS_REPLACE_SCENARIO and receipt["decision"] == "completed"
+            if (args.scenario in CANVAS_REPLACE_SCENARIOS | set(GENERALIZATION)
+                    and receipt["decision"] == "completed"
                     and receipt["tool"] in {"Screenshot", "Snapshot"}):
                 changes = inline_canvas_observations(response["result"])
                 if changes:
