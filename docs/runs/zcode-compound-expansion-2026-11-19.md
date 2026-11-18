@@ -15,3 +15,10 @@
 - 双下拉框，run `e5c7410fcf2d1c1f8eda1babc795fdb8`，NON_GREEN。侧栏坐标点击没有打开下拉框。此时请求未实际绑定的 `wx_process_popup` 裁图，被 `native_uia_visual_region_not_observed` 拒绝。未保存。受控复验要求先确认下拉框已经打开，再请求弹层裁图。
 
 两次失败均已回收，应用、监听和令牌均清理。首次目标式探索 0/2，无可录制轨迹。
+
+## 提供定位提示后的开发复验
+
+源 `b9266e1`。两条仍使用同一业务判据与 GUI 初态。
+
+- 平移加层高，run `e251f0f23b0338083fdb5919edde5f74`，SHADOW，完整 265.220 秒。先通过 UIA 编辑并读回层高，再用五次命名画布裁图定位选择、移动工具并读回位置。保存对话框用 UIA ValuePattern 与 InvokePattern。独立重切验证 X+10 mm、层高 0.24/0.40、112 层对象挤出。录制器从已验收轨迹生成 18 步。
+- 双下拉框，run `e5f89dbc84942f150fc33a48dcd05549`，NON_GREEN，完整 122.658 秒。模型尝试坐标点击 Advanced。守卫识别到原生 ButtonControl、AutomationId `5014` 和 InvokePattern，拒绝坐标派发并要求重新观察。模型再次调用 Click，触发 `native_recovery_observation_required`，未保存。下一次提供这个已观察到的 UIA 属性，并要求从新 Snapshot 确认后调用。

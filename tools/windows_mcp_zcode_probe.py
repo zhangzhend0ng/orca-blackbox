@@ -211,12 +211,15 @@ def main(argv=None):
                            "Call Snapshot again after all canvas work and before Save As. "
                            "Always observe the current native tree again when returning to a different UI area.")
             if args.scenario == UIA_QUALITY_ENUMS:
-                prompt += (" On Quality, enable Advanced for Ironing. Use a wx_sidebar crop to locate the combo on the actual row "
-                           "and the vertical scroll track if the row is offscreen. Resolve the click from the crop's actual origin. "
-                           "After clicking the dropdown, use Snapshot to check that an owned popup opened; only then request "
-                           "Screenshot with region_name='wx_process_popup'. If the main window is still active, refresh the sidebar "
-                           "and click the combo arrow, not the row label. Wait for the panel to settle after selection. "
-                           "Re-selecting another process tab and then Quality restores the top of the page for Seam.")
+                prompt += (" On this Quality fixture, Advanced starts off. Its unlabeled native ButtonControl was observed "
+                           "with automation_id='5014'. Find that exact target in the initial Snapshot and invoke it through Click(target). "
+                           "After a refresh-required rejection, your very next call must be Snapshot before any Click or Type. "
+                           "Use the new wx_sidebar crop to locate the dropdown arrow on the actual row. "
+                           "Change Seam while its row is visible, then navigate to Ironing with the process area's vertical scroll track. "
+                           "Resolve each click using the actual crop origin. After clicking a dropdown arrow, use Snapshot to check that an "
+                           "owned popup opened, then request Screenshot with region_name='wx_process_popup' and select the option. "
+                           "Call Snapshot when the popup closes, then take a fresh sidebar crop to read the selected value. "
+                           "If the main window is still active after attempting to open the dropdown, inspect a fresh sidebar crop before retrying.")
         (root/"prompt.txt").write_text(prompt, encoding="utf-8")
         report["prompt_sha256"] = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
         bundle = Path(r"C:\Program Files\ZCode\resources\glm\zcode.cjs")
