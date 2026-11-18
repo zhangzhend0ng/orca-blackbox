@@ -10,6 +10,7 @@ from harness.native_matrix import UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_S
 from harness.native_save_policy import native_tools, scoped_tool_schemas, validate_input
 from harness.native_uia import UiaSaveGuard, value_digest, verify_uia_save
 from harness.native_uia_hybrid import UiaHybridGuard, VisualCrop, verify_hybrid_trace
+from tools.native_save_server import authority_refusal
 
 RUN = "a" * 32
 OUTPUT = r"C:\owned\0001.3mf"
@@ -208,12 +209,80 @@ def test_stale_crop_has_owned_predispatch_facts_and_foreign_target_stops(tmp_pat
     with pytest.raises(ValueError, match="native_uia_refresh_required"):
         guard.check("Type", {"loc": [500, 250], "text": "145.5", "press_enter": True})
     assert guard.last_window["refresh_reason"] == "stale_crop"
+    assert guard.last_window["refresh_hint"] == {"region_name": "imgui_canvas"}
     assert guard.last_window["target_hwnd"] == 21 and guard.last_window["target_pid"] == 4
     assert guard._last_click is None
     api._window_pid = lambda hwnd: 4 if hwnd == 20 else 5
     with pytest.raises(ValueError, match="native_uia_drawn_target_not_owned"):
         guard.check("Click", {"loc": [500, 250]})
     assert "refresh_reason" not in guard.last_window
+
+
+def test_recoverable_uia_hit_reports_exact_native_action_and_requires_snapshot(tmp_path, monkeypatch):
+    scope = {"app_pid": 4, "hwnd": 20, "output_path": OUTPUT, "scenario": UIA_LAYER_SCENARIO,
+             "canvas_binding_json": '{"hwnd":21}'}
+    selector = {"control_type": "ButtonControl", "name": "", "automation_id": "-31893"}
+    element = SimpleNamespace(ProcessId=4, NativeWindowHandle=22, ControlTypeName="ButtonControl",
+        Name="", AutomationId="-31893", IsEnabled=True, GetInvokePattern=object,
+        BoundingRectangle=SimpleNamespace(left=170, top=600, right=200, bottom=630))
+    guard = UiaHybridGuard(scope, tmp_path, None, lambda *_: element)
+    api = SimpleNamespace(_window_pid=lambda _: 4, window_title=lambda _: "Orca",
+                          window_from_screen_point=lambda *_: 22, window_class=lambda _: "Button")
+    monkeypatch.setattr(guard, "owned_foreground", lambda: (api, 20))
+    monkeypatch.setattr(guard, "_regions", lambda _: {"wx_sidebar": [0, 70, 400, 1032]})
+    monkeypatch.setitem(sys.modules, "win32gui", SimpleNamespace(IsChild=lambda p, c: (p, c) == (20, 22)))
+    record = {"target": selector, "hwnd": 22, "pattern": "InvokePattern"}
+    monkeypatch.setattr(guard, "_native_controls",
+                        lambda *_: {("ButtonControl", "", "-31893"): (element, object(), record)})
+    with pytest.raises(ValueError, match="native_uia_refresh_required"):
+        guard.check("Click", {"loc": [196, 618]})
+    expected = {"tool": "Click", "target": selector, "pattern": "InvokePattern"}
+    receipt = {"decision": "recoverable", "error_code": "native_uia_refresh_required"}
+    message, result = authority_refusal(receipt, guard.last_window)
+    assert result == {"authority": receipt, "refresh_hint": expected}
+    assert "Call Snapshot before any new input" in message and '-31893' in message
+    assert authority_refusal({**receipt, "decision": "fatal"}, guard.last_window)[1].keys() == {"authority"}
+
+    guard.check("Screenshot", {"region_name": "wx_sidebar"})
+    guard.complete_view()
+    with pytest.raises(ValueError, match="native_uia_snapshot_required_for_target_hint"):
+        guard.check("Click", {"target": selector})
+    guard.check("Snapshot", {})
+    guard.perform("Snapshot", {})
+    assert guard.check("Click", {"target": selector})["route"] == "uia_action"
+
+    element.AutomationId = "unregistered"
+    with pytest.raises(ValueError, match="^native_uia_target_available$"):
+        guard.check("Click", {"loc": [196, 618]})
+    assert "refresh_hint" not in guard.last_window
+
+
+@pytest.mark.parametrize("fresh_snapshot", [False, True])
+def test_hybrid_trace_requires_main_snapshot_after_native_hint(fresh_snapshot):
+    main = {"app_pid": 4, "foreground_pid": 4, "foreground_hwnd": 20}
+    snapshot = dict(run_id=RUN, tool="Snapshot", arguments={}, error=None, dispatched=True,
+        window={**main, "route": "uia_tree", "visual_regions": {}, "native_targets": []})
+    refusal = dict(run_id=RUN, tool="Click", arguments={"loc": [196, 618]}, dispatched=False,
+        error="ValueError:native_uia_refresh_required", error_code="native_uia_refresh_required",
+        recovery={"decision": "recoverable"}, window={**main, "target_hwnd": 22, "target_pid": 4,
+            "refresh_reason": "uia_target_available",
+            "refresh_hint": {"tool": "Click", "target": SAVE, "pattern": "InvokePattern"}})
+    shortcut = dict(run_id=RUN, tool="Shortcut", arguments={"shortcut": "ctrl+shift+s"},
+        error=None, dispatched=True, window={**main, "route": "owned_command"})
+    rows = [snapshot, refusal]
+    if fresh_snapshot:
+        rows.append(snapshot)
+    rows.append(shortcut)
+    suffix = fake_trace()
+    suffix[0]["window"]["uia_save"] = True
+    trace = [{**row, "seq": i} for i, row in enumerate(rows + suffix, 1)]
+    kwargs = dict(run_id=RUN, app_pid=4, main_hwnd=20, output_path=OUTPUT, scenario=UIA_LAYER_SCENARIO,
+                  allow_refresh=True)
+    if fresh_snapshot:
+        assert verify_hybrid_trace(trace, **kwargs)["uia_tree_calls"] == 2
+    else:
+        with pytest.raises(ValueError, match="native_uia_snapshot_required_for_target_hint"):
+            verify_hybrid_trace(trace, **kwargs)
 
 
 @pytest.mark.parametrize("observation,args", [("Snapshot", {}), ("Screenshot", {"region_name": "imgui_canvas"})])

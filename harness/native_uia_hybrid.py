@@ -5,10 +5,16 @@ from dataclasses import dataclass
 
 from .agent_verify import _require
 from .native_matrix import UIA_DISTURBANCE_SCENARIO
-from .native_save_policy import InputGuard, UIA_VISUAL_REGIONS, validate_input, validate_uia_selector
+from .native_save_policy import INPUT_TOOLS, InputGuard, UIA_VISUAL_REGIONS, validate_input, validate_uia_selector
 from .native_uia import SAVE_DIALOG_TITLES, UiaSaveGuard, value_digest, verify_uia_save
 
 OBSERVATION_LIMIT_NS = 30_000_000_000
+UIA_REFRESH_ACTIONS = {
+    "EditControl": ("Type", "ValuePattern"),
+    "ButtonControl": ("Click", "InvokePattern"),
+    "MenuItemControl": ("Click", "InvokePattern"),
+    "TabItemControl": ("Click", "SelectionItemPattern"),
+}
 
 
 def within(bounds, rect):
@@ -42,6 +48,7 @@ class UiaHybridGuard(UiaSaveGuard):
         self.crop_id = 0
         self.canvas_click_crop = None
         self.needs_main_snapshot = False
+        self.needs_uia_snapshot = False
         self.canvas_hwnd = json.loads(scope["canvas_binding_json"])["hwnd"]
         self.prepared_dialog = scope.get("dialog_hwnd") if scope["scenario"] == UIA_DISTURBANCE_SCENARIO else None
         self.allow_cancel = self.prepared_dialog is not None
@@ -146,11 +153,12 @@ class UiaHybridGuard(UiaSaveGuard):
         if self.canvas_click_crop is not None and regions.get("imgui_canvas") != self.canvas_click_crop[1].anchor:
             self.canvas_click_crop = self._last_click = None
 
-    def _refresh_visual(self, target, target_class, reason):
+    def _refresh_visual(self, target, target_class, reason, hint):
         self.last_window.update(target_hwnd=target, target_pid=self.scope["app_pid"], target_class=target_class,
-                                refresh_reason=reason)
+                                refresh_reason=reason, refresh_hint=hint)
         self._clear_visual()
         self.native_targets, self.visual_regions = {}, {}
+        self.needs_uia_snapshot = reason == "uia_target_available"
         raise ValueError("native_uia_refresh_required")
 
     def _visual_route(self, wu, hwnd, name, args):
@@ -183,10 +191,16 @@ class UiaHybridGuard(UiaSaveGuard):
         element = self.control_from_point(*args["loc"])
         if element is not None and element.ProcessId != self.scope["app_pid"]:
             raise ValueError("native_uia_drawn_target_not_owned")
-        if element is not None and element.IsEnabled and self._pattern(element)[0] is not None:
-            if element.NativeWindowHandle == target and any(
-                    item[2]["hwnd"] == target for item in self._native_controls(wu, hwnd).values()):
-                self._refresh_visual(target, target_class, "uia_target_available")
+        pattern = self._pattern(element)[0] if element is not None and element.IsEnabled else None
+        if pattern is not None:
+            selector = {"control_type": element.ControlTypeName, "name": element.Name or "",
+                        "automation_id": element.AutomationId or ""}
+            record = self._native_controls(wu, hwnd).get(selector_key(selector))
+            if record is not None and element.NativeWindowHandle == target and record[2]["hwnd"] == target:
+                tool, expected_pattern = UIA_REFRESH_ACTIONS[selector["control_type"]]
+                if pattern == expected_pattern == record[2]["pattern"]:
+                    self._refresh_visual(target, target_class, "uia_target_available",
+                                         {"tool": tool, "target": record[2]["target"], "pattern": pattern})
             raise ValueError("native_uia_target_available")
         expected_classes = {"wxPanel", "wxWindowNR", "wxWindow", "wxDataView"} if kind == "wx_sidebar" else {"wxGLCanvas"}
         if target_class not in expected_classes or kind == "imgui_canvas" and target != self.canvas_hwnd:
@@ -198,7 +212,7 @@ class UiaHybridGuard(UiaSaveGuard):
             crop = self.crops.get(kind)
         if (crop is None or crop.anchor != live[kind] or not contains(crop.region, args["loc"])
                 or not 0 <= time.monotonic_ns() - crop.taken_at_ns <= OBSERVATION_LIMIT_NS):
-            self._refresh_visual(target, target_class, "stale_crop")
+            self._refresh_visual(target, target_class, "stale_crop", {"region_name": kind})
         return kind, crop.region, live[kind], target, crop
 
     def check(self, name, args):
@@ -208,6 +222,8 @@ class UiaHybridGuard(UiaSaveGuard):
         if name in {"ControlStatus", "Wait"}:
             return super().check(name, args)
         wu, hwnd = self.owned_foreground()
+        if self.needs_uia_snapshot and name in INPUT_TOOLS:
+            raise ValueError("native_uia_snapshot_required_for_target_hint")
         if self.prepared_dialog is not None and self.allow_cancel:
             if not self.cancel_invoked:
                 self._dialog(hwnd, wu)
@@ -337,6 +353,7 @@ class UiaHybridGuard(UiaSaveGuard):
             self._discard_changed_crops(self.visual_regions)
             self.native_targets = {key: item[2] for key, item in controls.items()}
             self.needs_main_snapshot = False
+            self.needs_uia_snapshot = False
             self.last_window.update(native_targets=list(self.native_targets.values()), visual_regions=self.visual_regions)
             visible = []
             for element, implementation, record in controls.values():
@@ -377,7 +394,7 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
                         allow_refresh=False, strict_crop_lifetime=False):
     regions, crop, targets = {}, None, []
     crops, canvas_click = {}, None
-    popup_open = False
+    popup_open = pending_uia_snapshot = False
     counts = dict(uia_tree_calls=0, uia_actions=0, cropped_visual_calls=0, visual_inputs=0)
     cancel, cancelled, closed = None, False, prepared_dialog is None
     _require((scenario == UIA_DISTURBANCE_SCENARIO) == (prepared_dialog is not None), "native_uia_prepared_dialog_contract")
@@ -387,16 +404,32 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
         validate_input(name, args, output_path, scenario)
         if allow_refresh and row.get("error_code") == "native_uia_refresh_required":
             _require(closed and not popup_open and name in {"Click", "Type"} and "loc" in args
+                     and not pending_uia_snapshot
                      and row["dispatched"] is False and (row.get("recovery") or {}).get("decision") == "recoverable"
                      and window.get("app_pid") == window.get("foreground_pid") == window.get("target_pid") == app_pid
                      and window.get("foreground_hwnd") == main_hwnd and window.get("target_hwnd", 0) > 0
                      and window.get("refresh_reason") in {"stale_crop", "uia_target_available"},
                      "native_uia_refresh_binding")
+            hint = window.get("refresh_hint")
+            if hint is not None:
+                _require(type(hint) is dict, "native_uia_refresh_hint")
+                if window["refresh_reason"] == "uia_target_available":
+                    target = hint.get("target")
+                    kind = target.get("control_type") if type(target) is dict else None
+                    _require(set(hint) == {"tool", "target", "pattern"} and type(kind) is str
+                             and UIA_REFRESH_ACTIONS.get(kind) == (hint["tool"], hint["pattern"]),
+                             "native_uia_refresh_hint")
+                    validate_uia_selector(target, kind)
+                    pending_uia_snapshot = True
+                else:
+                    _require(set(hint) == {"region_name"} and hint["region_name"] in UIA_VISUAL_REGIONS,
+                             "native_uia_refresh_hint")
             regions, crop, targets = {}, None, []
             crops.clear()
             canvas_click = None
             continue
         _require(row["dispatched"] is True and row["error"] is None, "native_uia_hybrid_identity")
+        _require(not pending_uia_snapshot or name not in INPUT_TOOLS, "native_uia_snapshot_required_for_target_hint")
         if window.get("prepared_dialog"):
             _require(not closed and not cancelled and window.get("foreground_hwnd") == prepared_dialog
                      and window.get("app_pid") == window.get("foreground_pid") == app_pid,
@@ -417,7 +450,7 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
             continue
         _require(closed, "native_uia_prepared_dialog_not_closed")
         if window.get("uia_save"):
-            _require(counts["uia_tree_calls"] and window["foreground_hwnd"] != main_hwnd,
+            _require(not pending_uia_snapshot and counts["uia_tree_calls"] and window["foreground_hwnd"] != main_hwnd,
                      "native_uia_hybrid_main_not_observed")
             save = verify_uia_save(trace[index:], run_id=run_id, app_pid=app_pid,
                 dialog_hwnd=window["foreground_hwnd"], output_path=output_path, first_seq=index + 1)
@@ -445,6 +478,7 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
                 if canvas_click is not None and regions.get("imgui_canvas") != canvas_click[1][3]:
                     canvas_click = None
             popup_open = False
+            pending_uia_snapshot = False
             counts["uia_tree_calls"] += 1
         elif name == "Screenshot":
             kind = window.get("visual_fallback")

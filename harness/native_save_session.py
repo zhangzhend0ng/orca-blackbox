@@ -48,7 +48,7 @@ def native_contract(actor="codex", scenario="base"):
     if actor == "script":
         data = native_contract("zcode", scenario).to_dict()
         data["executor"] = "script"
-        version = 2 if scenario == UIA_CANVAS_SCENARIO else 1
+        version = 3 if scenario == UIA_CANVAS_SCENARIO else 1
         data["contract_version"] = f"native-script-comparison-{version}-{scenario}"
         data["steps"] = [
             {"id": "setup", "goal": "Use the same trusted initial state as the corresponding ZCode scenario."},

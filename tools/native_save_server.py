@@ -13,6 +13,25 @@ sys.path.insert(0, str(REPO))
 from harness.canvas_input import send_canvas_number
 
 
+def authority_refusal(receipt, window):
+    result = {"authority": receipt}
+    if receipt["decision"] != "recoverable":
+        return "Authority revoked. Stop this run.", result
+    if receipt.get("error_code") != "native_uia_refresh_required":
+        return "Input was not dispatched. Observe the current screen before correcting the numeric field.", result
+    hint = window.get("refresh_hint")
+    if hint is None:
+        return ("Input was not dispatched. Refresh with Snapshot. If the intended control is drawn, "
+                "request its named Screenshot again before clicking."), result
+    result["refresh_hint"] = hint
+    if "target" in hint:
+        selector = json.dumps(hint["target"], ensure_ascii=False, separators=(",", ":"))
+        return (f"Input was not dispatched. Call Snapshot before any new input. If it still lists this target, "
+                f"use {hint['tool']} with target={selector} ({hint['pattern']})."), result
+    return (f"Input was not dispatched. Refresh with Snapshot, then request Screenshot with "
+            f"region_name={hint['region_name']} before a new Click."), result
+
+
 def main():
     from harness import host_guard
     from harness.agent_protocol import valid_run_id
@@ -101,15 +120,9 @@ def main():
                     except Exception:
                         self.controller.abort("native_result_envelope_failed")
                         raise
-                explanation = "Authority revoked. Stop this run."
-                if receipt["decision"] == "recoverable":
-                    if receipt.get("error_code") == "native_uia_refresh_required":
-                        explanation = ("Input was not dispatched. Refresh with Snapshot. If the intended control is drawn, "
-                                       "request its named Screenshot again before clicking.")
-                    else:
-                        explanation = "Input was not dispatched. Observe the current screen before correcting the numeric field."
+                explanation, structured = authority_refusal(receipt, guard.last_window)
                 return ToolResult(content=[TextContent(type="text", text=explanation)],
-                                  structured_content={"authority": receipt}, is_error=True)
+                                  structured_content=structured, is_error=True)
 
     original._build_mcp().add_middleware(Authority())
     original.main(["serve", "--transport", "streamable-http", "--host", "127.0.0.1",
