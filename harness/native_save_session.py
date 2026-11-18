@@ -62,7 +62,7 @@ def native_contract(actor="codex", scenario="base"):
         if recorded:
             from .native_uia_replay import read_recipe
             _, digest = read_recipe()
-            data["contract_version"] = "native-uia-recording-1"
+            data["contract_version"] = "native-uia-recording-2"
             data["steps"].insert(1, {"id": "recording", "goal": "Run the registered UIA recording with SHA256 " + digest})
         return validate_contract(data)
     data = {"schema_version": 1, "case_id": "m3g_export_3mf",
@@ -213,9 +213,15 @@ def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, can
             "artifact:exports/0001.gcode:sha256:"+proof["gcode_sha256"])
     if scenario == UIA_REPLAY_SCENARIO:
         from .native_uia_replay import verify_replay_trace
-        trace = [_json(line) for line in read("native_trace.ndjson", 256000).splitlines()]
-        _require(all(phases[2] <= row["started_at_ns"] <= row["finished_at_ns"] <= phases[3] for row in trace),
-                 "native_replay_input_phase")
+        raw_trace = read("native_trace.ndjson", 256000)
+        # The worker binds completed tool receipts before revoking input. This
+        # avoids comparing wall-clock samples from different Python runtimes.
+        _require(hashlib.sha256(raw_trace).hexdigest() == receipt.get("recorded_trace_sha256"),
+                 "native_replay_trace_binding")
+        trace = [_json(line) for line in raw_trace.splitlines()]
+        stamps = [row[key] for row in trace for key in ("started_at_ns", "finished_at_ns")]
+        _require(all(type(stamp) is int for stamp in stamps) and stamps == sorted(stamps),
+                 "native_replay_trace_order")
         route = verify_replay_trace(trace, snapshot.run_id, scope, receipt["recording_sha256"])
         detail += "; recorded UIA replay=" + json.dumps(route, sort_keys=True)
         refs += ("artifact:native_trace.ndjson",)

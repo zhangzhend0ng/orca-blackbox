@@ -148,6 +148,7 @@ def worker(run_id, actor="codex", scenario="base"):
                     from harness.native_uia_replay import play
                     start_server()
                     report["recording_sha256"] = play(ui, run_id, str(output))
+                    report["recorded_trace_sha256"] = hashlib.sha256((root / "native_trace.ndjson").read_bytes()).hexdigest()
                     report["script_steps"] = ["edit", "save"]
                 else:
                     edit_project(ui, scenario, binding.hwnd)

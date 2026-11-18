@@ -7,3 +7,5 @@
 3. 用 `python -B tools/native_save_demo.py --actor script --scenario uia_replay_layer --run-id <新 run-id>` 走既有 `hv_go.ps1` 和 `hv_harvest.ps1`。执行器在 win11-test 通过本地 Windows-MCP 重放，逐项核对归属、读回及可信回执。脚本合同绑定录制内容摘要，之后沿用已存在的独立文件冻结、重开、实际切片和清理。该场景以 SHADOW 单独登记。
 
 录制范围是固定 SUT 和初态的一条 UIA 路径。带自绘坐标输入的轨迹尚需可重复定位与专门录制规则。工时须通过同目标的实际作者对照测量。
+
+首轮 `77f4486756e9d260525586556525f433` 完整执行八条操作、生成保存与重切产物。冻结检查因 MCP 进程最后的墙钟时刻比 worker 完成时刻多 2.07 ms，正式记 NON_GREEN。修订在停输前由 worker 绑定已完成轨迹的 SHA256，复核仍要求同一服务端轨迹有序、严格匹配登记脚本。该首轮结果保留。
