@@ -24,7 +24,8 @@ CANVAS_NUMBER = r"(?:[1-9][0-9]{0,2}(?:\.[0-9]{1,4})?|0\.(?=[0-9]{0,3}[1-9])[0-9
 
 def native_tools(scenario):
     if scenario in UIA_MIX_SCENARIOS:
-        return NATIVE_TOOLS - {"Screenshot", "Wait", "ControlStatus"}
+        # The pinned upstream server always retains ControlStatus.
+        return NATIVE_TOOLS - {"Screenshot", "Wait"}
     if scenario == UIA_REPLAY_SCENARIO:
         return frozenset({"Snapshot", "Click", "Type", "Shortcut"})
     if scenario == UIA_REPLAY_SAVE:
