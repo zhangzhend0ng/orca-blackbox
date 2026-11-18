@@ -12,11 +12,9 @@ def value_digest(value):
 
 
 class UiaSaveGuard(InputGuard):
-    def __init__(self, scope, root, control_from_handle, focused_control, send_keys):
+    def __init__(self, scope, root, control_from_handle):
         super().__init__(scope, root)
         self.control_from_handle = control_from_handle
-        self.focused_control = focused_control
-        self.send_keys = send_keys
         self.observed = {}
         self.invoked = False
         self.written = None
@@ -121,23 +119,22 @@ class UiaSaveGuard(InputGuard):
             raise ValueError("native_uia_value_pattern_required")
         return pattern
 
-    def _notify_filename_edit(self, element, value, handle, dialog_hwnd):
+    def _notify_filename_edit(self, element, value, record, dialog_hwnd):
         """Publish a real edit change so the shell dialog commits the UIA value."""
-        def key(sequence):
-            _, hwnd = self.owned_foreground()
-            focused = self.focused_control()
-            if (hwnd != dialog_hwnd or focused is None or focused.NativeWindowHandle != handle
-                    or focused.ProcessId != self.scope["app_pid"]):
-                raise ValueError("native_uia_filename_focus_changed")
+        def edit_message(message, wparam, lparam):
+            wu, hwnd = self.owned_foreground()
+            self._dialog(hwnd, wu)
+            _, current = self._controls(wu, hwnd).get("filename", (None, None))
+            if hwnd != dialog_hwnd or current != record:
+                raise ValueError("native_uia_filename_target_changed")
             self.check_revocation()
-            self.send_keys(sequence, waitTime=0.05)
+            wu._send_msg(record["hwnd"], message, wparam, lparam)
 
-        element.SetFocus()
-        key("{End}")
-        key("{Back}")
+        edit_message(0x00B1, len(value) - 1, len(value))  # EM_SETSEL
+        edit_message(0x0102, 0x08, 0)  # WM_CHAR, backspace
         if self._value(element).Value != value[:-1]:
             raise ValueError("native_uia_filename_edit_notification_failed")
-        key(value[-1])
+        edit_message(0x0102, ord(value[-1]), 0)  # Restore exact path and notify the parent combo.
 
     def perform(self, name, arguments):
         wu, hwnd = self.owned_foreground()
@@ -164,7 +161,7 @@ class UiaSaveGuard(InputGuard):
             self.last_window.update(route="uia_value", pattern="ValuePattern")
             if not pattern.SetValue(arguments["text"]):
                 raise ValueError("native_uia_set_value_failed")
-            self._notify_filename_edit(element, arguments["text"], record["hwnd"], hwnd)
+            self._notify_filename_edit(element, arguments["text"], record, hwnd)
             readback = self._value(element).Value
             if readback != arguments["text"]:
                 raise ValueError("native_uia_value_readback_mismatch")

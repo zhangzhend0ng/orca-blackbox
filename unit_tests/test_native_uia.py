@@ -69,20 +69,23 @@ def test_save_trace_requires_the_observed_target_readback_and_invoke(fault):
         assert verify_uia_save(trace, **kwargs)["screenshots"] == 0
 
 
-def test_native_filename_edit_notification_stops_at_focus_change(tmp_path, monkeypatch):
-    focus = SimpleNamespace(NativeWindowHandle=11, ProcessId=4)
+def test_native_filename_edit_notification_stops_at_target_change(tmp_path, monkeypatch):
+    record = {"hwnd": 11, "target": EDIT}
+    current = dict(record)
     value = SimpleNamespace(Value=OUTPUT, IsReadOnly=False)
-    edit = SimpleNamespace(SetFocus=lambda: None, GetValuePattern=lambda: value)
-    keys = []
+    edit = SimpleNamespace(GetValuePattern=lambda: value)
+    messages = []
 
-    def send(sequence, **_):
-        keys.append(sequence)
-        if sequence == "{Back}":
+    def send(hwnd, message, wparam, lparam):
+        messages.append((hwnd, message, wparam, lparam))
+        if message == 0x0102:
             value.Value = value.Value[:-1]
-            focus.NativeWindowHandle = 99
+            current["hwnd"] = 99
 
-    guard = UiaSaveGuard({"app_pid": 4}, tmp_path, None, lambda: focus, send)
-    monkeypatch.setattr(guard, "owned_foreground", lambda: (None, 10))
-    with pytest.raises(ValueError, match="native_uia_filename_focus_changed"):
-        guard._notify_filename_edit(edit, OUTPUT, 11, 10)
-    assert keys == ["{End}", "{Back}"]
+    guard = UiaSaveGuard({"app_pid": 4}, tmp_path, None)
+    monkeypatch.setattr(guard, "owned_foreground", lambda: (SimpleNamespace(_send_msg=send), 10))
+    monkeypatch.setattr(guard, "_dialog", lambda *_: None)
+    monkeypatch.setattr(guard, "_controls", lambda *_: {"filename": (edit, current)})
+    with pytest.raises(ValueError, match="native_uia_filename_target_changed"):
+        guard._notify_filename_edit(edit, OUTPUT, record, 10)
+    assert messages == [(11, 0x00B1, len(OUTPUT) - 1, len(OUTPUT)), (11, 0x0102, 8, 0)]
