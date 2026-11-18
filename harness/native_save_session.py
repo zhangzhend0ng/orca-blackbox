@@ -17,7 +17,7 @@ from .agent_protocol import LAYER_FIXTURE_SHA256, valid_run_id
 from .native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
 from .native_matrix import (CANVAS_REPLACE_SCENARIO, CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS,
     GENERALIZATION, REPLAY_SOURCES, SCRIPT_SCENARIOS, UIA_CANVAS_SCENARIO, UIA_HYBRID_SCENARIOS,
-    UIA_PROCESS_COMBO, UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
+    UIA_MIX_RECIPES, UIA_PROCESS_COMBO, UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
 from .run_contract import validate_contract
 from .run_verdict import CheckResult, contract_digest
 from .runtime_ports import VerificationOutcome
@@ -60,6 +60,9 @@ def native_contract(actor="codex", scenario="base"):
             goal = "Save the loaded project unchanged from the prepared Save As dialog."
         elif source_scenario == UIA_PROCESS_COMBO:
             from .pilot_process_combo import GOAL
+            goal = GOAL
+        elif source_scenario == UIA_MIX_RECIPES:
+            from .pilot_mix_recipes import GOAL
             goal = GOAL
         data["steps"] = [
             {"id": "setup", "goal": "Use the same trusted initial state as the corresponding ZCode scenario."},
@@ -236,7 +239,7 @@ def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, can
              "native_script_initial_setup")
     gcode = read("exports/0001.gcode", 64*1024*1024)
     _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
-    if source_scenario in {UIA_CANVAS_SCENARIO, UIA_PROCESS_COMBO}:
+    if source_scenario in {UIA_CANVAS_SCENARIO, UIA_MIX_RECIPES, UIA_PROCESS_COMBO}:
         detail = json.dumps(verify_business(source_scenario, frozen, fixture, gcode, cancelled=cancelled), sort_keys=True)
     elif source_scenario == UIA_SAVE_SCENARIO:
         _require(type(setup.get("dialog_hwnd")) is int and setup["dialog_hwnd"] > 0
@@ -290,7 +293,8 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
                  and times[0] >= snapshot.manifest["started_at_ns"], "native_phase_order")
         fixture, frozen = read("input/fixture.3mf", 16*1024*1024), read("proof/0001.3mf", 16*1024*1024)
         saved = read("projects/0001.3mf", 16*1024*1024)
-        _require(hashlib.sha256(fixture).hexdigest() == LAYER_FIXTURE_SHA256, "native_fixture")
+        from .native_pilots import native_fixture
+        _require(hashlib.sha256(fixture).hexdigest() == native_fixture(scenario)[1], "native_fixture")
         digest = hashlib.sha256(frozen).hexdigest()
         _require(saved == frozen and digest == proof["project_sha256"], "native_frozen_file_binding")
         if actor == "script":

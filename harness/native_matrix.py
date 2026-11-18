@@ -9,14 +9,17 @@ UIA_LAYER_SCENARIO = "uia_hybrid_layer"
 UIA_LAYER_STRENGTH_SCENARIO = "uia_hybrid_layer_strength"
 UIA_CANVAS_SCENARIO = "uia_hybrid_canvas"
 UIA_PROCESS_COMBO = "uia_process_combo"
+UIA_MIX_RECIPES = "uia_mix_recipes"
 UIA_REPLAY_SCENARIO = "uia_replay_layer"
 UIA_REPLAY_SAVE = "uia_replay_save"
 UIA_REPLAY_CANVAS = "uia_replay_canvas"
+UIA_REPLAY_PROCESS = "uia_replay_process"
 REPLAY_SOURCES = {UIA_REPLAY_SCENARIO: UIA_LAYER_SCENARIO, UIA_REPLAY_SAVE: UIA_SAVE_SCENARIO,
-                  UIA_REPLAY_CANVAS: UIA_CANVAS_SCENARIO}
+                  UIA_REPLAY_CANVAS: UIA_CANVAS_SCENARIO, UIA_REPLAY_PROCESS: UIA_PROCESS_COMBO}
+UIA_PROCESS_SCENARIOS = frozenset((UIA_PROCESS_COMBO, UIA_REPLAY_PROCESS))
 UIA_SAVE_SCENARIOS = frozenset((UIA_SAVE_SCENARIO, UIA_REPLAY_SAVE))
 SCRIPT_COMPARISON_SCENARIOS = (UIA_LAYER_SCENARIO, UIA_CANVAS_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO, UIA_SAVE_SCENARIO,
-                               UIA_PROCESS_COMBO)
+                               UIA_PROCESS_COMBO, UIA_MIX_RECIPES)
 SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES)
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
@@ -44,9 +47,11 @@ SCENARIOS = {
     UIA_LAYER_STRENGTH_SCENARIO: ("Strength", None),
     UIA_CANVAS_SCENARIO: ("Quality", None),
     UIA_PROCESS_COMBO: ("Quality", None),
+    UIA_MIX_RECIPES: ("Quality", None),
     UIA_REPLAY_SCENARIO: ("Quality", None),
     UIA_REPLAY_SAVE: ("Quality", "save_dialog"),
     UIA_REPLAY_CANVAS: ("Quality", None),
+    UIA_REPLAY_PROCESS: ("Quality", None),
     "overwrite": ("Quality", "overwrite"),
     "safety_cancel": ("Quality", "cancel"),
     "safety_timeout": ("Quality", "timeout"),

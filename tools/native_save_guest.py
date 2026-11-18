@@ -84,7 +84,8 @@ def worker(run_id, actor="codex", scenario="base"):
             request.unlink()
             video = DesktopVideo(root)
             video.start()
-        ui = ProjectUI(root, guard)
+        from harness.native_pilots import native_fixture
+        ui = ProjectUI(root, guard, fixture=native_fixture(scenario))
         (root / "input/fixture.3mf").chmod(stat.S_IREAD)
         (root / "projects").mkdir()
         (root / "proof").mkdir()

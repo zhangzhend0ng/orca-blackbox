@@ -6,7 +6,8 @@ import re
 from copy import deepcopy
 from .native_diagnostic_recovery import COMMIT_SCENARIO
 from .native_matrix import (CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, SAVE_CLEAR_SCENARIOS,
-    UIA_HYBRID_SCENARIOS, UIA_REPLAY_CANVAS, UIA_REPLAY_SAVE, UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIOS)
+    UIA_HYBRID_SCENARIOS, UIA_PROCESS_SCENARIOS, UIA_REPLAY_CANVAS, UIA_REPLAY_PROCESS, UIA_REPLAY_SAVE,
+    UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIOS)
 
 NATIVE_TOOLS = frozenset({"Snapshot", "Screenshot", "Click", "Type", "Shortcut", "Wait", "ControlStatus"})
 INPUT_TOOLS = frozenset({"Click", "Type", "Shortcut"})
@@ -14,6 +15,7 @@ SHORTCUTS = frozenset({"ctrl+s", "ctrl+shift+s", "enter", "tab", "shift+tab", "e
 UIA_SAVE_TOOLS = frozenset({"Snapshot", "Click", "Type", "Wait", "ControlStatus"})
 UIA_ACTION_TYPES = ("ButtonControl", "MenuItemControl", "TabItemControl")
 UIA_VISUAL_REGIONS = ("wx_sidebar", "imgui_canvas")
+PROCESS_POPUP = "wx_process_popup"
 EDIT_NUMBER = r"(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?"
 CANVAS_NUMBER = r"(?:[1-9][0-9]{0,2}(?:\.[0-9]{1,4})?|0\.(?=[0-9]{0,3}[1-9])[0-9]{1,4})"
 
@@ -23,9 +25,13 @@ def native_tools(scenario):
         return frozenset({"Snapshot", "Click", "Type", "Shortcut"})
     if scenario == UIA_REPLAY_SAVE:
         return frozenset({"Snapshot", "Click", "Type"})
-    if scenario == UIA_REPLAY_CANVAS:
+    if scenario in {UIA_REPLAY_CANVAS, UIA_REPLAY_PROCESS}:
         return NATIVE_TOOLS - {"Wait", "ControlStatus"}
     return UIA_SAVE_TOOLS if scenario in UIA_SAVE_SCENARIOS else NATIVE_TOOLS
+
+
+def visual_regions(scenario):
+    return (*UIA_VISUAL_REGIONS, PROCESS_POPUP) if scenario in UIA_PROCESS_SCENARIOS else UIA_VISUAL_REGIONS
 
 
 def uia_selector_schema(control_type):
@@ -76,7 +82,7 @@ def hybrid_tool_schema(tool, output_path, scenario):
         uia_tool_schema(tool, output_path)
         return
     snapshots = exact({})
-    crop = exact({"region_name": {"type": "string", "enum": list(UIA_VISUAL_REGIONS)}})
+    crop = exact({"region_name": {"type": "string", "enum": list(visual_regions(scenario))}})
     loc = {**pixels(2), "description": "Absolute desktop pixel pair as a JSON integer array. Example [120,480]."}
     action = uia_selector_schema("ButtonControl")
     action["properties"]["control_type"] = {"type": "string", "enum": list(UIA_ACTION_TYPES)}
@@ -197,7 +203,7 @@ def validate_input(name, args, output_path, scenario="base"):
         if name == "Snapshot" and args:
             raise ValueError("native_uia_snapshot_options")
         if name == "Screenshot":
-            if set(args) == {"region_name"} and args["region_name"] in UIA_VISUAL_REGIONS:
+            if set(args) == {"region_name"} and args["region_name"] in visual_regions(scenario):
                 return
             box = args.get("region")
             if (set(args) != {"region"} or type(box) is not list or len(box) != 4

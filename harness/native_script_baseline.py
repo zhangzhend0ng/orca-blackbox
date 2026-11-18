@@ -5,7 +5,8 @@ import re
 import sys
 
 from .agent_protocol import ProtocolError, read_json
-from .native_matrix import UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO, UIA_PROCESS_COMBO
+from .native_matrix import (UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO,
+    UIA_MIX_RECIPES, UIA_PROCESS_COMBO)
 
 
 def edit_layer(ui, value="0.24"):
@@ -131,6 +132,18 @@ def edit_process_combo(ui):
         raise ProtocolError("process_combo_support_type")
 
 
+def add_mix_recipes(ui):
+    tests = Path(__file__).resolve().parents[1] / "tests"
+    sys.path.insert(0, str(tests / "mixing"))
+    from m4i_mixing_slice import register_scheme, sidebar_entries
+
+    for mode in ("Ratio", "Gradient"):
+        ui.main_input()
+        ok, _ = register_scheme(ui.app, mode, len(sidebar_entries(ui.app)))
+        if not ok:
+            raise ProtocolError("mix_recipe_registration:" + mode)
+
+
 def edit_project(ui, scenario, canvas):
     if scenario in {UIA_LAYER_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO}:
         if scenario == UIA_LAYER_STRENGTH_SCENARIO:
@@ -142,5 +155,7 @@ def edit_project(ui, scenario, canvas):
         move_x(ui, canvas)
     elif scenario == UIA_PROCESS_COMBO:
         edit_process_combo(ui)
+    elif scenario == UIA_MIX_RECIPES:
+        add_mix_recipes(ui)
     else:
         raise ProtocolError("script_comparison_scenario")

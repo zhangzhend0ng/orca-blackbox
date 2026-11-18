@@ -16,8 +16,8 @@ MAX_PROJECT_BYTES = 16 * 1024 * 1024
 
 
 class ProjectUI(BusinessUI):
-    def __init__(self, artifacts: Path, guard):
-        super().__init__(artifacts, guard)
+    def __init__(self, artifacts: Path, guard, **kwargs):
+        super().__init__(artifacts, guard, **kwargs)
         from . import topbar_util
         self.tb = topbar_util
         self.saved = None

@@ -159,7 +159,8 @@ def main(argv=None):
             prompt = ("Use only Windows-MCP in the isolated Snapmaker Orca window. " + business_goal(args.scenario)
                       + " The assigned output path is " + output + ". Save the complete project there as a 3MF. "
                       "Choose and check the UI route yourself. Prefer native control properties. Use named local "
-                      "observations for drawn controls that have no actionable UIA node. Follow the tool schemas "
+                      "observations for drawn controls that have no actionable UIA node. Use a popup's named region "
+                      "if the tool advertises one. Follow the tool schemas "
                       "and authority decisions. After a recoverable refusal, observe again before any input. "
                       "Finish with ControlStatus(release=true). Independent verification reopens and slices.")
         elif args.scenario == UIA_SAVE_SCENARIO:

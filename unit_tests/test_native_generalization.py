@@ -13,6 +13,8 @@ from harness.native_matrix import GENERALIZATION
 from harness.pilot_infill_material import verify_business as verify_combo
 from harness.pilot_scale_x import verify_business as verify_scale
 from harness.pilot_top_layers import verify_business as verify_top
+from harness.pilot_common import PROCESS_COMBO
+from harness.pilot_process_combo import verify_business as verify_process_combo
 from harness.pilot_transform import _fixture_with_transform
 from harness.project_3mf import _archive, _geometry
 from tools.zcode_matrix import generalization_threshold
@@ -38,6 +40,20 @@ def change_settings(project, **changes):
         for name, data in files.items():
             archive.writestr(name, data)
     return output.getvalue()
+
+
+def test_process_combo_requires_all_settings_in_the_same_saved_and_sliced_project(fixture):
+    project = change_settings(fixture, **PROCESS_COMBO)
+    config = b"".join(f"; {key} = {value}\n".encode() for key, value in PROCESS_COMBO.items() if key != "layer_height")
+    raw = gcode("0.3").replace(b"; CONFIG_BLOCK_END", config + b"; sparse_infill_pattern = grid\n; CONFIG_BLOCK_END")
+    assert verify_process_combo(project, fixture, raw)["gcode"]["layer_count"] == 90
+    for key, old in [("sparse_infill_density", "15%"), ("enable_support", "0"), ("support_type", "tree(auto)")]:
+        with pytest.raises(ValueError):
+            verify_process_combo(change_settings(project, **{key: old}), fixture, raw)
+        expected = f"; {key} = {PROCESS_COMBO[key]}".encode()
+        stale = raw.replace(expected, f"; {key} = {old}".encode())
+        with pytest.raises(ValueError, match="process_combo_gcode_setting"):
+            verify_process_combo(project, fixture, stale)
 
 
 def test_top_shell_layers_requires_saved_setting_and_top_surface_extrusion(fixture):

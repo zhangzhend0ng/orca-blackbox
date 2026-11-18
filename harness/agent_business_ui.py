@@ -30,14 +30,15 @@ def _discard_choice(caption, children, *, close_requested=False):
 
 
 class BusinessUI:
-    def __init__(self, artifacts: Path, guard):
+    def __init__(self, artifacts: Path, guard, *, fixture=(LAYER_FIXTURE, LAYER_FIXTURE_SHA256)):
         # GUI imports are deliberately lazy: importing this module is harmless.
         from .agent_guest import REPO, _WindowsUI, _bytes_once
         from . import export_util
         self.artifacts, self.guard, self.eu = artifacts, guard, export_util
         self.exports, self.base = 0, None
-        raw = (REPO / LAYER_FIXTURE).read_bytes()
-        if hashlib.sha256(raw).hexdigest() != LAYER_FIXTURE_SHA256:
+        fixture_path, fixture_sha256 = fixture
+        raw = (REPO / fixture_path).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != fixture_sha256:
             raise ProtocolError("fixture_digest")
         (artifacts / "input").mkdir()
         fixture = artifacts / "input/fixture.3mf"
@@ -62,7 +63,7 @@ class BusinessUI:
             self.click_rect(quality[1])
             self.pause(3)
             self.boot_details = {"fixture_path": "input/fixture.3mf",
-                "fixture_sha256": LAYER_FIXTURE_SHA256, "datadir": "profile", "driver_pid": os.getpid()}
+                "fixture_sha256": fixture_sha256, "datadir": "profile", "driver_pid": os.getpid()}
         except BaseException:
             if self.base is not None:
                 try:

@@ -9,7 +9,7 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from harness.agent_protocol import LAYER_FIXTURE, LAYER_FIXTURE_SHA256, valid_run_id
-from harness.native_matrix import REPLAY_SOURCES, UIA_CANVAS_SCENARIO, UIA_SAVE_SCENARIO
+from harness.native_matrix import REPLAY_SOURCES, UIA_CANVAS_SCENARIO, UIA_PROCESS_COMBO, UIA_SAVE_SCENARIO
 from harness.native_pilots import verify_business
 from harness.native_save_session import NATIVE_SUT_SHA256, verify_layer_saved, verify_unchanged_saved
 from harness.native_uia_replay import compile_recipe, recipe_path
@@ -47,7 +47,7 @@ def record(run_id):
     fixture, project, gcode = (path.read_bytes() for path in files)
     if any(hashlib.sha256(raw).hexdigest() != digest for raw, digest in zip((fixture, project, gcode), expected)):
         raise ValueError("replay_source_artifact_digest")
-    if scenario == UIA_CANVAS_SCENARIO:
+    if scenario in {UIA_CANVAS_SCENARIO, UIA_PROCESS_COMBO}:
         verify_business(scenario, project, fixture, gcode)
     elif scenario == UIA_SAVE_SCENARIO:
         if type(setup.get("dialog_hwnd")) is not int or setup["dialog_hwnd"] != scope.get("dialog_hwnd"):

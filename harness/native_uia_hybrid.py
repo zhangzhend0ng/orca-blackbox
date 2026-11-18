@@ -4,8 +4,8 @@ import time
 from dataclasses import dataclass
 
 from .agent_verify import _require
-from .native_matrix import UIA_DISTURBANCE_SCENARIO
-from .native_save_policy import INPUT_TOOLS, InputGuard, UIA_VISUAL_REGIONS, validate_input, validate_uia_selector
+from .native_matrix import UIA_DISTURBANCE_SCENARIO, UIA_PROCESS_SCENARIOS
+from .native_save_policy import INPUT_TOOLS, PROCESS_POPUP, InputGuard, UIA_VISUAL_REGIONS, validate_input, validate_uia_selector
 from .native_uia import SAVE_DIALOG_TITLES, UiaSaveGuard, value_digest, verify_uia_save
 
 OBSERVATION_LIMIT_NS = 30_000_000_000
@@ -24,6 +24,13 @@ def within(bounds, rect):
 
 def contains(rect, loc):
     return rect[0] <= loc[0] < rect[2] and rect[1] <= loc[1] < rect[3]
+
+
+def process_popup_near_sidebar(popup, bounds, sidebar, opened_at):
+    return (popup["class"] == "wxWindowNR" and popup["name"] == "panel" and within(sidebar, bounds)
+            and 80 <= bounds[2] - bounds[0] <= 260 and 70 <= bounds[3] - bounds[1] <= 180
+            and bounds[0] <= opened_at[0] < bounds[2]
+            and min(abs(opened_at[1] - bounds[1]), abs(opened_at[1] - bounds[3])) <= 60)
 
 
 def selector_key(target):
@@ -47,6 +54,7 @@ class UiaHybridGuard(UiaSaveGuard):
         self.crops = {}
         self.crop_id = 0
         self.canvas_click_crop = None
+        self.sidebar_opener = None
         self.needs_main_snapshot = False
         self.needs_uia_snapshot = False
         self.canvas_hwnd = json.loads(scope["canvas_binding_json"])["hwnd"]
@@ -147,6 +155,52 @@ class UiaHybridGuard(UiaSaveGuard):
     def _clear_visual(self):
         self.crops.clear()
         self.canvas_click_crop = self._last_click = None
+
+    def record_click(self, loc, *, clicks=1):
+        super().record_click(loc, clicks=clicks)
+        self.sidebar_opener = ((list(loc), time.monotonic_ns())
+            if self.scope["scenario"] in UIA_PROCESS_SCENARIOS
+            and self.last_window.get("visual_fallback") == "wx_sidebar"
+            and self.last_window.get("target_class") == "wxWindowNR" else None)
+
+    def _process_popup(self, wu, hwnd):
+        if self.scope["scenario"] not in UIA_PROCESS_SCENARIOS or self.sidebar_opener is None:
+            return None
+        opening_loc, opened = self.sidebar_opener
+        if not 0 <= time.monotonic_ns() - opened <= 45_000_000_000:
+            return None
+        popup = self._popup(wu, hwnd)
+        bounds = list(wu.window_rect(hwnd))
+        sidebar = self._regions(wu).get("wx_sidebar")
+        if sidebar is None or not process_popup_near_sidebar(popup, bounds, sidebar, opening_loc):
+            return None
+        return {"popup": popup, "bounds": bounds, "sidebar": sidebar, "opened_by": opening_loc}
+
+    def _process_popup_input(self, wu, hwnd, name, args, proof):
+        bounds = proof["bounds"]
+        proof_window = dict(process_popup=proof, app_pid=self.scope["app_pid"], foreground_hwnd=hwnd,
+                            foreground_pid=self.scope["app_pid"], route="process_popup_visual",
+                            visual_fallback=PROCESS_POPUP, visual_region=bounds, visual_anchor_region=bounds)
+        if name == "Screenshot" and args["region_name"] == PROCESS_POPUP:
+            self.last_window = dict(proof_window, visual_region_name=PROCESS_POPUP)
+            return self.last_window
+        if name == "Click" and "loc" in args:
+            crop = self.crops.get(PROCESS_POPUP)
+            if (crop is None or crop.region != bounds or not contains(bounds, args["loc"])
+                    or not 0 <= time.monotonic_ns() - crop.taken_at_ns <= OBSERVATION_LIMIT_NS):
+                raise ValueError("native_process_popup_crop_required")
+            hit = wu.window_from_screen_point(*args["loc"])
+            item = self.control_from_point(*args["loc"])
+            if hit != hwnd or (item is not None and (item.ProcessId != self.scope["app_pid"] or self._pattern(item)[0])):
+                raise ValueError("native_process_popup_target_changed")
+            target = InputGuard.check(self, name, args)
+            if target["foreground_hwnd"] != hwnd or target["target_hwnd"] != hwnd:
+                raise ValueError("native_process_popup_target_changed")
+            self.last_window.update(proof_window, visual_crop_id=crop.crop_id)
+            self._clear_visual()
+            self.needs_main_snapshot = True
+            return self.last_window
+        return None
 
     def _discard_changed_crops(self, regions):
         self.crops = {role: crop for role, crop in self.crops.items() if regions.get(role) == crop.anchor}
@@ -249,6 +303,12 @@ class UiaHybridGuard(UiaSaveGuard):
             self.last_window["uia_save"] = True
             return self.last_window
         named_observation = name == "Screenshot" and "region_name" in args
+        if hwnd != self.scope["hwnd"]:
+            process_popup = self._process_popup(wu, hwnd)
+            if process_popup is not None:
+                evidence = self._process_popup_input(wu, hwnd, name, args, process_popup)
+                if evidence is not None:
+                    return evidence
         if (name == "Snapshot" or named_observation) and hwnd != self.scope["hwnd"]:
             popup = self._popup(wu, hwnd)
             self._clear_visual()
@@ -256,6 +316,8 @@ class UiaHybridGuard(UiaSaveGuard):
             self.needs_main_snapshot = True
             self.last_window.update(route="uia_popup", app_pid=self.scope["app_pid"],
                 foreground_hwnd=hwnd, foreground_pid=wu._window_pid(hwnd), popup=popup)
+            if process_popup is not None:
+                self.last_window["process_popup"] = process_popup
             return self.last_window
         self.last_window.update(self._main_window(wu, hwnd))
         if self.needs_main_snapshot and name != "Snapshot":
@@ -294,6 +356,12 @@ class UiaHybridGuard(UiaSaveGuard):
 
     def capture_region(self):
         wu, hwnd = self.owned_foreground()
+        if self.last_window.get("route") == "process_popup_visual":
+            proof = self._process_popup(wu, hwnd)
+            if proof != self.last_window["process_popup"]:
+                raise ValueError("native_process_popup_changed")
+            self.last_window["visual_live_regions"] = {PROCESS_POPUP: proof["bounds"]}
+            return proof["bounds"]
         self._main_window(wu, hwnd)
         role = self.last_window["visual_fallback"]
         live = self._regions(wu)
@@ -339,8 +407,11 @@ class UiaHybridGuard(UiaSaveGuard):
             popup = self._popup(wu, hwnd)
             if popup != self.last_window["popup"]:
                 raise ValueError("native_uia_popup_changed")
-            return {"popup": popup, "controls": [], "visual_regions": {},
-                    "state": "Owned popup is read-only. Wait for it to close, then Snapshot the main window."}
+            process_popup = self.last_window.get("process_popup")
+            regions = {PROCESS_POPUP: process_popup["bounds"]} if process_popup else {}
+            state = ("A drawn process menu is open; observe its named region before input. After it closes, Snapshot the main window."
+                     if process_popup else "Owned popup is read-only. Wait for it to close, then Snapshot the main window.")
+            return {"popup": popup, "controls": [], "visual_regions": regions, "state": state}
         self._main_window(wu, hwnd)
         if name == "Snapshot":
             controls = self._native_controls(wu, hwnd)
@@ -389,6 +460,7 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
                         allow_refresh=False, strict_crop_lifetime=False, named_crops_only=False):
     regions, crop, targets = {}, None, []
     crops, canvas_click = {}, None
+    opener, popup_crop = None, None
     popup_open = pending_uia_snapshot = False
     counts = dict(uia_tree_calls=0, uia_actions=0, cropped_visual_calls=0, visual_inputs=0)
     cancel, cancelled, closed = None, False, prepared_dialog is None
@@ -452,6 +524,36 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
             save = verify_uia_save(trace[index:], run_id=run_id, app_pid=app_pid,
                 dialog_hwnd=window["foreground_hwnd"], output_path=output_path, first_seq=index + 1)
             return {"save_as": save, **counts}
+        if window.get("route") == "process_popup_visual":
+            proof = window["process_popup"]
+            popup, bounds, sidebar = proof["popup"], proof["bounds"], proof["sidebar"]
+            _require(scenario in UIA_PROCESS_SCENARIOS and opener is not None
+                     and proof["opened_by"] == opener[0] and sidebar == opener[1]
+                     and 0 <= row["started_at_ns"] - opener[2] <= 45_000_000_000
+                     and popup["root_owner_hwnd"] == main_hwnd and popup["hwnd"] != main_hwnd
+                     and window["foreground_hwnd"] == popup["hwnd"]
+                     and window["app_pid"] == window["foreground_pid"] == app_pid
+                     and window["visual_fallback"] == PROCESS_POPUP
+                     and window["visual_region"] == window["visual_anchor_region"] == bounds
+                     and process_popup_near_sidebar(popup, bounds, sidebar, opener[0]), "native_process_popup_binding")
+            ticket = (proof, window["visual_crop_id"])
+            if name == "Screenshot":
+                _require(args == {"region_name": PROCESS_POPUP} and ticket[1] == counts["cropped_visual_calls"] + 1
+                         and window["visual_live_regions"] == {PROCESS_POPUP: bounds}, "native_process_popup_observation")
+                popup_crop = (*ticket, row["finished_at_ns"])
+                counts["cropped_visual_calls"] += 1
+            else:
+                _require(name == "Click" and popup_crop is not None and popup_crop[:2] == ticket
+                         and 0 <= row["started_at_ns"] - popup_crop[2] <= OBSERVATION_LIMIT_NS
+                         and contains(bounds, args["loc"]) and window["target_hwnd"] == popup["hwnd"]
+                         and window["target_pid"] == app_pid and window["target_class"] == "wxWindowNR",
+                         "native_process_popup_input")
+                counts["visual_inputs"] += 1
+                opener = popup_crop = None
+            crops.clear()
+            canvas_click = None
+            popup_open = True
+            continue
         if window.get("route") == "uia_popup":
             popup, hwnd = window["popup"], window["foreground_hwnd"]
             observation = (name == "Snapshot" and not args) or (name == "Screenshot" and "region_name" in args)
@@ -522,9 +624,13 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
                      and (name != "Type" or (crop[0] == "imgui_canvas" and window.get("route") == "canvas_numeric")),
                      "native_uia_visual_input_proof")
             counts["visual_inputs"] += 1
+            opener = ((args["loc"], window["visual_anchor_region"], row["finished_at_ns"])
+                      if scenario in UIA_PROCESS_SCENARIOS and name == "Click" and kind == "wx_sidebar"
+                      and window.get("target_class") == "wxWindowNR" else None)
         elif "target" in args:
             crops.clear()
             canvas_click = None
+            opener = None
             _require({"target": args["target"], "hwnd": window["target_hwnd"], "pattern": window["pattern"]}
                      in targets and window["target_pid"] == app_pid, "native_uia_target_binding")
             if name == "Type":
@@ -539,4 +645,5 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
             _require(window.get("route") == "owned_command", "native_uia_owned_command")
             crops.clear()
             canvas_click = None
+            opener = None
     _require(False, "native_uia_save_trace_missing")

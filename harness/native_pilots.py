@@ -1,7 +1,7 @@
 """Finite business experiments; never a model-selected verifier or import path."""
 from importlib import import_module
 from .native_matrix import (CANVAS_REPLACE_SCENARIO, SCALE_SCENARIOS, UIA_CANVAS_SCENARIO,
-    UIA_DISTURBANCE_SCENARIO, UIA_PROCESS_COMBO, UIA_Y_SCENARIOS)
+    UIA_DISTURBANCE_SCENARIO, UIA_MIX_RECIPES, UIA_PROCESS_COMBO, UIA_Y_SCENARIOS)
 
 PILOTS = {
     "pilot_strength": "pilot_strength",
@@ -17,6 +17,7 @@ TRIALS = {
     "canvas_trial": "pilot_transform", CANVAS_REPLACE_SCENARIO: "pilot_transform",
     UIA_CANVAS_SCENARIO: "pilot_transform",
     UIA_PROCESS_COMBO: "pilot_process_combo",
+    UIA_MIX_RECIPES: "pilot_mix_recipes",
     "general_wall": "pilot_strength", "general_slot2": "pilot_material",
     "general_top_strength": "pilot_top_layers", "general_top_quality": "pilot_top_layers",
     **dict.fromkeys(SCALE_SCENARIOS, "pilot_scale_x"),
@@ -26,6 +27,14 @@ TRIALS = {
     **dict.fromkeys(UIA_Y_SCENARIOS, "move_y"),
     "uia_general_combo": "combo", UIA_DISTURBANCE_SCENARIO: "combo",
 }
+
+
+def native_fixture(scenario):
+    if scenario == UIA_MIX_RECIPES:
+        from .pilot_mix_recipes import FIXTURE, FIXTURE_SHA256
+        return FIXTURE, FIXTURE_SHA256
+    from .agent_protocol import LAYER_FIXTURE, LAYER_FIXTURE_SHA256
+    return LAYER_FIXTURE, LAYER_FIXTURE_SHA256
 
 
 def require_pilot_ready(scenario):

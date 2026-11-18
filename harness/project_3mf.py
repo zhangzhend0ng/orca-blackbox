@@ -22,7 +22,7 @@ def _numbers(text, count):
     return values
 
 
-def _xml(raw):
+def _xml(raw, *, allow_colour_paint=False):
     _require(len(raw) <= 2 * 1024 * 1024 and b"\0" not in raw, "project_xml_size")
     text = raw.decode("utf-8", errors="strict")
     _require("<!DOCTYPE" not in text.upper() and "<!ENTITY" not in text.upper(), "project_xml_entities")
@@ -30,7 +30,9 @@ def _xml(raw):
     pending, count = [(root, 0)], 0
     while pending:
         item, depth = pending.pop(); count += 1
-        _require(depth <= 16 and count <= 10000 and all(len(x) <= 4096 for x in item.attrib.values()), "project_xml_complexity")
+        _require(depth <= 16 and count <= 10000 and all(
+            len(value) <= (32768 if allow_colour_paint and key == "paint_color" and item.tag == _CORE + "triangle" else 4096)
+            for key, value in item.attrib.items()), "project_xml_complexity")
         pending.extend((child, depth + 1) for child in item)
     return root
 
@@ -76,8 +78,9 @@ def _apply(matrix, point):
     return tuple(sum(matrix[3 * col + row] * point[col] for col in range(3)) + matrix[9 + row] for row in range(3))
 
 
-def _geometry(files):
-    models = {name: _xml(raw) for name, raw in files.items() if name.endswith(".model")}
+def _geometry(files, *, allow_colour_paint=False):
+    models = {name: _xml(raw, allow_colour_paint=allow_colour_paint)
+              for name, raw in files.items() if name.endswith(".model")}
     _require("3D/3dmodel.model" in models and len(models) <= 8, "project_model_missing")
     objects = {}
     for name, model in models.items():
@@ -116,11 +119,14 @@ def _geometry(files):
                 points.append(point)
             faces = []
             for triangle in triangles:
-                _require(set(triangle.attrib) == {"v1", "v2", "v3"}, "project_paint_or_triangle")
+                paint = triangle.get("paint_color") if allow_colour_paint else None
+                keys = {"v1", "v2", "v3"} if paint is None else {"v1", "v2", "v3", "paint_color"}
+                _require(set(triangle.attrib) == keys, "project_paint_or_triangle")
                 ids = [int(triangle.get(k)) for k in ("v1", "v2", "v3")]
                 _require(len(set(ids)) == 3 and all(0 <= x < 8 for x in ids), "project_triangle_index")
                 face = tuple(points[x] for x in ids)
-                faces.append(min(face, face[1:] + face[:1], face[2:] + face[:2]))
+                canonical = min(face, face[1:] + face[:1], face[2:] + face[:2])
+                faces.append(canonical if not allow_colour_paint else (canonical, paint or "", face if paint else ()))
             _require(len(set(points)) == 8 and len(set(faces)) == 12, "project_mesh_degenerate")
             meshes.append(tuple(sorted(faces)))
     walk(("3D/3dmodel.model", build.get("objectid")), [transform])
