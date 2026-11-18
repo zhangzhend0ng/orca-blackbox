@@ -6,16 +6,30 @@ from types import SimpleNamespace
 
 import pytest
 
-from harness.native_matrix import UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_SAVE_SCENARIO
-from harness.native_save_policy import native_tools, scoped_tool_schemas, validate_input
+from harness.native_matrix import UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_PROCESS_COMBO, UIA_SAVE_SCENARIO
+from harness.native_save_policy import PROCESS_POPUP, native_tools, scoped_tool_schemas, validate_input
 from harness.native_uia import UiaSaveGuard, value_digest, verify_uia_save
-from harness.native_uia_hybrid import UiaHybridGuard, VisualCrop, verify_hybrid_trace
+from harness.native_uia_hybrid import UiaHybridGuard, VisualCrop, process_popup_near_sidebar, verify_hybrid_trace
 from tools.native_save_server import authority_refusal
 
 RUN = "a" * 32
 OUTPUT = r"C:\owned\0001.3mf"
 EDIT = {"control_type": "EditControl", "name": "File name:", "automation_id": "1001"}
 SAVE = {"control_type": "ButtonControl", "name": "Save", "automation_id": "1"}
+
+
+def test_process_popup_requires_registered_menu_named_region_and_nearby_opener():
+    request = {"region_name": PROCESS_POPUP}
+    validate_input("Screenshot", request, OUTPUT, UIA_PROCESS_COMBO)
+    with pytest.raises(ValueError):
+        validate_input("Screenshot", request, OUTPUT, UIA_LAYER_SCENARIO)
+    popup = {"class": "wxWindowNR", "name": "panel"}
+    sidebar = [0, 67, 426, 1032]
+    bounds = [246, 813, 393, 925]
+    assert process_popup_near_sidebar(popup, bounds, sidebar, [307, 794])
+    assert not process_popup_near_sidebar(popup, bounds, sidebar, [307, 680])
+    assert not process_popup_near_sidebar(popup, [246, 813, 460, 925], sidebar, [307, 794])
+    assert not process_popup_near_sidebar(dict(popup, name="Other"), bounds, sidebar, [307, 794])
 
 
 def test_save_scope_rejects_coordinates_screenshots_and_other_paths():
