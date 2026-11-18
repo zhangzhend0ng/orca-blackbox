@@ -30,7 +30,7 @@ def _discard_choice(caption, children, *, close_requested=False):
 
 
 class BusinessUI:
-    def __init__(self, artifacts: Path, guard, *, fixture=(LAYER_FIXTURE, LAYER_FIXTURE_SHA256)):
+    def __init__(self, artifacts: Path, guard, *, fixture=(LAYER_FIXTURE, LAYER_FIXTURE_SHA256), ready_on_open=None):
         # GUI imports are deliberately lazy: importing this module is harmless.
         from .agent_guest import REPO, _WindowsUI, _bytes_once
         from . import export_util
@@ -55,13 +55,18 @@ class BusinessUI:
             self.wu.user32.GetAncestor.restype = ctypes.c_void_p
             self.wu.user32.IsChild.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
             self.wu.user32.IsChild.restype = ctypes.c_int
-            self.pause(12)  # CLI fixture load must remain hands-off.
-            self.wu.user32.ShowWindow(self.app.hwnd, 3)
-            self.pause(1)
+            if ready_on_open is None:
+                self.pause(12)  # CLI fixture load must remain hands-off.
+                self.wu.user32.ShowWindow(self.app.hwnd, 3)
+                self.pause(1)
+            else:
+                self.wait(lambda: ready_on_open(self.app), 30)
+                self.maximize_ready()
             # Trusted setup exposes the Quality page; the model chooses its Edit.
             quality = self.wait(lambda: self.named_child("Quality"), 60)
             self.click_rect(quality[1])
-            self.pause(3)
+            if ready_on_open is None:
+                self.pause(3)
             self.boot_details = {"fixture_path": "input/fixture.3mf",
                 "fixture_sha256": fixture_sha256, "datadir": "profile", "driver_pid": os.getpid()}
         except BaseException:
@@ -88,6 +93,10 @@ class BusinessUI:
                 return value
             self.pause(0.1)
         raise ProtocolError("gui_wait_timeout")
+
+    def maximize_ready(self):
+        self.wu.user32.ShowWindow(self.app.hwnd, 3)
+        self.wait(lambda: self.wu.user32.IsZoomed(self.app.hwnd), 5)
 
     def identity(self):
         return self.base.identity()

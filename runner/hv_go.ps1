@@ -9,7 +9,7 @@
 # do NOT hardcode case names here (see docs/STRUCTURING_PLAN.md).
 param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$Warmup, [switch]$NoSync, [string]$Suite = 'regression', [switch]$V3,
       [ValidateSet('script', 'agent_mcp')][string]$V3Executor = 'script', [string]$V3RunId = '',
-      [switch]$WindowsMcpProbe, [string]$ProbeRunId = '', [switch]$NativeSave,
+      [switch]$WindowsMcpProbe, [string]$ProbeRunId = '', [switch]$NativeSave, [switch]$ProbeMixWaits,
       [ValidateSet('codex','zcode','script')][string]$NativeActor = 'codex',
       [ValidateSet('base','quality_a','quality_b','strength_a','strength_b','others_a','others_b','save_dialog','overwrite',
           'safety_cancel','safety_timeout','safety_guard_disconnect','pilot_strength','pilot_transform','pilot_material','pilot_infill','pilot_material3',
@@ -26,6 +26,9 @@ if ($NativeActor -eq 'script' -and $NativeScenario -notin @('uia_save_as','uia_h
 }
 if ($NativeScenario -ne 'base' -and (-not $NativeSave -or $NativeActor -eq 'codex')) { throw 'NativeScenario requires ZCode or script NativeSave' }
 if ($NativeSave -and -not $WindowsMcpProbe) { throw '-NativeSave requires -WindowsMcpProbe' }
+if ($ProbeMixWaits -and (-not $NativeSave -or $NativeActor -ne 'script' -or $NativeScenario -ne 'uia_replay_mix')) {
+    throw '-ProbeMixWaits requires the native scripted mixing replay'
+}
 if ($NativeActor -ne 'codex' -and -not $NativeSave) { throw '-NativeActor requires -NativeSave' }
 if ($WindowsMcpProbe) {
   if ($V3 -or $Cases -or $args -or $OnlyFailed -or $Warmup -or $V3RunId -or
@@ -143,10 +146,15 @@ if ($v.State -ne 'Running') {
 # 2) wait for guest + autologon (up to 6 min)
 Write-Host "[2] waiting for guest autologon..."
 $deadline = (Get-Date).AddMinutes(6)
-do {
+$q = $null
+if ($ProbeMixWaits) {
+  $q = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock { (quser 2>&1 | Out-String).Trim() } -ErrorAction SilentlyContinue
+  if ($q -match $guestUser) { Write-Host '    guest already logged on before first interval' }
+}
+while (-not ($q -match $guestUser) -and (Get-Date) -lt $deadline) {
   Start-Sleep 15
   $q = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock { (quser 2>&1 | Out-String).Trim() } -ErrorAction SilentlyContinue
-} while (-not ($q -match $guestUser) -and (Get-Date) -lt $deadline)
+}
 if ($q -notmatch $guestUser) { throw "guest not logged on after 6 min (autologon broken?)" }
 Write-Host "    logged on."
 

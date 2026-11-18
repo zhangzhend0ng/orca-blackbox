@@ -81,8 +81,9 @@ def main():
     p.add_argument("--record-desktop", action="store_true", help="Record the dedicated win11-test desktop.")
     p.add_argument("--goal-only", action="store_true", help="Omit the guided UI route for ZCode.")
     p.add_argument("--inspect-mix-controls", action="store_true", help="Capture Add Mix controls during the scripted probe.")
+    p.add_argument("--probe-mix-waits", action="store_true", help="Measure the mixing replay with readiness checks replacing fixed sleeps.")
     p.add_argument("--actor", choices=("codex", "zcode", "script"), default="codex")
-    from harness.native_matrix import REPLAY_SOURCES, SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_LAYER_SCENARIO, UIA_MIX_RECIPES
+    from harness.native_matrix import REPLAY_SOURCES, SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_LAYER_SCENARIO, UIA_MIX_RECIPES, UIA_REPLAY_MIX
     p.add_argument("--scenario", choices=tuple(s for s in SCENARIOS if s not in {"canvas_probe", "authority_probe"}))
     args = p.parse_args()
     if args.scenario is None:
@@ -91,6 +92,8 @@ def main():
         p.error("--goal-only requires --actor zcode and a UIA hybrid scenario")
     if args.inspect_mix_controls and (args.actor != "script" or args.scenario != UIA_MIX_RECIPES):
         p.error("--inspect-mix-controls requires the mixing baseline script")
+    if args.probe_mix_waits and (args.actor != "script" or args.scenario != UIA_REPLAY_MIX):
+        p.error("--probe-mix-waits requires the recorded mixing replay")
     from harness.native_matrix import scenario_spec
     scenario_spec(args.actor, args.scenario)
     from harness.native_pilots import require_pilot_ready
@@ -122,7 +125,8 @@ def main():
     script = root / "launch.ps1"
     capture_request = ""
     for enabled, folder in ((args.record_desktop, "native_video_requests"),
-                            (args.inspect_mix_controls, "native_mix_census_requests")):
+                            (args.inspect_mix_controls, "native_mix_census_requests"),
+                            (args.probe_mix_waits, "native_mix_wait_requests")):
         if not enabled:
             continue
         capture_request += ("Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {param($sb,$id) "
@@ -139,7 +143,8 @@ def main():
            else "") + "){throw 'demo_guest_sync_or_runtime_required'}\n"
         +capture_request+
         "& "+quoted(REPO / "runner/hv_go.ps1")+" -NoSync -WindowsMcpProbe -NativeSave -ProbeRunId "+quoted(run_id)
-        +" -NativeActor "+args.actor+" -NativeScenario "+args.scenario+" *> "+quoted(root / "launch.log")+"\n"
+        +" -NativeActor "+args.actor+" -NativeScenario "+args.scenario
+        +(" -ProbeMixWaits" if args.probe_mix_waits else "")+" *> "+quoted(root / "launch.log")+"\n"
         "$r=@{ok=$true;head="+quoted(head)+"}\n"
         "}catch{$r=@{ok=$false;error_type=$_.Exception.GetType().Name;message=$_.Exception.Message}}\n"
         "$r|ConvertTo-Json|Set-Content "+quoted(launch_done)+" -Encoding UTF8\n", encoding="utf-8")
@@ -184,6 +189,8 @@ def main():
                "actor_error": error, "result": result, "release_eligible": False}
     if args.goal_only:
         summary["prompt_mode"] = "goal_only"
+    if args.probe_mix_waits:
+        summary["mix_wait_probe"] = True
     (root / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(json.dumps(summary), flush=True)
     return 0 if code == 0 and result.get("verified_pass") is True else 1

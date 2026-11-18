@@ -85,7 +85,21 @@ def worker(run_id, actor="codex", scenario="base"):
             video = DesktopVideo(root)
             video.start()
         from harness.native_pilots import native_fixture
-        ui = ProjectUI(root, guard, fixture=native_fixture(scenario))
+        from harness.native_matrix import UIA_REPLAY_MIX
+        request = REPO / "artifacts/native_mix_wait_requests" / run_id
+        probe_waits = request.is_file()
+        ready_on_open = None
+        if probe_waits:
+            if actor != "script" or scenario != UIA_REPLAY_MIX:
+                raise ValueError("native_mix_wait_probe_scope")
+            request.unlink()
+            from harness.mix_dialog_util import mix_entry_labels
+
+            def ready_on_open(app):
+                return len(mix_entry_labels(app)) == 1
+
+            report["mix_wait_probe"] = {"initial_started_at_ns": time.time_ns()}
+        ui = ProjectUI(root, guard, fixture=native_fixture(scenario), ready_on_open=ready_on_open)
         (root / "input/fixture.3mf").chmod(stat.S_IREAD)
         (root / "projects").mkdir()
         (root / "proof").mkdir()
@@ -94,7 +108,11 @@ def worker(run_id, actor="codex", scenario="base"):
         tab, disturbance = scenario_spec(actor, scenario)
         target = ui.wait(lambda: ui.named_child(tab), 15)
         ui.click_rect(target[1])
-        ui.pause(2)
+        if not probe_waits:
+            ui.pause(2)
+        else:
+            ui.wait(lambda: ready_on_open(ui.app), 10)
+            report["mix_wait_probe"]["initial_ready_at_ns"] = time.time_ns()
         setup = {"run_id": run_id, "scenario": scenario, "app_pid": ui.app.pid, "tab_clicked": tab}
         if disturbance == "overwrite":
             raw = (root / "input/fixture.3mf").read_bytes()
@@ -213,10 +231,23 @@ def worker(run_id, actor="codex", scenario="base"):
         base = _WindowsUI(root, model=frozen, profile_name="profile_reopen")
         ui.base, ui.app, ui.wu = base, base.app, base.winutil
         ui._close_requested = False
-        ui.pause(12)
-        ui.wu.user32.ShowWindow(ui.app.hwnd, 3)
-        ui.pause(2)
+        if probe_waits:
+            ui.wait(lambda: len(mix_entry_labels(ui.app)) == 3, 30)
+            ui.maximize_ready()
+
+            def slice_ready():
+                _, button = ui.eu.find_slice_buttons(ui.app.hwnd)
+                return button and ui.owned(button[2]) and ui.wu.user32.IsWindowEnabled(button[2])
+
+            ui.wait(slice_ready, 15)
+            report["mix_wait_probe"]["ready_to_slice_at_ns"] = time.time_ns()
+        else:
+            ui.pause(12)
+            ui.wu.user32.ShowWindow(ui.app.hwnd, 3)
+            ui.pause(2)
         ui.slice()
+        if probe_waits:
+            report["mix_wait_probe"]["slice_ready_for_export_at_ns"] = time.time_ns()
         exported = ui.export_gcode()
         exported_ns = time.time_ns()
         (root / "proof_final.png").write_bytes(_encode_capture(ui.identity()[1])[1])
