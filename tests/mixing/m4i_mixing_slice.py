@@ -54,7 +54,7 @@ LABEL_RATIO = re.compile(r"^F\d+ \d+%(\+F\d+ \d+%)+$")
 LABEL_GRADIENT = re.compile(r"^F\d+->F\d+$")
 
 
-def register_scheme(session, mode, n_before):
+def register_scheme(session, mode, n_before, *, observe=None):
     """Open Add Mix, switch to `mode`, make the pair compatible, OK.
     Returns (registered, label). The label can be IDENTICAL to a seeded
     entry's text (make_compatible re-picks row 1 to F3 — the seeded pair),
@@ -67,7 +67,9 @@ def register_scheme(session, mode, n_before):
     if mode == "Gradient":
         mdu.click_tab(session, dlg, "Gradient")
         time.sleep(0.8)
-    switched = make_compatible(session, dlg)
+    if observe is not None:
+        observe("dialog", dlg)
+    switched = make_compatible(session, dlg, observe_popup=observe and (lambda rect: observe("choices", dlg, rect)))
     blocked = compat_blocked(dlg)
     ok_en = mdu.ok_enabled(dlg)
     print(f"{LOG} add {mode}: switched={switched} blocked={blocked} "
@@ -76,6 +78,8 @@ def register_scheme(session, mode, n_before):
         mdu.click_button(session, dlg, "Cancel")
         time.sleep(1.2)
         return False, None
+    if observe is not None:
+        observe("compatible", dlg)
     mdu.click_button(session, dlg, "OK")
     time.sleep(2.5)
     if mdu.find_mix_dialog(session.pid, timeout_s=3.0) is not None:

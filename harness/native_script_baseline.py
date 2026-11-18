@@ -132,19 +132,23 @@ def edit_process_combo(ui):
         raise ProtocolError("process_combo_support_type")
 
 
-def add_mix_recipes(ui):
+def add_mix_recipes(ui, *, census=False):
     tests = Path(__file__).resolve().parents[1] / "tests"
     sys.path.insert(0, str(tests / "mixing"))
     from m4i_mixing_slice import register_scheme, sidebar_entries
 
     for mode in ("Ratio", "Gradient"):
         ui.main_input()
-        ok, _ = register_scheme(ui.app, mode, len(sidebar_entries(ui.app)))
+        observe = None
+        if census:
+            from tools.native_mix_census import observer
+            observe = observer(ui, mode)
+        ok, _ = register_scheme(ui.app, mode, len(sidebar_entries(ui.app)), observe=observe)
         if not ok:
             raise ProtocolError("mix_recipe_registration:" + mode)
 
 
-def edit_project(ui, scenario, canvas):
+def edit_project(ui, scenario, canvas, *, mix_census=False):
     if scenario in {UIA_LAYER_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO}:
         if scenario == UIA_LAYER_STRENGTH_SCENARIO:
             quality = ui.wait(lambda: ui.named_child("Quality"), 15)
@@ -156,6 +160,6 @@ def edit_project(ui, scenario, canvas):
     elif scenario == UIA_PROCESS_COMBO:
         edit_process_combo(ui)
     elif scenario == UIA_MIX_RECIPES:
-        add_mix_recipes(ui)
+        add_mix_recipes(ui, census=mix_census)
     else:
         raise ProtocolError("script_comparison_scenario")

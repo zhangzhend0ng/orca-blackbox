@@ -159,7 +159,11 @@ def worker(run_id, actor="codex", scenario="base"):
                     report["script_steps"] = ["save"] if REPLAY_SOURCES[scenario] == UIA_SAVE_SCENARIO else ["edit", "save"]
                 else:
                     if scenario != UIA_SAVE_SCENARIO:
-                        edit_project(ui, scenario, binding.hwnd)
+                        census = REPO / "artifacts/native_mix_census_requests" / run_id
+                        mix_census = census.is_file()
+                        if mix_census:
+                            census.unlink()
+                        edit_project(ui, scenario, binding.hwnd, mix_census=mix_census)
                         report["script_steps"].append("edit")
                     ui.save_project(prepared_dialog=setup.get("dialog_hwnd"))
                     report["script_steps"].append("save")

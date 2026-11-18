@@ -31,6 +31,7 @@ HOST_SOURCES = ("tools/native_save_demo.py", "tools/windows_mcp_codex_probe.py",
     "contracts/evidence/canvas-diagnostic-bb64.json",
     "harness/pilot_top_layers.py", "harness/pilot_scale_x.py", "harness/pilot_infill_material.py",
     "harness/pilot_process_combo.py", "harness/pilot_mix_recipes.py", "fixtures/mixed_filament_test.3mf",
+    "tools/native_mix_census.py", "tests/mixing/m4i_mixing_slice.py", "tests/mixing/m3u_mixing_ratio_flow.py",
     "harness/native_uia.py", "harness/native_uia_hybrid.py", "harness/pilot_uia_goals.py",
     "harness/native_save_session.py", "harness/project_3mf.py", "harness/runtime.py", "harness/native_matrix.py", "harness/native_pilots.py", "harness/pilot_common.py", "harness/pilot_infill.py", "harness/pilot_material3.py", "harness/canvas_input.py", "harness/pilot_strength.py", "harness/pilot_transform.py", "harness/pilot_material.py", "harness/guard_fault.py", "tools/zcode_matrix.py", "tools/windows_mcp_zcode_probe.py", "tools/zcode_session_driver.mjs", "harness/ip_guard.py")
 
@@ -78,14 +79,17 @@ def main():
     p.add_argument("--run-id", default=None)
     p.add_argument("--record-desktop", action="store_true", help="Record the dedicated win11-test desktop.")
     p.add_argument("--goal-only", action="store_true", help="Omit the guided UI route for ZCode.")
+    p.add_argument("--inspect-mix-controls", action="store_true", help="Capture Add Mix controls during the scripted probe.")
     p.add_argument("--actor", choices=("codex", "zcode", "script"), default="codex")
-    from harness.native_matrix import REPLAY_SOURCES, SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_LAYER_SCENARIO
+    from harness.native_matrix import REPLAY_SOURCES, SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_LAYER_SCENARIO, UIA_MIX_RECIPES
     p.add_argument("--scenario", choices=tuple(s for s in SCENARIOS if s not in {"canvas_probe", "authority_probe"}))
     args = p.parse_args()
     if args.scenario is None:
         args.scenario = "base" if args.actor == "codex" else UIA_LAYER_SCENARIO
     if args.goal_only and (args.actor != "zcode" or args.scenario not in UIA_HYBRID_SCENARIOS):
         p.error("--goal-only requires --actor zcode and a UIA hybrid scenario")
+    if args.inspect_mix_controls and (args.actor != "script" or args.scenario != UIA_MIX_RECIPES):
+        p.error("--inspect-mix-controls requires the mixing baseline script")
     from harness.native_matrix import scenario_spec
     scenario_spec(args.actor, args.scenario)
     from harness.native_pilots import require_pilot_ready
@@ -110,9 +114,12 @@ def main():
     launch_done = root / "launch.json"
     script = root / "launch.ps1"
     capture_request = ""
-    if args.record_desktop:
-        capture_request = ("Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {param($sb,$id) "
-            "$dir=Join-Path $sb 'artifacts/native_video_requests'; $null=[IO.Directory]::CreateDirectory($dir); "
+    for enabled, folder in ((args.record_desktop, "native_video_requests"),
+                            (args.inspect_mix_controls, "native_mix_census_requests")):
+        if not enabled:
+            continue
+        capture_request += ("Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {param($sb,$id) "
+            "$dir=Join-Path $sb 'artifacts/" + folder + "'; $null=[IO.Directory]::CreateDirectory($dir); "
             "$file=[IO.File]::Open((Join-Path $dir $id),[IO.FileMode]::CreateNew); $file.Dispose()} "
             "-ArgumentList $guestSandbox,"+quoted(run_id)+"\n")
     script.write_text("$ErrorActionPreference='Stop'\ntry {\n"
@@ -121,7 +128,7 @@ def main():
         "@{head=(& $git -C $sb rev-parse HEAD);dirty=@(& $git -C $sb status --porcelain);"
         r"runtime=(Test-Path 'C:\coil\tools\windows-mcp-0.8.9\python.exe')} } -ArgumentList $guestSandbox,$guestGit"+"\n"
         "if($state.head.Trim() -ne "+quoted(head)+" -or $state.dirty.Count"
-        + (" -or -not $state.runtime" if args.actor != "script" or args.scenario in REPLAY_SOURCES
+        + (" -or -not $state.runtime" if args.actor != "script" or args.scenario in REPLAY_SOURCES or args.inspect_mix_controls
            else "") + "){throw 'demo_guest_sync_or_runtime_required'}\n"
         +capture_request+
         "& "+quoted(REPO / "runner/hv_go.ps1")+" -NoSync -WindowsMcpProbe -NativeSave -ProbeRunId "+quoted(run_id)
