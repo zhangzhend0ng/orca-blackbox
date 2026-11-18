@@ -20,17 +20,18 @@ const config=JSON.parse(fs.readFileSync(path.join(process.cwd(),'fake-config.jso
 const selected={providerId:'new-provider',modelId:'glm-5.3-flash'};
 const settings={model:{current:selected},thoughtLevel:{current:'low'}};
 const rl=require('node:readline').createInterface({input:process.stdin});
-let polled=false;
+let polls=0;
 rl.on('line',line=>{
  const q=JSON.parse(line);let result={};
  fs.appendFileSync(path.join(process.cwd(),'fake-requests.ndjson'),JSON.stringify(q)+'\n');
  if(q.method==='session/create')result={session:{sessionId:'single_turn'},settings};
  if(q.method==='session/read')result={settings};
  if(q.method==='session/events'){
-  if(polled)throw Error('unexpected second turn or polling after fixed events');
-  polled=true;
+  const index=polls++;
   fs.writeFileSync(path.join(process.cwd(),'authority.ndjson'),config.sidecar);
-  result={events:config.events};
+  const batch=config.batches[index];
+  if(!batch)throw Error('unexpected polling after fixed events');
+  result={events:batch};
  }
  process.stdout.write(JSON.stringify({id:q.id,result})+'\n');
 });
@@ -61,7 +62,8 @@ def tool_events(call_id, tool, *, error=False):
                      result={"content": [{"type": "text", "text": "ToolError wrapped as normal content"}]})))]
 
 
-def run_driver(tmp_path, rows, events, *, enabled=True, suffix="", count=None, request_ids=None):
+def run_driver(tmp_path, rows, events, *, enabled=True, suffix="", count=None, request_ids=None,
+               idle_after=None, scenario="base"):
     node = shutil.which("node")
     if not node:
         pytest.skip("Node runtime unavailable")
@@ -74,13 +76,14 @@ def run_driver(tmp_path, rows, events, *, enabled=True, suffix="", count=None, r
     sidecar = "".join(json.dumps({"request_id": (request_ids[index - 1] if request_ids is not None
                                    else "mcp-" + str(index)), "authority": row}) + "\n"
                       for index, row in enumerate(rows, 1)) + suffix
-    (tmp_path / "fake-config.json").write_text(json.dumps(dict(sidecar=sidecar, events=events)))
+    batches = [events] if idle_after is None else [events[:idle_after], [], [], events[idle_after:]]
+    (tmp_path / "fake-config.json").write_text(json.dumps(dict(sidecar=sidecar, batches=batches)))
     server = tmp_path / "fake-server.cjs"
     server.write_text(FAKE_SERVER)
     spec = dict(root=str(tmp_path), bundle=str(server), workspace=str(tmp_path), run_id=RUN_ID,
                 python="MUST_NOT_EXECUTE", bridge="MUST_NOT_EXECUTE", prompt="synthetic protocol test",
                 authority_protocol="native-authority-1", authority_log=str(tmp_path / "authority.ndjson"),
-                recovery_enabled=enabled)
+                recovery_enabled=enabled, scenario=scenario)
     spec_file = tmp_path / "spec.json"
     spec_file.write_text(json.dumps(spec))
     result = subprocess.run([node, str(DRIVER), str(spec_file)], capture_output=True, timeout=15)
@@ -115,9 +118,45 @@ def test_recoverable_error_event_continues_original_turn_after_observation(tmp_p
     assert report["native_tool_calls"][0]["error_event"] is True
 
 
+@pytest.mark.parametrize("diagnostic", [True, False])
+def test_diagnostic_receipt_accepted_only_in_its_own_contract(tmp_path, diagnostic):
+    from harness.native_diagnostic_recovery import ERROR_CODE, PROTOCOL, SCENARIO
+
+    injected = receipt(1, "Type", "recoverable")
+    injected["error_code"] = ERROR_CODE
+    injected["recovery"].update(error_code=ERROR_CODE, protocol=PROTOCOL)
+    events = [dict(type="turn.started")]
+    events += tool_events("c1", "Type", error=True) + tool_events("c2", "Screenshot") + tool_events("c3", "Type")
+    code, report = run_driver(tmp_path, [injected, receipt(2), receipt(3, "Type")], events,
+                              enabled=not diagnostic, scenario=SCENARIO if diagnostic else "recovery_owned_edit")
+    if not diagnostic:
+        assert code == 1 and report["error"] == "native_recovery_receipt_invalid"
+    else:
+        assert code == 0, report
+        turn = report["diagnostic_turn"]
+        assert turn["session_send_count"] == turn["turn_started_count"] == turn["turn_completed_count"] == 1
+        assert turn["calls"][0] == dict(seq=1, tool="Type", decision="recoverable", dispatched=False,
+                                         facts_sha256="b" * 64)
+
+
 def test_completed_receipt_allows_clean_turn(tmp_path):
     code, report = run_driver(tmp_path, [receipt()], tool_events("c1", "Screenshot"))
     assert code == 0 and report["error"] is None
+
+
+def test_progress_excludes_full_receipts_and_skips_idle_polls(tmp_path):
+    from harness.native_matrix import completed_progress
+
+    events = tool_events("c1", "Click") + tool_events("c2", "Screenshot")
+    code, report = run_driver(tmp_path, [receipt(1, "Click"), receipt(2)], events, idle_after=2)
+    assert code == 0, report
+    path = tmp_path / "progress.ndjson"
+    completed = [{"tool": "Click", "status": "completed"}, {"tool": "Screenshot", "status": "completed"}]
+    assert [json.loads(line)["native_tool_calls"] for line in path.read_text().splitlines()] == [
+        [], completed[:1], completed,
+    ]
+    assert completed_progress(path) == completed
+    assert report["native_tool_calls"][0]["authority"] == receipt(1, "Click")
 
 
 def test_informational_tool_update_without_call_id_does_not_abort_clean_tool(tmp_path):

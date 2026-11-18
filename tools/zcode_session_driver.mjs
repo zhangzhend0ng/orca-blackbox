@@ -1,6 +1,7 @@
 // ZCode's original app-server owns the agent loop. This client only binds a
 // session, supplies its goal, enforces permissions and records native events.
 import {spawn} from 'node:child_process';
+import {createHash} from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
@@ -10,15 +11,21 @@ const names=['Snapshot','Screenshot','Click','Type','Shortcut','Wait','ControlSt
 const allowed=new Set(names.map(n=>'mcp__windows_mcp__'+n));
 const report={actor:'zcode',provider_id:'new-provider',model_id:'glm-5.3-flash',error:null,
  native_tool_calls:[],permissions:[],event_counts:{},stage:'starting'};
-const save=(final=false)=>{
- if(final)fs.writeFileSync(path.join(spec.root,'actor.json'),JSON.stringify(report,null,2),{flag:'wx'});
- else fs.appendFileSync(path.join(spec.root,'progress.ndjson'),JSON.stringify(report)+'\n');
-};
+let lastProgress;
+function saveProgress(){
+ const completed=report.native_tool_calls.filter(call=>call.status==='completed')
+  .map(({tool,status})=>({tool,status}));
+ const snapshot=JSON.stringify({native_tool_calls:completed});
+ if(snapshot===lastProgress)return;
+ fs.appendFileSync(path.join(spec.root,'progress.ndjson'),snapshot+'\n');
+ lastProgress=snapshot;
+}
 const server=spawn(process.execPath,[spec.bundle,'app-server','--cwd',spec.workspace,'--no-color'],
  {cwd:spec.workspace,env:process.env,stdio:['pipe','pipe','pipe'],windowsHide:true});
 const stderr=fs.openSync(path.join(spec.root,'server.stderr.log'),'wx');
 let stderrBytes=0,wireBytes=0,sequence=0;
 const pending=new Map();
+const requestCounts=new Map();
 const write=d=>server.stdin.write(JSON.stringify(d)+'\n');
 server.stderr.on('data',data=>{
  stderrBytes+=data.length;
@@ -53,6 +60,7 @@ readline.createInterface({input:server.stdout}).on('line',line=>{
 });
 function request(method,params,seconds=60){
  const id=String(++sequence);
+ requestCounts.set(method,(requestCounts.get(method)||0)+1);
  return new Promise((resolve,reject)=>{
   const timer=setTimeout(()=>{pending.delete(id);reject(new Error('rpc_timeout:'+method))},seconds*1000);
   pending.set(id,{resolve,reject,timer,method});write({id,method,params});
@@ -61,6 +69,7 @@ function request(method,params,seconds=60){
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const calls=new Map();
 const authorityMode=spec.authority_protocol==='native-authority-1';
+const diagnosticMode=spec.scenario==='recovery_diagnostic_once';
 let authorityConsumed=0;
 let needsObservation=false,recoveryCount=0;
 const requestIds=new Set();
@@ -81,11 +90,14 @@ function takeAuthority(call){
  if(a.decision==='fatal')throw new Error('native_authority_fatal:'+a.error_code);
  if(a.decision==='recoverable'){
   const r=a.recovery;
-  if(!spec.recovery_enabled||a.dispatched!==false||r?.protocol!=='native-recovery-1'||r.run_id!==spec.run_id
+  const protocol=diagnosticMode?'native-diagnostic-recovery-1':'native-recovery-1';
+  const error=diagnosticMode?'native_diagnostic_injected_pre_dispatch':'native_type_requires_owned_edit';
+  if(!(diagnosticMode||spec.recovery_enabled)||a.dispatched!==false||r?.protocol!==protocol||r.run_id!==spec.run_id
     ||r.seq!==a.seq||r.tool!==call.tool||r.decision!=='recoverable'||r.dispatch_state!=='not_dispatched'
-    ||call.tool!=='Type'||a.error_code!=='native_type_requires_owned_edit'||r.error_code!==a.error_code
+    ||call.tool!=='Type'||a.error_code!==error||r.error_code!==a.error_code
     ||typeof r.facts_sha256!=='string'||!/^[0-9a-f]{64}$/.test(r.facts_sha256)
-    ||r.requires_observation!==true||!Number.isInteger(r.budget_used)||r.budget_used!==recoveryCount+1||r.budget_used>2)
+    ||r.requires_observation!==true||!Number.isInteger(r.budget_used)||r.budget_used!==recoveryCount+1
+    ||r.budget_used>(diagnosticMode?1:2))
     throw new Error('native_recovery_receipt_invalid');
   recoveryCount++;needsObservation=true;
  }else if(a.dispatched!==true)throw new Error('native_authority_completion_not_dispatched');
@@ -95,6 +107,7 @@ function takeAuthority(call){
 }
 let session,finished=false;
 try{
+ if(diagnosticMode&&!authorityMode)throw new Error('native_diagnostic_authority_required');
  await request('runtime/capabilities',{});
  const snapshot=await request('session/create',{
   workspace:{workspacePath:spec.workspace,workspaceKey:'orca-native-'+spec.run_id},
@@ -111,7 +124,7 @@ try{
  if(report.selection?.providerId!==report.provider_id||report.selection?.modelId!==report.model_id||report.thought_level!=='low')throw new Error('selected_model_mismatch');
  session=snapshot.session?.sessionId;
  if(!session)throw new Error('session_id_missing');
- report.session_id=session;report.stage='ready';save();
+ report.session_id=session;report.stage='ready';saveProgress();
  await request('session/send',{sessionId:session,content:spec.prompt});
  let after=0;
  const deadline=Date.now()+540000;
@@ -129,6 +142,8 @@ try{
      report.informational_tool_event_kinds[String(p.kind)]=(report.informational_tool_event_kinds[String(p.kind)]||0)+1;
      continue;
     }
+    if(diagnosticMode&&(report.event_counts['turn.started']!==1||finished))
+     throw new Error('native_diagnostic_tool_outside_turn');
     if(authorityMode&&(typeof p.toolCallId!=='string'||!p.toolCallId))throw new Error('native_tool_call_identity_missing');
     const call=calls.get(p.toolCallId)||{tool_call_id:p.toolCallId,status:'pending'};
     if(authorityMode&&p.kind!=='scheduled'&&!calls.has(p.toolCallId))throw new Error('native_unscheduled_tool_event');
@@ -170,7 +185,7 @@ try{
     finished=true;
    }
   }
-  report.native_tool_calls=[...calls.values()];report.stage=finished?'completed':'running';save();
+  report.native_tool_calls=[...calls.values()];report.stage=finished?'completed':'running';saveProgress();
   if(!finished)await delay(500);
  }
  if(!calls.size||[...calls.values()].some(c=>!['completed','recoverable_rejection'].includes(c.status)))throw new Error('native_calls_incomplete');
@@ -183,14 +198,32 @@ try{
  const read=await request('session/read',{sessionId:session,messageLimit:1});
  const selected=read.settings?.model?.current;
  if(selected?.providerId!==report.provider_id||selected?.modelId!==report.model_id)throw new Error('final_model_mismatch');
+ if(diagnosticMode){
+  const turn={
+   run_id:spec.run_id,session_identity_sha256:createHash('sha256').update(session).digest('hex'),
+   session_create_count:requestCounts.get('session/create'),
+   session_send_count:requestCounts.get('session/send'),
+   turn_started_count:report.event_counts['turn.started']||0,
+   turn_completed_count:report.event_counts['turn.completed']||0,
+   turn_failed_count:report.event_counts['turn.failed']||0,
+  };
+  if(recoveryCount!==1||turn.session_create_count!==1||turn.session_send_count!==1
+     ||turn.turn_started_count!==1||turn.turn_completed_count!==1||turn.turn_failed_count!==0)
+   throw new Error('native_diagnostic_single_turn_or_refusal_missing');
+  report.diagnostic_turn={...turn,calls:[...calls.values()].map(({authority:a})=>({
+   seq:a.seq,tool:a.tool,decision:a.decision,dispatched:a.dispatched,
+   facts_sha256:a.recovery?.facts_sha256||null,
+  }))};
+ }
 }catch(e){report.error=String(e.message).slice(0,300)}
 finally{
  try{if(session)await request('session/close',{sessionId:session},15)}catch{report.error||='session_close_unconfirmed';}
- report.native_tool_calls=[...calls.values()];save();
+ report.native_tool_calls=[...calls.values()];
  server.stdin.end();
  const exited=await Promise.race([new Promise(resolve=>server.on('exit',()=>resolve(true))),delay(5000).then(()=>false)]);
  if(!exited){report.error||='server_exit_unconfirmed';server.kill();}
  fs.closeSync(stderr);
- save(true);
+ try{saveProgress()}catch{report.error||='native_progress_write_failed';}
+ fs.writeFileSync(path.join(spec.root,'actor.json'),JSON.stringify(report,null,2),{flag:'wx'});
  process.exitCode=report.error?1:0;
 }

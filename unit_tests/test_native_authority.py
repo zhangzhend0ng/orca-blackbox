@@ -60,6 +60,30 @@ def test_bounded_refusal_observe_then_native_dispatch_and_independent_audit(tmp_
     assert audit_trace(trace, RUN, enabled=True)["recoveries"] == 1
 
 
+def test_diagnostic_refuses_only_first_guard_approved_numeric_edit(tmp_path):
+    from harness.native_diagnostic_recovery import ERROR_CODE, PROTOCOL
+
+    class EditGuard(Guard):
+        def check(self, name, args):
+            window = super().check(name, args)
+            window["target_class"] = "Edit"
+            return window
+
+    controller = AuthorityController(EditGuard(tmp_path), tmp_path, RUN, diagnostic_enabled=True)
+    dispatched = []
+    assert execute(controller, "Type", {"text": "C:/owned.3mf"}, dispatched)[1]["decision"] == "completed"
+    refusal = execute(controller, "Type", {"text": "0.24"}, dispatched)[1]
+    assert (refusal["decision"], refusal["error_code"], refusal["dispatched"]) == ("recoverable", ERROR_CODE, False)
+    assert refusal["recovery"]["protocol"] == PROTOCOL
+    execute(controller, "Screenshot", {}, dispatched)
+    execute(controller, "Type", {"text": "0.24"}, dispatched)
+    assert dispatched == ["Type", "Screenshot", "Type"]
+    trace = [json.loads(line) for line in (tmp_path / "native_trace.ndjson").read_text().splitlines()]
+    assert trace[1]["window"]["target_class"] == "Edit"
+    assert trace[1]["guard_allowed"] is True and trace[1]["diagnostic_injection"] is True
+    assert not (tmp_path / "input_revoked").exists()
+
+
 @pytest.mark.parametrize("action", ["Click", "Type", "Shortcut"])
 def test_missing_new_observation_after_refusal_is_terminal(tmp_path, action):
     guard = Guard(tmp_path, "native_type_requires_owned_edit")

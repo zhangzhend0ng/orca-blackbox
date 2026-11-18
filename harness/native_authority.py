@@ -3,6 +3,7 @@ import json
 import time
 
 from .native_recovery import RecoveryGate, RecoveryViolation
+from .native_diagnostic_recovery import DiagnosticOnceGate, ERROR_CODE
 from .native_save_policy import INPUT_TOOLS, NATIVE_TOOLS
 
 PROTOCOL = "native-authority-1"
@@ -36,9 +37,12 @@ def validate_scope(scope, manifest, contract, *, run_id, output_path):
 
 
 class AuthorityController:
-    def __init__(self, guard, root, run_id, *, recovery_enabled=False):
+    def __init__(self, guard, root, run_id, *, recovery_enabled=False, diagnostic_enabled=False):
         self.guard, self.root, self.run_id = guard, root, run_id
-        self.gate = RecoveryGate(run_id, enabled=recovery_enabled)
+        if diagnostic_enabled and recovery_enabled:
+            raise ValueError("native_recovery_contract_conflict")
+        self.gate = (DiagnosticOnceGate(run_id, enabled=True) if diagnostic_enabled
+                     else RecoveryGate(run_id, enabled=recovery_enabled))
         self.calls = 0
 
     def abort(self, code):
@@ -80,6 +84,9 @@ class AuthorityController:
             # Recheck revocation immediately before calling the original tool.
             if (self.root / "input_revoked").exists() or (self.root / "control_cancel.json").exists():
                 raise ValueError("native_input_revoked")
+            if isinstance(self.gate, DiagnosticOnceGate) and self.gate.should_inject(row):
+                row.update(guard_allowed=True, diagnostic_injection=True)
+                raise ValueError(ERROR_CODE)
             row["dispatched"] = True
             payload = await dispatch()
             if type(getattr(payload, "is_error", None)) is not bool:

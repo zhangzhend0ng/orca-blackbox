@@ -27,6 +27,7 @@ def main():
     from fastmcp.tools.base import ToolResult
     from mcp.types import TextContent
     from harness.native_authority import AuthorityController, validate_scope, attach_authority
+    from harness.native_diagnostic_recovery import SCENARIO as DIAGNOSTIC_SCENARIO
     recovery_enabled = validate_scope(scope,
         json.loads((root.parent / "manifest.json").read_text()),
         json.loads((root.parent / "contract.json").read_text()),
@@ -37,7 +38,7 @@ def main():
         def __init__(self):
             self.lock = asyncio.Lock()
             self.controller = AuthorityController(guard, root, args.run_id,
-                recovery_enabled=recovery_enabled)
+                recovery_enabled=recovery_enabled, diagnostic_enabled=scope["scenario"] == DIAGNOSTIC_SCENARIO)
 
         async def on_call_tool(self, context, call_next):
             async with self.lock:

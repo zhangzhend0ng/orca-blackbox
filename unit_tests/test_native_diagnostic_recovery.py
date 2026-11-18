@@ -5,7 +5,7 @@ import json
 import pytest
 
 from harness.native_diagnostic_recovery import (DiagnosticOnceGate, ERROR_CODE, PROTOCOL,
-                                                audit_diagnostic_trace)
+                                                audit_diagnostic_trace, verify_diagnostic_calls)
 from harness.native_recovery import RecoveryGate, RecoveryViolation
 
 RUN = "a" * 32
@@ -173,3 +173,28 @@ def test_success_cannot_hide_injection_or_unknown_dispatch():
         if mutation == "dispatch": rows[1]["dispatched"] = False
         if mutation == "receipt": rows[1]["recovery"] = rows[0]["recovery"]
         with pytest.raises(RecoveryViolation): audit(rows)
+
+
+@pytest.mark.parametrize("fault", [None, "host_calls", "only_save_path", "wrong_pid"])
+def test_corrected_edit_must_match_guest_trace_and_native_turn(fault):
+    rows = trace()
+    rows[2].update(arguments={"text": "0.240"}, window=rows[0]["window"].copy())
+    receipt = turn()
+    receipt["calls"] = [
+        dict(seq=1, tool="Type", decision="recoverable", dispatched=False,
+             facts_sha256=rows[0]["recovery"]["facts_sha256"]),
+        dict(seq=2, tool="Screenshot", decision="completed", dispatched=True, facts_sha256=None),
+        dict(seq=3, tool="Type", decision="completed", dispatched=True, facts_sha256=None),
+    ]
+    if fault == "host_calls":
+        receipt["calls"][0]["facts_sha256"] = "0" * 64
+    if fault == "only_save_path":
+        rows[2]["arguments"]["text"] = "C:/owned.3mf"
+    if fault == "wrong_pid":
+        rows[2]["window"]["app_pid"] = 234
+    audit(rows, receipt)
+    if fault:
+        with pytest.raises(RecoveryViolation):
+            verify_diagnostic_calls(rows, receipt, 123)
+    else:
+        assert verify_diagnostic_calls(rows, receipt, 123) == dict(rejected_seq=1, observation_seq=2, corrected_seq=3)

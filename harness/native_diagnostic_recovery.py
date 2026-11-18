@@ -19,12 +19,14 @@ file writes, agent loop, dispatch, retries or GREEN verdict live in this module.
 import hashlib
 import json
 import re
+from decimal import Decimal
 
 from .native_recovery import (RecoveryGate, RecoveryViolation, INPUT_TOOLS,
                               OBSERVATION_TOOLS, TOOLS, _check, _facts, _positive)
 
 PROTOCOL = "native-diagnostic-recovery-1"
 ERROR_CODE = "native_diagnostic_injected_pre_dispatch"
+SCENARIO = "recovery_diagnostic_once"
 
 
 def _owned_edit_numeric(row):
@@ -55,6 +57,11 @@ def _diagnostic_facts(row):
 class DiagnosticOnceGate(RecoveryGate):
     """Default-off, one-shot diagnostic authority; no production-code aliasing."""
 
+    def should_inject(self, row):
+        return (self.enabled and self.recoveries == 0 and not self.fatal
+                and self.pending_seq is None and row["tool"] == "Type"
+                and _owned_edit_numeric(row))
+
     def reject(self, row):
         try:
             _check(type(row) is dict and row.get("run_id") == self.run_id, "diagnostic_rejection_run")
@@ -64,11 +71,9 @@ class DiagnosticOnceGate(RecoveryGate):
             self.fatal = True
             raise
         self.last_seq = row["seq"]
-        allowed = (not self.fatal and self.pending_seq is None and self.enabled
-                   and self.recoveries == 0 and row["tool"] == "Type"
-                   and row["error_code"] == ERROR_CODE and row["dispatched"] is False
-                   and row.get("guard_allowed") is True and row.get("diagnostic_injection") is True
-                   and _owned_edit_numeric(row))
+        allowed = (self.should_inject(row) and row["error_code"] == ERROR_CODE
+                   and row["dispatched"] is False and row.get("guard_allowed") is True
+                   and row.get("diagnostic_injection") is True)
         if allowed:
             self.recoveries = 1
             self.pending_seq = row["seq"]
@@ -129,3 +134,24 @@ def audit_diagnostic_trace(trace, run_id, *, enabled=False, turn_receipt=None):
     result = gate.audit_state()
     result.update(session_identity_sha256=turn_receipt["session_identity_sha256"], same_turn_verified=True)
     return result
+
+
+def verify_diagnostic_calls(trace, turn_receipt, app_pid):
+    """Bind host call receipts to audited guest rows and prove a later numeric edit."""
+    expected = [dict(seq=row["seq"], tool=row["tool"], dispatched=row["dispatched"],
+                     decision="completed" if row["error"] is None else "recoverable",
+                     facts_sha256=(row.get("recovery") or {}).get("facts_sha256")) for row in trace]
+    calls = turn_receipt.get("calls")
+    _check(type(calls) is list and len(calls) == len(expected)
+           and all(type(call) is dict and type(call.get("seq")) is int
+                   and type(call.get("dispatched")) is bool for call in calls)
+           and calls == expected, "diagnostic_host_calls_mismatch")
+    refusal = next(row for row in trace if row["error"] is not None)
+    _check(refusal["window"]["app_pid"] == app_pid, "diagnostic_refusal_app_mismatch")
+    after = trace[refusal["seq"]:]
+    observation = next(row for row in after if row["tool"] in OBSERVATION_TOOLS)
+    fixed = next((row for row in trace[observation["seq"]:] if row["tool"] == "Type"
+                  and _owned_edit_numeric(row) and row["window"]["app_pid"] == app_pid
+                  and Decimal(row["arguments"]["text"]) == Decimal(refusal["arguments"]["text"])), None)
+    _check(fixed is not None, "diagnostic_corrected_numeric_type_missing")
+    return dict(rejected_seq=refusal["seq"], observation_seq=observation["seq"], corrected_seq=fixed["seq"])

@@ -13,6 +13,7 @@ from harness.agent_model import _child_environment
 from harness.agent_protocol import valid_run_id
 from harness.ip_guard import IPGuard
 from harness.native_save_policy import NATIVE_TOOLS
+from harness.native_diagnostic_recovery import SCENARIO as DIAGNOSTIC_SCENARIO
 from harness.win32_job import OwnedJobProcess
 from runner.windows_mcp_bridge import GuestHTTP
 
@@ -126,7 +127,7 @@ def main(argv=None):
             "Inspect screenshots after changes and confirm saving through the UI. "
             "Do not close, reopen, slice or export: independent verification handles that. "
             "Finish with ControlStatus(release=true), then describe observations without claiming test pass.")
-        if args.scenario in {"recovery_owned_edit", "canvas_trial"}:
+        if args.scenario in {"recovery_owned_edit", "canvas_trial", DIAGNOSTIC_SCENARIO}:
             prompt += " A recoverable pre-dispatch refusal requires a fresh Snapshot/Screenshot before any further input. A fatal refusal ends this run."
         if args.scenario == "canvas_trial":
             prompt = prompt.replace("Type supports clear=true and press_enter=true.",
@@ -185,6 +186,8 @@ def main(argv=None):
         report["selection"] = actor.get("selection")
         if code or actor.get("error"):
             raise RuntimeError("zcode_actor_failed:"+str(actor.get("error")))
+        if args.scenario == DIAGNOSTIC_SCENARIO:
+            report["diagnostic_turn"] = actor["diagnostic_turn"]
         report["model_io"] = model_io_summary(root)
         report["toolset_verified"] = True
     except Exception as exc:
@@ -229,6 +232,8 @@ def main(argv=None):
                 "toolset_verified": report["toolset_verified"]}
             if "expected_contract" in locals():
                 receipt.update(contract_sha256=expected_contract, scenario=args.scenario)
+            if "diagnostic_turn" in report:
+                receipt["diagnostic_turn"] = report["diagnostic_turn"]
             if report.get("host_job", {}).get("forced_termination"):
                 # Let the final single-slot relay launch return; its detached
                 # HTTP ferry never submits further relay commands.

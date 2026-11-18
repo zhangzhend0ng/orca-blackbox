@@ -14,6 +14,7 @@ import xml.etree.ElementTree as ET
 from decimal import DecimalException
 
 from .agent_protocol import LAYER_FIXTURE_SHA256, valid_run_id
+from .native_diagnostic_recovery import SCENARIO as DIAGNOSTIC_SCENARIO
 from .run_contract import validate_contract
 from .run_verdict import CheckResult, contract_digest
 from .runtime_ports import VerificationOutcome
@@ -77,6 +78,9 @@ def native_contract(actor="codex", scenario="base"):
         elif scenario == "recovery_owned_edit":
             data["contract_version"] = "native-recovery-zcode-1-owned-edit"
             data["steps"].insert(1, {"id": "recovery", "goal": "At most two proven owned numeric non-Edit refusals before dispatch; fresh observation before any further input; every other refusal durably stops authority."})
+        elif scenario == DIAGNOSTIC_SCENARIO:
+            data["contract_version"] = "native-diagnostic-recovery-zcode-1"
+            data["steps"].insert(1, {"id": "recovery", "goal": "Inject one refusal after the owned numeric Edit guard allows it and before dispatch. In a single native turn, observe again and correct the numeric edit. Independently verify the business result. Mechanism evidence only."})
     return validate_contract(data)
 
 
@@ -128,6 +132,7 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
     from decimal import Decimal
     refs = []
     recovery_summary = None
+    diagnostic_summary = None
     try:
         actor, scenario = native_spec(contract_digest(snapshot.contract))
         read = lambda n, limit: _read(snapshot.artifact_dir, n, snapshot.manifest["started_at_ns"], limit, cancelled)
@@ -164,6 +169,13 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
         if scenario in {"recovery_owned_edit", "canvas_trial"}:
             from .native_recovery import audit_trace
             recovery_summary = audit_trace(trace, snapshot.run_id, enabled=True)
+        elif scenario == DIAGNOSTIC_SCENARIO:
+            from .native_diagnostic_recovery import audit_diagnostic_trace, verify_diagnostic_calls
+            _require(host.get("contract_sha256") == contract_digest(snapshot.contract)
+                     and host.get("scenario") == scenario, "native_diagnostic_host_contract")
+            turn = host.get("diagnostic_turn")
+            diagnostic_summary = audit_diagnostic_trace(trace, snapshot.run_id, enabled=True, turn_receipt=turn)
+            diagnostic_summary.update(verify_diagnostic_calls(trace, turn, proof["old_pid"]))
         else:
             _require(all(x["error"] is None for x in trace), "native_trace_error_or_late_input")
         _require(any(x["tool"] == "Type" and x["arguments"].get("text") == proof["output_path"] for x in trace), "native_gui_save_path")
@@ -209,12 +221,14 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
                 "artifact:proof/0001.3mf:sha256:"+digest, "artifact:exports/0001.gcode:sha256:"+proof["gcode_sha256"])
         if recovery_summary is not None:
             detail += "; native_recovery="+json.dumps(recovery_summary, sort_keys=True)
+        if diagnostic_summary is not None:
+            detail += "; native_diagnostic_recovery="+json.dumps(diagnostic_summary, sort_keys=True)
         if canvas_summary is not None:
             detail += "; canvas_input="+json.dumps(canvas_summary, sort_keys=True)
         return VerificationOutcome({"path": CheckResult("pass", "Native GUI save; stopped input; old exit; frozen-file fresh-profile reslice", refs),
             "business": CheckResult("pass", detail, refs)}, True, True,
-            recovery_used=bool(recovery_summary and recovery_summary["recoveries"]),
-            recovery_recorded=recovery_summary is not None)
+            recovery_used=bool(diagnostic_summary or recovery_summary and recovery_summary["recoveries"]),
+            recovery_recorded=diagnostic_summary is not None or recovery_summary is not None)
     except (OSError, ValueError, TypeError, KeyError, AttributeError, RecursionError,
             struct.error, DecimalException, ET.ParseError, zipfile.BadZipFile,
             zipfile.LargeZipFile, zlib.error, EOFError, NotImplementedError) as exc:
