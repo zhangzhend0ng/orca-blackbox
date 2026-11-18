@@ -12,9 +12,11 @@ def value_digest(value):
 
 
 class UiaSaveGuard(InputGuard):
-    def __init__(self, scope, root, control_from_handle):
+    def __init__(self, scope, root, control_from_handle, focused_control, send_keys):
         super().__init__(scope, root)
         self.control_from_handle = control_from_handle
+        self.focused_control = focused_control
+        self.send_keys = send_keys
         self.observed = {}
         self.invoked = False
         self.written = None
@@ -119,6 +121,24 @@ class UiaSaveGuard(InputGuard):
             raise ValueError("native_uia_value_pattern_required")
         return pattern
 
+    def _notify_filename_edit(self, element, value, handle, dialog_hwnd):
+        """Publish a real edit change so the shell dialog commits the UIA value."""
+        def key(sequence):
+            _, hwnd = self.owned_foreground()
+            focused = self.focused_control()
+            if (hwnd != dialog_hwnd or focused is None or focused.NativeWindowHandle != handle
+                    or focused.ProcessId != self.scope["app_pid"]):
+                raise ValueError("native_uia_filename_focus_changed")
+            self.check_revocation()
+            self.send_keys(sequence, waitTime=0.05)
+
+        element.SetFocus()
+        key("{End}")
+        key("{Back}")
+        if self._value(element).Value != value[:-1]:
+            raise ValueError("native_uia_filename_edit_notification_failed")
+        key(value[-1])
+
     def perform(self, name, arguments):
         wu, hwnd = self.owned_foreground()
         if hwnd != self.last_window["foreground_hwnd"]:
@@ -144,11 +164,13 @@ class UiaSaveGuard(InputGuard):
             self.last_window.update(route="uia_value", pattern="ValuePattern")
             if not pattern.SetValue(arguments["text"]):
                 raise ValueError("native_uia_set_value_failed")
+            self._notify_filename_edit(element, arguments["text"], record["hwnd"], hwnd)
             readback = self._value(element).Value
             if readback != arguments["text"]:
                 raise ValueError("native_uia_value_readback_mismatch")
             self.written = record
             self.last_window["readback_sha256"] = value_digest(readback)
+            self.last_window["native_edit_notified"] = True
             return {"target": record["target"], "value": readback, "pattern": "ValuePattern"}
         filename = controls.get("filename")
         if (filename is None or filename[1] != self.written
@@ -165,10 +187,10 @@ class UiaSaveGuard(InputGuard):
         return {"target": record["target"], "pattern": "InvokePattern", "invoked": True}
 
 
-def verify_uia_save(trace, *, run_id, app_pid, dialog_hwnd, output_path):
+def verify_uia_save(trace, *, run_id, app_pid, dialog_hwnd, output_path, first_seq=1):
     """Auditable UIA observation, exact-path read-back, then property-based Save."""
     observed, written, invoked, closed = None, False, False, False
-    for seq, row in enumerate(trace, 1):
+    for seq, row in enumerate(trace, first_seq):
         name, args, evidence = row["tool"], row["arguments"], row.get("window", {})
         _require(row["seq"] == seq and row["run_id"] == run_id and row["dispatched"] is True
                  and row["error"] is None and name in {"Snapshot", "Type", "Click", "Wait", "ControlStatus"},
@@ -197,6 +219,7 @@ def verify_uia_save(trace, *, run_id, app_pid, dialog_hwnd, output_path):
                  "native_uia_target_binding")
         if name == "Type":
             _require(args.get("text") == output_path and evidence.get("target_class") == "Edit"
+                     and evidence.get("native_edit_notified") is True
                      and evidence.get("readback_sha256") == value_digest(output_path), "native_uia_value_readback")
             written = True
         else:

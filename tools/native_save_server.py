@@ -44,9 +44,9 @@ def main():
     from windows_mcp import __main__ as original
     from windows_mcp.uia import SendKeys
     if scope["scenario"] == UIA_SAVE_SCENARIO:
-        from windows_mcp.uia import ControlFromHandle
+        from windows_mcp.uia import ControlFromHandle, GetFocusedControl
         from harness.native_uia import UiaSaveGuard
-        guard = UiaSaveGuard(scope, root, ControlFromHandle)
+        guard = UiaSaveGuard(scope, root, ControlFromHandle, GetFocusedControl, SendKeys)
     else:
         guard = InputGuard(scope, root)
 

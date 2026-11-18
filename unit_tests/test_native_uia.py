@@ -1,11 +1,12 @@
 """Pure UIA contract and evidence checks. No desktop calls."""
 from copy import deepcopy
+from types import SimpleNamespace
 
 import pytest
 
 from harness.native_matrix import UIA_SAVE_SCENARIO
 from harness.native_save_policy import native_tools, scoped_tool_schemas, validate_input
-from harness.native_uia import value_digest, verify_uia_save
+from harness.native_uia import UiaSaveGuard, value_digest, verify_uia_save
 
 RUN = "a" * 32
 OUTPUT = r"C:\owned\0001.3mf"
@@ -36,7 +37,7 @@ def fake_trace():
         ("Snapshot", {}, {"route": "uia_tree", "controls": controls}),
         ("Type", {"target": EDIT, "text": OUTPUT}, {"route": "uia_value", "pattern": "ValuePattern",
             "target": EDIT, "target_hwnd": 11, "target_pid": 4, "target_class": "Edit",
-            "readback_sha256": value_digest(OUTPUT)}),
+            "readback_sha256": value_digest(OUTPUT), "native_edit_notified": True}),
         ("Click", {"target": SAVE}, {"route": "uia_invoke", "pattern": "InvokePattern",
             "target": SAVE, "target_hwnd": 12, "target_pid": 4, "target_class": "Button",
             "path_sha256": value_digest(OUTPUT)}),
@@ -66,3 +67,22 @@ def test_save_trace_requires_the_observed_target_readback_and_invoke(fault):
             verify_uia_save(trace, **kwargs)
     else:
         assert verify_uia_save(trace, **kwargs)["screenshots"] == 0
+
+
+def test_native_filename_edit_notification_stops_at_focus_change(tmp_path, monkeypatch):
+    focus = SimpleNamespace(NativeWindowHandle=11, ProcessId=4)
+    value = SimpleNamespace(Value=OUTPUT, IsReadOnly=False)
+    edit = SimpleNamespace(SetFocus=lambda: None, GetValuePattern=lambda: value)
+    keys = []
+
+    def send(sequence, **_):
+        keys.append(sequence)
+        if sequence == "{Back}":
+            value.Value = value.Value[:-1]
+            focus.NativeWindowHandle = 99
+
+    guard = UiaSaveGuard({"app_pid": 4}, tmp_path, None, lambda: focus, send)
+    monkeypatch.setattr(guard, "owned_foreground", lambda: (None, 10))
+    with pytest.raises(ValueError, match="native_uia_filename_focus_changed"):
+        guard._notify_filename_edit(edit, OUTPUT, 11, 10)
+    assert keys == ["{End}", "{Back}"]
