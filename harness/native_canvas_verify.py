@@ -8,7 +8,7 @@ from .script_verify import _InvalidEvidence, _unique_pairs
 from .canvas_approval import resolve_approval
 from .canvas_input import bind_canvas, binding_to_json, load_canvas_binding, decide_type
 from .native_save_policy import validate_input
-from .native_matrix import CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS
+from .native_matrix import CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, UIA_HYBRID_SCENARIOS
 
 
 def _json(raw):
@@ -71,6 +71,9 @@ def _verify(trace, scope, setup, run_id, contract_sha256, read_artifact):
         if row.get("error") is not None or row.get("dispatched") is not True:
             continue  # Parent recovery/fatal audit remains mandatory.
         args, window = row.get("arguments"), row.get("window")
+        if scenario in UIA_HYBRID_SCENARIOS and row["tool"] in {"Click", "Type"} and "loc" not in args:
+            last_click = None
+            continue  # Parent hybrid audit checks these property-based actions.
         if replace and row["tool"] == "Shortcut":
             last_click = None
         if row.get("tool") == "Click":

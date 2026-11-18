@@ -5,8 +5,11 @@ from .native_diagnostic_recovery import COMMIT_SCENARIO, SCENARIO as DIAGNOSTIC_
 
 CANVAS_REPLACE_SCENARIO = "canvas_replace_trial"
 UIA_SAVE_SCENARIO = "uia_save_as"
+UIA_LAYER_SCENARIO = "uia_hybrid_layer"
+UIA_CANVAS_SCENARIO = "uia_hybrid_canvas"
+UIA_HYBRID_SCENARIOS = frozenset({UIA_LAYER_SCENARIO, UIA_CANVAS_SCENARIO})
 SCALE_SCENARIOS = ("general_scale_quality", "general_scale_others")
-CANVAS_REPLACE_SCENARIOS = frozenset((CANVAS_REPLACE_SCENARIO, *SCALE_SCENARIOS))
+CANVAS_REPLACE_SCENARIOS = frozenset((CANVAS_REPLACE_SCENARIO, UIA_CANVAS_SCENARIO, *SCALE_SCENARIOS))
 CANVAS_SCENARIOS = CANVAS_REPLACE_SCENARIOS | {"canvas_trial"}
 GENERALIZATION = (
     "general_wall", "general_slot2", "general_top_strength", "general_top_quality",
@@ -21,6 +24,8 @@ SCENARIOS = {
     "others_a": ("Others", None), "others_b": ("Others", None),
     "save_dialog": ("Quality", "save_dialog"),
     UIA_SAVE_SCENARIO: ("Quality", "save_dialog"),
+    UIA_LAYER_SCENARIO: ("Quality", None),
+    UIA_CANVAS_SCENARIO: ("Quality", None),
     "overwrite": ("Quality", "overwrite"),
     "safety_cancel": ("Quality", "cancel"),
     "safety_timeout": ("Quality", "timeout"),

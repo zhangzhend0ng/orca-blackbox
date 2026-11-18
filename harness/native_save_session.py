@@ -15,7 +15,8 @@ from decimal import DecimalException
 
 from .agent_protocol import LAYER_FIXTURE_SHA256, valid_run_id
 from .native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
-from .native_matrix import CANVAS_REPLACE_SCENARIO, CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, GENERALIZATION, UIA_SAVE_SCENARIO
+from .native_matrix import (CANVAS_REPLACE_SCENARIO, CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS,
+    GENERALIZATION, UIA_HYBRID_SCENARIOS, UIA_SAVE_SCENARIO)
 from .run_contract import validate_contract
 from .run_verdict import CheckResult, contract_digest
 from .runtime_ports import VerificationOutcome
@@ -95,6 +96,9 @@ def native_contract(actor="codex", scenario="base"):
             if scenario == COMMIT_SCENARIO:
                 data["contract_version"] = "native-diagnostic-recovery-zcode-2-commit"
                 data["steps"][1]["goal"] += " Replace and commit the native Edit with clear=true and press_enter=true in the same Type."
+        if scenario in UIA_HYBRID_SCENARIOS:
+            data["contract_version"] = "native-uia-hybrid-zcode-1-" + scenario
+            data["steps"].insert(1, {"id": "uia_authority", "goal": "Use owned UIA target properties and readback for native controls. Use a crop only for drawn wx or ImGui surfaces. Require the UIA Save As trace and independent saved-file verification."})
     return validate_contract(data)
 
 
@@ -226,6 +230,14 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
                      and host.get("scenario") == scenario, "native_uia_host_contract")
             uia_summary = verify_uia_save(trace, run_id=snapshot.run_id, app_pid=proof["old_pid"],
                 dialog_hwnd=setup["dialog_hwnd"], output_path=proof["output_path"])
+        elif scenario in UIA_HYBRID_SCENARIOS:
+            from .native_uia_hybrid import verify_hybrid_trace
+            scope = _json(read("scope.json", 65536))
+            _require(host.get("contract_sha256") == contract_digest(snapshot.contract)
+                     and host.get("scenario") == scenario and scope["app_pid"] == proof["old_pid"],
+                     "native_uia_host_contract")
+            uia_summary = verify_hybrid_trace(trace, run_id=snapshot.run_id, app_pid=proof["old_pid"],
+                main_hwnd=scope["hwnd"], output_path=proof["output_path"], scenario=scenario)
         gcode = read("exports/0001.gcode", 64*1024*1024)
         _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
         from .native_pilots import PILOTS, TRIALS, verify_business
@@ -259,6 +271,8 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
             detail += "; native_diagnostic_recovery="+json.dumps(diagnostic_summary, sort_keys=True)
         if canvas_summary is not None:
             detail += "; canvas_input="+json.dumps(canvas_summary, sort_keys=True)
+        if uia_summary is not None and scenario in UIA_HYBRID_SCENARIOS:
+            detail += "; native_uia="+json.dumps(uia_summary, sort_keys=True)
         return VerificationOutcome({"path": CheckResult("pass", "Native GUI save; stopped input; old exit; frozen-file fresh-profile reslice", refs),
             "business": CheckResult("pass", detail, refs)}, True, True,
             recovery_used=bool(diagnostic_summary or recovery_summary and recovery_summary["recoveries"]),

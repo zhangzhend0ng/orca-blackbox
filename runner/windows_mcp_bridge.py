@@ -150,7 +150,7 @@ def authority_receipt(response, request, run_id, seq):
     return receipt
 
 
-def inline_canvas_observations(result):
+def inline_canvas_observations(result, expected_size=(1920, 1080)):
     """Fit oversized frames under ZCode's inline limit at unchanged coordinates."""
     changes = []
     for item in result.get("content", []):
@@ -163,7 +163,7 @@ def inline_canvas_observations(result):
         if len(data) > 3_000_000 or item["mimeType"] not in {"image/png", "image/jpeg"}:
             raise ValueError("native_observation_image_size_or_format")
         with Image.open(io.BytesIO(base64.b64decode(data, validate=True)), formats=["PNG", "JPEG"]) as source:
-            if source.size != (1920, 1080):
+            if source.size != expected_size:
                 raise ValueError("native_observation_image_geometry")
             frame = source.convert("RGB")
         for quality in (88, 78, 68, 52):
@@ -185,7 +185,7 @@ def main():
     p.add_argument("--guest-root", default=r"C:\coil\orca-blackbox-v3-r1")
     p.add_argument("--goal-save", action="store_true")
     p.add_argument("--authority-log", type=Path)
-    from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, GENERALIZATION, SCENARIOS
+    from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, GENERALIZATION, SCENARIOS, UIA_HYBRID_SCENARIOS
     p.add_argument("--scenario", choices=tuple(SCENARIOS), default="base")
     args = p.parse_args()
     transport = GuestHTTP(args.guest_root, args.run_id, deadline=time.monotonic()+900, goal_save=args.goal_save)
@@ -219,10 +219,14 @@ def main():
         if method == "tools/call" and args.authority_log is not None:
             receipt = authority_receipt(response, request, args.run_id, calls)
             sidecar = {"request_id": request["id"], "authority": receipt}
-            if (args.scenario in CANVAS_REPLACE_SCENARIOS | set(GENERALIZATION)
+            if (args.scenario in CANVAS_REPLACE_SCENARIOS | set(GENERALIZATION) | UIA_HYBRID_SCENARIOS
                     and receipt["decision"] == "completed"
                     and receipt["tool"] in {"Screenshot", "Snapshot"}):
-                changes = inline_canvas_observations(response["result"])
+                size = (1920, 1080)
+                if args.scenario in UIA_HYBRID_SCENARIOS and receipt["tool"] == "Screenshot":
+                    left, top, right, bottom = request["params"]["arguments"]["region"]
+                    size = (right - left, bottom - top)
+                changes = inline_canvas_observations(response["result"], size)
                 if changes:
                     sidecar["observation_transcode"] = changes
             # Written completely before forwarding this response. The agent has

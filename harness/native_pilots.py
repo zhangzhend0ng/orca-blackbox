@@ -1,6 +1,6 @@
 """Finite business experiments; never a model-selected verifier or import path."""
 from importlib import import_module
-from .native_matrix import CANVAS_REPLACE_SCENARIO, SCALE_SCENARIOS
+from .native_matrix import CANVAS_REPLACE_SCENARIO, SCALE_SCENARIOS, UIA_CANVAS_SCENARIO
 
 PILOTS = {
     "pilot_strength": "pilot_strength",
@@ -14,6 +14,7 @@ PILOT_BLOCKS = {
 }
 TRIALS = {
     "canvas_trial": "pilot_transform", CANVAS_REPLACE_SCENARIO: "pilot_transform",
+    UIA_CANVAS_SCENARIO: "pilot_transform",
     "general_wall": "pilot_strength", "general_slot2": "pilot_material",
     "general_top_strength": "pilot_top_layers", "general_top_quality": "pilot_top_layers",
     **dict.fromkeys(SCALE_SCENARIOS, "pilot_scale_x"),

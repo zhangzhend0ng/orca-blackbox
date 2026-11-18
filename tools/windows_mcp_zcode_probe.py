@@ -15,7 +15,7 @@ from harness.ip_guard import IPGuard
 from harness.native_save_policy import native_tools
 from harness.native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
 from harness.native_authority import RECOVERY_SCENARIOS
-from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, SAVE_CLEAR_SCENARIOS, UIA_SAVE_SCENARIO
+from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, SAVE_CLEAR_SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_SAVE_SCENARIO
 from harness.win32_job import OwnedJobProcess
 from runner.windows_mcp_bridge import GuestHTTP
 
@@ -156,6 +156,18 @@ def main(argv=None):
                       "Edit and Save button, Type with the exact Edit target and assigned path, and Click with the exact "
                       "Save button target. Read back the value from the Type result. Confirm the dialog closed with Snapshot "
                       "and finish with ControlStatus(release=true). Independent verification will reopen and slice.")
+        elif args.scenario in UIA_HYBRID_SCENARIOS:
+            prompt = ("Use Windows-MCP in the isolated Snapmaker Orca window. " + business_goal(args.scenario)
+                      + " Save the whole project at this exact assigned 3MF path: " + output + ". "
+                      "Start with Snapshot. Use the exact control_type, name and automation_id as target for native controls. "
+                      "Use Snapshot to locate and read native Edit controls that appear after activating drawn fields. "
+                      "Use Screenshot with region=[left,top,right,bottom] contained in one listed visual_regions box only "
+                      "when the needed drawn wx or ImGui control is absent from the UIA list. The returned image starts at "
+                      "[left,top]; add that offset for a Click loc. For an ImGui number, Click once and Type at the same "
+                      "location within 30 seconds with press_enter=true, then inspect the new value with a crop. "
+                      "Open Save As with Shortcut ctrl+shift+s. Snapshot the dialog, Type the full path into the Edit target, "
+                      "read its returned value, Click the Save button target and Snapshot to confirm closure. "
+                      "Finish with ControlStatus(release=true). Preserve unrelated settings. Independent verification reopens and slices.")
         (root/"prompt.txt").write_text(prompt, encoding="utf-8")
         bundle = Path(r"C:\Program Files\ZCode\resources\glm\zcode.cjs")
         report["bundle_sha256"] = hashlib.sha256(bundle.read_bytes()).hexdigest()

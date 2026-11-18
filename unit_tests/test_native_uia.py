@@ -4,9 +4,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from harness.native_matrix import UIA_SAVE_SCENARIO
+from harness.native_matrix import UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_SAVE_SCENARIO
 from harness.native_save_policy import native_tools, scoped_tool_schemas, validate_input
 from harness.native_uia import UiaSaveGuard, value_digest, verify_uia_save
+from harness.native_uia_hybrid import verify_hybrid_trace
 
 RUN = "a" * 32
 OUTPUT = r"C:\owned\0001.3mf"
@@ -89,3 +90,34 @@ def test_native_filename_edit_notification_stops_at_target_change(tmp_path, monk
     with pytest.raises(ValueError, match="native_uia_filename_target_changed"):
         guard._notify_filename_edit(edit, OUTPUT, record, 10)
     assert messages == [(11, 0x00B1, len(OUTPUT) - 1, len(OUTPUT)), (11, 0x0102, 8, 0)]
+
+
+def test_hybrid_contract_rejects_whole_frames_and_path_by_location():
+    with pytest.raises(ValueError, match="native_uia_crop_required"):
+        validate_input("Screenshot", {}, OUTPUT, UIA_CANVAS_SCENARIO)
+    with pytest.raises(ValueError, match="native_uia_canvas_arguments"):
+        validate_input("Type", {"loc": [20, 30], "text": OUTPUT, "press_enter": True}, OUTPUT, UIA_CANVAS_SCENARIO)
+    validate_input("Type", {"target": EDIT, "text": "0.24"}, OUTPUT, UIA_LAYER_SCENARIO)
+
+
+@pytest.mark.parametrize("box", [[2, 3, 40, 60], [0, 0, 1920, 1080]])
+def test_hybrid_audits_crop_before_save_as(box):
+    main = {"app_pid": 4, "foreground_pid": 4, "foreground_hwnd": 20}
+    rows = [
+        ("Snapshot", {}, {"route": "uia_tree", "visual_regions": {"wx_sidebar": [0, 0, 400, 900]},
+                         "native_targets": []}),
+        ("Screenshot", {"region": box}, {"visual_fallback": "wx_sidebar", "visual_region": box}),
+    ]
+    prefix = [dict(seq=i, tool=name, arguments=args, window={**main, **evidence},
+                   run_id=RUN, dispatched=True, error=None)
+              for i, (name, args, evidence) in enumerate(rows, 1)]
+    suffix = fake_trace()
+    for row in suffix:
+        row["seq"] += len(prefix)
+    suffix[0]["window"]["uia_save"] = True
+    kwargs = dict(run_id=RUN, app_pid=4, main_hwnd=20, output_path=OUTPUT, scenario=UIA_LAYER_SCENARIO)
+    if box[2] > 400:
+        with pytest.raises(ValueError, match="native_uia_cropped_proof"):
+            verify_hybrid_trace(prefix + suffix, **kwargs)
+    else:
+        assert verify_hybrid_trace(prefix + suffix, **kwargs)["cropped_visual_calls"] == 1

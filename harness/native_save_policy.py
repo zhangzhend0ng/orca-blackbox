@@ -5,12 +5,16 @@ import math
 import re
 from copy import deepcopy
 from .native_diagnostic_recovery import COMMIT_SCENARIO
-from .native_matrix import CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, SAVE_CLEAR_SCENARIOS, UIA_SAVE_SCENARIO
+from .native_matrix import (CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, SAVE_CLEAR_SCENARIOS,
+    UIA_CANVAS_SCENARIO, UIA_HYBRID_SCENARIOS, UIA_SAVE_SCENARIO)
 
 NATIVE_TOOLS = frozenset({"Snapshot", "Screenshot", "Click", "Type", "Shortcut", "Wait", "ControlStatus"})
 INPUT_TOOLS = frozenset({"Click", "Type", "Shortcut"})
 SHORTCUTS = frozenset({"ctrl+s", "ctrl+shift+s", "enter", "tab", "shift+tab", "esc", "escape"})
 UIA_SAVE_TOOLS = frozenset({"Snapshot", "Click", "Type", "Wait", "ControlStatus"})
+UIA_ACTION_TYPES = ("ButtonControl", "MenuItemControl", "TabItemControl")
+EDIT_NUMBER = r"(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?"
+CANVAS_NUMBER = r"(?:[1-9][0-9]{0,2}(?:\.[0-9]{1,4})?|0\.(?=[0-9]{0,3}[1-9])[0-9]{1,4})"
 
 
 def native_tools(scenario):
@@ -50,6 +54,37 @@ def uia_tool_schema(tool, output_path):
                 "required": required, "additionalProperties": False})
 
 
+def hybrid_tool_schema(tool, output_path, scenario):
+    def exact(properties):
+        return {"type": "object", "properties": properties, "required": list(properties),
+                "additionalProperties": False}
+
+    def pixels(length):
+        return {"type": "array", "items": {"type": "integer", "minimum": 0, "maximum": 1920},
+                "minItems": length, "maxItems": length}
+
+    name = tool["name"]
+    if name in {"Wait", "ControlStatus"}:
+        uia_tool_schema(tool, output_path)
+        return
+    snapshots = exact({})
+    click = {"type": "object", "oneOf": [exact({"target": {"oneOf": [uia_selector_schema(kind) for kind in UIA_ACTION_TYPES]}}),
+                       exact({"loc": pixels(2)})]}
+    value = {"anyOf": [{"const": output_path}, {"type": "string", "pattern": "^" + EDIT_NUMBER + "$"}]}
+    type_forms = [exact({"target": uia_selector_schema("EditControl"), "text": value})]
+    if scenario == UIA_CANVAS_SCENARIO:
+        type_forms.append(exact({"loc": pixels(2), "text": {"type": "string", "pattern": "^" + CANVAS_NUMBER + "$"},
+                                 "press_enter": {"const": True}}))
+    schemas = {
+        "Snapshot": (snapshots, "Read the scoped UIA tree, values and anchored regions available for drawn UI."),
+        "Screenshot": (exact({"region": pixels(4)}), "Capture only one crop inside a wx or ImGui region from Snapshot. Use absolute edges [left,top,right,bottom]."),
+        "Click": (click, "Invoke or select a native control using its exact Snapshot target. Use loc only for a drawn control in the latest crop; add the crop origin to the pixel coordinates."),
+        "Type": ({"type": "object", "oneOf": type_forms}, "Set an observed UIA Edit using its exact target and read back its value. On the approved ImGui route only, a same-location Click followed by numeric Type with press_enter=true commits the field."),
+        "Shortcut": (exact({"shortcut": {"const": "ctrl+shift+s"}}), "Open Save As in the owned main application."),
+    }
+    tool["inputSchema"], tool["description"] = schemas[name]
+
+
 def scoped_tool_schemas(tools, output_path, scenario="base"):
     """Advertise the same narrow types accepted by the authority middleware.
 
@@ -64,11 +99,16 @@ def scoped_tool_schemas(tools, output_path, scenario="base"):
         for tool in result:
             uia_tool_schema(tool, output_path)
         return result
+    if scenario in UIA_HYBRID_SCENARIOS:
+        result = deepcopy(tools)
+        for tool in result:
+            hybrid_tool_schema(tool, output_path, scenario)
+        return result
     loc = {"type": "array", "items": {"type": "integer", "minimum": 0, "maximum": 1919},
            "minItems": 2, "maxItems": 2, "description": "Desktop [x,y] as two JSON integers. x<1920 and y<1080. Do not stringify."}
-    numeric = {"type": "string", "pattern": r"^(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?$"}
+    numeric = {"type": "string", "pattern": "^" + EDIT_NUMBER + "$"}
     if scenario in CANVAS_SCENARIOS:
-        numeric = {"type": "string", "pattern": r"^(?:[1-9][0-9]{0,2}(?:\.[0-9]{1,4})?|0\.(?=[0-9]{0,3}[1-9])[0-9]{1,4})$"}
+        numeric = {"type": "string", "pattern": "^" + CANVAS_NUMBER + "$"}
     fields = {
         "Snapshot": ({"use_vision": {"type": "boolean"}, "use_annotation": {"type": "boolean"},
                       "use_dom": {"type": "boolean", "enum": [False]}}, []),
@@ -135,7 +175,35 @@ def scoped_tool_schemas(tools, output_path, scenario="base"):
 def validate_input(name, args, output_path, scenario="base"):
     if type(name) is not str or name not in native_tools(scenario) or type(args) is not dict:
         raise ValueError("native_tool_rejected")
-    if scenario == UIA_SAVE_SCENARIO:
+    if scenario in UIA_HYBRID_SCENARIOS:
+        if name == "Snapshot" and args:
+            raise ValueError("native_uia_snapshot_options")
+        if name == "Screenshot":
+            box = args.get("region")
+            if (set(args) != {"region"} or type(box) is not list or len(box) != 4
+                    or any(type(value) is not int for value in box)
+                    or not (0 <= box[0] < box[2] <= 1920 and 0 <= box[1] < box[3] <= 1080)):
+                raise ValueError("native_uia_crop_required")
+            return
+        if name in {"Click", "Type"} and "target" in args:
+            target = args["target"]
+            kind = target.get("control_type") if type(target) is dict else None
+            if name == "Type":
+                if (set(args) != {"target", "text"} or kind != "EditControl" or type(args["text"]) is not str
+                        or not (args["text"] == output_path or re.fullmatch(EDIT_NUMBER, args["text"]))):
+                    raise ValueError("native_uia_edit_arguments")
+            elif set(args) != {"target"} or kind not in UIA_ACTION_TYPES:
+                raise ValueError("native_uia_action_arguments")
+            validate_uia_selector(target, kind)
+            return
+        if name == "Click" and set(args) != {"loc"}:
+            raise ValueError("native_uia_visual_click_arguments")
+        if name == "Type" and (scenario != UIA_CANVAS_SCENARIO or set(args) != {"loc", "text", "press_enter"}
+                               or args["text"] == output_path):
+            raise ValueError("native_uia_canvas_arguments")
+        if name == "Shortcut" and args != {"shortcut": "ctrl+shift+s"}:
+            raise ValueError("native_uia_command_rejected")
+    elif scenario == UIA_SAVE_SCENARIO:
         if name == "Snapshot" and args:
             raise ValueError("native_uia_snapshot_options")
         if name in {"Click", "Type"}:
@@ -166,7 +234,7 @@ def validate_input(name, args, output_path, scenario="base"):
             text = args.get("text")
             from .canvas_input import numeric_text_allowed
             numeric_ok = numeric_text_allowed("pilot_transform", text) if scenario in CANVAS_SCENARIOS else bool(
-                type(text) is str and re.fullmatch(r"(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?", text))
+                type(text) is str and re.fullmatch(EDIT_NUMBER, text))
             if (type(text) is not str or len(text) > 1024 or not (text == output_path or numeric_ok)):
                 raise ValueError("native_type_text_rejected")
             if (set(args) - {"loc", "text", "clear", "caret_position", "press_enter"}
