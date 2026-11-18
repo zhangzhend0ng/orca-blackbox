@@ -6,9 +6,9 @@
 
 供应商固定原有Snapmaker `new-provider/glm-5.3-flash`，原有HTTP地址`http://ai-gateway.s.com/v1`、Anthropic协议、reasoning/thought low。原生ZCode app-server持有模型agent循环；项目客户端只创建会话、给目标、限制权限、收集事件与停止，不替模型生成下一动作。客户端不导出Key、不复制到客机、不修改全局模型/账号/代理；三份个人配置hash在每轮前后核对。实际model-io再次核验provider/model和每次七项工具清单。
 
-仅开放Snapshot、Screenshot、Click、Type、Shortcut、Wait、ControlStatus。模型不获shell、文件系统、任意路径或全局快捷键。数值/固定保存路径、owned PID/HWND/控件类型由执行端校验。会话关闭搜索/记忆/子agent等额外能力，未使用插件认证请求拒绝；bootstrap仍可能初始化已有插件，不构成完整OS沙箱。tools/list说明必须与收窄schema及权限一致。
+混合场景开放 Snapshot、Screenshot、Click、Type、Shortcut、Wait、ControlStatus。独立 Save As 只开放其中的属性查询、属性输入、等待和状态。模型不获 shell、文件系统、任意路径或全局快捷键。数值、固定保存路径及窗口归属由执行端校验。Screenshot 只接受当前 wx 或 ImGui 区域的名字，裁图边界由执行端计算。会话关闭搜索、记忆和子 agent 等额外能力，bootstrap 仍可能初始化已有插件。
 
-现有逐调用门禁不等于永久撤销：b6b15eb填充轮次出现foreign拒绝后仍继续调用。**fatal latch尚待修复和真实验收**，不能声称失配后即刻终止或整轮没有任何越权输入。后续必须首次fatal原子锁存、停止actor/MCP；只允许有未派发证据的owned控件类型错误按新合同有限恢复。旧严格合同不放宽、旧失败不重标。
+致命换窗或归属失败锁存撤销，桥停止转发。混合 UIA 路径允许最多两次有明确归属且尚未派发的恢复。命中可操作的原生目标时回传已核实的属性，必须重新 Snapshot 再操作。ZCode app-server 子进程通过原生并发上限串行执行，宿主核对实际启动与可信收据的次序。旧填充失败与新受控恢复证据分别保留。[停止与恢复证据](runs/zcode-capabilities-2026-11-18.md) · [执行层复验](runs/zcode-uia-execution-recheck-2026-11-18.md)
 
 宿主模型期间轮询既有clash-guard；guard不可达或未ready停止本轮owned Job。守卫针对既有OpenAI分组，ready不证明公司网关出口美国；不修改Clash/guard规则。前台失配和原版MCP的ControlStatus disabled不是要求开启宿主控制的理由。
 

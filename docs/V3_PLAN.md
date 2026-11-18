@@ -94,3 +94,5 @@ UIA 优先轮的候选新目标为 Bottom shell layers 3→6（Strength / Qualit
 受控纠错和画布的完整业务闭环已通过。冻结泛化评估完成，正式 4/8，低于投入阈值。批后确认两个缩放槽位遇到组装矩阵的检查器误拒，修订仅做离线复核。详见[八槽结果](runs/zcode-generalization-2026-11-18.md)，原分母、历史判定和发布门闸保留。
 
 UIA 优先轮通过原生 Save As、wx 层高和 ImGui X 平移三个开发验收。新冻结八槽正式 1/8，低于投入阈值。Strength 初态的底层数目标通过，其他槽分别卡在裁图范围、前台窗口、UIA 路由、ZCode 串行约束和带干扰的准备顺序。见[UIA 优先轮证据](runs/zcode-uia-first-2026-11-18.md)。
+
+批后开发修订已复验壁环数、ZCode 和脚本的 X 平移，以及 Quality、Strength 两种起点的层高配对。命名裁图、串行调度及原生目标恢复均已在客机验证。材料槽 2 仍受 owned 弹窗阻断。开发复验与配对计时单独登记，维护人时和跨版本变化尚待实测。[执行层与脚本对照证据](runs/zcode-uia-execution-recheck-2026-11-18.md)
