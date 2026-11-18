@@ -5,11 +5,49 @@ import math
 import re
 from copy import deepcopy
 from .native_diagnostic_recovery import COMMIT_SCENARIO
-from .native_matrix import CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, SAVE_CLEAR_SCENARIOS
+from .native_matrix import CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, SAVE_CLEAR_SCENARIOS, UIA_SAVE_SCENARIO
 
 NATIVE_TOOLS = frozenset({"Snapshot", "Screenshot", "Click", "Type", "Shortcut", "Wait", "ControlStatus"})
 INPUT_TOOLS = frozenset({"Click", "Type", "Shortcut"})
 SHORTCUTS = frozenset({"ctrl+s", "ctrl+shift+s", "enter", "tab", "shift+tab", "esc", "escape"})
+UIA_SAVE_TOOLS = frozenset({"Snapshot", "Click", "Type", "Wait", "ControlStatus"})
+
+
+def native_tools(scenario):
+    return UIA_SAVE_TOOLS if scenario == UIA_SAVE_SCENARIO else NATIVE_TOOLS
+
+
+def uia_selector_schema(control_type):
+    return {"type": "object", "properties": {
+        "control_type": {"const": control_type},
+        "name": {"type": "string", "maxLength": 128},
+        "automation_id": {"type": "string", "maxLength": 128},
+    }, "required": ["control_type", "name", "automation_id"], "additionalProperties": False}
+
+
+def validate_uia_selector(selector, control_type):
+    if (type(selector) is not dict or set(selector) != {"control_type", "name", "automation_id"}
+            or selector["control_type"] != control_type
+            or any(type(selector[k]) is not str or len(selector[k]) > 128
+                   or any(ord(c) < 32 for c in selector[k]) for k in ("name", "automation_id"))
+            or not (selector["name"] or selector["automation_id"])):
+        raise ValueError("native_uia_selector_invalid")
+
+
+def uia_tool_schema(tool, output_path):
+    schemas = {
+        "Snapshot": ({}, [], "Read the owned Save As UIA controls and file-name value as text."),
+        "Click": ({"target": uia_selector_schema("ButtonControl")}, ["target"],
+                  "Invoke the Save button using its exact UIA target from Snapshot."),
+        "Type": ({"target": uia_selector_schema("EditControl"), "text": {"const": output_path}},
+                 ["target", "text"], "Set the exact assigned path on the file-name Edit via UIA and read it back."),
+        "Wait": ({"duration": {"type": "integer", "minimum": 0, "maximum": 5}},
+                 ["duration"], "Wait for at most five whole seconds."),
+        "ControlStatus": ({"release": {"type": "boolean"}}, [], "Finish the isolated GUI session."),
+    }
+    properties, required, description = schemas[tool["name"]]
+    tool.update(description=description, inputSchema={"type": "object", "properties": properties,
+                "required": required, "additionalProperties": False})
 
 
 def scoped_tool_schemas(tools, output_path, scenario="base"):
@@ -18,8 +56,14 @@ def scoped_tool_schemas(tools, output_path, scenario="base"):
     Upstream coordinate/string unions otherwise invite stringified locations.
     This edits transport metadata only, never the original MCP implementation.
     """
-    if len(tools) != len(NATIVE_TOOLS) or {t["name"] for t in tools} != NATIVE_TOOLS:
+    expected = native_tools(scenario)
+    if len(tools) != len(expected) or {t["name"] for t in tools} != expected:
         raise ValueError("native_toolset_changed")
+    if scenario == UIA_SAVE_SCENARIO:
+        result = deepcopy(tools)
+        for tool in result:
+            uia_tool_schema(tool, output_path)
+        return result
     loc = {"type": "array", "items": {"type": "integer", "minimum": 0, "maximum": 1919},
            "minItems": 2, "maxItems": 2, "description": "Desktop [x,y] as two JSON integers. x<1920 and y<1080. Do not stringify."}
     numeric = {"type": "string", "pattern": r"^(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?$"}
@@ -89,8 +133,17 @@ def scoped_tool_schemas(tools, output_path, scenario="base"):
 
 
 def validate_input(name, args, output_path, scenario="base"):
-    if type(name) is not str or name not in NATIVE_TOOLS or type(args) is not dict:
+    if type(name) is not str or name not in native_tools(scenario) or type(args) is not dict:
         raise ValueError("native_tool_rejected")
+    if scenario == UIA_SAVE_SCENARIO:
+        if name == "Snapshot" and args:
+            raise ValueError("native_uia_snapshot_options")
+        if name in {"Click", "Type"}:
+            required = {"target", "text"} if name == "Type" else {"target"}
+            if set(args) != required or (name == "Type" and args["text"] != output_path):
+                raise ValueError("native_uia_save_arguments")
+            validate_uia_selector(args["target"], "EditControl" if name == "Type" else "ButtonControl")
+            return
     if name in {"Snapshot", "Screenshot"}:
         if args.get("save_path") is not None or args.get("use_dom", False) is not False:
             raise ValueError("native_capture_write_or_dom_rejected")
@@ -220,10 +273,34 @@ class InputGuard:
         if name == "Shortcut" and self.scope.get("scenario") in CANVAS_REPLACE_SCENARIOS:
             self._last_click = None
         self.arguments_validated = True
-        if (self.root / "input_revoked").exists() or (self.root / "control_cancel.json").exists() or (self.root / "authority_abort.json").exists():
-            raise ValueError("native_input_revoked")
+        self.check_revocation()
         if name not in INPUT_TOOLS:
             return {}
+        wu, foreground = self.owned_foreground()
+        target = wu.window_from_screen_point(*args["loc"]) if "loc" in args else foreground
+        if not target or wu._window_pid(target) != self.scope["app_pid"]:
+            raise ValueError("native_target_not_owned")
+        self.last_window = {"foreground_hwnd": foreground, "target_hwnd": target,
+                            "app_pid": self.scope["app_pid"], "foreground_pid": wu._window_pid(foreground),
+                            "target_pid": wu._window_pid(target), "target_class": wu.window_class(target)}
+        if name == "Type" and self.scope.get("scenario") in CANVAS_SCENARIOS:
+            return self._canvas_trial_type(args)
+        if name == "Type":
+            if wu.window_class(target) != "Edit":
+                raise ValueError("native_type_requires_owned_edit")
+            if args["text"] == self.scope["output_path"]:
+                caption = wu.window_title(foreground)
+                if caption not in {"Save file as", "Save file as:"}:
+                    raise ValueError("native_path_requires_save_dialog")
+        return self.last_window
+
+    def check_revocation(self):
+        if any((self.root / flag).exists() for flag in
+               ("input_revoked", "control_cancel.json", "authority_abort.json")):
+            raise ValueError("native_input_revoked")
+
+    def owned_foreground(self):
+        self.check_revocation()
         import ctypes as C
         from ctypes import wintypes as W
         from . import winutil as wu
@@ -241,19 +318,4 @@ class InputGuard:
         foreground = u.GetForegroundWindow()
         if not foreground or wu._window_pid(foreground) != self.scope["app_pid"]:
             raise ValueError("native_foreground_not_owned")
-        target = wu.window_from_screen_point(*args["loc"]) if "loc" in args else foreground
-        if not target or wu._window_pid(target) != self.scope["app_pid"]:
-            raise ValueError("native_target_not_owned")
-        self.last_window = {"foreground_hwnd": foreground, "target_hwnd": target,
-                            "app_pid": self.scope["app_pid"], "foreground_pid": wu._window_pid(foreground),
-                            "target_pid": wu._window_pid(target), "target_class": wu.window_class(target)}
-        if name == "Type" and self.scope.get("scenario") in CANVAS_SCENARIOS:
-            return self._canvas_trial_type(args)
-        if name == "Type":
-            if wu.window_class(target) != "Edit":
-                raise ValueError("native_type_requires_owned_edit")
-            if args["text"] == self.scope["output_path"]:
-                caption = wu.window_title(foreground)
-                if caption not in {"Save file as", "Save file as:"}:
-                    raise ValueError("native_path_requires_save_dialog")
-        return self.last_window
+        return wu, foreground

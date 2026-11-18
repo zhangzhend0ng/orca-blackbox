@@ -7,7 +7,7 @@ import path from 'node:path';
 import readline from 'node:readline';
 
 const spec=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
-const names=['Snapshot','Screenshot','Click','Type','Shortcut','Wait','ControlStatus'];
+const names=spec.tools??['Snapshot','Screenshot','Click','Type','Shortcut','Wait','ControlStatus'];
 const allowed=new Set(names.map(n=>'mcp__windows_mcp__'+n));
 const report={actor:'zcode',provider_id:'new-provider',model_id:'glm-5.3-flash',error:null,
  native_tool_calls:[],permissions:[],event_counts:{},stage:'starting'};

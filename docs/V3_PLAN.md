@@ -6,7 +6,11 @@
 
 验证原生agent能否在限定权限、预算和独立判定下完成真实业务，并减少新任务与UI变化的维护成本。AI自主选路线和操作；测试器提供目标、隔离环境与证据，不给点击清单，不让模型自签通过。
 
-固定路线：ZCode原生app-server → Snapmaker `new-provider/glm-5.3-flash` → 七项Windows-MCP → `win11-test`。不另搭规划循环，不并建第二平台。
+固定路线为 ZCode 原生 app-server → Snapmaker `new-provider/glm-5.3-flash` → Windows-MCP 0.8.9 的 UIA 优先接口 → `win11-test`。同一原生 turn 内由模型选择目标，执行器判断可用的定位与输入通道。
+
+- 原生控件先读取 owned 窗口 UIA 树，用名称、控件类型、AutomationId 和当前所属窗唯一定位。读取或替换值走 ValuePattern，动作按钮优先 InvokePattern。每次操作重新查询、核对窗口归属和撤销状态，记录定位、操作及读回方式。
+- wx 自绘和 ImGui 画布缺少独立语义节点时，先定位已登记的父窗或画布边界，再返回该范围的局部画面。仅在同次观察覆盖的范围执行像素输入，输入前复查目标及焦点。普通对话框和原生输入框走属性接口。
+- 第一闸用预打开的原生 Save As 对话框验证。轨迹必须包含属性查询、文件名 ValuePattern 写入和读回、Save 按钮 InvokePattern、观察到对话框关闭，且模型全屏截图及坐标输入均为 0。独立 3MF 和新 profile 重切通过后，Save As 分支才进入后续任务；wx/ImGui 局部视图有单独的实现与轨迹验收。
 
 主链：固定合同/fixture → fresh profile → AI观察/输入/保存 → 撤销输入与MCP → 旧SUT退出 → 冻结同一3MF → 新profile重开/GUI切片 → 只读3MF/G-code检查 → Job清理/harvest。
 
@@ -49,6 +53,8 @@ foreign PID/HWND、前台身份失配、守卫失效、授权撤销、任意路�
 ### C. 冻结后验证泛化
 
 A/B通过才冻结源代码、SUT、模型选择、通用prompt、工具schema/说明、权限与oracle版本。之后不再根据保留集运行现象调流程、加坐标或改提示词；失败完整计入。修复后保留集变开发集，下一次另选未参与调试任务。
+
+UIA 优先版本在 Save As 与所需局部视觉分支的轨迹验收通过后另行冻结。报告 UIA 查询、属性操作、局部视觉与像素输入次数，并列出回退理由。之前八槽作为视觉坐标路线的历史对照保留，之前试过的目标归开发集。
 
 ## 4. 最小有决策价值的评估
 

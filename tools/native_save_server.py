@@ -29,21 +29,26 @@ def main():
     if not host_guard.in_guest():
         raise PermissionError("native server requires guest")
     root = REPO / "artifacts/v3" / args.run_id / "artifacts"
-    from harness.native_save_policy import InputGuard, NATIVE_TOOLS
+    from harness.native_save_policy import InputGuard, native_tools
     scope = json.loads((root / "scope.json").read_text())
-    guard = InputGuard(scope, root)
     from fastmcp.server.middleware import Middleware
     from fastmcp.tools.base import ToolResult
     from mcp.types import TextContent
     from harness.native_authority import AuthorityController, validate_scope, attach_authority
     from harness.native_diagnostic_recovery import DIAGNOSTIC_SCENARIOS
-    from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, SAVE_CLEAR_SCENARIOS
+    from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, SAVE_CLEAR_SCENARIOS, UIA_SAVE_SCENARIO
     recovery_enabled = validate_scope(scope,
         json.loads((root.parent / "manifest.json").read_text()),
         json.loads((root.parent / "contract.json").read_text()),
         run_id=args.run_id, output_path=str(root / "projects/0001.3mf"))
     from windows_mcp import __main__ as original
     from windows_mcp.uia import SendKeys
+    if scope["scenario"] == UIA_SAVE_SCENARIO:
+        from windows_mcp.uia import ControlFromHandle
+        from harness.native_uia import UiaSaveGuard
+        guard = UiaSaveGuard(scope, root, ControlFromHandle)
+    else:
+        guard = InputGuard(scope, root)
 
     def canvas_dispatch(arguments):
         send_canvas_number(guard, arguments, SendKeys)
@@ -62,7 +67,15 @@ def main():
         async def on_call_tool(self, context, call_next):
             async with self.lock:
                 name, arguments = context.message.name, context.message.arguments or {}
-                payload, receipt = await self.controller.call(name, arguments, lambda: call_next(context))
+
+                async def dispatch():
+                    if scope["scenario"] == UIA_SAVE_SCENARIO and name in {"Snapshot", "Click", "Type"}:
+                        value = json.dumps(guard.perform(name, arguments), ensure_ascii=False)
+                        return ToolResult(content=[TextContent(type="text", text=value)],
+                                          structured_content={"result": value})
+                    return await call_next(context)
+
+                payload, receipt = await self.controller.call(name, arguments, dispatch)
                 if receipt["decision"] == "completed":
                     try:
                         return ToolResult(content=payload.content,
@@ -79,7 +92,7 @@ def main():
     original._build_mcp().add_middleware(Authority())
     original.main(["serve", "--transport", "streamable-http", "--host", "127.0.0.1",
                    "--port", "18789", "--stateless-http", "--no-control", "--tools",
-                   ",".join(sorted(NATIVE_TOOLS)), "--config", str(root / "config.toml")])
+                   ",".join(sorted(native_tools(scope["scenario"]))), "--config", str(root / "config.toml")])
 
 
 if __name__ == "__main__":

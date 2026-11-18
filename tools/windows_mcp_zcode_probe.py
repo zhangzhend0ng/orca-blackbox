@@ -12,10 +12,10 @@ sys.path.insert(0, str(REPO))
 from harness.agent_model import _child_environment
 from harness.agent_protocol import valid_run_id
 from harness.ip_guard import IPGuard
-from harness.native_save_policy import NATIVE_TOOLS
+from harness.native_save_policy import native_tools
 from harness.native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
 from harness.native_authority import RECOVERY_SCENARIOS
-from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, SAVE_CLEAR_SCENARIOS
+from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, SAVE_CLEAR_SCENARIOS, UIA_SAVE_SCENARIO
 from harness.win32_job import OwnedJobProcess
 from runner.windows_mcp_bridge import GuestHTTP
 
@@ -37,9 +37,9 @@ def provider_metadata(path):
             "endpoint_scheme": endpoint.scheme, "endpoint_host": endpoint.hostname, "protocol": "anthropic-messages"}
 
 
-def model_io_summary(root):
+def model_io_summary(root, scenario="base"):
     records = []
-    allowed = {"mcp__windows_mcp__"+name for name in NATIVE_TOOLS}
+    allowed = {"mcp__windows_mcp__"+name for name in native_tools(scenario)}
     for path in sorted((root/"storage/cli/rollout").glob("model-io-*.jsonl")):
         if path.stat().st_size > 64*1024*1024:
             raise ValueError("zcode_model_io_limit")
@@ -150,6 +150,12 @@ def main(argv=None):
             prompt += (" Activate an inactive numeric field with one left Click chosen from the screenshot, then Type at "
                        "the same loc within 30 seconds. Type sends numeric keys and Enter directly without clicking again. "
                        "Inspect the committed value before saving.")
+        if args.scenario == UIA_SAVE_SCENARIO:
+            prompt = ("The isolated Snapmaker Orca Save As dialog is already open. Save the current project unchanged as a 3MF "
+                      "at this exact assigned path: " + output + ". Use Snapshot for the UIA properties of the filename "
+                      "Edit and Save button, Type with the exact Edit target and assigned path, and Click with the exact "
+                      "Save button target. Read back the value from the Type result. Confirm the dialog closed with Snapshot "
+                      "and finish with ControlStatus(release=true). Independent verification will reopen and slice.")
         (root/"prompt.txt").write_text(prompt, encoding="utf-8")
         bundle = Path(r"C:\Program Files\ZCode\resources\glm\zcode.cjs")
         report["bundle_sha256"] = hashlib.sha256(bundle.read_bytes()).hexdigest()
@@ -157,7 +163,8 @@ def main(argv=None):
                 "bundle": str(bundle), "python": sys.executable,
                 "bridge": str(REPO/"runner/windows_mcp_bridge.py"), "prompt": prompt,
                 "authority_protocol": "native-authority-1", "authority_log": str(root/"authority.ndjson"),
-                "recovery_enabled": args.scenario in RECOVERY_SCENARIOS, "scenario": args.scenario}
+                "recovery_enabled": args.scenario in RECOVERY_SCENARIOS, "scenario": args.scenario,
+                "tools": sorted(native_tools(args.scenario))}
         (root/"spec.json").write_text(json.dumps(spec), encoding="utf-8")
         env, report["proxy_source"] = _child_environment()
         env.update(ZCODE_PERSONAL_PROVIDER_CONFIG_FILE=str(provider),
@@ -203,7 +210,7 @@ def main(argv=None):
             raise RuntimeError("zcode_actor_failed:"+str(actor.get("error")))
         if args.scenario in DIAGNOSTIC_SCENARIOS:
             report["diagnostic_turn"] = actor["diagnostic_turn"]
-        report["model_io"] = model_io_summary(root)
+        report["model_io"] = model_io_summary(root, args.scenario)
         report["toolset_verified"] = True
     except Exception as exc:
         report["error"] = type(exc).__name__+":"+str(exc)[:240]
@@ -224,7 +231,7 @@ def main(argv=None):
                 report["error"] = "zcode_cleanup_unconfirmed"
         if report.get("fault_event"):
             try:
-                report["model_io"] = model_io_summary(root)
+                report["model_io"] = model_io_summary(root, args.scenario)
                 report["toolset_verified"] = True
             except Exception as exc:
                 report["fault_model_io_error"] = type(exc).__name__

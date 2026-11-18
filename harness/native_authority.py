@@ -127,7 +127,7 @@ class AuthorityController:
                 raise ValueError("native_original_result_schema")
             if payload.is_error:
                 raise ValueError("native_original_tool_failed")
-            if name == "Click" and hasattr(self.guard, "record_click"):
+            if name == "Click" and "loc" in arguments and hasattr(self.guard, "record_click"):
                 self.guard.record_click(arguments["loc"], clicks=arguments.get("clicks", 1))
             if name in {"Snapshot", "Screenshot"}:
                 self.gate.observed(self.calls)

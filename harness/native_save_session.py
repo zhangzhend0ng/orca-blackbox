@@ -15,7 +15,7 @@ from decimal import DecimalException
 
 from .agent_protocol import LAYER_FIXTURE_SHA256, valid_run_id
 from .native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
-from .native_matrix import CANVAS_REPLACE_SCENARIO, CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, GENERALIZATION
+from .native_matrix import CANVAS_REPLACE_SCENARIO, CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, GENERALIZATION, UIA_SAVE_SCENARIO
 from .run_contract import validate_contract
 from .run_verdict import CheckResult, contract_digest
 from .runtime_ports import VerificationOutcome
@@ -59,7 +59,12 @@ def native_contract(actor="codex", scenario="base"):
         if scenario == "safety_timeout":
             data["limits"]["timeout_s"] = 120
         from .native_pilots import PILOTS, TRIALS, pilot_module
-        if scenario in {**PILOTS, **TRIALS}:
+        if scenario == UIA_SAVE_SCENARIO:
+            data["case_id"] = "uia_save_as"
+            data["contract_version"] = "native-uia-save-zcode-1"
+            data["steps"][1]["goal"] = ("Locate Save As controls by UIA properties, set and read back the exact assigned path "
+                                       "using ValuePattern and invoke Save using InvokePattern. Preserve the project unchanged.")
+        elif scenario in {**PILOTS, **TRIALS}:
             pilot = pilot_module(scenario)
             data["case_id"] = pilot.CASE_ID
             data["contract_version"] = "native-pilot-zcode-1-"+scenario
@@ -142,6 +147,7 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
     refs = []
     recovery_summary = None
     diagnostic_summary = None
+    uia_summary = None
     try:
         actor, scenario = native_spec(contract_digest(snapshot.contract))
         read = lambda n, limit: _read(snapshot.artifact_dir, n, snapshot.manifest["started_at_ns"], limit, cancelled)
@@ -214,10 +220,28 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
             if disturbance == "save_dialog":
                 _require(type(setup.get("dialog_hwnd")) is int and setup["dialog_hwnd"] > 0,
                          "native_initial_dialog_not_proven")
+        if scenario == UIA_SAVE_SCENARIO:
+            from .native_uia import verify_uia_save
+            _require(host.get("contract_sha256") == contract_digest(snapshot.contract)
+                     and host.get("scenario") == scenario, "native_uia_host_contract")
+            uia_summary = verify_uia_save(trace, run_id=snapshot.run_id, app_pid=proof["old_pid"],
+                dialog_hwnd=setup["dialog_hwnd"], output_path=proof["output_path"])
         gcode = read("exports/0001.gcode", 64*1024*1024)
         _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
         from .native_pilots import PILOTS, TRIALS, verify_business
-        if scenario in {**PILOTS, **TRIALS}:
+        if scenario == UIA_SAVE_SCENARIO:
+            from .pilot_common import inspect_preserved_settings
+            from .project_3mf import _archive
+            inspect_project(frozen, fixture, layer_height="0.4", cancelled=cancelled)
+            saved_settings = _json(_archive(frozen, cancelled)["Metadata/project_settings.config"])
+            fixture_settings = _json(_archive(fixture, cancelled)["Metadata/project_settings.config"])
+            inspect_preserved_settings(saved_settings, fixture_settings, cancelled=cancelled)
+            layers = analyze_gcode(gcode, layer_height="0.4", cancelled=cancelled)
+            _require(layers["layer_count"] == 68 and Decimal(layers["last_z"]) == Decimal("27.2")
+                     and layers["object_tools"] == [0], "native_uia_saved_layer_schedule")
+            detail = "UIA Save As preserved all fixture settings and geometry; fresh-profile reopen produced 68 layers; "
+            detail += json.dumps(uia_summary, sort_keys=True)
+        elif scenario in {**PILOTS, **TRIALS}:
             _require(host.get("contract_sha256") == contract_digest(snapshot.contract)
                      and host.get("scenario") == scenario, "native_pilot_host_contract")
             business = verify_business(scenario, frozen, fixture, gcode, cancelled=cancelled)

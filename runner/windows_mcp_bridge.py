@@ -103,7 +103,7 @@ class GuestHTTP(RelayMailbox):
         return super().remote({**spec, "goal_save": self.goal_save})
 
 
-def validate_request(request, tool_calls, *, goal_save=False):
+def validate_request(request, tool_calls, *, goal_save=False, scenario="base"):
     if type(request) is not dict or request.get("jsonrpc") != "2.0":
         raise ValueError("invalid_mcp_request")
     method = request.get("method")
@@ -111,8 +111,8 @@ def validate_request(request, tool_calls, *, goal_save=False):
         raise ValueError("method_rejected")
     if method == "tools/call":
         params = request.get("params")
-        from harness.native_save_policy import NATIVE_TOOLS
-        allowed = NATIVE_TOOLS if goal_save else TOOLS
+        from harness.native_save_policy import native_tools
+        allowed = native_tools(scenario) if goal_save else TOOLS
         if (type(params) is not dict or type(params.get("name")) is not str or params.get("name") not in allowed
                 or type(params.get("arguments", {})) is not dict or tool_calls >= (40 if goal_save else 20)):
             raise ValueError("tool_rejected_or_budget")
@@ -197,7 +197,7 @@ def main():
         if len(raw) > 65536:
             raise ValueError("request_too_large")
         request = decode_json(raw)
-        method = validate_request(request, calls, goal_save=args.goal_save)
+        method = validate_request(request, calls, goal_save=args.goal_save, scenario=args.scenario)
         calls += method == "tools/call"
         result = transport.remote({"op": "http", "body": raw.decode("utf-8")})
         if "id" not in request:
@@ -208,9 +208,9 @@ def main():
         if response.get("jsonrpc") != "2.0" or response.get("id") != request["id"]:
             raise ValueError("response_identity")
         if method == "tools/list":
-            from harness.native_save_policy import NATIVE_TOOLS
+            from harness.native_save_policy import native_tools
             names = {t["name"] for t in response.get("result", {}).get("tools", [])}
-            if names != (NATIVE_TOOLS if args.goal_save else TOOLS):
+            if names != (native_tools(args.scenario) if args.goal_save else TOOLS):
                 raise ValueError("server_toolset_changed")
             if args.goal_save:
                 from harness.native_save_policy import scoped_tool_schemas

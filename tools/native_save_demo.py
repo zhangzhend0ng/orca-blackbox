@@ -25,6 +25,7 @@ HOST_SOURCES = ("tools/native_save_demo.py", "tools/windows_mcp_codex_probe.py",
     "harness/native_authority_probe.py", "harness/native_canvas_verify.py", "harness/runtime_ports.py",
     "contracts/evidence/canvas-diagnostic-bb64.json",
     "harness/pilot_top_layers.py", "harness/pilot_scale_x.py", "harness/pilot_infill_material.py",
+    "harness/native_uia.py",
     "harness/native_save_session.py", "harness/project_3mf.py", "harness/runtime.py", "harness/native_matrix.py", "harness/native_pilots.py", "harness/pilot_common.py", "harness/pilot_infill.py", "harness/pilot_material3.py", "harness/canvas_input.py", "harness/pilot_strength.py", "harness/pilot_transform.py", "harness/pilot_material.py", "harness/guard_fault.py", "tools/zcode_matrix.py", "tools/windows_mcp_zcode_probe.py", "tools/zcode_session_driver.mjs", "harness/ip_guard.py")
 
 

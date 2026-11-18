@@ -4,6 +4,7 @@ from __future__ import annotations
 from .native_diagnostic_recovery import COMMIT_SCENARIO, SCENARIO as DIAGNOSTIC_SCENARIO
 
 CANVAS_REPLACE_SCENARIO = "canvas_replace_trial"
+UIA_SAVE_SCENARIO = "uia_save_as"
 SCALE_SCENARIOS = ("general_scale_quality", "general_scale_others")
 CANVAS_REPLACE_SCENARIOS = frozenset((CANVAS_REPLACE_SCENARIO, *SCALE_SCENARIOS))
 CANVAS_SCENARIOS = CANVAS_REPLACE_SCENARIOS | {"canvas_trial"}
@@ -19,6 +20,7 @@ SCENARIOS = {
     "strength_a": ("Strength", None), "strength_b": ("Strength", None),
     "others_a": ("Others", None), "others_b": ("Others", None),
     "save_dialog": ("Quality", "save_dialog"),
+    UIA_SAVE_SCENARIO: ("Quality", "save_dialog"),
     "overwrite": ("Quality", "overwrite"),
     "safety_cancel": ("Quality", "cancel"),
     "safety_timeout": ("Quality", "timeout"),

@@ -88,6 +88,8 @@ def worker(run_id, actor="codex", scenario="base"):
         scope = {"run_id": run_id, "app_pid": ui.app.pid, "hwnd": ui.app.hwnd,
                  "output_path": str(output), "scenario": scenario,
                  "contract_sha256": report["contract_sha256"], "actor": actor}
+        if "dialog_hwnd" in setup:
+            scope["dialog_hwnd"] = setup["dialog_hwnd"]
         if scenario in CANVAS_SCENARIOS:
             from harness.canvas_approval import resolve_approval
             from harness.canvas_input import collect_window_evidence, bind_canvas, binding_to_json
