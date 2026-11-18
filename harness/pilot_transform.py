@@ -10,7 +10,7 @@ from .agent_protocol import LAYER_FIXTURE_SHA256
 from .agent_verify import _require
 from .project_3mf import _archive, _geometry, _xml, _CORE, inspect_project
 from .script_verify import _json, _check_cancel
-from .pilot_common import inspect_preserved_settings
+from .pilot_common import MOVE_LAYER, inspect_preserved_settings, require_gcode_settings
 
 CASE_ID = "pilot_model_move_x"
 GOAL = ("Move the sole cube exactly 10 mm in the positive global X direction from its loaded position. "
@@ -103,25 +103,30 @@ def verify_business(project: bytes, fixture: bytes, gcode: bytes, *, cancelled=l
     return verify_translation(project, fixture, gcode, axis="x", distance=10, cancelled=cancelled)
 
 
-def verify_translation(project, fixture, gcode, *, axis, distance, cancelled):
+def verify_translation(project, fixture, gcode, *, axis, distance, cancelled, layer_edit=False):
     _require(type(fixture) is bytes and hashlib.sha256(fixture).hexdigest() == LAYER_FIXTURE_SHA256,
              "transform_fixture_identity")
     expected, wanted, original_transform = _expected_fixture(fixture, cancelled, axis=axis, distance=distance)
     files = _archive(project, cancelled)
     geometry, _, transform = _geometry(files)
     _require(transform == wanted, "transform_build_delta")
-    summary = inspect_project(project, expected, layer_height="0.4", cancelled=cancelled,
+    layer = "0.24" if layer_edit else "0.4"
+    count, final_z = (112, "27.04") if layer_edit else (68, "27.2")
+    summary = inspect_project(project, expected, layer_height=layer, cancelled=cancelled,
         expected_assembly_transform=original_transform)
     inspect_preserved_settings(_json(files["Metadata/project_settings.config"]),
-        _json(_archive(fixture, cancelled)["Metadata/project_settings.config"]), cancelled=cancelled)
-    layers = analyze_gcode(gcode, layer_height="0.4", cancelled=cancelled)
-    _require(layers["layer_count"] == 68 and Decimal(layers["last_z"]) == Decimal("27.2")
+        _json(_archive(fixture, cancelled)["Metadata/project_settings.config"]),
+        allowed_changes=MOVE_LAYER if layer_edit else None, cancelled=cancelled)
+    if layer_edit:
+        require_gcode_settings(gcode, MOVE_LAYER, "transform_layer_echo")
+    layers = analyze_gcode(gcode, layer_height=layer, cancelled=cancelled)
+    _require(layers["layer_count"] == count and Decimal(layers["last_z"]) == Decimal(final_z)
              and layers["object_tools"] == [0], "transform_layer_or_tool_schedule")
     vertices = {point for triangle in geometry for point in triangle}
     bounds = [(min(p[a] for p in vertices),max(p[a] for p in vertices)) for a in (0,1)]
     xy = _object_xy(gcode, bounds, cancelled)
     summary["geometry_unchanged"] = False  # World placement deliberately changed.
     summary["shape_preserved"] = True
-    return {"detail": f"Cube moved +{distance}mm global {axis.upper()}; preserved .4/.4 and settings; actual 68-layer extrusion in moved XY bounds",
+    return {"detail": f"Cube moved +{distance}mm global {axis.upper()}; layer heights {layer}/0.4; actual {count}-layer extrusion in moved XY bounds",
             "project": summary, "gcode": layers, f"translation_{axis}_mm": str(distance),
             "object_xy_bounds": xy, "other_fixture_settings_preserved": True}

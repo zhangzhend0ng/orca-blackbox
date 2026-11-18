@@ -10,19 +10,26 @@ UIA_LAYER_STRENGTH_SCENARIO = "uia_hybrid_layer_strength"
 UIA_CANVAS_SCENARIO = "uia_hybrid_canvas"
 UIA_PROCESS_COMBO = "uia_process_combo"
 UIA_MIX_RECIPES = "uia_mix_recipes"
+UIA_QUALITY_ENUMS = "uia_quality_enums"
+UIA_MOVE_LAYER = "uia_move_layer"
 UIA_REPLAY_SCENARIO = "uia_replay_layer"
 UIA_REPLAY_SAVE = "uia_replay_save"
 UIA_REPLAY_CANVAS = "uia_replay_canvas"
 UIA_REPLAY_PROCESS = "uia_replay_process"
 UIA_REPLAY_MIX = "uia_replay_mix"
+UIA_REPLAY_ENUMS = "uia_replay_enums"
+UIA_REPLAY_MOVE_LAYER = "uia_replay_move_layer"
 REPLAY_SOURCES = {UIA_REPLAY_SCENARIO: UIA_LAYER_SCENARIO, UIA_REPLAY_SAVE: UIA_SAVE_SCENARIO,
                   UIA_REPLAY_CANVAS: UIA_CANVAS_SCENARIO, UIA_REPLAY_PROCESS: UIA_PROCESS_COMBO,
-                  UIA_REPLAY_MIX: UIA_MIX_RECIPES}
-UIA_PROCESS_SCENARIOS = frozenset((UIA_PROCESS_COMBO, UIA_REPLAY_PROCESS))
+                  UIA_REPLAY_MIX: UIA_MIX_RECIPES, UIA_REPLAY_ENUMS: UIA_QUALITY_ENUMS,
+                  UIA_REPLAY_MOVE_LAYER: UIA_MOVE_LAYER}
+UIA_ENUM_SCENARIOS = frozenset((UIA_QUALITY_ENUMS, UIA_REPLAY_ENUMS))
+UIA_PROCESS_SCENARIOS = frozenset((UIA_PROCESS_COMBO, UIA_REPLAY_PROCESS)) | UIA_ENUM_SCENARIOS
+UIA_MOVE_LAYER_SCENARIOS = frozenset((UIA_MOVE_LAYER, UIA_REPLAY_MOVE_LAYER))
 UIA_MIX_SCENARIOS = frozenset((UIA_MIX_RECIPES, UIA_REPLAY_MIX))
 UIA_SAVE_SCENARIOS = frozenset((UIA_SAVE_SCENARIO, UIA_REPLAY_SAVE))
 SCRIPT_COMPARISON_SCENARIOS = (UIA_LAYER_SCENARIO, UIA_CANVAS_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO, UIA_SAVE_SCENARIO,
-                               UIA_PROCESS_COMBO, UIA_MIX_RECIPES)
+                               UIA_PROCESS_COMBO, UIA_MIX_RECIPES, UIA_QUALITY_ENUMS, UIA_MOVE_LAYER)
 SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES)
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
@@ -31,7 +38,7 @@ UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
     "uia_general_combo", UIA_DISTURBANCE_SCENARIO)
 UIA_HYBRID_SCENARIOS = frozenset((*SCRIPT_SCENARIOS, *UIA_GENERALIZATION)) - UIA_SAVE_SCENARIOS
 SCALE_SCENARIOS = ("general_scale_quality", "general_scale_others")
-CANVAS_REPLACE_SCENARIOS = frozenset((CANVAS_REPLACE_SCENARIO, UIA_CANVAS_SCENARIO, UIA_REPLAY_CANVAS, *SCALE_SCENARIOS, *UIA_Y_SCENARIOS))
+CANVAS_REPLACE_SCENARIOS = frozenset((CANVAS_REPLACE_SCENARIO, UIA_CANVAS_SCENARIO, UIA_REPLAY_CANVAS, *SCALE_SCENARIOS, *UIA_Y_SCENARIOS)) | UIA_MOVE_LAYER_SCENARIOS
 CANVAS_SCENARIOS = CANVAS_REPLACE_SCENARIOS | {"canvas_trial"}
 GENERALIZATION = (
     "general_wall", "general_slot2", "general_top_strength", "general_top_quality",
@@ -56,6 +63,7 @@ SCENARIOS = {
     UIA_REPLAY_CANVAS: ("Quality", None),
     UIA_REPLAY_PROCESS: ("Quality", None),
     UIA_REPLAY_MIX: ("Quality", None),
+    **dict.fromkeys(UIA_ENUM_SCENARIOS | UIA_MOVE_LAYER_SCENARIOS, ("Quality", None)),
     "overwrite": ("Quality", "overwrite"),
     "safety_cancel": ("Quality", "cancel"),
     "safety_timeout": ("Quality", "timeout"),

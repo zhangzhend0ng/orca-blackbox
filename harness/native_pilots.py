@@ -1,7 +1,8 @@
 """Finite business experiments; never a model-selected verifier or import path."""
 from importlib import import_module
 from .native_matrix import (CANVAS_REPLACE_SCENARIO, SCALE_SCENARIOS, UIA_CANVAS_SCENARIO,
-    UIA_DISTURBANCE_SCENARIO, UIA_MIX_RECIPES, UIA_MIX_SCENARIOS, UIA_PROCESS_COMBO, UIA_Y_SCENARIOS)
+    UIA_DISTURBANCE_SCENARIO, UIA_MIX_RECIPES, UIA_MIX_SCENARIOS, UIA_MOVE_LAYER,
+    UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS, UIA_Y_SCENARIOS)
 
 PILOTS = {
     "pilot_strength": "pilot_strength",
@@ -18,6 +19,7 @@ TRIALS = {
     UIA_CANVAS_SCENARIO: "pilot_transform",
     UIA_PROCESS_COMBO: "pilot_process_combo",
     UIA_MIX_RECIPES: "pilot_mix_recipes",
+    UIA_QUALITY_ENUMS: "quality_enums", UIA_MOVE_LAYER: "move_layer",
     "general_wall": "pilot_strength", "general_slot2": "pilot_material",
     "general_top_strength": "pilot_top_layers", "general_top_quality": "pilot_top_layers",
     **dict.fromkeys(SCALE_SCENARIOS, "pilot_scale_x"),
@@ -49,7 +51,7 @@ def pilot_module(scenario):
     if type(scenario) is not str or scenario not in {**PILOTS, **TRIALS}:
         raise ValueError("native_pilot_not_registered")
     module = {**PILOTS, **TRIALS}[scenario]
-    if module in {"bottom", "move_y", "combo"}:
+    if module in {"bottom", "move_y", "combo", "quality_enums", "move_layer"}:
         return import_module(".pilot_uia_goals", __package__).GOALS[module]
     return import_module("."+module, __package__)
 

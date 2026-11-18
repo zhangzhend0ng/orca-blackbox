@@ -6,7 +6,8 @@ from pathlib import Path
 
 from .agent_protocol import LAYER_FIXTURE_SHA256, ProtocolError, valid_run_id
 from .native_matrix import (REPLAY_SOURCES, UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_PROCESS_COMBO,
-    UIA_MIX_RECIPES, UIA_REPLAY_CANVAS, UIA_REPLAY_MIX, UIA_REPLAY_PROCESS, UIA_REPLAY_SAVE,
+    UIA_MIX_RECIPES, UIA_MOVE_LAYER, UIA_PROCESS_SCENARIOS, UIA_QUALITY_ENUMS, UIA_REPLAY_CANVAS,
+    UIA_REPLAY_ENUMS, UIA_REPLAY_MIX, UIA_REPLAY_MOVE_LAYER, UIA_REPLAY_PROCESS, UIA_REPLAY_SAVE,
     UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
 from .native_save_policy import PROCESS_POPUP, validate_input, validate_uia_selector
 from .native_uia import verify_uia_save
@@ -19,7 +20,9 @@ SAVE_ORDER = ("Snapshot", "Type", "Click", "Snapshot")
 RECORDINGS = {UIA_REPLAY_SCENARIO: RECORDING, UIA_REPLAY_SAVE: RECORDING.with_name("uia_save.json"),
               UIA_REPLAY_CANVAS: RECORDING.with_name("uia_canvas.json"),
               UIA_REPLAY_PROCESS: RECORDING.with_name("uia_process.json"),
-              UIA_REPLAY_MIX: RECORDING.with_name("uia_mix.json")}
+              UIA_REPLAY_MIX: RECORDING.with_name("uia_mix.json"),
+              UIA_REPLAY_ENUMS: RECORDING.with_name("uia_enums.json"),
+              UIA_REPLAY_MOVE_LAYER: RECORDING.with_name("uia_move_layer.json")}
 
 
 def fixture_digest(scenario):
@@ -49,11 +52,11 @@ def verify_recipe(recipe):
             or recipe["initial_tab"] != "Quality" or recipe["fixture_sha256"] != fixture_digest(scenario)):
         raise ValueError("replay_recipe_scope")
     steps = recipe["steps"]
-    if scenario == UIA_CANVAS_SCENARIO:
-        verify_canvas_steps(steps)
+    if scenario in {UIA_CANVAS_SCENARIO, UIA_MOVE_LAYER}:
+        verify_canvas_steps(steps, UIA_REPLAY_MOVE_LAYER if scenario == UIA_MOVE_LAYER else UIA_REPLAY_CANVAS)
         return recipe
-    if scenario == UIA_PROCESS_COMBO:
-        verify_process_steps(steps)
+    if scenario in {UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS}:
+        verify_process_steps(steps, UIA_REPLAY_ENUMS if scenario == UIA_QUALITY_ENUMS else UIA_REPLAY_PROCESS)
         return recipe
     if scenario == UIA_MIX_RECIPES:
         verify_mix_steps(steps)
@@ -108,8 +111,8 @@ def verify_visual_steps(steps, scenario):
         raise ValueError("replay_canvas_save_arguments")
 
 
-def verify_process_steps(steps):
-    verify_visual_steps(steps, UIA_REPLAY_PROCESS)
+def verify_process_steps(steps, scenario=UIA_REPLAY_PROCESS):
+    verify_visual_steps(steps, scenario)
     crops, values, menu_clicks = {}, [], 0
     for step in steps[:-5]:
         tool, args = step["tool"], step["arguments"]
@@ -132,7 +135,8 @@ def verify_process_steps(steps):
                 elif "wx_sidebar" not in crops or not contains(crops["wx_sidebar"], point):
                     raise ValueError("replay_process_sidebar_unobserved")
             crops.clear()
-    if sorted(values) != [Decimal("0.3"), Decimal("30")] or menu_clicks != 1:
+    expected_values, expected_clicks = ([], 2) if scenario == UIA_REPLAY_ENUMS else ([Decimal("0.3"), Decimal("30")], 1)
+    if sorted(values) != expected_values or menu_clicks != expected_clicks:
         raise ValueError("replay_process_edit_scope")
 
 
@@ -154,25 +158,33 @@ def verify_mix_steps(steps):
         raise ValueError("replay_mix_edit_order")
 
 
-def verify_canvas_steps(steps):
-    verify_visual_steps(steps, UIA_REPLAY_CANVAS)
-    numeric = 0
-    canvas = point = None
+def verify_canvas_steps(steps, scenario=UIA_REPLAY_CANVAS):
+    verify_visual_steps(steps, scenario)
+    numeric, layer = 0, 0
+    canvas = sidebar = point = None
     for step in steps[:-5]:
         tool, args = step["tool"], step["arguments"]
-        if tool == "Screenshot" and args["region_name"] == "imgui_canvas":
-            canvas = step["bounds"]
+        if tool == "Screenshot":
+            if args["region_name"] == "imgui_canvas":
+                canvas = step["bounds"]
+            elif scenario == UIA_REPLAY_MOVE_LAYER and args["region_name"] == "wx_sidebar":
+                sidebar = step["bounds"]
         elif tool == "Click":
             point = args.get("loc")
-            if point is not None and (canvas is None or not contains(canvas, point)):
-                raise ValueError("replay_canvas_point_unobserved")
-            canvas = None
+            if point is not None and not (canvas is not None and contains(canvas, point)):
+                if sidebar is None or not contains(sidebar, point):
+                    raise ValueError("replay_canvas_point_unobserved")
+                point = None
+            canvas = sidebar = None
         elif tool == "Type":
-            if point is None or args.get("loc") != point or Decimal(args["text"]) != Decimal("145.5"):
+            if scenario == UIA_REPLAY_MOVE_LAYER and "target" in args and args["text"] == "0.24":
+                layer += 1
+            elif point is None or args.get("loc") != point or Decimal(args["text"]) != Decimal("145.5"):
                 raise ValueError("replay_canvas_numeric_precondition")
-            numeric += 1
-            canvas = point = None
-    if numeric != 1:
+            else:
+                numeric += 1
+            canvas = sidebar = point = None
+    if numeric != 1 or layer != (scenario == UIA_REPLAY_MOVE_LAYER):
         raise ValueError("replay_canvas_numeric_count")
 
 
@@ -194,17 +206,17 @@ def compile_recipe(raw, *, run_id, source_sha, app_pid, main_hwnd, output_path,
     if scenario == UIA_SAVE_SCENARIO:
         verify_uia_save(trace, run_id=run_id, app_pid=app_pid, dialog_hwnd=dialog_hwnd, output_path=output_path)
     else:
-        strict = scenario in {UIA_CANVAS_SCENARIO, UIA_PROCESS_COMBO, UIA_MIX_RECIPES}
+        strict = scenario in {UIA_CANVAS_SCENARIO, UIA_PROCESS_COMBO, UIA_MIX_RECIPES, UIA_MOVE_LAYER, UIA_QUALITY_ENUMS}
         verify_hybrid_trace(trace, run_id=run_id, app_pid=app_pid, main_hwnd=main_hwnd,
                             output_path=output_path, scenario=scenario, named_crops_only=strict,
                             strict_crop_lifetime=strict or any("visual_crop_id" in row["window"] for row in trace),
-                            allow_refresh=scenario == UIA_PROCESS_COMBO)
+                            allow_refresh=scenario in UIA_PROCESS_SCENARIOS | {UIA_MOVE_LAYER})
     actions = []
     for row in trace:
         tool, args = row["tool"], dict(row["arguments"])
         if (tool in {"Wait", "ControlStatus"} or row.get("error") or row["window"].get("route") == "uia_popup"
                 or (scenario in {UIA_LAYER_SCENARIO, UIA_SAVE_SCENARIO} and tool in {"Snapshot", "Screenshot"})
-                or (scenario == UIA_PROCESS_COMBO and tool == "Screenshot" and args.get("region_name") == "imgui_canvas")):
+                or (scenario in UIA_PROCESS_SCENARIOS and tool == "Screenshot" and args.get("region_name") == "imgui_canvas")):
             continue
         if args.get("text") == output_path:
             args["text"] = OUTPUT
@@ -226,7 +238,7 @@ def compile_recipe(raw, *, run_id, source_sha, app_pid, main_hwnd, output_path,
         steps = [snapshot, actions[0], snapshot, actions[1], snapshot, actions[2], actions[3], snapshot]
     elif scenario == UIA_SAVE_SCENARIO:
         steps = [snapshot, *actions, snapshot]
-    elif scenario in {UIA_PROCESS_COMBO, UIA_MIX_RECIPES}:
+    elif scenario in UIA_PROCESS_SCENARIOS | {UIA_MIX_RECIPES, UIA_MOVE_LAYER}:
         shortcut_index = next(i for i, action in enumerate(actions) if action["tool"] == "Shortcut")
         saved = [action for action in actions[shortcut_index + 1:] if action["tool"] != "Snapshot"]
         steps = [*actions[:shortcut_index + 1], snapshot, *saved, snapshot]
@@ -299,7 +311,7 @@ def verify_replay_trace(trace, run_id, scope, digest):
     if scenario == UIA_REPLAY_SAVE:
         return verify_uia_save(trace, run_id=run_id, app_pid=scope["app_pid"], dialog_hwnd=scope["dialog_hwnd"],
                                output_path=scope["output_path"])
-    if scenario in {UIA_REPLAY_CANVAS, UIA_REPLAY_PROCESS} and any(step.get("bounds") != row["window"].get("visual_region")
+    if scenario in {UIA_REPLAY_CANVAS, UIA_REPLAY_PROCESS, UIA_REPLAY_ENUMS, UIA_REPLAY_MOVE_LAYER} and any(step.get("bounds") != row["window"].get("visual_region")
                                              for step, row in zip(recipe["steps"], trace)
                                              if step["tool"] == "Screenshot"):
         raise ValueError("replay_canvas_layout_receipt")

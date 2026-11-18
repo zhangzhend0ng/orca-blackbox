@@ -6,7 +6,7 @@ import sys
 
 from .agent_protocol import ProtocolError, read_json
 from .native_matrix import (UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO,
-    UIA_MIX_RECIPES, UIA_PROCESS_COMBO)
+    UIA_MIX_RECIPES, UIA_MOVE_LAYER, UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS)
 
 
 def edit_layer(ui, value="0.24"):
@@ -132,6 +132,31 @@ def edit_process_combo(ui):
         raise ProtocolError("process_combo_support_type")
 
 
+def edit_quality_enums(ui):
+    # Retain m5h's sidebar order and rebuild protection.
+    from . import process_panel as pp
+
+    app = ui.app
+    ui.main_input()
+    pp.ensure_advanced(app, want=True)
+    if not pp.click_tab(app, "Quality", "height") or not pp.scroll_group_into_view(app, "Ironing", timeout_s=45):
+        raise ProtocolError("quality_enums_ironing_group")
+    located, _ = pp.set_combo_by_popup(app, ("no", "ironing"), "topmost", log="[m5h replay baseline]", psm=6)
+    if not located:
+        raise ProtocolError("quality_enums_ironing_choice")
+    pp.neutralize_focus(app)
+    ui.pause(12)
+    ui.main_input()
+    if (not pp.click_tab(app, "Strength", "loops") or not pp.click_tab(app, "Quality", "height")
+            or not pp.scroll_group_into_view(app, "Seam", timeout_s=45)):
+        raise ProtocolError("quality_enums_seam_group")
+    located, _ = pp.set_combo_by_popup(app, "Aligned", "random", log="[m5h replay baseline]", psm=6)
+    if not located:
+        raise ProtocolError("quality_enums_seam_choice")
+    pp.neutralize_focus(app)
+    ui.pause(12)
+
+
 def add_mix_recipes(ui, *, census=False):
     tests = Path(__file__).resolve().parents[1] / "tests"
     sys.path.insert(0, str(tests / "mixing"))
@@ -159,6 +184,11 @@ def edit_project(ui, scenario, canvas, *, mix_census=False):
         move_x(ui, canvas)
     elif scenario == UIA_PROCESS_COMBO:
         edit_process_combo(ui)
+    elif scenario == UIA_QUALITY_ENUMS:
+        edit_quality_enums(ui)
+    elif scenario == UIA_MOVE_LAYER:
+        edit_layer(ui)
+        move_x(ui, canvas)
     elif scenario == UIA_MIX_RECIPES:
         add_mix_recipes(ui, census=mix_census)
     else:
