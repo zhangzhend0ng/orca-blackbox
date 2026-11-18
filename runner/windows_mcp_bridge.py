@@ -6,6 +6,8 @@ the connection; input actions are never retried. This is an isolated probe.
 from __future__ import annotations
 
 import argparse
+import base64
+import io
 import json
 from pathlib import Path
 import sys
@@ -16,6 +18,8 @@ sys.path.insert(0, str(REPO))
 from runner.agent_bridge import RelayMailbox, decode_json
 
 TOOLS = frozenset({"Snapshot", "Screenshot", "Click", "Wait", "ControlStatus"})
+ZCODE_INLINE_IMAGE_LIMIT = 200 * 1024
+ZCODE_INLINE_TARGET = 180 * 1024
 GUEST_HTTP = r"""
 param($sb,$run,$encoded)
 $ErrorActionPreference='Stop'
@@ -146,13 +150,42 @@ def authority_receipt(response, request, run_id, seq):
     return receipt
 
 
+def inline_canvas_observations(result):
+    """Fit oversized frames under ZCode's inline limit at unchanged coordinates."""
+    changes = []
+    for item in result.get("content", []):
+        if item.get("type") != "image":
+            continue
+        data = item["data"]
+        if len(data) <= ZCODE_INLINE_IMAGE_LIMIT:
+            continue
+        from PIL import Image
+        if len(data) > 3_000_000 or item["mimeType"] not in {"image/png", "image/jpeg"}:
+            raise ValueError("native_observation_image_size_or_format")
+        with Image.open(io.BytesIO(base64.b64decode(data, validate=True)), formats=["PNG", "JPEG"]) as source:
+            if source.size != (1920, 1080):
+                raise ValueError("native_observation_image_geometry")
+            frame = source.convert("RGB")
+        for quality in (88, 78, 68, 52):
+            out = io.BytesIO()
+            frame.save(out, format="JPEG", optimize=True, quality=quality)
+            encoded = base64.b64encode(out.getvalue()).decode("ascii")
+            if len(encoded) <= ZCODE_INLINE_TARGET:
+                changes.append({"before_base64": len(data), "after_base64": len(encoded), "mime_type": "image/jpeg"})
+                item.update(data=encoded, mimeType="image/jpeg")
+                break
+        else:
+            raise ValueError("native_observation_inline_limit")
+    return changes
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--run-id", required=True)
     p.add_argument("--guest-root", default=r"C:\coil\orca-blackbox-v3-r1")
     p.add_argument("--goal-save", action="store_true")
     p.add_argument("--authority-log", type=Path)
-    from harness.native_matrix import SCENARIOS
+    from harness.native_matrix import CANVAS_REPLACE_SCENARIO, SCENARIOS
     p.add_argument("--scenario", choices=tuple(SCENARIOS), default="base")
     args = p.parse_args()
     transport = GuestHTTP(args.guest_root, args.run_id, deadline=time.monotonic()+900, goal_save=args.goal_save)
@@ -185,10 +218,16 @@ def main():
                 response["result"]["tools"] = scoped_tool_schemas(response["result"]["tools"], output, scenario=args.scenario)
         if method == "tools/call" and args.authority_log is not None:
             receipt = authority_receipt(response, request, args.run_id, calls)
+            sidecar = {"request_id": request["id"], "authority": receipt}
+            if (args.scenario == CANVAS_REPLACE_SCENARIO and receipt["decision"] == "completed"
+                    and receipt["tool"] in {"Screenshot", "Snapshot"}):
+                changes = inline_canvas_observations(response["result"])
+                if changes:
+                    sidecar["observation_transcode"] = changes
             # Written completely before forwarding this response. The agent has
             # no filesystem tool and cannot create its own authority receipts.
             with args.authority_log.open("a", encoding="utf-8") as stream:
-                stream.write(json.dumps({"request_id": request["id"], "authority": receipt})+"\n")
+                stream.write(json.dumps(sidecar)+"\n")
                 stream.flush()
         print(json.dumps(response, separators=(",", ":")), flush=True)
 

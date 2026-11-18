@@ -43,9 +43,9 @@ def main():
         json.loads((root.parent / "contract.json").read_text()),
         run_id=args.run_id, output_path=str(root / "projects/0001.3mf"))
     from windows_mcp import __main__ as original
+    from windows_mcp.uia import SendKeys
 
     def canvas_dispatch(arguments):
-        from uiautomation import SendKeys
         send_canvas_number(guard, arguments, SendKeys)
         message = "Sent numeric keys and Enter to the bound canvas without re-clicking. Inspect the committed value."
         return ToolResult(content=[TextContent(type="text", text=message)],

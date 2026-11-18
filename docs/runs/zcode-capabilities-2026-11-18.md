@@ -84,3 +84,15 @@
 - 纠错首轮的原版 Type 工具回执明确读到 seq7 的 `0.24`，随后的 seq8 Type 未打开 clear，读回 `0.240.24`，且该调用还发了 Enter。seq9 才因非 Edit 停输。第二轮 seq7 仍读回 `0.24`，seq8 Tab 后模型在截图中报告已提交。模型把 seq10 的位置当作空白并点击，下一次 Save As 前台检查失败。原始截图像素和失焦目标的身份没有保留，因此具体激活了哪个控件或应用仍未知。历史成功 run `8cb6ee5f048f4562b3b26f87d65f5d3c` 用单次 clear+Type+Enter 提交数值，随后完成保存重开。
 - 画布 run `4250e066acf920a72055ac131178763b` 的 seq13、17、30 均报告 `PaneControl GLCanvas` 无法读回。模型在接下来的截图中报告输入文本与原数字混在一起，反复尝试选中和取消，未进入保存。旧 inline 截图像素在 model-io 中被省略。只读核对 `GizmoObjectManipulation.cpp`、`imgui_widgets.cpp` 和原版 0.8.9 wheel，Position 用 `BBLInputDouble`，首次激活全选，旧 Type 在真正送键前无条件再 Click，选中内容可能被第二击缩成插入点。
 - `recovery_diagnostic_commit` 强制原生 Edit 数字一次替换并提交，成功读回后观察结果并直接保存。另立 `canvas_replace_trial`，尝试保留首次 Click 的选区，Type 在同一绑定画布只发白名单数字和一次 Enter，每键前重查目标及撤销。一次性单击凭据、30 秒期限和独立产物检查继续生效。两个合同回收最多四张 Type 后的原始截图，便于核对实际 UI。旧合同和失败记录可按原身份读取。
+
+### 受控纠错闭环复验
+
+源 `3ee0945d4f7af5608b9e8848e9df278efd71823d`，run `013885216df9f8e218587d389eeb5e7c`。同一原生 turn 内 seq5 受控预派发拒绝，seq6 Screenshot，seq7 单次 clear+Type+Enter，工具读回 `0.24`，seq8 截图，seq9 直接 Save As。模型首次输入保存路径时把它追加到默认文件名，随后自行打开 clear 重填并保存。四张编辑后截图已回收，哈希与工具轨迹一致。
+
+独立业务与路径均通过，正式 SHADOW，`MECHANISM_ONLY`。冻结 3MF SHA256 `4ed9d469ae12d1b1049ba8703bb1040574c7d683c87ee09a18d69491b0815d5b`，新 profile 重开后导出实际 112 层，初层保持 0.40 mm，G-code SHA256 `17474d91ee2ac477cc0ed9896ba74941544dea28c0403e3a6fd5cb3bddaf0603`。18 次工具尝试、19 份模型收据，模型、七工具和配置完整校验通过。宿主与客机 Job 0、自然退出、run token 已删除。前两轮失败保留。
+
+### 画布复验的传输与派发问题
+
+源 `3ee0945`，run `a8e6ec54c16c2c8490d03d9827f3e717`。seq5、6、8、10、12 的移动面板 PNG 编码 201–212 KiB，超过原生 ZCode 的 200 KiB 阈值。模型只收到文件引用，此隔离合同无相应读图工具。它后来恢复可见画面并选择数值字段，seq22 通过 owned canvas 检查并尝试进入键盘分支，但在送键前导入库失败。安装 wheel 的键盘实现实际为 `windows_mcp.uia`，已切回原版使用的入口。正式 NON_GREEN，无业务产物，配置一致、两侧 Job 0、token 删除，原结果保留。
+
+复验修订让该合同超过阈值的 Screenshot/Snapshot 在宿主桥接层以原像素尺寸编码为低于阈值的 JPEG，留有 20 KiB 余量。已内联的小图和客机回收的原始 PNG 保持原样，大小变化进入宿主受信 sidecar。

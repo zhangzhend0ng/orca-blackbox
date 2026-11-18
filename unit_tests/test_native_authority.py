@@ -118,6 +118,32 @@ def test_output_schema_fields_survive_authority_attachment():
         attach_authority({"authority": "not ours"}, metadata)
 
 
+def test_oversized_canvas_frame_stays_inline_at_original_coordinates():
+    import base64
+    import io
+    import random
+    from runner.windows_mcp_bridge import inline_canvas_observations, ZCODE_INLINE_TARGET
+
+    Image = pytest.importorskip("PIL.Image")
+    frame = Image.new("RGB", (1920, 1080), "white")
+    noisy = Image.frombytes("RGB", (280, 240), random.Random(0).randbytes(280 * 240 * 3))
+    frame.paste(noisy, (700, 440))
+    raw = io.BytesIO()
+    frame.save(raw, format="PNG")
+    oversized = base64.b64encode(raw.getvalue()).decode("ascii")
+    text = {"type": "text", "text": "Overview"}
+    item = {"type": "image", "mimeType": "image/png", "data": oversized}
+    result = {"content": [text, item], "structuredContent": {"authority": {"seq": 7}}}
+    assert inline_canvas_observations(result) == [
+        {"before_base64": len(oversized), "after_base64": len(item["data"]), "mime_type": "image/jpeg"},
+    ]
+    assert len(item["data"]) <= ZCODE_INLINE_TARGET
+    assert result["content"][0] == text and result["structuredContent"]["authority"]["seq"] == 7
+    with Image.open(io.BytesIO(base64.b64decode(item["data"]))) as observed:
+        assert observed.format == "JPEG" and observed.size == frame.size
+    assert inline_canvas_observations(result) == []
+
+
 def test_journal_write_failure_stops_all_later_dispatches(tmp_path):
     (tmp_path / "native_trace.ndjson").mkdir()
     controller = AuthorityController(Guard(tmp_path), tmp_path, RUN)
