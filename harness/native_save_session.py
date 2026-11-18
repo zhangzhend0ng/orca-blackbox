@@ -14,7 +14,8 @@ import xml.etree.ElementTree as ET
 from decimal import DecimalException
 
 from .agent_protocol import LAYER_FIXTURE_SHA256, valid_run_id
-from .native_diagnostic_recovery import SCENARIO as DIAGNOSTIC_SCENARIO
+from .native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
+from .native_matrix import CANVAS_REPLACE_SCENARIO, CANVAS_SCENARIOS
 from .run_contract import validate_contract
 from .run_verdict import CheckResult, contract_digest
 from .runtime_ports import VerificationOutcome
@@ -66,6 +67,9 @@ def native_contract(actor="codex", scenario="base"):
             if scenario == "canvas_trial":
                 data["contract_version"] = "native-canvas-trial-zcode-1-observed-wxglcanvas-v1"
                 data["steps"].insert(1, {"id": "canvas_authority", "goal": "Explicit observed-wxglcanvas-v1 numeric-only capability trial; fixed diagnostic/SUT hashes; clear=false/caret=idle/press_enter=false; prior successful same-loc Click. PFD and internal field activation unproven; at most two proven owned numeric pre-dispatch refusals with fresh observation."})
+            elif scenario == CANVAS_REPLACE_SCENARIO:
+                data["contract_version"] = "native-canvas-replace-zcode-1"
+                data["steps"].insert(1, {"id": "canvas_authority", "goal": "Bound wxGLCanvas numeric replacement using one successful same-position single Click, focused numeric keys without another click, then one Enter. Recheck the owned destination before every key. Confirm using the saved 3MF and new-profile G-code."})
         elif scenario in {"canvas_probe", "authority_probe"}:
             data["case_id"] = "diagnostic_canvas_input"
             data["contract_version"] = "native-canvas-probe-1"
@@ -78,9 +82,12 @@ def native_contract(actor="codex", scenario="base"):
         elif scenario == "recovery_owned_edit":
             data["contract_version"] = "native-recovery-zcode-1-owned-edit"
             data["steps"].insert(1, {"id": "recovery", "goal": "At most two proven owned numeric non-Edit refusals before dispatch; fresh observation before any further input; every other refusal durably stops authority."})
-        elif scenario == DIAGNOSTIC_SCENARIO:
+        elif scenario in DIAGNOSTIC_SCENARIOS:
             data["contract_version"] = "native-diagnostic-recovery-zcode-1"
             data["steps"].insert(1, {"id": "recovery", "goal": "Inject one refusal after the owned numeric Edit guard allows it and before dispatch. In a single native turn, observe again and correct the numeric edit. Independently verify the business result. Mechanism evidence only."})
+            if scenario == COMMIT_SCENARIO:
+                data["contract_version"] = "native-diagnostic-recovery-zcode-2-commit"
+                data["steps"][1]["goal"] += " Replace and commit the native Edit with clear=true and press_enter=true in the same Type."
     return validate_contract(data)
 
 
@@ -166,16 +173,17 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
         trace = [_json(line) for line in read("native_trace.ndjson", 256000).splitlines() if line]
         _require(1 <= len(trace) <= 40 and len(trace) == host["tool_count"], "native_trace_count")
         _require(all(x["finished_at_ns"] <= times[0] for x in trace), "native_trace_late_input")
-        if scenario in {"recovery_owned_edit", "canvas_trial"}:
+        if scenario in CANVAS_SCENARIOS | {"recovery_owned_edit"}:
             from .native_recovery import audit_trace
             recovery_summary = audit_trace(trace, snapshot.run_id, enabled=True)
-        elif scenario == DIAGNOSTIC_SCENARIO:
+        elif scenario in DIAGNOSTIC_SCENARIOS:
             from .native_diagnostic_recovery import audit_diagnostic_trace, verify_diagnostic_calls
             _require(host.get("contract_sha256") == contract_digest(snapshot.contract)
                      and host.get("scenario") == scenario, "native_diagnostic_host_contract")
             turn = host.get("diagnostic_turn")
             diagnostic_summary = audit_diagnostic_trace(trace, snapshot.run_id, enabled=True, turn_receipt=turn)
-            diagnostic_summary.update(verify_diagnostic_calls(trace, turn, proof["old_pid"]))
+            diagnostic_summary.update(verify_diagnostic_calls(trace, turn, proof["old_pid"],
+                require_commit=scenario == COMMIT_SCENARIO))
         else:
             _require(all(x["error"] is None for x in trace), "native_trace_error_or_late_input")
         _require(any(x["tool"] == "Type" and x["arguments"].get("text") == proof["output_path"] for x in trace), "native_gui_save_path")
@@ -183,7 +191,7 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
             if x["tool"] in {"Click", "Type", "Shortcut"} and x["error"] is None:
                 _require(x["window"]["app_pid"] == proof["old_pid"], "native_input_ownership")
         canvas_summary = None
-        if scenario == "canvas_trial":
+        if scenario in CANVAS_SCENARIOS:
             from .native_canvas_verify import verify_canvas_trace
             canvas_summary = verify_canvas_trace(trace, _json(read("scope.json", 65536)),
                 _json(read("canvas_setup.json", 400000)), run_id=snapshot.run_id,

@@ -8,6 +8,7 @@ from .script_verify import _InvalidEvidence, _unique_pairs
 from .canvas_approval import resolve_approval
 from .canvas_input import bind_canvas, binding_to_json, load_canvas_binding, decide_type
 from .native_save_policy import validate_input
+from .native_matrix import CANVAS_REPLACE_SCENARIO, CANVAS_SCENARIOS
 
 
 def _json(raw):
@@ -41,8 +42,10 @@ def verify_canvas_trace(trace, scope, setup, *, run_id, contract_sha256, read_ar
 def _verify(trace, scope, setup, run_id, contract_sha256, read_artifact):
     _require(type(run_id) is str and re.fullmatch("[0-9a-f]{32}", run_id)
              and type(contract_sha256) is str and re.fullmatch("[0-9a-f]{64}", contract_sha256), "canvas_expected_identity")
-    _require(type(scope) is dict and type(setup) is dict and scope.get("scenario") == "canvas_trial",
+    _require(type(scope) is dict and type(setup) is dict and scope.get("scenario") in CANVAS_SCENARIOS,
              "canvas_trial_scope")
+    scenario = scope["scenario"]
+    replace = scenario == CANVAS_REPLACE_SCENARIO
     for data in (scope, setup):
         _require(data.get("run_id") == run_id and data.get("contract_sha256") == contract_sha256,
                  "canvas_run_contract_mismatch")
@@ -68,18 +71,20 @@ def _verify(trace, scope, setup, run_id, contract_sha256, read_artifact):
         if row.get("error") is not None or row.get("dispatched") is not True:
             continue  # Parent recovery/fatal audit remains mandatory.
         args, window = row.get("arguments"), row.get("window")
+        if replace and row["tool"] == "Shortcut":
+            last_click = None
         if row.get("tool") == "Click":
             _require(type(args) is dict and type(window) is dict, "canvas_click_schema")
-            validate_input("Click", args, scope["output_path"], "canvas_trial")
+            validate_input("Click", args, scope["output_path"], scenario)
             _require(all(type(window.get(k)) is int and window[k] == bound.app_pid
                          for k in ("app_pid", "foreground_pid", "target_pid")), "canvas_click_ownership")
             stamp = window.get("click_finished_monotonic_ns")
             _require(_time(stamp), "canvas_click_timestamp")
-            last_click = (args["loc"], window.get("target_hwnd"), stamp)
+            last_click = (args["loc"], window.get("target_hwnd"), stamp, args.get("clicks", 1))
         if row.get("tool") != "Type":
             continue
         _require(type(args) is dict and type(window) is dict, "canvas_type_schema")
-        validate_input("Type", args, scope["output_path"], "canvas_trial")
+        validate_input("Type", args, scope["output_path"], scenario)
         name = "canvas_input_" + str(seq) + ".json"
         _require(window.get("observation_file") == name, "canvas_observation_name")
         raw = read_artifact(name, 2_000_000)
@@ -110,10 +115,13 @@ def _verify(trace, scope, setup, run_id, contract_sha256, read_artifact):
                  and next(w["rect"] for w in current["windows"] if w["hwnd"] == bound.main_hwnd) == list(bound.main_rect),
                  "canvas_current_identity")
         if decision["route"] == "canvas_numeric":
-            _require(args.get("clear", False) is False and args.get("press_enter", False) is False
+            _require(args.get("clear", False) is False and args.get("press_enter", False) is replace
                      and args.get("caret_position", "idle") == "idle", "canvas_narrow_options")
             _require(last_click is not None and last_click[0] == args["loc"] and last_click[1] == bound.hwnd
-                     and 0 <= checked-last_click[2] <= 30_000_000_000, "canvas_recent_click_required")
+                     and 0 <= checked-last_click[2] <= 30_000_000_000
+                     and (not replace or last_click[3] == 1), "canvas_recent_click_required")
+            _require(window.get("input_backend") == ("focused_keys_no_click" if replace else None),
+                     "canvas_input_backend")
             last_click = None
             canvas_count += 1
         else:

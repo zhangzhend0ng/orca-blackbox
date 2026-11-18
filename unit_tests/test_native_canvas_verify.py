@@ -70,6 +70,21 @@ def test_independent_canvas_evidence_passes_without_claiming_gl_or_field(case):
     json.dumps(result)
 
 
+def test_replacement_contract_requires_single_click_and_focused_backend(case):
+    from harness.native_matrix import CANVAS_REPLACE_SCENARIO
+
+    case["scope"]["scenario"] = CANVAS_REPLACE_SCENARIO
+    click, typed = case["trace"]
+    typed["arguments"]["press_enter"] = True
+    with pytest.raises(_InvalidEvidence, match="canvas_input_backend"):
+        verify(case)
+    typed["window"]["input_backend"] = "focused_keys_no_click"
+    assert verify(case)["canvas_numeric_count"] == 1
+    click["arguments"]["clicks"] = 2
+    with pytest.raises(_InvalidEvidence, match="canvas_recent_click_required"):
+        verify(case)
+
+
 def test_legitimate_sidebar_layout_change_passes(case):
     case["observations"][2]["windows"][2]["rect"] = [100, 50, 1800, 1000]
     case["observations"][2]["windows"][2]["client_rect"] = [0, 0, 1700, 950]

@@ -1,5 +1,6 @@
 """Finite business experiments; never a model-selected verifier or import path."""
 from importlib import import_module
+from .native_matrix import CANVAS_SCENARIOS
 
 PILOTS = {
     "pilot_strength": "pilot_strength",
@@ -11,7 +12,7 @@ PILOTS = {
 PILOT_BLOCKS = {
     "pilot_transform": "scene_numeric_range_and_canvas_edit_authority_not_ready",
 }
-TRIALS = {"canvas_trial": "pilot_transform"}
+TRIALS = dict.fromkeys(CANVAS_SCENARIOS, "pilot_transform")
 
 
 def require_pilot_ready(scenario):

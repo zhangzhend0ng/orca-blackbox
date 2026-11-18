@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 
 from harness.native_save_policy import InputGuard, validate_input, scoped_tool_schemas, NATIVE_TOOLS
+from harness.native_diagnostic_recovery import COMMIT_SCENARIO
+from harness.native_matrix import CANVAS_REPLACE_SCENARIO
 from harness.canvas_input import binding_to_json
 from unit_tests.test_canvas_input import evidence, observed_binding, OUTPUT, RUN
 from unit_tests.test_canvas_approval import approved
@@ -79,3 +81,50 @@ def test_click_and_environment_failures_do_not_authorize_canvas_type(trial,fault
 def test_actual_checked_in_diagnostic_bytes_match_the_approval():
     path=Path(__file__).resolve().parents[1]/"contracts/evidence/canvas-diagnostic-bb64.json"
     assert hashlib.sha256(path.read_bytes()).hexdigest()==approved().diagnostic_sha256
+
+
+@pytest.mark.parametrize("scenario,clear,text", [
+    (COMMIT_SCENARIO, True, "0.24"), (CANVAS_REPLACE_SCENARIO, False, "145.5"),
+])
+def test_commit_options_match_advertised_type_schema(scenario, clear, text):
+    jsonschema = pytest.importorskip("jsonschema")
+    tools = [{"name": name, "inputSchema": {}} for name in NATIVE_TOOLS]
+    schema = next(tool["inputSchema"] for tool in scoped_tool_schemas(tools, OUTPUT, scenario)
+                  if tool["name"] == "Type")
+    args = {"loc": [450, 100], "text": text, "clear": clear, "press_enter": True}
+    jsonschema.validate(args, schema)
+    validate_input("Type", args, OUTPUT, scenario)
+    for bad in [dict(args, press_enter=False), dict(args, caret_position="start"), dict(args, clear=not clear)]:
+        with pytest.raises(jsonschema.ValidationError):
+            jsonschema.validate(bad, schema)
+        with pytest.raises(ValueError, match="native_numeric_type_options"):
+            validate_input("Type", bad, OUTPUT, scenario)
+    save = dict(args, text=OUTPUT)
+    jsonschema.validate(save, schema)
+    validate_input("Type", save, OUTPUT, scenario)
+
+
+def test_replace_accepts_one_click_and_rechecks_before_each_key(trial):
+    from tools.native_save_server import send_canvas_number
+
+    guard, _, evidence, _ = trial
+    guard.scope["scenario"] = CANVAS_REPLACE_SCENARIO
+    args = {"loc": [450, 100], "text": "145.5", "press_enter": True}
+    guard.last_window = {"target_hwnd": 30}
+    guard.record_click(args["loc"], clicks=2)
+    with pytest.raises(ValueError, match="recent_click"):
+        guard._canvas_trial_type(args)
+    guard.record_click(args["loc"])
+    guard._canvas_trial_type(args)
+    keys = []
+    send_canvas_number(guard, args, lambda key, **_: keys.append(key))
+    assert keys == [*"145.5", "{Enter}"]
+
+    keys.clear()
+    def lose_focus(key, **_):
+        keys.append(key)
+        evidence["focus_hwnd"] = 20
+
+    with pytest.raises(ValueError, match="canvas_focus_or_foreground_changed"):
+        send_canvas_number(guard, args, lose_focus)
+    assert keys == ["1"]

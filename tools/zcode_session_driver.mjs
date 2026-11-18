@@ -69,7 +69,7 @@ function request(method,params,seconds=60){
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const calls=new Map();
 const authorityMode=spec.authority_protocol==='native-authority-1';
-const diagnosticMode=spec.scenario==='recovery_diagnostic_once';
+const diagnosticMode=['recovery_diagnostic_once','recovery_diagnostic_commit'].includes(spec.scenario);
 let authorityConsumed=0;
 let needsObservation=false,recoveryCount=0;
 const requestIds=new Set();

@@ -4,6 +4,8 @@ from __future__ import annotations
 import math
 import re
 from copy import deepcopy
+from .native_diagnostic_recovery import COMMIT_SCENARIO
+from .native_matrix import CANVAS_REPLACE_SCENARIO, CANVAS_SCENARIOS
 
 NATIVE_TOOLS = frozenset({"Snapshot", "Screenshot", "Click", "Type", "Shortcut", "Wait", "ControlStatus"})
 INPUT_TOOLS = frozenset({"Click", "Type", "Shortcut"})
@@ -21,7 +23,7 @@ def scoped_tool_schemas(tools, output_path, scenario="base"):
     loc = {"type": "array", "items": {"type": "integer", "minimum": 0, "maximum": 1919},
            "minItems": 2, "maxItems": 2, "description": "Desktop [x,y] as two JSON integers. x<1920 and y<1080. Do not stringify."}
     numeric = {"type": "string", "pattern": r"^(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?$"}
-    if scenario == "canvas_trial":
+    if scenario in CANVAS_SCENARIOS:
         numeric = {"type": "string", "pattern": r"^(?:[1-9][0-9]{0,2}(?:\.[0-9]{1,4})?|0\.(?=[0-9]{0,3}[1-9])[0-9]{1,4})$"}
     fields = {
         "Snapshot": ({"use_vision": {"type": "boolean"}, "use_annotation": {"type": "boolean"},
@@ -47,6 +49,15 @@ def scoped_tool_schemas(tools, output_path, scenario="base"):
     }
     if scenario == "canvas_trial":
         descriptions["Type"] = ("Type positive numeric text below 1000 (at most 4 decimals) into the explicitly bound canvas. Each numeric Type requires and consumes a successful Click at the same loc within 30 seconds. If another Type is necessary after inspecting the result, Click again first. Canvas Type requires clear=false, caret_position=idle and press_enter=false. Its own Click can alter selection. The exact assigned save path remains allowed only in native Save file as Edit, with normal Edit options. No other strings or paths.")
+    elif scenario == CANVAS_REPLACE_SCENARIO:
+        descriptions["Type"] = ("Type positive numeric text below 1000 (at most 4 decimals) into a newly activated canvas field. "
+                                "Activate an inactive numeric field with exactly one left Click and then Type at that same loc "
+                                "within 30 seconds. This consumes the Click, preserves the selection from activation, and "
+                                "presses Enter once without clicking again. Set press_enter=true, clear=false, caret_position=idle. "
+                                "Inspect the committed value. The exact assigned save path uses ordinary native Save As Edit options.")
+    elif scenario == COMMIT_SCENARIO:
+        descriptions["Type"] += (" For numeric edits in this trial, send clear=true and press_enter=true together "
+                                 "with idle caret to replace and commit in one operation.")
     result = deepcopy(tools)
     for tool in result:
         properties, required = fields[tool["name"]]
@@ -54,11 +65,17 @@ def scoped_tool_schemas(tools, output_path, scenario="base"):
             raise ValueError("native_upstream_required_schema_changed")
         tool["inputSchema"] = {"type": "object", "properties": properties, "required": required,
                                "additionalProperties": False}
-        if scenario == "canvas_trial" and tool["name"] == "Type":
+        if scenario in CANVAS_SCENARIOS | {COMMIT_SCENARIO} and tool["name"] == "Type":
+            numeric_options = {"properties": {"text": numeric, "clear": {"enum": [scenario == COMMIT_SCENARIO]},
+                               "press_enter": {"enum": [scenario != "canvas_trial"]},
+                               "caret_position": {"enum": ["idle"]}}}
+            if scenario != "canvas_trial":
+                numeric_options["required"] = ["press_enter"]
+            if scenario == COMMIT_SCENARIO:
+                numeric_options["required"].append("clear")
             tool["inputSchema"]["anyOf"] = [
                 {"properties": {"text": {"const": output_path}}},
-                {"properties": {"text": numeric, "clear": {"enum": [False]},
-                                "press_enter": {"enum": [False]}, "caret_position": {"enum": ["idle"]}}}]
+                numeric_options]
         tool["description"] = descriptions[tool["name"]]
     return result
 
@@ -85,7 +102,7 @@ def validate_input(name, args, output_path, scenario="base"):
         else:
             text = args.get("text")
             from .canvas_input import numeric_text_allowed
-            numeric_ok = numeric_text_allowed("pilot_transform", text) if scenario == "canvas_trial" else bool(
+            numeric_ok = numeric_text_allowed("pilot_transform", text) if scenario in CANVAS_SCENARIOS else bool(
                 type(text) is str and re.fullmatch(r"(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?", text))
             if (type(text) is not str or len(text) > 1024 or not (text == output_path or numeric_ok)):
                 raise ValueError("native_type_text_rejected")
@@ -93,10 +110,12 @@ def validate_input(name, args, output_path, scenario="base"):
                     or any(type(args[k]) is not bool for k in ("clear", "press_enter") if k in args)
                     or args.get("caret_position", "idle") not in {"idle", "start", "end"}):
                 raise ValueError("native_type_options_rejected")
-            if scenario == "canvas_trial" and text != output_path and (
-                    args.get("clear", False) is not False or args.get("press_enter", False) is not False
-                    or args.get("caret_position", "idle") != "idle"):
-                raise ValueError("canvas_trial_type_options")
+            if scenario in CANVAS_SCENARIOS | {COMMIT_SCENARIO} and text != output_path:
+                if (args.get("clear", False) is not (scenario == COMMIT_SCENARIO)
+                        or args.get("press_enter", False) is not (scenario != "canvas_trial")
+                        or args.get("caret_position", "idle") != "idle"):
+                    code = "canvas_trial_type_options" if scenario == "canvas_trial" else "native_numeric_type_options"
+                    raise ValueError(code)
     elif name == "Shortcut":
         if (set(args) != {"shortcut"} or type(args["shortcut"]) is not str
                 or args["shortcut"].lower() not in SHORTCUTS):
@@ -118,9 +137,9 @@ class InputGuard:
         self.last_canvas_evidence = None
         self._last_click = None
 
-    def record_click(self, loc):
+    def record_click(self, loc, *, clicks=1):
         """Controller calls only after a successful original Click; not a field proof."""
-        if self.scope.get("scenario", "base") != "canvas_trial":
+        if self.scope.get("scenario") not in CANVAS_SCENARIOS:
             return
         import time
         if (type(loc) is not list or len(loc) != 2 or any(type(v) is not int for v in loc)
@@ -130,15 +149,14 @@ class InputGuard:
         if type(target) is not int or target <= 0:
             raise ValueError("canvas_click_target_missing")
         finished_ns = time.monotonic_ns()
-        self._last_click = (tuple(loc), finished_ns, target)
+        self._last_click = (tuple(loc), finished_ns, target, clicks)
         self.last_window["click_finished_monotonic_ns"] = finished_ns
 
-    def _canvas_trial_type(self, args):
+    def _canvas_destination(self, args):
         import time
         from .canvas_approval import resolve_approval
         from .canvas_input import collect_window_evidence, load_canvas_binding, decide_type
         evidence = collect_window_evidence(self.scope["run_id"], self.scope["app_pid"], self.scope["hwnd"], args["loc"])
-        self.last_canvas_evidence = evidence
         approval = resolve_approval(self.scope["canvas_approval_profile"],
             diagnostic_sha256=self.scope["canvas_diagnostic_sha256"], sut_sha256=self.scope["canvas_sut_sha256"])
         binding = load_canvas_binding(self.scope["canvas_binding_json"], run_id=self.scope["run_id"],
@@ -147,12 +165,28 @@ class InputGuard:
         checked_ns = time.monotonic_ns()
         decision = decide_type("pilot_transform", args["text"], args["loc"], evidence,
             output_path=self.scope["output_path"], now_ns=checked_ns, binding=binding)
+        if any((self.root / flag).exists() for flag in ("input_revoked", "control_cancel.json", "authority_abort.json")):
+            raise ValueError("native_input_revoked")
+        return evidence, binding, checked_ns, decision
+
+    def recheck_canvas_keys(self, args):
+        """Recheck the fixed canvas destination without clicking or consuming another ticket."""
+        _, _, _, decision = self._canvas_destination(args)
+        if decision["route"] != "canvas_numeric":
+            raise ValueError("native_canvas_destination_changed")
+
+    def _canvas_trial_type(self, args):
+        import time
+        evidence, binding, checked_ns, decision = self._canvas_destination(args)
+        self.last_canvas_evidence = evidence
         if decision["route"] == "canvas_numeric":
             click, self._last_click = self._last_click, None
-            if (args.get("clear", False) is not False or args.get("press_enter", False) is not False
+            replace = self.scope["scenario"] == CANVAS_REPLACE_SCENARIO
+            if (args.get("clear", False) is not False or args.get("press_enter", False) is not replace
                     or args.get("caret_position", "idle") != "idle"):
                 raise ValueError("canvas_trial_type_options")
             if (click is None or click[0] != tuple(args["loc"]) or click[2] != binding.hwnd
+                    or (replace and click[3] != 1)
                     or not 0 <= time.monotonic_ns()-click[1] <= 30_000_000_000):
                 raise ValueError("native_canvas_trial_recent_click_required")
         windows = {w["hwnd"]:w for w in evidence["windows"]}
@@ -162,16 +196,16 @@ class InputGuard:
             process_created=evidence["process_created"], guard_checked_monotonic_ns=checked_ns,
             target_class=target["class"], target_title=target.get("title", ""),
             captured_monotonic_ns=evidence["captured_monotonic_ns"],
-            canvas_diagnostic_sha256=approval.diagnostic_sha256, canvas_profile=approval.profile_id,
+            canvas_diagnostic_sha256=binding.diagnostic_sha256, canvas_profile=binding.approval_profile,
             pfd_index=target.get("pixel_format", {}).get("index", 0),
             pfd_verified=False, internal_numeric_field_verified=False)
-        if (self.root / "input_revoked").exists() or (self.root / "control_cancel.json").exists() or (self.root / "authority_abort.json").exists():
-            raise ValueError("native_input_revoked")
         return self.last_window
 
     def check(self, name, args):
         self.last_canvas_evidence, self.last_window, self.arguments_validated = None, {}, False
         validate_input(name, args, self.scope["output_path"], self.scope.get("scenario", "base"))
+        if name == "Shortcut" and self.scope.get("scenario") == CANVAS_REPLACE_SCENARIO:
+            self._last_click = None
         self.arguments_validated = True
         if (self.root / "input_revoked").exists() or (self.root / "control_cancel.json").exists() or (self.root / "authority_abort.json").exists():
             raise ValueError("native_input_revoked")
@@ -200,7 +234,7 @@ class InputGuard:
         self.last_window = {"foreground_hwnd": foreground, "target_hwnd": target,
                             "app_pid": self.scope["app_pid"], "foreground_pid": wu._window_pid(foreground),
                             "target_pid": wu._window_pid(target), "target_class": wu.window_class(target)}
-        if name == "Type" and self.scope.get("scenario") == "canvas_trial":
+        if name == "Type" and self.scope.get("scenario") in CANVAS_SCENARIOS:
             return self._canvas_trial_type(args)
         if name == "Type":
             if wu.window_class(target) != "Edit":

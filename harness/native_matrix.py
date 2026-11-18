@@ -1,7 +1,10 @@
 """Finite, trusted setup registry. These routes are never sent to the model."""
 from __future__ import annotations
 
-from .native_diagnostic_recovery import SCENARIO as DIAGNOSTIC_SCENARIO
+from .native_diagnostic_recovery import COMMIT_SCENARIO, SCENARIO as DIAGNOSTIC_SCENARIO
+
+CANVAS_REPLACE_SCENARIO = "canvas_replace_trial"
+CANVAS_SCENARIOS = frozenset({"canvas_trial", CANVAS_REPLACE_SCENARIO})
 
 SCENARIOS = {
     "base": ("Quality", None),
@@ -21,7 +24,9 @@ SCENARIOS = {
     "canvas_probe": ("Quality", None),
     "recovery_owned_edit": ("Others", None),
     DIAGNOSTIC_SCENARIO: ("Others", None),
+    COMMIT_SCENARIO: ("Others", None),
     "canvas_trial": ("Quality", None),
+    CANVAS_REPLACE_SCENARIO: ("Quality", None),
     "authority_probe": ("Quality", None),
 }
 BUSINESS = ("quality_a", "quality_b", "strength_a", "strength_b", "others_a", "others_b", "save_dialog", "overwrite")

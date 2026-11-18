@@ -78,3 +78,9 @@
 ## 阶段结论
 
 进度日志修复已通过历史回放、纯测试和真机跑批检查。受控纠错两次均观察到拒绝、重新观察及继续派发，完整保存重开业务验收仍未通过。画布输入轨迹已通过，X+10 的 3MF 和实际 G-code 业务闭环仍未通过。四轮均经 `hv_harvest.ps1` 回收，最终 `win11-test` 只读复核 Orca=0、MCP 监听=0、suite Ready、checkout clean、四个 token 均不存在。泛化未启动，旧矩阵及发布覆盖率沿用原判定。
+
+## 保存与画布输入根因复盘
+
+- 纠错首轮的原版 Type 工具回执明确读到 seq7 的 `0.24`，随后的 seq8 Type 未打开 clear，读回 `0.240.24`，且该调用还发了 Enter。seq9 才因非 Edit 停输。第二轮 seq7 仍读回 `0.24`，seq8 Tab 后模型在截图中报告已提交。模型把 seq10 的位置当作空白并点击，下一次 Save As 前台检查失败。原始截图像素和失焦目标的身份没有保留，因此具体激活了哪个控件或应用仍未知。历史成功 run `8cb6ee5f048f4562b3b26f87d65f5d3c` 用单次 clear+Type+Enter 提交数值，随后完成保存重开。
+- 画布 run `4250e066acf920a72055ac131178763b` 的 seq13、17、30 均报告 `PaneControl GLCanvas` 无法读回。模型在接下来的截图中报告输入文本与原数字混在一起，反复尝试选中和取消，未进入保存。旧 inline 截图像素在 model-io 中被省略。只读核对 `GizmoObjectManipulation.cpp`、`imgui_widgets.cpp` 和原版 0.8.9 wheel，Position 用 `BBLInputDouble`，首次激活全选，旧 Type 在真正送键前无条件再 Click，选中内容可能被第二击缩成插入点。
+- `recovery_diagnostic_commit` 强制原生 Edit 数字一次替换并提交，成功读回后观察结果并直接保存。另立 `canvas_replace_trial`，尝试保留首次 Click 的选区，Type 在同一绑定画布只发白名单数字和一次 Enter，每键前重查目标及撤销。一次性单击凭据、30 秒期限和独立产物检查继续生效。两个合同回收最多四张 Type 后的原始截图，便于核对实际 UI。旧合同和失败记录可按原身份读取。

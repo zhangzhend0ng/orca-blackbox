@@ -27,6 +27,8 @@ from .native_recovery import (RecoveryGate, RecoveryViolation, INPUT_TOOLS,
 PROTOCOL = "native-diagnostic-recovery-1"
 ERROR_CODE = "native_diagnostic_injected_pre_dispatch"
 SCENARIO = "recovery_diagnostic_once"
+COMMIT_SCENARIO = "recovery_diagnostic_commit"
+DIAGNOSTIC_SCENARIOS = frozenset({SCENARIO, COMMIT_SCENARIO})
 
 
 def _owned_edit_numeric(row):
@@ -136,7 +138,7 @@ def audit_diagnostic_trace(trace, run_id, *, enabled=False, turn_receipt=None):
     return result
 
 
-def verify_diagnostic_calls(trace, turn_receipt, app_pid):
+def verify_diagnostic_calls(trace, turn_receipt, app_pid, *, require_commit=False):
     """Bind host call receipts to audited guest rows and prove a later numeric edit."""
     expected = [dict(seq=row["seq"], tool=row["tool"], dispatched=row["dispatched"],
                      decision="completed" if row["error"] is None else "recoverable",
@@ -154,4 +156,9 @@ def verify_diagnostic_calls(trace, turn_receipt, app_pid):
                   and _owned_edit_numeric(row) and row["window"]["app_pid"] == app_pid
                   and Decimal(row["arguments"]["text"]) == Decimal(refusal["arguments"]["text"])), None)
     _check(fixed is not None, "diagnostic_corrected_numeric_type_missing")
+    if require_commit:
+        for attempt in (refusal, fixed):
+            args = attempt["arguments"]
+            _check(args.get("clear") is True and args.get("press_enter") is True
+                   and args.get("caret_position", "idle") == "idle", "native_diagnostic_commit_options")
     return dict(rejected_seq=refusal["seq"], observation_seq=observation["seq"], corrected_seq=fixed["seq"])

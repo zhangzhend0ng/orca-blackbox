@@ -10,6 +10,15 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 
+def send_canvas_number(guard, arguments, send_keys):
+    """Preserve the ImGui selection made by the preceding guarded Click."""
+    for character in arguments["text"]:
+        guard.recheck_canvas_keys(arguments)
+        send_keys(character, interval=0.04, waitTime=0.05)
+    guard.recheck_canvas_keys(arguments)
+    send_keys("{Enter}", waitTime=0.05)
+
+
 def main():
     from harness import host_guard
     from harness.agent_protocol import valid_run_id
@@ -27,18 +36,28 @@ def main():
     from fastmcp.tools.base import ToolResult
     from mcp.types import TextContent
     from harness.native_authority import AuthorityController, validate_scope, attach_authority
-    from harness.native_diagnostic_recovery import SCENARIO as DIAGNOSTIC_SCENARIO
+    from harness.native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
+    from harness.native_matrix import CANVAS_REPLACE_SCENARIO
     recovery_enabled = validate_scope(scope,
         json.loads((root.parent / "manifest.json").read_text()),
         json.loads((root.parent / "contract.json").read_text()),
         run_id=args.run_id, output_path=str(root / "projects/0001.3mf"))
     from windows_mcp import __main__ as original
 
+    def canvas_dispatch(arguments):
+        from uiautomation import SendKeys
+        send_canvas_number(guard, arguments, SendKeys)
+        message = "Sent numeric keys and Enter to the bound canvas without re-clicking. Inspect the committed value."
+        return ToolResult(content=[TextContent(type="text", text=message)],
+                          structured_content={"result": message})
+
     class Authority(Middleware):
         def __init__(self):
             self.lock = asyncio.Lock()
             self.controller = AuthorityController(guard, root, args.run_id,
-                recovery_enabled=recovery_enabled, diagnostic_enabled=scope["scenario"] == DIAGNOSTIC_SCENARIO)
+                recovery_enabled=recovery_enabled, diagnostic_enabled=scope["scenario"] in DIAGNOSTIC_SCENARIOS,
+                canvas_dispatch=canvas_dispatch if scope["scenario"] == CANVAS_REPLACE_SCENARIO else None,
+                record_edit_frames=scope["scenario"] in {COMMIT_SCENARIO, CANVAS_REPLACE_SCENARIO})
 
         async def on_call_tool(self, context, call_next):
             async with self.lock:

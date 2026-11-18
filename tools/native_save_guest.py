@@ -61,7 +61,7 @@ def worker(run_id, actor="codex", scenario="base"):
         (root / "projects").mkdir()
         (root / "proof").mkdir()
         output = root / "projects/0001.3mf"
-        from harness.native_matrix import scenario_spec
+        from harness.native_matrix import CANVAS_SCENARIOS, scenario_spec
         tab, disturbance = scenario_spec(actor, scenario)
         target = ui.wait(lambda: ui.named_child(tab), 15)
         ui.click_rect(target[1])
@@ -88,7 +88,7 @@ def worker(run_id, actor="codex", scenario="base"):
         scope = {"run_id": run_id, "app_pid": ui.app.pid, "hwnd": ui.app.hwnd,
                  "output_path": str(output), "scenario": scenario,
                  "contract_sha256": report["contract_sha256"], "actor": actor}
-        if scenario == "canvas_trial":
+        if scenario in CANVAS_SCENARIOS:
             from harness.canvas_approval import resolve_approval
             from harness.canvas_input import collect_window_evidence, bind_canvas, binding_to_json
             diagnostic = REPO / "contracts/evidence/canvas-diagnostic-bb64.json"

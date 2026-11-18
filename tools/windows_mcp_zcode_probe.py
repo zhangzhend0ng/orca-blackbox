@@ -13,7 +13,8 @@ from harness.agent_model import _child_environment
 from harness.agent_protocol import valid_run_id
 from harness.ip_guard import IPGuard
 from harness.native_save_policy import NATIVE_TOOLS
-from harness.native_diagnostic_recovery import SCENARIO as DIAGNOSTIC_SCENARIO
+from harness.native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
+from harness.native_matrix import CANVAS_REPLACE_SCENARIO, CANVAS_SCENARIOS
 from harness.win32_job import OwnedJobProcess
 from runner.windows_mcp_bridge import GuestHTTP
 
@@ -127,14 +128,24 @@ def main(argv=None):
             "Inspect screenshots after changes and confirm saving through the UI. "
             "Do not close, reopen, slice or export: independent verification handles that. "
             "Finish with ControlStatus(release=true), then describe observations without claiming test pass.")
-        if args.scenario in {"recovery_owned_edit", "canvas_trial", DIAGNOSTIC_SCENARIO}:
+        if args.scenario in CANVAS_SCENARIOS | DIAGNOSTIC_SCENARIOS | {"recovery_owned_edit"}:
             prompt += " A recoverable pre-dispatch refusal requires a fresh Snapshot/Screenshot before any further input. A fatal refusal ends this run."
+        if args.scenario == COMMIT_SCENARIO:
+            prompt += (" Use clear=true and press_enter=true together in each numeric Type, with the caret left idle."
+                       " After the tool reads the desired value back, inspect the committed result instead of typing it again."
+                       " Once committed, proceed directly to Save As. No click is needed just to drop focus.")
         if args.scenario == "canvas_trial":
             prompt = prompt.replace("Type supports clear=true and press_enter=true.",
                 "For numeric Type use clear=false, caret_position=idle and press_enter=false; ordinary Edit replacement options are available only for the exact SaveAs path.")
             prompt += (" This is a controlled canvas numeric-input capability trial. Every canvas numeric Type consumes a successful Click at that same visually chosen loc from the last 30 seconds."
                        " On the canvas use clear=false, caret_position=idle, press_enter=false only; the field must already be ready to replace its current value."
                        " Inspect the actual result; do not assume typing replaced existing text. Only the exact SaveAs path retains ordinary Edit replacement options.")
+        if args.scenario == CANVAS_REPLACE_SCENARIO:
+            prompt = prompt.replace("Type supports clear=true and press_enter=true.",
+                "For canvas numbers use clear=false, caret_position=idle and press_enter=true. The exact Save As path uses normal Edit options.")
+            prompt += (" Activate an inactive numeric field with one left Click chosen from the screenshot, then Type at "
+                       "the same loc within 30 seconds. Type sends numeric keys and Enter directly without clicking again. "
+                       "Inspect the committed value before saving.")
         (root/"prompt.txt").write_text(prompt, encoding="utf-8")
         bundle = Path(r"C:\Program Files\ZCode\resources\glm\zcode.cjs")
         report["bundle_sha256"] = hashlib.sha256(bundle.read_bytes()).hexdigest()
@@ -142,7 +153,7 @@ def main(argv=None):
                 "bundle": str(bundle), "python": sys.executable,
                 "bridge": str(REPO/"runner/windows_mcp_bridge.py"), "prompt": prompt,
                 "authority_protocol": "native-authority-1", "authority_log": str(root/"authority.ndjson"),
-                "recovery_enabled": args.scenario in {"recovery_owned_edit", "canvas_trial"}, "scenario": args.scenario}
+                "recovery_enabled": args.scenario in CANVAS_SCENARIOS | {"recovery_owned_edit"}, "scenario": args.scenario}
         (root/"spec.json").write_text(json.dumps(spec), encoding="utf-8")
         env, report["proxy_source"] = _child_environment()
         env.update(ZCODE_PERSONAL_PROVIDER_CONFIG_FILE=str(provider),
@@ -186,7 +197,7 @@ def main(argv=None):
         report["selection"] = actor.get("selection")
         if code or actor.get("error"):
             raise RuntimeError("zcode_actor_failed:"+str(actor.get("error")))
-        if args.scenario == DIAGNOSTIC_SCENARIO:
+        if args.scenario in DIAGNOSTIC_SCENARIOS:
             report["diagnostic_turn"] = actor["diagnostic_turn"]
         report["model_io"] = model_io_summary(root)
         report["toolset_verified"] = True
