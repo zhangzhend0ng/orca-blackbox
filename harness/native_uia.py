@@ -16,17 +16,14 @@ class UiaSaveGuard(InputGuard):
         super().__init__(scope, root)
         self.control_from_handle = control_from_handle
         self.observed = {}
-        self.saved = False
+        self.invoked = False
         self.written = None
 
-    def _controls(self, wu, hwnd):
-        from win32gui import IsChild
-
+    def _elements(self, hwnd):
         pid = self.scope["app_pid"]
         root = self.control_from_handle(hwnd)
         if root is None or root.ProcessId != pid or root.NativeWindowHandle != hwnd:
             raise ValueError("native_uia_dialog_identity")
-        controls = {}
         pending = [(root, 0)]
         count = 0
         while pending:
@@ -38,6 +35,14 @@ class UiaSaveGuard(InputGuard):
                 continue
             if depth < 12:
                 pending.extend((child, depth + 1) for child in element.GetChildren())
+            yield element
+
+    def _controls(self, wu, hwnd):
+        from win32gui import IsChild
+
+        pid = self.scope["app_pid"]
+        controls = {}
+        for element in self._elements(hwnd):
             kind = element.ControlTypeName
             if kind not in {"EditControl", "ButtonControl"}:
                 continue
@@ -57,6 +62,25 @@ class UiaSaveGuard(InputGuard):
                 raise ValueError("native_uia_ambiguous_control")
             controls[role] = element, {"target": target, "hwnd": child}
         return controls
+
+    def _observe_after_invoke(self, wu, hwnd):
+        from win32gui import GetAncestor, IsWindow, IsWindowVisible
+
+        main = self.scope["hwnd"]
+        dialog = self.scope["dialog_hwnd"]
+        if hwnd != main and GetAncestor(hwnd, 3) != main:
+            raise ValueError("native_uia_post_save_window_not_owned")
+        closed = not (IsWindow(dialog) and IsWindowVisible(dialog))
+        self.last_window["dialog_closed"] = closed
+        if hwnd == main and closed:
+            return {"dialog_closed": True}
+        texts = []
+        for node in self._elements(hwnd):
+            if node.ControlTypeName == "TextControl" and node.Name and len(texts) < 8:
+                texts.append(node.Name[:192])
+        modal = {"title": wu.window_title(hwnd)[:128], "class": wu.window_class(hwnd), "text": texts}
+        self.last_window["post_invoke_window"] = modal
+        return {"dialog_closed": closed, "foreground_window": modal}
 
     def _dialog(self, hwnd, wu):
         if (hwnd != self.scope.get("dialog_hwnd") or wu.window_class(hwnd) != "#32770"
@@ -79,7 +103,7 @@ class UiaSaveGuard(InputGuard):
         wu, hwnd = self.owned_foreground()
         pid = self.scope["app_pid"]
         self.last_window = dict(route="uia_tree", app_pid=pid, foreground_hwnd=hwnd, foreground_pid=pid)
-        if name == "Snapshot" and self.saved and hwnd == self.scope["hwnd"]:
+        if name == "Snapshot" and self.invoked and hwnd != self.scope.get("dialog_hwnd"):
             return self.last_window
         self._dialog(hwnd, wu)
         if name in {"Click", "Type"}:
@@ -99,9 +123,8 @@ class UiaSaveGuard(InputGuard):
         wu, hwnd = self.owned_foreground()
         if hwnd != self.last_window["foreground_hwnd"]:
             raise ValueError("native_uia_foreground_changed")
-        if name == "Snapshot" and self.saved and hwnd == self.scope["hwnd"]:
-            self.last_window["dialog_closed"] = True
-            return {"dialog_closed": True}
+        if name == "Snapshot" and self.invoked and hwnd != self.scope.get("dialog_hwnd"):
+            return self._observe_after_invoke(wu, hwnd)
         self._dialog(hwnd, wu)
         controls = self._controls(wu, hwnd)
         if name == "Snapshot":
@@ -138,7 +161,7 @@ class UiaSaveGuard(InputGuard):
                                 path_sha256=value_digest(self.scope["output_path"]))
         if not invoke.Invoke():
             raise ValueError("native_uia_invoke_failed")
-        self.saved = True
+        self.invoked = True
         return {"target": record["target"], "pattern": "InvokePattern", "invoked": True}
 
 
