@@ -132,3 +132,17 @@ def test_replace_accepts_one_click_and_rechecks_before_each_key(trial):
     with pytest.raises(ValueError, match="canvas_focus_or_foreground_changed"):
         send_canvas_number(guard, args, lose_focus)
     assert keys == ["1"]
+
+
+def test_canvas_replacement_click_schema_and_gate_require_single_click():
+    jsonschema = pytest.importorskip("jsonschema")
+    tools = [{"name": name, "inputSchema": {}} for name in NATIVE_TOOLS]
+    schema = next(tool["inputSchema"] for tool in scoped_tool_schemas(tools, OUTPUT, CANVAS_REPLACE_SCENARIO)
+                  if tool["name"] == "Click")
+    args = {"loc": [450, 100]}
+    jsonschema.validate(args, schema)
+    validate_input("Click", args, OUTPUT, CANVAS_REPLACE_SCENARIO)
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(dict(args, clicks=2), schema)
+    with pytest.raises(ValueError, match="native_canvas_single_click_required"):
+        validate_input("Click", dict(args, clicks=2), OUTPUT, CANVAS_REPLACE_SCENARIO)

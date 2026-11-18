@@ -81,7 +81,7 @@ def test_replacement_contract_requires_single_click_and_focused_backend(case):
     typed["window"]["input_backend"] = "focused_keys_no_click"
     assert verify(case)["canvas_numeric_count"] == 1
     click["arguments"]["clicks"] = 2
-    with pytest.raises(_InvalidEvidence, match="canvas_recent_click_required"):
+    with pytest.raises(_InvalidEvidence, match="canvas_authority_invalid"):
         verify(case)
 
 

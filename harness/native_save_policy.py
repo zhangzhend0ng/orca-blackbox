@@ -50,6 +50,9 @@ def scoped_tool_schemas(tools, output_path, scenario="base"):
     if scenario == "canvas_trial":
         descriptions["Type"] = ("Type positive numeric text below 1000 (at most 4 decimals) into the explicitly bound canvas. Each numeric Type requires and consumes a successful Click at the same loc within 30 seconds. If another Type is necessary after inspecting the result, Click again first. Canvas Type requires clear=false, caret_position=idle and press_enter=false. Its own Click can alter selection. The exact assigned save path remains allowed only in native Save file as Edit, with normal Edit options. No other strings or paths.")
     elif scenario == CANVAS_REPLACE_SCENARIO:
+        fields["Click"][0]["clicks"] = {"type": "integer", "enum": [1]}
+        descriptions["Click"] = ("Single left-click at loc=[x,y] inside the owned application or its dialog. "
+                                 "This trial accepts one click at a time. Leave clicks unset or set clicks=1.")
         descriptions["Type"] = ("Type positive numeric text below 1000 (at most 4 decimals) into a newly activated canvas field. "
                                 "Activate an inactive numeric field with exactly one left Click and then Type at that same loc "
                                 "within 30 seconds. This consumes the Click, preserves the selection from activation, and "
@@ -101,6 +104,8 @@ def validate_input(name, args, output_path, scenario="base"):
             if (args.get("button", "left") != "left" or type(args.get("clicks", 1)) is not int
                     or args.get("clicks", 1) not in {1, 2} or set(args) - {"loc", "button", "clicks"}):
                 raise ValueError("native_click_rejected")
+            if scenario == CANVAS_REPLACE_SCENARIO and args.get("clicks", 1) != 1:
+                raise ValueError("native_canvas_single_click_required")
         else:
             text = args.get("text")
             from .canvas_input import numeric_text_allowed
