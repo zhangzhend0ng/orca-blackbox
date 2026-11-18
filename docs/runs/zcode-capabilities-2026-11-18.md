@@ -51,3 +51,22 @@
 - 新恢复合同：真实预派发拒绝→同一原生turn重新观察→自主修正→独立保存/重开切片通过。
 - canvas_trial：仅已批准wxGLCanvas、最窄数字选项、30秒同位置Click一次性关联；至少实际一次canvas_numeric且X+10的3MF/真实G-code oracle通过。
 - 普通pilot_transform仍blocked；A/B未完成前不启动泛化批次或新增相似业务。
+
+## 基线后的进度日志修复与受控纠错
+
+源 `bf13401717073b9dc03fa9e7fa5ec52921d4e5c5`。进度文件仅在已完成调用列表变化时追加精简 JSON 行，宿主有界读取且忽略无换行的尾部，完整调用证据仍由 `actor.json` 和受信收据保存。用原画布失败样本的 554 条快照重放，4,003,584 字节压到 31 条、19,576 字节，末条仍包含全部 30 次完成调用。250 项纯测试及 6 项针对变更的原生协议替身测试通过。
+
+单独注册 `recovery_diagnostic_once`，只在真实 guard 放行的首个 owned numeric Edit 的 Type 上、原工具派发前注入一次。独立验收要求同一原生 turn、准确匹配的宿主和客机回执、拒绝后重新观察并成功派发相同数值，以及原层高业务检查通过。通过后的样本也仅记 `MECHANISM_ONLY`。
+
+| run | 已观察到的动作 | 独立业务与清理 |
+|---|---|---|
+| `4b46a8ba64a7eab94d5e78e386788e34` | seq5 guard 放行的原生 Edit 命中受控拒绝，未派发。seq6 Screenshot，seq7 和 seq8 派发 0.24。seq9 同点已是 wxWindowNR，拒绝后永久停输，未观测到后续派发。 | NON_GREEN。turn 未正常完成，未保存、重开或切片。宿主 Job 0，客机 Job 0 且记录了强制收尾，token 已删。宿主配置哈希比对失败，CLI 文件在启动窗口内被修改，写入来源未确认。离线核对已落盘的 10 份请求收据使用指定模型和七工具。进度文件 1,329 字节。 |
+| `104f5606a6a070cbdff5b700cad71b1e` | 同一提交复验。seq5 同类预派发拒绝，seq6 Screenshot，seq7 派发 0.24，seq8 Tab。seq11 保存快捷键因前台归属失配而在派发前 fatal，未观测到后续派发。 | NON_GREEN。turn 未正常完成，未保存、重开或切片。配置哈希一致，离线核对 12 份已落盘的请求收据。宿主及客机 Job 0，客机记录强制收尾，token 已删。进度文件 2,071 字节。 |
+
+运行经 `hv_go.ps1` 在 `win11-test` 执行，并经 `hv_harvest.ps1` 收回；原始证据位于 `artifacts/windows_mcp_harvest/<run>` 和 `artifacts/windows_mcp_host/<run>`。首轮收尾复查客机无 Orca、无 MCP 监听，suite Ready，目标 token 已删除，checkout clean。
+
+## 基线后的画布业务复验
+
+源 `bf13401`，run `4f0c3992514cede73c5ef48551d11fe0`。seq12 的同位置 Click 后，seq13 派发 145.5，回收后独立 `verify_canvas_trace` 认定 1 次合规画布数值输入。seq14 Screenshot 后没有新 Click，seq15 重复 Type 在派发前被拒并停输。原通用拒绝码为 `native_tool_failed`，同位置点击凭据未更新是可以直接确认的合同违例，现场证据不足以断言它是唯一原因。进度文件 4,636 字节，未触及上限。
+
+正式 NON_GREEN。无 3MF 保存、重开切片及 X+10 独立业务证据。PFD 与内部数值字段证明仍为 false。配置哈希一致，离线核对已落盘的 16 份请求收据。宿主与客机 Job 0，客机记录强制收尾，token 已删。

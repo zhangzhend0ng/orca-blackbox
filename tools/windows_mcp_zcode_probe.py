@@ -132,7 +132,7 @@ def main(argv=None):
         if args.scenario == "canvas_trial":
             prompt = prompt.replace("Type supports clear=true and press_enter=true.",
                 "For numeric Type use clear=false, caret_position=idle and press_enter=false; ordinary Edit replacement options are available only for the exact SaveAs path.")
-            prompt += (" This is a controlled canvas numeric-input capability trial. For a numeric field drawn in the canvas, first Click the field at a visually chosen loc, then Type at that same loc within 30 seconds."
+            prompt += (" This is a controlled canvas numeric-input capability trial. Every canvas numeric Type consumes a successful Click at that same visually chosen loc from the last 30 seconds."
                        " On the canvas use clear=false, caret_position=idle, press_enter=false only; the field must already be ready to replace its current value."
                        " Inspect the actual result; do not assume typing replaced existing text. Only the exact SaveAs path retains ordinary Edit replacement options.")
         (root/"prompt.txt").write_text(prompt, encoding="utf-8")

@@ -60,7 +60,8 @@ def test_recent_click_token_is_same_target_single_use_and_not_a_field_proof(tria
     result=guard._canvas_trial_type({"loc":[450,100],"text":"145.5"})
     assert result["route"]=="canvas_numeric" and result["internal_numeric_field_verified"] is False
     assert "windows" not in result and guard.last_canvas_evidence["windows"]
-    with pytest.raises(ValueError,match="recent_click"): guard._canvas_trial_type({"loc":[450,100],"text":"145.5"})
+    with pytest.raises(ValueError,match="^native_canvas_trial_recent_click_required$"):
+        guard._canvas_trial_type({"loc":[450,100],"text":"145.5"})
 
 
 @pytest.mark.parametrize("fault", ["absent","expired","wrong_loc","other_hwnd","changed_focus","revoked"])

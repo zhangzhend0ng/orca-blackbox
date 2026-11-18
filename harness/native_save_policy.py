@@ -46,7 +46,7 @@ def scoped_tool_schemas(tools, output_path, scenario="base"):
         "ControlStatus": "Read/release the original global control lease. Its disabled state is expected in this dedicated --no-control guest; per-call owned-window/input authority is enforced separately. This tool cannot enable or reconfigure authority.",
     }
     if scenario == "canvas_trial":
-        descriptions["Type"] = ("Type positive numeric text below 1000 (at most 4 decimals) into the explicitly bound canvas only after your successful Click at the same loc within 30 seconds. Canvas Type requires clear=false, caret_position=idle, press_enter=false; it does not prove an internal field is active and its own Click can alter selection. Stop and inspect if it appends or does not land. The exact assigned save path remains allowed only in native Save file as Edit, with normal Edit options. No other strings or paths.")
+        descriptions["Type"] = ("Type positive numeric text below 1000 (at most 4 decimals) into the explicitly bound canvas. Each numeric Type requires and consumes a successful Click at the same loc within 30 seconds. If another Type is necessary after inspecting the result, Click again first. Canvas Type requires clear=false, caret_position=idle and press_enter=false. Its own Click can alter selection. The exact assigned save path remains allowed only in native Save file as Edit, with normal Edit options. No other strings or paths.")
     result = deepcopy(tools)
     for tool in result:
         properties, required = fields[tool["name"]]
@@ -154,7 +154,7 @@ class InputGuard:
                 raise ValueError("canvas_trial_type_options")
             if (click is None or click[0] != tuple(args["loc"]) or click[2] != binding.hwnd
                     or not 0 <= time.monotonic_ns()-click[1] <= 30_000_000_000):
-                raise ValueError("canvas_trial_recent_click_required")
+                raise ValueError("native_canvas_trial_recent_click_required")
         windows = {w["hwnd"]:w for w in evidence["windows"]}
         target = windows[evidence["target_hwnd"]]
         self.last_window.update(decision)
