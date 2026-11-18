@@ -30,7 +30,8 @@ def _discard_choice(caption, children, *, close_requested=False):
 
 
 class BusinessUI:
-    def __init__(self, artifacts: Path, guard, *, fixture=(LAYER_FIXTURE, LAYER_FIXTURE_SHA256), ready_on_open=None):
+    def __init__(self, artifacts: Path, guard, *, fixture=(LAYER_FIXTURE, LAYER_FIXTURE_SHA256),
+                 ready_on_open=None, probe_boot=False):
         # GUI imports are deliberately lazy: importing this module is harmless.
         from .agent_guest import REPO, _WindowsUI, _bytes_once
         from . import export_util
@@ -44,7 +45,8 @@ class BusinessUI:
         fixture = artifacts / "input/fixture.3mf"
         _bytes_once(fixture, raw)
         try:
-            self.base = _WindowsUI(artifacts, model=fixture)
+            options = {"boot_ready": ready_on_open, "guard": guard} if probe_boot else {}
+            self.base = _WindowsUI(artifacts, model=fixture, **options)
             self.wu, self.app = self.base.winutil, self.base.app
             import ctypes
             self.wu.user32.GetWindow.argtypes = [ctypes.c_void_p, ctypes.c_uint]

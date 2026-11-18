@@ -88,18 +88,26 @@ def worker(run_id, actor="codex", scenario="base"):
         from harness.native_matrix import UIA_REPLAY_MIX
         request = REPO / "artifacts/native_mix_wait_requests" / run_id
         probe_waits = request.is_file()
+        boot_request = REPO / "artifacts/native_mix_boot_requests" / run_id
+        probe_boot = boot_request.is_file()
+        if probe_boot and not probe_waits:
+            raise ValueError("native_mix_boot_probe_scope")
         ready_on_open = None
         if probe_waits:
             if actor != "script" or scenario != UIA_REPLAY_MIX:
                 raise ValueError("native_mix_wait_probe_scope")
             request.unlink()
+            if probe_boot:
+                boot_request.unlink()
             from harness.mix_dialog_util import mix_entry_labels
 
             def ready_on_open(app):
                 return len(mix_entry_labels(app)) == 1
 
             report["mix_wait_probe"] = {"initial_started_at_ns": time.time_ns()}
-        ui = ProjectUI(root, guard, fixture=native_fixture(scenario), ready_on_open=ready_on_open)
+        ui = ProjectUI(root, guard, fixture=native_fixture(scenario), ready_on_open=ready_on_open, probe_boot=probe_boot)
+        if probe_boot:
+            report["mix_boot_probe"] = {"initial": ui.base.boot_scan}
         (root / "input/fixture.3mf").chmod(stat.S_IREAD)
         (root / "projects").mkdir()
         (root / "proof").mkdir()
@@ -228,7 +236,10 @@ def worker(run_id, actor="codex", scenario="base"):
         frozen.chmod(stat.S_IREAD)
         frozen_ns = time.time_ns()
         started = time.time_ns()
-        base = _WindowsUI(root, model=frozen, profile_name="profile_reopen")
+        options = {"boot_ready": lambda app: len(mix_entry_labels(app)) == 3, "guard": guard} if probe_boot else {}
+        base = _WindowsUI(root, model=frozen, profile_name="profile_reopen", **options)
+        if probe_boot:
+            report["mix_boot_probe"]["reopen"] = base.boot_scan
         ui.base, ui.app, ui.wu = base, base.app, base.winutil
         ui._close_requested = False
         if probe_waits:

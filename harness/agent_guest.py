@@ -51,7 +51,7 @@ def _encode_capture(capture):
 
 
 class _WindowsUI:
-    def __init__(self, artifacts, model=None, profile_name="profile"):
+    def __init__(self, artifacts, model=None, profile_name="profile", *, boot_ready=None, guard=None):
         from harness import launcher, profile, winutil
         self.winutil = winutil
         if type(profile_name) is not str or profile_name not in {"profile", "profile_reopen"}:
@@ -60,8 +60,40 @@ class _WindowsUI:
         if target.exists():
             raise FileExistsError("profile already exists")
         profile.seed_profile(target, fresh=False)
-        self.app = launcher.launch(datadir=target, model=model, dismiss_wizard=True)
+        options = {} if boot_ready is None else {"dismiss_blockers": False, "boot_demote_s": 0}
+        self.app = launcher.launch(datadir=target, model=model, dismiss_wizard=True, **options)
         self.shape = None
+        if boot_ready is not None:
+            try:
+                self.boot_scan = self._scan_until_ready(launcher, boot_ready, guard)
+            except BaseException:
+                try:
+                    self.close()
+                except Exception as cleanup_error:
+                    print(f"[boot-ready] cleanup: {type(cleanup_error).__name__}", file=sys.stderr)
+                raise
+
+    def _scan_until_ready(self, launcher, ready, guard):
+        app, wu = self.app, self.winutil
+        started = time.monotonic()
+        stable_since = None
+        while time.monotonic() - started < 25:
+            guard()
+            if not app.alive() or wu._window_pid(app.hwnd) != app.pid:
+                raise ProtocolError("boot_ready_window_changed")
+            closed = launcher.sweep_boot_blockers(app.pid, app.hwnd, budget_s=.05, dismiss_wizard=True)
+            app.blockers.extend(closed)
+            modal = any(pid == app.pid and hwnd != app.hwnd and wu.window_class(hwnd) == "#32770"
+                        for hwnd, pid in wu.enum_windows())
+            now = time.monotonic()
+            if not closed and not modal and wu.user32.IsWindowEnabled(app.hwnd) and ready(app):
+                if stable_since is not None and now - stable_since >= .5:
+                    guard()
+                    return {"elapsed_ns": round((now - started) * 1e9), "dismissed": app.blockers}
+                stable_since = stable_since or now
+            else:
+                stable_since = None
+        raise ProtocolError("boot_ready_timeout")
 
     def identity(self):
         app, wu = self.app, self.winutil
