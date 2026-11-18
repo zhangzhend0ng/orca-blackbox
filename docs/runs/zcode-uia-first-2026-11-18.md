@@ -68,3 +68,9 @@ seq1 用 UIA 属性找到 `File name:`（EditControl、AutomationId=1001）和 `
 已回收的工具轨迹共 10 次 UIA 查询、3 次属性输入、13 张局部裁图和 8 次坐标输入，回退区域只有 wx 侧栏、ImGui 画布。跨区裁图未派发。失败槽缺少完整模型收据。Strength 槽 3MF SHA256 `957280db25da19457a6e630d5a4a790073c872985b6c5fb6e1fb6c8209de56bb`，G-code SHA256 `71321010f2ce658be248c13af3275f9a231f0fcea1c1b73eb7e0395345bec120`。冻结提交完整纯测试 1,332 项通过、1 项跳过。
 
 批后将画布绑定移到预开模态之前。修订与单独复验沿用开发记录，冻结分母和判定保留。
+
+## 批后准备与取消路径复验
+
+源 `348ebf78080afd9f07e19e8792992b2af86df8c5`，run `642652e4874ca53e854322c3fe945d6c`。画布在预开模态前绑定，ZCode 启动成功。seq1 用 UIA 查询；seq2 对 `Cancel`（ButtonControl、AutomationId=2）调用 InvokePattern；seq3 从 UIA 确认模态关闭并回到主窗。随后 seq9 以 UIA Edit 输入壁环数，seq12 的裁图请求与当前观察登记不匹配，在截图前停输。该开发复验确认准备与取消路径，组合未进入保存与重切，正式 NON_GREEN。冻结结果仍为 1/8。
+
+本轮所有 19 次 GUI 运行均已回收。最后只读复核 `win11-test`，Orca=0、MCP 监听=0、suite Ready、guest checkout clean、19 个 run token 均不存在。修订后关联单元测试 109 项通过。
