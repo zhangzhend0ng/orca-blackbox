@@ -70,7 +70,10 @@ def main(argv=None):
     parser.add_argument("--run-id", required=True)
     from harness.native_matrix import SCENARIOS, scenario_spec, completed_progress
     parser.add_argument("--scenario", choices=tuple(s for s in SCENARIOS if s not in {"canvas_probe", "authority_probe"}), default="base")
+    parser.add_argument("--goal-only", action="store_true", help="Omit the guided UI route in a UIA exploration.")
     args = parser.parse_args(argv)
+    if args.goal_only and args.scenario not in UIA_HYBRID_SCENARIOS:
+        parser.error("--goal-only requires a UIA hybrid scenario")
     _, disturbance = scenario_spec("zcode", args.scenario)
     from harness.native_pilots import require_pilot_ready
     require_pilot_ready(args.scenario)
@@ -85,7 +88,8 @@ def main(argv=None):
     control = GuestHTTP(r"C:\coil\orca-blackbox-v3-r1", args.run_id,
                         deadline=time.monotonic()+1000, channel="control", goal_save=True)
     report = {"run_id": args.run_id, "actor": "zcode", "error": None, "release_eligible": False,
-              "native_tool_calls": [], "toolset_verified": False, "guard_checked": False, "scenario": args.scenario}
+              "native_tool_calls": [], "toolset_verified": False, "guard_checked": False, "scenario": args.scenario,
+              "prompt_mode": "goal_only" if args.goal_only else "guided"}
     process, transport = None, None
     timeout_stop = False
     try:
@@ -151,7 +155,14 @@ def main(argv=None):
             prompt += (" Activate an inactive numeric field with one left Click chosen from the screenshot, then Type at "
                        "the same loc within 30 seconds. Type sends numeric keys and Enter directly without clicking again. "
                        "Inspect the committed value before saving.")
-        if args.scenario == UIA_SAVE_SCENARIO:
+        if args.goal_only:
+            prompt = ("Use only Windows-MCP in the isolated Snapmaker Orca window. " + business_goal(args.scenario)
+                      + " The assigned output path is " + output + ". Save the complete project there as a 3MF. "
+                      "Choose and check the UI route yourself. Prefer native control properties. Use named local "
+                      "observations for drawn controls that have no actionable UIA node. Follow the tool schemas "
+                      "and authority decisions. After a recoverable refusal, observe again before any input. "
+                      "Finish with ControlStatus(release=true). Independent verification reopens and slices.")
+        elif args.scenario == UIA_SAVE_SCENARIO:
             prompt = ("The isolated Snapmaker Orca Save As dialog is already open. Save the current project unchanged as a 3MF "
                       "at this exact assigned path: " + output + ". Use Snapshot for the UIA properties of the filename "
                       "Edit and Save button, Type with the exact Edit target and assigned path, and Click with the exact "
@@ -179,6 +190,7 @@ def main(argv=None):
                 prompt += (" For a scene-editing goal, start by observing the named imgui_canvas crop. "
                            "After changing selection or opening a gizmo, observe the named canvas again before choosing a new location.")
         (root/"prompt.txt").write_text(prompt, encoding="utf-8")
+        report["prompt_sha256"] = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
         bundle = Path(r"C:\Program Files\ZCode\resources\glm\zcode.cjs")
         report["bundle_sha256"] = hashlib.sha256(bundle.read_bytes()).hexdigest()
         spec = {"root": str(root), "workspace": str(workspace), "run_id": args.run_id,

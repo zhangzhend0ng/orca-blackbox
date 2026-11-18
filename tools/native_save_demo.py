@@ -75,12 +75,15 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--run-id", default=None)
     p.add_argument("--record-desktop", action="store_true", help="Record the dedicated win11-test desktop.")
+    p.add_argument("--goal-only", action="store_true", help="Omit the guided UI route for ZCode.")
     p.add_argument("--actor", choices=("codex", "zcode", "script"), default="codex")
-    from harness.native_matrix import SCENARIOS, UIA_LAYER_SCENARIO, UIA_REPLAY_SCENARIO
+    from harness.native_matrix import SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_LAYER_SCENARIO, UIA_REPLAY_SCENARIO
     p.add_argument("--scenario", choices=tuple(s for s in SCENARIOS if s not in {"canvas_probe", "authority_probe"}))
     args = p.parse_args()
     if args.scenario is None:
         args.scenario = "base" if args.actor == "codex" else UIA_LAYER_SCENARIO
+    if args.goal_only and (args.actor != "zcode" or args.scenario not in UIA_HYBRID_SCENARIOS):
+        p.error("--goal-only requires --actor zcode and a UIA hybrid scenario")
     from harness.native_matrix import scenario_spec
     scenario_spec(args.actor, args.scenario)
     from harness.native_pilots import require_pilot_ready
@@ -132,7 +135,10 @@ def main():
             code = wait_script(run_id)
         elif args.actor == "zcode":
             from tools.windows_mcp_zcode_probe import main as run_actor
-            code = run_actor(["--run-id", run_id, "--scenario", args.scenario])
+            command = ["--run-id", run_id, "--scenario", args.scenario]
+            if args.goal_only:
+                command.append("--goal-only")
+            code = run_actor(command)
         else:
             from tools.windows_mcp_codex_probe import main as run_actor
             code = run_actor(["--run-id", run_id, "--goal-save"])
@@ -160,6 +166,8 @@ def main():
     result = json.loads(result_path.read_text()) if result_path.exists() else {"verified_pass": False}
     summary = {"run_id": run_id, "source_sha": head, "actor": args.actor, "scenario": args.scenario, "actor_exit": code,
                "actor_error": error, "result": result, "release_eligible": False}
+    if args.goal_only:
+        summary["prompt_mode"] = "goal_only"
     (root / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(json.dumps(summary), flush=True)
     return 0 if code == 0 and result.get("verified_pass") is True else 1
