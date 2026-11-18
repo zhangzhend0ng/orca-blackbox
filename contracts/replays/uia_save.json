@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "scenario": "uia_save_as",
+  "initial_tab": "Quality",
+  "fixture_sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+  "steps": [
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Type",
+      "arguments": {
+        "target": {
+          "automation_id": "1001",
+          "control_type": "EditControl",
+          "name": "File name:"
+        },
+        "text": "$OUTPUT_3MF"
+      }
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "target": {
+          "automation_id": "1",
+          "control_type": "ButtonControl",
+          "name": "Save"
+        }
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    }
+  ],
+  "source": {
+    "run_id": "d7299035e33b80969e0064a8d9b3e4fc",
+    "source_sha": "fcffb0f2fd15ea2508c4ac197aeac27a8f7d82a4",
+    "trace_sha256": "d9e1fef61523bd43d6082d54b46e92afac638390114772591df4a8ebb0449c97"
+  }
+}

@@ -91,8 +91,9 @@ class ProjectUI(BusinessUI):
             "captured_at_ns":time.time_ns(),"main_hwnd":self.app.hwnd,"app_pid":self.app.pid,
             "owned_dialog":bool(owned_dialog),"candidate":candidate})
 
-    def save_project(self):
-        self.main_input()
+    def save_project(self, *, prepared_dialog=None):
+        if prepared_dialog is None:
+            self.main_input()
         if self.saved is not None:
             raise ProtocolError("project_already_saved")
         path = self._project_path()
@@ -100,10 +101,12 @@ class ProjectUI(BusinessUI):
             raise ProtocolError("project_exists")
         path.parent.mkdir(exist_ok=True)
         self._project_path()
-        self._save_command()
+        if prepared_dialog is None:
+            self._save_command()
         dialog = self.wait(lambda: self.eu.wait_save_dialog(self.app.pid, timeout_s=.2), 10)
         owned_dialog=self.owned_dialog(dialog[3])
-        if not owned_dialog or dialog[1] not in {"Save file as:", "Save file as"}:
+        if (not owned_dialog or dialog[1] not in {"Save file as:", "Save file as"}
+                or (prepared_dialog is not None and dialog[3] != prepared_dialog)):
             try:
                 self._save_dialog_diagnostic(dialog,owned_dialog)
             except FileExistsError:

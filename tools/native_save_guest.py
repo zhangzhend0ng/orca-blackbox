@@ -89,7 +89,7 @@ def worker(run_id, actor="codex", scenario="base"):
         (root / "projects").mkdir()
         (root / "proof").mkdir()
         output = root / "projects/0001.3mf"
-        from harness.native_matrix import CANVAS_SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_REPLAY_SCENARIO, scenario_spec
+        from harness.native_matrix import CANVAS_SCENARIOS, REPLAY_SOURCES, UIA_HYBRID_SCENARIOS, UIA_SAVE_SCENARIO, scenario_spec
         tab, disturbance = scenario_spec(actor, scenario)
         target = ui.wait(lambda: ui.named_child(tab), 15)
         ui.click_rect(target[1])
@@ -150,16 +150,17 @@ def worker(run_id, actor="codex", scenario="base"):
                           script_action_started_at_ns=time.time_ns())
             measured_start = time.monotonic_ns()
             try:
-                if scenario == UIA_REPLAY_SCENARIO:
+                if scenario in REPLAY_SOURCES:
                     from harness.native_uia_replay import play
                     start_server()
-                    report["recording_sha256"] = play(ui, run_id, str(output))
+                    report["recording_sha256"] = play(ui, run_id, str(output), scenario=scenario)
                     report["recorded_trace_sha256"] = hashlib.sha256((root / "native_trace.ndjson").read_bytes()).hexdigest()
-                    report["script_steps"] = ["edit", "save"]
+                    report["script_steps"] = ["save"] if REPLAY_SOURCES[scenario] == UIA_SAVE_SCENARIO else ["edit", "save"]
                 else:
-                    edit_project(ui, scenario, binding.hwnd)
-                    report["script_steps"].append("edit")
-                    ui.save_project()
+                    if scenario != UIA_SAVE_SCENARIO:
+                        edit_project(ui, scenario, binding.hwnd)
+                        report["script_steps"].append("edit")
+                    ui.save_project(prepared_dialog=setup.get("dialog_hwnd"))
                     report["script_steps"].append("save")
             finally:
                 report["script_action_elapsed_ns"] = time.monotonic_ns() - measured_start

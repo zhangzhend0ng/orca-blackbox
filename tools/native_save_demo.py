@@ -23,7 +23,8 @@ HOST_SOURCES = ("tools/native_save_demo.py", "tools/windows_mcp_codex_probe.py",
     "tools/native_save_run.py", "tools/native_save_guest.py", "tools/native_save_server.py", "harness/native_authority.py",
     "harness/native_desktop_video.py",
     "harness/native_script_baseline.py", "harness/process_panel.py", "harness/agent_project_ui.py", "harness/agent_business_ui.py",
-    "harness/native_uia_replay.py", "contracts/replays/uia_layer.json",
+    "harness/native_uia_replay.py", "contracts/replays/uia_layer.json", "contracts/replays/uia_save.json",
+    "contracts/replays/uia_canvas.json",
     "tests/engine/m6a_transform_verify.py", "tests/mixing/m4e_mixing_paint.py",
     "harness/native_recovery.py", "harness/native_diagnostic_recovery.py", "harness/canvas_approval.py",
     "harness/native_authority_probe.py", "harness/native_canvas_verify.py", "harness/runtime_ports.py",
@@ -77,7 +78,7 @@ def main():
     p.add_argument("--record-desktop", action="store_true", help="Record the dedicated win11-test desktop.")
     p.add_argument("--goal-only", action="store_true", help="Omit the guided UI route for ZCode.")
     p.add_argument("--actor", choices=("codex", "zcode", "script"), default="codex")
-    from harness.native_matrix import SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_LAYER_SCENARIO, UIA_REPLAY_SCENARIO
+    from harness.native_matrix import REPLAY_SOURCES, SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_LAYER_SCENARIO
     p.add_argument("--scenario", choices=tuple(s for s in SCENARIOS if s not in {"canvas_probe", "authority_probe"}))
     args = p.parse_args()
     if args.scenario is None:
@@ -119,7 +120,7 @@ def main():
         "@{head=(& $git -C $sb rev-parse HEAD);dirty=@(& $git -C $sb status --porcelain);"
         r"runtime=(Test-Path 'C:\coil\tools\windows-mcp-0.8.9\python.exe')} } -ArgumentList $guestSandbox,$guestGit"+"\n"
         "if($state.head.Trim() -ne "+quoted(head)+" -or $state.dirty.Count"
-        + (" -or -not $state.runtime" if args.actor != "script" or args.scenario == UIA_REPLAY_SCENARIO
+        + (" -or -not $state.runtime" if args.actor != "script" or args.scenario in REPLAY_SOURCES
            else "") + "){throw 'demo_guest_sync_or_runtime_required'}\n"
         +capture_request+
         "& "+quoted(REPO / "runner/hv_go.ps1")+" -NoSync -WindowsMcpProbe -NativeSave -ProbeRunId "+quoted(run_id)

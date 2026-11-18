@@ -9,16 +9,21 @@ UIA_LAYER_SCENARIO = "uia_hybrid_layer"
 UIA_LAYER_STRENGTH_SCENARIO = "uia_hybrid_layer_strength"
 UIA_CANVAS_SCENARIO = "uia_hybrid_canvas"
 UIA_REPLAY_SCENARIO = "uia_replay_layer"
-SCRIPT_COMPARISON_SCENARIOS = (UIA_LAYER_SCENARIO, UIA_CANVAS_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO)
-SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, UIA_REPLAY_SCENARIO)
+UIA_REPLAY_SAVE = "uia_replay_save"
+UIA_REPLAY_CANVAS = "uia_replay_canvas"
+REPLAY_SOURCES = {UIA_REPLAY_SCENARIO: UIA_LAYER_SCENARIO, UIA_REPLAY_SAVE: UIA_SAVE_SCENARIO,
+                  UIA_REPLAY_CANVAS: UIA_CANVAS_SCENARIO}
+UIA_SAVE_SCENARIOS = frozenset((UIA_SAVE_SCENARIO, UIA_REPLAY_SAVE))
+SCRIPT_COMPARISON_SCENARIOS = (UIA_LAYER_SCENARIO, UIA_CANVAS_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO, UIA_SAVE_SCENARIO)
+SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES)
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
 UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
     "uia_general_bottom_strength", "uia_general_bottom_quality", *UIA_Y_SCENARIOS,
     "uia_general_combo", UIA_DISTURBANCE_SCENARIO)
-UIA_HYBRID_SCENARIOS = frozenset((*SCRIPT_SCENARIOS, *UIA_GENERALIZATION))
+UIA_HYBRID_SCENARIOS = frozenset((*SCRIPT_SCENARIOS, *UIA_GENERALIZATION)) - UIA_SAVE_SCENARIOS
 SCALE_SCENARIOS = ("general_scale_quality", "general_scale_others")
-CANVAS_REPLACE_SCENARIOS = frozenset((CANVAS_REPLACE_SCENARIO, UIA_CANVAS_SCENARIO, *SCALE_SCENARIOS, *UIA_Y_SCENARIOS))
+CANVAS_REPLACE_SCENARIOS = frozenset((CANVAS_REPLACE_SCENARIO, UIA_CANVAS_SCENARIO, UIA_REPLAY_CANVAS, *SCALE_SCENARIOS, *UIA_Y_SCENARIOS))
 CANVAS_SCENARIOS = CANVAS_REPLACE_SCENARIOS | {"canvas_trial"}
 GENERALIZATION = (
     "general_wall", "general_slot2", "general_top_strength", "general_top_quality",
@@ -37,6 +42,8 @@ SCENARIOS = {
     UIA_LAYER_STRENGTH_SCENARIO: ("Strength", None),
     UIA_CANVAS_SCENARIO: ("Quality", None),
     UIA_REPLAY_SCENARIO: ("Quality", None),
+    UIA_REPLAY_SAVE: ("Quality", "save_dialog"),
+    UIA_REPLAY_CANVAS: ("Quality", None),
     "overwrite": ("Quality", "overwrite"),
     "safety_cancel": ("Quality", "cancel"),
     "safety_timeout": ("Quality", "timeout"),
@@ -79,7 +86,7 @@ def scenario_spec(actor, scenario):
         if scenario not in SCRIPT_SCENARIOS:
             raise ValueError("native_script_scenario_not_registered")
         return SCENARIOS[scenario]
-    if actor not in {"codex", "zcode"} or scenario not in SCENARIOS or scenario == UIA_REPLAY_SCENARIO:
+    if actor not in {"codex", "zcode"} or scenario not in SCENARIOS or scenario in REPLAY_SOURCES:
         raise ValueError("native_scenario_not_registered")
     if actor != "zcode" and scenario != "base":
         raise ValueError("native_matrix_requires_zcode")

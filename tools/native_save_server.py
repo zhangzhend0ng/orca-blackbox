@@ -49,7 +49,7 @@ def main():
     from mcp.types import TextContent
     from harness.native_authority import AuthorityController, validate_scope, attach_authority
     from harness.native_diagnostic_recovery import DIAGNOSTIC_SCENARIOS
-    from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, SAVE_CLEAR_SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_SAVE_SCENARIO
+    from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, SAVE_CLEAR_SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_SAVE_SCENARIOS
     recovery_enabled = validate_scope(scope,
         json.loads((root.parent / "manifest.json").read_text()),
         json.loads((root.parent / "contract.json").read_text()),
@@ -61,7 +61,7 @@ def main():
         from windows_mcp.uia import ControlFromHandle, ControlFromPoint
         from harness.native_uia_hybrid import UiaHybridGuard
         guard = UiaHybridGuard(scope, root, ControlFromHandle, ControlFromPoint)
-    elif scope["scenario"] == UIA_SAVE_SCENARIO:
+    elif scope["scenario"] in UIA_SAVE_SCENARIOS:
         from windows_mcp.uia import ControlFromHandle
         from harness.native_uia import UiaSaveGuard
         guard = UiaSaveGuard(scope, root, ControlFromHandle)
@@ -92,7 +92,7 @@ def main():
                         value = json.dumps(guard.perform(name, arguments), ensure_ascii=False)
                         return ToolResult(content=[TextContent(type="text", text=value)],
                                           structured_content={"result": value, "popup_observation": True})
-                    if ((hybrid or scope["scenario"] == UIA_SAVE_SCENARIO)
+                    if ((hybrid or scope["scenario"] in UIA_SAVE_SCENARIOS)
                             and (name == "Snapshot" or "target" in arguments)):
                         value = json.dumps(guard.perform(name, arguments), ensure_ascii=False)
                         return ToolResult(content=[TextContent(type="text", text=value)],

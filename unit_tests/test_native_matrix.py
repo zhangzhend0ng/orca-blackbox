@@ -4,17 +4,21 @@ from copy import deepcopy
 
 import pytest
 
-from harness.native_matrix import SCENARIOS, completed_progress
+from harness.native_matrix import REPLAY_SOURCES, SCENARIOS, completed_progress
 from harness.native_save_session import native_contract, native_spec
 from harness.run_verdict import contract_digest
 from tools.zcode_matrix import grade
 
 
 def test_registered_matrix_contracts_are_distinct_and_closed():
-    hashes = [contract_digest(native_contract("zcode", s)) for s in SCENARIOS]
-    assert len(set(hashes)) == len(SCENARIOS)
-    for scenario, digest in zip(SCENARIOS, hashes):
+    scenarios = [scenario for scenario in SCENARIOS if scenario not in REPLAY_SOURCES]
+    hashes = [contract_digest(native_contract("zcode", s)) for s in scenarios]
+    assert len(set(hashes)) == len(scenarios)
+    for scenario, digest in zip(scenarios, hashes):
         assert native_spec(digest) == ("zcode", scenario)
+    for scenario in REPLAY_SOURCES:
+        with pytest.raises(ValueError):
+            native_contract("zcode", scenario)
     with pytest.raises(ValueError):
         native_contract("codex", "strength_a")
     with pytest.raises(ValueError):

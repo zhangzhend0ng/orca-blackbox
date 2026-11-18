@@ -16,8 +16,8 @@ from decimal import DecimalException
 from .agent_protocol import LAYER_FIXTURE_SHA256, valid_run_id
 from .native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
 from .native_matrix import (CANVAS_REPLACE_SCENARIO, CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS,
-    GENERALIZATION, SCRIPT_SCENARIOS, UIA_CANVAS_SCENARIO, UIA_HYBRID_SCENARIOS,
-    UIA_LAYER_SCENARIO, UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
+    GENERALIZATION, REPLAY_SOURCES, SCRIPT_SCENARIOS, UIA_CANVAS_SCENARIO, UIA_HYBRID_SCENARIOS,
+    UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
 from .run_contract import validate_contract
 from .run_verdict import CheckResult, contract_digest
 from .runtime_ports import VerificationOutcome
@@ -47,22 +47,28 @@ def native_contract(actor="codex", scenario="base"):
     from .native_matrix import scenario_spec
     scenario_spec(actor, scenario)
     if actor == "script":
-        recorded = scenario == UIA_REPLAY_SCENARIO
-        data = native_contract("zcode", UIA_LAYER_SCENARIO if recorded else scenario).to_dict()
+        recorded = scenario in REPLAY_SOURCES
+        source_scenario = REPLAY_SOURCES.get(scenario, scenario)
+        data = native_contract("zcode", source_scenario).to_dict()
         data["executor"] = "script"
         version = 3 if scenario == UIA_CANVAS_SCENARIO else 1
         data["contract_version"] = f"native-script-comparison-{version}-{scenario}"
+        goal = "Set regular layer height to 0.24 mm, preserving the 0.40 mm initial layer."
+        if source_scenario == UIA_CANVAS_SCENARIO:
+            goal = "Move the cube exactly +10 mm in global X."
+        elif source_scenario == UIA_SAVE_SCENARIO:
+            goal = "Save the loaded project unchanged from the prepared Save As dialog."
         data["steps"] = [
             {"id": "setup", "goal": "Use the same trusted initial state as the corresponding ZCode scenario."},
-            {"id": "goal", "goal": ("Set regular layer height to 0.24 mm, preserving the 0.40 mm initial layer."
-                                    if scenario != UIA_CANVAS_SCENARIO else "Move the cube exactly +10 mm in global X.")},
+            {"id": "goal", "goal": goal},
             {"id": "proof", "goal": "GUI save, freeze saved bytes, reopen with an independent profile and GUI reslice/export."},
             {"id": "close", "goal": "Use the shared business verifier and confirm owned Job is empty."},
         ]
         if recorded:
             from .native_uia_replay import read_recipe
-            _, digest = read_recipe()
-            data["contract_version"] = "native-uia-recording-2"
+            _, digest = read_recipe(scenario)
+            data["contract_version"] = ("native-uia-recording-2" if scenario == UIA_REPLAY_SCENARIO
+                                        else "native-uia-recording-1-" + scenario)
             data["steps"].insert(1, {"id": "recording", "goal": "Run the registered UIA recording with SHA256 " + digest})
         return validate_contract(data)
     data = {"schema_version": 1, "case_id": "m3g_export_3mf",
@@ -122,9 +128,12 @@ def native_contract(actor="codex", scenario="base"):
 
 def native_spec(digest):
     from .native_matrix import SCENARIOS
-    for actor, scenarios in (("codex", ("base",)), ("zcode", (s for s in SCENARIOS if s != UIA_REPLAY_SCENARIO)),
+    from .native_uia_replay import recipe_path
+    for actor, scenarios in (("codex", ("base",)), ("zcode", (s for s in SCENARIOS if s not in REPLAY_SOURCES)),
                              ("script", SCRIPT_SCENARIOS)):
         for scenario in scenarios:
+            if scenario in REPLAY_SOURCES and not recipe_path(scenario).is_file():
+                continue
             if digest == contract_digest(native_contract(actor, scenario)):
                 return actor, scenario
     raise ValueError("native_contract_digest")
@@ -175,6 +184,24 @@ def verify_layer_saved(frozen, fixture, gcode, *, cancelled):
     return "Saved .24/initial .4, unchanged cube, reopened actual 112-layer G-code"
 
 
+def verify_unchanged_saved(frozen, fixture, gcode, cancelled):
+    from decimal import Decimal
+    from .agent_layer_verify import analyze_gcode
+    from .agent_verify import _require
+    from .pilot_common import inspect_preserved_settings
+    from .project_3mf import _archive, inspect_project
+    from .script_verify import _json
+
+    inspect_project(frozen, fixture, layer_height="0.4", cancelled=cancelled)
+    saved_settings = _json(_archive(frozen, cancelled)["Metadata/project_settings.config"])
+    fixture_settings = _json(_archive(fixture, cancelled)["Metadata/project_settings.config"])
+    inspect_preserved_settings(saved_settings, fixture_settings, cancelled=cancelled)
+    layers = analyze_gcode(gcode, layer_height="0.4", cancelled=cancelled)
+    _require(layers["layer_count"] == 68 and Decimal(layers["last_z"]) == Decimal("27.2")
+             and layers["object_tools"] == [0], "native_uia_saved_layer_schedule")
+    return "UIA Save As preserved all fixture settings and geometry; fresh-profile reopen produced 68 layers"
+
+
 def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, cancelled):
     from .agent_verify import _require
     from .native_matrix import scenario_spec
@@ -184,12 +211,14 @@ def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, can
     receipt = _json(read("native_worker.json", 65536))
     scope = _json(read("scope.json", 65536))
     setup = _json(read("setup.json", 65536))
+    source_scenario = REPLAY_SOURCES.get(scenario, scenario)
     digest = contract_digest(snapshot.contract)
     _require(all(evidence.get("run_id") == snapshot.run_id and evidence.get("actor") == "script"
                  and evidence.get("scenario") == scenario and evidence.get("contract_sha256") == digest
                  for evidence in (receipt, scope)), "native_script_identity")
     _require(receipt.get("error") is None and receipt.get("app_closed") is True
-             and receipt.get("script_steps") == ["edit", "save"], "native_script_actions")
+             and receipt.get("script_steps") == (["save"] if source_scenario == UIA_SAVE_SCENARIO else ["edit", "save"]),
+             "native_script_actions")
     phases = [snapshot.manifest["started_at_ns"], setup["finished_at_ns"],
               receipt["script_action_started_at_ns"], receipt["script_action_finished_at_ns"],
               proof["input_stopped_at_ns"]]
@@ -204,14 +233,18 @@ def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, can
              "native_script_initial_setup")
     gcode = read("exports/0001.gcode", 64*1024*1024)
     _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
-    if scenario == UIA_CANVAS_SCENARIO:
-        detail = json.dumps(verify_business(scenario, frozen, fixture, gcode, cancelled=cancelled), sort_keys=True)
+    if source_scenario == UIA_CANVAS_SCENARIO:
+        detail = json.dumps(verify_business(source_scenario, frozen, fixture, gcode, cancelled=cancelled), sort_keys=True)
+    elif source_scenario == UIA_SAVE_SCENARIO:
+        _require(type(setup.get("dialog_hwnd")) is int and setup["dialog_hwnd"] > 0
+                 and setup["dialog_hwnd"] == scope.get("dialog_hwnd"), "native_script_initial_dialog")
+        detail = verify_unchanged_saved(frozen, fixture, gcode, cancelled)
     else:
         detail = verify_layer_saved(frozen, fixture, gcode, cancelled=cancelled)
     refs = ("artifact:proof.json", "artifact:process.json", "artifact:native_worker.json",
             "artifact:proof/0001.3mf:sha256:"+proof["project_sha256"],
             "artifact:exports/0001.gcode:sha256:"+proof["gcode_sha256"])
-    if scenario == UIA_REPLAY_SCENARIO:
+    if scenario in REPLAY_SOURCES:
         from .native_uia_replay import verify_replay_trace
         raw_trace = read("native_trace.ndjson", 256000)
         # The worker binds completed tool receipts before revoking input. This
@@ -232,9 +265,6 @@ def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, can
 def verify_saved(snapshot, *, cancelled=lambda: False):
     from .script_verify import _read, _json, _InvalidEvidence
     from .agent_verify import _require
-    from .project_3mf import inspect_project
-    from .agent_layer_verify import analyze_gcode
-    from decimal import Decimal
     refs = []
     recovery_summary = None
     diagnostic_summary = None
@@ -336,17 +366,7 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
         _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
         from .native_pilots import PILOTS, TRIALS, verify_business
         if scenario == UIA_SAVE_SCENARIO:
-            from .pilot_common import inspect_preserved_settings
-            from .project_3mf import _archive
-            inspect_project(frozen, fixture, layer_height="0.4", cancelled=cancelled)
-            saved_settings = _json(_archive(frozen, cancelled)["Metadata/project_settings.config"])
-            fixture_settings = _json(_archive(fixture, cancelled)["Metadata/project_settings.config"])
-            inspect_preserved_settings(saved_settings, fixture_settings, cancelled=cancelled)
-            layers = analyze_gcode(gcode, layer_height="0.4", cancelled=cancelled)
-            _require(layers["layer_count"] == 68 and Decimal(layers["last_z"]) == Decimal("27.2")
-                     and layers["object_tools"] == [0], "native_uia_saved_layer_schedule")
-            detail = "UIA Save As preserved all fixture settings and geometry; fresh-profile reopen produced 68 layers; "
-            detail += json.dumps(uia_summary, sort_keys=True)
+            detail = verify_unchanged_saved(frozen, fixture, gcode, cancelled) + "; " + json.dumps(uia_summary, sort_keys=True)
         elif scenario in {**PILOTS, **TRIALS}:
             _require(host.get("contract_sha256") == contract_digest(snapshot.contract)
                      and host.get("scenario") == scenario, "native_pilot_host_contract")

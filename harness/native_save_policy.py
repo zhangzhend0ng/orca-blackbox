@@ -6,7 +6,7 @@ import re
 from copy import deepcopy
 from .native_diagnostic_recovery import COMMIT_SCENARIO
 from .native_matrix import (CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, SAVE_CLEAR_SCENARIOS,
-    UIA_HYBRID_SCENARIOS, UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
+    UIA_HYBRID_SCENARIOS, UIA_REPLAY_CANVAS, UIA_REPLAY_SAVE, UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIOS)
 
 NATIVE_TOOLS = frozenset({"Snapshot", "Screenshot", "Click", "Type", "Shortcut", "Wait", "ControlStatus"})
 INPUT_TOOLS = frozenset({"Click", "Type", "Shortcut"})
@@ -21,7 +21,11 @@ CANVAS_NUMBER = r"(?:[1-9][0-9]{0,2}(?:\.[0-9]{1,4})?|0\.(?=[0-9]{0,3}[1-9])[0-9
 def native_tools(scenario):
     if scenario == UIA_REPLAY_SCENARIO:
         return frozenset({"Snapshot", "Click", "Type", "Shortcut"})
-    return UIA_SAVE_TOOLS if scenario == UIA_SAVE_SCENARIO else NATIVE_TOOLS
+    if scenario == UIA_REPLAY_SAVE:
+        return frozenset({"Snapshot", "Click", "Type"})
+    if scenario == UIA_REPLAY_CANVAS:
+        return NATIVE_TOOLS - {"Wait", "ControlStatus"}
+    return UIA_SAVE_TOOLS if scenario in UIA_SAVE_SCENARIOS else NATIVE_TOOLS
 
 
 def uia_selector_schema(control_type):
@@ -108,7 +112,7 @@ def scoped_tool_schemas(tools, output_path, scenario="base"):
     expected = native_tools(scenario)
     if len(tools) != len(expected) or {t["name"] for t in tools} != expected:
         raise ValueError("native_toolset_changed")
-    if scenario == UIA_SAVE_SCENARIO:
+    if scenario in UIA_SAVE_SCENARIOS:
         result = deepcopy(tools)
         for tool in result:
             uia_tool_schema(tool, output_path)
@@ -219,7 +223,7 @@ def validate_input(name, args, output_path, scenario="base"):
             raise ValueError("native_uia_canvas_arguments")
         if name == "Shortcut" and args != {"shortcut": "ctrl+shift+s"}:
             raise ValueError("native_uia_command_rejected")
-    elif scenario == UIA_SAVE_SCENARIO:
+    elif scenario in UIA_SAVE_SCENARIOS:
         if name == "Snapshot" and args:
             raise ValueError("native_uia_snapshot_options")
         if name in {"Click", "Type"}:
