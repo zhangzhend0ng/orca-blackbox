@@ -331,8 +331,12 @@ class UiaHybridGuard(UiaSaveGuard):
                 self.last_window["process_popup"] = process_popup
             return self.last_window
         self.last_window.update(self._main_window(wu, hwnd))
+        mix_closure = None
         if self.needs_main_snapshot and name != "Snapshot":
-            raise ValueError("native_uia_main_observation_after_popup")
+            if self.mix is not None and name == "Shortcut":
+                mix_closure = self.mix.closed_confirmation(hwnd)
+            if mix_closure is None:
+                raise ValueError("native_uia_main_observation_after_popup")
         if name == "Snapshot":
             self.last_window["route"] = "uia_tree"
         elif "target" in args:
@@ -363,6 +367,9 @@ class UiaHybridGuard(UiaSaveGuard):
             self.last_window = super().check(name, args)
             self._clear_visual()
             self.last_window["route"] = "owned_command"
+            if mix_closure is not None:
+                self.last_window["mix_closed_dialog"] = mix_closure
+                self.needs_main_snapshot = False
         return self.last_window
 
     def capture_region(self):
@@ -551,6 +558,10 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
             canvas_click = None
             popup_open = True
             continue
+        if mix is not None and "mix_closed_dialog" in window:
+            _require(popup_open and name == "Shortcut" and mix.dialog is None and len(mix.modes) == 2,
+                     "native_mix_main_transition")
+            popup_open = False
         if window.get("uia_save"):
             _require(not pending_uia_snapshot and counts["uia_tree_calls"] and window["foreground_hwnd"] != main_hwnd,
                      "native_uia_hybrid_main_not_observed")

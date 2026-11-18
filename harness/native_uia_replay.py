@@ -212,6 +212,8 @@ def compile_recipe(raw, *, run_id, source_sha, app_pid, main_hwnd, output_path,
             args = {"mix_role": row["window"]["mix_control"]["role"]}
         if scenario == UIA_MIX_RECIPES and tool == "Snapshot" and actions and actions[-1]["tool"] == "Snapshot":
             continue
+        if scenario == UIA_MIX_RECIPES and tool == "Shortcut" and row["window"].get("mix_closed_dialog"):
+            actions.append({"tool": "Snapshot", "arguments": {}})
         action = {"tool": tool, "arguments": args}
         if tool == "Screenshot":
             action["bounds"] = row["window"]["visual_region"]

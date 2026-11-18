@@ -35,9 +35,20 @@ class MixSurface:
         self.observed = {}
         self.choices = None
         self.selected = False
+        self.confirmed_dialog = None
+        self.confirmations = 0
 
     def opened_from_sidebar(self):
         self.opened = time.monotonic_ns()
+        self.confirmed_dialog = None
+
+    def closed_confirmation(self, hwnd):
+        from win32gui import IsWindowVisible
+
+        if (hwnd == self.guard.scope["hwnd"] and self.confirmations == 2 and self.confirmed_dialog is not None
+                and not IsWindowVisible(self.confirmed_dialog)):
+            return self.confirmed_dialog
+        return None
 
     def surface(self, wu, hwnd):
         from win32gui import GetAncestor, GetWindow, IsWindowVisible
@@ -169,6 +180,9 @@ class MixSurface:
                 raise ValueError("native_mix_property_click_occluded")
             if wu.real_click_screen(*point) != 2:
                 raise ValueError("native_mix_property_click_failed")
+        if key == "confirm":
+            self.confirmed_dialog = proof["dialog"]
+            self.confirmations += 1
         self.combo = control["bounds"] if key == "filament1" else None
         self.selected = False
         self.choices = None
@@ -255,7 +269,9 @@ class MixTrace:
         tool, args, window = row["tool"], row["arguments"], row["window"]
         route = window.get("route")
         if route not in {"mix_tree", "mix_property", "mix_badge"}:
-            if tool == "Snapshot" and window.get("foreground_hwnd") == self.main and self.dialog is not None:
+            recovered_closure = (tool == "Shortcut" and window.get("mix_closed_dialog") == self.dialog)
+            if ((tool == "Snapshot" or recovered_closure) and window.get("foreground_hwnd") == self.main
+                    and self.dialog is not None):
                 _require(self.confirmed, "native_mix_unconfirmed_dialog_exit")
                 self.dialog = self.combo = self.choices = self.controls = None
                 self.confirmed = False
