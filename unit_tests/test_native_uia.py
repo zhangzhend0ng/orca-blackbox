@@ -116,6 +116,8 @@ def test_hybrid_schema_exposes_typed_properties_for_model_projection():
     jsonschema.validate({"loc": [120, 480], "text": "145.5", "press_enter": True}, schemas["Type"])
     jsonschema.validate({"region_name": "imgui_canvas"}, schemas["Screenshot"])
     with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate({"region": [426, 67, 1920, 1032]}, schemas["Screenshot"])
+    with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate({"region_name": "desktop"}, schemas["Screenshot"])
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate({"loc": "[120,480]"}, schemas["Click"])
@@ -149,7 +151,7 @@ def test_named_crop_resolves_live_geometry_after_layout_changes(tmp_path, monkey
     guard.canvas_click_crop = ((500, 250), observed)
     guard._last_click = [500, 250]
     monkeypatch.setattr(guard, "_regions", lambda _: {"imgui_canvas": current})
-    with pytest.raises(ValueError, match="native_uia_visual_region_not_observed"):
+    with pytest.raises(ValueError, match="native_uia_named_crop_required"):
         guard.check("Screenshot", {"region": old})
     proof = guard.check("Screenshot", {"region_name": "imgui_canvas"})
     assert proof["visual_region"] == current and guard.capture_region() == current

@@ -165,17 +165,10 @@ class UiaHybridGuard(UiaSaveGuard):
         self._main_window(wu, hwnd)
         live = self._regions(wu)
         if name == "Screenshot":
-            named = args.get("region_name")
-            if named is not None:
-                if named not in live:
-                    raise ValueError("native_uia_visual_region_not_observed")
-                return named, live[named], live[named], None, None
-            region = args["region"]
-            matches = [key for key, rect in live.items()
-                       if self.visual_regions.get(key) == rect and within(rect, region)]
-            if len(matches) != 1:
+            named = args["region_name"]
+            if named not in live:
                 raise ValueError("native_uia_visual_region_not_observed")
-            return matches[0], region, live[matches[0]], None, None
+            return named, live[named], live[named], None, None
         from win32gui import IsChild
 
         matches = [kind for kind, box in live.items() if contains(box, args["loc"])]
@@ -218,6 +211,8 @@ class UiaHybridGuard(UiaSaveGuard):
     def check(self, name, args):
         self.last_canvas_evidence, self.last_window, self.arguments_validated = None, {}, False
         validate_input(name, args, self.scope["output_path"], self.scope["scenario"])
+        if name == "Screenshot" and set(args) != {"region_name"}:
+            raise ValueError("native_uia_named_crop_required")
         self.arguments_validated = True
         if name in {"ControlStatus", "Wait"}:
             return super().check(name, args)
@@ -391,7 +386,7 @@ class UiaHybridGuard(UiaSaveGuard):
 
 
 def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scenario, prepared_dialog=None,
-                        allow_refresh=False, strict_crop_lifetime=False):
+                        allow_refresh=False, strict_crop_lifetime=False, named_crops_only=False):
     regions, crop, targets = {}, None, []
     crops, canvas_click = {}, None
     popup_open = pending_uia_snapshot = False
@@ -402,6 +397,8 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
         window, args, name = row["window"], row["arguments"], row["tool"]
         _require(row["seq"] == index + 1 and row["run_id"] == run_id, "native_uia_hybrid_identity")
         validate_input(name, args, output_path, scenario)
+        _require(not named_crops_only or name != "Screenshot" or set(args) == {"region_name"},
+                 "native_uia_named_crop_required")
         if allow_refresh and row.get("error_code") == "native_uia_refresh_required":
             _require(closed and not popup_open and name in {"Click", "Type"} and "loc" in args
                      and not pending_uia_snapshot

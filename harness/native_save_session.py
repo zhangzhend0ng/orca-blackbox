@@ -108,7 +108,7 @@ def native_contract(actor="codex", scenario="base"):
                 data["contract_version"] = "native-diagnostic-recovery-zcode-2-commit"
                 data["steps"][1]["goal"] += " Replace and commit the native Edit with clear=true and press_enter=true in the same Type."
         if scenario in UIA_HYBRID_SCENARIOS:
-            data["contract_version"] = "native-uia-hybrid-zcode-3-" + scenario
+            data["contract_version"] = "native-uia-hybrid-zcode-4-" + scenario
             data["steps"].insert(1, {"id": "uia_authority", "goal": "Use owned UIA target properties and readback for native controls. Use the latest crop of the intended named wx or ImGui region after any mutation. Allow up to two proven owned, pre-dispatch input refusals followed by fresh observation. Require the UIA Save As trace and independent saved-file verification."})
     return validate_contract(data)
 
@@ -309,7 +309,7 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
             uia_summary = verify_hybrid_trace(trace, run_id=snapshot.run_id, app_pid=proof["old_pid"],
                 main_hwnd=scope["hwnd"], output_path=proof["output_path"], scenario=scenario,
                 prepared_dialog=setup.get("dialog_hwnd") if disturbance == "save_dialog" else None,
-                allow_refresh=True, strict_crop_lifetime=True)
+                allow_refresh=True, strict_crop_lifetime=True, named_crops_only=True)
         gcode = read("exports/0001.gcode", 64*1024*1024)
         _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
         from .native_pilots import PILOTS, TRIALS, verify_business

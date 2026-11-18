@@ -70,9 +70,7 @@ def hybrid_tool_schema(tool, output_path, scenario):
         uia_tool_schema(tool, output_path)
         return
     snapshots = exact({})
-    crop = exact({"region_name": {"type": "string", "enum": list(UIA_VISUAL_REGIONS)},
-                  "region": pixels(4)}, [])
-    crop["oneOf"] = [{"required": ["region_name"]}, {"required": ["region"]}]
+    crop = exact({"region_name": {"type": "string", "enum": list(UIA_VISUAL_REGIONS)}})
     loc = {**pixels(2), "description": "Absolute desktop pixel pair as a JSON integer array. Example [120,480]."}
     action = uia_selector_schema("ButtonControl")
     action["properties"]["control_type"] = {"type": "string", "enum": list(UIA_ACTION_TYPES)}
@@ -91,7 +89,7 @@ def hybrid_tool_schema(tool, output_path, scenario):
         value["anyOf"].append({"pattern": "^" + CANVAS_NUMBER + "$"})
     schemas = {
         "Snapshot": (snapshots, "Read the scoped UIA tree, values and anchored regions available for drawn UI."),
-        "Screenshot": (crop, "Capture one wx or ImGui area by its region_name from Snapshot. Use the returned crop_region as its live screen rectangle. For a smaller crop, supply region as absolute edges [left,top,right,bottom] instead."),
+        "Screenshot": (crop, "Capture one named wx or ImGui area. The executor derives its live bounds and returns crop_region."),
         "Click": (click, "Invoke or select a native control using its exact Snapshot target. Use loc only for a drawn control in the latest crop; add the crop origin to the pixel coordinates."),
         "Type": (edit, "Set an observed UIA Edit using its exact target and read back its value. On the approved ImGui route only, a same-location Click followed by numeric Type with press_enter=true commits the field."),
         "Shortcut": (exact({"shortcut": {"const": "ctrl+shift+s"}}), "Open Save As in the owned main application."),
