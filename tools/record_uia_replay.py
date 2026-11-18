@@ -8,9 +8,9 @@ import sys
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from harness.agent_protocol import LAYER_FIXTURE, LAYER_FIXTURE_SHA256, valid_run_id
-from harness.native_matrix import REPLAY_SOURCES, UIA_CANVAS_SCENARIO, UIA_PROCESS_COMBO, UIA_SAVE_SCENARIO
-from harness.native_pilots import verify_business
+from harness.agent_protocol import valid_run_id
+from harness.native_matrix import REPLAY_SOURCES, UIA_CANVAS_SCENARIO, UIA_MIX_RECIPES, UIA_PROCESS_COMBO, UIA_SAVE_SCENARIO
+from harness.native_pilots import native_fixture, verify_business
 from harness.native_save_session import NATIVE_SUT_SHA256, verify_layer_saved, verify_unchanged_saved
 from harness.native_uia_replay import compile_recipe, recipe_path
 from tools.zcode_matrix import grade, load
@@ -42,12 +42,13 @@ def record(run_id):
             or not grade(scenario, host, result, process, teardown, trace,
                          coordinator_exit=summary["actor_exit"])):
         raise ValueError("replay_source_not_proven")
-    files = (REPO / LAYER_FIXTURE, evidence / "proof/0001.3mf", evidence / "exports/0001.gcode")
-    expected = (LAYER_FIXTURE_SHA256, proof["project_sha256"], proof["gcode_sha256"])
+    fixture_path, fixture_hash = native_fixture(scenario)
+    files = (REPO / fixture_path, evidence / "proof/0001.3mf", evidence / "exports/0001.gcode")
+    expected = (fixture_hash, proof["project_sha256"], proof["gcode_sha256"])
     fixture, project, gcode = (path.read_bytes() for path in files)
     if any(hashlib.sha256(raw).hexdigest() != digest for raw, digest in zip((fixture, project, gcode), expected)):
         raise ValueError("replay_source_artifact_digest")
-    if scenario in {UIA_CANVAS_SCENARIO, UIA_PROCESS_COMBO}:
+    if scenario in {UIA_CANVAS_SCENARIO, UIA_PROCESS_COMBO, UIA_MIX_RECIPES}:
         verify_business(scenario, project, fixture, gcode)
     elif scenario == UIA_SAVE_SCENARIO:
         if type(setup.get("dialog_hwnd")) is not int or setup["dialog_hwnd"] != scope.get("dialog_hwnd"):

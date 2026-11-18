@@ -93,7 +93,7 @@ def main():
                         return ToolResult(content=[TextContent(type="text", text=value)],
                                           structured_content={"result": value, "popup_observation": True})
                     if ((hybrid or scope["scenario"] in UIA_SAVE_SCENARIOS)
-                            and (name == "Snapshot" or "target" in arguments)):
+                            and (name == "Snapshot" or "target" in arguments or "mix_role" in arguments)):
                         value = json.dumps(guard.perform(name, arguments), ensure_ascii=False)
                         return ToolResult(content=[TextContent(type="text", text=value)],
                                           structured_content={"result": value})

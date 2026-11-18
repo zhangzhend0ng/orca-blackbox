@@ -6,7 +6,7 @@ import re
 from copy import deepcopy
 from .native_diagnostic_recovery import COMMIT_SCENARIO
 from .native_matrix import (CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, SAVE_CLEAR_SCENARIOS,
-    UIA_HYBRID_SCENARIOS, UIA_PROCESS_SCENARIOS, UIA_REPLAY_CANVAS, UIA_REPLAY_PROCESS, UIA_REPLAY_SAVE,
+    UIA_HYBRID_SCENARIOS, UIA_MIX_SCENARIOS, UIA_PROCESS_SCENARIOS, UIA_REPLAY_CANVAS, UIA_REPLAY_MIX, UIA_REPLAY_PROCESS, UIA_REPLAY_SAVE,
     UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIOS)
 
 NATIVE_TOOLS = frozenset({"Snapshot", "Screenshot", "Click", "Type", "Shortcut", "Wait", "ControlStatus"})
@@ -16,22 +16,32 @@ UIA_SAVE_TOOLS = frozenset({"Snapshot", "Click", "Type", "Wait", "ControlStatus"
 UIA_ACTION_TYPES = ("ButtonControl", "MenuItemControl", "TabItemControl")
 UIA_VISUAL_REGIONS = ("wx_sidebar", "imgui_canvas")
 PROCESS_POPUP = "wx_process_popup"
+MIX_DIALOG, MIX_CHOICES = "wx_add_mix", "wx_mix_filaments"
+MIX_ROLES = ("ratio", "gradient", "filament1", "filament3", "confirm")
 EDIT_NUMBER = r"(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?"
 CANVAS_NUMBER = r"(?:[1-9][0-9]{0,2}(?:\.[0-9]{1,4})?|0\.(?=[0-9]{0,3}[1-9])[0-9]{1,4})"
 
 
 def native_tools(scenario):
+    if scenario in UIA_MIX_SCENARIOS:
+        return NATIVE_TOOLS - {"Screenshot", "Wait", "ControlStatus"}
     if scenario == UIA_REPLAY_SCENARIO:
         return frozenset({"Snapshot", "Click", "Type", "Shortcut"})
     if scenario == UIA_REPLAY_SAVE:
         return frozenset({"Snapshot", "Click", "Type"})
-    if scenario in {UIA_REPLAY_CANVAS, UIA_REPLAY_PROCESS}:
+    if scenario in {UIA_REPLAY_CANVAS, UIA_REPLAY_MIX, UIA_REPLAY_PROCESS}:
         return NATIVE_TOOLS - {"Wait", "ControlStatus"}
     return UIA_SAVE_TOOLS if scenario in UIA_SAVE_SCENARIOS else NATIVE_TOOLS
 
 
 def visual_regions(scenario):
+    if scenario in UIA_MIX_SCENARIOS:
+        return ("wx_sidebar", MIX_DIALOG, MIX_CHOICES)
     return (*UIA_VISUAL_REGIONS, PROCESS_POPUP) if scenario in UIA_PROCESS_SCENARIOS else UIA_VISUAL_REGIONS
+
+
+def action_types(scenario):
+    return (*UIA_ACTION_TYPES, "PaneControl") if scenario in UIA_MIX_SCENARIOS else UIA_ACTION_TYPES
 
 
 def uia_selector_schema(control_type):
@@ -85,9 +95,12 @@ def hybrid_tool_schema(tool, output_path, scenario):
     crop = exact({"region_name": {"type": "string", "enum": list(visual_regions(scenario))}})
     loc = {**pixels(2), "description": "Absolute desktop pixel pair as a JSON integer array. Example [120,480]."}
     action = uia_selector_schema("ButtonControl")
-    action["properties"]["control_type"] = {"type": "string", "enum": list(UIA_ACTION_TYPES)}
+    action["properties"]["control_type"] = {"type": "string", "enum": list(action_types(scenario))}
     click = exact({"target": action, "loc": loc}, [])
     click["oneOf"] = [{"required": ["target"]}, {"required": ["loc"]}]
+    if scenario in UIA_MIX_SCENARIOS:
+        click = exact({"target": action, "mix_role": {"type": "string", "enum": list(MIX_ROLES)}}, [])
+        click["oneOf"] = [{"required": ["target"]}, {"required": ["mix_role"]}]
     value = {"type": "string", "anyOf": [{"const": output_path}, {"pattern": "^" + EDIT_NUMBER + "$"}]}
     edit = exact({"target": uia_selector_schema("EditControl"), "text": value})
     if scenario in CANVAS_SCENARIOS:
@@ -102,7 +115,9 @@ def hybrid_tool_schema(tool, output_path, scenario):
     schemas = {
         "Snapshot": (snapshots, "Read the scoped UIA tree, values and anchored regions available for drawn UI."),
         "Screenshot": (crop, "Capture one named wx or ImGui area. The executor derives its live bounds and returns crop_region."),
-        "Click": (click, "Invoke or select a native control using its exact Snapshot target. Use loc only for a drawn control in the latest crop; add the crop origin to the pixel coordinates."),
+        "Click": (click, ("Use an exact observed target or a listed Add Mix mix_role. The filament3 role is available only after observing it in the material popup."
+                          if scenario in UIA_MIX_SCENARIOS else
+                          "Invoke or select a native control using its exact Snapshot target. Use loc only for a drawn control in the latest crop; add the crop origin to the pixel coordinates.")),
         "Type": (edit, "Set an observed UIA Edit using its exact target and read back its value. On the approved ImGui route only, a same-location Click followed by numeric Type with press_enter=true commits the field."),
         "Shortcut": (exact({"shortcut": {"const": "ctrl+shift+s"}}), "Open Save As in the owned main application."),
     }
@@ -202,6 +217,11 @@ def validate_input(name, args, output_path, scenario="base"):
     if scenario in UIA_HYBRID_SCENARIOS:
         if name == "Snapshot" and args:
             raise ValueError("native_uia_snapshot_options")
+        if name == "Click" and scenario in UIA_MIX_SCENARIOS:
+            if set(args) == {"mix_role"} and args["mix_role"] in MIX_ROLES:
+                return
+            if set(args) != {"target"}:
+                raise ValueError("native_mix_click_arguments")
         if name == "Screenshot":
             if set(args) == {"region_name"} and args["region_name"] in visual_regions(scenario):
                 return
@@ -218,7 +238,7 @@ def validate_input(name, args, output_path, scenario="base"):
                 if (set(args) != {"target", "text"} or kind != "EditControl" or type(args["text"]) is not str
                         or not (args["text"] == output_path or re.fullmatch(EDIT_NUMBER, args["text"]))):
                     raise ValueError("native_uia_edit_arguments")
-            elif set(args) != {"target"} or kind not in UIA_ACTION_TYPES:
+            elif set(args) != {"target"} or kind not in action_types(scenario):
                 raise ValueError("native_uia_action_arguments")
             validate_uia_selector(target, kind)
             return

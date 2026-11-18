@@ -1,7 +1,7 @@
 """Finite business experiments; never a model-selected verifier or import path."""
 from importlib import import_module
 from .native_matrix import (CANVAS_REPLACE_SCENARIO, SCALE_SCENARIOS, UIA_CANVAS_SCENARIO,
-    UIA_DISTURBANCE_SCENARIO, UIA_MIX_RECIPES, UIA_PROCESS_COMBO, UIA_Y_SCENARIOS)
+    UIA_DISTURBANCE_SCENARIO, UIA_MIX_RECIPES, UIA_MIX_SCENARIOS, UIA_PROCESS_COMBO, UIA_Y_SCENARIOS)
 
 PILOTS = {
     "pilot_strength": "pilot_strength",
@@ -30,7 +30,7 @@ TRIALS = {
 
 
 def native_fixture(scenario):
-    if scenario == UIA_MIX_RECIPES:
+    if scenario in UIA_MIX_SCENARIOS:
         from .pilot_mix_recipes import FIXTURE, FIXTURE_SHA256
         return FIXTURE, FIXTURE_SHA256
     from .agent_protocol import LAYER_FIXTURE, LAYER_FIXTURE_SHA256

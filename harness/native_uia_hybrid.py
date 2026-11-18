@@ -4,7 +4,7 @@ import time
 from dataclasses import dataclass
 
 from .agent_verify import _require
-from .native_matrix import UIA_DISTURBANCE_SCENARIO, UIA_PROCESS_SCENARIOS
+from .native_matrix import UIA_DISTURBANCE_SCENARIO, UIA_MIX_SCENARIOS, UIA_PROCESS_SCENARIOS
 from .native_save_policy import INPUT_TOOLS, PROCESS_POPUP, InputGuard, UIA_VISUAL_REGIONS, validate_input, validate_uia_selector
 from .native_uia import SAVE_DIALOG_TITLES, UiaSaveGuard, value_digest, verify_uia_save
 
@@ -55,6 +55,10 @@ class UiaHybridGuard(UiaSaveGuard):
         self.crop_id = 0
         self.canvas_click_crop = None
         self.sidebar_opener = None
+        self.mix = None
+        if scope["scenario"] in UIA_MIX_SCENARIOS:
+            from .native_mix_uia import MixSurface
+            self.mix = MixSurface(self)
         self.needs_main_snapshot = False
         self.needs_uia_snapshot = False
         self.canvas_hwnd = json.loads(scope["canvas_binding_json"])["hwnd"]
@@ -303,6 +307,13 @@ class UiaHybridGuard(UiaSaveGuard):
             self.last_window["uia_save"] = True
             return self.last_window
         named_observation = name == "Screenshot" and "region_name" in args
+        if self.mix is not None:
+            evidence = self.mix.check(wu, hwnd, name, args)
+            if evidence is not None:
+                self.last_window = evidence
+                return evidence
+            if "mix_role" in args:
+                raise ValueError("native_mix_surface_required")
         if hwnd != self.scope["hwnd"]:
             process_popup = self._process_popup(wu, hwnd)
             if process_popup is not None:
@@ -403,6 +414,15 @@ class UiaHybridGuard(UiaSaveGuard):
         if self.last_window.get("uia_save"):
             return super().perform(name, arguments)
         wu, hwnd = self.owned_foreground()
+        if self.last_window.get("route") in {"mix_tree", "mix_property", "mix_badge"}:
+            proof = self.mix.surface(wu, hwnd)
+            if proof != self.last_window["mix_surface"]:
+                raise ValueError("native_mix_surface_changed")
+            if self.last_window["route"] == "mix_badge":
+                return self.mix.select_filament(wu, proof, self.last_window)
+            if name == "Click":
+                return self.mix.perform_click(wu, proof, arguments, self.last_window)
+            return self.mix.describe(wu, proof, self.last_window)
         if self.last_window.get("route") == "uia_popup":
             popup = self._popup(wu, hwnd)
             if popup != self.last_window["popup"]:
@@ -453,6 +473,10 @@ class UiaHybridGuard(UiaSaveGuard):
             success = pattern.Select()
         if not success:
             raise ValueError("native_uia_action_failed")
+        if self.mix is not None:
+            from .native_mix_uia import OPEN_MIX
+            if record["target"] == OPEN_MIX:
+                self.mix.opened_from_sidebar()
         return {"target": record["target"], "pattern": record["pattern"]}
 
 
@@ -463,6 +487,10 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
     opener, popup_crop = None, None
     popup_open = pending_uia_snapshot = False
     counts = dict(uia_tree_calls=0, uia_actions=0, cropped_visual_calls=0, visual_inputs=0)
+    mix = None
+    if scenario in UIA_MIX_SCENARIOS:
+        from .native_mix_uia import MixTrace
+        mix = MixTrace(run_id, app_pid, main_hwnd)
     cancel, cancelled, closed = None, False, prepared_dialog is None
     _require((scenario == UIA_DISTURBANCE_SCENARIO) == (prepared_dialog is not None), "native_uia_prepared_dialog_contract")
     for index, row in enumerate(trace):
@@ -518,12 +546,17 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
         if name in {"ControlStatus", "Wait"}:
             continue
         _require(closed, "native_uia_prepared_dialog_not_closed")
+        if mix is not None and mix.record(row, counts):
+            crops.clear()
+            canvas_click = None
+            popup_open = True
+            continue
         if window.get("uia_save"):
             _require(not pending_uia_snapshot and counts["uia_tree_calls"] and window["foreground_hwnd"] != main_hwnd,
                      "native_uia_hybrid_main_not_observed")
             save = verify_uia_save(trace[index:], run_id=run_id, app_pid=app_pid,
                 dialog_hwnd=window["foreground_hwnd"], output_path=output_path, first_seq=index + 1)
-            return {"save_as": save, **counts}
+            return {"save_as": save, **counts, **(mix.summary() if mix is not None else {})}
         if window.get("route") == "process_popup_visual":
             proof = window["process_popup"]
             popup, bounds, sidebar = proof["popup"], proof["bounds"], proof["sidebar"]

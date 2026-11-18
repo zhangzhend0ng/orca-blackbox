@@ -6,7 +6,8 @@ from pathlib import Path
 
 from .agent_protocol import LAYER_FIXTURE_SHA256, ProtocolError, valid_run_id
 from .native_matrix import (REPLAY_SOURCES, UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_PROCESS_COMBO,
-    UIA_REPLAY_CANVAS, UIA_REPLAY_PROCESS, UIA_REPLAY_SAVE, UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
+    UIA_MIX_RECIPES, UIA_REPLAY_CANVAS, UIA_REPLAY_MIX, UIA_REPLAY_PROCESS, UIA_REPLAY_SAVE,
+    UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
 from .native_save_policy import PROCESS_POPUP, validate_input, validate_uia_selector
 from .native_uia import verify_uia_save
 from .native_uia_hybrid import contains, verify_hybrid_trace, within
@@ -17,7 +18,15 @@ ORDER = ("Snapshot", "Type", "Snapshot", "Shortcut", "Snapshot", "Type", "Click"
 SAVE_ORDER = ("Snapshot", "Type", "Click", "Snapshot")
 RECORDINGS = {UIA_REPLAY_SCENARIO: RECORDING, UIA_REPLAY_SAVE: RECORDING.with_name("uia_save.json"),
               UIA_REPLAY_CANVAS: RECORDING.with_name("uia_canvas.json"),
-              UIA_REPLAY_PROCESS: RECORDING.with_name("uia_process.json")}
+              UIA_REPLAY_PROCESS: RECORDING.with_name("uia_process.json"),
+              UIA_REPLAY_MIX: RECORDING.with_name("uia_mix.json")}
+
+
+def fixture_digest(scenario):
+    if scenario == UIA_MIX_RECIPES:
+        from .pilot_mix_recipes import FIXTURE_SHA256
+        return FIXTURE_SHA256
+    return LAYER_FIXTURE_SHA256
 
 
 def recipe_path(scenario):
@@ -37,7 +46,7 @@ def verify_recipe(recipe):
             raise ValueError("replay_source_digest")
     scenario = recipe["scenario"]
     if (type(recipe["schema_version"]) is not int or recipe["schema_version"] != 1 or scenario not in REPLAY_SOURCES.values()
-            or recipe["initial_tab"] != "Quality" or recipe["fixture_sha256"] != LAYER_FIXTURE_SHA256):
+            or recipe["initial_tab"] != "Quality" or recipe["fixture_sha256"] != fixture_digest(scenario)):
         raise ValueError("replay_recipe_scope")
     steps = recipe["steps"]
     if scenario == UIA_CANVAS_SCENARIO:
@@ -45,6 +54,9 @@ def verify_recipe(recipe):
         return recipe
     if scenario == UIA_PROCESS_COMBO:
         verify_process_steps(steps)
+        return recipe
+    if scenario == UIA_MIX_RECIPES:
+        verify_mix_steps(steps)
         return recipe
     order = SAVE_ORDER if scenario == UIA_SAVE_SCENARIO else ORDER
     if (type(steps) is not list or len(steps) != len(order)
@@ -124,6 +136,24 @@ def verify_process_steps(steps):
         raise ValueError("replay_process_edit_scope")
 
 
+def verify_mix_steps(steps):
+    from .native_mix_uia import OPEN_MIX
+
+    verify_visual_steps(steps, UIA_REPLAY_MIX)
+    if any(step["tool"] not in {"Snapshot", "Click"} for step in steps[:-5]):
+        raise ValueError("replay_mix_edit_scope")
+    if any(first["tool"] == second["tool"] for first, second in zip(steps[:-5], steps[1:-5])):
+        raise ValueError("replay_mix_observation_required")
+    actions = [step["arguments"] for step in steps[:-5] if step["tool"] == "Click"]
+    expected = []
+    for mode in ("ratio", "gradient"):
+        expected.extend([{"target": OPEN_MIX}, *({"mix_role": role} for role in
+                         (mode, "filament1", "filament3", "confirm"))])
+    ratio_optional = expected[:1] + expected[2:]
+    if actions not in (expected, ratio_optional) or steps[-6]["tool"] != "Snapshot":
+        raise ValueError("replay_mix_edit_order")
+
+
 def verify_canvas_steps(steps):
     verify_visual_steps(steps, UIA_REPLAY_CANVAS)
     numeric = 0
@@ -164,7 +194,7 @@ def compile_recipe(raw, *, run_id, source_sha, app_pid, main_hwnd, output_path,
     if scenario == UIA_SAVE_SCENARIO:
         verify_uia_save(trace, run_id=run_id, app_pid=app_pid, dialog_hwnd=dialog_hwnd, output_path=output_path)
     else:
-        strict = scenario in {UIA_CANVAS_SCENARIO, UIA_PROCESS_COMBO}
+        strict = scenario in {UIA_CANVAS_SCENARIO, UIA_PROCESS_COMBO, UIA_MIX_RECIPES}
         verify_hybrid_trace(trace, run_id=run_id, app_pid=app_pid, main_hwnd=main_hwnd,
                             output_path=output_path, scenario=scenario, named_crops_only=strict,
                             strict_crop_lifetime=strict or any("visual_crop_id" in row["window"] for row in trace),
@@ -178,6 +208,10 @@ def compile_recipe(raw, *, run_id, source_sha, app_pid, main_hwnd, output_path,
             continue
         if args.get("text") == output_path:
             args["text"] = OUTPUT
+        if scenario == UIA_MIX_RECIPES and row["window"].get("route") == "mix_property":
+            args = {"mix_role": row["window"]["mix_control"]["role"]}
+        if scenario == UIA_MIX_RECIPES and tool == "Snapshot" and actions and actions[-1]["tool"] == "Snapshot":
+            continue
         action = {"tool": tool, "arguments": args}
         if tool == "Screenshot":
             action["bounds"] = row["window"]["visual_region"]
@@ -190,12 +224,12 @@ def compile_recipe(raw, *, run_id, source_sha, app_pid, main_hwnd, output_path,
         steps = [snapshot, actions[0], snapshot, actions[1], snapshot, actions[2], actions[3], snapshot]
     elif scenario == UIA_SAVE_SCENARIO:
         steps = [snapshot, *actions, snapshot]
-    elif scenario == UIA_PROCESS_COMBO:
+    elif scenario in {UIA_PROCESS_COMBO, UIA_MIX_RECIPES}:
         shortcut_index = next(i for i, action in enumerate(actions) if action["tool"] == "Shortcut")
         saved = [action for action in actions[shortcut_index + 1:] if action["tool"] != "Snapshot"]
         steps = [*actions[:shortcut_index + 1], snapshot, *saved, snapshot]
     return verify_recipe({"schema_version": 1, "scenario": scenario, "initial_tab": "Quality",
-                          "fixture_sha256": LAYER_FIXTURE_SHA256, "steps": steps,
+                          "fixture_sha256": fixture_digest(scenario), "steps": steps,
                           "source": {"run_id": run_id, "source_sha": source_sha,
                                      "trace_sha256": hashlib.sha256(raw).hexdigest()}})
 
@@ -245,7 +279,9 @@ def play(ui, run_id, output_path, *, scenario=UIA_REPLAY_SCENARIO):
             returned = json.loads(structured["result"])
             if returned.get("value") != args["text"]:
                 raise ProtocolError("replay_value_readback")
-        if tool in {"Click", "Type"} and "loc" in args:
+        if tool == "Click" and scenario == UIA_REPLAY_MIX:
+            ui.pause(.25)
+        elif tool in {"Click", "Type"} and "loc" in args:
             ui.pause(.6)  # Allow the draw loop to render before the next crop.
     if observations.get("dialog_closed") is not True:
         raise ProtocolError("replay_dialog_not_closed")

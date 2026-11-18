@@ -155,7 +155,18 @@ def main(argv=None):
             prompt += (" Activate an inactive numeric field with one left Click chosen from the screenshot, then Type at "
                        "the same loc within 30 seconds. Type sends numeric keys and Enter directly without clicking again. "
                        "Inspect the committed value before saving.")
-        if args.goal_only:
+        from harness.native_matrix import UIA_MIX_RECIPES
+        if args.scenario == UIA_MIX_RECIPES:
+            prompt = ("Use Windows-MCP to operate the isolated Orca window. " + business_goal(args.scenario)
+                      + " Use Snapshot before clicks. Open Add Mix using the visible ButtonControl with an empty name "
+                      "and automation_id -31825 from Snapshot. Inside Add Mix, use Click with the advertised mix_role "
+                      "(ratio or gradient, then filament1). Observe the popup with Snapshot, then choose filament3 "
+                      "when listed. That action reads back both slots. Snapshot the dialog again and click confirm only "
+                      "when ready. Snapshot when the main window returns, and repeat for the other recipe. "
+                      "Once both are registered, use Shortcut ctrl+shift+s, Snapshot, Type the exact assigned full path "
+                      + output + " through the observed Edit target, verify the returned value, click the observed "
+                      "Save button, and Snapshot to confirm closure. Finish your turn. The verifier will reopen and slice.")
+        elif args.goal_only:
             prompt = ("Use only Windows-MCP in the isolated Snapmaker Orca window. " + business_goal(args.scenario)
                       + " The assigned output path is " + output + ". Save the complete project there as a 3MF. "
                       "Choose and check the UI route yourself. Prefer native control properties. Use named local "
