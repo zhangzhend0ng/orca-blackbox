@@ -15,7 +15,8 @@ from harness.ip_guard import IPGuard
 from harness.native_save_policy import native_tools
 from harness.native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
 from harness.native_authority import RECOVERY_SCENARIOS
-from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, SAVE_CLEAR_SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_SAVE_SCENARIO
+from harness.native_matrix import (CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, SAVE_CLEAR_SCENARIOS,
+    UIA_HYBRID_SCENARIOS, UIA_SAVE_SCENARIO)
 from harness.win32_job import OwnedJobProcess
 from runner.windows_mcp_bridge import GuestHTTP
 
@@ -164,12 +165,17 @@ def main(argv=None):
                       "Use Type with that Edit's target object to change the value; no coordinate click is needed for a listed Edit. "
                       "Use Screenshot with region=[left,top,right,bottom] contained in one listed visual_regions box only "
                       "when the needed drawn wx or ImGui control is absent from the UIA list. The returned image starts at "
-                      "[left,top]; add that offset for a Click loc. Send loc as a JSON integer array, such as [120,480]. "
+                      "[left,top]; add that offset once to image-relative pixels. Before Click, verify the final loc lies inside "
+                      "the most recent crop: left <= x < right and top <= y < bottom. Send loc as a JSON integer array. "
                       "For an ImGui number, Click once and Type at the same "
                       "location within 30 seconds with press_enter=true, then inspect the new value with a crop. "
                       "Open Save As with Shortcut ctrl+shift+s. Snapshot the dialog, Type the full path into the Edit target, "
                       "read its returned value, Click the Save button target and Snapshot to confirm closure. "
                       "Finish with ControlStatus(release=true). Preserve unrelated settings. Independent verification reopens and slices.")
+            if args.scenario in CANVAS_SCENARIOS:
+                prompt += (" For a scene-editing goal, start by observing the listed imgui_canvas rectangle as one crop. "
+                           "When selection changes, the gizmo and scene can redraw. Observe that same canvas region again "
+                           "until you see the target controls, then use a smaller crop if you need more detail.")
         (root/"prompt.txt").write_text(prompt, encoding="utf-8")
         bundle = Path(r"C:\Program Files\ZCode\resources\glm\zcode.cjs")
         report["bundle_sha256"] = hashlib.sha256(bundle.read_bytes()).hexdigest()

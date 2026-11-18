@@ -25,3 +25,5 @@ seq1 用 UIA 属性找到 `File name:`（EditControl、AutomationId=1001）和 `
 - G-code SHA256 `0dcc5d1bdd63ff8936c7a8add5c2b6c83ea1ec7f951ee71634c0d1993c3b1227`
 
 同源画布 run `ab480a1a3efe230b861c82240d0a1c3a`。结构化工具参数已传过 ZCode，Click 在 guest 被 `native_uia_save_dialog_required` 拒绝且未派发。根因是局部视觉 Click 经过裁图与控件检查后，误调了父类 Save As 门禁。改为复用普通 owned-window 门禁，再走已绑定的画布能力。该次保留 NON_GREEN，清理确认。
+
+源 `6c5cfa8`，画布 run `cee7a86c1fb6e16e02178e50f989d73d`。成功派发 seq6 的画布选择。seq7 最近裁图的 X 范围 `[426,1100)`，seq8 试点 X=1477，守卫在输入前停住。NON_GREEN，清理确认。明确模型可以一次观察整个已登记画布区域以保留场景和工具的空间关系，点击必须落在最新裁图内，仍无全桌面视觉通道。
