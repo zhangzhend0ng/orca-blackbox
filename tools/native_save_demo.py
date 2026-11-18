@@ -21,6 +21,7 @@ HOST_SOURCES = ("tools/native_save_demo.py", "tools/windows_mcp_codex_probe.py",
     "harness/agent_model.py", "harness/win32_job.py", "harness/native_save_policy.py",
     "runner/hv_go.ps1", "runner/hv_harvest.ps1", "runner/_common.ps1",
     "tools/native_save_run.py", "tools/native_save_guest.py", "tools/native_save_server.py", "harness/native_authority.py",
+    "harness/native_desktop_video.py",
     "harness/native_script_baseline.py", "harness/process_panel.py", "harness/agent_project_ui.py", "harness/agent_business_ui.py",
     "harness/native_uia_replay.py", "contracts/replays/uia_layer.json",
     "tests/engine/m6a_transform_verify.py", "tests/mixing/m4e_mixing_paint.py",
@@ -73,6 +74,7 @@ def wait_script(run_id):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--run-id", default=None)
+    p.add_argument("--record-desktop", action="store_true", help="Record the dedicated win11-test desktop.")
     p.add_argument("--actor", choices=("codex", "zcode", "script"), default="codex")
     from harness.native_matrix import SCENARIOS, UIA_LAYER_SCENARIO, UIA_REPLAY_SCENARIO
     p.add_argument("--scenario", choices=tuple(s for s in SCENARIOS if s not in {"canvas_probe", "authority_probe"}))
@@ -102,6 +104,12 @@ def main():
     root.mkdir(parents=True, exist_ok=False)
     launch_done = root / "launch.json"
     script = root / "launch.ps1"
+    capture_request = ""
+    if args.record_desktop:
+        capture_request = ("Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {param($sb,$id) "
+            "$dir=Join-Path $sb 'artifacts/native_video_requests'; $null=[IO.Directory]::CreateDirectory($dir); "
+            "$file=[IO.File]::Open((Join-Path $dir $id),[IO.FileMode]::CreateNew); $file.Dispose()} "
+            "-ArgumentList $guestSandbox,"+quoted(run_id)+"\n")
     script.write_text("$ErrorActionPreference='Stop'\ntry {\n"
         "$env:ORCA_BB_GUEST_SANDBOX="+quoted(r"C:\coil\orca-blackbox-v3-r1")+"\n. "+quoted(REPO / "runner/_common.ps1")+"\n"
         "$state=Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {param($sb,$git) "
@@ -110,6 +118,7 @@ def main():
         "if($state.head.Trim() -ne "+quoted(head)+" -or $state.dirty.Count"
         + (" -or -not $state.runtime" if args.actor != "script" or args.scenario == UIA_REPLAY_SCENARIO
            else "") + "){throw 'demo_guest_sync_or_runtime_required'}\n"
+        +capture_request+
         "& "+quoted(REPO / "runner/hv_go.ps1")+" -NoSync -WindowsMcpProbe -NativeSave -ProbeRunId "+quoted(run_id)
         +" -NativeActor "+args.actor+" -NativeScenario "+args.scenario+" *> "+quoted(root / "launch.log")+"\n"
         "$r=@{ok=$true;head="+quoted(head)+"}\n"

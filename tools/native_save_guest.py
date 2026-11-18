@@ -31,7 +31,7 @@ def worker(run_id, actor="codex", scenario="base"):
         if (time.monotonic() >= deadline or (root / "control_cancel.json").exists()
                 or (root / "authority_abort.json").exists()):
             raise TimeoutError("native_worker_deadline_or_cancel")
-    ui, server = None, None
+    ui, server, video = None, None, None
     report = {"run_id": run_id, "error": None, "app_closed": False,
               "release_eligible": False, "contract_sha256": contract_digest(native_contract(actor, scenario))}
     def atomic_json(path, data):
@@ -78,6 +78,12 @@ def worker(run_id, actor="codex", scenario="base"):
         sut_sha = hashlib.sha256(default_exe().read_bytes()).hexdigest()
         if sut_sha != NATIVE_SUT_SHA256:
             raise RuntimeError("native_frozen_sut_changed")
+        request = REPO / "artifacts/native_video_requests" / run_id
+        if request.is_file():
+            from harness.native_desktop_video import DesktopVideo
+            request.unlink()
+            video = DesktopVideo(root)
+            video.start()
         ui = ProjectUI(root, guard)
         (root / "input/fixture.3mf").chmod(stat.S_IREAD)
         (root / "projects").mkdir()
@@ -232,6 +238,11 @@ def worker(run_id, actor="codex", scenario="base"):
             except Exception as exc:
                 report["cleanup_error"] = type(exc).__name__
         (root / "token").unlink(missing_ok=True)
+        if video is not None:
+            try:
+                atomic_json(root / "desktop_video.json", video.finish())
+            except Exception as exc:
+                report["video_error"] = type(exc).__name__
         write_json_once(root / "native_worker.json", report)
     return 0 if not report["error"] and report["app_closed"] and not report.get("input_stop_error") else 1
 
