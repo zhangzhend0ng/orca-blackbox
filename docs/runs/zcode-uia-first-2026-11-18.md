@@ -18,3 +18,10 @@ seq1 用 UIA 属性找到 `File name:`（EditControl、AutomationId=1001）和 `
 ## wx 与 ImGui 开发锚点
 
 源 `fcffb0f`。层高 run `2d1838fd41fca5e5c3871bc371605f93` 完成 UIA 查询和侧栏裁图，ZCode 在 Click 派发前拒绝字符串型 `loc`。平移 run `c2776a6c2400d0b03086d7bb6b5263b1` 完成 UIA 查询和两张裁图，ZCode 在 Click 派发前拒绝空参数。两次均收取了 Snapshot/Screenshot 的可信收据，无 Click 到达桌面。两次的正式结果均为 NON_GREEN，清理确认。为 Click/Type 补上顶层的结构化字段声明，同时在 Snapshot 给出 Edit 的 UIA 边界，使自绘标签可与属性目标关联。
+
+源 `ee84a61ee886e57bbe44cd34698bc70189c7ee59`，层高 run `bfd5c93af9571ba3ddc53f7099d7e407`。正式 SHADOW，清理确认。10 次调用含 2 张 wx 侧栏裁图、1 次原生 Edit 属性写入读回、0 次坐标输入。Save As 仍全程走属性。冻结 3MF 层高 0.24、首层 0.40，立方体保持，新 profile 重开后导出 112 层。
+
+- 3MF SHA256 `1df22525520f1ede4d6d34a8a5e3627b7d2bd6c36479574ba25a300157319d0c`
+- G-code SHA256 `0dcc5d1bdd63ff8936c7a8add5c2b6c83ea1ec7f951ee71634c0d1993c3b1227`
+
+同源画布 run `ab480a1a3efe230b861c82240d0a1c3a`。结构化工具参数已传过 ZCode，Click 在 guest 被 `native_uia_save_dialog_required` 拒绝且未派发。根因是局部视觉 Click 经过裁图与控件检查后，误调了父类 Save As 门禁。改为复用普通 owned-window 门禁，再走已绑定的画布能力。该次保留 NON_GREEN，清理确认。

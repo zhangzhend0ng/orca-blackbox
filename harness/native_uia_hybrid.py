@@ -3,7 +3,7 @@ import json
 import time
 
 from .agent_verify import _require
-from .native_save_policy import validate_input, validate_uia_selector
+from .native_save_policy import InputGuard, validate_input, validate_uia_selector
 from .native_uia import SAVE_DIALOG_TITLES, UiaSaveGuard, value_digest, verify_uia_save
 
 OBSERVATION_LIMIT_NS = 30_000_000_000
@@ -155,6 +155,7 @@ class UiaHybridGuard(UiaSaveGuard):
         if name == "Snapshot":
             self.last_window["route"] = "uia_tree"
         elif "target" in args:
+            self._last_click = None
             if name == "Type" and args["text"] == self.scope["output_path"]:
                 raise ValueError("native_path_requires_save_dialog")
             _, _, record = self._find_native(wu, hwnd, args)
@@ -166,7 +167,7 @@ class UiaHybridGuard(UiaSaveGuard):
             if name == "Type" and role != "imgui_canvas":
                 raise ValueError("native_uia_canvas_visual_type_required")
             if name != "Screenshot":
-                self.last_window = super().check(name, args)
+                self.last_window = InputGuard.check(self, name, args)
             self.last_window.setdefault("route", "local_visual")
             self.last_window.update(visual_fallback=role, visual_region=region)
         else:

@@ -7,7 +7,7 @@ import pytest
 from harness.native_matrix import UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_SAVE_SCENARIO
 from harness.native_save_policy import native_tools, scoped_tool_schemas, validate_input
 from harness.native_uia import UiaSaveGuard, value_digest, verify_uia_save
-from harness.native_uia_hybrid import verify_hybrid_trace
+from harness.native_uia_hybrid import UiaHybridGuard, verify_hybrid_trace
 
 RUN = "a" * 32
 OUTPUT = r"C:\owned\0001.3mf"
@@ -98,6 +98,34 @@ def test_hybrid_contract_rejects_whole_frames_and_path_by_location():
     with pytest.raises(ValueError, match="native_uia_canvas_arguments"):
         validate_input("Type", {"loc": [20, 30], "text": OUTPUT, "press_enter": True}, OUTPUT, UIA_CANVAS_SCENARIO)
     validate_input("Type", {"target": EDIT, "text": "0.24"}, OUTPUT, UIA_LAYER_SCENARIO)
+
+
+def test_hybrid_schema_exposes_typed_properties_for_model_projection():
+    jsonschema = pytest.importorskip("jsonschema")
+    tools = [{"name": n, "inputSchema": {}} for n in native_tools(UIA_CANVAS_SCENARIO)]
+    schemas = {t["name"]: t["inputSchema"] for t in scoped_tool_schemas(tools, OUTPUT, UIA_CANVAS_SCENARIO)}
+    for name in ("Click", "Type"):
+        assert schemas[name]["properties"]["loc"]["type"] == "array"
+        assert schemas[name]["properties"]["target"]["type"] == "object"
+    jsonschema.validate({"loc": [120, 480]}, schemas["Click"])
+    jsonschema.validate({"target": SAVE}, schemas["Click"])
+    jsonschema.validate({"target": EDIT, "text": OUTPUT}, schemas["Type"])
+    jsonschema.validate({"loc": [120, 480], "text": "145.5", "press_enter": True}, schemas["Type"])
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate({"loc": "[120,480]"}, schemas["Click"])
+
+
+def test_drawn_canvas_click_uses_the_owned_input_guard(tmp_path, monkeypatch):
+    scope = {"app_pid": 4, "hwnd": 20, "output_path": OUTPUT, "scenario": UIA_CANVAS_SCENARIO,
+             "canvas_binding_json": '{"hwnd":21}'}
+    guard = UiaHybridGuard(scope, tmp_path, None, None)
+    api = SimpleNamespace(_window_pid=lambda _: 4, window_title=lambda _: "Orca",
+                          window_from_screen_point=lambda *_: 21, window_class=lambda _: "wxGLCanvas")
+    monkeypatch.setattr(guard, "owned_foreground", lambda: (api, 20))
+    monkeypatch.setattr(guard, "_visual_route", lambda *_: ("imgui_canvas", [100, 150, 900, 800]))
+    proof = guard.check("Click", {"loc": [120, 480]})
+    assert proof["target_hwnd"] == 21 and proof["route"] == "local_visual"
+    assert proof["visual_fallback"] == "imgui_canvas"
 
 
 @pytest.mark.parametrize("box", [[2, 3, 40, 60], [0, 0, 1920, 1080]])
