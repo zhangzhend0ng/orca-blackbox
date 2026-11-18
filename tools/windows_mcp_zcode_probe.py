@@ -134,6 +134,9 @@ def main(argv=None):
             prompt += (" Use clear=true and press_enter=true together in each numeric Type, with the caret left idle."
                        " After the tool reads the desired value back, inspect the committed result instead of typing it again."
                        " Once committed, proceed directly to Save As. No click is needed just to drop focus.")
+        if args.scenario in {CANVAS_REPLACE_SCENARIO, COMMIT_SCENARIO}:
+            prompt += (" In the Save As file name Edit, always use clear=true when typing the exact assigned path. "
+                       "The dialog pre-fills a file name that must be replaced.")
         if args.scenario == "canvas_trial":
             prompt = prompt.replace("Type supports clear=true and press_enter=true.",
                 "For numeric Type use clear=false, caret_position=idle and press_enter=false; ordinary Edit replacement options are available only for the exact SaveAs path.")
@@ -142,7 +145,7 @@ def main(argv=None):
                        " Inspect the actual result; do not assume typing replaced existing text. Only the exact SaveAs path retains ordinary Edit replacement options.")
         if args.scenario == CANVAS_REPLACE_SCENARIO:
             prompt = prompt.replace("Type supports clear=true and press_enter=true.",
-                "For canvas numbers use clear=false, caret_position=idle and press_enter=true. The exact Save As path uses normal Edit options.")
+                "For canvas numbers use clear=false, caret_position=idle and press_enter=true.")
             prompt += (" Activate an inactive numeric field with one left Click chosen from the screenshot, then Type at "
                        "the same loc within 30 seconds. Type sends numeric keys and Enter directly without clicking again. "
                        "Inspect the committed value before saving.")

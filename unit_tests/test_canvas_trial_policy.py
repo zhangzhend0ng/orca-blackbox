@@ -99,9 +99,13 @@ def test_commit_options_match_advertised_type_schema(scenario, clear, text):
             jsonschema.validate(bad, schema)
         with pytest.raises(ValueError, match="native_numeric_type_options"):
             validate_input("Type", bad, OUTPUT, scenario)
-    save = dict(args, text=OUTPUT)
+    save = dict(args, text=OUTPUT, clear=True)
     jsonschema.validate(save, schema)
     validate_input("Type", save, OUTPUT, scenario)
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(dict(save, clear=False), schema)
+    with pytest.raises(ValueError, match="native_save_path_requires_clear"):
+        validate_input("Type", dict(save, clear=False), OUTPUT, scenario)
 
 
 def test_replace_accepts_one_click_and_rechecks_before_each_key(trial):

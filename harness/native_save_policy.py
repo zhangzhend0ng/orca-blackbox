@@ -54,10 +54,10 @@ def scoped_tool_schemas(tools, output_path, scenario="base"):
                                 "Activate an inactive numeric field with exactly one left Click and then Type at that same loc "
                                 "within 30 seconds. This consumes the Click, preserves the selection from activation, and "
                                 "presses Enter once without clicking again. Set press_enter=true, clear=false, caret_position=idle. "
-                                "Inspect the committed value. The exact assigned save path uses ordinary native Save As Edit options.")
+                                "Inspect the committed value. For the assigned path, use clear=true in the native Save As Edit.")
     elif scenario == COMMIT_SCENARIO:
         descriptions["Type"] += (" For numeric edits in this trial, send clear=true and press_enter=true together "
-                                 "with idle caret to replace and commit in one operation.")
+                                 "with idle caret to replace and commit in one operation. The assigned save path also requires clear=true.")
     result = deepcopy(tools)
     for tool in result:
         properties, required = fields[tool["name"]]
@@ -66,6 +66,10 @@ def scoped_tool_schemas(tools, output_path, scenario="base"):
         tool["inputSchema"] = {"type": "object", "properties": properties, "required": required,
                                "additionalProperties": False}
         if scenario in CANVAS_SCENARIOS | {COMMIT_SCENARIO} and tool["name"] == "Type":
+            save_options = {"properties": {"text": {"const": output_path}}}
+            if scenario in {CANVAS_REPLACE_SCENARIO, COMMIT_SCENARIO}:
+                save_options["properties"]["clear"] = {"const": True}
+                save_options["required"] = ["clear"]
             numeric_options = {"properties": {"text": numeric, "clear": {"enum": [scenario == COMMIT_SCENARIO]},
                                "press_enter": {"enum": [scenario != "canvas_trial"]},
                                "caret_position": {"enum": ["idle"]}}}
@@ -73,9 +77,7 @@ def scoped_tool_schemas(tools, output_path, scenario="base"):
                 numeric_options["required"] = ["press_enter"]
             if scenario == COMMIT_SCENARIO:
                 numeric_options["required"].append("clear")
-            tool["inputSchema"]["anyOf"] = [
-                {"properties": {"text": {"const": output_path}}},
-                numeric_options]
+            tool["inputSchema"]["anyOf"] = [save_options, numeric_options]
         tool["description"] = descriptions[tool["name"]]
     return result
 
@@ -110,6 +112,9 @@ def validate_input(name, args, output_path, scenario="base"):
                     or any(type(args[k]) is not bool for k in ("clear", "press_enter") if k in args)
                     or args.get("caret_position", "idle") not in {"idle", "start", "end"}):
                 raise ValueError("native_type_options_rejected")
+            if (scenario in {CANVAS_REPLACE_SCENARIO, COMMIT_SCENARIO}
+                    and text == output_path and args.get("clear") is not True):
+                raise ValueError("native_save_path_requires_clear")
             if scenario in CANVAS_SCENARIOS | {COMMIT_SCENARIO} and text != output_path:
                 if (args.get("clear", False) is not (scenario == COMMIT_SCENARIO)
                         or args.get("press_enter", False) is not (scenario != "canvas_trial")
