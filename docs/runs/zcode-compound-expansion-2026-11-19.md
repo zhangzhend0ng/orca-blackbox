@@ -22,3 +22,18 @@
 
 - 平移加层高，run `e251f0f23b0338083fdb5919edde5f74`，SHADOW，完整 265.220 秒。先通过 UIA 编辑并读回层高，再用五次命名画布裁图定位选择、移动工具并读回位置。保存对话框用 UIA ValuePattern 与 InvokePattern。独立重切验证 X+10 mm、层高 0.24/0.40、112 层对象挤出。录制器从已验收轨迹生成 18 步。
 - 双下拉框，run `e5f89dbc84942f150fc33a48dcd05549`，NON_GREEN，完整 122.658 秒。模型尝试坐标点击 Advanced。守卫识别到原生 ButtonControl、AutomationId `5014` 和 InvokePattern，拒绝坐标派发并要求重新观察。模型再次调用 Click，触发 `native_recovery_observation_required`，未保存。下一次提供这个已观察到的 UIA 属性，并要求从新 Snapshot 确认后调用。
+- 双下拉框，源 `8886c62`，run `74df4be4db0068074a27be6924b2fb80`，NON_GREEN，完整 125.611 秒。Advanced 通过已观察的 UIA 属性成功 Invoke，随后裁图确认开启。展开后，当前视口显示 Layer height 和 Line width，Seam 与 Ironing 均需导航。滚动条附近的坐标 Click 命中一个存在原生 pattern、当前却无法安全解析为动作选择器的控件，派发前以 `native_uia_target_available` 拒绝。该用例的工具接口未提供参数视口的受控滚动操作。未保存，未录制，无回放计时。两次复验失败均回收并验证清理。
+
+## 平移加层高的无模型回放
+
+脚本 [uia_move_layer.json](../../contracts/replays/uia_move_layer.json) 绑定已验收的公司模型轨迹、fixture 和初态。回放源 `19b9b4d`，run `b1d0ecff0f77bdaedd26dc847dcddfab`，18 步，无模型调用。通过独立重开切片和清理检查，记 SHADOW。
+
+| 同一平移加层高用例 | 本轮启动准备 | 准备完成到停输 | 停输到独立导出完成 | 启动到宿主回收 |
+|---|---:|---:|---:|---:|
+| 手写基线 | 52.29 秒 | 59.95 秒 | 52.80 秒 | 192.85 秒 |
+| ZCode 带定位提示探索 | 52.32 秒 | 131.14 秒 | 54.02 秒 | 265.22 秒 |
+| 无模型录制脚本 | 53.47 秒 | 15.84 秒 | 54.66 秒 | 149.04 秒 |
+
+完整用时由宿主 Stopwatch 记录，含启动调度、收尾和回收；阶段由客机时间戳计算。单次配对中，脚本动作少用 44.11 秒，完整少用 43.81 秒（22.7%）。测量均使用常规冷启动和独立重开，范围为同一 Orca 构建、客机布局与立方体 fixture。
+
+本轮手写基线 2/2，首次目标式探索 0/2，带定位提示后 1/2 可生成脚本，且这 1 条无模型回放通过。两条业务均属于开发集。
