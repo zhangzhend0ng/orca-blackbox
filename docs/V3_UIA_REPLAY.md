@@ -20,3 +20,15 @@
 | `29fa34d22956104119c44b7fee8f3ff2` | 11.781 秒 | SHADOW，保存后独立重开切出 112 层 |
 
 两次都使用源 `a567e57828c45b2d9f3b90d869fe744d5635fbe5`，新 profile 与新输出路径，实际调用 8 次。模型调用、Screenshot 调用、坐标输入均为 0。原 AI 源 run 在同 SUT、fixture 和 Quality 初态下，同一阶段用时 82.97 秒，来自较早源码版本。关联单测 109 项通过。三次运行均已回收。客机复核 Orca、MCP 监听及本轮 token 均为 0，suite Ready，客机工作树 clean。
+
+## 2026-11-18 录像复验
+
+两轮均通过 `hv_go.ps1` 在 `win11-test` 运行，并通过 `hv_harvest.ps1` 回收。宿主入口加 `--record-desktop` 可录制客机桌面，原片和 SHA-256 回执保存在各 run 的 `desktop.mp4`、`desktop_video.json`。
+
+| 阶段 | Run | 客机结果 |
+|---|---|---|
+| ZCode 公司模型探索 | `06af33e3e7184f6fb83a3f36bb4a7811` | SHADOW。11 次调用含 3 次命名局部观察，层高写入和另存为均使用 UIA，坐标输入 0 次。独立重开切出 112 层。 |
+| 从本次轨迹生成脚本 | 同上 | 编译命令退出码 0，生成八步 UIA 脚本。 |
+| 脚本冷启动回归 | `a73c608cf6684e03b9853a08116ff8db` | SHADOW。实跑 8 次，脚本动作阶段用时 10.125 秒，模型、截图和坐标输入均为 0。独立重开切出 112 层。 |
+
+本次登记与客机执行的脚本摘要一致，为 `d244d3335578d3a853019e58f40f0ec25c0f436c165fb9fb4781d4388fcd2b46`。两轮的桌面原片、3MF 和 G-code 均核对回执摘要，客机复核套件 Ready，Orca 进程、MCP 监听及两轮令牌均为 0。录像包含两段原速客机实录、真实编译命令与输出转录和重切验收截图。成片在宿主本地 `artifacts/uia_demo/06af33e3/uia-ai-to-script-full.mp4`。
