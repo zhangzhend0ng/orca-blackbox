@@ -9,3 +9,12 @@ seq1 用 UIA 属性找到 `File name:`（EditControl、AutomationId=1001）和 `
 源 `9cadd7a`，run `dc685b49004cce9f1348d0ec70c497e0`。结构化 Snapshot 读出新增 owned 模态为 `Confirm Save As`，文字为 `fixture.3mf already exists. Do you want to replace it?`。纯 ValuePattern 写入读回了新路径，但未让 Windows 文件对话框按新值提交。覆盖按钮未被授权，保留 NON_GREEN，清理确认。随后通过 UIA 定向聚焦同一文件名 Edit，修改并恢复末字符以发出原生编辑通知，逐键守卫并再次读回精确路径，然后才允许 Invoke Save。
 
 源 `7139740`，run `d0dbcd4d8ef7c6005f3f55c4b53826b1`。UIA SetFocus 后的焦点报告不等于已定位的文件名 Edit。Type 在发送全局键前报 `native_uia_filename_focus_changed`，没有 Invoke，正式 NON_GREEN，清理确认。随后改为每条原生编辑消息直接发给重新核对过的同一 UIA Edit HWND，并读回中间值与最终值。
+
+源 `fcffb0f2fd15ea2508c4ac197aeac27a8f7d82a4`，run `d7299035e33b80969e0064a8d9b3e4fc`，Save As 第一闸通过，正式 SHADOW。6 次工具调用依序为 UIA Snapshot、文件名 ValuePattern 写入和读回、Save 按钮 InvokePattern、Wait、UIA Snapshot 确认关闭、ControlStatus。模型截图 0、坐标输入 0。原生编辑通知以 UIA 锁定的 Edit HWND 为接收方，通知后再次读回完整路径。独立重开所保存的 3MF，所有 fixture 设置及形状保持，切出 68 层，末层 Z=27.2 mm。清理确认。
+
+- 3MF SHA256 `89743a1f8213a3dd1ba2298b8bcb15ca34926c470f6dc339daae447fb997da2e`
+- G-code SHA256 `33b96a7c766fc3f960aba7a2699c32c3cdb1b908bf8f4e591a11bec0f0a10899`
+
+## wx 与 ImGui 开发锚点
+
+源 `fcffb0f`。层高 run `2d1838fd41fca5e5c3871bc371605f93` 完成 UIA 查询和侧栏裁图，ZCode 在 Click 派发前拒绝字符串型 `loc`。平移 run `c2776a6c2400d0b03086d7bb6b5263b1` 完成 UIA 查询和两张裁图，ZCode 在 Click 派发前拒绝空参数。两次均收取了 Snapshot/Screenshot 的可信收据，无 Click 到达桌面。两次的正式结果均为 NON_GREEN，清理确认。为 Click/Type 补上顶层的结构化字段声明，同时在 Snapshot 给出 Edit 的 UIA 边界，使自绘标签可与属性目标关联。

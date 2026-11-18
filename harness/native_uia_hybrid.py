@@ -23,11 +23,9 @@ def selector_key(target):
 
 
 class UiaHybridGuard(UiaSaveGuard):
-    def __init__(self, scope, root, control_from_handle, control_from_point, focused_control, send_keys):
+    def __init__(self, scope, root, control_from_handle, control_from_point):
         super().__init__(scope, root, control_from_handle)
         self.control_from_point = control_from_point
-        self.focused_control = focused_control
-        self.send_keys = send_keys
         self.native_targets = {}
         self.visual_regions = {}
         self.last_crop = None
@@ -147,7 +145,7 @@ class UiaHybridGuard(UiaSaveGuard):
                 raise ValueError("native_uia_save_dialog_not_owned")
             self.scope["dialog_hwnd"] = hwnd
         if "dialog_hwnd" in self.scope and (hwnd == self.scope["dialog_hwnd"] or self.invoked):
-            if name in {"Click", "Type"} and "target" not in args or name in {"Screenshot", "Shortcut"}:
+            if (name in {"Click", "Type"} and "target" not in args) or name in {"Screenshot", "Shortcut"}:
                 raise ValueError("native_uia_dialog_route_required")
             self.last_crop = None
             self.last_window = super().check(name, args)
@@ -189,10 +187,13 @@ class UiaHybridGuard(UiaSaveGuard):
             self.visual_regions = self._regions(wu)
             self.native_targets = {key: item[2] for key, item in controls.items()}
             self.last_window.update(native_targets=list(self.native_targets.values()), visual_regions=self.visual_regions)
-            visible = [
-                {**record["target"], **({"value": implementation.Value} if record["pattern"] == "ValuePattern" else {})}
-                for _, implementation, record in controls.values()
-            ]
+            visible = []
+            for element, implementation, record in controls.values():
+                bounds = element.BoundingRectangle
+                observed = {"target": record["target"], "bounds": [bounds.left, bounds.top, bounds.right, bounds.bottom]}
+                if record["pattern"] == "ValuePattern":
+                    observed["value"] = implementation.Value
+                visible.append(observed)
             return {"controls": visible, "visual_regions": self.visual_regions}
         element, pattern, record = self._find_native(wu, hwnd, arguments)
         if record["hwnd"] != self.last_window["target_hwnd"]:
@@ -203,14 +204,15 @@ class UiaHybridGuard(UiaSaveGuard):
             if not pattern.SetValue(value) or self._value(element).Value != value:
                 raise ValueError("native_uia_value_readback_mismatch")
             self.last_window["readback_sha256"] = value_digest(value)
-            element.SetFocus()
-            self._main_window(*self.owned_foreground())
-            focused = self.focused_control()
-            if focused is None or focused.NativeWindowHandle != record["hwnd"] or focused.ProcessId != self.scope["app_pid"]:
-                raise ValueError("native_uia_focus_changed")
+            wu, hwnd = self.owned_foreground()
+            self._main_window(wu, hwnd)
+            _, _, current = self._find_native(wu, hwnd, arguments)
+            if current != record:
+                raise ValueError("native_uia_target_changed")
             self.check_revocation()
-            self.send_keys("{Enter}", waitTime=0.05)
-            return {"value": value, "pattern": "ValuePattern", "commit": "focused Enter"}
+            wu.msg_text(record["hwnd"], "\r")
+            self.last_window["commit_backend"] = "uia_target_native_enter"
+            return {"value": value, "pattern": "ValuePattern", "commit": "Enter delivered to the observed Edit"}
         if record["pattern"] == "InvokePattern":
             success = pattern.Invoke()
         else:
@@ -261,6 +263,7 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
                      in targets and window["target_pid"] == app_pid, "native_uia_target_binding")
             if name == "Type":
                 _require(window.get("route") == "uia_value" and window.get("pattern") == "ValuePattern"
+                         and window.get("commit_backend") == "uia_target_native_enter"
                          and window.get("readback_sha256") == value_digest(args["text"]), "native_uia_value_readback")
             else:
                 _require(window.get("route") == "uia_action"

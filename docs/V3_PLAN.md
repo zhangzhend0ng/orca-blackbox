@@ -10,7 +10,7 @@
 
 - 原生控件先读取 owned 窗口 UIA 树，用名称、控件类型、AutomationId 和当前所属窗唯一定位。读取或替换值走 ValuePattern，动作按钮优先 InvokePattern。每次操作重新查询、核对窗口归属和撤销状态，记录定位、操作及读回方式。
 - wx 自绘和 ImGui 画布缺少独立语义节点时，先定位已登记的父窗或画布边界，再返回该范围的局部画面。仅在同次观察覆盖的范围执行像素输入，输入前复查目标及焦点。普通对话框和原生输入框走属性接口。
-- 第一闸用预打开的原生 Save As 对话框验证。轨迹必须包含属性查询、文件名 ValuePattern 写入和读回、Save 按钮 InvokePattern、观察到对话框关闭，且模型全屏截图及坐标输入均为 0。独立 3MF 和新 profile 重切通过后，Save As 分支才进入后续任务；wx/ImGui 局部视图有单独的实现与轨迹验收。
+- 第一闸用预打开的原生 Save As 对话框验证。轨迹必须包含属性查询、文件名 ValuePattern 写入和读回、Save 按钮 InvokePattern、观察到对话框关闭，且模型截图和坐标输入均为 0。Shell 文件对话框需要的编辑通知只发给重新核验过的同一个 UIA Edit HWND，发送后再次读回。独立 3MF 和新 profile 重切通过后，Save As 分支才进入后续任务。wx/ImGui 局部视图用层高与画布平移两个开发锚点验收，各自检查 UIA、裁图及产物轨迹。[UIA 优先验证记录](runs/zcode-uia-first-2026-11-18.md)
 
 主链：固定合同/fixture → fresh profile → AI观察/输入/保存 → 撤销输入与MCP → 旧SUT退出 → 冻结同一3MF → 新profile重开/GUI切片 → 只读3MF/G-code检查 → Job清理/harvest。
 

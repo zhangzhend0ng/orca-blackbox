@@ -55,8 +55,9 @@ def uia_tool_schema(tool, output_path):
 
 
 def hybrid_tool_schema(tool, output_path, scenario):
-    def exact(properties):
-        return {"type": "object", "properties": properties, "required": list(properties),
+    def exact(properties, required=None):
+        return {"type": "object", "properties": properties,
+                "required": list(properties) if required is None else required,
                 "additionalProperties": False}
 
     def pixels(length):
@@ -68,18 +69,27 @@ def hybrid_tool_schema(tool, output_path, scenario):
         uia_tool_schema(tool, output_path)
         return
     snapshots = exact({})
-    click = {"type": "object", "oneOf": [exact({"target": {"oneOf": [uia_selector_schema(kind) for kind in UIA_ACTION_TYPES]}}),
-                       exact({"loc": pixels(2)})]}
-    value = {"anyOf": [{"const": output_path}, {"type": "string", "pattern": "^" + EDIT_NUMBER + "$"}]}
-    type_forms = [exact({"target": uia_selector_schema("EditControl"), "text": value})]
+    loc = {**pixels(2), "description": "Absolute desktop pixel pair as a JSON integer array. Example [120,480]."}
+    action = uia_selector_schema("ButtonControl")
+    action["properties"]["control_type"] = {"type": "string", "enum": list(UIA_ACTION_TYPES)}
+    click = exact({"target": action, "loc": loc}, [])
+    click["oneOf"] = [{"required": ["target"]}, {"required": ["loc"]}]
+    value = {"type": "string", "anyOf": [{"const": output_path}, {"pattern": "^" + EDIT_NUMBER + "$"}]}
+    edit = exact({"target": uia_selector_schema("EditControl"), "text": value})
     if scenario == UIA_CANVAS_SCENARIO:
-        type_forms.append(exact({"loc": pixels(2), "text": {"type": "string", "pattern": "^" + CANVAS_NUMBER + "$"},
-                                 "press_enter": {"const": True}}))
+        edit["required"] = ["text"]
+        edit["properties"].update(loc=loc, press_enter={"type": "boolean", "const": True})
+        edit["oneOf"] = [
+            {"required": ["target"], "not": {"anyOf": [{"required": ["loc"]}, {"required": ["press_enter"]}]}},
+            {"required": ["loc", "press_enter"], "not": {"required": ["target"]},
+             "properties": {"text": {"pattern": "^" + CANVAS_NUMBER + "$"}}},
+        ]
+        value["anyOf"].append({"pattern": "^" + CANVAS_NUMBER + "$"})
     schemas = {
         "Snapshot": (snapshots, "Read the scoped UIA tree, values and anchored regions available for drawn UI."),
         "Screenshot": (exact({"region": pixels(4)}), "Capture only one crop inside a wx or ImGui region from Snapshot. Use absolute edges [left,top,right,bottom]."),
         "Click": (click, "Invoke or select a native control using its exact Snapshot target. Use loc only for a drawn control in the latest crop; add the crop origin to the pixel coordinates."),
-        "Type": ({"type": "object", "oneOf": type_forms}, "Set an observed UIA Edit using its exact target and read back its value. On the approved ImGui route only, a same-location Click followed by numeric Type with press_enter=true commits the field."),
+        "Type": (edit, "Set an observed UIA Edit using its exact target and read back its value. On the approved ImGui route only, a same-location Click followed by numeric Type with press_enter=true commits the field."),
         "Shortcut": (exact({"shortcut": {"const": "ctrl+shift+s"}}), "Open Save As in the owned main application."),
     }
     tool["inputSchema"], tool["description"] = schemas[name]

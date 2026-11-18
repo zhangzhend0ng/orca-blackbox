@@ -45,9 +45,9 @@ def main():
     from windows_mcp.uia import SendKeys
     hybrid = scope["scenario"] in UIA_HYBRID_SCENARIOS
     if hybrid:
-        from windows_mcp.uia import ControlFromHandle, ControlFromPoint, GetFocusedControl
+        from windows_mcp.uia import ControlFromHandle, ControlFromPoint
         from harness.native_uia_hybrid import UiaHybridGuard
-        guard = UiaHybridGuard(scope, root, ControlFromHandle, ControlFromPoint, GetFocusedControl, SendKeys)
+        guard = UiaHybridGuard(scope, root, ControlFromHandle, ControlFromPoint)
     elif scope["scenario"] == UIA_SAVE_SCENARIO:
         from windows_mcp.uia import ControlFromHandle
         from harness.native_uia import UiaSaveGuard

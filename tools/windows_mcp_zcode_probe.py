@@ -159,11 +159,13 @@ def main(argv=None):
         elif args.scenario in UIA_HYBRID_SCENARIOS:
             prompt = ("Use Windows-MCP in the isolated Snapmaker Orca window. " + business_goal(args.scenario)
                       + " Save the whole project at this exact assigned 3MF path: " + output + ". "
-                      "Start with Snapshot. Use the exact control_type, name and automation_id as target for native controls. "
-                      "Use Snapshot to locate and read native Edit controls that appear after activating drawn fields. "
+                      "Start with Snapshot. For a native control, copy its exact target object from Snapshot. "
+                      "If a wx label is drawn and missing from the tree, use a local crop to match the label to its Edit bounds. "
+                      "Use Type with that Edit's target object to change the value; no coordinate click is needed for a listed Edit. "
                       "Use Screenshot with region=[left,top,right,bottom] contained in one listed visual_regions box only "
                       "when the needed drawn wx or ImGui control is absent from the UIA list. The returned image starts at "
-                      "[left,top]; add that offset for a Click loc. For an ImGui number, Click once and Type at the same "
+                      "[left,top]; add that offset for a Click loc. Send loc as a JSON integer array, such as [120,480]. "
+                      "For an ImGui number, Click once and Type at the same "
                       "location within 30 seconds with press_enter=true, then inspect the new value with a crop. "
                       "Open Save As with Shortcut ctrl+shift+s. Snapshot the dialog, Type the full path into the Edit target, "
                       "read its returned value, Click the Save button target and Snapshot to confirm closure. "
