@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from .agent_verify import _require
 from .native_matrix import UIA_DISTURBANCE_SCENARIO, UIA_ENUM_SCENARIOS, UIA_MIX_SCENARIOS, UIA_PROCESS_SCENARIOS
-from .native_process_viewport import PROCESS_VALUES, process_viewports, scroll_group
+from .native_process_viewport import PROCESS_VALUES, process_viewports, read_ironing_selection, scroll_group
 from .native_save_policy import INPUT_TOOLS, PROCESS_POPUP, InputGuard, UIA_VISUAL_REGIONS, validate_input, validate_uia_selector
 from .native_uia import SAVE_DIALOG_TITLES, UiaSaveGuard, value_digest, verify_uia_save
 
@@ -56,6 +56,7 @@ class UiaHybridGuard(UiaSaveGuard):
         self.control_from_point = control_from_point
         self.native_targets = {}
         self.process_groups = {}
+        self.ironing_binding = None
         self.visual_regions = {}
         self.crops = {}
         self.crop_id = 0
@@ -435,6 +436,13 @@ class UiaHybridGuard(UiaSaveGuard):
         if (hwnd != self.last_window["foreground_hwnd"] or wu.window_from_screen_point(*loc) != target
                 or wu._window_pid(target) != self.scope["app_pid"] or wu.window_class(target) != "wxWindowNR"):
             raise ValueError("native_process_click_target_changed")
+        if hwnd == self.scope["hwnd"] and wu.window_title(target) == "No ironing":
+            groups, values = self._process_viewports(wu, hwnd)
+            group, bounds = groups.get("Ironing"), values.get("No ironing")
+            if group is not None and bounds == list(wu.window_rect(target)):
+                left, top = group["group_bounds"][:2]
+                self.ironing_binding = {"viewport_hwnd": group["hwnd"],
+                    "relative_rect": [edge - origin for edge, origin in zip(bounds, (left, top, left, top))]}
         self.check_revocation()
         point = wu._lparam_from_screen(target, *loc)
         wu._send_msg(target, wu.WM_LBUTTONDOWN, wu.MK_LBUTTON, point)
@@ -524,6 +532,12 @@ class UiaHybridGuard(UiaSaveGuard):
             observation = {"controls": visible, "visual_regions": self.visual_regions}
             if self.scope["scenario"] in UIA_ENUM_SCENARIOS:
                 self.process_groups, controls = self._process_viewports(wu, hwnd)
+                if self.ironing_binding is not None and "Topmost surface" not in controls:
+                    readback = read_ironing_selection(wu, hwnd, self.scope["app_pid"],
+                        self.process_groups.get("Ironing"), self.ironing_binding, self.root)
+                    if readback is not None:
+                        controls["Topmost surface"] = readback["bounds"]
+                        self.last_window["ironing_readback"] = readback
                 observation.update(process_groups=sorted(self.process_groups), process_values=list(controls),
                                    process_value_bounds=controls)
                 self.last_window.update(process_groups=observation["process_groups"], process_values=list(controls),

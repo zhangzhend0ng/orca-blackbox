@@ -37,6 +37,7 @@ if ($WindowsMcpRunId) {
       $names+=@(Get-ChildItem -LiteralPath $root -Filter 'mix_controls_*.png' | Where-Object {$_.Name -cmatch '^mix_controls_(ratio|gradient)_(dialog|choices|compatible)\.png$'} | ForEach-Object Name)
       $names+=@(Get-ChildItem -LiteralPath $root -Filter 'canvas_input_*.json' | Where-Object {$_.Name -cmatch '^canvas_input_([1-9]|[1-3][0-9]|40)\.json$'} | ForEach-Object Name)
       $names+=@(Get-ChildItem -LiteralPath $root -Filter 'native_observation_*.png' | Where-Object {$_.Name -cmatch '^native_observation_([1-9]|[1-3][0-9]|40)\.png$'} | ForEach-Object Name)
+      $names+=@(Get-ChildItem -LiteralPath $root -Filter 'process_readback_*.png' | Where-Object {$_.Name -cmatch '^process_readback_[0-9a-f]{64}\.png$'} | ForEach-Object Name)
     }
     $names+=@(Get-ChildItem -LiteralPath $root -Filter 'state_*.png' | Where-Object {$_.Name -cmatch '^state_[0-9]{2}_(prepare|preview)\.png$'} | ForEach-Object Name)
     foreach($name in $names) {

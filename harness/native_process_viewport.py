@@ -1,5 +1,8 @@
 """Navigate owned wx process groups through their actual viewport."""
 import ctypes
+import hashlib
+from io import BytesIO
+import subprocess
 from ctypes import wintypes
 import time
 
@@ -77,6 +80,49 @@ def process_viewports(wu, main, pid, sidebar):
                          "group_hwnd": child, "group_bounds": bounds}
     return ({name: item for name, item in groups.items() if name not in duplicates},
             {value: values[value] for value in sorted(values) if value not in duplicate_values})
+
+
+def read_ironing_selection(wu, main, pid, group, binding, root):
+    """Read the same visible, previously opened custom combo after its rebuild."""
+    from win32gui import IsChild
+
+    if group is None or group["hwnd"] != binding["viewport_hwnd"]:
+        return None
+    left, top = group["group_bounds"][:2]
+    bounds = [edge + offset for edge, offset in zip(binding["relative_rect"], (left, top, left, top))]
+    if not _inside(bounds, group["bounds"]) or not IsChild(main, group["hwnd"]):
+        return None
+    target = wu.window_from_screen_point((bounds[0] + bounds[2]) // 2, (bounds[1] + bounds[3]) // 2)
+    if (not target or not IsChild(group["hwnd"], target) or wu._window_pid(target) != pid
+            or wu.window_class(target) != "wxWindowNR" or list(wu.window_rect(target)) != bounds):
+        return None
+    buffer = ctypes.create_unicode_buffer(128)
+    wu._send_msg(target, 0x000D, len(buffer), ctypes.addressof(buffer), timeout_ms=500)  # WM_GETTEXT
+    proof = {"hwnd": target, "bounds": bounds, "raw": buffer.value}
+    if buffer.value.strip().casefold() == "topmost surface":
+        return dict(proof, backend="WM_GETTEXT")
+
+    from PIL import ImageGrab
+
+    # The wx field paints an ellipsis at this width. In this enum only the
+    # topmost option starts with "Topmost sur".
+    image = ImageGrab.grab(bbox=(bounds[0] + 18, bounds[1], bounds[2], bounds[3])).convert("L")
+    prepared = BytesIO()
+    image.resize((image.width * 4, image.height * 4)).save(prepared, format="PNG")
+    result = subprocess.run([r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+        "stdin", "stdout", "-l", "eng", "--psm", "7"], input=prepared.getvalue(),
+        capture_output=True, timeout=5, creationflags=subprocess.CREATE_NO_WINDOW)
+    text = result.stdout.decode("utf-8", errors="replace").strip()
+    words = text.casefold().rstrip(".…").split()
+    if (result.returncode or len(words) != 2 or words[0] != "topmost"
+            or len(words[1]) < 3 or not "surface".startswith(words[1])):
+        return None
+    digest = hashlib.sha256(prepared.getvalue()).hexdigest()
+    path = root / f"process_readback_{digest}.png"
+    if not path.exists():
+        with path.open("xb") as stream:
+            stream.write(prepared.getvalue())
+    return dict(proof, backend="scoped_ocr", painted_text=text, image=path.name, sha256=digest)
 
 
 def _direction(proof):
