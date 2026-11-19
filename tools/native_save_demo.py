@@ -86,7 +86,7 @@ def main():
     p.add_argument("--probe-mix-boot", action="store_true", help="Include readiness-based startup dialog scanning in the mixing waits probe.")
     p.add_argument("--actor", choices=("codex", "zcode", "script"), default="codex")
     from harness.native_matrix import FIXTURE_SCENARIOS, RECORDED_SCENARIOS, REPLAY_SOURCES, SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_LAYER_SCENARIO, UIA_MIX_RECIPES, UIA_REPLAY_MIX
-    from harness.native_pairwise import OPERATIONS, PAIR_CASES
+    from harness.native_pairwise import CONFIG_CASES, OPERATIONS, PAIR_CASES
     p.add_argument("--scenario", choices=tuple(s for s in SCENARIOS if s not in {"canvas_probe", "authority_probe"}))
     args = p.parse_args()
     args.probe_mix_waits |= args.probe_mix_boot
@@ -117,6 +117,10 @@ def main():
     recording_scenarios = fixture_cases or (args.scenario,)
     if args.scenario in PAIR_CASES:
         recording_scenarios = tuple(OPERATIONS[name].recording for name in PAIR_CASES[args.scenario]) + ("uia_replay_move_layer",)
+    if args.scenario in CONFIG_CASES:
+        sources += ("contracts/config_dependencies.json", "harness/native_config_cases.py",
+                    "harness/agent_layer_verify.py")
+        recording_scenarios += ("uia_replay_layer", "uia_replay_enums")
     for scenario in recording_scenarios:
         if scenario not in REPLAY_SOURCES:
             continue
@@ -148,6 +152,21 @@ def main():
             "$dir=Join-Path $sb 'artifacts/" + folder + "'; $null=[IO.Directory]::CreateDirectory($dir); "
             "$file=[IO.File]::Open((Join-Path $dir $id),[IO.FileMode]::CreateNew); $file.Dispose()} "
             "-ArgumentList $guestSandbox,"+quoted(run_id)+"\n")
+    sut_check = ""
+    if args.scenario in CONFIG_CASES:
+        from harness.native_config_cases import CATALOG
+        sut = CATALOG["sut"]
+        sut_check = (
+            "$sut=Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {param($sb,$git,$python) "
+            "Push-Location $sb; try {$exe=& $python -B -c "
+            "'from harness.launcher import default_exe; print(default_exe())'; "
+            "if($LASTEXITCODE -ne 0){throw 'config_guest_exe_lookup'}; "
+            "@{hash=(Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash;"
+            "presets=(& $git -C $sb rev-parse 'HEAD:resources')} } finally {Pop-Location} "
+            "} -ArgumentList $guestSandbox,$guestGit,$guestPython\n"
+            "if($sut.hash -ne " + quoted(sut["exe_sha256"]) + " -or $sut.presets -ne "
+            + quoted(sut["preset_tree"]) + "){throw 'config_guest_build_or_preset_digest_changed'}\n"
+        )
     script.write_text("$ErrorActionPreference='Stop'\ntry {\n"
         "$env:ORCA_BB_GUEST_SANDBOX="+quoted(r"C:\coil\orca-blackbox-v3-r1")+"\n. "+quoted(REPO / "runner/_common.ps1")+"\n"
         "$state=Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {param($sb,$git) "
@@ -156,7 +175,7 @@ def main():
         "if($state.head.Trim() -ne "+quoted(head)+" -or $state.dirty.Count"
         + (" -or -not $state.runtime" if args.actor != "script" or args.scenario in RECORDED_SCENARIOS or fixture_cases or args.inspect_mix_controls
            else "") + "){throw 'demo_guest_sync_or_runtime_required'}\n"
-        +capture_request+
+        +sut_check+capture_request+
         "& "+quoted(REPO / "runner/hv_go.ps1")+" -NoSync -WindowsMcpProbe -NativeSave -ProbeRunId "+quoted(run_id)
         +" -NativeActor "+args.actor+" -NativeScenario "+args.scenario
         +(" -ProbeMixWaits" if args.probe_mix_waits else "")+" *> "+quoted(root / "launch.log")+"\n"
@@ -209,12 +228,14 @@ def main():
         +" *> "+quoted(root / "harvest.log")+"\n"+child_harvest+"$r=@{ok=$true}\n"
         "}catch{$r=@{ok=$false;error_type=$_.Exception.GetType().Name}}\n"
         "$r|ConvertTo-Json|Set-Content "+quoted(harvest_done)+" -Encoding UTF8\n", encoding="utf-8")
+    harvest_started = time.monotonic()
     detached(harvest, harvest_done, 120)
+    harvest_seconds = time.monotonic() - harvest_started
     result_path = REPO / "artifacts/windows_mcp_harvest" / run_id / "result.json"
     result = json.loads(result_path.read_text()) if result_path.exists() else {"verified_pass": False}
     summary = {"run_id": run_id, "source_sha": head, "actor": args.actor, "scenario": args.scenario, "actor_exit": code,
                "actor_error": error, "result": result, "release_eligible": False,
-               "host_wall_seconds": time.monotonic() - started}
+               "host_wall_seconds": time.monotonic() - started, "harvest_seconds": harvest_seconds}
     if args.goal_only:
         summary["prompt_mode"] = "goal_only"
     if args.probe_mix_waits:

@@ -10,7 +10,7 @@ from .native_matrix import (REPLAY_SOURCES, UIA_CANVAS_SCENARIO, UIA_LAYER_SCENA
     UIA_REPLAY_ENUMS, UIA_REPLAY_MIX, UIA_REPLAY_MOVE_LAYER, UIA_REPLAY_PROCESS, UIA_REPLAY_SAVE,
     UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
 from .native_save_policy import PROCESS_POPUP, validate_input, validate_uia_selector
-from .native_pairwise import PAIR_CASES, PAIR_ENUM_CASES, check_live, compile_pair
+from .native_pairwise import CONFIG_CASES, PAIR_CASES, PAIR_ENUM_CASES, check_config_snapshot, check_live, compile_pair
 from .native_uia import verify_uia_save
 from .native_uia_hybrid import ENUM_READBACK_VALUES, contains, new_enum_readback, verify_hybrid_trace, within
 
@@ -90,7 +90,7 @@ def verify_recipe(recipe):
 
 
 def verify_visual_steps(steps, scenario):
-    if type(steps) is not list or not 8 <= len(steps) <= 40:
+    if type(steps) is not list or not (6 if scenario in CONFIG_CASES else 8) <= len(steps) <= 40:
         raise ValueError("replay_canvas_size")
     for step in steps:
         if type(step) is not dict or not {"tool", "arguments"} <= step.keys():
@@ -324,9 +324,10 @@ def play(ui, run_id, output_path, *, scenario=UIA_REPLAY_SCENARIO, report=None):
     for seq, (tool, args) in enumerate(executable_steps(recipe, output_path), 1):
         step = recipe["steps"][seq - 1]
         segment = segments.get(seq)
-        if report is not None and segments:
+        if report is not None and (segments or scenario in CONFIG_CASES):
             report["replay_cursor"] = {"step": seq, "tool": tool,
-                                       "operation": segment["operation"] if segment else "save"}
+                                       "operation": segment["operation"] if segment else
+                                       "checkpoint" if seq in recipe.get("checkpoints", {}) else "save"}
         ui.guard()
         if seq == 2 and scenario == UIA_REPLAY_SCENARIO:
             values = [item.get("value") for item in observations["controls"] if item["target"] == args["target"]]
@@ -347,6 +348,9 @@ def play(ui, run_id, output_path, *, scenario=UIA_REPLAY_SCENARIO, report=None):
         structured = response["result"]["structuredContent"]
         if tool == "Snapshot":
             observations = json.loads(structured["result"])
+            checkpoint = recipe.get("checkpoints", {}).get(seq)
+            if checkpoint:
+                check_config_snapshot(checkpoint, observations, live=True)
             if "process_value" in step and step["process_value"] not in observations.get("process_values", []):
                 raise ProtocolError("replay_process_value_readback")
             if segment and seq in {segment["first"], segment["last"]}:
@@ -388,6 +392,8 @@ def verify_replay_trace(trace, run_id, scope, digest):
     if scenario in PAIR_ENUM_CASES | {UIA_REPLAY_ENUMS} and any(step["process_value"] not in row["window"].get("process_values", ())
                                             for step, row in zip(recipe["steps"], trace) if "process_value" in step):
         raise ValueError("replay_process_value_readback")
+    for seq, checkpoint in recipe.get("checkpoints", {}).items():
+        check_config_snapshot(checkpoint, trace[seq - 1]["window"], live=False)
     return verify_hybrid_trace(trace, run_id=run_id, app_pid=scope["app_pid"], main_hwnd=scope["hwnd"],
                                output_path=scope["output_path"], scenario=scope["scenario"],
                                named_crops_only=True, strict_crop_lifetime=True)

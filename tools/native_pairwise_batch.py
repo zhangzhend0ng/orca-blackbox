@@ -11,7 +11,8 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from harness.agent_protocol import valid_run_id
-from harness.native_pairwise import PAIR_CASES
+from harness.native_config_cases import CATALOG
+from harness.native_pairwise import CONFIG_CASES, CONFIG_PLAN, LEGACY_PAIRS, PAIR_CASES
 from harness.native_uia_replay import read_recipe
 
 
@@ -38,13 +39,16 @@ def collect(run_id, elapsed, returncode):
         if not failure:
             failure = outcome.get("checks", {}).get("business", {}).get("detail")
             if not failure or failure == "not checked":
-                failure = "guest_result_or_cleanup_unavailable"
+                launch = read_if_present(REPO / "artifacts/native_save_demo" / run_id, "launch")
+                failure = launch.get("message") or "guest_result_or_cleanup_unavailable"
     return {"status": "SHADOW" if passed else "NON_GREEN", "cleanup_confirmed": cleaned,
+            "executed": bool(worker.get("script_action_started_at_ns") or worker.get("replay_cursor")),
             "failure": failure, "replay_cursor": worker.get("replay_cursor"),
             "prepare_s": (setup["finished_at_ns"] - manifest["started_at_ns"]) / 1e9 if setup and manifest else None,
             "script_s": worker["script_action_elapsed_ns"] / 1e9 if "script_action_elapsed_ns" in worker else None,
             "reopen_export_s": (proof["exported_at_ns"] - proof["reopen_started_at_ns"]) / 1e9 if proof else None,
             "host_wall_s": host.get("host_wall_seconds", elapsed),
+            "harvest_s": host.get("harvest_seconds"),
             "old_pid": proof.get("old_pid"), "reopened_pid": proof.get("reopened_pid")}
 
 
@@ -52,18 +56,24 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--plan-only", action="store_true")
     parser.add_argument("--batch-id", default=None)
+    parser.add_argument("--family", choices=("legacy", "config", "legal", "dependency"), default="legacy")
     parser.add_argument("--case", action="append", choices=PAIR_CASES)
     args = parser.parse_args()
     batch_id = args.batch_id or uuid.uuid4().hex
     valid_run_id(batch_id)
-    cases = tuple(dict.fromkeys(args.case or PAIR_CASES))
+    defaults = LEGACY_PAIRS if args.family == "legacy" else {
+        name: row for name, row in CONFIG_CASES.items() if args.family in {"config", row["family"]}}
+    cases = tuple(dict.fromkeys(args.case or defaults))
     rows = []
     for scenario in cases:
         recipe, digest = read_recipe(scenario)
         rows.append({"scenario": scenario, "order": PAIR_CASES[scenario], "recipe_sha256": digest,
                      "run_id": uuid.uuid5(uuid.UUID(hex=batch_id), scenario).hex,
-                     "segments": recipe["segments"], "steps": recipe["steps"]})
+                     "segments": recipe["segments"], "steps": recipe["steps"],
+                     **{key: recipe[key] for key in ("config_case", "checkpoints", "catalog_sha256") if key in recipe}})
     plan = {"batch_id": batch_id, "release_eligible": False, "cases": rows}
+    if any(name in CONFIG_CASES for name in cases):
+        plan.update(config_plan=CONFIG_PLAN, upstream_commit=CATALOG["upstream_commit"], sut=CATALOG["sut"])
     if args.plan_only:
         print(json.dumps(plan, indent=2))
         return 0
@@ -82,6 +92,8 @@ def main():
         for row in rows:
             ident, scenario = row["run_id"], row["scenario"]
             result = {"scenario": scenario, "order": row["order"], "run_id": ident}
+            if "config_case" in row:
+                result["family"] = row["config_case"]["family"]
             if results and not results[-1]["cleanup_confirmed"]:
                 result.update(status="NOT_RUN", cleanup_confirmed=False, failure="previous_cleanup_unconfirmed")
             else:
@@ -99,6 +111,7 @@ def main():
     passed = sum(row["status"] == "SHADOW" for row in results)
     summary = {"batch_id": batch_id, "source_sha": head, "cases": results, "passed": passed,
                "planned": len(rows), "attempted": sum(row["status"] != "NOT_RUN" for row in results),
+               "executed": sum(row.get("executed", False) for row in results),
                "wall_s": time.monotonic() - started, "release_eligible": False}
     (root / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     return 0 if passed == len(rows) else 1

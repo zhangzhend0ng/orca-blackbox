@@ -1,0 +1,287 @@
+{
+  "schema_version": 1,
+  "upstream_commit": "936c035a2c557ea5dde24d3951f8395c6914bd97",
+  "sut": {
+    "product_version": "2.4.0",
+    "exe_sha256": "5c48644d7da18b50636ceeee4ef9fd2eaf6d4e8ac05bd88752f40e3717fc47bf",
+    "source_commit": null,
+    "source_relationship": "Comparison only; no binary-to-commit build receipt.",
+    "guest": "win11-test",
+    "preset_tree": "54b5b20b80253e4792cd9ec390b007f4f83cc1a5",
+    "fixture_sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+    "fixture_format_version": "2.3.6"
+  },
+  "rules": [
+    {
+      "id": "validate-layer-nozzle",
+      "kind": "validation",
+      "evidence": "source_confirmed",
+      "scope": "FFF objects with active extruders",
+      "trigger": "layer_height > min_nozzle_diameter",
+      "affected": [
+        "layer_height",
+        "nozzle_diameter"
+      ],
+      "expected": "Reject slice with Layer height cannot exceed nozzle diameter.",
+      "source": [
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1826
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1950
+        }
+      ],
+      "candidate_filter": {
+        "reject_if_gt": [
+          "layer_height",
+          "active_min_nozzle_diameter"
+        ]
+      }
+    },
+    {
+      "id": "validate-first-layer-raft-nozzle",
+      "kind": "validation",
+      "evidence": "source_confirmed",
+      "scope": "FFF first layer, including raft",
+      "trigger": "initial_layer_print_height > (object->has_raft() && first_layer_extruder != size_t(-1) ? m_config.nozzle_diameter.get_at(first_layer_extruder) : min_nozzle_diameter); first_layer_extruder = raft_layers == 1 ? support_interface_filament - 1 : support_filament - 1",
+      "affected": [
+        "initial_layer_print_height",
+        "nozzle_diameter",
+        "raft_layers",
+        "support_interface_filament",
+        "support_filament"
+      ],
+      "expected": "Reject slice with Layer height cannot exceed nozzle diameter.",
+      "source": [
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1932
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1946
+        }
+      ],
+      "candidate_filter": {
+        "reject_if_gt": [
+          "initial_layer_print_height",
+          "active_first_layer_nozzle_diameter"
+        ]
+      }
+    },
+    {
+      "id": "ui-advanced-ironing",
+      "kind": "ui_visibility",
+      "evidence": "source_confirmed",
+      "scope": "Global FFF process Quality tab",
+      "trigger": "ironing_type.mode = comAdvanced; og_line.toggle_visible && line_mode <= mode",
+      "affected": [
+        "ironing_type"
+      ],
+      "expected": "Ironing group is visible in Advanced and hidden in Basic. Switching mode preserves the saved ironing type.",
+      "source": [
+        {
+          "file": "src/libslic3r/PrintConfig.cpp",
+          "line": 3719
+        },
+        {
+          "file": "src/libslic3r/PrintConfig.cpp",
+          "line": 3733
+        },
+        {
+          "file": "src/slic3r/GUI/OG_CustomCtrl.cpp",
+          "line": 722
+        },
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 2721
+        }
+      ],
+      "replay": {
+        "kind": "mode_cycle",
+        "scenarios": [
+          {
+            "id": "dep_ironing_mode_cycle",
+            "phase": "trigger_release_restore",
+            "order": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "ui-ironing-fields",
+      "kind": "ui_visibility",
+      "evidence": "source_confirmed",
+      "scope": "FFF process; UI mode is an additional visibility gate",
+      "trigger": "config->opt_enum<IroningType>(\"ironing_type\") != IroningType::NoIroning",
+      "affected": [
+        "ironing_pattern",
+        "ironing_flow",
+        "ironing_spacing",
+        "ironing_angle",
+        "ironing_inset"
+      ],
+      "expected": "Toggle the rows according to has_ironing; config values remain intact.",
+      "source": [
+        {
+          "file": "src/slic3r/GUI/ConfigManipulation.cpp",
+          "line": 807
+        },
+        {
+          "file": "src/slic3r/GUI/ConfigManipulation.cpp",
+          "line": 808
+        },
+        {
+          "file": "src/slic3r/GUI/ConfigManipulation.cpp",
+          "line": 809
+        }
+      ],
+      "blocked_reason": "Requires a field-level observer and a bound reverse enum action."
+    },
+    {
+      "id": "ui-support-ironing-speed",
+      "kind": "ui_visibility",
+      "evidence": "source_confirmed",
+      "scope": "FFF process, support or raft",
+      "trigger": "has_ironing || ((have_raft || (have_support_material && support_interface_top_layers > 0)) && support_ironing)",
+      "affected": [
+        "ironing_speed"
+      ],
+      "expected": "Expose speed when model ironing or applicable support ironing is active.",
+      "source": [
+        {
+          "file": "src/slic3r/GUI/ConfigManipulation.cpp",
+          "line": 780
+        },
+        {
+          "file": "src/slic3r/GUI/ConfigManipulation.cpp",
+          "line": 782
+        },
+        {
+          "file": "src/slic3r/GUI/ConfigManipulation.cpp",
+          "line": 811
+        }
+      ]
+    },
+    {
+      "id": "slice-ironing-topmost",
+      "kind": "slice_behavior",
+      "evidence": "source_confirmed",
+      "scope": "FFF nonempty regions; 27 mm cube with flat top and support disabled",
+      "trigger": "!layerm->slices.empty() && config.ironing_type != IroningType::NoIroning && (config.ironing_type == IroningType::AllSolid || ((config.top_shell_layers > 0 || (this->object()->print()->config().spiral_mode && config.bottom_shell_layers > 1)) && (config.ironing_type == IroningType::TopSurfaces || (config.ironing_type == IroningType::TopmostOnly && layerm->layer()->upper_layer == nullptr))))",
+      "affected": [
+        "ironing_type",
+        "top_shell_layers",
+        "spiral_mode",
+        "bottom_shell_layers",
+        "solid_infill_filament",
+        "ironing_spacing",
+        "ironing_inset",
+        "ironing_flow",
+        "layer_height",
+        "ironing_speed",
+        "ironing_angle",
+        "infill_direction",
+        "ironing_pattern"
+      ],
+      "expected": "On this cube Topmost yields positive XY extrusion tagged Ironing at the last object Z; No ironing yields no such extrusion.",
+      "source": [
+        {
+          "file": "src/libslic3r/Fill/Fill.cpp",
+          "line": 1540
+        },
+        {
+          "file": "src/libslic3r/Fill/Fill.cpp",
+          "line": 1543
+        },
+        {
+          "file": "src/libslic3r/Fill/Fill.cpp",
+          "line": 1555
+        },
+        {
+          "file": "src/libslic3r/Fill/Fill.cpp",
+          "line": 1611
+        }
+      ],
+      "replay": {
+        "kind": "ironing_toolpath",
+        "scenarios": [
+          {
+            "id": "dep_ironing_disabled",
+            "phase": "release_control",
+            "order": []
+          },
+          {
+            "id": "dep_ironing_topmost",
+            "phase": "trigger",
+            "order": [
+              "ironing"
+            ]
+          }
+        ]
+      },
+      "blocked_reason": "A fresh No ironing fixture provides the release control. Same-session removal and restoration require a bound reverse enum action."
+    },
+    {
+      "id": "normalize-ironing-spacing",
+      "kind": "value_normalization",
+      "evidence": "source_confirmed",
+      "scope": "FFF GUI validation",
+      "trigger": "config->opt_float(\"ironing_spacing\") < 0.05",
+      "affected": [
+        "ironing_spacing"
+      ],
+      "expected": "Warn and apply ironing_spacing=0.1.",
+      "source": [
+        {
+          "file": "src/slic3r/GUI/ConfigManipulation.cpp",
+          "line": 236
+        },
+        {
+          "file": "src/slic3r/GUI/ConfigManipulation.cpp",
+          "line": 243
+        }
+      ]
+    }
+  ],
+  "legal_domain": {
+    "fixture": "fixtures/agent_layer_cube.3mf",
+    "scope": "Snapmaker U1 0.8 mm, embedded materials, one cube, global FFF process, no raft",
+    "fixed": {
+      "active_min_nozzle_diameter": "0.8",
+      "active_first_layer_nozzle_diameter": "0.8",
+      "initial_layer_print_height": "0.4"
+    },
+    "factors": {
+      "layer_height": {
+        "0.4": [],
+        "0.24": [
+          "layer"
+        ],
+        "0.9": null
+      },
+      "seam_position": {
+        "aligned": [],
+        "random": [
+          "seam"
+        ]
+      },
+      "ironing_type": {
+        "no ironing": [],
+        "topmost": [
+          "ironing"
+        ]
+      }
+    },
+    "constraint_ids": [
+      "validate-layer-nozzle",
+      "validate-first-layer-raft-nozzle"
+    ],
+    "preserve": [
+      "ironing_flow",
+      "ironing_spacing"
+    ]
+  }
+}

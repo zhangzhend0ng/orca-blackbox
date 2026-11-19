@@ -33,7 +33,8 @@ def request_digest(request):
                                      ensure_ascii=False, allow_nan=False).encode("utf-8")).hexdigest()
 
 
-def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", cancelled=lambda: False) -> dict:
+def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", cancelled=lambda: False,
+                  inspect_ironing=False) -> dict:
     """Inspect supported U1 object moves, excluding purge/tower/retraction/Z-hop.
 
     Global G90/G91, M82/M83 and G92 are tracked. Object extrusion must occur at
@@ -60,12 +61,15 @@ def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", ca
     position = {k: None for k in "XYZE"}
     absolute_xyz, relative_e, active, objects = None, None, None, set()
     z_layers, moves, active_tool, object_tools, tower = [], 0, None, set(), False
+    ironing_z, ironing_moves, ironing = set(), 0, False
     for i, line in enumerate(lines[lo + 1:hi]):
         if i % 256 == 0:
             _check_cancel(cancelled)
         if line in ("; WIPE_TOWER_START", "; WIPE_TOWER_END"):
             _require(active is None and tower == (line == "; WIPE_TOWER_END"), "gcode_tower_scope")
             tower = line == "; WIPE_TOWER_START"
+        if inspect_ironing and line.startswith(";TYPE:"):
+            ironing = line == ";TYPE:Ironing"
         if not exclude_mode and line.startswith(("; printing object", "; stop printing object", "; start printing object")):
             label = _LABEL.fullmatch(line)
             _require(label is not None, "gcode_object_label")
@@ -167,6 +171,9 @@ def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", ca
             _require(all(old[axis] is not None and position[axis] is not None for axis in "XY"), "unknown_object_xy")
             z = position["Z"]
             _require(z is not None and z > 0, "unknown_object_z")
+            if ironing:
+                ironing_z.add(z)
+                ironing_moves += 1
             if not z_layers or abs(z - z_layers[-1]) > _TOL:
                 _require(not z_layers or z > z_layers[-1], "gcode_object_z_not_monotonic")
                 z_layers.append(z)
@@ -176,9 +183,12 @@ def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", ca
     _require(all(abs(b - a - wanted) <= _TOL for a, b in zip(z_layers, z_layers[1:])), "gcode_actual_layer_step_mismatch")
     # The frozen fixture is a 27mm cube; allow one layer of slicer boundary rounding.
     _require(Decimal(27) - wanted <= z_layers[-1] <= Decimal(27) + wanted, "gcode_fixture_height_mismatch")
-    return {"layer_height": str(wanted), "first_layer_height": str(first),
+    result = {"layer_height": str(wanted), "first_layer_height": str(first),
             "layer_count": len(z_layers), "first_z": str(z_layers[0]), "last_z": str(z_layers[-1]),
             "positive_xy_e_moves": moves, "object_tools": sorted(object_tools), "sha256": hashlib.sha256(raw).hexdigest()}
+    if inspect_ironing:
+        result.update(ironing_z=[str(z) for z in sorted(ironing_z)], ironing_xy_e_moves=ironing_moves)
+    return result
 
 
 def verify_layer(snapshot, *, cancelled=lambda: False) -> VerificationOutcome:

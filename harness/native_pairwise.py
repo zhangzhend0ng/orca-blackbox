@@ -1,8 +1,10 @@
 """Compose two admitted cube operations from independently accepted recordings."""
 from dataclasses import asdict, dataclass
 from itertools import combinations
+import hashlib
 
 from .agent_protocol import LAYER_FIXTURE_SHA256, ProtocolError
+from .native_config_cases import CATALOG_PATH, DOMAIN, generate
 
 
 @dataclass(frozen=True)
@@ -59,8 +61,13 @@ def generate_cases():
     return cases
 
 
-PAIR_CASES = generate_cases()
-PAIR_ENUM_CASES = frozenset(s for s, order in PAIR_CASES.items() if {"seam", "ironing"}.intersection(order))
+LEGACY_PAIRS = generate_cases()
+CONFIG_PLAN = generate(admitted)
+CONFIG_CASES = {row["id"]: row for rows in (CONFIG_PLAN["legal"], CONFIG_PLAN["dependency"])
+                for row in rows if row["selection"] == "selected"}
+PAIR_CASES = {**LEGACY_PAIRS, **{name: row["order"] for name, row in CONFIG_CASES.items()}}
+PAIR_ENUM_CASES = (frozenset(s for s, order in PAIR_CASES.items() if {"seam", "ironing"}.intersection(order))
+                   | CONFIG_CASES.keys())
 PAIR_MOVE_CASES = frozenset(s for s, order in PAIR_CASES.items() if "move" in order)
 
 
@@ -83,6 +90,18 @@ def compile_pair(scenario):
 
     steps, segments = [], []
     order = PAIR_CASES[scenario]
+    case = CONFIG_CASES.get(scenario)
+    checkpoints = {}
+    if case:
+        layer, _ = pinned_recording("uia_replay_layer")
+        steps.append({"tool": "Snapshot", "arguments": {}})
+        checkpoints[1] = {"visible": False, "seam": "Aligned", "layer": layer["steps"][1]["arguments"]["target"]}
+        if case.get("kind") == "mode_cycle":
+            source, _ = pinned_recording(OPERATIONS["ironing"].recording)
+            advanced = source["steps"][OPERATIONS["ironing"].start]
+            for visible in (True, False, True):
+                steps.extend([advanced, {"tool": "Snapshot", "arguments": {}}])
+                checkpoints[len(steps)] = {"visible": visible}
     for name in order:
         op = OPERATIONS[name]
         source, digest = pinned_recording(op.recording)
@@ -101,9 +120,25 @@ def compile_pair(scenario):
     save, digest = pinned_recording("uia_replay_move_layer")
     steps.extend(save["steps"][-5:])
     verify_visual_steps(steps, scenario)
-    return {"scenario": scenario, "initial_tab": "Quality", "fixture_sha256": LAYER_FIXTURE_SHA256,
+    recipe = {"scenario": scenario, "initial_tab": "Quality", "fixture_sha256": LAYER_FIXTURE_SHA256,
             "initial_state": sorted(INITIAL), "segments": segments, "save_recording_sha256": digest,
             "steps": steps}
+    if case:
+        recipe.update(config_case=case, checkpoints=checkpoints,
+                      catalog_sha256=hashlib.sha256(CATALOG_PATH.read_bytes()).hexdigest())
+    return recipe
+
+
+def check_config_snapshot(checkpoint, observation, *, live):
+    groups = observation.get("process_groups", ())
+    if "Seam" not in groups or ("Ironing" in groups) != checkpoint["visible"]:
+        raise ProtocolError("config_ironing_visibility")
+    if "seam" in checkpoint and checkpoint["seam"] not in observation.get("process_values", ()):
+        raise ProtocolError("config_initial_seam")
+    if live and "layer" in checkpoint:
+        values = [item.get("value") for item in observation["controls"] if item["target"] == checkpoint["layer"]]
+        if values not in (["0.4"], ["0.40"]):
+            raise ProtocolError("config_initial_layer")
 
 
 def check_live(segment, seq, observations, steps):
@@ -124,8 +159,6 @@ def check_live(segment, seq, observations, steps):
 
 
 def verify_pair(scenario, project, fixture, gcode, *, cancelled):
-    import hashlib
-
     from .agent_layer_verify import analyze_gcode
     from .agent_verify import _require
     from .pilot_common import inspect_preserved_settings, require_gcode_settings
@@ -144,10 +177,23 @@ def verify_pair(scenario, project, fixture, gcode, *, cancelled):
         config = "Metadata/project_settings.config"
         inspect_preserved_settings(_json(_archive(project, cancelled)[config]), _json(_archive(fixture, cancelled)[config]),
                                    allowed_changes=settings, cancelled=cancelled)
-        require_gcode_settings(gcode, settings, "pair_gcode_settings")
-        gcode_info = analyze_gcode(gcode, layer_height=layer, cancelled=cancelled)
+        case = CONFIG_CASES.get(scenario)
+        gcode_settings = settings
+        if case:
+            baseline = _json(_archive(fixture, cancelled)[config])
+            _require(all(settings.get(key, baseline.get(key)) == value for key, value in case["values"].items()),
+                     "config_value_plan_mismatch")
+            gcode_settings = {**case["values"], **{key: baseline[key] for key in DOMAIN["preserve"]},
+                              "initial_layer_print_height": DOMAIN["fixed"]["initial_layer_print_height"]}
+        require_gcode_settings(gcode, gcode_settings, "pair_gcode_settings")
+        gcode_info = analyze_gcode(gcode, layer_height=layer, cancelled=cancelled, inspect_ironing=case is not None)
         _require(gcode_info["layer_count"] == (112 if "layer" in order else 68)
                  and gcode_info["object_tools"] == [0], "pair_gcode_layer_or_tool")
         info = {"project": inspect_project(project, fixture, layer_height=layer, cancelled=cancelled),
                 "gcode": gcode_info}
+        if case:
+            expected_z = [gcode_info["last_z"]] if case["values"]["ironing_type"] == "topmost" else []
+            _require(gcode_info["ironing_z"] == expected_z, "config_actual_ironing_layers")
+            info["verified_gcode_settings"] = gcode_settings
+            info["config_case"] = case
     return dict(info, order=order, verified_settings=settings)
