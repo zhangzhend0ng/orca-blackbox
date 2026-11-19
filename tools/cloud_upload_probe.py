@@ -19,10 +19,9 @@ def click_client(hwnd, point):
             and winutil.real_click_screen(*winutil.client_to_screen(hwnd, *point)) == 2)
 
 
-def open_test_project(app, fixture, result, poll):
-    from harness import export_util, topbar_util, winutil
+def project_menu_command(app, command, poll):
+    from harness import topbar_util, winutil
 
-    result["upload_stage"] = "open_fixture_file_menu"
     if not winutil.force_set_foreground(app.hwnd):
         return False
     toolbar = topbar_util._topbar(app.hwnd)
@@ -39,7 +38,7 @@ def open_test_project(app, fixture, result, poll):
         hmenu = topbar_util.menu_hmenu(menu[4])
         row = one([item for item in topbar_util.menu_items(hmenu)
                    if item[1].replace("&", "").split("\t", 1)[0].strip().rstrip(".\u2026").lower()
-                   == "open project" and not item[2] & 3])
+                   == command and not item[2] & 3])
         if row is None:
             return False
         item_id, _ = topbar_util.item_info(hmenu, row[0])
@@ -49,6 +48,15 @@ def open_test_project(app, fixture, result, poll):
     finally:
         if winutil.user32.IsWindow(menu[4]):
             winutil._send_msg(menu[4], 0x001F, 0, 0)
+    return True
+
+
+def open_test_project(app, fixture, result, poll):
+    from harness import export_util, winutil
+
+    result["upload_stage"] = "open_fixture_file_menu"
+    if not project_menu_command(app, "open project", poll):
+        return False
 
     def chooser():
         return one([hwnd for hwnd, pid in winutil.enum_windows()
@@ -76,6 +84,28 @@ def open_test_project(app, fixture, result, poll):
 
     result["upload_stage"] = "load_fixture_project"
     return bool(poll(loaded, 18))
+
+
+def new_cube_project(app, result, poll):
+    from harness import add_shape, export_util, winutil
+
+    result["upload_stage"] = "create_empty_project"
+    if not project_menu_command(app, "new project", poll):
+        return False
+    if not poll(lambda: "untitled" in winutil.window_title(app.hwnd).casefold(), 8):
+        return False
+    if not export_util.find_slice_buttons(app.hwnd)[1]:
+        _, lines = visible_lines(app.hwnd)
+        prepare = one([(x, y) for text, x, y in lines if y < 85 and x < 230
+                       and re.search(r"\bprepare\b", text)])
+        if not click_client(app.hwnd, prepare):
+            return False
+    result["new_project_observed"] = True
+    result["upload_stage"] = "add_cube"
+    if not add_shape.add_primitive(app, "Cube"):
+        return False
+    result["cube_visible"] = True
+    return True
 
 
 def owned_button(app, hwnd, label):
@@ -125,7 +155,7 @@ def export_native(app, path, result):
     return export_util.wait_file(path, timeout_s=25)
 
 
-def opens_send_only(hwnd):
+def opens_preprint_page(hwnd, path):
     from pywinauto import uia_defines
 
     from tools.cloud_login_probe import scan
@@ -139,9 +169,13 @@ def opens_send_only(hwnd):
             continue
         if (url.scheme == "http" and url.netloc == "127.0.0.1:13619"
                 and url.path == "/web/flutter_web/index.html"
-                and parse_qs(url.query).get("path") == ["5"]):
+                and parse_qs(url.query).get("path") == [str(path)]):
             return True
     return False
+
+
+def opens_send_only(hwnd):
+    return opens_preprint_page(hwnd, 5)
 
 
 def record_picker_sample(hwnd, row_y, path):
@@ -190,7 +224,7 @@ def find_send_button(hwnd):
     return None
 
 
-def run_upload(app, fixture, output_dir, result, poll, *, review_only=False):
+def run_upload(app, fixture, output_dir, result, poll, *, review_only=False, print_project=False):
     from harness import export_util, launcher, winutil
 
     result["upload_stage"] = "check_fixed_sut"
@@ -200,9 +234,13 @@ def run_upload(app, fixture, output_dir, result, poll, *, review_only=False):
         ):
             return False
 
-    result["upload_stage"] = "open_u1_project"
-    if not fixture.is_file() or not open_test_project(app, fixture, result, poll):
-        return False
+    if print_project:
+        if not new_cube_project(app, result, poll):
+            return False
+    else:
+        result["upload_stage"] = "open_u1_project"
+        if not fixture.is_file() or not open_test_project(app, fixture, result, poll):
+            return False
     result["upload_stage"] = "prepare_slice_toolbar"
     winutil.user32.ShowWindow(app.hwnd, 3)
     if not winutil.force_set_foreground(app.hwnd):
@@ -270,7 +308,7 @@ def run_upload(app, fixture, output_dir, result, poll, *, review_only=False):
         return False
     hwnd = dialog[3]
     field = export_util.find_edit(hwnd)
-    upload = owned_button(app, hwnd, "Upload")
+    upload = owned_button(app, hwnd, "Upload and Print" if print_project else "Upload")
     if field is None or not winutil.user32.IsChild(hwnd, field) or upload is None:
         return False
     winutil._send_msg(field, 0x00B1, 0, -1)
@@ -279,6 +317,10 @@ def run_upload(app, fixture, output_dir, result, poll, *, review_only=False):
         return False
     if not winutil.force_set_foreground(hwnd) or not click_rect(upload[1]):
         return False
+    if print_project:
+        from tools.cloud_print_probe import start_print
+
+        return start_print(app, filename, result, poll)
     result["upload_stage"] = "check_send_only_page"
 
     def only_page():

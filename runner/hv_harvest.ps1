@@ -36,7 +36,7 @@ if ($WindowsMcpRunId) {
       }
       @{name='result.json';data=[Convert]::ToBase64String([IO.File]::ReadAllBytes($file))}
       $report = [IO.File]::ReadAllText($file) | ConvertFrom-Json
-      if ($report.mode -in @('upload_review','upload_live_video') -and $report.video) {
+      if ($report.mode -in @('upload_review','upload_live_video','print_live_video') -and $report.video) {
         $video = Join-Path (Split-Path $file -Parent) 'desktop.mp4'
         $item = Get-Item -LiteralPath $video -ErrorAction Stop
         if ($report.run_id -ne $id -or $item.Length -gt 20000000 -or
@@ -46,7 +46,7 @@ if ($WindowsMcpRunId) {
         }
         @{name='desktop.mp4';data=[Convert]::ToBase64String([IO.File]::ReadAllBytes($video))}
       }
-      if ($report.mode -in @('upload','upload_live_video') -and $report.gcode) {
+      if ($report.mode -in @('upload','upload_live_video','print_live_video') -and $report.gcode) {
         $name = 'orcabb' + $id.Substring(0,10) + '.gcode'
         if ($report.run_id -ne $id -or $report.gcode.name -ne $name) { throw 'Cloud G-code identity rejected' }
         $gcode = Join-Path (Split-Path $file -Parent) $name

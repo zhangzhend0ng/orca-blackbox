@@ -383,7 +383,7 @@ def inspect(app, result, run_dir, authenticate_login, hide_sign_in=None):
 
 
 def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
-        video_review=False, video_live=False):
+        video_review=False, video_live=False, print_new_project=False):
     from harness import host_guard, launcher, profile
 
     host_guard.assert_guest_or_allow()
@@ -398,7 +398,8 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
     result = {
         "run_id": run_id, "region": "CN", "verdict": "NON_GREEN",
         "stage": "seed_profile", "private_removed": False,
-        "mode": ("upload_live_video" if video_live else "upload_review" if video_review
+        "mode": ("print_live_video" if print_new_project else "upload_live_video" if video_live
+                 else "upload_review" if video_review
                  else "upload" if upload_gcode else "devices" if discover_devices
                  else "authenticate" if authenticate_login else "inspect"),
     }
@@ -431,7 +432,7 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
             video = DesktopVideo(run_dir, capture=live.frame, fps=10, size=live.size)
             video.start()
         inspect(session, result, run_dir, authenticate_login,
-                hide_sign_in=live.hide_sign_in if live is not None else None)
+                hide_sign_in=live.hide_sign_in if live is not None and not print_new_project else None)
         if discover_devices and result.get("home_signed_in"):
             from tools.cloud_device_probe import inspect_devices
 
@@ -443,6 +444,7 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
                 video.start()
             if live is not None:
                 live.show_signed_in()
+                result["signed_in_at_ns"] = time.time_ns()
             result["device_page_observed"] = inspect_devices(session, result, poll)
             if upload_gcode:
                 result["upload_stage"] = "await_u1_device_panel"
@@ -457,11 +459,17 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
                 if panel_observed or recorded_panel:
                     from tools.cloud_upload_probe import run_upload
 
+                    if print_new_project:
+                        from tools.cloud_print_probe import observe_u1_task
+
+                        result["print_device_idle_before"] = observe_u1_task(session, result)
                     outcome = run_upload(
                         session, ROOT / "fixtures" / "agent_layer_cube.3mf", run_dir, result, poll,
-                        review_only=video_review,
+                        review_only=video_review, print_project=print_new_project,
                     )
-                    result["review_ready" if video_review else "device_upload_confirmed"] = outcome
+                    outcome_key = ("print_started" if print_new_project
+                                   else "review_ready" if video_review else "device_upload_confirmed")
+                    result[outcome_key] = outcome
                     if video_live and outcome:
                         time.sleep(3)
     except Exception as exc:
@@ -497,6 +505,8 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
                              else result.get("device_upload_confirmed"))
         if video_live:
             goal_observed = goal_observed and result.get("video")
+        if print_new_project:
+            goal_observed = result.get("print_started") and result.get("video")
         if goal_observed and result["private_removed"]:
             result["verdict"] = "SHADOW"
         result["duration_s"] = round(time.monotonic() - started, 2)
@@ -513,6 +523,7 @@ def main():
     video_args = parser.add_mutually_exclusive_group()
     video_args.add_argument("--record-upload-review", action="store_true")
     video_args.add_argument("--record-upload-live", action="store_true")
+    parser.add_argument("--print-new-project", action="store_true")
     args = parser.parse_args()
     if not re.fullmatch(r"[0-9a-f]{32}", args.run_id):
         parser.error("invalid run ID")
@@ -522,8 +533,10 @@ def main():
         parser.error("--upload-gcode requires --discover-devices")
     if (args.record_upload_review or args.record_upload_live) and not args.upload_gcode:
         parser.error("upload video options require --upload-gcode")
+    if args.print_new_project and not args.record_upload_live:
+        parser.error("--print-new-project requires --record-upload-live")
     return run(args.run_id, args.authenticate, args.discover_devices, args.upload_gcode,
-               args.record_upload_review, args.record_upload_live)
+               args.record_upload_review, args.record_upload_live, args.print_new_project)
 
 
 if __name__ == "__main__":
