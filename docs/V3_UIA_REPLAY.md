@@ -35,4 +35,14 @@
 
 ## 2026-11-19 复合用例
 
-固定布局下，平移加层高已完成带定位提示的公司模型探索、18 步录制和无模型回放。双下拉框的手写基线通过，模型执行止于参数区导航。完整阶段、失败轨迹和同口径耗时见[复合用例试验](runs/zcode-compound-expansion-2026-11-19.md)。
+固定布局下，平移加层高和双下拉框都已从通过独立验收的 ZCode 公司模型轨迹生成脚本，并在客机无模型回放。保存后分别用新进程和新 profile 重开、重切并验证。轨迹、失败和配对计时见[复合用例试验](runs/zcode-compound-expansion-2026-11-19.md)。
+
+```powershell
+python -B tools/native_save_demo.py --actor script --scenario uia_replay_move_layer
+python -B tools/native_save_demo.py --actor script --scenario uia_replay_enums
+python -B tools/native_save_demo.py --actor script --scenario fixture_cold
+python -B tools/native_save_demo.py --actor script --scenario fixture_shared
+python -B tools/native_save_demo.py --actor script --scenario uia_replay_mix
+```
+
+两种 fixture 模式串行执行同一组脚本。批次记录在回收目录的 `fixture_suite.json`，每条具有自己 ID、初态、轨迹、保存文件和独立切片产物。共享模式重载原始 3MF，核对相同编辑 PID 和 HWND，所有独立重切保留新 profile。记录中的初态和清理证据是共享收益能否计入的判据。开发结果仍按 SHADOW 或 NON_GREEN 登记。
