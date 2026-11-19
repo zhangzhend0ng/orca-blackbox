@@ -47,6 +47,14 @@ if ($WindowsMcpRunId) {
           throw 'Cloud G-code content rejected'
         }
         @{name=$name;data=[Convert]::ToBase64String([IO.File]::ReadAllBytes($gcode))}
+        $picker = Join-Path (Split-Path $file -Parent) 'upload-picker.png'
+        if ($report.send_only_page_verified -eq $true -and (Test-Path -LiteralPath $picker -PathType Leaf)) {
+          $item = Get-Item -LiteralPath $picker
+          if ($item.Length -gt 500000 -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+            throw 'Upload picker image rejected'
+          }
+          @{name='upload-picker.png';data=[Convert]::ToBase64String([IO.File]::ReadAllBytes($picker))}
+        }
       }
       $image = Join-Path (Split-Path $file -Parent) 'signed_out.png'
       if (Test-Path -LiteralPath $image -PathType Leaf) {

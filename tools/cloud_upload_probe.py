@@ -144,6 +144,20 @@ def opens_send_only(hwnd):
     return False
 
 
+def record_picker_sample(hwnd, row_y, path):
+    """Capture the device dropdown inside the verified upload-only dialog."""
+    from PIL import Image
+
+    from harness import winutil
+
+    if not opens_send_only(hwnd):
+        return
+    width, height, pixels = winutil.capture_window(hwnd)
+    box = (width // 4, max(0, row_y - 42), width - 12, min(height, row_y + 260))
+    image = Image.frombytes("RGB", (width, height), pixels, "raw", "BGRX")
+    image.crop(box).save(path)
+
+
 def run_upload(app, fixture, output_dir, result, poll):
     from harness import export_util, launcher, winutil
 
@@ -276,6 +290,8 @@ def run_upload(app, fixture, output_dir, result, poll):
 
     send = poll(send_candidate, 8)
     if send is None and open_picker is not None and opens_send_only(only) and click_client(only, open_picker):
+        picker_y = open_picker[1]
+
         def list_devices():
             _, lines = visible_lines(only)
             result["u1_picker_labels"] = [
@@ -289,7 +305,8 @@ def run_upload(app, fixture, output_dir, result, poll):
             lan = one([(x, y) for text, x, y in lines if re.search(r"\blan\s+mode\b", text)])
             return u1 or lan
 
-        choice = poll(list_devices, 8)
+        choice = poll(list_devices, 18)
+        record_picker_sample(only, picker_y, output_dir / "upload-picker.png")
         if choice is not None and click_client(only, choice):
             picked = True
             result["u1_picker_selection_clicked"] = True
