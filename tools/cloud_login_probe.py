@@ -422,8 +422,12 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
         if print_new_project:
             settings["models"] = [{"vendor": "Snapmaker", "model": "SM_U1", "nozzle_diameter": "0.4"}]
             settings["presets"] = {"machine": "Snapmaker U1 (0.4 nozzle)"}
-            settings["filaments"] = {"Snapmaker PLA Basic @U1": "true"}
-        profile.seed_profile(datadir, conf_extra=settings)
+            settings["filaments"] = ["Snapmaker PLA Basic @U1"]
+        presets = profile.REPO_RESOURCES if print_new_project else None
+        profile.seed_profile(datadir, conf_extra=settings, source_presets=presets)
+        if presets is not None:
+            manifest = json.loads((datadir / "system" / "Snapmaker.json").read_bytes())
+            result["snapmaker_preset_version"] = manifest["version"]
         os.environ["WEBVIEW2_USER_DATA_FOLDER"] = str(private / "webview")
         os.environ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = "--force-renderer-accessibility"
         result["stage"] = "launch"

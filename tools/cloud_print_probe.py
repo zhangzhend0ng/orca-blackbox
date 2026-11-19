@@ -21,7 +21,7 @@ def find_device_name(hwnd, name, bounds, surface):
     width, height, raw = winutil.capture_window(hwnd)
     frame = cv2.cvtColor(np.frombuffer(raw, np.uint8).reshape(height, width, 4)[y0:y1, x0:x1],
                          cv2.COLOR_BGRA2BGR)
-    variants = ("card", "picker") if surface != "picker" else ("picker", "card")
+    variants = (surface, "card") if surface != "card" else ("card",)
     for variant in variants:
         template = anchors.RESOURCE / f"cloud_client_test_{variant}.png"
         score, x, y, width, height = anchors.match(frame, template)
@@ -33,8 +33,9 @@ def find_device_name(hwnd, name, bounds, surface):
 def observe_device_task(app, name):
     from harness import winutil
 
-    width, height, _ = winutil.capture_window(app.hwnd)
-    selected = find_device_name(app.hwnd, name, (28, 92, 180, 146), "panel") is not None
+    width, height, raw = winutil.capture_window(app.hwnd)
+    selected = False
+    idle_badge = False
     _, full = visible_lines(app.hwnd)
     headers = [(x, y) for label, x, y in full
                if re.search(r"\bprinting\s+task\b", label) and x < width * 0.65]
@@ -45,13 +46,26 @@ def observe_device_task(app, name):
             _, lines = visible_lines(
                 app.hwnd, crop=(max(0, x - 130), y + 7, min(width, x + 510), height - 3), psm=6,
             )
+            label = find_device_name(app.hwnd, name, (x - 52, y + 30, x + 190, y + 66), "panel")
+            if label:
+                selected = True
+                # Verified green idle badge immediately to the left of the device name.
+                label_width = 80 if name == "客户端测试" else 20
+                badge_start = label[0] - label_width // 2 - 36
+                green_pixels = 0
+                for row in range(label[1] - 6, label[1] + 7):
+                    for column in range(badge_start, badge_start + 30):
+                        offset = (row * width + column) * 4
+                        blue, green, red = raw[offset:offset + 3]
+                        green_pixels += green >= 140 and green >= red + 80 and green >= blue + 80
+                idle_badge = green_pixels >= 130
     text = "\n".join(label for label, _, _ in lines)
     percentages = [int(value) for value in re.findall(r"(?<!\d)([0-9]{1,3})\s*%", text)]
     working = bool(re.search(
         r"\b(?:working|paused|resume\s+print|pause\s+print|printing\s+in\s+progress|heating|calibrating)\b", text
     )) or any(0 < n < 100 for n in percentages)
     idle = bool(re.search(r"\b(?:idle|no\s+(?:current\s+|printing\s+|print\s+)?(?:task|job))\b", text))
-    return {"selected": selected, "printing_task_area": len(headers) == 1, "idle_label": idle,
+    return {"selected": selected, "printing_task_area": len(headers) == 1, "idle_label": idle or idle_badge,
             "active_job": working, "progress_percent": percentages[:6]}
 
 
