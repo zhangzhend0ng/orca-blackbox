@@ -44,3 +44,9 @@ run c7dffafc16f5459cbaff562ef60ea6b9（6229bb0，66.58 s）在发送页局部读
 run 8a0ed84002694455ad9edce215044837（adb8226，60.34 s）为 SHADOW。同一客机运行完成中国区登录、打开 U1 设备面板、加载工程并切片、导出 G-code、进入独立只上传页、核对 U1 已选及本轮文件名，点击启用的 Send 后读到 Upload completed。固定安装包把该提示放在发送页的 taskComplete 流程中。只上传流程未触发打印，设备文件列表没有另跑一次核对。
 
 本次文件为 orcabb8a0ed84002.gcode，共 163547 字节，SHA-256 为 82838177710b811c28ac35065b0d399035267ec9841d94bec77ed03477e77408。客机回执及经摘要复核的 G-code 在 artifacts/windows_mcp_harvest/8a0ed84002694455ad9edce215044837/。指定设备后共执行 3 次，实际发送 1 次，按 Orca 上传完成判据通过 1 次。
+
+## 补录回放
+
+成功轮仅保存 G-code 与回执。补录 run a4b8ceeadf0a437e9ef46ef6d098fd67（ced3561）从确认登录后开始。录像只采集 Orca 自己的窗口，回放完成设备页、工程装载、切片并进入 U1 的只上传页。验证 Send 已启用后停留并退出，未再次提交。首次补录 55926e405fa943db8d2203f75fe85261 卡在设备文件页入口判据，保留为 NON_GREEN。
+
+成片在 artifacts/windows_mcp_harvest/a4b8ceeadf0a437e9ef46ef6d098fd67/orca-u1-upload-review.mp4，H.264，32.36 秒，包含加速实况和单独标注的原成功轮回执。片尾的原始回执来自 8a0ed84002694455ad9edce215044837。
