@@ -46,3 +46,5 @@ python -B tools/native_save_demo.py --actor script --scenario uia_replay_mix
 ```
 
 两种 fixture 模式串行执行同一组脚本。批次记录在回收目录的 `fixture_suite.json`，每条具有自己 ID、初态、轨迹、保存文件和独立切片产物。共享模式重载原始 3MF，核对相同编辑 PID 和 HWND，所有独立重切保留新 profile。记录中的初态和清理证据是共享收益能否计入的判据。开发结果仍按 SHADOW 或 NON_GREEN 登记。
+
+立方体录制还可按已登记的业务子项生成两两组合。生成器列出前置条件、预期效果和来源摘要，批次入口串行回放并为每条独立重开重切。见[两两组合入口与客机实测](runs/pairwise-replay-2026-11-19.md)。
