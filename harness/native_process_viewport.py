@@ -86,7 +86,8 @@ def _direction(proof):
 
 
 def scroll_group(initial, current, from_handle, check_revocation):
-    from win32gui import SendMessageTimeout
+    from windows_mcp.uia.controls import PatternId
+    from .winutil import _send_msg
 
     anchor = (initial["hwnd"], initial["bounds"], initial["group_hwnd"])
 
@@ -98,8 +99,10 @@ def scroll_group(initial, current, from_handle, check_revocation):
         return live
 
     viewport, group = map(from_handle, (initial["hwnd"], initial["group_hwnd"]))
-    scroll = viewport.GetScrollPattern() if viewport is not None else None
-    item = group.GetScrollItemPattern() if group is not None else None
+    # Generic wx HWNDs map to controls without the specialized pattern helpers.
+    # Query actual provider capability through the base Control API.
+    scroll = viewport.GetPattern(PatternId.ScrollPattern) if viewport is not None else None
+    item = group.GetPattern(PatternId.ScrollItemPattern) if group is not None else None
     patterns = []
     if scroll is not None and scroll.VerticallyScrollable:
         patterns.append("ScrollPattern")
@@ -131,7 +134,7 @@ def scroll_group(initial, current, from_handle, check_revocation):
             if not direction or time.monotonic() >= stopped:
                 break
             # The owned viewport handles its standard vertical scrollbar line commands.
-            SendMessageTimeout(live["hwnd"], 0x0115, int(direction > 0), 0, 2, 500)
+            _send_msg(live["hwnd"], 0x0115, int(direction > 0), 0, timeout_ms=500)
             updated = refresh()
             if updated["group_bounds"] == live["group_bounds"]:
                 break
