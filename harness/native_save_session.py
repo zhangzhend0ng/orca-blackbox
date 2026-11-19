@@ -498,7 +498,9 @@ def run_native_save(run_id, actor="codex", scenario="base"):
         from .model_move_pilot import canonical, digest as plan_digest, read_request
         plan, _ = read_request(run_id)
         git = os.environ.get("ORCA_BB_GUEST_GIT") or r"C:\coil\tools\mingit\cmd\git.exe"
-        head = subprocess.check_output([git, "rev-parse", "HEAD"], cwd=REPO, text=True).strip()
+        # Management sync owns the checkout, while suite runs as INTERACTIVE.
+        head = subprocess.check_output([git, "-c", "safe.directory=" + REPO.as_posix(),
+                                        "rev-parse", "HEAD"], cwd=REPO, text=True).strip()
         if head != plan["source_sha256"]:
             raise ValueError("model_plan_guest_source_mismatch")
         plan_hash = plan_digest(canonical(plan))

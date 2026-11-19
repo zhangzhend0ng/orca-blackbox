@@ -27,6 +27,18 @@ if ($WindowsMcpRunId) {
   $remote = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
     param($sb,$id,$nativeSave)
     $root=if($nativeSave){Join-Path $sb ('artifacts\v3\'+$id+'\artifacts')}else{Join-Path $sb ('artifacts\windows_mcp_runs\'+$id)}
+    if($nativeSave -and !(Test-Path -LiteralPath $root)){
+      $runner='C:\coil\run_suite.ps1'
+      $log=Join-Path $sb 'artifacts\windows_mcp_probe.log'
+      if((Test-Path -LiteralPath $runner) -and [IO.File]::ReadAllText($runner).Contains("--run-id '$id'") -and
+          (Test-Path -LiteralPath $log)){
+        $file=Get-Item -LiteralPath $log
+        if($file.Length -le 65536 -and -not ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)){
+          @{name='runner_startup_failure.log';data=[Convert]::ToBase64String([IO.File]::ReadAllBytes($log))}
+        }
+      }
+      return
+    }
     # Never harvest the run's authentication token or config/profile files.
     $names=@('process.json','worker.json','worker.log','server.log','ready.json')
     if($nativeSave){$names=@('canvas_diagnostic.json','setup.json','control_cancel.json','process.json','proof.json','native_worker.json','native_worker.log','native_trace.ndjson','host_done.json','scope.json','server.log','ready.json','initial.png','agent_final.png','proof_final.png','projects/0001.3mf','proof/0001.3mf','exports/0001.gcode')}
