@@ -31,3 +31,11 @@
     runner/hv_harvest.ps1 -CloudLoginProbe -WindowsMcpRunId <同一run ID>
 
 回收目录为 artifacts/windows_mcp_harvest/<run ID>。计时从客机进程开始到删除本轮私有目录为止，包含准备、交互、首页观测和回收。Git 同步与宿主回收在该计时外。
+
+## 首页登录状态复核
+
+直接检查客机 Orca 2.4.0 安装的 `resources/web/flutter_web/main.dart.js`。可执行文件 SHA-256 为 `5c48644d7da18b50636ceeee4ef9fd2eaf6d4e8ac05bd88752f40e3717fc47bf`，首页脚本 SHA-256 为 `5d9ef1810174e1a22d75a168e5c148fc1fa3574f80f4531a249e3e67b578383b`。首页 `HomeSideMenuWidget.aQ8` 用 `gnQ()` 选择账号区。`gnQ()` 要求状态为 `online` 或 `Online`，并要求身份字段非空。该条件为假时才渲染首页唯一的 `Login/Register`。原探针要求额外找到退出菜单、账号资料页或受条件控制的 `My Favorites`，漏判了已观察到的首页状态切换。
+
+回看 `545658d78c1d46bfaa81f218e15350b4`、`6407867ffcad41dd8c99d7dd469f1eed`、`9663b61facc34f0fb25b3f8f67095ec3`。三轮都从可点击的 `Login/Register` 进入已核对域名的登录框，提交后该框关闭。随后同一 Orca 首页仍能同时识别 `Model Library` 和 `My Devices`，登录入口已消失。按已核实的渲染逻辑，这三轮的界面证据支持登录成功。历史回执与表中原探针判定照原样保存。
+
+新判据在登录前后使用同一首页截图区域和 OCR 方法。提交前需同时读到登录入口及两个首页导航标签，登录框关闭后需连续两次只读到两个导航标签。只输出标签是否可见和匹配次数。设备在线、打印任务投递及实打仍需各自验收。

@@ -145,80 +145,48 @@ def enter_secret(hwnd, node, value):
     return True
 
 
-def private_ui_words(hwnd, *, sidebar=False):
-    """Read narrow UI text in memory. No authenticated image or text artifact."""
+def observe_home_sidebar(hwnd):
+    """Record only the known sidebar labels from an in-memory observation."""
     from PIL import Image
 
     from harness import ocr_util, winutil
 
     width, height, pixels = winutil.capture_window(hwnd)
-    picture = Image.frombytes("RGB", (width, height), pixels, "raw", "BGRX")
-    if sidebar:
-        picture = picture.crop((0, 0, width // 3, height // 2))
+    picture = Image.frombytes("RGB", (width, height), pixels, "raw", "BGRX").crop(
+        (0, 0, width // 3, height // 2))
     payload = io.BytesIO()
     picture.resize((picture.width * 2, picture.height * 2)).save(payload, format="PNG")
     text = subprocess.run([ocr_util.TESSERACT_EXE, "stdin", "stdout", "-l", "eng", "--psm", "11"],
                           input=payload.getvalue(), stdout=subprocess.PIPE,
                           stderr=subprocess.DEVNULL, check=True, timeout=8).stdout.decode("utf-8")
-    return {line.strip().casefold() for line in text.splitlines()}
+    return {
+        "home_login_button_visible": bool(re.search(r"\blogin[ \t]*/[ \t]*register\b", text, re.I)),
+        "home_devices_entry_visible": bool(re.search(r"\bmy[ \t]+devices\b", text, re.I)),
+        "home_library_entry_visible": bool(re.search(r"\bmodel[ \t]+library\b", text, re.I)),
+    }
 
 
-def verify_account_page(app, home_point, auth_hwnd, result):
-    from harness import winutil
+def confirm_home_entry(hwnd, result, *, visible):
+    evidence_key = "home_before" if visible else "home_after"
+    expected_samples = 1 if visible else 2
+    matches = 0
 
-    def has(words, pattern):
-        return any(re.search(pattern, line) for line in words)
+    def read():
+        nonlocal matches
+        sample = observe_home_sidebar(hwnd)
+        result[evidence_key] = sample
+        ready = sample["home_devices_entry_visible"] and sample["home_library_entry_visible"]
+        if ready and sample["home_login_button_visible"] == visible:
+            matches += 1
+        else:
+            matches = 0
+        result[evidence_key + "_matching_samples"] = matches
+        return matches >= expected_samples
 
-    sign_out = r"\b(?:log\s*out|sign\s*out)\b"
-    login = r"\blogin\s*/\s*register\b"
-
-    def home_ready():
-        words = private_ui_words(app.hwnd, sidebar=True)
-        result["home_login_button_visible"] = has(words, login)
-        result["home_devices_entry_visible"] = has(words, r"\bmy\s+devices\b")
-        result["home_library_entry_visible"] = has(words, r"\bmodel\s+library\b")
-        result["home_favorites_entry_visible"] = has(words, r"\bmy\s+favorites\b")
-        home_known = result["home_devices_entry_visible"] or result["home_library_entry_visible"]
-        return words if home_known and not result["home_login_button_visible"] else None
-
-    words = poll(home_ready, 7)
-    if words is None:
-        return False
-    if result["home_favorites_entry_visible"]:
-        result["home_proof"] = "signed_in_favorites_entry"
-        return True
-    if has(words, sign_out):
-        result["home_proof"] = "logout_control"
-        return True
-    if home_point is None or not winutil.force_set_foreground(app.hwnd):
-        return False
-    # The account header exposes its menu at the dropdown end of the row.
-    # Move there without clicking any menu item.
-    x, y = winutil.client_to_screen(app.hwnd, home_point[0] + 90, home_point[1])
-    if not winutil.user32.SetCursorPos(x, y):
-        return False
-
-    def profile_ready():
-        for hwnd, pid in winutil.enum_windows():
-            if pid != app.pid or hwnd == auth_hwnd:
-                continue
-            words = private_ui_words(hwnd)
-            if has(words, sign_out):
-                return "logout_control"
-            if has(words, r"\bnickname\b") and has(words, r"\b(?:profile page|account)\b"):
-                return "authenticated_profile"
-        return None
-
-    proof = poll(profile_ready, 4)
-    if not proof and winutil.user32.GetForegroundWindow() == app.hwnd:
-        winutil.real_click_screen(x, y)
-        proof = poll(profile_ready, 6)
-    if proof:
-        result["home_proof"] = proof
-    return bool(proof)
+    return bool(poll(read, 10))
 
 
-def authenticate(app, hwnd, home_point, result):
+def authenticate(app, hwnd, result):
     from pywinauto import uia_defines
 
     from harness import winutil
@@ -285,7 +253,8 @@ def authenticate(app, hwnd, home_point, result):
 
     result["stage"] = "verify_home_account_state"
     result["login_dialog_closed"] = True
-    if verify_account_page(app, home_point, hwnd, result):
+    if confirm_home_entry(app.hwnd, result, visible=False):
+        result["home_proof"] = "login_entry_removed_on_ready_home"
         result["home_signed_in"] = True
         result["stage"] = "home_signed_in"
 
@@ -330,6 +299,9 @@ def inspect(app, result, run_dir, authenticate_login):
         return None
 
     button = poll(entry, 5)
+    if not confirm_home_entry(app.hwnd, result, visible=True) and authenticate_login:
+        result["stage"] = "signed_out_home_unconfirmed"
+        return
     point = None
     if button is not None and invoke(button):
         result["home_entry"] = "uia"
@@ -397,7 +369,7 @@ def inspect(app, result, run_dir, authenticate_login):
 
         form = poll(password_form, 8) or form
     if authenticate_login:
-        authenticate(app, dialog_hwnd, point, result)
+        authenticate(app, dialog_hwnd, result)
         return
     result["signed_out_controls"] = [
         {"kind": kind, "name": name[:80], "password": bool(node.CurrentIsPassword),
