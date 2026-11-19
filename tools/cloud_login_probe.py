@@ -161,18 +161,24 @@ def private_ui_words(hwnd, *, sidebar=False):
 def verify_account_page(app, home_point, auth_hwnd, result):
     from harness import winutil
 
-    sign_out = {"log out", "logout", "sign out", "signout"}
+    def has(words, pattern):
+        return any(re.search(pattern, line) for line in words)
+
+    sign_out = r"\b(?:log\s*out|sign\s*out)\b"
+    login = r"\blogin\s*/\s*register\b"
 
     def home_ready():
         words = private_ui_words(app.hwnd, sidebar=True)
-        result["home_login_button_visible"] = "login/register" in words
-        result["home_devices_entry_visible"] = "my devices" in words
-        return words if "my devices" in words and "login/register" not in words else None
+        result["home_login_button_visible"] = has(words, login)
+        result["home_devices_entry_visible"] = has(words, r"\bmy\s+devices\b")
+        result["home_library_entry_visible"] = has(words, r"\bmodel\s+library\b")
+        home_known = result["home_devices_entry_visible"] or result["home_library_entry_visible"]
+        return words if home_known and not result["home_login_button_visible"] else None
 
     words = poll(home_ready, 7)
     if words is None:
         return False
-    if sign_out.intersection(words):
+    if has(words, sign_out):
         result["home_proof"] = "logout_control"
         return True
     if home_point is None or not winutil.force_set_foreground(app.hwnd):
@@ -185,10 +191,10 @@ def verify_account_page(app, home_point, auth_hwnd, result):
         for hwnd, pid in winutil.enum_windows():
             if pid != app.pid or hwnd == auth_hwnd:
                 continue
-            words = private_ui_words(hwnd, sidebar=(hwnd == app.hwnd))
-            if sign_out.intersection(words):
+            words = private_ui_words(hwnd)
+            if has(words, sign_out):
                 return "logout_control"
-            if "nickname" in words and ("profile page" in words or "account" in words):
+            if has(words, r"\bnickname\b") and has(words, r"\b(?:profile page|account)\b"):
                 return "authenticated_profile"
         return None
 
