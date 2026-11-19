@@ -272,19 +272,24 @@ def run_upload(app, fixture, output_dir, result, poll):
             {"labels": labels.findall(text), "x_band": x // 60, "y_band": y // 35}
             for text, x, y in lines if labels.search(text)
         ]
-        return send if len(choices) == 1 and filename_visible and send is not None and (picked or open_picker is None) else None
+        return send if picked and filename_visible and send is not None and placeholder is None else None
 
     send = poll(send_candidate, 8)
     if send is None and open_picker is not None and opens_send_only(only) and click_client(only, open_picker):
-        def list_u1():
+        def list_devices():
             _, lines = visible_lines(only)
             result["u1_picker_labels"] = [
-                {"u1": bool(re.search(r"\bu1\b", text)), "x_band": x // 60, "y_band": y // 35}
+                {"labels": re.findall(r"\bu1\b|\blan mode\b|\badd device\b", text),
+                 "x_band": x // 60, "y_band": y // 35}
                 for text, x, y in lines if re.search(r"\bu1\b|\blan mode\b|\badd device\b", text)
             ]
-            return one([(x, y) for text, x, y in lines if re.search(r"\bu1\b", text)])
+            # The deployed picker appends an Add Device row as a sentinel.
+            # A Lan Mode badge, when present, belongs to a real selectable row.
+            u1 = one([(x, y) for text, x, y in lines if re.search(r"\bu1\b", text)])
+            lan = one([(x, y) for text, x, y in lines if re.search(r"\blan\s+mode\b", text)])
+            return u1 or lan
 
-        choice = poll(list_u1, 8)
+        choice = poll(list_devices, 8)
         if choice is not None and click_client(only, choice):
             picked = True
             result["u1_picker_selection_clicked"] = True
