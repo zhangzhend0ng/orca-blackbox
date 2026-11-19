@@ -50,3 +50,9 @@ run 8a0ed84002694455ad9edce215044837（adb8226，60.34 s）为 SHADOW。同一�
 成功轮仅保存 G-code 与回执。补录 run a4b8ceeadf0a437e9ef46ef6d098fd67（ced3561）从确认登录后开始。录像只采集 Orca 自己的窗口，回放完成设备页、工程装载、切片并进入 U1 的只上传页。验证 Send 已启用后停留并退出，未再次提交。首次补录 55926e405fa943db8d2203f75fe85261 卡在设备文件页入口判据，保留为 NON_GREEN。
 
 成片在 artifacts/windows_mcp_harvest/a4b8ceeadf0a437e9ef46ef6d098fd67/orca-u1-upload-review.mp4，H.264，32.36 秒，包含加速实况和单独标注的原成功轮回执。片尾的原始回执来自 8a0ed84002694455ad9edce215044837。
+
+## 全屏实际上传录像
+
+按用户要求，run d8b0fc896b3c4d42bfb8e280127bc584（fba5a28）重新实跑一次只上传。Orca 最大化，交互计划任务以隐藏窗口模式启动，捕获客机整屏。凭据输入由同步遮挡保护，录像计 48 帧遮挡和 0 帧前台命令行。脚本从首页登录、选择 U1、装载工程、切片、导出到进入只上传页，实际点击 Send，读取到 Upload completed。回执为 SHADOW，客机总耗时 74.56 s。该操作未触发开始打印。
+
+成片为 artifacts/windows_mcp_harvest/d8b0fc896b3c4d42bfb8e280127bc584/orca-u1-live-fullscreen.mp4，1920×1080，正常速度 55.00 秒。约 53.8 秒的成片帧复核到 Upload completed。上传文件为 orcabbd8b0fc896b.gcode，共 163003 字节，SHA-256 为 572808d8ebe179755ac4da9487643fad2e1bae8bea5e172438722067da0365cf。回收保留原录像、成片、G-code 和运行回执。
