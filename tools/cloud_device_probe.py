@@ -68,7 +68,7 @@ def device_labels(lines):
     ]
 
 
-def inspect_devices(app, result, poll):
+def inspect_devices(app, result, poll, *, print_target=None):
     from harness import winutil
 
     result["device_stage"] = "find_my_devices"
@@ -130,15 +130,23 @@ def inspect_devices(app, result, poll):
     page = result.get("device_page", {})
     if page.get("heading") or page.get("add_device_visible"):
         result["device_stage"] = "device_page_observed"
-        if u1_cards:
-            connect_u1(app, u1_cards[0], result, poll)
+        if print_target:
+            from tools.cloud_print_probe import find_device_name
+
+            width, height, _ = winutil.capture_window(app.hwnd)
+            card = find_device_name(app.hwnd, print_target, (home_sidebar_edge(app.hwnd, width), 230,
+                                                            width, min(height, 590)), "card")
+            if card is not None:
+                connect_device(app, card, result, poll, inspect_storage=False)
+        elif u1_cards:
+            connect_device(app, u1_cards[0], result, poll)
         elif not (page.get("idle_labels") or page.get("online_labels")) and len(add_targets) == 1:
             inspect_nearby(app, add_targets[0], result, poll)
         return True
     return False
 
 
-def connect_u1(app, card, result, poll):
+def connect_device(app, card, result, poll, *, inspect_storage=True):
     from harness import winutil
 
     result["device_stage"] = "find_u1_device_control"
@@ -191,7 +199,7 @@ def connect_u1(app, card, result, poll):
     if poll(check_connection, 14):
         if result["device_control"]["offline"]:
             result["device_stage"] = "device_reported_offline"
-        else:
+        elif inspect_storage:
             inspect_files(app, result, poll)
         return
     _, lines = visible_lines(app.hwnd)
@@ -201,7 +209,7 @@ def connect_u1(app, card, result, poll):
     if winutil.real_click_screen(*winutil.client_to_screen(app.hwnd, *tabs[0])) != 2:
         return
     result["device_stage"] = "device_tab_opened"
-    if poll(check_connection, 14) and not result["device_control"]["offline"]:
+    if poll(check_connection, 14) and not result["device_control"]["offline"] and inspect_storage:
         inspect_files(app, result, poll)
 
 

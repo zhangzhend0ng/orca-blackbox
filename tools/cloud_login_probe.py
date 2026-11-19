@@ -418,7 +418,12 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
     video = None
     live = None
     try:
-        profile.seed_profile(datadir, conf_extra={"app": {"region": "China", "language": "en_US", "default_page": "0"}})
+        settings = {"app": {"region": "China", "language": "en_US", "default_page": "0"}}
+        if print_new_project:
+            settings["models"] = [{"vendor": "Snapmaker", "model": "SM_U1", "nozzle_diameter": "0.4"}]
+            settings["presets"] = {"machine": "Snapmaker U1 (0.4 nozzle)"}
+            settings["filaments"] = {"Snapmaker PLA Basic @U1": "true"}
+        profile.seed_profile(datadir, conf_extra=settings)
         os.environ["WEBVIEW2_USER_DATA_FOLDER"] = str(private / "webview")
         os.environ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = "--force-renderer-accessibility"
         result["stage"] = "launch"
@@ -456,8 +461,20 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
             if live is not None:
                 live.show_signed_in()
                 result["signed_in_at_ns"] = time.time_ns()
-            result["device_page_observed"] = inspect_devices(session, result, poll)
-            if upload_gcode:
+            if print_new_project:
+                from tools.cloud_print_probe import select_idle_device
+
+                select_idle_device(session, result, poll)
+            else:
+                result["device_page_observed"] = inspect_devices(session, result, poll)
+            if upload_gcode and print_new_project:
+                from tools.cloud_upload_probe import run_upload
+
+                outcome = run_upload(session, None, run_dir, result, poll, print_project=True)
+                result["print_started"] = outcome
+                if outcome:
+                    time.sleep(4)
+            elif upload_gcode:
                 result["upload_stage"] = "await_u1_device_panel"
                 panel_observed = result.get("device_stage") in {
                     "u1_device_panel_observed", "device_files_opened", "u1_device_files_observed"
@@ -470,16 +487,11 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
                 if panel_observed or recorded_panel:
                     from tools.cloud_upload_probe import run_upload
 
-                    if print_new_project:
-                        from tools.cloud_print_probe import observe_u1_task
-
-                        result["print_device_idle_before"] = observe_u1_task(session, result)
                     outcome = run_upload(
                         session, ROOT / "fixtures" / "agent_layer_cube.3mf", run_dir, result, poll,
-                        review_only=video_review, print_project=print_new_project,
+                        review_only=video_review,
                     )
-                    outcome_key = ("print_started" if print_new_project
-                                   else "review_ready" if video_review else "device_upload_confirmed")
+                    outcome_key = "review_ready" if video_review else "device_upload_confirmed"
                     result[outcome_key] = outcome
                     if video_live and outcome:
                         time.sleep(3)
