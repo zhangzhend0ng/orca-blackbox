@@ -1,6 +1,8 @@
 """Window-only video of a post-login Orca upload-path replay."""
 from __future__ import annotations
 
+import threading
+
 
 def capture(app, result):
     import cv2
@@ -25,3 +27,66 @@ def capture(app, result):
     cv2.putText(canvas, "Orca on win11-test | U1 upload-path replay | stops before Send",
                 (28, 701), cv2.FONT_HERSHEY_SIMPLEX, 0.72, (235, 235, 235), 1, cv2.LINE_AA)
     return canvas
+
+
+class LiveDesktopCapture:
+    """Full interactive guest recording, with a synchronized sign-in pause."""
+
+    def __init__(self, app, result):
+        import cv2
+        import numpy as np
+        from PIL import ImageGrab
+
+        self.app = app
+        self.result = result
+        self.cv2 = cv2
+        self.np = np
+        self.grab = ImageGrab.grab
+        with self.grab() as image:
+            self.size = image.size
+        self.lock = threading.Lock()
+        self.hidden = False
+        self.privacy_frames = 0
+        self.foreground_console_frames = 0
+        width, height = self.size
+        self.slate = np.full((height, width, 3), (34, 27, 24), dtype=np.uint8)
+        cv2.putText(self.slate, "Orca | signing in", (width // 2 - 225, height // 2 - 18),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1.6, (242, 242, 242), 2, cv2.LINE_AA)
+        cv2.putText(self.slate, "Credential entry hidden", (width // 2 - 225, height // 2 + 51),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (214, 214, 214), 2, cv2.LINE_AA)
+
+    def hide_sign_in(self):
+        with self.lock:
+            self.hidden = True
+
+    def show_signed_in(self):
+        with self.lock:
+            self.hidden = False
+
+    def frame(self):
+        from harness import winutil
+
+        with self.lock:
+            if self.hidden:
+                self.privacy_frames += 1
+                return self.slate
+            with self.grab() as image:
+                frame = self.cv2.cvtColor(self.np.asarray(image), self.cv2.COLOR_RGB2BGR)
+            foreground = winutil.user32.GetForegroundWindow()
+            if foreground and winutil.window_class(foreground) in {
+                "ConsoleWindowClass", "CASCADIA_HOSTING_WINDOW_CLASS",
+            }:
+                self.foreground_console_frames += 1
+            if self.result.get("home_signed_in") and self.result.get("device_stage", "") in {
+                "", "find_my_devices", "read_my_devices", "device_page_observed", "find_u1_device_control",
+            }:
+                # Cover the account card only. Keep the title bar, tabs,
+                # navigation, and the device content of the desktop intact.
+                x, y = winutil.client_to_screen(self.app.hwnd, 0, 0)
+                ratio = winutil.get_dpi_for_window(self.app.hwnd) / 96
+                left, top = max(0, x), max(0, y + round(67 * ratio))
+                right = min(frame.shape[1], x + round(262 * ratio))
+                bottom = min(frame.shape[0], y + round(226 * ratio))
+                if right > left and bottom > top:
+                    frame[top:bottom, left:right] = (248, 248, 248)
+            return frame

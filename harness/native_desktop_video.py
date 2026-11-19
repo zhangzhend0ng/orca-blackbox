@@ -8,9 +8,11 @@ class DesktopVideo:
     fps = 5
     size = (1280, 720)
 
-    def __init__(self, root, capture=None):
+    def __init__(self, root, capture=None, *, fps=None, size=None):
         self.path = root / "desktop.mp4"
         self.capture = capture
+        self.fps = self.fps if fps is None else fps
+        self.size = self.size if size is None else size
         self.stop = threading.Event()
         self.ready = threading.Event()
         self.error = None

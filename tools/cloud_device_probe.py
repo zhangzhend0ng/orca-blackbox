@@ -47,6 +47,12 @@ def visible_lines(hwnd, *, sidebar=False, crop=None, psm=11):
     return width, lines
 
 
+def home_sidebar_edge(hwnd, width):
+    from harness import winutil
+
+    return min(width // 4, round(262 * winutil.get_dpi_for_window(hwnd) / 96))
+
+
 def device_labels(lines):
     fixed = re.compile(
         r"\b(?:my devices|add device|no devices?|no data|lan mode|cloud mode|"
@@ -86,10 +92,11 @@ def inspect_devices(app, result, poll):
     def read_devices():
         nonlocal add_targets, u1_cards, page_seen_at
         width, lines = visible_lines(app.hwnd)
-        content = [label for label, x, _ in lines if x > width // 4]
-        add_targets = [(x, y) for label, x, y in lines if x > width // 4
+        edge = home_sidebar_edge(app.hwnd, width)
+        content = [label for label, x, _ in lines if x > edge]
+        add_targets = [(x, y) for label, x, y in lines if x > edge
                        and re.search(r"\badd\s+device\b", label)]
-        u1_cards = [(x, y) for label, x, y in lines if x > width // 4 and y > 230
+        u1_cards = [(x, y) for label, x, y in lines if x > edge and y > 230
                     and re.search(r"\bu1\b", label)]
 
         def count(pattern):
@@ -110,7 +117,7 @@ def inspect_devices(app, result, poll):
             "u1_card_labels": len(u1_cards),
         }
         result["device_layout"] = device_labels([
-            (label, x, y) for label, x, y in lines if x > width // 4 and y > 90
+            (label, x, y) for label, x, y in lines if x > edge and y > 90
         ])
         page = result["device_page"]
         if not page["heading"] or not page["add_device_visible"]:

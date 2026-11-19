@@ -274,7 +274,7 @@ def home_login_point(hwnd):
     return matches[0] if len(matches) == 1 else None
 
 
-def inspect(app, result, run_dir, authenticate_login):
+def inspect(app, result, run_dir, authenticate_login, hide_sign_in=None):
     from harness import winutil
 
     login_names = {"login/register", "登录/注册"}
@@ -369,6 +369,8 @@ def inspect(app, result, run_dir, authenticate_login):
 
         form = poll(password_form, 8) or form
     if authenticate_login:
+        if hide_sign_in is not None:
+            hide_sign_in()
         authenticate(app, dialog_hwnd, result)
         return
     result["signed_out_controls"] = [
@@ -380,7 +382,8 @@ def inspect(app, result, run_dir, authenticate_login):
     result["stage"] = "form_inspected"
 
 
-def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False, video_review=False):
+def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
+        video_review=False, video_live=False):
     from harness import host_guard, launcher, profile
 
     host_guard.assert_guest_or_allow()
@@ -395,11 +398,13 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False, 
     result = {
         "run_id": run_id, "region": "CN", "verdict": "NON_GREEN",
         "stage": "seed_profile", "private_removed": False,
-        "mode": ("upload_review" if video_review else "upload" if upload_gcode else "devices" if discover_devices
+        "mode": ("upload_live_video" if video_live else "upload_review" if video_review
+                 else "upload" if upload_gcode else "devices" if discover_devices
                  else "authenticate" if authenticate_login else "inspect"),
     }
     session = None
     video = None
+    live = None
     try:
         profile.seed_profile(datadir, conf_extra={"app": {"region": "China", "language": "en_US", "default_page": "0"}})
         os.environ["WEBVIEW2_USER_DATA_FOLDER"] = str(private / "webview")
@@ -407,7 +412,26 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False, 
         result["stage"] = "launch"
         session = launcher.launch(datadir=datadir, wait_window_s=55, boot_demote_s=0,
                                   blocker_sweep_s=3, dismiss_wizard=True)
-        inspect(session, result, run_dir, authenticate_login)
+        if video_live:
+            from ctypes.wintypes import HWND
+
+            from harness import winutil
+            from harness.native_desktop_video import DesktopVideo
+            from tools.cloud_upload_video import LiveDesktopCapture
+
+            console_window = ctypes.windll.kernel32.GetConsoleWindow
+            console_window.restype = HWND
+            console = console_window()
+            if console:
+                winutil.user32.ShowWindow(console, 0)
+            winutil.user32.ShowWindow(session.hwnd, 3)
+            if not winutil.force_set_foreground(session.hwnd):
+                raise RuntimeError("upload_video_foreground")
+            live = LiveDesktopCapture(session, result)
+            video = DesktopVideo(run_dir, capture=live.frame, fps=10, size=live.size)
+            video.start()
+        inspect(session, result, run_dir, authenticate_login,
+                hide_sign_in=live.hide_sign_in if live is not None else None)
         if discover_devices and result.get("home_signed_in"):
             from tools.cloud_device_probe import inspect_devices
 
@@ -417,6 +441,8 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False, 
 
                 video = DesktopVideo(run_dir, capture=lambda: capture(session, result))
                 video.start()
+            if live is not None:
+                live.show_signed_in()
             result["device_page_observed"] = inspect_devices(session, result, poll)
             if upload_gcode:
                 result["upload_stage"] = "await_u1_device_panel"
@@ -424,11 +450,11 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False, 
                     "u1_device_panel_observed", "device_files_opened", "u1_device_files_observed"
                 }
                 control = result.get("device_control", {})
-                review_panel = (
-                    video_review and result.get("device_stage") == "device_control_opened"
+                recorded_panel = (
+                    (video_review or video_live) and result.get("device_stage") == "device_control_opened"
                     and control.get("temperature") and not control.get("still_on_home") and not control.get("offline")
                 )
-                if panel_observed or review_panel:
+                if panel_observed or recorded_panel:
                     from tools.cloud_upload_probe import run_upload
 
                     outcome = run_upload(
@@ -436,12 +462,17 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False, 
                         review_only=video_review,
                     )
                     result["review_ready" if video_review else "device_upload_confirmed"] = outcome
+                    if video_live and outcome:
+                        time.sleep(3)
     except Exception as exc:
         result["error"] = type(exc).__name__
     finally:
         if video is not None:
             try:
                 result["video"] = video.finish()
+                if live is not None:
+                    result["video"]["privacy_frames"] = live.privacy_frames
+                    result["video"]["foreground_console_frames"] = live.foreground_console_frames
             except Exception as exc:
                 result["video_error"] = type(exc).__name__
         try:
@@ -464,6 +495,8 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False, 
         if upload_gcode:
             goal_observed = (result.get("review_ready") and result.get("video") if video_review
                              else result.get("device_upload_confirmed"))
+        if video_live:
+            goal_observed = goal_observed and result.get("video")
         if goal_observed and result["private_removed"]:
             result["verdict"] = "SHADOW"
         result["duration_s"] = round(time.monotonic() - started, 2)
@@ -477,7 +510,9 @@ def main():
     parser.add_argument("--authenticate", action="store_true")
     parser.add_argument("--discover-devices", action="store_true")
     parser.add_argument("--upload-gcode", action="store_true")
-    parser.add_argument("--record-upload-review", action="store_true")
+    video_args = parser.add_mutually_exclusive_group()
+    video_args.add_argument("--record-upload-review", action="store_true")
+    video_args.add_argument("--record-upload-live", action="store_true")
     args = parser.parse_args()
     if not re.fullmatch(r"[0-9a-f]{32}", args.run_id):
         parser.error("invalid run ID")
@@ -485,10 +520,10 @@ def main():
         parser.error("--discover-devices requires --authenticate")
     if args.upload_gcode and not args.discover_devices:
         parser.error("--upload-gcode requires --discover-devices")
-    if args.record_upload_review and not args.upload_gcode:
-        parser.error("--record-upload-review requires --upload-gcode")
+    if (args.record_upload_review or args.record_upload_live) and not args.upload_gcode:
+        parser.error("upload video options require --upload-gcode")
     return run(args.run_id, args.authenticate, args.discover_devices, args.upload_gcode,
-               args.record_upload_review)
+               args.record_upload_review, args.record_upload_live)
 
 
 if __name__ == "__main__":
