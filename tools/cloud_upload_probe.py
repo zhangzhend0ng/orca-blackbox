@@ -94,6 +94,37 @@ def click_rect(rect):
     return winutil.real_click_screen((x0+x1)//2, (y0+y1)//2) == 2
 
 
+def export_native(app, path, result):
+    from harness import export_util, winutil
+
+    result["upload_stage"] = "find_export_button"
+    _, button = export_util.find_print_buttons(app.hwnd)
+    if (button is None or button[0] != "Export G-code file"
+            or not winutil.user32.IsWindowVisible(button[2])
+            or not winutil.user32.IsWindowEnabled(button[2])
+            or not winutil.force_set_foreground(app.hwnd) or not click_rect(button[1])):
+        return False
+    result["upload_stage"] = "find_export_dialog"
+    dialog = export_util.wait_toplevel(
+        app.pid, lambda cls, title, rect: cls == "#32770" and title.startswith("Save G-code file as"),
+        timeout_s=12,
+    )
+    if dialog is None:
+        return False
+    hwnd = dialog[3]
+    edit = export_util.find_edit(hwnd)
+    if edit is None or not winutil.user32.IsChild(hwnd, edit) or path.exists():
+        return False
+    winutil._send_msg(edit, 0x00B1, 0, -1)
+    winutil.msg_text(edit, str(path))
+    if winutil.edit_text(edit, len(str(path)) + 1) != str(path):
+        result["upload_stage"] = "export_path_readback_failed"
+        return False
+    winutil._send_msg(hwnd, 0x0111, 1, 0)
+    result["upload_stage"] = "await_exported_gcode"
+    return export_util.wait_file(path, timeout_s=25)
+
+
 def opens_send_only(hwnd):
     from pywinauto import uia_defines
 
@@ -161,7 +192,7 @@ def run_upload(app, fixture, output_dir, result, poll):
     filename = "orcabb" + result["run_id"][:10] + ".gcode"
     gcode = output_dir / filename
     result["upload_stage"] = "export_gcode"
-    if not export_util.export_gcode(app, gcode, timeout_s=25):
+    if not export_native(app, gcode, result):
         return False
     data = gcode.read_bytes()
     if b"; printer_model = Snapmaker U1" not in data or b"G1 " not in data:
