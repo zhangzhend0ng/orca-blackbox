@@ -12,12 +12,6 @@ def one(values):
     return values[0] if len(values) == 1 else None
 
 
-def button_point(hwnd, label, *, ymax=None):
-    _, lines = visible_lines(hwnd)
-    return one([(x, y) for text, x, y in lines if text.strip() == label
-                and (ymax is None or y < ymax)])
-
-
 def click_client(hwnd, point):
     from harness import winutil
 
@@ -132,19 +126,27 @@ def run_upload(app, fixture, output_dir, result, poll):
     result["upload_stage"] = "open_u1_project"
     if not fixture.is_file() or not open_test_project(app, fixture, result, poll):
         return False
-    result["upload_stage"] = "slice_u1_project"
-    # Opening a project normally switches from Device to Prepare itself.
-    # Re-enter from the exact topbar tab if slicing controls are still hidden.
-    if export_util.find_slice_buttons(app.hwnd)[1] is None:
+    result["upload_stage"] = "prepare_slice_toolbar"
+    winutil.user32.ShowWindow(app.hwnd, 3)
+    if not winutil.force_set_foreground(app.hwnd):
+        return False
+
+    def ready_to_slice():
+        _, button = export_util.find_slice_buttons(app.hwnd)
+        return button if button and winutil.user32.IsWindowVisible(button[2]) and winutil.user32.IsWindowEnabled(button[2]) else None
+
+    if not poll(ready_to_slice, 4):
         _, lines = visible_lines(app.hwnd)
         prepare = one([(x, y) for text, x, y in lines if y < 85 and x < 230
                        and re.search(r"\bprepare\b", text)])
-        if not click_client(app.hwnd, prepare):
+        if not click_client(app.hwnd, prepare) or not poll(ready_to_slice, 8):
             return False
+    result["upload_stage"] = "select_export_mode"
     if not export_util.switch_to_export_mode(app):
         return False
-    _, slice_button = export_util.find_slice_buttons(app.hwnd)
-    if slice_button is None or not winutil.user32.IsWindowEnabled(slice_button[2]):
+    result["upload_stage"] = "activate_slice"
+    slice_button = poll(ready_to_slice, 6)
+    if slice_button is None:
         return False
     if not click_rect(slice_button[1]):
         return False
@@ -153,10 +155,12 @@ def run_upload(app, fixture, output_dir, result, poll):
         _, action = export_util.find_print_buttons(app.hwnd)
         return action and action[0] == "Export G-code file" and winutil.user32.IsWindowEnabled(action[2])
 
+    result["upload_stage"] = "wait_for_slice_result"
     if not poll(sliced, 95):
         return False
     filename = "orcabb" + result["run_id"][:10] + ".gcode"
     gcode = output_dir / filename
+    result["upload_stage"] = "export_gcode"
     if not export_util.export_gcode(app, gcode, timeout_s=25):
         return False
     data = gcode.read_bytes()
