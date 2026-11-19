@@ -22,10 +22,15 @@ VENV_PY = HERE / ".venv" / "Scripts" / "python.exe"
 EXE = r"C:\Users\snapmaker\Documents\Snapmaker_Orca241\snapmaker-orca.exe"
 
 
-def run_case(case: str, datadir: str, slot: str, timeout_s: int, log_path: Path) -> dict:
+def run_case(case: str, datadir: str, slot: str, timeout_s: int, log_path: Path,
+             perf_label: str | None = None) -> dict:
     env = dict(os.environ)
     env["ORCA_BB_ALLOW_HOST"] = "1"
     env["ORCA_VISION_APP_EXE"] = EXE
+    if perf_label:
+        # ORCA_BB_PERF=1 → launcher hook samples into artifacts/perf/<label>__*.jsonl
+        env["ORCA_BB_PERF"] = "1"
+        env["ORCA_BB_PERF_LABEL"] = perf_label
     env["ORCA_BB_CONF_EXTRA"] = json.dumps(
         {"app": {"window_mainframe": slot, "show_splash_screen": False}})
     logf = open(log_path, "w", encoding="utf-8", errors="replace")
@@ -64,6 +69,8 @@ def main() -> int:
     ap.add_argument("--datadir", default=None)
     ap.add_argument("--slot", default="1960; 40; 900; 500; 0")
     ap.add_argument("--timeout", type=int, default=900)
+    ap.add_argument("--perf", action="store_true",
+                    help="enable metric sampling (harness/perf_monitor.py jsonl)")
     ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args()
 
@@ -87,8 +94,12 @@ def main() -> int:
     stem = Path(a.case).stem
     ts = time.strftime("%H%M%S")
     log_path = HERE / "artifacts" / f"wf_{stem}_{ts}.log"
+    perf_label = (f"{stem}__slot{re.sub(r'[^0-9A-Za-z_-]+', '_', a.slot)[:20]}"
+                  if a.perf else None)
+    if perf_label:
+        print(f"[farm] perf sampling on: label={perf_label}", flush=True)
 
-    r = run_case(a.case, a.datadir, a.slot, a.timeout, log_path)
+    r = run_case(a.case, a.datadir, a.slot, a.timeout, log_path, perf_label)
 
     # one retry on the known transient boot failure (instant-death / no main window)
     if r["verdict"] == "RED":
@@ -101,7 +112,7 @@ def main() -> int:
             print("[farm] transient boot failure, retrying once", flush=True)
             time.sleep(8)
             log2 = HERE / "artifacts" / f"wf_{stem}_{ts}_retry.log"
-            r = run_case(a.case, a.datadir, a.slot, a.timeout, log2)
+            r = run_case(a.case, a.datadir, a.slot, a.timeout, log2, perf_label)
 
     print("FARM_RESULT " + json.dumps(r, ensure_ascii=False))
     return r["rc"]

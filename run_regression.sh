@@ -15,7 +15,9 @@ BATCH=""
 rm -f artifacts/junit.xml artifacts/failed_cases.txt
 for c in $CASES; do
   echo "=== $c ==="
-  $PY tests/${c}.py > artifacts/regress_${c}.log 2>&1
+  # ORCA_BB_PERF_LABEL=$c — when the caller exports ORCA_BB_PERF=1 the
+  # launcher hook writes artifacts/perf/${c}__<ts>.jsonl for this case
+  ORCA_BB_PERF_LABEL=$c $PY tests/${c}.py > artifacts/regress_${c}.log 2>&1
   rc=$?
   BATCH="$BATCH ${c}|${rc}|artifacts/regress_${c}.log"
   if [ $rc -eq 0 ]; then PASS=$((PASS+1)); echo "[$c] GREEN (rc=0)";

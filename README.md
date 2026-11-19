@@ -51,6 +51,9 @@ harness/            驱动核心（纯 ctypes，零第三方依赖即可跑 m0�
   env_check.py      环境预检（GameViewer 等远控层、DPI）— 移植自 wx_gui 的 C++ 门禁
   profile.py        沙盒 datadir 种子（数据源 = 仓内 vendored resources/，非用户 %APPDATA%）
   launcher.py       黑盒启动（显式剥除 ORCA_GUI_TEST_MODE！）
+  perf_monitor.py   指标采样（psutil+ctypes 兜底；ORCA_BB_PERF=1 时随 launcher
+                    挂载 → artifacts/perf/*.jsonl；tools/perf_report.py 出报告；
+                    看板配置见 deploy/monitoring/README.md）
 m0_boot_check.py    里程碑0：启动→定位→截图→关闭 冒烟
 m1/m2/m3*/m4*/m5*   用例（m1 层驱动验证 → m2 切片链 → m3 业务路径 →
                     m4 混色全链路 → m5 工艺参数主流程；35 例全绿套件 = m3j..m5h）

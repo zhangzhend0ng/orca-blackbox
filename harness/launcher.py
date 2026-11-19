@@ -14,7 +14,7 @@ import sys
 import time
 from pathlib import Path
 
-from . import host_guard, winutil
+from . import host_guard, perf_monitor, winutil
 
 # App-under-test resolution order (see default_exe):
 #   1. ORCA_VISION_APP_EXE env var (any layout, CI/packaged)
@@ -43,6 +43,7 @@ class AppSession:
     def __init__(self, popen: subprocess.Popen, hwnd: int):
         self.popen = popen
         self.hwnd = hwnd
+        self.perf = None  # optional perf_monitor.PerfMonitor (env-gated)
 
     @property
     def pid(self) -> int:
@@ -56,14 +57,26 @@ class AppSession:
 
     def close(self, timeout_s: float = 10.0) -> None:
         """Graceful WM_CLOSE, then wait, then hard kill."""
-        if not self.alive():
-            return
-        winutil.close_window(self.hwnd)
-        deadline = time.monotonic() + timeout_s
-        while self.alive() and time.monotonic() < deadline:
-            time.sleep(0.5)
-        if self.alive():
-            self.popen.kill()
+        try:
+            if not self.alive():
+                return
+            winutil.close_window(self.hwnd)
+            deadline = time.monotonic() + timeout_s
+            while self.alive() and time.monotonic() < deadline:
+                time.sleep(0.5)
+            if self.alive():
+                self.popen.kill()
+        finally:
+            # Always finalize the perf monitor (close() may early-return above)
+            # — a partial-but-valid jsonl beats a lost one.
+            if self.perf is not None:
+                try:
+                    summary = self.perf.stop()
+                    print(f"[launcher] perf done: label={summary.get('label')} "
+                          f"pids={len(summary.get('pids', {}))}")
+                except Exception as exc:  # noqa: BLE001 — teardown must not mask
+                    print(f"[launcher] perf stop failed: {exc!r}")
+                self.perf = None
 
     def __enter__(self):
         return self
@@ -244,4 +257,8 @@ def launch(exe: Path | str | None = None,
     print(f"[launcher] pid={popen.pid} hwnd=0x{hwnd:x} rect={winutil.window_rect(hwnd)} dpi={dpi}")
     session = AppSession(popen, hwnd)
     session.blockers = dismissed  # forensic trail: titles WM_CLOSEd at boot
+    if perf_monitor.env_enabled():
+        # ORCA_BB_PERF=1 — external metric sampling for this run (see
+        # harness/perf_monitor.py header for the row schema and env knobs)
+        session.perf = perf_monitor.attach_for_session(popen, exe=exe)
     return session
