@@ -166,10 +166,25 @@ def inspect(app, result, run_dir):
         result["stage"] = "login_dialog_unavailable"
         return
     result["cn_document"] = is_cn_document(form)
+    if not result["cn_document"]:
+        result["stage"] = "login_origin_unconfirmed"
+        return
+
+    password_tabs = [node for kind, name, node in form if kind == 50000 and name == "密码登录"]
+    if len(password_tabs) == 1 and invoke(password_tabs[0]):
+        def password_form():
+            nodes = scan(dialog_hwnd)
+            if is_cn_document(nodes) and any(kind == 50004 and node.CurrentIsPassword
+                                             for kind, _, node in nodes):
+                return nodes
+            return None
+
+        form = poll(password_form, 8) or form
     result["signed_out_controls"] = [
-        {"kind": kind, "name": name[:80], "password": bool(node.CurrentIsPassword)}
+        {"kind": kind, "name": name[:80], "password": bool(node.CurrentIsPassword),
+         "enabled": bool(node.CurrentIsEnabled)}
         for kind, name, node in form
-        if kind in (50000, 50004, 50005, 50020, 50030) and (name or kind == 50004)
+        if kind in (50000, 50002, 50004, 50005, 50020, 50030) and (name or kind in (50002, 50004))
     ][:85]
     result["stage"] = "form_inspected"
 
