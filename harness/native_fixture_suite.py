@@ -69,7 +69,7 @@ def open_fixture(ui, fixture):
             children = ui.eu._children_texts(hwnd)
             if caption == "Snapmaker Orca - Save":
                 discard = _discard_choice(caption, children, close_requested=True)
-            elif caption == "Load project: Unsaved Changes":
+            elif caption.casefold() == "load project: unsaved changes":
                 discard = _discard_choice(caption, children)
             else:
                 continue
@@ -277,9 +277,9 @@ def run_fixture_worker(run_id, scenario):
                         case.timing["reset_windows"] = [active.wu.window_title(hwnd)[:128]
                             for hwnd, pid in active.wu.enum_windows() if pid == active.app.pid]
                         for hwnd, pid in active.wu.enum_windows():
-                            if pid == active.app.pid and active.owned_dialog(hwnd) and active.wu.window_title(hwnd) in {
-                                "Choose one file (3mf):", "Choose one file (3mf)", "Load project: Unsaved Changes",
-                                "Snapmaker Orca - Save",
+                            if pid == active.app.pid and active.owned_dialog(hwnd) and active.wu.window_title(hwnd).casefold() in {
+                                "choose one file (3mf):", "choose one file (3mf)", "load project: unsaved changes",
+                                "snapmaker orca - save",
                             }:
                                 active.wu.close_window(hwnd)
                         active.wait(lambda: active.wu.user32.IsWindowEnabled(active.app.hwnd), 5)
