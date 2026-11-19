@@ -99,7 +99,7 @@ def read_ironing_selection(wu, main, pid, group, binding, root):
     buffer = ctypes.create_unicode_buffer(128)
     wu._send_msg(target, 0x000D, len(buffer), ctypes.cast(buffer, ctypes.c_void_p), timeout_ms=500)  # WM_GETTEXT
     proof = {"hwnd": target, "bounds": bounds, "raw": buffer.value}
-    if buffer.value.strip().casefold() == "topmost surface":
+    if buffer.value.strip().casefold() in {"topmost surface", "topmost surface only"}:
         return dict(proof, backend="WM_GETTEXT")
 
     from PIL import ImageGrab
