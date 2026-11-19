@@ -94,9 +94,22 @@ def open_fixture(ui, fixture):
     ui.guard()
     ui.wu._send_msg(dialog, 0x0111, 1, 0)
     ui.wait(lambda: not ui.wu.user32.IsWindow(dialog), 15)
-    ui.wait(lambda: ui.wu.user32.IsWindowEnabled(ui.app.hwnd)
-            and fixture.stem in ui.wu.window_title(ui.app.hwnd), 15)
-    return {"dialog_hwnd": dialog, "field_hwnd": field, "at_ns": time.time_ns(), "discarded": discarded}
+    dismissed = []
+
+    def loaded_fixture():
+        for hwnd, pid in ui.wu.enum_windows():
+            if (pid == ui.app.pid and hwnd not in dismissed and ui.owned_dialog(hwnd)
+                    and ui.wu.window_title(hwnd).casefold() == "customized preset"):
+                ui.guard()
+                # The same known load blocker is dismissed during cold boot.
+                ui.wu.close_window(hwnd)
+                dismissed.append(hwnd)
+        return (ui.wu.user32.IsWindowEnabled(ui.app.hwnd)
+                and fixture.stem in ui.wu.window_title(ui.app.hwnd))
+
+    ui.wait(loaded_fixture, 15)
+    return {"dialog_hwnd": dialog, "field_hwnd": field, "at_ns": time.time_ns(),
+            "discarded": discarded, "customized_preset_closed_hwnds": dismissed}
 
 
 def setup_case(case, ui, sut_sha):
@@ -279,7 +292,7 @@ def run_fixture_worker(run_id, scenario):
                         for hwnd, pid in active.wu.enum_windows():
                             if pid == active.app.pid and active.owned_dialog(hwnd) and active.wu.window_title(hwnd).casefold() in {
                                 "choose one file (3mf):", "choose one file (3mf)", "load project: unsaved changes",
-                                "snapmaker orca - save",
+                                "snapmaker orca - save", "customized preset",
                             }:
                                 active.wu.close_window(hwnd)
                         active.wait(lambda: active.wu.user32.IsWindowEnabled(active.app.hwnd), 5)
