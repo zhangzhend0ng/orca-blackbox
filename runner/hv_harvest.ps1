@@ -34,7 +34,16 @@ if ($WindowsMcpRunId) {
       if ($item.Length -gt 65536 -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
         throw 'Cloud login report rejected'
       }
-      return @{name='result.json';data=[Convert]::ToBase64String([IO.File]::ReadAllBytes($file))}
+      @{name='result.json';data=[Convert]::ToBase64String([IO.File]::ReadAllBytes($file))}
+      $image = Join-Path (Split-Path $file -Parent) 'signed_out.png'
+      if (Test-Path -LiteralPath $image -PathType Leaf) {
+        $item = Get-Item -LiteralPath $image
+        if ($item.Length -gt 1800000 -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+          throw 'Cloud login image rejected'
+        }
+        @{name='signed_out.png';data=[Convert]::ToBase64String([IO.File]::ReadAllBytes($image))}
+      }
+      return
     }
     $root=if($nativeSave){Join-Path $sb ('artifacts\v3\'+$id+'\artifacts')}else{Join-Path $sb ('artifacts\windows_mcp_runs\'+$id)}
     if($nativeSave -and !(Test-Path -LiteralPath $root)){

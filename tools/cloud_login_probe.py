@@ -79,7 +79,7 @@ def is_cn_document(nodes):
     return False
 
 
-def inspect(app, result):
+def inspect(app, result, run_dir):
     from harness import winutil
 
     login_names = {"login", "log in", "sign in", "登录", "登陆"}
@@ -103,9 +103,15 @@ def inspect(app, result):
                     break
         return None
 
-    button = poll(entry, 68)
+    button = poll(entry, 32)
     if button is None:
         result["signed_out_controls"] = names
+        # Discovery only. No credential is read or entered in this probe.
+        from PIL import Image
+
+        width, height, pixels = winutil.capture_window(app.hwnd)
+        Image.frombytes("RGB", (width, height), pixels, "raw", "BGRX").save(
+            run_dir / "signed_out.png")
         return
     if not invoke(button):
         result["stage"] = "entry_not_invokable"
@@ -165,7 +171,7 @@ def run(run_id):
         result["stage"] = "launch"
         session = launcher.launch(datadir=datadir, wait_window_s=55, boot_demote_s=0,
                                   blocker_sweep_s=3, dismiss_wizard=True)
-        inspect(session, result)
+        inspect(session, result, run_dir)
     except Exception as exc:
         result["error"] = type(exc).__name__
     finally:
