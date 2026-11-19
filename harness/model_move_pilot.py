@@ -25,6 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 LIMIT = 16 * 1024 * 1024
 MESH_LIMIT = 24 * 1024 * 1024
 FACE_LIMIT = 300_000
+MODEL_DECIMAL_PLACES = 5
 MAIN = "3D/3dmodel.model"
 CONFIG = "Metadata/project_settings.config"
 SETTINGS = "Metadata/model_settings.config"
@@ -194,7 +195,7 @@ def prepare_mesh(raw, model_format, carrier):
     centered, vertex_ids = [], {}
     indices = []
     for point in points:
-        key = tuple(round(a - b, 5) for a, b in zip(point, center))
+        key = tuple(round(a - b, MODEL_DECIMAL_PLACES) for a, b in zip(point, center))
         if key not in vertex_ids:
             vertex_ids[key] = len(centered)
             centered.append(key)
@@ -257,7 +258,10 @@ def instance(raw, cancelled):
 
 
 def shape_digest(points, faces, cancelled):
-    rounded = [tuple(round(x * 10000) for x in p) for p in points]
+    # The prepared mesh already sits on this grid. Using a coarser grid can
+    # put a legitimate float32 round-trip on the opposite side of a midpoint.
+    scale = 10 ** MODEL_DECIMAL_PLACES
+    rounded = [tuple(round(x * scale) for x in p) for p in points]
     encoded = []
     for i, face in enumerate(faces):
         if i % 2048 == 0:

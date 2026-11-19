@@ -29,3 +29,10 @@ def test_geometry_input_changes_facts_and_digest_without_changing_template():
             validate_plan(bad, case)
     assert results[0][0] != results[1][0] and results[0][1] != results[1][1]
     assert results[0][2] == results[1][2]
+
+
+def test_shape_digest_uses_the_preparation_grid_across_float32_round_trip():
+    face = [(0, 1, 2)]
+    source = [(-45.75075, 0, 0), (-42.75075, 0, 0), (-42.75075, 0, 1)]
+    serialized = [(-45.7507515, 0, 0), (-42.7507515, 0, 0), (-42.7507515, 0, 1)]
+    assert shape_digest(source, face, lambda: False) == shape_digest(serialized, face, lambda: False)
