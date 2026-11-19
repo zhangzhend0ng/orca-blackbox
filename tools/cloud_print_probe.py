@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 
 from tools.cloud_device_probe import visible_lines
-from tools.cloud_upload_probe import click_client, one, opens_preprint_page
+from tools.cloud_upload_probe import click_client, find_send_button, one, opens_preprint_page
 
 
 def find_device_name(hwnd, name, bounds, surface):
@@ -124,8 +124,7 @@ def start_print(app, filename, result, poll):
 
     def button():
         nonlocal picker
-        width, height, raw = winutil.capture_window(dialog)
-        _, lines = visible_lines(dialog)
+        width, lines = visible_lines(dialog)
         heading = one([(x, y) for label, x, y in lines if label.strip() == "select printer"])
         selected = None
         if heading is not None:
@@ -137,20 +136,13 @@ def start_print(app, filename, result, poll):
             r"\b(?:offline|mismatch(?:es)?|not\s+(?:ready|available|connected)"
             r"|failed|different\s+material|nozzle\s+does\s+not\s+match|printer\s+is\s+printing)\b", words,
         ))
-        _, footer = visible_lines(
-            dialog, crop=(width - 140, height - 60, width - 35, height - 16), psm=7,
-        )
-        target = one([(x, y) for label, x, y in footer if label.strip() in {"print", "start print"}])
-        enabled = False
-        if target is not None:
-            x, y = target
-            offset = (y * width + x - 38) * 4
-            blue, green, red = raw[offset:offset + 3]
-            enabled = blue >= 190 and green >= 95 and red < 100
+        # The fixed build labels the footer Send in both WebView modes.
+        # Only the already verified path=4 is the upload-and-print flow.
+        target = find_send_button(dialog)
         filename_visible = filename in words or filename.removesuffix(".gcode") in words
         result["preprint"] = {"target_selected": selected is not None, "filename_visible": filename_visible,
-                              "warning": warning, "print_button_enabled": enabled}
-        return target if selected and filename_visible and not warning and enabled else None
+                              "warning": warning, "print_button_enabled": target is not None}
+        return target if selected and filename_visible and not warning else None
 
     point = poll(button, 8)
     if point is None and picker and not result["preprint"]["target_selected"]:
@@ -178,13 +170,15 @@ def start_print(app, filename, result, poll):
                 continue
             _, lines = visible_lines(current)
             words = "\n".join(label for label, _, _ in lines)
-            if re.search(r"\bprint\s+started\b", words):
-                result["print_receipt"] = "orca_print_started"
-                return True
-            if (filename.removesuffix(".gcode") in words and
-                    re.search(r"\b(?:heating|printing\s+in\s+progress|working|preparing)\b", words)):
-                result["print_receipt"] = "matching_job_on_device"
-                return True
+            if re.search(r"\bprint\s+task\s+was\s+sent\s+successfully\b", words):
+                result["print_task_sent"] = True
+            if (current == app.hwnd and filename.removesuffix(".gcode") in words and
+                    re.search(r"\bprinting\s+task\b", words)):
+                state = observe_device_task(app, name)
+                result["print_device_after"] = state
+                if state["selected"] and state["active_job"]:
+                    result["print_receipt"] = "matching_job_on_device"
+                    return True
         return False
 
     if poll(receipt, 75):

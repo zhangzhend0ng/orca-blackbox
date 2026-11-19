@@ -421,8 +421,11 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
         settings = {"app": {"region": "China", "language": "en_US", "default_page": "0"}}
         if print_new_project:
             settings["models"] = [{"vendor": "Snapmaker", "model": "SM_U1", "nozzle_diameter": "0.4"}]
-            settings["presets"] = {"machine": "Snapmaker U1 (0.4 nozzle)"}
-            settings["filaments"] = ["Snapmaker PLA Basic @U1"]
+            machine = "Snapmaker U1 (0.4 nozzle)"
+            material = "Snapmaker PLA Basic @U1"
+            settings["presets"] = {"machine": machine}
+            settings["filaments"] = [material]
+            settings["orca_presets"] = [{"machine": machine, "filament": material}]
         presets = profile.REPO_RESOURCES if print_new_project else None
         profile.seed_profile(datadir, conf_extra=settings, source_presets=presets)
         if presets is not None:
