@@ -11,9 +11,10 @@
 #   "FAILED: <name> <name> ..."  -> names written one per line
 #   "SUMMARY: PASS=n FAIL=0"     -> host list cleared (no stale reruns)
 #   no summary file              -> host list untouched (unknown state)
-param([switch]$V3, [string]$WindowsMcpRunId = '', [switch]$NativeSave)
+param([switch]$V3, [string]$WindowsMcpRunId = '', [switch]$NativeSave, [switch]$CloudLoginProbe)
 . (Join-Path $PSScriptRoot '_common.ps1')
 if($NativeSave -and -not $WindowsMcpRunId){throw '-NativeSave requires -WindowsMcpRunId'}
+if($CloudLoginProbe -and (-not $WindowsMcpRunId -or $NativeSave)){throw 'Invalid cloud login harvest selection'}
 
 $repo = Split-Path $PSScriptRoot -Parent
 $artifacts = Join-Path $repo 'artifacts'
@@ -25,7 +26,16 @@ if ($WindowsMcpRunId) {
   $target = Join-Path $artifacts ('windows_mcp_harvest\' + $WindowsMcpRunId)
   New-Item -ItemType Directory -Force $target | Out-Null
   $remote = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
-    param($sb,$id,$nativeSave)
+    param($sb,$id,$nativeSave,$cloudLogin)
+    if ($cloudLogin) {
+      $file = Join-Path $sb ('artifacts\cloud_login_runs\'+$id+'\result.json')
+      if (!(Test-Path -LiteralPath $file -PathType Leaf)) { throw 'Cloud login report missing' }
+      $item = Get-Item -LiteralPath $file
+      if ($item.Length -gt 65536 -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+        throw 'Cloud login report rejected'
+      }
+      return @{name='result.json';data=[Convert]::ToBase64String([IO.File]::ReadAllBytes($file))}
+    }
     $root=if($nativeSave){Join-Path $sb ('artifacts\v3\'+$id+'\artifacts')}else{Join-Path $sb ('artifacts\windows_mcp_runs\'+$id)}
     if($nativeSave -and !(Test-Path -LiteralPath $root)){
       $runner='C:\coil\run_suite.ps1'
@@ -83,7 +93,7 @@ if ($WindowsMcpRunId) {
         if(Test-Path -LiteralPath $p){@{name=$name;data=[Convert]::ToBase64String([IO.File]::ReadAllBytes($p))}}
       }
     }
-  } -ArgumentList $guestSandbox,$WindowsMcpRunId,([bool]$NativeSave)
+  } -ArgumentList $guestSandbox,$WindowsMcpRunId,([bool]$NativeSave),([bool]$CloudLoginProbe)
   foreach($file in $remote){
     $destination=Join-Path $target $file.name
     New-Item -ItemType Directory -Force (Split-Path $destination -Parent)|Out-Null

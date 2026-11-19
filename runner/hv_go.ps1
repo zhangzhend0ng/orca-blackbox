@@ -11,8 +11,12 @@ param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$W
       [ValidateSet('script', 'agent_mcp')][string]$V3Executor = 'script', [string]$V3RunId = '',
       [switch]$WindowsMcpProbe, [string]$ProbeRunId = '', [switch]$NativeSave, [switch]$ProbeMixWaits,
       [ValidateSet('codex','zcode','script')][string]$NativeActor = 'codex',
-      [ValidatePattern('\A[a-z0-9_]{1,64}\z')][string]$NativeScenario = 'base')
+      [ValidatePattern('\A[a-z0-9_]{1,64}\z')][string]$NativeScenario = 'base',
+      [switch]$CloudLoginProbe)
 . (Join-Path $PSScriptRoot '_common.ps1')
+if ($CloudLoginProbe -and (-not $WindowsMcpProbe -or $NativeSave -or $vm -ne 'win11-test' -or $guestUser -ne 'test')) {
+    throw 'Cloud login requires the standalone probe slot on win11-test/test'
+}
 if ($NativeSave -and $NativeActor -eq 'zcode' -and -not $PSBoundParameters.ContainsKey('NativeScenario')) {
     $NativeScenario = 'uia_hybrid_layer'
 }
@@ -146,7 +150,7 @@ if ($v.State -ne 'Running') {
 Write-Host "[2] waiting for guest autologon..."
 $deadline = (Get-Date).AddMinutes(6)
 $q = $null
-if ($ProbeMixWaits) {
+if ($ProbeMixWaits -or $CloudLoginProbe) {
   $q = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock { (quser 2>&1 | Out-String).Trim() } -ErrorAction SilentlyContinue
   if ($q -match $guestUser) { Write-Host '    guest already logged on before first interval' }
 }
@@ -262,7 +266,7 @@ Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
   # NOTE: this scriptblock runs ON THE GUEST — everything it needs must be
   # marshaled via param/-ArgumentList (host-side $warmup is not visible here;
   # measured 09-03 night: silent $false, warmup block never emitted).
-  param($caseStr, $sb, $py, $warmup, $suite, $v3, $v3Executor, $v3RunId, $mcpProbe, $probeRunId, $nativeSave, $nativeActor, $nativeScenario)
+  param($caseStr, $sb, $py, $warmup, $suite, $v3, $v3Executor, $v3RunId, $mcpProbe, $probeRunId, $nativeSave, $nativeActor, $nativeScenario, $cloudLogin)
   # full run: the guest derives the list from cases.py itself (single
   # source of truth); explicit subset: split the passed string.
   # warmup fragment — the host-side decision ($warmup) must be baked into
@@ -358,6 +362,13 @@ Set-Location '$sb'
 exit `$LASTEXITCODE
 "@
   }
+  if ($cloudLogin) {
+    $runner = @"
+Set-Location '$sb'
+& '$py' -B 'tools\cloud_login_probe.py' --run-id '$probeRunId' *> `$null
+exit `$LASTEXITCODE
+"@
+  }
   [IO.File]::WriteAllText('C:\coil\run_suite.ps1', $runner)
   Unregister-ScheduledTask -TaskName suite -Confirm:$false -ErrorAction SilentlyContinue
   $a = New-ScheduledTaskAction -Execute "powershell.exe" -Argument ("-NoProfile -ExecutionPolicy Bypass -File C:\coil\run_suite.ps1 " + $caseStr)
@@ -366,7 +377,7 @@ exit `$LASTEXITCODE
   Register-ScheduledTask -TaskName "suite" -Action $a -Settings $st -Principal $p -Force | Out-Null
   Start-ScheduledTask -TaskName "suite"
   "suite launched: " + (Get-ScheduledTask suite).State
-} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, ([bool]$V3), $V3Executor, $V3RunId, ([bool]$WindowsMcpProbe), $ProbeRunId, ([bool]$NativeSave), $NativeActor, $NativeScenario
+} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, ([bool]$V3), $V3Executor, $V3RunId, ([bool]$WindowsMcpProbe), $ProbeRunId, ([bool]$NativeSave), $NativeActor, $NativeScenario, ([bool]$CloudLoginProbe)
 Write-Host "[4] DONE. Poll progress any time (admin window):"
 Write-Host "    Get-Content C:\coil\vm_setup\poll_rerun.txt | Set-Content C:\coil\vm_setup\relay_cmd.txt   # via relay"
 Write-Host "    or in guest: Get-Content C:\coil\regress_progress.txt -Tail 5"
