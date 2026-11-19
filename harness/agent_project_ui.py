@@ -47,6 +47,11 @@ class ProjectUI(BusinessUI):
         return {"path": PROJECT_PATH, "sha256": hashlib.sha256(raw).hexdigest(), "size_bytes": len(raw)}
 
     def _save_command(self):
+        self._project_command("save project as")
+
+    def _project_command(self, label):
+        if label not in {"save project as", "open project"}:
+            raise ProtocolError("project_command_scope")
         toolbar = self.tb._topbar(self.app.hwnd)
         if not toolbar or not self.owned(toolbar[2]):
             raise ProtocolError("file_toolbar_missing")
@@ -62,7 +67,7 @@ class ProjectUI(BusinessUI):
         try:
             hmenu = self.tb.menu_hmenu(menu_hwnd)
             rows = [row for row in self.tb.menu_items(hmenu) if
-                row[1].replace("&", "").split("\t", 1)[0].strip().rstrip(".\u2026").lower() == "save project as"]
+                row[1].replace("&", "").split("\t", 1)[0].strip().rstrip(".\u2026").lower() == label]
             if len(rows) != 1 or rows[0][2] & 3:  # MF_GRAYED | MF_DISABLED
                 raise ProtocolError("save_project_command_unavailable")
             item_id, _submenu = self.tb.item_info(hmenu, rows[0][0])

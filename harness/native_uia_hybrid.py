@@ -10,6 +10,8 @@ from .native_save_policy import INPUT_TOOLS, PROCESS_POPUP, InputGuard, UIA_VISU
 from .native_uia import SAVE_DIALOG_TITLES, UiaSaveGuard, value_digest, verify_uia_save
 
 OBSERVATION_LIMIT_NS = 30_000_000_000
+POPUP_BIND_LIMIT_NS = 45_000_000_000
+POPUP_CROP_LIMIT_NS = 180_000_000_000
 UIA_REFRESH_ACTIONS = {
     "EditControl": ("Type", "ValuePattern"),
     "ButtonControl": ("Click", "InvokePattern"),
@@ -59,6 +61,7 @@ class UiaHybridGuard(UiaSaveGuard):
         self.crop_id = 0
         self.canvas_click_crop = None
         self.sidebar_opener = None
+        self.bound_process_popup = None
         self.mix = None
         if scope["scenario"] in UIA_MIX_SCENARIOS:
             from .native_mix_uia import MixSurface
@@ -169,6 +172,7 @@ class UiaHybridGuard(UiaSaveGuard):
 
     def record_click(self, loc, *, clicks=1):
         super().record_click(loc, clicks=clicks)
+        self.bound_process_popup = None
         self.sidebar_opener = ((list(loc), time.monotonic_ns())
             if self.scope["scenario"] in UIA_PROCESS_SCENARIOS
             and self.last_window.get("visual_fallback") == "wx_sidebar"
@@ -178,14 +182,18 @@ class UiaHybridGuard(UiaSaveGuard):
         if self.scope["scenario"] not in UIA_PROCESS_SCENARIOS or self.sidebar_opener is None:
             return None
         opening_loc, opened = self.sidebar_opener
-        if not 0 <= time.monotonic_ns() - opened <= 45_000_000_000:
-            return None
         popup = self._popup(wu, hwnd)
         bounds = list(wu.window_rect(hwnd))
         sidebar = self._regions(wu).get("wx_sidebar")
         if sidebar is None or not process_popup_near_sidebar(popup, bounds, sidebar, opening_loc):
             return None
-        return {"popup": popup, "bounds": bounds, "sidebar": sidebar, "opened_by": opening_loc}
+        proof = {"popup": popup, "bounds": bounds, "sidebar": sidebar, "opened_by": opening_loc}
+        if self.bound_process_popup is not None:
+            return proof if proof == self.bound_process_popup else None
+        if 0 <= time.monotonic_ns() - opened <= POPUP_BIND_LIMIT_NS:
+            self.bound_process_popup = proof
+            return proof
+        return None
 
     def _process_popup_input(self, wu, hwnd, name, args, proof):
         bounds = proof["bounds"]
@@ -198,7 +206,7 @@ class UiaHybridGuard(UiaSaveGuard):
         if name == "Click" and "loc" in args:
             crop = self.crops.get(PROCESS_POPUP)
             if (crop is None or crop.region != bounds or not contains(bounds, args["loc"])
-                    or not 0 <= time.monotonic_ns() - crop.taken_at_ns <= OBSERVATION_LIMIT_NS):
+                    or not 0 <= time.monotonic_ns() - crop.taken_at_ns <= POPUP_CROP_LIMIT_NS):
                 raise ValueError("native_process_popup_crop_required")
             hit = wu.window_from_screen_point(*args["loc"])
             item = self.control_from_point(*args["loc"])
@@ -338,6 +346,8 @@ class UiaHybridGuard(UiaSaveGuard):
                 self.last_window["process_popup"] = process_popup
             return self.last_window
         self.last_window.update(self._main_window(wu, hwnd))
+        if self.bound_process_popup is not None:
+            self.bound_process_popup = self.sidebar_opener = None
         mix_closure = None
         if self.needs_main_snapshot and name != "Snapshot":
             if self.mix is not None and name == "Shortcut":
@@ -568,6 +578,11 @@ def verify_process_scroll(window, group, observed_viewports, sidebar):
              and type(attempted) is list and attempted == [p for p in backends if p in attempted]
              and all(p in patterns or p == "WM_VSCROLL" for p in attempted)
              and scroll.get("backend") == (attempted[-1] if attempted else "none"), "native_process_viewport_backend")
+    scroll_before, scroll_after = scroll.get("scroll_before"), scroll.get("scroll_after")
+    for scrollbar in (scroll_before, scroll_after):
+        _require(type(scrollbar) is list and len(scrollbar) == 4 and all(type(v) is int for v in scrollbar)
+                 and scrollbar[0] <= scrollbar[3] <= scrollbar[1] and scrollbar[2] > 0,
+                 "native_process_scrollbar_readback")
     after = scroll.get("after")
     for position in (before, after):
         _require(type(position) is dict and position.get("group") == group
@@ -577,14 +592,16 @@ def verify_process_scroll(window, group, observed_viewports, sidebar):
                  and sidebar is not None and within(sidebar, position["bounds"]), "native_process_viewport_geometry")
     _require(all(before[key] == after[key] for key in ("hwnd", "group_hwnd", "bounds"))
              and after["bounds"][1] <= after["group_bounds"][1] < after["bounds"][3]
-             and (attempted or before == after), "native_process_viewport_readback")
+             and ((before == after and scroll_before == scroll_after) if not attempted
+                  else before["group_bounds"] != after["group_bounds"] and scroll_before[3] != scroll_after[3]),
+             "native_process_viewport_readback")
 
 
 def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scenario, prepared_dialog=None,
                         allow_refresh=False, strict_crop_lifetime=False, named_crops_only=False):
     regions, crop, targets = {}, None, []
     crops, canvas_click = {}, None
-    opener, popup_crop = None, None
+    opener, popup_crop, bound_popup = None, None, None
     popup_open = pending_uia_snapshot = False
     counts = dict(uia_tree_calls=0, uia_actions=0, cropped_visual_calls=0, visual_inputs=0)
     enum_readbacks, process_viewports = set(), {}
@@ -674,13 +691,16 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
             popup, bounds, sidebar = proof["popup"], proof["bounds"], proof["sidebar"]
             _require(scenario in UIA_PROCESS_SCENARIOS and opener is not None
                      and proof["opened_by"] == opener[0] and sidebar == opener[1]
-                     and 0 <= row["started_at_ns"] - opener[2] <= 45_000_000_000
+                     and (bound_popup == proof
+                          or (bound_popup is None
+                              and 0 <= row["started_at_ns"] - opener[2] <= POPUP_BIND_LIMIT_NS))
                      and popup["root_owner_hwnd"] == main_hwnd and popup["hwnd"] != main_hwnd
                      and window["foreground_hwnd"] == popup["hwnd"]
                      and window["app_pid"] == window["foreground_pid"] == app_pid
                      and window["visual_fallback"] == PROCESS_POPUP
                      and window["visual_region"] == window["visual_anchor_region"] == bounds
                      and process_popup_near_sidebar(popup, bounds, sidebar, opener[0]), "native_process_popup_binding")
+            bound_popup = proof
             ticket = (proof, window["visual_crop_id"])
             if name == "Screenshot":
                 _require(args == {"region_name": PROCESS_POPUP} and ticket[1] == counts["cropped_visual_calls"] + 1
@@ -689,12 +709,12 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
                 counts["cropped_visual_calls"] += 1
             else:
                 _require(name == "Click" and popup_crop is not None and popup_crop[:2] == ticket
-                         and 0 <= row["started_at_ns"] - popup_crop[2] <= OBSERVATION_LIMIT_NS
+                         and 0 <= row["started_at_ns"] - popup_crop[2] <= POPUP_CROP_LIMIT_NS
                          and contains(bounds, args["loc"]) and window["target_hwnd"] == popup["hwnd"]
                          and window["target_pid"] == app_pid and window["target_class"] == "wxWindowNR",
                          "native_process_popup_input")
                 counts["visual_inputs"] += 1
-                opener = popup_crop = None
+                opener = popup_crop = bound_popup = None
                 needs_enum_readback = scenario in UIA_ENUM_SCENARIOS
             crops.clear()
             canvas_click = None
@@ -708,6 +728,16 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
                      and window.get("app_pid") == window.get("foreground_pid") == app_pid
                      and popup.get("hwnd") == hwnd and popup.get("root_owner_hwnd") == main_hwnd
                      and type(popup.get("class")) is str and popup["class"], "native_uia_popup_binding")
+            proof = window.get("process_popup")
+            if proof is not None:
+                _require(scenario in UIA_PROCESS_SCENARIOS and opener is not None
+                         and proof["popup"] == popup and proof["opened_by"] == opener[0]
+                         and proof["sidebar"] == opener[1]
+                         and (bound_popup == proof or (bound_popup is None and
+                              0 <= row["started_at_ns"] - opener[2] <= POPUP_BIND_LIMIT_NS))
+                         and process_popup_near_sidebar(popup, proof["bounds"], opener[1], opener[0]),
+                         "native_process_popup_binding")
+                bound_popup = proof
             regions, crop, targets = {}, None, []
             crops.clear()
             canvas_click = None
@@ -741,6 +771,8 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
                 if canvas_click is not None and regions.get("imgui_canvas") != canvas_click[1][3]:
                     canvas_click = None
             popup_open = False
+            if bound_popup is not None:
+                bound_popup = opener = None
             pending_uia_snapshot = False
             counts["uia_tree_calls"] += 1
         elif name == "Screenshot":

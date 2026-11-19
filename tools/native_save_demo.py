@@ -76,6 +76,7 @@ def wait_script(run_id):
 
 
 def main():
+    started = time.monotonic()
     p = argparse.ArgumentParser()
     p.add_argument("--run-id", default=None)
     p.add_argument("--record-desktop", action="store_true", help="Record the dedicated win11-test desktop.")
@@ -84,7 +85,7 @@ def main():
     p.add_argument("--probe-mix-waits", action="store_true", help="Measure the mixing replay with readiness checks replacing fixed sleeps.")
     p.add_argument("--probe-mix-boot", action="store_true", help="Include readiness-based startup dialog scanning in the mixing waits probe.")
     p.add_argument("--actor", choices=("codex", "zcode", "script"), default="codex")
-    from harness.native_matrix import REPLAY_SOURCES, SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_LAYER_SCENARIO, UIA_MIX_RECIPES, UIA_REPLAY_MIX
+    from harness.native_matrix import FIXTURE_SCENARIOS, REPLAY_SOURCES, SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_LAYER_SCENARIO, UIA_MIX_RECIPES, UIA_REPLAY_MIX
     p.add_argument("--scenario", choices=tuple(s for s in SCENARIOS if s not in {"canvas_probe", "authority_probe"}))
     args = p.parse_args()
     args.probe_mix_waits |= args.probe_mix_boot
@@ -107,9 +108,16 @@ def main():
     if not re.fullmatch(r"[0-9a-f]{40}", head):
         raise ValueError("invalid_demo_head")
     sources = HOST_SOURCES
-    if args.scenario in REPLAY_SOURCES:
+    fixture_cases = ()
+    if args.scenario in FIXTURE_SCENARIOS:
+        from harness.native_fixture_suite import FIXTURE_CASES
+        fixture_cases = FIXTURE_CASES
+        sources += ("harness/native_fixture_suite.py",)
+    for scenario in fixture_cases or (args.scenario,):
+        if scenario not in REPLAY_SOURCES:
+            continue
         from harness.native_uia_replay import recipe_path
-        recording = recipe_path(args.scenario).relative_to(REPO).as_posix()
+        recording = recipe_path(scenario).relative_to(REPO).as_posix()
         if recording not in sources:
             sources += (recording,)
     for source in sources:
@@ -142,7 +150,7 @@ def main():
         "@{head=(& $git -C $sb rev-parse HEAD);dirty=@(& $git -C $sb status --porcelain);"
         r"runtime=(Test-Path 'C:\coil\tools\windows-mcp-0.8.9\python.exe')} } -ArgumentList $guestSandbox,$guestGit"+"\n"
         "if($state.head.Trim() -ne "+quoted(head)+" -or $state.dirty.Count"
-        + (" -or -not $state.runtime" if args.actor != "script" or args.scenario in REPLAY_SOURCES or args.inspect_mix_controls
+        + (" -or -not $state.runtime" if args.actor != "script" or args.scenario in REPLAY_SOURCES or fixture_cases or args.inspect_mix_controls
            else "") + "){throw 'demo_guest_sync_or_runtime_required'}\n"
         +capture_request+
         "& "+quoted(REPO / "runner/hv_go.ps1")+" -NoSync -WindowsMcpProbe -NativeSave -ProbeRunId "+quoted(run_id)
@@ -179,17 +187,30 @@ def main():
             "[IO.File]::WriteAllText((Join-Path $a 'control_cancel.json'),'{\"reason\":\"host_error\"}');"
             "for($i=0;$i-lt 100;$i++){if(Test-Path (Join-Path $a 'process.json')){break};Start-Sleep -Milliseconds 300}}"
             "} -ArgumentList $guestSandbox,"+quoted(run_id)+"\n")
+    child_harvest = ""
+    if fixture_cases:
+        child_ids = [uuid.uuid5(uuid.UUID(run_id), scenario).hex for scenario in fixture_cases]
+        suite_path = REPO / "artifacts/windows_mcp_harvest" / run_id / "fixture_suite.json"
+        harvest_command = quoted(REPO / "runner/hv_harvest.ps1") + " -NativeSave -WindowsMcpRunId "
+        child_harvest = (
+            "if (Test-Path -LiteralPath " + quoted(suite_path) + "){\n"
+            "$children=@((Get-Content -Raw -LiteralPath " + quoted(suite_path) + " | ConvertFrom-Json).cases)\n"
+            "foreach($child in $children){\n"
+            "if ($child.run_id -cnotin @(" + ",".join(map(quoted, child_ids)) + ")){throw 'fixture_child_identity'}\n"
+            "& " + harvest_command + "$child.run_id *>> " + quoted(root / "harvest.log") + "\n}\n}\n"
+        )
     harvest.write_text("$ErrorActionPreference='Stop'\ntry {\n"
         "$env:ORCA_BB_GUEST_SANDBOX="+quoted(r"C:\coil\orca-blackbox-v3-r1")+"\n"+cancel+"& "
         +quoted(REPO / "runner/hv_harvest.ps1")+" -NativeSave -WindowsMcpRunId "+quoted(run_id)
-        +" *> "+quoted(root / "harvest.log")+"\n$r=@{ok=$true}\n"
+        +" *> "+quoted(root / "harvest.log")+"\n"+child_harvest+"$r=@{ok=$true}\n"
         "}catch{$r=@{ok=$false;error_type=$_.Exception.GetType().Name}}\n"
         "$r|ConvertTo-Json|Set-Content "+quoted(harvest_done)+" -Encoding UTF8\n", encoding="utf-8")
     detached(harvest, harvest_done, 120)
     result_path = REPO / "artifacts/windows_mcp_harvest" / run_id / "result.json"
     result = json.loads(result_path.read_text()) if result_path.exists() else {"verified_pass": False}
     summary = {"run_id": run_id, "source_sha": head, "actor": args.actor, "scenario": args.scenario, "actor_exit": code,
-               "actor_error": error, "result": result, "release_eligible": False}
+               "actor_error": error, "result": result, "release_eligible": False,
+               "host_wall_seconds": time.monotonic() - started}
     if args.goal_only:
         summary["prompt_mode"] = "goal_only"
     if args.probe_mix_waits:

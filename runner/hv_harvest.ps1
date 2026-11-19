@@ -31,7 +31,9 @@ if ($WindowsMcpRunId) {
     $names=@('process.json','worker.json','worker.log','server.log','ready.json')
     if($nativeSave){$names=@('canvas_diagnostic.json','setup.json','control_cancel.json','process.json','proof.json','native_worker.json','native_worker.log','native_trace.ndjson','host_done.json','scope.json','server.log','ready.json','initial.png','agent_final.png','proof_final.png','projects/0001.3mf','proof/0001.3mf','exports/0001.gcode')}
     if($nativeSave){
-      $names+=@('canvas_setup.json','authority_abort.json','authority_probe.json','desktop_video.json','desktop.mp4','mix_controls.ndjson')
+      $names+=@('canvas_setup.json','authority_abort.json','authority_probe.json','desktop_video.json','desktop.mp4','mix_controls.ndjson',
+                'fixture_suite.json','fixture_case.json','input/fixture.3mf','initial_state.3mf',
+                'initial_state/projects/0001.3mf','close_windows.json')
       $names+=@(Get-ChildItem -LiteralPath $root -Filter 'mix_controls_*.png' | Where-Object {$_.Name -cmatch '^mix_controls_(ratio|gradient)_(dialog|choices|compatible)\.png$'} | ForEach-Object Name)
       $names+=@(Get-ChildItem -LiteralPath $root -Filter 'canvas_input_*.json' | Where-Object {$_.Name -cmatch '^canvas_input_([1-9]|[1-3][0-9]|40)\.json$'} | ForEach-Object Name)
       $names+=@(Get-ChildItem -LiteralPath $root -Filter 'native_observation_*.png' | Where-Object {$_.Name -cmatch '^native_observation_([1-9]|[1-3][0-9]|40)\.png$'} | ForEach-Object Name)

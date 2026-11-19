@@ -30,13 +30,14 @@ UIA_MIX_SCENARIOS = frozenset((UIA_MIX_RECIPES, UIA_REPLAY_MIX))
 UIA_SAVE_SCENARIOS = frozenset((UIA_SAVE_SCENARIO, UIA_REPLAY_SAVE))
 SCRIPT_COMPARISON_SCENARIOS = (UIA_LAYER_SCENARIO, UIA_CANVAS_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO, UIA_SAVE_SCENARIO,
                                UIA_PROCESS_COMBO, UIA_MIX_RECIPES, UIA_QUALITY_ENUMS, UIA_MOVE_LAYER)
-SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES)
+FIXTURE_SCENARIOS = ("fixture_cold", "fixture_shared")
+SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *FIXTURE_SCENARIOS)
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
 UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
     "uia_general_bottom_strength", "uia_general_bottom_quality", *UIA_Y_SCENARIOS,
     "uia_general_combo", UIA_DISTURBANCE_SCENARIO)
-UIA_HYBRID_SCENARIOS = frozenset((*SCRIPT_SCENARIOS, *UIA_GENERALIZATION)) - UIA_SAVE_SCENARIOS
+UIA_HYBRID_SCENARIOS = frozenset((*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *UIA_GENERALIZATION)) - UIA_SAVE_SCENARIOS
 SCALE_SCENARIOS = ("general_scale_quality", "general_scale_others")
 CANVAS_REPLACE_SCENARIOS = frozenset((CANVAS_REPLACE_SCENARIO, UIA_CANVAS_SCENARIO, UIA_REPLAY_CANVAS, *SCALE_SCENARIOS, *UIA_Y_SCENARIOS)) | UIA_MOVE_LAYER_SCENARIOS
 CANVAS_SCENARIOS = CANVAS_REPLACE_SCENARIOS | {"canvas_trial"}
@@ -64,6 +65,7 @@ SCENARIOS = {
     UIA_REPLAY_PROCESS: ("Quality", None),
     UIA_REPLAY_MIX: ("Quality", None),
     **dict.fromkeys(UIA_ENUM_SCENARIOS | UIA_MOVE_LAYER_SCENARIOS, ("Quality", None)),
+    **dict.fromkeys(FIXTURE_SCENARIOS, ("Quality", None)),
     "overwrite": ("Quality", "overwrite"),
     "safety_cancel": ("Quality", "cancel"),
     "safety_timeout": ("Quality", "timeout"),
@@ -106,7 +108,8 @@ def scenario_spec(actor, scenario):
         if scenario not in SCRIPT_SCENARIOS:
             raise ValueError("native_script_scenario_not_registered")
         return SCENARIOS[scenario]
-    if actor not in {"codex", "zcode"} or scenario not in SCENARIOS or scenario in REPLAY_SOURCES:
+    if (actor not in {"codex", "zcode"} or scenario not in SCENARIOS
+            or scenario in REPLAY_SOURCES or scenario in FIXTURE_SCENARIOS):
         raise ValueError("native_scenario_not_registered")
     if actor != "zcode" and scenario != "base":
         raise ValueError("native_matrix_requires_zcode")

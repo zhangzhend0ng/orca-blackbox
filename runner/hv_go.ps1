@@ -17,13 +17,16 @@ param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$W
           'general_wall','general_slot2','general_top_strength','general_top_quality','general_scale_quality','general_scale_others','general_combo','general_combo_dialog',
           'uia_save_as','uia_hybrid_layer','uia_hybrid_layer_strength','uia_hybrid_canvas','uia_process_combo','uia_mix_recipes','uia_replay_layer','uia_replay_save','uia_replay_canvas','uia_replay_process','uia_replay_mix','uia_general_wall','uia_general_slot2','uia_general_bottom_strength',
           'uia_general_bottom_quality','uia_general_y_quality','uia_general_y_others','uia_general_combo','uia_general_combo_dialog',
-          'uia_quality_enums','uia_move_layer','uia_replay_enums','uia_replay_move_layer')][string]$NativeScenario = 'base')
+          'uia_quality_enums','uia_move_layer','uia_replay_enums','uia_replay_move_layer','fixture_cold','fixture_shared')][string]$NativeScenario = 'base')
 . (Join-Path $PSScriptRoot '_common.ps1')
 if ($NativeSave -and $NativeActor -eq 'zcode' -and -not $PSBoundParameters.ContainsKey('NativeScenario')) {
     $NativeScenario = 'uia_hybrid_layer'
 }
-if ($NativeActor -eq 'script' -and $NativeScenario -notin @('uia_save_as','uia_hybrid_layer','uia_hybrid_layer_strength','uia_hybrid_canvas','uia_process_combo','uia_mix_recipes','uia_replay_layer','uia_replay_save','uia_replay_canvas','uia_replay_process','uia_replay_mix','uia_quality_enums','uia_move_layer','uia_replay_enums','uia_replay_move_layer')) {
+if ($NativeActor -eq 'script' -and $NativeScenario -notin @('uia_save_as','uia_hybrid_layer','uia_hybrid_layer_strength','uia_hybrid_canvas','uia_process_combo','uia_mix_recipes','uia_replay_layer','uia_replay_save','uia_replay_canvas','uia_replay_process','uia_replay_mix','uia_quality_enums','uia_move_layer','uia_replay_enums','uia_replay_move_layer','fixture_cold','fixture_shared')) {
     throw 'Script requires a registered comparison or replay scenario'
+}
+if ($NativeScenario -in @('fixture_cold','fixture_shared') -and $NativeActor -ne 'script') {
+    throw 'Fixture scenarios require the recorded script actor'
 }
 if ($NativeScenario -ne 'base' -and (-not $NativeSave -or $NativeActor -eq 'codex')) { throw 'NativeScenario requires ZCode or script NativeSave' }
 if ($NativeSave -and -not $WindowsMcpProbe) { throw '-NativeSave requires -WindowsMcpProbe' }

@@ -16,7 +16,7 @@ from decimal import DecimalException
 from .agent_protocol import LAYER_FIXTURE_SHA256, valid_run_id
 from .native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
 from .native_matrix import (CANVAS_REPLACE_SCENARIO, CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS,
-    GENERALIZATION, REPLAY_SOURCES, SCRIPT_SCENARIOS, UIA_CANVAS_SCENARIO, UIA_HYBRID_SCENARIOS,
+    FIXTURE_SCENARIOS, GENERALIZATION, REPLAY_SOURCES, SCRIPT_SCENARIOS, UIA_CANVAS_SCENARIO, UIA_HYBRID_SCENARIOS,
     UIA_MIX_RECIPES, UIA_MOVE_LAYER, UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS, UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
 from .run_contract import validate_contract
 from .run_verdict import CheckResult, contract_digest
@@ -46,6 +46,18 @@ class NativeSaveHandle(_ScriptHandle):
 def native_contract(actor="codex", scenario="base"):
     from .native_matrix import scenario_spec
     scenario_spec(actor, scenario)
+    if scenario in FIXTURE_SCENARIOS:
+        from .native_fixture_suite import FIXTURE_CASES
+        from .native_uia_replay import read_recipe
+        steps = [{"id": "setup", "goal": "Verify initial project state for each compound recipe."}]
+        for index, case in enumerate(FIXTURE_CASES):
+            _, digest = read_recipe(case)
+            steps.append({"id": f"replay_{index}", "goal": f"Replay {case} using SHA256 {digest}."})
+        steps.append({"id": "proof", "goal": "Gracefully close editing sessions and independently reopen each saved project to reslice."})
+        return validate_contract({"schema_version": 1, "case_id": scenario,
+            "contract_version": "native-compound-" + scenario + "-1", "executor": "script",
+            "required_checks": ["path", "business"], "steps": steps,
+            "limits": {"timeout_s": 900, "max_actions": 80, "max_retries": 0, "max_cost_usd": 0}})
     if actor == "script":
         recorded = scenario in REPLAY_SOURCES
         source_scenario = REPLAY_SOURCES.get(scenario, scenario)
@@ -132,11 +144,16 @@ def native_contract(actor="codex", scenario="base"):
 def native_spec(digest):
     from .native_matrix import SCENARIOS
     from .native_uia_replay import recipe_path
-    for actor, scenarios in (("codex", ("base",)), ("zcode", (s for s in SCENARIOS if s not in REPLAY_SOURCES)),
+    for actor, scenarios in (("codex", ("base",)), ("zcode", (s for s in SCENARIOS
+                               if s not in REPLAY_SOURCES and s not in FIXTURE_SCENARIOS)),
                              ("script", SCRIPT_SCENARIOS)):
         for scenario in scenarios:
             if scenario in REPLAY_SOURCES and not recipe_path(scenario).is_file():
                 continue
+            if scenario in FIXTURE_SCENARIOS:
+                from .native_fixture_suite import FIXTURE_CASES
+                if not all(recipe_path(case).is_file() for case in FIXTURE_CASES):
+                    continue
             if digest == contract_digest(native_contract(actor, scenario)):
                 return actor, scenario
     raise ValueError("native_contract_digest")
@@ -205,7 +222,8 @@ def verify_unchanged_saved(frozen, fixture, gcode, cancelled):
     return "UIA Save As preserved all fixture settings and geometry; fresh-profile reopen produced 68 layers"
 
 
-def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, cancelled):
+def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, cancelled, *,
+                           process_ref="artifact:process.json"):
     from .agent_verify import _require
     from .native_matrix import scenario_spec
     from .native_pilots import verify_business
@@ -245,7 +263,7 @@ def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, can
         detail = verify_unchanged_saved(frozen, fixture, gcode, cancelled)
     else:
         detail = verify_layer_saved(frozen, fixture, gcode, cancelled=cancelled)
-    refs = ("artifact:proof.json", "artifact:process.json", "artifact:native_worker.json",
+    refs = ("artifact:proof.json", process_ref, "artifact:native_worker.json",
             "artifact:proof/0001.3mf:sha256:"+proof["project_sha256"],
             "artifact:exports/0001.gcode:sha256:"+proof["gcode_sha256"])
     if scenario in REPLAY_SOURCES:
@@ -266,7 +284,7 @@ def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, can
         "business": CheckResult("pass", detail, refs)}, True, True)
 
 
-def verify_saved(snapshot, *, cancelled=lambda: False):
+def verify_saved(snapshot, *, cancelled=lambda: False, batch_process=None):
     from .script_verify import _read, _json, _InvalidEvidence
     from .agent_verify import _require
     refs = []
@@ -276,9 +294,14 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
     try:
         actor, scenario = native_spec(contract_digest(snapshot.contract))
         read = lambda n, limit: _read(snapshot.artifact_dir, n, snapshot.manifest["started_at_ns"], limit, cancelled)
-        process, proof = _json(read("process.json", 65536)), _json(read("proof.json", 65536))
+        if scenario in FIXTURE_SCENARIOS:
+            from .native_fixture_suite import verify_fixture_suite
+            return verify_fixture_suite(snapshot, scenario, read, cancelled)
+        process = _json(read("process.json", 65536)) if batch_process is None else batch_process
+        process_run_id = snapshot.run_id if batch_process is None else snapshot.manifest["metadata"]["environment_id"]
+        proof = _json(read("proof.json", 65536))
         _require(all(type(process[k]) is int for k in ("exit_code", "active_processes"))
-                 and process["run_id"] == snapshot.run_id and process["exit_code"] == 0
+                 and process["run_id"] == process_run_id and process["exit_code"] == 0
                  and process["active_processes"] == 0 and process["job_assigned"] is True
                  and process["forced_termination"] is False, "native_process_cleanup")
         _require(all(type(proof[k]) is int for k in ("mcp_active_processes", "old_exit_code", "reopened_exit_code", "old_pid"))
@@ -296,7 +319,8 @@ def verify_saved(snapshot, *, cancelled=lambda: False):
         digest = hashlib.sha256(frozen).hexdigest()
         _require(saved == frozen and digest == proof["project_sha256"], "native_frozen_file_binding")
         if actor == "script":
-            return verify_script_business(snapshot, scenario, read, proof, fixture, frozen, cancelled)
+            ref = "artifact:process.json" if batch_process is None else "batch:" + process_run_id + ":artifact:process.json"
+            return verify_script_business(snapshot, scenario, read, proof, fixture, frozen, cancelled, process_ref=ref)
         host = _json(read("host_done.json", 65536))
         _require(type(host["host_active_processes"]) is int and type(host["tool_count"]) is int
                  and host["run_id"] == snapshot.run_id and host["native_ok"] is True
