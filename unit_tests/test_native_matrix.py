@@ -11,7 +11,8 @@ from tools.zcode_matrix import grade
 
 
 def test_registered_matrix_contracts_are_distinct_and_closed():
-    script_only = RECORDED_SCENARIOS | set(FIXTURE_SCENARIOS)
+    from harness.native_matrix import BOUND_MODEL_MOVE
+    script_only = RECORDED_SCENARIOS | set(FIXTURE_SCENARIOS) | {BOUND_MODEL_MOVE}
     scenarios = [scenario for scenario in SCENARIOS if scenario not in script_only]
     hashes = [contract_digest(native_contract("zcode", s)) for s in scenarios]
     assert len(set(hashes)) == len(scenarios)

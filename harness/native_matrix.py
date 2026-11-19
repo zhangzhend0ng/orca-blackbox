@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from .native_diagnostic_recovery import COMMIT_SCENARIO, SCENARIO as DIAGNOSTIC_SCENARIO
 from .native_pairwise import PAIR_CASES, PAIR_ENUM_CASES, PAIR_MOVE_CASES
+from .model_move_pilot import SCENARIO as BOUND_MODEL_MOVE
 
 CANVAS_REPLACE_SCENARIO = "canvas_replace_trial"
 UIA_SAVE_SCENARIO = "uia_save_as"
@@ -33,7 +34,7 @@ UIA_SAVE_SCENARIOS = frozenset((UIA_SAVE_SCENARIO, UIA_REPLAY_SAVE))
 SCRIPT_COMPARISON_SCENARIOS = (UIA_LAYER_SCENARIO, UIA_CANVAS_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO, UIA_SAVE_SCENARIO,
                                UIA_PROCESS_COMBO, UIA_MIX_RECIPES, UIA_QUALITY_ENUMS, UIA_MOVE_LAYER)
 FIXTURE_SCENARIOS = ("fixture_cold", "fixture_shared")
-SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *PAIR_CASES, *FIXTURE_SCENARIOS)
+SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *PAIR_CASES, *FIXTURE_SCENARIOS, BOUND_MODEL_MOVE)
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
 UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
@@ -69,6 +70,7 @@ SCENARIOS = {
     **dict.fromkeys(UIA_ENUM_SCENARIOS | UIA_MOVE_LAYER_SCENARIOS, ("Quality", None)),
     **dict.fromkeys(FIXTURE_SCENARIOS, ("Quality", None)),
     **dict.fromkeys(PAIR_CASES, ("Quality", None)),
+    BOUND_MODEL_MOVE: ("Quality", None),
     "overwrite": ("Quality", "overwrite"),
     "safety_cancel": ("Quality", "cancel"),
     "safety_timeout": ("Quality", "timeout"),
@@ -112,7 +114,7 @@ def scenario_spec(actor, scenario):
             raise ValueError("native_script_scenario_not_registered")
         return SCENARIOS[scenario]
     if (actor not in {"codex", "zcode"} or scenario not in SCENARIOS
-            or scenario in RECORDED_SCENARIOS or scenario in FIXTURE_SCENARIOS):
+            or scenario in RECORDED_SCENARIOS or scenario in FIXTURE_SCENARIOS or scenario == BOUND_MODEL_MOVE):
         raise ValueError("native_scenario_not_registered")
     if actor != "zcode" and scenario != "base":
         raise ValueError("native_matrix_requires_zcode")

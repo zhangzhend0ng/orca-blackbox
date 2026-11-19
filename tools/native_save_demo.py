@@ -41,6 +41,55 @@ def quoted(value):
     return "'"+str(value).replace("'", "''")+"'"
 
 
+def stage_model(root, run_id, model_path, head):
+    from harness.agent_protocol import LAYER_FIXTURE
+    from harness.model_move_pilot import CATALOG, LIMIT, TEMPLATE, canonical, digest, prepare_mesh, validate_plan
+
+    with model_path.open("rb") as stream:
+        raw = stream.read(LIMIT + 1)
+    model_format = model_path.suffix.lower().lstrip(".")
+    project = prepare_mesh(raw, model_format, (REPO / LAYER_FIXTURE).read_bytes())
+    plan = validate_plan({"run_id": run_id, "template": TEMPLATE, "source_sha256": head,
+        "model": {"name": model_path.name, "format": model_format, "size": len(raw), "sha256": digest(raw)},
+        "environment": CATALOG["sut"], "prepared_sha256": digest(project),
+        "import_policy": "geometry_in_fixed_process"}, run_id)
+    model = root / "prepared.3mf"
+    manifest = root / "resolved_plan.json"
+    model.write_bytes(project)
+    manifest.write_bytes(canonical(plan))
+    # Preserve exact source bytes locally. The guest receives the normalized
+    # project and its plan through the existing Hyper-V management channel.
+    (root / ("source." + model_format)).write_bytes(raw)
+    script = (
+        "$modelSession=New-PSSession -VMName $vm -Credential $cred -ErrorAction Stop\n"
+        "try {\n"
+        "$target=Join-Path $guestSandbox ('artifacts/native_model_requests/'+" + quoted(run_id) + ")\n"
+        "Invoke-Command -Session $modelSession {param($d) "
+        "if(Test-Path -LiteralPath $d){throw 'model_request_exists'}; "
+        "$null=[IO.Directory]::CreateDirectory($d)} -ArgumentList $target\n"
+        "function Send-ModelFile($localPath,$name,$sha) {\n"
+        "  $stream=[IO.File]::OpenRead($localPath)\n"
+        "  try {\n"
+        "    $buffer=New-Object byte[] 196608\n"
+        "    while(($n=$stream.Read($buffer,0,$buffer.Length)) -gt 0) {\n"
+        "      $chunk=[Convert]::ToBase64String($buffer,0,$n)\n"
+        "      Invoke-Command -Session $modelSession {param($path,$data) "
+        "$s=[IO.File]::Open($path,[IO.FileMode]::Append); try {"
+        "$b=[Convert]::FromBase64String($data);$s.Write($b,0,$b.Length)} finally {$s.Dispose()}} "
+        "-ArgumentList (Join-Path $target $name),$chunk\n"
+        "    }\n"
+        "  } finally {$stream.Dispose()}\n"
+        "  $actual=Invoke-Command -Session $modelSession {param($path) "
+        "(Get-FileHash -LiteralPath $path).Hash } -ArgumentList (Join-Path $target $name)\n"
+        "  if($actual -ne $sha){throw 'model_transfer_digest'}\n"
+        "}\n"
+        "Send-ModelFile " + quoted(model) + " 'prepared.3mf' " + quoted(digest(project)) + "\n"
+        "Send-ModelFile " + quoted(manifest) + " 'resolved_plan.json' " + quoted(digest(canonical(plan))) + "\n"
+        "} finally {Remove-PSSession $modelSession}\n"
+    )
+    return plan, script
+
+
 def detached(script, completed, seconds):
     command = ("Start-Process powershell.exe -WindowStyle Hidden -PassThru -ArgumentList "
                "@('-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',"+quoted(script)+") | Select-Object -ExpandProperty Id")
@@ -79,19 +128,22 @@ def main():
     started = time.monotonic()
     p = argparse.ArgumentParser()
     p.add_argument("--run-id", default=None)
+    p.add_argument("--model", type=Path, help="STL or 3MF geometry for the bound-model translation trial.")
     p.add_argument("--record-desktop", action="store_true", help="Record the dedicated win11-test desktop.")
     p.add_argument("--goal-only", action="store_true", help="Omit the guided UI route for ZCode.")
     p.add_argument("--inspect-mix-controls", action="store_true", help="Capture Add Mix controls during the scripted probe.")
     p.add_argument("--probe-mix-waits", action="store_true", help="Measure the mixing replay with readiness checks replacing fixed sleeps.")
     p.add_argument("--probe-mix-boot", action="store_true", help="Include readiness-based startup dialog scanning in the mixing waits probe.")
     p.add_argument("--actor", choices=("codex", "zcode", "script"), default="codex")
-    from harness.native_matrix import FIXTURE_SCENARIOS, RECORDED_SCENARIOS, REPLAY_SOURCES, SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_LAYER_SCENARIO, UIA_MIX_RECIPES, UIA_REPLAY_MIX
+    from harness.native_matrix import BOUND_MODEL_MOVE, FIXTURE_SCENARIOS, RECORDED_SCENARIOS, REPLAY_SOURCES, SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_LAYER_SCENARIO, UIA_MIX_RECIPES, UIA_REPLAY_MIX
     from harness.native_pairwise import CONFIG_CASES, OPERATIONS, PAIR_CASES
     p.add_argument("--scenario", choices=tuple(s for s in SCENARIOS if s not in {"canvas_probe", "authority_probe"}))
     args = p.parse_args()
     args.probe_mix_waits |= args.probe_mix_boot
     if args.scenario is None:
-        args.scenario = "base" if args.actor == "codex" else UIA_LAYER_SCENARIO
+        args.scenario = BOUND_MODEL_MOVE if args.model is not None else "base" if args.actor == "codex" else UIA_LAYER_SCENARIO
+    if (args.scenario == BOUND_MODEL_MOVE) != (args.model is not None) or (args.model is not None and args.actor != "script"):
+        p.error("--model requires --actor script and the bound_model_move scenario")
     if args.goal_only and (args.actor != "zcode" or args.scenario not in UIA_HYBRID_SCENARIOS):
         p.error("--goal-only requires --actor zcode and a UIA hybrid scenario")
     if args.inspect_mix_controls and (args.actor != "script" or args.scenario != UIA_MIX_RECIPES):
@@ -117,10 +169,13 @@ def main():
     recording_scenarios = fixture_cases or (args.scenario,)
     if args.scenario in PAIR_CASES:
         recording_scenarios = tuple(OPERATIONS[name].recording for name in PAIR_CASES[args.scenario]) + ("uia_replay_move_layer",)
-    if args.scenario in CONFIG_CASES:
+    if args.scenario in CONFIG_CASES or args.scenario == BOUND_MODEL_MOVE:
         sources += ("contracts/config_dependencies.json", "harness/native_config_cases.py",
                     "harness/agent_layer_verify.py", "tools/scan_config_dependencies.py")
+    if args.scenario in CONFIG_CASES:
         recording_scenarios += ("uia_replay_layer", "uia_replay_enums")
+    if args.model is not None:
+        sources += ("harness/model_move_pilot.py", "fixtures/agent_layer_cube.3mf")
     for scenario in recording_scenarios:
         if scenario not in REPLAY_SOURCES:
             continue
@@ -142,6 +197,9 @@ def main():
     launch_done = root / "launch.json"
     script = root / "launch.ps1"
     capture_request = ""
+    plan = None
+    if args.model is not None:
+        plan, capture_request = stage_model(root, run_id, args.model, head)
     for enabled, folder in ((args.record_desktop, "native_video_requests"),
                             (args.inspect_mix_controls, "native_mix_census_requests"),
                             (args.probe_mix_waits, "native_mix_wait_requests"),
@@ -153,7 +211,7 @@ def main():
             "$file=[IO.File]::Open((Join-Path $dir $id),[IO.FileMode]::CreateNew); $file.Dispose()} "
             "-ArgumentList $guestSandbox,"+quoted(run_id)+"\n")
     sut_check = ""
-    if args.scenario in CONFIG_CASES:
+    if args.scenario in CONFIG_CASES or args.scenario == BOUND_MODEL_MOVE:
         from harness.native_config_cases import CATALOG
         sut = CATALOG["sut"]
         profile_command = ("import json; from harness.profile import default_presets_dir; "
@@ -244,6 +302,10 @@ def main():
     harvest_seconds = time.monotonic() - harvest_started
     result_path = REPO / "artifacts/windows_mcp_harvest" / run_id / "result.json"
     result = json.loads(result_path.read_text()) if result_path.exists() else {"verified_pass": False}
+    plan_matches = None
+    if plan is not None:
+        path = result_path.with_name("resolved_plan.json")
+        plan_matches = path.exists() and json.loads(path.read_bytes()) == plan
     summary = {"run_id": run_id, "source_sha": head, "actor": args.actor, "scenario": args.scenario, "actor_exit": code,
                "actor_error": error, "result": result, "release_eligible": False,
                "host_wall_seconds": time.monotonic() - started, "harvest_seconds": harvest_seconds}
@@ -251,11 +313,13 @@ def main():
         summary["prompt_mode"] = "goal_only"
     if args.probe_mix_waits:
         summary["mix_wait_probe"] = True
+    if plan is not None:
+        summary.update(model=plan["model"], plan_matches=plan_matches)
     if args.probe_mix_boot:
         summary["mix_boot_probe"] = True
     (root / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(json.dumps(summary), flush=True)
-    return 0 if code == 0 and result.get("verified_pass") is True else 1
+    return 0 if code == 0 and result.get("verified_pass") is True and plan_matches is not False else 1
 
 
 if __name__ == "__main__":

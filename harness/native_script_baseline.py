@@ -42,7 +42,7 @@ def _type_canvas_number(ui, scope, screen_point, text):
     send_canvas_number(InputGuard(scope, ui.artifacts), {"loc": list(screen_point), "text": text}, send_key)
 
 
-def move_x(ui, canvas):
+def move_x(ui, canvas, *, original_x=None, delta_mm=10):
     # Reuse the existing hand-authored m6a locators. The only change to the
     # recipe is the +10 mm target relative to the trusted cube fixture.
     # Use the source tree, regardless of the output root's layout.
@@ -85,13 +85,15 @@ def move_x(ui, canvas):
     click((move, BAR_Y))
     ui.pause(2.5)
     box, current = position_row_wait(ui.app, timeout_s=12)
-    fixture = (ui.artifacts / "input/fixture.3mf").read_bytes()
-    _, wanted, original = _expected_fixture(fixture, lambda: False)
-    if box is None or Decimal(current.replace(",", ".")) != original[9]:
+    if original_x is None:
+        fixture = (ui.artifacts / "input/fixture.3mf").read_bytes()
+        _, _, matrix = _expected_fixture(fixture, lambda: False)
+        original_x = matrix[9]
+    if box is None or Decimal(current.replace(",", ".")) != original_x:
         raise ProtocolError("script_canvas_original_x")
     click(box)
     ui.pause(0.6)
-    expected = format(wanted[9], "f")
+    expected = format(original_x + delta_mm, "f")
     scope = read_json(ui.artifacts / "scope.json")
     screen_point = ui.wu.client_to_screen(ui.app.hwnd, *box)
     _type_canvas_number(ui, scope, screen_point, expected)
@@ -100,6 +102,7 @@ def move_x(ui, canvas):
     print(f"[native-script] Position X readback: before={current[:48]!r} expected={expected!r} actual={(actual or '')[:48]!r}")
     # The ImGui overlay can close or OCR can miss the value after commit.
     # The common saved-project and actual-extrusion checks decide success.
+    return {"before": current, "submitted": expected, "observed_after": actual}
 
 
 def edit_process_combo(ui):

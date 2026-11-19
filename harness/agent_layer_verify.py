@@ -34,7 +34,7 @@ def request_digest(request):
 
 
 def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", cancelled=lambda: False,
-                  inspect_ironing=False) -> dict:
+                  inspect_ironing=False, expected_height_mm=Decimal(27)) -> dict:
     """Inspect supported U1 object moves, excluding purge/tower/retraction/Z-hop.
 
     Global G90/G91, M82/M83 and G92 are tracked. Object extrusion must occur at
@@ -183,8 +183,9 @@ def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", ca
     _require(active is None and not tower and len(objects) == 1 and moves >= 2 and len(z_layers) >= 2, "gcode_missing_object_extrusion")
     _require(abs(z_layers[0] - first) <= _TOL, "gcode_first_actual_layer_mismatch")
     _require(all(abs(b - a - wanted) <= _TOL for a, b in zip(z_layers, z_layers[1:])), "gcode_actual_layer_step_mismatch")
-    # The frozen fixture is a 27mm cube; allow one layer of slicer boundary rounding.
-    _require(Decimal(27) - wanted <= z_layers[-1] <= Decimal(27) + wanted, "gcode_fixture_height_mismatch")
+    # The last planar layer can differ from the physical top by one layer of rounding.
+    _require(expected_height_mm - wanted <= z_layers[-1] <= expected_height_mm + wanted,
+             "gcode_fixture_height_mismatch")
     result = {"layer_height": str(wanted), "first_layer_height": str(first),
             "layer_count": len(z_layers), "first_z": str(z_layers[0]), "last_z": str(z_layers[-1]),
             "positive_xy_e_moves": moves, "object_tools": sorted(object_tools), "sha256": hashlib.sha256(raw).hexdigest()}

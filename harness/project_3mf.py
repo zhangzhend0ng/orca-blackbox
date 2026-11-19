@@ -37,7 +37,7 @@ def _xml(raw, *, allow_colour_paint=False):
     return root
 
 
-def _archive(raw, cancelled):
+def _archive(raw, cancelled, *, member_limit=16 * 1024 * 1024):
     _require(type(raw) is bytes and 1 <= len(raw) <= 16 * 1024 * 1024, "project_zip_size")
     files, names, total = {}, set(), 0
     with zipfile.ZipFile(io.BytesIO(raw)) as archive:
@@ -52,7 +52,7 @@ def _archive(raw, cancelled):
             names.add(name.casefold())
             _require(not stat.S_ISLNK(item.external_attr >> 16) and not item.flag_bits & 1
                      and item.compress_type in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED)
-                     and 0 <= item.file_size <= 16 * 1024 * 1024, "project_zip_member")
+                     and 0 <= item.file_size <= member_limit, "project_zip_member")
             total += item.file_size
             _require(total <= 64 * 1024 * 1024, "project_zip_total")
             with archive.open(item) as source:

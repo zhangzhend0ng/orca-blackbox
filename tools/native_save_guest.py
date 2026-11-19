@@ -152,7 +152,7 @@ def worker(run_id, actor="codex", scenario="base"):
     from harness.agent_guest import _encode_capture
     from harness.native_save_session import native_contract, NATIVE_SUT_SHA256
     from harness.run_verdict import contract_digest
-    from harness.native_matrix import FIXTURE_SCENARIOS
+    from harness.native_matrix import BOUND_MODEL_MOVE, FIXTURE_SCENARIOS
     if actor == "script" and scenario in FIXTURE_SCENARIOS:
         from harness.native_fixture_suite import run_fixture_worker
         return run_fixture_worker(run_id, scenario)
@@ -202,7 +202,19 @@ def worker(run_id, actor="codex", scenario="base"):
                 return len(mix_entry_labels(app)) == 1
 
             report["mix_wait_probe"] = {"initial_started_at_ns": time.time_ns()}
-        ui = ProjectUI(root, guard, fixture=native_fixture(scenario), ready_on_open=ready_on_open, probe_boot=probe_boot)
+        bound_plan = None
+        if scenario == BOUND_MODEL_MOVE:
+            from harness.agent_protocol import read_json
+            from harness.model_move_pilot import canonical, digest, instance, read_request
+            bound_plan, path = read_request(run_id)
+            if bound_plan != read_json(root / "resolved_plan.json"):
+                raise ValueError("model_worker_plan_changed")
+            fixture = (path, bound_plan["prepared_sha256"])
+            _, _, initial_transform = instance(path.read_bytes(), lambda: False)
+            report["resolved_plan_sha256"] = digest(canonical(bound_plan))
+        else:
+            fixture = native_fixture(scenario)
+        ui = ProjectUI(root, guard, fixture=fixture, ready_on_open=ready_on_open, probe_boot=probe_boot)
         if probe_boot:
             report["mix_boot_probe"] = {"initial": ui.base.boot_scan}
         (root / "input/fixture.3mf").chmod(stat.S_IREAD)
@@ -228,7 +240,9 @@ def worker(run_id, actor="codex", scenario="base"):
                  "output_path": str(output), "scenario": scenario,
                  "contract_sha256": report["contract_sha256"], "actor": actor}
         # A modal disables the canvas. Bind the enabled child before applying the disturbance.
-        if scenario in CANVAS_SCENARIOS | UIA_HYBRID_SCENARIOS:
+        if bound_plan:
+            scope["resolved_plan_sha256"] = report["resolved_plan_sha256"]
+        if bound_plan or scenario in CANVAS_SCENARIOS | UIA_HYBRID_SCENARIOS:
             binding = bind_native_canvas(ui, scope, root, sut_sha)
         if disturbance == "save_dialog":
             ui._save_command()
@@ -257,7 +271,14 @@ def worker(run_id, actor="codex", scenario="base"):
                           script_action_started_at_ns=time.time_ns())
             measured_start = time.monotonic_ns()
             try:
-                if scenario in RECORDED_SCENARIOS:
+                if bound_plan:
+                    from harness.native_script_baseline import move_x
+                    report["move"] = move_x(ui, binding.hwnd, original_x=initial_transform[9],
+                                             delta_mm=bound_plan["template"]["operations"][0]["delta_mm"])
+                    report["script_steps"].append("edit")
+                    ui.save_project()
+                    report["script_steps"].append("save")
+                elif scenario in RECORDED_SCENARIOS:
                     from harness.native_uia_replay import play
                     native.start()
                     report["recording_sha256"] = play(ui, run_id, str(output), scenario=scenario, report=report)

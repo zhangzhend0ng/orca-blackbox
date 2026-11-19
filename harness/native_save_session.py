@@ -12,10 +12,11 @@ import zipfile
 import zlib
 import xml.etree.ElementTree as ET
 from decimal import DecimalException
+from functools import partial
 
-from .agent_protocol import LAYER_FIXTURE_SHA256, valid_run_id
+from .agent_protocol import LAYER_FIXTURE_SHA256, valid_run_id, write_json_once
 from .native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
-from .native_matrix import (CANVAS_REPLACE_SCENARIO, CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS,
+from .native_matrix import (BOUND_MODEL_MOVE, CANVAS_REPLACE_SCENARIO, CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS,
     FIXTURE_SCENARIOS, GENERALIZATION, RECORDED_SCENARIOS, REPLAY_SOURCES, SCRIPT_SCENARIOS, UIA_CANVAS_SCENARIO, UIA_HYBRID_SCENARIOS,
     UIA_MIX_RECIPES, UIA_MOVE_LAYER, UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS, UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
 from .run_contract import validate_contract
@@ -47,6 +48,14 @@ class NativeSaveHandle(_ScriptHandle):
 def native_contract(actor="codex", scenario="base"):
     from .native_matrix import scenario_spec
     scenario_spec(actor, scenario)
+    if scenario == BOUND_MODEL_MOVE:
+        from .model_move_pilot import TEMPLATE, canonical, digest
+        return validate_contract({"schema_version": 1, "case_id": scenario,
+            "contract_version": "native-bound-model-1", "executor": "script",
+            "required_checks": ["path", "business"], "steps": [
+                {"id": "edit", "goal": "Execute the resolved translation plan using template " + digest(canonical(TEMPLATE))},
+                {"id": "proof", "goal": "Independently reopen and slice the moved instance."},
+            ], "limits": {"timeout_s": 900, "max_actions": 40, "max_retries": 0, "max_cost_usd": 0}})
     if scenario in PAIR_CASES:
         from .native_uia_replay import read_recipe
 
@@ -156,7 +165,7 @@ def native_spec(digest):
     from .native_matrix import SCENARIOS
     from .native_uia_replay import recipe_path
     for actor, scenarios in (("codex", ("base",)), ("zcode", (s for s in SCENARIOS
-                               if s not in RECORDED_SCENARIOS and s not in FIXTURE_SCENARIOS)),
+                               if s not in RECORDED_SCENARIOS and s not in FIXTURE_SCENARIOS and s != BOUND_MODEL_MOVE)),
                              ("script", SCRIPT_SCENARIOS)):
         for scenario in scenarios:
             if scenario in REPLAY_SOURCES and not recipe_path(scenario).is_file():
@@ -181,13 +190,14 @@ def native_actor(digest):
 class NativeSaveExecutor:
     synthetic, kind = False, "agent_mcp"
 
-    def __init__(self, digest):
+    def __init__(self, digest, plan=None):
         self.actor, self.scenario = native_spec(digest)
         if self.actor == "script":
             self.kind = "script"
         from .native_pilots import require_pilot_ready
         require_pilot_ready(self.scenario)
         self.contract_sha256 = digest
+        self.plan = plan
 
     def start(self, context):
         from . import host_guard
@@ -197,6 +207,8 @@ class NativeSaveExecutor:
         artifacts = context.artifact_dir.resolve(strict=True)
         if any(artifacts.iterdir()):
             raise FileExistsError("native_artifacts_not_empty")
+        if self.plan is not None:
+            write_json_once(artifacts / "resolved_plan.json", self.plan)
         env = {k: v for k, v in os.environ.items() if not k.upper().endswith(("_TOKEN", "_SECRET", "_API_KEY"))}
         for key in ("ORCA_BB_ALLOW_HOST", "ORCA_BB_CONF_EXTRA", "ORCA_GUI_TEST_MODE"):
             env.pop(key, None)
@@ -238,7 +250,7 @@ def verify_unchanged_saved(frozen, fixture, gcode, cancelled):
 
 
 def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, cancelled, *,
-                           process_ref="artifact:process.json"):
+                           process_ref="artifact:process.json", bound_plan=None):
     from .agent_verify import _require
     from .native_matrix import scenario_spec
     from .native_pilots import verify_business
@@ -270,7 +282,13 @@ def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, can
     gcode = read("exports/0001.gcode", 64*1024*1024)
     _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
     from .native_pilots import TRIALS
-    if scenario in PAIR_CASES:
+    if scenario == BOUND_MODEL_MOVE:
+        from .model_move_pilot import canonical, digest, verify_move
+        _require(proof.get("reopened_pid", 0) > 0 and proof["reopened_pid"] != proof["old_pid"]
+                 and receipt.get("resolved_plan_sha256") == scope.get("resolved_plan_sha256") ==
+                 digest(canonical(bound_plan)), "model_independent_reopen_binding")
+        detail = json.dumps(verify_move(bound_plan, fixture, frozen, gcode, cancelled), sort_keys=True)
+    elif scenario in PAIR_CASES:
         _require(type(proof.get("reopened_pid")) is int and proof["reopened_pid"] > 0
                  and proof["reopened_pid"] != proof["old_pid"], "pair_independent_reopen")
         detail = json.dumps(verify_pair(scenario, frozen, fixture, gcode, cancelled=cancelled), sort_keys=True)
@@ -285,6 +303,8 @@ def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, can
     refs = ("artifact:proof.json", process_ref, "artifact:native_worker.json",
             "artifact:proof/0001.3mf:sha256:"+proof["project_sha256"],
             "artifact:exports/0001.gcode:sha256:"+proof["gcode_sha256"])
+    if bound_plan is not None:
+        refs += ("artifact:resolved_plan.json", "artifact:input/fixture.3mf")
     if scenario in RECORDED_SCENARIOS:
         from .native_uia_replay import verify_replay_trace
         raw_trace = read("native_trace.ndjson", 256000)
@@ -303,7 +323,7 @@ def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, can
         "business": CheckResult("pass", detail, refs)}, True, True)
 
 
-def verify_saved(snapshot, *, cancelled=lambda: False, batch_process=None):
+def verify_saved(snapshot, *, cancelled=lambda: False, batch_process=None, plan_sha256=None):
     from .script_verify import _read, _json, _InvalidEvidence
     from .agent_verify import _require
     refs = []
@@ -334,12 +354,19 @@ def verify_saved(snapshot, *, cancelled=lambda: False, batch_process=None):
         fixture, frozen = read("input/fixture.3mf", 16*1024*1024), read("proof/0001.3mf", 16*1024*1024)
         saved = read("projects/0001.3mf", 16*1024*1024)
         from .native_pilots import native_fixture
-        _require(hashlib.sha256(fixture).hexdigest() == native_fixture(scenario)[1], "native_fixture")
+        bound_plan = None
+        if scenario == BOUND_MODEL_MOVE:
+            from .model_move_pilot import canonical, digest, validate_plan
+            bound_plan = validate_plan(_json(read("resolved_plan.json", 65536)), snapshot.run_id)
+            _require(digest(canonical(bound_plan)) == plan_sha256, "native_resolved_plan_changed")
+        fixture_sha = bound_plan["prepared_sha256"] if bound_plan else native_fixture(scenario)[1]
+        _require(hashlib.sha256(fixture).hexdigest() == fixture_sha, "native_fixture")
         digest = hashlib.sha256(frozen).hexdigest()
         _require(saved == frozen and digest == proof["project_sha256"], "native_frozen_file_binding")
         if actor == "script":
             ref = "artifact:process.json" if batch_process is None else "batch:" + process_run_id + ":artifact:process.json"
-            return verify_script_business(snapshot, scenario, read, proof, fixture, frozen, cancelled, process_ref=ref)
+            return verify_script_business(snapshot, scenario, read, proof, fixture, frozen, cancelled,
+                                          process_ref=ref, bound_plan=bound_plan)
         host = _json(read("host_done.json", 65536))
         _require(type(host["host_active_processes"]) is int and type(host["tool_count"]) is int
                  and host["run_id"] == snapshot.run_id and host["native_ok"] is True
@@ -449,9 +476,12 @@ def verify_saved(snapshot, *, cancelled=lambda: False, batch_process=None):
 class NativeSaveVerifier:
     synthetic = False
 
+    def __init__(self, plan_sha256=None):
+        self.plan_sha256 = plan_sha256
+
     def start(self, snapshot):
         from .agent_layer_verify import _Handle
-        return _Handle(snapshot, check=verify_saved)
+        return _Handle(snapshot, check=partial(verify_saved, plan_sha256=self.plan_sha256))
 
 
 def run_native_save(run_id, actor="codex", scenario="base"):
@@ -462,7 +492,16 @@ def run_native_save(run_id, actor="codex", scenario="base"):
     root.mkdir(parents=True, exist_ok=True)
     contract = native_contract(actor, scenario)
     digest = contract_digest(contract)
-    return run_once(contract, NativeSaveExecutor(digest), {digest: NativeSaveVerifier()},
+    plan = plan_hash = None
+    if scenario == BOUND_MODEL_MOVE:
+        import subprocess
+        from .model_move_pilot import canonical, digest as plan_digest, read_request
+        plan, _ = read_request(run_id)
+        head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip()
+        if head != plan["source_sha256"]:
+            raise ValueError("model_plan_guest_source_mismatch")
+        plan_hash = plan_digest(canonical(plan))
+    return run_once(contract, NativeSaveExecutor(digest, plan), {digest: NativeSaveVerifier(plan_hash)},
         root=root, run_id=run_id, desktop_id="guest-console", execution_mode="guest_native",
         verify_timeout_s=40, cleanup_timeout_s=30,
         cancelled=lambda: (root / run_id / "artifacts/control_cancel.json").exists())
