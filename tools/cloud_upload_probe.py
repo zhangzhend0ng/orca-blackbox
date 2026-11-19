@@ -170,6 +170,26 @@ def record_send_footer(hwnd, row_y, path):
         image.crop((0, min(row_y + 48, height - 1), width, height)).save(path)
 
 
+def find_send_button(hwnd):
+    from harness import winutil
+
+    width, height, pixels = winutil.capture_window(hwnd)
+    if width < 300 or height < 250:
+        return None
+    _, lines = visible_lines(
+        hwnd, crop=(width - 120, height - 52, width - 52, height - 21), psm=7,
+    )
+    point = one([(x, y) for text, x, y in lines if text.strip() == "send"])
+    if point is None:
+        return None
+    x, y = point
+    offset = ((y * width) + x - 40) * 4
+    blue, green, red = pixels[offset:offset + 3]
+    if blue >= 190 and green >= 95 and red < 100:
+        return point
+    return None
+
+
 def run_upload(app, fixture, output_dir, result, poll):
     from harness import export_util, launcher, winutil
 
@@ -280,7 +300,7 @@ def run_upload(app, fixture, output_dir, result, poll):
         width, lines = visible_lines(only)
         choices = [(x, y) for text, x, y in lines if re.search(r"\bu1\b", text)]
         filename_visible = any(filename in text for text, _, _ in lines)
-        send = one([(x, y) for text, x, y in lines if re.fullmatch(r"[\W_]*send[\W_]*", text)])
+        send = find_send_button(only)
         # The shipped send page renders a static title, then a thumbnail,
         # then the 300 px dropdown on the same horizontal row.
         heading = one([(x, y) for text, x, y in lines if text.strip() == "select printer"])
