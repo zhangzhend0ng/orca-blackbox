@@ -211,7 +211,8 @@ def launch(exe: Path | str | None = None,
     si = subprocess.STARTUPINFO()
     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     si.wShowWindow = 4  # SW_SHOWNOACTIVATE (ineffective for wx, kept anyway)
-    popen = subprocess.Popen(args, env=env, cwd=str(exe.parent), startupinfo=si)
+    # FARM FIX (2026-11-08): cwd=exe.parent breaks this packaged build's boot (no main window in 90s; cwd elsewhere boots fine — DLLs resolve from the exe dir regardless, so inherit the driver's cwd instead).
+    popen = subprocess.Popen(args, env=env, startupinfo=si)
     try:
         hwnd = winutil.find_main_window(popen.pid, timeout_s=wait_window_s)
     except BaseException:

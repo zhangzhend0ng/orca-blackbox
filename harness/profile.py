@@ -40,6 +40,7 @@
 # load (a mismatch logs an info line); the JSON must simply parse.
 
 import hashlib
+import os
 import json
 import shutil
 import sys
@@ -207,7 +208,21 @@ def seed_profile(dest: Path,
     # 3) app conf: minimal hand-written template — reproducible and free of
     #    user state (recent files, window geometry, device identity).
     conf = json.loads(json.dumps(MINIMAL_CONF))
-    for key, value in (conf_extra or {}).items():
+    # FARM HOOK (multi-instance parallel runs, 2026-11-07): merge
+    # ORCA_BB_CONF_EXTRA (JSON) the same way as conf_extra so UNMODIFIED case
+    # scripts can be slotted onto a display-2 grid cell per instance:
+    #   ORCA_BB_CONF_EXTRA='{"app":{"window_mainframe":"1960; 40; 900; 500; 0",
+    #                          "show_splash_screen":false}}'
+    env_extra = os.environ.get("ORCA_BB_CONF_EXTRA")
+    merged_extra = json.loads(json.dumps(conf_extra or {}))
+    if env_extra:
+        for key, value in json.loads(env_extra).items():
+            if (key in merged_extra and isinstance(merged_extra[key], dict)
+                    and isinstance(value, dict)):
+                merged_extra[key].update(value)
+            else:
+                merged_extra[key] = value
+    for key, value in merged_extra.items():
         if isinstance(value, dict) and isinstance(conf.get(key), dict):
             conf[key].update(value)          # one-level deep merge
         else:
