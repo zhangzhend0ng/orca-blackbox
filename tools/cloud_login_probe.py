@@ -205,6 +205,7 @@ def verify_account_page(app, home_point, auth_hwnd, result):
 
 
 def authenticate(app, hwnd, home_point, result):
+    from comtypes import COMError
     from pywinauto import uia_defines
 
     from harness import winutil
@@ -236,12 +237,19 @@ def authenticate(app, hwnd, home_point, result):
         return
 
     result["stage"] = "enter_account"
-    if not enter_secret(hwnd, user, phone[1]):
-        return
     value = uia_defines.get_elem_interface(user, "Value")
+    try:
+        value.SetValue(phone[1])
+    except COMError:
+        if not enter_secret(hwnd, user, phone[1]):
+            return
     if not poll(lambda: value.CurrentValue == phone[1], 3):
-        result["stage"] = "account_readback_failed"
-        return
+        if value.CurrentValue or not enter_secret(hwnd, user, phone[1]):
+            result["stage"] = "account_readback_failed"
+            return
+        if not poll(lambda: value.CurrentValue == phone[1], 3):
+            result["stage"] = "account_readback_failed"
+            return
     result["stage"] = "enter_masked_password"
     if cn_document(scan(hwnd)) is None or not enter_secret(hwnd, password, secret):
         return
