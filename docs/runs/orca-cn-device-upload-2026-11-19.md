@@ -32,3 +32,15 @@
 最终验收统计为一条端到端上传路径，设备探查执行 7 次，上传模式执行 7 次，发送提交 0 次，设备接收通过 0 次。账号主页的 U1 卡片及其控制视图可进入。附近发现阶段未读到设备型号，只上传页的打印机下拉仅出现 Add Device，缺少可选上传目标。最后一轮生成的 G-code 为 orcabbb959ee83ff.gcode，161371 字节，SHA-256 为 044c2723d3f316d54951f4f58c77ceabc67d7b1375ff5bc933a085feb364f779，回收目录为 artifacts/windows_mcp_harvest/b959ee83ffc24b5980a0ef90242910f1。未触发打印。
 
 runner 入口为 hv_go.ps1 -WindowsMcpProbe -CloudLoginProbe -CloudLoginAuthenticate -CloudDeviceProbe -CloudUploadGcode -ProbeRunId <32 位 run ID>，随后使用 hv_harvest.ps1 -CloudLoginProbe -WindowsMcpRunId <同一 run ID>。HARVEST 对生成的 G-code 核对当前 run 的文件名、大小和摘要。总耗时包含客机准备、操作和私有目录回收。
+
+## 指定设备后的复核
+
+用户确认账号下有 U1 和客户端测试。run 734d7b4010bb49e8b509ac21ee6f35e2（a4bb43a，84.88 s）的下拉局部图显示两台设备均可见，U1 带勾选标记。历史回执中的 Add Device 是整窗 OCR 的唯一匹配项，局部实拍确认它另有两个设备选项。直接在已选设备名称的窄区域用行识别，可在该证据中读回 U1。该 run 未发送。
+
+局部证据位于 artifacts/windows_mcp_harvest/734d7b4010bb49e8b509ac21ee6f35e2/upload-picker.png。
+
+run c7dffafc16f5459cbaff562ef60ea6b9（6229bb0，66.58 s）在发送页局部读回了 U1。整窗 OCR 同样漏读了白字蓝底的 Send。底部局部图 upload-footer.png 显示 Send 已启用，本轮仍未发送。下一轮将底部按钮区域单行识别及蓝色启用态作为点击前置判据。
+
+run 8a0ed84002694455ad9edce215044837（adb8226，60.34 s）为 SHADOW。同一客机运行完成中国区登录、打开 U1 设备面板、加载工程并切片、导出 G-code、进入独立只上传页、核对 U1 已选及本轮文件名，点击启用的 Send 后读到 Upload completed。固定安装包把该提示放在发送页的 taskComplete 流程中。只上传流程未触发打印，设备文件列表没有另跑一次核对。
+
+本次文件为 orcabb8a0ed84002.gcode，共 163547 字节，SHA-256 为 82838177710b811c28ac35065b0d399035267ec9841d94bec77ed03477e77408。客机回执及经摘要复核的 G-code 在 artifacts/windows_mcp_harvest/8a0ed84002694455ad9edce215044837/。指定设备后共执行 3 次，实际发送 1 次，按 Orca 上传完成判据通过 1 次。
