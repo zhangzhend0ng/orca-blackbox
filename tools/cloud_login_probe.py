@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import shutil
@@ -12,9 +13,6 @@ from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-
-import json
-
 
 def poll(read, seconds):
     deadline = time.monotonic() + seconds
@@ -33,8 +31,10 @@ def scan(hwnd):
     walker = uia.RawViewWalker
     stack = [uia.ElementFromHandle(hwnd)]
     nodes = []
-    while stack and len(nodes) < 700:
+    visited = 0
+    while stack and visited < 700:
         node = stack.pop()
+        visited += 1
         try:
             kind = node.CurrentControlType
             if not node.CurrentIsOffscreen:
@@ -85,16 +85,25 @@ def inspect(app, result):
     login_names = {"login", "log in", "sign in", "登录", "登陆"}
     result["stage"] = "find_entry"
     names = []
+    semantics_enabled = False
 
     def entry():
-        nonlocal names
+        nonlocal names, semantics_enabled
         nodes = scan(app.hwnd)
         names = list(dict.fromkeys(name[:80] for kind, name, _ in nodes
                                    if name and kind in (50000, 50002, 50005, 50019, 50020, 50030)))[:85]
         entries = [node for _, name, node in nodes if name.strip().casefold() in login_names]
-        return entries[-1] if entries else None
+        if len(entries) == 1:
+            return entries[0]
+        if not semantics_enabled:
+            for _, name, node in nodes:
+                if name == "Enable accessibility":
+                    semantics_enabled = invoke(node)
+                    result["flutter_semantics_enabled"] = semantics_enabled
+                    break
+        return None
 
-    button = poll(entry, 20)
+    button = poll(entry, 68)
     if button is None:
         result["signed_out_controls"] = names
         return
@@ -152,6 +161,7 @@ def run(run_id):
     try:
         profile.seed_profile(datadir, conf_extra={"app": {"region": "China", "language": "en_US", "default_page": "0"}})
         os.environ["WEBVIEW2_USER_DATA_FOLDER"] = str(private / "webview")
+        os.environ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = "--force-renderer-accessibility"
         result["stage"] = "launch"
         session = launcher.launch(datadir=datadir, wait_window_s=55, boot_demote_s=0,
                                   blocker_sweep_s=3, dismiss_wizard=True)
