@@ -1,0 +1,1055 @@
+{
+  "schema_version": 1,
+  "upstream_commit": "936c035a2c557ea5dde24d3951f8395c6914bd97",
+  "sut": {
+    "product_version": "2.4.0",
+    "exe_sha256": "5c48644d7da18b50636ceeee4ef9fd2eaf6d4e8ac05bd88752f40e3717fc47bf",
+    "source_commit": "56e82d53c85457f530827d2488664015b2eae08e",
+    "source_relationship": "Embedded DLL build identifier references this commit. The compiled worktree cleanliness is unknown.",
+    "guest": "win11-test",
+    "preset_tree": "54b5b20b80253e4792cd9ec390b007f4f83cc1a5",
+    "fixture_sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+    "fixture_format_version": "2.3.6",
+    "dll_sha256": "0485166d3c128320195d44c55db18fd43567e2fbbaa4aa5d3f163b71772fba35",
+    "dll_build_id": "56e82d53c8",
+    "installed_vendors": {
+      "Snapmaker": {
+        "version": "02.02.55.02",
+        "json_files": 707,
+        "json_tree_sha256": "92c779cf2eeef1e417b6e486be9a218e1fabd93a820936bf8b50aa1b1f117d64"
+      },
+      "BBL": {
+        "version": "02.00.00.55",
+        "json_files": 1140,
+        "json_tree_sha256": "c5ecff8ca5f50e684ece6e996314cfe4dd49818956134dc2700b62503626a2ce"
+      }
+    }
+  },
+  "rule_evidence": {
+    "ui-advanced-ironing": {
+      "status": "guest_verified",
+      "scope": "Global Quality on the pinned fixture; Ironing group hidden/shown/hidden/shown during Basic/Advanced cycling; No ironing persists.",
+      "runs": [
+        "aff32323f6fd56a4913184fea87237f4"
+      ]
+    },
+    "slice-ironing-topmost": {
+      "status": "guest_verified",
+      "scope": "One flat-top cube with support disabled; Off has zero object ironing moves; Topmost has positive tagged XY/E moves only on the last object layer.",
+      "runs": [
+        "318b0aa39d8a5dd7943d6c421bbe04a6",
+        "a4a6e87a823f534e9025e25870ee7a4e",
+        "d13fa85852ab52a7b724d186d3ba962a"
+      ]
+    },
+    "slice-seam-object-preference": {
+      "status": "partial_guest_observation",
+      "scope": "Random UI selection, saved value and G-code config were checked. Actual seam geometry remains pending.",
+      "runs": [
+        "c96a3498bbb3524680bcc49736f5b87c",
+        "a38b163fae08595eadb09d8b780357f2"
+      ]
+    }
+  },
+  "batches": {
+    "93e1170c58b046dea8d15dfcc7df2cfe": {
+      "batch_id": "93e1170c58b046dea8d15dfcc7df2cfe",
+      "source_sha": "eaa0d4bf52e3ae052e21e57e034e2f961ce73fa2",
+      "cases": [
+        {
+          "scenario": "cfg_value_01",
+          "family": "legal",
+          "run_id": "2a6b96432a275fbcbd2a33517a98f78c",
+          "order": [],
+          "status_after_plan_binding_audit": "NON_GREEN",
+          "planned_recipe_sha256": "efdb0df0ae2ff69a5bcd0d677b05313fe58f77865bf8d9c22a8965717dd68f00",
+          "guest_recipe_sha256": "76382541e30298f62271d64faf364e419c2c52f7955ecf13422bafb68848ab48",
+          "recipe_matches_plan": false,
+          "audit_failure": "guest_recipe_digest_mismatch; confirmed equivalent after replacing LF catalog hash with CRLF catalog hash",
+          "prepare_s": 53.1606018,
+          "script_s": 9.672,
+          "reopen_export_s": 51.11901,
+          "harvest_s": 2.0,
+          "host_wall_s": 142.39100000000326,
+          "model_calls": 0,
+          "ui_tool_count": 6,
+          "ui_checkpoints": [
+            {
+              "step": 1,
+              "process_groups": [
+                "Seam"
+              ],
+              "process_values": [
+                "Aligned"
+              ]
+            }
+          ],
+          "check_layers": [
+            "owned_ui_initial_and_steps",
+            "3mf",
+            "gcode_config",
+            "object_layer_schedule",
+            "object_ironing_xy_e"
+          ],
+          "gcode_config": {
+            "initial_layer_print_height": "0.4",
+            "ironing_flow": "10%",
+            "ironing_spacing": "0.15",
+            "ironing_type": "no ironing",
+            "layer_height": "0.4",
+            "seam_position": "aligned"
+          },
+          "gcode_observed": {
+            "layer_count": 68,
+            "first_z": "0.4",
+            "last_z": "27.2",
+            "ironing_z": [],
+            "ironing_xy_e_moves": 0
+          },
+          "project_sha256": "aa989876e5f832b63a6d6ca5f14d66062c4b75a7155545c73e43b6876011a01d",
+          "gcode_sha256": "709142788118d9a1ba8cb1d7958d6d1a91b8c4af430af7f15326c27b1189402b",
+          "old_pid": 1588,
+          "reopened_pid": 3704,
+          "evidence_path": "artifacts/windows_mcp_harvest/2a6b96432a275fbcbd2a33517a98f78c",
+          "cleanup_confirmed": true
+        },
+        {
+          "scenario": "cfg_value_04",
+          "family": "legal",
+          "run_id": "c96a3498bbb3524680bcc49736f5b87c",
+          "order": [
+            "seam",
+            "ironing"
+          ],
+          "status_after_plan_binding_audit": "NON_GREEN",
+          "planned_recipe_sha256": "ddd816742cdbb8354b3084ea50a348096513cd16c7d44723ed7ee2a47bcb71b6",
+          "guest_recipe_sha256": "b75476eab61b52713991c12d8ecdd07206390dbb1cd49e7f08a37f75fcbf5e8b",
+          "recipe_matches_plan": false,
+          "audit_failure": "guest_recipe_digest_mismatch; confirmed equivalent after replacing LF catalog hash with CRLF catalog hash",
+          "prepare_s": 51.7530101,
+          "script_s": 43.734,
+          "reopen_export_s": 49.8795094,
+          "harvest_s": 2.0160000000032596,
+          "host_wall_s": 174.43799999996554,
+          "model_calls": 0,
+          "ui_tool_count": 25,
+          "ui_checkpoints": [
+            {
+              "step": 1,
+              "process_groups": [
+                "Seam"
+              ],
+              "process_values": [
+                "Aligned"
+              ]
+            }
+          ],
+          "check_layers": [
+            "owned_ui_initial_and_steps",
+            "3mf",
+            "gcode_config",
+            "object_layer_schedule",
+            "object_ironing_xy_e"
+          ],
+          "gcode_config": {
+            "initial_layer_print_height": "0.4",
+            "ironing_flow": "10%",
+            "ironing_spacing": "0.15",
+            "ironing_type": "topmost",
+            "layer_height": "0.4",
+            "seam_position": "random"
+          },
+          "gcode_observed": {
+            "layer_count": 68,
+            "first_z": "0.4",
+            "last_z": "27.2",
+            "ironing_z": [
+              "27.2"
+            ],
+            "ironing_xy_e_moves": 492
+          },
+          "project_sha256": "9c5fb08212822591c7444afb1aef8f4f868730a43f46002d67fbeee67e069288",
+          "gcode_sha256": "b8498f0fdb691337aed46be550b63ff8a85c4056f5be0e10425d4f01fca3b841",
+          "old_pid": 10232,
+          "reopened_pid": 7808,
+          "evidence_path": "artifacts/windows_mcp_harvest/c96a3498bbb3524680bcc49736f5b87c",
+          "cleanup_confirmed": true
+        },
+        {
+          "scenario": "cfg_value_06",
+          "family": "legal",
+          "run_id": "8ed1a1e3e341519ea8f80d76d021a98d",
+          "order": [
+            "layer",
+            "ironing"
+          ],
+          "status_after_plan_binding_audit": "NON_GREEN",
+          "planned_recipe_sha256": "a07ea6d7f17a89b1bc0cbf8c801633b9ab9a280200871e6c1c084132678b2edf",
+          "guest_recipe_sha256": "728e04029a175b19390e6ab6abb648471398d17c0f96cddfd2f622d9583ca3fc",
+          "recipe_matches_plan": false,
+          "audit_failure": "guest_recipe_digest_mismatch; confirmed equivalent after replacing LF catalog hash with CRLF catalog hash",
+          "prepare_s": 51.743028,
+          "script_s": 44.875,
+          "reopen_export_s": 50.6639965,
+          "harvest_s": 2.0,
+          "host_wall_s": 177.420999999973,
+          "model_calls": 0,
+          "ui_tool_count": 22,
+          "ui_checkpoints": [
+            {
+              "step": 1,
+              "process_groups": [
+                "Seam"
+              ],
+              "process_values": [
+                "Aligned"
+              ]
+            }
+          ],
+          "check_layers": [
+            "owned_ui_initial_and_steps",
+            "3mf",
+            "gcode_config",
+            "object_layer_schedule",
+            "object_ironing_xy_e"
+          ],
+          "gcode_config": {
+            "initial_layer_print_height": "0.4",
+            "ironing_flow": "10%",
+            "ironing_spacing": "0.15",
+            "ironing_type": "topmost",
+            "layer_height": "0.24",
+            "seam_position": "aligned"
+          },
+          "gcode_observed": {
+            "layer_count": 112,
+            "first_z": "0.4",
+            "last_z": "27.04",
+            "ironing_z": [
+              "27.04"
+            ],
+            "ironing_xy_e_moves": 492
+          },
+          "project_sha256": "30f9005eca1a2f91714d458fb4dc8a52c4ceda4517d08f5e0b13ae3dfdcdacf8",
+          "gcode_sha256": "3bb150fd092061278e48ff427ba071257cf6982cc215a044980232ad7b12f2e5",
+          "old_pid": 9968,
+          "reopened_pid": 8580,
+          "evidence_path": "artifacts/windows_mcp_harvest/8ed1a1e3e341519ea8f80d76d021a98d",
+          "cleanup_confirmed": true
+        },
+        {
+          "scenario": "cfg_value_07",
+          "family": "legal",
+          "run_id": "a38b163fae08595eadb09d8b780357f2",
+          "order": [
+            "layer",
+            "seam"
+          ],
+          "status_after_plan_binding_audit": "NON_GREEN",
+          "planned_recipe_sha256": "e50b03d3a1f82b789a19bf88c03b4f9b3bb6a661d8df10ed7a04da6f0179ccc8",
+          "guest_recipe_sha256": "162a285f95152f622a8727c48db7c77c6ddad8a803aabdce1ba1c38278933423",
+          "recipe_matches_plan": false,
+          "audit_failure": "guest_recipe_digest_mismatch; confirmed equivalent after replacing LF catalog hash with CRLF catalog hash",
+          "prepare_s": 51.6834208,
+          "script_s": 12.328,
+          "reopen_export_s": 49.7536846,
+          "harvest_s": 2.0,
+          "host_wall_s": 142.59399999998277,
+          "model_calls": 0,
+          "ui_tool_count": 15,
+          "ui_checkpoints": [
+            {
+              "step": 1,
+              "process_groups": [
+                "Seam"
+              ],
+              "process_values": [
+                "Aligned"
+              ]
+            }
+          ],
+          "check_layers": [
+            "owned_ui_initial_and_steps",
+            "3mf",
+            "gcode_config",
+            "object_layer_schedule",
+            "object_ironing_xy_e"
+          ],
+          "gcode_config": {
+            "initial_layer_print_height": "0.4",
+            "ironing_flow": "10%",
+            "ironing_spacing": "0.15",
+            "ironing_type": "no ironing",
+            "layer_height": "0.24",
+            "seam_position": "random"
+          },
+          "gcode_observed": {
+            "layer_count": 112,
+            "first_z": "0.4",
+            "last_z": "27.04",
+            "ironing_z": [],
+            "ironing_xy_e_moves": 0
+          },
+          "project_sha256": "78240951f5ddf1fa2f19748bec5d9a1bcc94593cf95eb502facd5921a92f1d51",
+          "gcode_sha256": "cdac2bf5e38890a813f748a6e2785770c0e6003ef8a41454baac93dcaec49884",
+          "old_pid": 3280,
+          "reopened_pid": 5668,
+          "evidence_path": "artifacts/windows_mcp_harvest/a38b163fae08595eadb09d8b780357f2",
+          "cleanup_confirmed": true
+        },
+        {
+          "scenario": "dep_ironing_mode_cycle",
+          "family": "dependency",
+          "run_id": "2ed713b12a0b520bb5700c51f910990d",
+          "order": [],
+          "status_after_plan_binding_audit": "NON_GREEN",
+          "planned_recipe_sha256": "d53c20021c691de6843d637c7613aba79aef51b0b9457a8c55c80090011dd894",
+          "guest_recipe_sha256": "92a223273f40096bb063c9b90b07ad89ccc613512350e3b22610021289d89940",
+          "recipe_matches_plan": false,
+          "audit_failure": "guest_recipe_digest_mismatch; confirmed equivalent after replacing LF catalog hash with CRLF catalog hash",
+          "prepare_s": 51.6313155,
+          "script_s": 13.797,
+          "reopen_export_s": 49.795417,
+          "harvest_s": 2.0,
+          "host_wall_s": 141.56199999997625,
+          "model_calls": 0,
+          "ui_tool_count": 12,
+          "ui_checkpoints": [
+            {
+              "step": 1,
+              "process_groups": [
+                "Seam"
+              ],
+              "process_values": [
+                "Aligned"
+              ]
+            },
+            {
+              "step": 3,
+              "process_groups": [
+                "Ironing",
+                "Seam"
+              ],
+              "process_values": []
+            },
+            {
+              "step": 5,
+              "process_groups": [
+                "Seam"
+              ],
+              "process_values": [
+                "Aligned"
+              ]
+            },
+            {
+              "step": 7,
+              "process_groups": [
+                "Ironing",
+                "Seam"
+              ],
+              "process_values": []
+            }
+          ],
+          "check_layers": [
+            "owned_ui_initial_and_steps",
+            "3mf",
+            "gcode_config",
+            "object_layer_schedule",
+            "object_ironing_xy_e"
+          ],
+          "gcode_config": {
+            "initial_layer_print_height": "0.4",
+            "ironing_flow": "10%",
+            "ironing_spacing": "0.15",
+            "ironing_type": "no ironing",
+            "layer_height": "0.4",
+            "seam_position": "aligned"
+          },
+          "gcode_observed": {
+            "layer_count": 68,
+            "first_z": "0.4",
+            "last_z": "27.2",
+            "ironing_z": [],
+            "ironing_xy_e_moves": 0
+          },
+          "project_sha256": "5c60ee15feaa9f70b234eb17cb7ca07aecbf1521daa0ff11c287ff02d8ee13f6",
+          "gcode_sha256": "8b04e77bc1651f6f389a10730b305f18d2b208fe7df41ca4514c552232c7c20e",
+          "old_pid": 3808,
+          "reopened_pid": 5004,
+          "evidence_path": "artifacts/windows_mcp_harvest/2ed713b12a0b520bb5700c51f910990d",
+          "cleanup_confirmed": true
+        },
+        {
+          "scenario": "dep_ironing_disabled",
+          "family": "dependency",
+          "run_id": "98890a095834581ab2e703fbd61aeb89",
+          "order": [],
+          "status_after_plan_binding_audit": "NON_GREEN",
+          "planned_recipe_sha256": "55da219c850a8e34e6eb08720096f27439766c6f8afd24f18074a716700d2fdf",
+          "guest_recipe_sha256": "720d07bb97b6ce2bef12d48a08b0a0ed881a4dfa7745adc389bd4439757905d7",
+          "recipe_matches_plan": false,
+          "audit_failure": "guest_recipe_digest_mismatch; confirmed equivalent after replacing LF catalog hash with CRLF catalog hash",
+          "prepare_s": 51.6599446,
+          "script_s": 6.969,
+          "reopen_export_s": 49.8510595,
+          "harvest_s": 2.0,
+          "host_wall_s": 137.9529999999795,
+          "model_calls": 0,
+          "ui_tool_count": 6,
+          "ui_checkpoints": [
+            {
+              "step": 1,
+              "process_groups": [
+                "Seam"
+              ],
+              "process_values": [
+                "Aligned"
+              ]
+            }
+          ],
+          "check_layers": [
+            "owned_ui_initial_and_steps",
+            "3mf",
+            "gcode_config",
+            "object_layer_schedule",
+            "object_ironing_xy_e"
+          ],
+          "gcode_config": {
+            "initial_layer_print_height": "0.4",
+            "ironing_flow": "10%",
+            "ironing_spacing": "0.15",
+            "ironing_type": "no ironing",
+            "layer_height": "0.4",
+            "seam_position": "aligned"
+          },
+          "gcode_observed": {
+            "layer_count": 68,
+            "first_z": "0.4",
+            "last_z": "27.2",
+            "ironing_z": [],
+            "ironing_xy_e_moves": 0
+          },
+          "project_sha256": "f8af3c62187b61fa4de0c2fc4bd2eb71ac9bdef194515b3e0a52612bb4f81d67",
+          "gcode_sha256": "d799c4af2773c1e037924602c8fd8c0ded34b63ddb06995911920ffaffbbaa46",
+          "old_pid": 9236,
+          "reopened_pid": 7364,
+          "evidence_path": "artifacts/windows_mcp_harvest/98890a095834581ab2e703fbd61aeb89",
+          "cleanup_confirmed": true
+        },
+        {
+          "scenario": "dep_ironing_topmost",
+          "family": "dependency",
+          "run_id": "f43a0013796f5585b5c8d89e2820e182",
+          "order": [
+            "ironing"
+          ],
+          "status_after_plan_binding_audit": "NON_GREEN",
+          "planned_recipe_sha256": "92ae4895152c7ca8a094a8d639e2ceb96f1890201c56702e17374445fc904f22",
+          "guest_recipe_sha256": "e5d632fbe75e016451f9d959b71b0f2dffca1fc8484df92c0a5f0fac6baace78",
+          "recipe_matches_plan": false,
+          "audit_failure": "guest_recipe_digest_mismatch; confirmed equivalent after replacing LF catalog hash with CRLF catalog hash",
+          "prepare_s": 51.7201313,
+          "script_s": 42.141,
+          "reopen_export_s": 50.6981706,
+          "harvest_s": 2.0,
+          "host_wall_s": 179.2029999999795,
+          "model_calls": 0,
+          "ui_tool_count": 19,
+          "ui_checkpoints": [
+            {
+              "step": 1,
+              "process_groups": [
+                "Seam"
+              ],
+              "process_values": [
+                "Aligned"
+              ]
+            }
+          ],
+          "check_layers": [
+            "owned_ui_initial_and_steps",
+            "3mf",
+            "gcode_config",
+            "object_layer_schedule",
+            "object_ironing_xy_e"
+          ],
+          "gcode_config": {
+            "initial_layer_print_height": "0.4",
+            "ironing_flow": "10%",
+            "ironing_spacing": "0.15",
+            "ironing_type": "topmost",
+            "layer_height": "0.4",
+            "seam_position": "aligned"
+          },
+          "gcode_observed": {
+            "layer_count": 68,
+            "first_z": "0.4",
+            "last_z": "27.2",
+            "ironing_z": [
+              "27.2"
+            ],
+            "ironing_xy_e_moves": 492
+          },
+          "project_sha256": "2f08cf2062b3190b39428349dc3693e166fdb72f51477250213545e7111cd569",
+          "gcode_sha256": "8bca2225e5acf8a11dc3dd3ad7199141b33210820d8cac33e83a18350269dc18",
+          "old_pid": 9772,
+          "reopened_pid": 5612,
+          "evidence_path": "artifacts/windows_mcp_harvest/f43a0013796f5585b5c8d89e2820e182",
+          "cleanup_confirmed": true
+        }
+      ],
+      "planned": 7,
+      "attempted": 7,
+      "executed": 7,
+      "wall_s": 1095.9529999999795,
+      "release_eligible": false,
+      "catalog_sha256": "221ba789258c0b7362237b156f03eee4f19f4b6d3ddbce5866698e8c8a9b7bf2",
+      "planned_value_pairs": [
+        [
+          [
+            "layer_height",
+            "0.24"
+          ],
+          [
+            "ironing_type",
+            "no ironing"
+          ]
+        ],
+        [
+          [
+            "layer_height",
+            "0.24"
+          ],
+          [
+            "ironing_type",
+            "topmost"
+          ]
+        ],
+        [
+          [
+            "layer_height",
+            "0.24"
+          ],
+          [
+            "seam_position",
+            "aligned"
+          ]
+        ],
+        [
+          [
+            "layer_height",
+            "0.24"
+          ],
+          [
+            "seam_position",
+            "random"
+          ]
+        ],
+        [
+          [
+            "layer_height",
+            "0.4"
+          ],
+          [
+            "ironing_type",
+            "no ironing"
+          ]
+        ],
+        [
+          [
+            "layer_height",
+            "0.4"
+          ],
+          [
+            "ironing_type",
+            "topmost"
+          ]
+        ],
+        [
+          [
+            "layer_height",
+            "0.4"
+          ],
+          [
+            "seam_position",
+            "aligned"
+          ]
+        ],
+        [
+          [
+            "layer_height",
+            "0.4"
+          ],
+          [
+            "seam_position",
+            "random"
+          ]
+        ],
+        [
+          [
+            "seam_position",
+            "aligned"
+          ],
+          [
+            "ironing_type",
+            "no ironing"
+          ]
+        ],
+        [
+          [
+            "seam_position",
+            "aligned"
+          ],
+          [
+            "ironing_type",
+            "topmost"
+          ]
+        ],
+        [
+          [
+            "seam_position",
+            "random"
+          ],
+          [
+            "ironing_type",
+            "no ironing"
+          ]
+        ],
+        [
+          [
+            "seam_position",
+            "random"
+          ],
+          [
+            "ironing_type",
+            "topmost"
+          ]
+        ]
+      ],
+      "business_passed": 7,
+      "audit_passed": 0
+    },
+    "bda31aee778c4e91b885edf2ec5ec50a": {
+      "batch_id": "bda31aee778c4e91b885edf2ec5ec50a",
+      "source_sha": "755dff6dc65dbd5e73591352c7315670892ff821",
+      "cases": [
+        {
+          "scenario": "cfg_value_06",
+          "family": "legal",
+          "run_id": "d13fa85852ab52a7b724d186d3ba962a",
+          "order": [
+            "layer",
+            "ironing"
+          ],
+          "status_after_plan_binding_audit": "SHADOW",
+          "planned_recipe_sha256": "6dc7547cc83fb7b8b007d635f7e7cab7602a0b73f6919dc011a439d057293d0d",
+          "guest_recipe_sha256": "6dc7547cc83fb7b8b007d635f7e7cab7602a0b73f6919dc011a439d057293d0d",
+          "recipe_matches_plan": true,
+          "prepare_s": 51.6357186,
+          "script_s": 44.922,
+          "reopen_export_s": 50.4552628,
+          "harvest_s": 2.0,
+          "host_wall_s": 177.71899999998277,
+          "model_calls": 0,
+          "ui_tool_count": 22,
+          "ui_checkpoints": [
+            {
+              "step": 1,
+              "process_groups": [
+                "Seam"
+              ],
+              "process_values": [
+                "Aligned"
+              ]
+            }
+          ],
+          "check_layers": [
+            "owned_ui_initial_and_steps",
+            "3mf",
+            "gcode_config",
+            "object_layer_schedule",
+            "object_ironing_xy_e"
+          ],
+          "gcode_config": {
+            "initial_layer_print_height": "0.4",
+            "ironing_flow": "10%",
+            "ironing_spacing": "0.15",
+            "ironing_type": "topmost",
+            "layer_height": "0.24",
+            "seam_position": "aligned"
+          },
+          "gcode_observed": {
+            "layer_count": 112,
+            "first_z": "0.4",
+            "last_z": "27.04",
+            "ironing_z": [
+              "27.04"
+            ],
+            "ironing_xy_e_moves": 492
+          },
+          "project_sha256": "b58f250a28019c771865225d988399e3dfd5a66e408ae2836613c2def61a4e3f",
+          "gcode_sha256": "aabfaadc69b435732022eeef301176968c20966948eced43c4f933814a55c72a",
+          "old_pid": 4536,
+          "reopened_pid": 9864,
+          "evidence_path": "artifacts/windows_mcp_harvest/d13fa85852ab52a7b724d186d3ba962a",
+          "cleanup_confirmed": true
+        },
+        {
+          "scenario": "dep_ironing_mode_cycle",
+          "family": "dependency",
+          "run_id": "aff32323f6fd56a4913184fea87237f4",
+          "order": [],
+          "status_after_plan_binding_audit": "SHADOW",
+          "planned_recipe_sha256": "3998a9d48d7cad62ef37e4e84ea3aae28b1818b3456833e18a85930f4f0eb390",
+          "guest_recipe_sha256": "3998a9d48d7cad62ef37e4e84ea3aae28b1818b3456833e18a85930f4f0eb390",
+          "recipe_matches_plan": true,
+          "prepare_s": 51.687158,
+          "script_s": 14.407,
+          "reopen_export_s": 49.817271,
+          "harvest_s": 2.0160000000032596,
+          "host_wall_s": 145.59399999998277,
+          "model_calls": 0,
+          "ui_tool_count": 12,
+          "ui_checkpoints": [
+            {
+              "step": 1,
+              "process_groups": [
+                "Seam"
+              ],
+              "process_values": [
+                "Aligned"
+              ]
+            },
+            {
+              "step": 3,
+              "process_groups": [
+                "Ironing",
+                "Seam"
+              ],
+              "process_values": []
+            },
+            {
+              "step": 5,
+              "process_groups": [
+                "Seam"
+              ],
+              "process_values": [
+                "Aligned"
+              ]
+            },
+            {
+              "step": 7,
+              "process_groups": [
+                "Ironing",
+                "Seam"
+              ],
+              "process_values": []
+            }
+          ],
+          "check_layers": [
+            "owned_ui_initial_and_steps",
+            "3mf",
+            "gcode_config",
+            "object_layer_schedule",
+            "object_ironing_xy_e"
+          ],
+          "gcode_config": {
+            "initial_layer_print_height": "0.4",
+            "ironing_flow": "10%",
+            "ironing_spacing": "0.15",
+            "ironing_type": "no ironing",
+            "layer_height": "0.4",
+            "seam_position": "aligned"
+          },
+          "gcode_observed": {
+            "layer_count": 68,
+            "first_z": "0.4",
+            "last_z": "27.2",
+            "ironing_z": [],
+            "ironing_xy_e_moves": 0
+          },
+          "project_sha256": "04dc62e613d690bd4aab53297780229114a10b53efb837dd078b0cfc133a82f9",
+          "gcode_sha256": "b0aa6507ac015145eb8cf68155b834e5fd99ef068a73e6a64ffc32903f5aac88",
+          "old_pid": 2864,
+          "reopened_pid": 6648,
+          "evidence_path": "artifacts/windows_mcp_harvest/aff32323f6fd56a4913184fea87237f4",
+          "cleanup_confirmed": true
+        },
+        {
+          "scenario": "dep_ironing_disabled",
+          "family": "dependency",
+          "run_id": "318b0aa39d8a5dd7943d6c421bbe04a6",
+          "order": [],
+          "status_after_plan_binding_audit": "SHADOW",
+          "planned_recipe_sha256": "68c146c84e7314f953f82fb645d28546e436e12c93335616601ae33ee6b5b265",
+          "guest_recipe_sha256": "68c146c84e7314f953f82fb645d28546e436e12c93335616601ae33ee6b5b265",
+          "recipe_matches_plan": true,
+          "prepare_s": 52.2720581,
+          "script_s": 7.766,
+          "reopen_export_s": 49.8041399,
+          "harvest_s": 2.0,
+          "host_wall_s": 137.89100000000326,
+          "model_calls": 0,
+          "ui_tool_count": 6,
+          "ui_checkpoints": [
+            {
+              "step": 1,
+              "process_groups": [
+                "Seam"
+              ],
+              "process_values": [
+                "Aligned"
+              ]
+            }
+          ],
+          "check_layers": [
+            "owned_ui_initial_and_steps",
+            "3mf",
+            "gcode_config",
+            "object_layer_schedule",
+            "object_ironing_xy_e"
+          ],
+          "gcode_config": {
+            "initial_layer_print_height": "0.4",
+            "ironing_flow": "10%",
+            "ironing_spacing": "0.15",
+            "ironing_type": "no ironing",
+            "layer_height": "0.4",
+            "seam_position": "aligned"
+          },
+          "gcode_observed": {
+            "layer_count": 68,
+            "first_z": "0.4",
+            "last_z": "27.2",
+            "ironing_z": [],
+            "ironing_xy_e_moves": 0
+          },
+          "project_sha256": "9049a74494e9cea9ab26f7eb1ba66f3a7b558b6fa3215ac9ae2566ac9908efab",
+          "gcode_sha256": "cd4d91b7771be2ab21438bea2de8914a890421f4802311bf5f72f4ddb90a9907",
+          "old_pid": 4480,
+          "reopened_pid": 8564,
+          "evidence_path": "artifacts/windows_mcp_harvest/318b0aa39d8a5dd7943d6c421bbe04a6",
+          "cleanup_confirmed": true
+        },
+        {
+          "scenario": "dep_ironing_topmost",
+          "family": "dependency",
+          "run_id": "a4a6e87a823f534e9025e25870ee7a4e",
+          "order": [
+            "ironing"
+          ],
+          "status_after_plan_binding_audit": "SHADOW",
+          "planned_recipe_sha256": "defb0a854e36a0121c1481c381f7fe8f995cbcc87ee5d797a366558e83403f3c",
+          "guest_recipe_sha256": "defb0a854e36a0121c1481c381f7fe8f995cbcc87ee5d797a366558e83403f3c",
+          "recipe_matches_plan": true,
+          "prepare_s": 51.8504333,
+          "script_s": 43.734,
+          "reopen_export_s": 50.9272851,
+          "harvest_s": 2.0,
+          "host_wall_s": 174.98399999999674,
+          "model_calls": 0,
+          "ui_tool_count": 19,
+          "ui_checkpoints": [
+            {
+              "step": 1,
+              "process_groups": [
+                "Seam"
+              ],
+              "process_values": [
+                "Aligned"
+              ]
+            }
+          ],
+          "check_layers": [
+            "owned_ui_initial_and_steps",
+            "3mf",
+            "gcode_config",
+            "object_layer_schedule",
+            "object_ironing_xy_e"
+          ],
+          "gcode_config": {
+            "initial_layer_print_height": "0.4",
+            "ironing_flow": "10%",
+            "ironing_spacing": "0.15",
+            "ironing_type": "topmost",
+            "layer_height": "0.4",
+            "seam_position": "aligned"
+          },
+          "gcode_observed": {
+            "layer_count": 68,
+            "first_z": "0.4",
+            "last_z": "27.2",
+            "ironing_z": [
+              "27.2"
+            ],
+            "ironing_xy_e_moves": 492
+          },
+          "project_sha256": "c4d70848cfbd359705c13b8896de48963d86f4bff83518c1f7a520484bdb997e",
+          "gcode_sha256": "a42a2f825e32f5beef0e19335d03122c0b07b62ff983dd54e59dc6547f7eb418",
+          "old_pid": 7284,
+          "reopened_pid": 8688,
+          "evidence_path": "artifacts/windows_mcp_harvest/a4a6e87a823f534e9025e25870ee7a4e",
+          "cleanup_confirmed": true
+        }
+      ],
+      "planned": 4,
+      "attempted": 4,
+      "executed": 4,
+      "wall_s": 636.375,
+      "release_eligible": false,
+      "catalog_sha256": "a3b78bd095eda3fc00c22cf471822c276460611bef2ebbd525407a4abaa40e14",
+      "planned_value_pairs": [
+        [
+          [
+            "layer_height",
+            "0.24"
+          ],
+          [
+            "ironing_type",
+            "no ironing"
+          ]
+        ],
+        [
+          [
+            "layer_height",
+            "0.24"
+          ],
+          [
+            "ironing_type",
+            "topmost"
+          ]
+        ],
+        [
+          [
+            "layer_height",
+            "0.24"
+          ],
+          [
+            "seam_position",
+            "aligned"
+          ]
+        ],
+        [
+          [
+            "layer_height",
+            "0.24"
+          ],
+          [
+            "seam_position",
+            "random"
+          ]
+        ],
+        [
+          [
+            "layer_height",
+            "0.4"
+          ],
+          [
+            "ironing_type",
+            "no ironing"
+          ]
+        ],
+        [
+          [
+            "layer_height",
+            "0.4"
+          ],
+          [
+            "ironing_type",
+            "topmost"
+          ]
+        ],
+        [
+          [
+            "layer_height",
+            "0.4"
+          ],
+          [
+            "seam_position",
+            "aligned"
+          ]
+        ],
+        [
+          [
+            "layer_height",
+            "0.4"
+          ],
+          [
+            "seam_position",
+            "random"
+          ]
+        ],
+        [
+          [
+            "seam_position",
+            "aligned"
+          ],
+          [
+            "ironing_type",
+            "no ironing"
+          ]
+        ],
+        [
+          [
+            "seam_position",
+            "aligned"
+          ],
+          [
+            "ironing_type",
+            "topmost"
+          ]
+        ],
+        [
+          [
+            "seam_position",
+            "random"
+          ],
+          [
+            "ironing_type",
+            "no ironing"
+          ]
+        ],
+        [
+          [
+            "seam_position",
+            "random"
+          ],
+          [
+            "ironing_type",
+            "topmost"
+          ]
+        ]
+      ],
+      "business_passed": 4,
+      "audit_passed": 4
+    }
+  },
+  "guest_cleanup": {
+    "head": "755dff6dc65dbd5e73591352c7315670892ff821",
+    "tree": [],
+    "task": "Ready",
+    "orca": 0,
+    "mcp_listeners": 0,
+    "tokens": [],
+    "identity": {
+      "exe": "C:\\coil\\Projects\\SnapmakerOrca_dev\\build\\src\\Release\\snapmaker-orca.exe",
+      "exe_sha256": "5c48644d7da18b50636ceeee4ef9fd2eaf6d4e8ac05bd88752f40e3717fc47bf",
+      "dll": "C:\\coil\\Projects\\SnapmakerOrca_dev\\build\\src\\Release\\Snapmaker_Orca.dll",
+      "dll_sha256": "0485166d3c128320195d44c55db18fd43567e2fbbaa4aa5d3f163b71772fba35",
+      "build_id_offset": 50149136,
+      "preset_root": "C:\\coil\\Projects\\SnapmakerOrca_dev\\build\\src\\Release\\resources\\profiles",
+      "vendors": {
+        "Snapmaker": {
+          "version": "02.02.55.02",
+          "json_files": 707,
+          "json_tree_sha256": "92c779cf2eeef1e417b6e486be9a218e1fabd93a820936bf8b50aa1b1f117d64"
+        },
+        "BBL": {
+          "version": "02.00.00.55",
+          "json_files": 1140,
+          "json_tree_sha256": "c5ecff8ca5f50e684ece6e996314cfe4dd49818956134dc2700b62503626a2ce"
+        }
+      }
+    }
+  }
+}
