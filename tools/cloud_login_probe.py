@@ -420,9 +420,15 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False, 
             result["device_page_observed"] = inspect_devices(session, result, poll)
             if upload_gcode:
                 result["upload_stage"] = "await_u1_device_panel"
-                if result.get("device_stage") in {
+                panel_observed = result.get("device_stage") in {
                     "u1_device_panel_observed", "device_files_opened", "u1_device_files_observed"
-                }:
+                }
+                control = result.get("device_control", {})
+                review_panel = (
+                    video_review and result.get("device_stage") == "device_control_opened"
+                    and control.get("temperature") and not control.get("still_on_home") and not control.get("offline")
+                )
+                if panel_observed or review_panel:
                     from tools.cloud_upload_probe import run_upload
 
                     outcome = run_upload(
