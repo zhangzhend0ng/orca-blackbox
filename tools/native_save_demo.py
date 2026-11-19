@@ -22,7 +22,7 @@ HOST_SOURCES = ("tools/native_save_demo.py", "tools/windows_mcp_codex_probe.py",
     "runner/hv_go.ps1", "runner/hv_harvest.ps1", "runner/_common.ps1",
     "tools/native_save_run.py", "tools/native_save_guest.py", "tools/native_save_server.py", "harness/native_authority.py",
     "harness/native_desktop_video.py",
-    "harness/native_script_baseline.py", "harness/process_panel.py", "harness/agent_project_ui.py", "harness/agent_business_ui.py",
+    "harness/native_script_baseline.py", "harness/native_pairwise.py", "harness/process_panel.py", "harness/agent_project_ui.py", "harness/agent_business_ui.py",
     "harness/native_uia_replay.py", "contracts/replays/uia_layer.json", "contracts/replays/uia_save.json",
     "contracts/replays/uia_canvas.json", "contracts/replays/uia_process.json",
     "tests/engine/m6a_transform_verify.py", "tests/mixing/m4e_mixing_paint.py",
@@ -85,7 +85,8 @@ def main():
     p.add_argument("--probe-mix-waits", action="store_true", help="Measure the mixing replay with readiness checks replacing fixed sleeps.")
     p.add_argument("--probe-mix-boot", action="store_true", help="Include readiness-based startup dialog scanning in the mixing waits probe.")
     p.add_argument("--actor", choices=("codex", "zcode", "script"), default="codex")
-    from harness.native_matrix import FIXTURE_SCENARIOS, REPLAY_SOURCES, SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_LAYER_SCENARIO, UIA_MIX_RECIPES, UIA_REPLAY_MIX
+    from harness.native_matrix import FIXTURE_SCENARIOS, RECORDED_SCENARIOS, REPLAY_SOURCES, SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_LAYER_SCENARIO, UIA_MIX_RECIPES, UIA_REPLAY_MIX
+    from harness.native_pairwise import OPERATIONS, PAIR_CASES
     p.add_argument("--scenario", choices=tuple(s for s in SCENARIOS if s not in {"canvas_probe", "authority_probe"}))
     args = p.parse_args()
     args.probe_mix_waits |= args.probe_mix_boot
@@ -113,7 +114,10 @@ def main():
         from harness.native_fixture_suite import FIXTURE_CASES
         fixture_cases = FIXTURE_CASES
         sources += ("harness/native_fixture_suite.py",)
-    for scenario in fixture_cases or (args.scenario,):
+    recording_scenarios = fixture_cases or (args.scenario,)
+    if args.scenario in PAIR_CASES:
+        recording_scenarios = tuple(OPERATIONS[name].recording for name in PAIR_CASES[args.scenario]) + ("uia_replay_move_layer",)
+    for scenario in recording_scenarios:
         if scenario not in REPLAY_SOURCES:
             continue
         from harness.native_uia_replay import recipe_path
@@ -150,7 +154,7 @@ def main():
         "@{head=(& $git -C $sb rev-parse HEAD);dirty=@(& $git -C $sb status --porcelain);"
         r"runtime=(Test-Path 'C:\coil\tools\windows-mcp-0.8.9\python.exe')} } -ArgumentList $guestSandbox,$guestGit"+"\n"
         "if($state.head.Trim() -ne "+quoted(head)+" -or $state.dirty.Count"
-        + (" -or -not $state.runtime" if args.actor != "script" or args.scenario in REPLAY_SOURCES or fixture_cases or args.inspect_mix_controls
+        + (" -or -not $state.runtime" if args.actor != "script" or args.scenario in RECORDED_SCENARIOS or fixture_cases or args.inspect_mix_controls
            else "") + "){throw 'demo_guest_sync_or_runtime_required'}\n"
         +capture_request+
         "& "+quoted(REPO / "runner/hv_go.ps1")+" -NoSync -WindowsMcpProbe -NativeSave -ProbeRunId "+quoted(run_id)

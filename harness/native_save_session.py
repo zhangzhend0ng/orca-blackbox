@@ -16,9 +16,10 @@ from decimal import DecimalException
 from .agent_protocol import LAYER_FIXTURE_SHA256, valid_run_id
 from .native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
 from .native_matrix import (CANVAS_REPLACE_SCENARIO, CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS,
-    FIXTURE_SCENARIOS, GENERALIZATION, REPLAY_SOURCES, SCRIPT_SCENARIOS, UIA_CANVAS_SCENARIO, UIA_HYBRID_SCENARIOS,
+    FIXTURE_SCENARIOS, GENERALIZATION, RECORDED_SCENARIOS, REPLAY_SOURCES, SCRIPT_SCENARIOS, UIA_CANVAS_SCENARIO, UIA_HYBRID_SCENARIOS,
     UIA_MIX_RECIPES, UIA_MOVE_LAYER, UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS, UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
 from .run_contract import validate_contract
+from .native_pairwise import PAIR_CASES, verify_pair
 from .run_verdict import CheckResult, contract_digest
 from .runtime_ports import VerificationOutcome
 from .script_executor import _ScriptHandle
@@ -46,6 +47,16 @@ class NativeSaveHandle(_ScriptHandle):
 def native_contract(actor="codex", scenario="base"):
     from .native_matrix import scenario_spec
     scenario_spec(actor, scenario)
+    if scenario in PAIR_CASES:
+        from .native_uia_replay import read_recipe
+
+        _, digest = read_recipe(scenario)
+        return validate_contract({"schema_version": 1, "case_id": scenario,
+            "contract_version": "native-pairwise-1", "executor": "script",
+            "required_checks": ["path", "business"], "steps": [
+                {"id": "recording", "goal": "Run generated operation pair with SHA256 " + digest},
+                {"id": "proof", "goal": "Independently reopen and reslice the frozen project to verify both effects."},
+            ], "limits": {"timeout_s": 900, "max_actions": 40, "max_retries": 0, "max_cost_usd": 0}})
     if scenario in FIXTURE_SCENARIOS:
         from .native_fixture_suite import FIXTURE_CASES
         from .native_uia_replay import read_recipe
@@ -145,11 +156,15 @@ def native_spec(digest):
     from .native_matrix import SCENARIOS
     from .native_uia_replay import recipe_path
     for actor, scenarios in (("codex", ("base",)), ("zcode", (s for s in SCENARIOS
-                               if s not in REPLAY_SOURCES and s not in FIXTURE_SCENARIOS)),
+                               if s not in RECORDED_SCENARIOS and s not in FIXTURE_SCENARIOS)),
                              ("script", SCRIPT_SCENARIOS)):
         for scenario in scenarios:
             if scenario in REPLAY_SOURCES and not recipe_path(scenario).is_file():
                 continue
+            if scenario in PAIR_CASES:
+                from .native_pairwise import OPERATIONS
+                if not all(recipe_path(op.recording).is_file() for op in OPERATIONS.values()):
+                    continue
             if scenario in FIXTURE_SCENARIOS:
                 from .native_fixture_suite import FIXTURE_CASES
                 if not all(recipe_path(case).is_file() for case in FIXTURE_CASES):
@@ -255,7 +270,11 @@ def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, can
     gcode = read("exports/0001.gcode", 64*1024*1024)
     _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
     from .native_pilots import TRIALS
-    if source_scenario in TRIALS:
+    if scenario in PAIR_CASES:
+        _require(type(proof.get("reopened_pid")) is int and proof["reopened_pid"] > 0
+                 and proof["reopened_pid"] != proof["old_pid"], "pair_independent_reopen")
+        detail = json.dumps(verify_pair(scenario, frozen, fixture, gcode, cancelled=cancelled), sort_keys=True)
+    elif source_scenario in TRIALS:
         detail = json.dumps(verify_business(source_scenario, frozen, fixture, gcode, cancelled=cancelled), sort_keys=True)
     elif source_scenario == UIA_SAVE_SCENARIO:
         _require(type(setup.get("dialog_hwnd")) is int and setup["dialog_hwnd"] > 0
@@ -266,7 +285,7 @@ def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, can
     refs = ("artifact:proof.json", process_ref, "artifact:native_worker.json",
             "artifact:proof/0001.3mf:sha256:"+proof["project_sha256"],
             "artifact:exports/0001.gcode:sha256:"+proof["gcode_sha256"])
-    if scenario in REPLAY_SOURCES:
+    if scenario in RECORDED_SCENARIOS:
         from .native_uia_replay import verify_replay_trace
         raw_trace = read("native_trace.ndjson", 256000)
         # The worker binds completed tool receipts before revoking input. This

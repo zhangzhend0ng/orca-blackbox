@@ -5,6 +5,7 @@ caller binds original bytes to LAYER_FIXTURE_SHA256 before this comparison.
 """
 from .agent_verify import _require
 from .gcode_check import config_value_all
+from .native_pairwise import PAIR_CASES, expected_settings
 from .script_verify import _check_cancel, _InvalidEvidence
 
 _VECTOR_MIGRATIONS = frozenset("""
@@ -34,6 +35,7 @@ PROCESS_COMBO = {"layer_height": "0.3", "sparse_infill_density": "30%", "enable_
                  "support_type": "normal(auto)"}
 QUALITY_ENUMS = {"ironing_type": "topmost", "seam_position": "random"}
 MOVE_LAYER = {"layer_height": "0.24"}
+PAIR_SETTINGS = tuple(expected_settings(scenario) for scenario in PAIR_CASES)
 
 
 def require_gcode_settings(gcode, expected, error_code):
@@ -50,7 +52,7 @@ def inspect_preserved_settings(actual, expected, *, allowed_changes=None, cancel
     changes = {} if allowed_changes is None else allowed_changes
     _require(type(changes) is dict and (not changes or changes in
              ({"wall_loops": "3"}, {"sparse_infill_density": "30%"}, {"top_shell_layers": "5"},
-              {"bottom_shell_layers": "6"}, PROCESS_COMBO, QUALITY_ENUMS, MOVE_LAYER)),
+              {"bottom_shell_layers": "6"}, PROCESS_COMBO, QUALITY_ENUMS, MOVE_LAYER, *PAIR_SETTINGS)),
              "pilot_config_change_scope")
     if changes == {"wall_loops": "3"}:
         _require(expected.get("wall_loops") == "2" and actual.get("wall_loops") == "3",

@@ -103,7 +103,7 @@ def verify_business(project: bytes, fixture: bytes, gcode: bytes, *, cancelled=l
     return verify_translation(project, fixture, gcode, axis="x", distance=10, cancelled=cancelled)
 
 
-def verify_translation(project, fixture, gcode, *, axis, distance, cancelled, layer_edit=False):
+def verify_translation(project, fixture, gcode, *, axis, distance, cancelled, layer_edit=False, pair_settings=None):
     _require(type(fixture) is bytes and hashlib.sha256(fixture).hexdigest() == LAYER_FIXTURE_SHA256,
              "transform_fixture_identity")
     expected, wanted, original_transform = _expected_fixture(fixture, cancelled, axis=axis, distance=distance)
@@ -114,11 +114,12 @@ def verify_translation(project, fixture, gcode, *, axis, distance, cancelled, la
     count, final_z = (112, "27.04") if layer_edit else (68, "27.2")
     summary = inspect_project(project, expected, layer_height=layer, cancelled=cancelled,
         expected_assembly_transform=original_transform)
+    settings = pair_settings if pair_settings is not None else MOVE_LAYER if layer_edit else None
     inspect_preserved_settings(_json(files["Metadata/project_settings.config"]),
         _json(_archive(fixture, cancelled)["Metadata/project_settings.config"]),
-        allowed_changes=MOVE_LAYER if layer_edit else None, cancelled=cancelled)
-    if layer_edit:
-        require_gcode_settings(gcode, MOVE_LAYER, "transform_layer_echo")
+        allowed_changes=settings, cancelled=cancelled)
+    if settings:
+        require_gcode_settings(gcode, settings, "transform_layer_echo" if pair_settings is None else "pair_gcode_settings")
     layers = analyze_gcode(gcode, layer_height=layer, cancelled=cancelled)
     _require(layers["layer_count"] == count and Decimal(layers["last_z"]) == Decimal(final_z)
              and layers["object_tools"] == [0], "transform_layer_or_tool_schedule")

@@ -4,14 +4,14 @@ from copy import deepcopy
 
 import pytest
 
-from harness.native_matrix import FIXTURE_SCENARIOS, REPLAY_SOURCES, SCENARIOS, completed_progress
+from harness.native_matrix import FIXTURE_SCENARIOS, RECORDED_SCENARIOS, SCENARIOS, completed_progress
 from harness.native_save_session import native_contract, native_spec
 from harness.run_verdict import contract_digest
 from tools.zcode_matrix import grade
 
 
 def test_registered_matrix_contracts_are_distinct_and_closed():
-    script_only = set(REPLAY_SOURCES) | set(FIXTURE_SCENARIOS)
+    script_only = RECORDED_SCENARIOS | set(FIXTURE_SCENARIOS)
     scenarios = [scenario for scenario in SCENARIOS if scenario not in script_only]
     hashes = [contract_digest(native_contract("zcode", s)) for s in scenarios]
     assert len(set(hashes)) == len(scenarios)

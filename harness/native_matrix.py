@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from .native_diagnostic_recovery import COMMIT_SCENARIO, SCENARIO as DIAGNOSTIC_SCENARIO
+from .native_pairwise import PAIR_CASES, PAIR_ENUM_CASES, PAIR_MOVE_CASES
 
 CANVAS_REPLACE_SCENARIO = "canvas_replace_trial"
 UIA_SAVE_SCENARIO = "uia_save_as"
@@ -23,7 +24,8 @@ REPLAY_SOURCES = {UIA_REPLAY_SCENARIO: UIA_LAYER_SCENARIO, UIA_REPLAY_SAVE: UIA_
                   UIA_REPLAY_CANVAS: UIA_CANVAS_SCENARIO, UIA_REPLAY_PROCESS: UIA_PROCESS_COMBO,
                   UIA_REPLAY_MIX: UIA_MIX_RECIPES, UIA_REPLAY_ENUMS: UIA_QUALITY_ENUMS,
                   UIA_REPLAY_MOVE_LAYER: UIA_MOVE_LAYER}
-UIA_ENUM_SCENARIOS = frozenset((UIA_QUALITY_ENUMS, UIA_REPLAY_ENUMS))
+RECORDED_SCENARIOS = frozenset(REPLAY_SOURCES) | PAIR_CASES.keys()
+UIA_ENUM_SCENARIOS = frozenset((UIA_QUALITY_ENUMS, UIA_REPLAY_ENUMS)) | PAIR_ENUM_CASES
 UIA_PROCESS_SCENARIOS = frozenset((UIA_PROCESS_COMBO, UIA_REPLAY_PROCESS)) | UIA_ENUM_SCENARIOS
 UIA_MOVE_LAYER_SCENARIOS = frozenset((UIA_MOVE_LAYER, UIA_REPLAY_MOVE_LAYER))
 UIA_MIX_SCENARIOS = frozenset((UIA_MIX_RECIPES, UIA_REPLAY_MIX))
@@ -31,15 +33,15 @@ UIA_SAVE_SCENARIOS = frozenset((UIA_SAVE_SCENARIO, UIA_REPLAY_SAVE))
 SCRIPT_COMPARISON_SCENARIOS = (UIA_LAYER_SCENARIO, UIA_CANVAS_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO, UIA_SAVE_SCENARIO,
                                UIA_PROCESS_COMBO, UIA_MIX_RECIPES, UIA_QUALITY_ENUMS, UIA_MOVE_LAYER)
 FIXTURE_SCENARIOS = ("fixture_cold", "fixture_shared")
-SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *FIXTURE_SCENARIOS)
+SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *PAIR_CASES, *FIXTURE_SCENARIOS)
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
 UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
     "uia_general_bottom_strength", "uia_general_bottom_quality", *UIA_Y_SCENARIOS,
     "uia_general_combo", UIA_DISTURBANCE_SCENARIO)
-UIA_HYBRID_SCENARIOS = frozenset((*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *UIA_GENERALIZATION)) - UIA_SAVE_SCENARIOS
+UIA_HYBRID_SCENARIOS = (frozenset((*SCRIPT_COMPARISON_SCENARIOS, *UIA_GENERALIZATION)) | RECORDED_SCENARIOS) - UIA_SAVE_SCENARIOS
 SCALE_SCENARIOS = ("general_scale_quality", "general_scale_others")
-CANVAS_REPLACE_SCENARIOS = frozenset((CANVAS_REPLACE_SCENARIO, UIA_CANVAS_SCENARIO, UIA_REPLAY_CANVAS, *SCALE_SCENARIOS, *UIA_Y_SCENARIOS)) | UIA_MOVE_LAYER_SCENARIOS
+CANVAS_REPLACE_SCENARIOS = frozenset((CANVAS_REPLACE_SCENARIO, UIA_CANVAS_SCENARIO, UIA_REPLAY_CANVAS, *SCALE_SCENARIOS, *UIA_Y_SCENARIOS)) | UIA_MOVE_LAYER_SCENARIOS | PAIR_MOVE_CASES
 CANVAS_SCENARIOS = CANVAS_REPLACE_SCENARIOS | {"canvas_trial"}
 GENERALIZATION = (
     "general_wall", "general_slot2", "general_top_strength", "general_top_quality",
@@ -66,6 +68,7 @@ SCENARIOS = {
     UIA_REPLAY_MIX: ("Quality", None),
     **dict.fromkeys(UIA_ENUM_SCENARIOS | UIA_MOVE_LAYER_SCENARIOS, ("Quality", None)),
     **dict.fromkeys(FIXTURE_SCENARIOS, ("Quality", None)),
+    **dict.fromkeys(PAIR_CASES, ("Quality", None)),
     "overwrite": ("Quality", "overwrite"),
     "safety_cancel": ("Quality", "cancel"),
     "safety_timeout": ("Quality", "timeout"),
@@ -109,7 +112,7 @@ def scenario_spec(actor, scenario):
             raise ValueError("native_script_scenario_not_registered")
         return SCENARIOS[scenario]
     if (actor not in {"codex", "zcode"} or scenario not in SCENARIOS
-            or scenario in REPLAY_SOURCES or scenario in FIXTURE_SCENARIOS):
+            or scenario in RECORDED_SCENARIOS or scenario in FIXTURE_SCENARIOS):
         raise ValueError("native_scenario_not_registered")
     if actor != "zcode" and scenario != "base":
         raise ValueError("native_matrix_requires_zcode")

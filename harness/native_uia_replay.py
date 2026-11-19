@@ -10,6 +10,7 @@ from .native_matrix import (REPLAY_SOURCES, UIA_CANVAS_SCENARIO, UIA_LAYER_SCENA
     UIA_REPLAY_ENUMS, UIA_REPLAY_MIX, UIA_REPLAY_MOVE_LAYER, UIA_REPLAY_PROCESS, UIA_REPLAY_SAVE,
     UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
 from .native_save_policy import PROCESS_POPUP, validate_input, validate_uia_selector
+from .native_pairwise import PAIR_CASES, PAIR_ENUM_CASES, check_live, compile_pair
 from .native_uia import verify_uia_save
 from .native_uia_hybrid import ENUM_READBACK_VALUES, contains, new_enum_readback, verify_hybrid_trace, within
 
@@ -96,7 +97,7 @@ def verify_visual_steps(steps, scenario):
             raise ValueError("replay_step_schema")
         tool, args = step["tool"], step["arguments"]
         keys = {"tool", "arguments", "bounds"} if tool == "Screenshot" else {"tool", "arguments"}
-        if scenario == UIA_REPLAY_ENUMS and tool == "Snapshot" and "process_value" in step:
+        if scenario in PAIR_ENUM_CASES | {UIA_REPLAY_ENUMS} and tool == "Snapshot" and "process_value" in step:
             if step["process_value"] not in ENUM_READBACK_VALUES:
                 raise ValueError("replay_process_value")
             keys.add("process_value")
@@ -222,9 +223,12 @@ def verify_canvas_steps(steps, scenario=UIA_REPLAY_CANVAS):
 def read_recipe(scenario=UIA_REPLAY_SCENARIO):
     from .agent_protocol import read_json
 
-    recipe = verify_recipe(read_json(recipe_path(scenario)))
-    if recipe["scenario"] != REPLAY_SOURCES[scenario]:
-        raise ValueError("replay_recipe_scenario")
+    if scenario in PAIR_CASES:
+        recipe = compile_pair(scenario)
+    else:
+        recipe = verify_recipe(read_json(recipe_path(scenario)))
+        if recipe["scenario"] != REPLAY_SOURCES[scenario]:
+            raise ValueError("replay_recipe_scenario")
     canonical = json.dumps(recipe, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return recipe, hashlib.sha256(canonical).hexdigest()
 
@@ -302,7 +306,7 @@ def executable_steps(recipe, output_path):
         yield step["tool"], args
 
 
-def play(ui, run_id, output_path, *, scenario=UIA_REPLAY_SCENARIO):
+def play(ui, run_id, output_path, *, scenario=UIA_REPLAY_SCENARIO, report=None):
     from .host_guard import in_guest
     from .native_authority_probe import loopback_client
     from runner.windows_mcp_bridge import authority_receipt
@@ -310,12 +314,19 @@ def play(ui, run_id, output_path, *, scenario=UIA_REPLAY_SCENARIO):
     if not in_guest():
         raise PermissionError("replay_guest_only")
     recipe, digest = read_recipe(scenario)
+    enum_replay = scenario in PAIR_ENUM_CASES | {UIA_REPLAY_ENUMS}
+    segments = {seq: segment for segment in recipe.get("segments", ())
+                for seq in range(segment["first"], segment["last"] + 1)}
     request = loopback_client(ui.artifacts, "native-uia-replay")
     observations = None
     popup_open = False
     dialog_snapshot = len(recipe["steps"]) - 3
     for seq, (tool, args) in enumerate(executable_steps(recipe, output_path), 1):
         step = recipe["steps"][seq - 1]
+        segment = segments.get(seq)
+        if report is not None and segments:
+            report["replay_cursor"] = {"step": seq, "tool": tool,
+                                       "operation": segment["operation"] if segment else "save"}
         ui.guard()
         if seq == 2 and scenario == UIA_REPLAY_SCENARIO:
             values = [item.get("value") for item in observations["controls"] if item["target"] == args["target"]]
@@ -325,7 +336,7 @@ def play(ui, run_id, output_path, *, scenario=UIA_REPLAY_SCENARIO):
             ui.wait(lambda: ui.eu.wait_save_dialog(ui.app.pid, timeout_s=.2), 10)
         if seq == len(recipe["steps"]):
             ui.wait(lambda: ui.wu.user32.GetForegroundWindow() == ui.app.hwnd, 10)
-        if scenario == UIA_REPLAY_ENUMS and tool == "Screenshot" and args["region_name"] == PROCESS_POPUP:
+        if enum_replay and tool == "Screenshot" and args["region_name"] == PROCESS_POPUP:
             ui.wait(lambda: ui.wu.user32.GetForegroundWindow() not in (0, ui.app.hwnd), 5)
         call = {"jsonrpc": "2.0", "id": seq, "method": "tools/call",
                 "params": {"name": tool, "arguments": args}}
@@ -338,10 +349,12 @@ def play(ui, run_id, output_path, *, scenario=UIA_REPLAY_SCENARIO):
             observations = json.loads(structured["result"])
             if "process_value" in step and step["process_value"] not in observations.get("process_values", []):
                 raise ProtocolError("replay_process_value_readback")
+            if segment and seq in {segment["first"], segment["last"]}:
+                check_live(segment, seq, observations, recipe["steps"])
         if tool == "Screenshot" and (structured.get("crop_region") != step["bounds"]
                                      or structured.get("crop_region_name") != args["region_name"]):
             raise ProtocolError("replay_canvas_layout_changed")
-        if scenario == UIA_REPLAY_ENUMS and tool == "Screenshot" and args["region_name"] == PROCESS_POPUP:
+        if enum_replay and tool == "Screenshot" and args["region_name"] == PROCESS_POPUP:
             popup_open = True
         if tool == "Type" and "target" in args:
             returned = json.loads(structured["result"])
@@ -368,11 +381,11 @@ def verify_replay_trace(trace, run_id, scope, digest):
     if scenario == UIA_REPLAY_SAVE:
         return verify_uia_save(trace, run_id=run_id, app_pid=scope["app_pid"], dialog_hwnd=scope["dialog_hwnd"],
                                output_path=scope["output_path"])
-    if scenario in {UIA_REPLAY_CANVAS, UIA_REPLAY_PROCESS, UIA_REPLAY_ENUMS, UIA_REPLAY_MOVE_LAYER} and any(step.get("bounds") != row["window"].get("visual_region")
+    if scenario in (PAIR_CASES.keys() | {UIA_REPLAY_CANVAS, UIA_REPLAY_PROCESS, UIA_REPLAY_ENUMS, UIA_REPLAY_MOVE_LAYER}) and any(step.get("bounds") != row["window"].get("visual_region")
                                              for step, row in zip(recipe["steps"], trace)
                                              if step["tool"] == "Screenshot"):
         raise ValueError("replay_canvas_layout_receipt")
-    if scenario == UIA_REPLAY_ENUMS and any(step["process_value"] not in row["window"].get("process_values", ())
+    if scenario in PAIR_ENUM_CASES | {UIA_REPLAY_ENUMS} and any(step["process_value"] not in row["window"].get("process_values", ())
                                             for step, row in zip(recipe["steps"], trace) if "process_value" in step):
         raise ValueError("replay_process_value_readback")
     return verify_hybrid_trace(trace, run_id=run_id, app_pid=scope["app_pid"], main_hwnd=scope["hwnd"],

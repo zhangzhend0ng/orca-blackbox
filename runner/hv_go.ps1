@@ -11,24 +11,19 @@ param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$W
       [ValidateSet('script', 'agent_mcp')][string]$V3Executor = 'script', [string]$V3RunId = '',
       [switch]$WindowsMcpProbe, [string]$ProbeRunId = '', [switch]$NativeSave, [switch]$ProbeMixWaits,
       [ValidateSet('codex','zcode','script')][string]$NativeActor = 'codex',
-      [ValidateSet('base','quality_a','quality_b','strength_a','strength_b','others_a','others_b','save_dialog','overwrite',
-          'safety_cancel','safety_timeout','safety_guard_disconnect','pilot_strength','pilot_transform','pilot_material','pilot_infill','pilot_material3',
-          'canvas_probe','recovery_owned_edit','recovery_diagnostic_once','recovery_diagnostic_commit','canvas_trial','canvas_replace_trial','authority_probe',
-          'general_wall','general_slot2','general_top_strength','general_top_quality','general_scale_quality','general_scale_others','general_combo','general_combo_dialog',
-          'uia_save_as','uia_hybrid_layer','uia_hybrid_layer_strength','uia_hybrid_canvas','uia_process_combo','uia_mix_recipes','uia_replay_layer','uia_replay_save','uia_replay_canvas','uia_replay_process','uia_replay_mix','uia_general_wall','uia_general_slot2','uia_general_bottom_strength',
-          'uia_general_bottom_quality','uia_general_y_quality','uia_general_y_others','uia_general_combo','uia_general_combo_dialog',
-          'uia_quality_enums','uia_move_layer','uia_replay_enums','uia_replay_move_layer','fixture_cold','fixture_shared')][string]$NativeScenario = 'base')
+      [ValidatePattern('\A[a-z0-9_]{1,64}\z')][string]$NativeScenario = 'base')
 . (Join-Path $PSScriptRoot '_common.ps1')
 if ($NativeSave -and $NativeActor -eq 'zcode' -and -not $PSBoundParameters.ContainsKey('NativeScenario')) {
     $NativeScenario = 'uia_hybrid_layer'
 }
-if ($NativeActor -eq 'script' -and $NativeScenario -notin @('uia_save_as','uia_hybrid_layer','uia_hybrid_layer_strength','uia_hybrid_canvas','uia_process_combo','uia_mix_recipes','uia_replay_layer','uia_replay_save','uia_replay_canvas','uia_replay_process','uia_replay_mix','uia_quality_enums','uia_move_layer','uia_replay_enums','uia_replay_move_layer','fixture_cold','fixture_shared')) {
-    throw 'Script requires a registered comparison or replay scenario'
-}
-if ($NativeScenario -in @('fixture_cold','fixture_shared') -and $NativeActor -ne 'script') {
-    throw 'Fixture scenarios require the recorded script actor'
-}
 if ($NativeScenario -ne 'base' -and (-not $NativeSave -or $NativeActor -eq 'codex')) { throw 'NativeScenario requires ZCode or script NativeSave' }
+if ($NativeSave) {
+  Push-Location (Split-Path $PSScriptRoot -Parent)
+  try {
+    & python -B -c 'import sys; from harness.native_matrix import scenario_spec; scenario_spec(*sys.argv[1:])' $NativeActor $NativeScenario
+    if ($LASTEXITCODE -ne 0) { throw 'Native scenario is not registered for this actor' }
+  } finally { Pop-Location }
+}
 if ($NativeSave -and -not $WindowsMcpProbe) { throw '-NativeSave requires -WindowsMcpProbe' }
 if ($ProbeMixWaits -and (-not $NativeSave -or $NativeActor -ne 'script' -or $NativeScenario -ne 'uia_replay_mix')) {
     throw '-ProbeMixWaits requires the native scripted mixing replay'

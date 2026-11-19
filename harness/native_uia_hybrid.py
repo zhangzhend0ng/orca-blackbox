@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from .agent_verify import _require
 from .native_matrix import UIA_DISTURBANCE_SCENARIO, UIA_ENUM_SCENARIOS, UIA_MIX_SCENARIOS, UIA_PROCESS_SCENARIOS
+from .native_pairwise import PAIR_ENUM_CASES, enum_values
 from .native_process_viewport import PROCESS_VALUES, process_viewports, read_ironing_selection, recheck_viewport, scroll_group
 from .native_save_policy import INPUT_TOOLS, PROCESS_POPUP, InputGuard, UIA_VISUAL_REGIONS, validate_input, validate_uia_selector
 from .native_uia import SAVE_DIALOG_TITLES, UiaSaveGuard, value_digest, verify_uia_save
@@ -579,8 +580,8 @@ class UiaHybridGuard(UiaSaveGuard):
 ENUM_READBACK_VALUES = frozenset({"Random", "Topmost surface"})
 
 
-def new_enum_readback(visible_values, completed_values):
-    fresh = (ENUM_READBACK_VALUES - completed_values).intersection(visible_values)
+def new_enum_readback(visible_values, completed_values, expected_values=ENUM_READBACK_VALUES):
+    fresh = (expected_values - completed_values).intersection(visible_values)
     return next(iter(fresh)) if len(fresh) == 1 else None
 
 
@@ -622,6 +623,7 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
     popup_open = pending_uia_snapshot = False
     counts = dict(uia_tree_calls=0, uia_actions=0, cropped_visual_calls=0, visual_inputs=0)
     enum_readbacks, process_viewports = set(), {}
+    expected_enums = enum_values(scenario) if scenario in PAIR_ENUM_CASES else ENUM_READBACK_VALUES
     needs_enum_readback = needs_viewport_snapshot = False
     if scenario in UIA_ENUM_SCENARIOS:
         counts["process_viewport_actions"] = 0
@@ -698,7 +700,7 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
             _require(not pending_uia_snapshot and counts["uia_tree_calls"] and window["foreground_hwnd"] != main_hwnd,
                      "native_uia_hybrid_main_not_observed")
             if scenario in UIA_ENUM_SCENARIOS:
-                _require(enum_readbacks == ENUM_READBACK_VALUES and not needs_enum_readback, "native_process_readback_missing")
+                _require(enum_readbacks == expected_enums and not needs_enum_readback, "native_process_readback_missing")
                 counts["process_value_readbacks"] = sorted(enum_readbacks)
             save = verify_uia_save(trace[index:], run_id=run_id, app_pid=app_pid,
                 dialog_hwnd=window["foreground_hwnd"], output_path=output_path, first_seq=index + 1)
@@ -779,7 +781,7 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
                 _require(type(process_viewports) is dict and set(process_viewports) <= {"Seam", "Ironing"}
                          and window.get("process_groups", []) == sorted(process_viewports)
                          and type(values) is list and all(type(value) is str for value in values), "native_process_snapshot")
-                readback = new_enum_readback(values, enum_readbacks) if needs_enum_readback else None
+                readback = new_enum_readback(values, enum_readbacks, expected_enums) if needs_enum_readback else None
                 if readback is not None:
                     enum_readbacks.add(readback)
                     needs_enum_readback = False
