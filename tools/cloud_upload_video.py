@@ -77,7 +77,7 @@ class LiveDesktopCapture:
                 "ConsoleWindowClass", "CASCADIA_HOSTING_WINDOW_CLASS",
             }:
                 self.foreground_console_frames += 1
-            if (self.result.get("mode") != "print_live_video" and self.result.get("home_signed_in")
+            if (not self.result.get("new_project_requested") and self.result.get("home_signed_in")
                     and self.result.get("device_stage", "") in {
                 "", "find_my_devices", "read_my_devices", "device_page_observed", "find_u1_device_control",
                     }):

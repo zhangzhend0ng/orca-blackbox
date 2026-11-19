@@ -14,7 +14,7 @@ param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$W
       [ValidatePattern('\A[a-z0-9_]{1,64}\z')][string]$NativeScenario = 'base',
       [switch]$CloudLoginProbe, [switch]$CloudLoginAuthenticate, [switch]$CloudDeviceProbe,
       [switch]$CloudUploadGcode, [switch]$CloudUploadVideoReview, [switch]$CloudUploadLiveVideo,
-      [switch]$CloudPrintNewProject)
+      [switch]$CloudPrintNewProject, [switch]$CloudUploadNewProject)
 . (Join-Path $PSScriptRoot '_common.ps1')
 if ($CloudLoginProbe -and (-not $WindowsMcpProbe -or $NativeSave -or $vm -ne 'win11-test' -or $guestUser -ne 'test')) {
     throw 'Cloud login requires the standalone probe slot on win11-test/test'
@@ -36,6 +36,9 @@ if ($CloudUploadVideoReview -and $CloudUploadLiveVideo) {
 }
 if ($CloudPrintNewProject -and -not $CloudUploadLiveVideo) {
     throw 'CloudPrintNewProject requires CloudUploadLiveVideo'
+}
+if ($CloudUploadNewProject -and (-not $CloudUploadLiveVideo -or $CloudPrintNewProject)) {
+    throw 'CloudUploadNewProject requires CloudUploadLiveVideo and uses the upload-only workflow'
 }
 if ($NativeSave -and $NativeActor -eq 'zcode' -and -not $PSBoundParameters.ContainsKey('NativeScenario')) {
     $NativeScenario = 'uia_hybrid_layer'
@@ -286,7 +289,7 @@ Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
   # NOTE: this scriptblock runs ON THE GUEST — everything it needs must be
   # marshaled via param/-ArgumentList (host-side $warmup is not visible here;
   # measured 09-03 night: silent $false, warmup block never emitted).
-  param($caseStr, $sb, $py, $warmup, $suite, $v3, $v3Executor, $v3RunId, $mcpProbe, $probeRunId, $nativeSave, $nativeActor, $nativeScenario, $cloudLogin, $cloudAuthenticate, $cloudDevice, $cloudUpload, $cloudVideoReview, $cloudLiveVideo, $cloudPrint)
+  param($caseStr, $sb, $py, $warmup, $suite, $v3, $v3Executor, $v3RunId, $mcpProbe, $probeRunId, $nativeSave, $nativeActor, $nativeScenario, $cloudLogin, $cloudAuthenticate, $cloudDevice, $cloudUpload, $cloudVideoReview, $cloudLiveVideo, $cloudPrint, $cloudNewProject)
   # full run: the guest derives the list from cases.py itself (single
   # source of truth); explicit subset: split the passed string.
   # warmup fragment — the host-side decision ($warmup) must be baked into
@@ -389,6 +392,7 @@ exit `$LASTEXITCODE
     if ($cloudVideoReview) { $loginArg += ' --record-upload-review' }
     if ($cloudLiveVideo) { $loginArg += ' --record-upload-live' }
     if ($cloudPrint) { $loginArg += ' --print-new-project' }
+    if ($cloudNewProject) { $loginArg += ' --upload-new-project' }
     $runner = @"
 Set-Location '$sb'
 & '$py' -B 'tools\cloud_login_probe.py' --run-id '$probeRunId'$loginArg *> `$null
@@ -404,7 +408,7 @@ exit `$LASTEXITCODE
   Register-ScheduledTask -TaskName "suite" -Action $a -Settings $st -Principal $p -Force | Out-Null
   Start-ScheduledTask -TaskName "suite"
   "suite launched: " + (Get-ScheduledTask suite).State
-} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, ([bool]$V3), $V3Executor, $V3RunId, ([bool]$WindowsMcpProbe), $ProbeRunId, ([bool]$NativeSave), $NativeActor, $NativeScenario, ([bool]$CloudLoginProbe), ([bool]$CloudLoginAuthenticate), ([bool]$CloudDeviceProbe), ([bool]$CloudUploadGcode), ([bool]$CloudUploadVideoReview), ([bool]$CloudUploadLiveVideo), ([bool]$CloudPrintNewProject)
+} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, ([bool]$V3), $V3Executor, $V3RunId, ([bool]$WindowsMcpProbe), $ProbeRunId, ([bool]$NativeSave), $NativeActor, $NativeScenario, ([bool]$CloudLoginProbe), ([bool]$CloudLoginAuthenticate), ([bool]$CloudDeviceProbe), ([bool]$CloudUploadGcode), ([bool]$CloudUploadVideoReview), ([bool]$CloudUploadLiveVideo), ([bool]$CloudPrintNewProject), ([bool]$CloudUploadNewProject)
 Write-Host "[4] DONE. Poll progress any time (admin window):"
 Write-Host "    Get-Content C:\coil\vm_setup\poll_rerun.txt | Set-Content C:\coil\vm_setup\relay_cmd.txt   # via relay"
 Write-Host "    or in guest: Get-Content C:\coil\regress_progress.txt -Tail 5"

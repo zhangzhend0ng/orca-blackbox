@@ -394,7 +394,7 @@ def inspect(app, result, run_dir, authenticate_login, hide_sign_in=None):
 
 
 def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
-        video_review=False, video_live=False, print_new_project=False):
+        video_review=False, video_live=False, print_new_project=False, upload_new_project=False):
     from harness import host_guard, launcher, profile
 
     host_guard.assert_guest_or_allow()
@@ -406,9 +406,11 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
     run_dir.mkdir(parents=True, exist_ok=False)
     private = run_dir / "private"
     datadir = private / "orca"
+    new_project = print_new_project or upload_new_project
     result = {
         "run_id": run_id, "region": "CN", "verdict": "NON_GREEN",
         "stage": "seed_profile", "private_removed": False,
+        "new_project_requested": new_project,
         "mode": ("print_live_video" if print_new_project else "upload_live_video" if video_live
                  else "upload_review" if video_review
                  else "upload" if upload_gcode else "devices" if discover_devices
@@ -419,20 +421,20 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
     live = None
     try:
         settings = {"app": {"region": "China", "language": "en_US", "default_page": "0"}}
-        if print_new_project:
+        if new_project:
             settings["models"] = [{"vendor": "Snapmaker", "model": "SM_U1", "nozzle_diameter": "0.4"}]
             machine = "Snapmaker U1 (0.4 nozzle)"
             material = "Snapmaker PLA Basic @U1"
             settings["presets"] = {"machine": machine}
             settings["filaments"] = [material]
             settings["orca_presets"] = [{"machine": machine, "filament": material}]
-        presets = profile.REPO_RESOURCES if print_new_project else None
+        presets = profile.REPO_RESOURCES if new_project else None
         profile.seed_profile(datadir, conf_extra=settings, source_presets=presets)
         if presets is not None:
             manifest = json.loads((datadir / "system" / "Snapmaker.json").read_bytes())
             result["snapmaker_preset_version"] = manifest["version"]
             # The seed copies regression-only flow presets. Keep them outside
-            # this run's Orca profile, which will start a physical print.
+            # this run's Orca profile for the new project.
             regression_presets = datadir / "user"
             if regression_presets.is_dir():
                 regression_presets.rename(private / "regression-presets")
@@ -440,7 +442,7 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
         os.environ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = "--force-renderer-accessibility"
         result["stage"] = "launch"
         session = launcher.launch(datadir=datadir, wait_window_s=55, boot_demote_s=0,
-                                  blocker_sweep_s=8 if print_new_project else 3, dismiss_wizard=True)
+                                  blocker_sweep_s=8 if new_project else 3, dismiss_wizard=True)
         if video_live:
             from ctypes.wintypes import HWND
 
@@ -460,7 +462,7 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
             video = DesktopVideo(run_dir, capture=live.frame, fps=10, size=live.size)
             video.start()
         inspect(session, result, run_dir, authenticate_login,
-                hide_sign_in=live.hide_sign_in if live is not None and not print_new_project else None)
+                hide_sign_in=live.hide_sign_in if live is not None and not new_project else None)
         if discover_devices and result.get("home_signed_in"):
             from tools.cloud_device_probe import inspect_devices
 
@@ -501,7 +503,7 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
 
                     outcome = run_upload(
                         session, ROOT / "fixtures" / "agent_layer_cube.3mf", run_dir, result, poll,
-                        review_only=video_review,
+                        review_only=video_review, new_project=upload_new_project,
                     )
                     outcome_key = "review_ready" if video_review else "device_upload_confirmed"
                     result[outcome_key] = outcome
@@ -558,7 +560,9 @@ def main():
     video_args = parser.add_mutually_exclusive_group()
     video_args.add_argument("--record-upload-review", action="store_true")
     video_args.add_argument("--record-upload-live", action="store_true")
-    parser.add_argument("--print-new-project", action="store_true")
+    project_args = parser.add_mutually_exclusive_group()
+    project_args.add_argument("--print-new-project", action="store_true")
+    project_args.add_argument("--upload-new-project", action="store_true")
     args = parser.parse_args()
     if not re.fullmatch(r"[0-9a-f]{32}", args.run_id):
         parser.error("invalid run ID")
@@ -570,8 +574,10 @@ def main():
         parser.error("upload video options require --upload-gcode")
     if args.print_new_project and not args.record_upload_live:
         parser.error("--print-new-project requires --record-upload-live")
+    if args.upload_new_project and not args.record_upload_live:
+        parser.error("--upload-new-project requires --record-upload-live")
     return run(args.run_id, args.authenticate, args.discover_devices, args.upload_gcode,
-               args.record_upload_review, args.record_upload_live, args.print_new_project)
+               args.record_upload_review, args.record_upload_live, args.print_new_project, args.upload_new_project)
 
 
 if __name__ == "__main__":

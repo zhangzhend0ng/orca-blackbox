@@ -236,7 +236,7 @@ def find_send_button(hwnd):
     return None
 
 
-def run_upload(app, fixture, output_dir, result, poll, *, review_only=False, print_project=False):
+def run_upload(app, fixture, output_dir, result, poll, *, review_only=False, new_project=False, print_project=False):
     from harness import export_util, launcher, winutil
 
     result["upload_stage"] = "check_fixed_sut"
@@ -246,7 +246,7 @@ def run_upload(app, fixture, output_dir, result, poll, *, review_only=False, pri
         ):
             return False
 
-    if print_project:
+    if new_project or print_project:
         if not new_cube_project(app, result, poll):
             return False
     else:
