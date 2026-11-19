@@ -8,7 +8,7 @@ import subprocess
 import time
 
 
-def visible_lines(hwnd, *, sidebar=False):
+def visible_lines(hwnd, *, sidebar=False, crop=None):
     """Read label positions in memory. Device identities are never retained."""
     from PIL import Image
 
@@ -17,9 +17,13 @@ def visible_lines(hwnd, *, sidebar=False):
     width, height, pixels = winutil.capture_window(hwnd)
     picture = Image.frombytes("RGB", (width, height), pixels, "raw", "BGRX")
     if sidebar:
-        picture = picture.crop((0, 0, width // 4, height // 2))
+        crop = (0, 0, width // 4, height // 2)
+    x0, y0 = 0, 0
+    if crop:
+        x0, y0, x1, y1 = crop
+        picture = picture.crop((max(x0, 0), max(y0, 0), min(x1, width), min(y1, height)))
     payload = io.BytesIO()
-    scale = 2
+    scale = 4 if crop and not sidebar else 2
     picture.resize((picture.width * scale, picture.height * scale)).save(payload, format="PNG")
     data = subprocess.run(
         [ocr_util.TESSERACT_EXE, "stdin", "stdout", "-l", "eng", "--psm", "11", "tsv"],
@@ -39,7 +43,7 @@ def visible_lines(hwnd, *, sidebar=False):
         right = max(int(word["left"]) + int(word["width"]) for word in group)
         top = min(int(word["top"]) for word in group)
         bottom = max(int(word["top"]) + int(word["height"]) for word in group)
-        lines.append((words, (left + right) // (2 * scale), (top + bottom) // (2 * scale)))
+        lines.append((words, x0 + (left + right) // (2 * scale), y0 + (top + bottom) // (2 * scale)))
     return width, lines
 
 
@@ -133,16 +137,21 @@ def connect_u1(app, card, result, poll):
     if not winutil.force_set_foreground(app.hwnd):
         return
     x, y = card
-    if not winutil.user32.SetCursorPos(*winutil.client_to_screen(app.hwnd, x, y - 82)):
-        return
 
     def control():
-        _, lines = visible_lines(app.hwnd)
-        choices = [(cx, cy) for label, cx, cy in lines if abs(cx - x) < 140 and abs(cy - y) < 185
-                   and re.search(r"\bdevice\s+control\b", label)]
+        _, lines = visible_lines(app.hwnd, crop=(max(0, x - 96), max(0, y - 190), x + 124, y + 8))
+        result["selected_card_layout"] = device_labels(lines)
+        choices = [(cx, cy) for label, cx, cy in lines if cy < y - 9 and
+                   (re.search(r"\bdevice\s+control\b", label) or label.strip() == "control")]
         return choices[0] if len(choices) == 1 else None
 
-    point = poll(control, 8)
+    point = None
+    for y_offset in (82, 121, 47):
+        if not winutil.user32.SetCursorPos(*winutil.client_to_screen(app.hwnd, x, y - y_offset)):
+            return
+        point = poll(control, 3)
+        if point is not None:
+            break
     if point is None or winutil.user32.GetForegroundWindow() != app.hwnd:
         return
     if winutil.real_click_screen(*winutil.client_to_screen(app.hwnd, *point)) != 2:
