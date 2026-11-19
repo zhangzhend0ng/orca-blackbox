@@ -212,12 +212,13 @@ def main(argv=None):
                            "Always observe the current native tree again when returning to a different UI area.")
             if args.scenario == UIA_QUALITY_ENUMS:
                 prompt += (" Change Seam first, while its Aligned value is already visible in the initial Quality view. "
-                           "Use Screenshot(region_name='wx_sidebar') and click the center of the painted value, accounting for the crop origin. "
+                           "The process_value_bounds in Snapshot are absolute desktop rectangles. Use the center of the Aligned rectangle "
+                           "for Click(loc) after taking Screenshot(region_name='wx_sidebar'). "
                            "After each dropdown opens, use Snapshot to confirm the owned popup, then Screenshot(region_name='wx_process_popup') "
                            "to locate the desired option. Click it and Snapshot the main window to read process_values. "
                            "Advanced starts off. Find the unlabeled ButtonControl with automation_id='5014' in that Snapshot and invoke it via Click(target). "
                            "Take a fresh Snapshot then call Click with only process_group='Ironing', followed by Snapshot and a fresh wx_sidebar crop. "
-                           "Click the center of the painted No ironing value. In the popup select Topmost surface. "
+                           "Click the center of the No ironing rectangle from process_value_bounds. In the popup select Topmost surface. "
                            "Wait 12 seconds across bounded Wait calls for the page rebuild before trying to navigate again. "
                            "Read back Topmost surface in process_values, navigating to Ironing again if needed, then use native Save As.")
         (root/"prompt.txt").write_text(prompt, encoding="utf-8")

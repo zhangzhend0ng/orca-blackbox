@@ -523,10 +523,11 @@ class UiaHybridGuard(UiaSaveGuard):
                 visible.append(observed)
             observation = {"controls": visible, "visual_regions": self.visual_regions}
             if self.scope["scenario"] in UIA_ENUM_SCENARIOS:
-                self.process_groups, values = self._process_viewports(wu, hwnd)
-                observation.update(process_groups=sorted(self.process_groups), process_values=values)
-                self.last_window.update(process_groups=observation["process_groups"], process_values=values,
-                                        process_viewports=self.process_groups)
+                self.process_groups, controls = self._process_viewports(wu, hwnd)
+                observation.update(process_groups=sorted(self.process_groups), process_values=list(controls),
+                                   process_value_bounds=controls)
+                self.last_window.update(process_groups=observation["process_groups"], process_values=list(controls),
+                                        process_viewports=self.process_groups, process_value_bounds=controls)
             return observation
         element, pattern, record = self._find_native(wu, hwnd, arguments)
         if record["hwnd"] != self.last_window["target_hwnd"]:

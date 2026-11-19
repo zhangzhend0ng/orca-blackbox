@@ -43,9 +43,9 @@ def process_viewports(wu, main, pid, sidebar):
     from win32gui import GetParent, IsWindowVisible
 
     if sidebar is None:
-        return {}, []
-    groups, values = {}, set()
-    duplicates = set()
+        return {}, {}
+    groups, values = {}, {}
+    duplicates, duplicate_values = set(), set()
     for child in _children(main):
         if (wu._window_pid(child) != pid or wu.window_class(child) != "wxWindowNR"
                 or not IsWindowVisible(child)):
@@ -65,7 +65,9 @@ def process_viewports(wu, main, pid, sidebar):
             continue
         if title in PROCESS_VALUES:
             if _inside(bounds, viewport):
-                values.add(title)
+                if title in values:
+                    duplicate_values.add(title)
+                values[title] = bounds
             continue
         if bounds[2] - bounds[0] < 100:
             continue
@@ -73,7 +75,8 @@ def process_viewports(wu, main, pid, sidebar):
             duplicates.add(title)
         groups[title] = {"group": title, "hwnd": parent, "bounds": viewport,
                          "group_hwnd": child, "group_bounds": bounds}
-    return {name: item for name, item in groups.items() if name not in duplicates}, sorted(values)
+    return ({name: item for name, item in groups.items() if name not in duplicates},
+            {value: values[value] for value in sorted(values) if value not in duplicate_values})
 
 
 def _direction(proof):
