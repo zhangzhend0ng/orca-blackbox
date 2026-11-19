@@ -43,6 +43,20 @@ def visible_lines(hwnd, *, sidebar=False):
     return width, lines
 
 
+def device_labels(lines):
+    fixed = re.compile(
+        r"\b(?:my devices|add device|no devices?|no data|lan mode|cloud mode|"
+        r"manual(?:ly)? connect|manual add|connect|device control|device discovery|"
+        r"devices? nearby|nearby devices?|finding new devices|enter ip address|"
+        r"offline|online|idle|working|printing|unavailable|disconnected|"
+        r"snapmaker|u1|j1s?|artisan|a[23]50|a150)\b"
+    )
+    return [
+        {"labels": fixed.findall(label), "x_band": x // 80, "y_band": y // 40}
+        for label, x, y in lines
+    ]
+
+
 def inspect_devices(app, result, poll):
     from harness import winutil
 
@@ -86,6 +100,9 @@ def inspect_devices(app, result, poll):
             "upload_label_visible": bool(count(r"\bupload\b")),
             "content_text_lines": len(content),
         }
+        result["device_layout"] = device_labels([
+            (label, x, y) for label, x, y in lines if x > width // 4 and y > 90
+        ])
         page = result["device_page"]
         if not page["heading"] or not page["add_device_visible"]:
             return False
@@ -120,9 +137,13 @@ def inspect_nearby(app, add_target, result, poll):
                 continue
             _, lines = visible_lines(hwnd)
             words = "\n".join(label for label, _, _ in lines)
-            nearby = bool(re.search(r"\bnearby\s+devices?\b|\bdiscovery\s+device\b", words))
-            manual = bool(re.search(r"\bmanual(?:ly)?\s+connect\b|\benter\s+ip\s+address\b", words))
-            if not (nearby or manual):
+            nearby = bool(re.search(r"\b(?:nearby\s+devices?|devices?\s+nearby|discovery\s+device|device\s+discovery)\b", words))
+            manual = bool(re.search(r"\bmanual(?:ly)?\s+(?:connect|add)\b|\benter\s+ip\s+address\b", words))
+            title = winutil.window_title(hwnd).casefold()
+            discovery_window = (
+                hwnd != app.hwnd and title in {"add device", "device discovery", "discovery device"}
+            )
+            if not (nearby or manual or discovery_window):
                 continue
             if ready_at is None:
                 ready_at = time.monotonic()
@@ -134,6 +155,7 @@ def inspect_nearby(app, add_target, result, poll):
                 "device_model_labels": len(re.findall(r"\b(?:snapmaker\s+)?(?:u1|j1s?|artisan|a[23]50|a150)\b", words)),
                 "content_text_lines": len(lines),
             }
+            result["nearby_layout"] = device_labels(lines)
             return time.monotonic() - ready_at >= 10
         return False
 
