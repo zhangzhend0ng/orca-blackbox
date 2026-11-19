@@ -251,19 +251,23 @@ def run_upload(app, fixture, output_dir, result, poll):
 
     def send_candidate():
         nonlocal open_picker
-        _, lines = visible_lines(only)
+        width, lines = visible_lines(only)
         choices = [(x, y) for text, x, y in lines if re.search(r"\bu1\b", text)]
         filename_visible = any(filename in text for text, _, _ in lines)
         send = one([(x, y) for text, x, y in lines if re.fullmatch(r"[\W_]*send[\W_]*", text)])
-        open_picker = one([(x, y) for text, x, y in lines if re.fullmatch(
-            r"(?:please\s+)?(?:select|choose)(?:\s+(?:a|the))?\s+(?:device|printer)",
-            text.strip().rstrip("."),
-        )])
+        # The shipped send page renders a static title, then a thumbnail,
+        # then the 300 px dropdown on the same horizontal row.
+        heading = one([(x, y) for text, x, y in lines if text.strip() == "select printer"])
+        placeholder = one([(x, y) for text, x, y in lines if "click to select printer" in text])
+        open_picker = placeholder
+        if open_picker is None and heading is not None and heading[0] < width // 4:
+            open_picker = (width * 57 // 100, heading[1])
         labels = re.compile(r"\b(?:select|choose|refresh|loading|device|printer|send|upload|connect|"
                             r"offline|online|available|unavailable|no|cannot|lan|wan|working|"
                             r"print|u1|cancel|file|network|error|model)\b")
         result["send_view"] = {"recognized_u1_labels": len(choices), "standalone_send_visible": send is not None,
-                               "filename_visible": filename_visible, "device_picker_visible": open_picker is not None}
+                               "filename_visible": filename_visible, "device_picker_visible": open_picker is not None,
+                               "printer_placeholder_visible": placeholder is not None}
         result["send_view_labels"] = [
             {"labels": labels.findall(text), "x_band": x // 60, "y_band": y // 35}
             for text, x, y in lines if labels.search(text)
@@ -274,6 +278,10 @@ def run_upload(app, fixture, output_dir, result, poll):
     if send is None and open_picker is not None and opens_send_only(only) and click_client(only, open_picker):
         def list_u1():
             _, lines = visible_lines(only)
+            result["u1_picker_labels"] = [
+                {"u1": bool(re.search(r"\bu1\b", text)), "x_band": x // 60, "y_band": y // 35}
+                for text, x, y in lines if re.search(r"\bu1\b|\blan mode\b|\badd device\b", text)
+            ]
             return one([(x, y) for text, x, y in lines if re.search(r"\bu1\b", text)])
 
         choice = poll(list_u1, 8)
