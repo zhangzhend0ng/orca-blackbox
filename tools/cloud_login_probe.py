@@ -177,12 +177,16 @@ def verify_account_page(app, home_point, auth_hwnd, result):
         result["home_login_button_visible"] = has(words, login)
         result["home_devices_entry_visible"] = has(words, r"\bmy\s+devices\b")
         result["home_library_entry_visible"] = has(words, r"\bmodel\s+library\b")
+        result["home_favorites_entry_visible"] = has(words, r"\bmy\s+favorites\b")
         home_known = result["home_devices_entry_visible"] or result["home_library_entry_visible"]
         return words if home_known and not result["home_login_button_visible"] else None
 
     words = poll(home_ready, 7)
     if words is None:
         return False
+    if result["home_favorites_entry_visible"]:
+        result["home_proof"] = "signed_in_favorites_entry"
+        return True
     if has(words, sign_out):
         result["home_proof"] = "logout_control"
         return True
