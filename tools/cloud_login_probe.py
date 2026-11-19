@@ -128,7 +128,12 @@ def enter_secret(hwnd, node, value):
 
     if not winutil.force_set_foreground(hwnd):
         return False
-    node.SetFocus()
+    rect = node.CurrentBoundingRectangle
+    if rect.right <= rect.left or rect.bottom <= rect.top:
+        return False
+    if winutil.real_click_screen((rect.left + rect.right) // 2,
+                                 (rect.top + rect.bottom) // 2) != 2:
+        return False
     uia = IUIA().iuia
     if not poll(lambda: uia.CompareElements(uia.GetFocusedElement(), node), 2):
         return False
@@ -205,7 +210,6 @@ def verify_account_page(app, home_point, auth_hwnd, result):
 
 
 def authenticate(app, hwnd, home_point, result):
-    from comtypes import COMError
     from pywinauto import uia_defines
 
     from harness import winutil
@@ -238,11 +242,8 @@ def authenticate(app, hwnd, home_point, result):
 
     result["stage"] = "enter_account"
     value = uia_defines.get_elem_interface(user, "Value")
-    try:
-        value.SetValue(phone[1])
-    except COMError:
-        if not enter_secret(hwnd, user, phone[1]):
-            return
+    if value.CurrentValue or not enter_secret(hwnd, user, phone[1]):
+        return
     if not poll(lambda: value.CurrentValue == phone[1], 3):
         if value.CurrentValue or not enter_secret(hwnd, user, phone[1]):
             result["stage"] = "account_readback_failed"
@@ -251,7 +252,8 @@ def authenticate(app, hwnd, home_point, result):
             result["stage"] = "account_readback_failed"
             return
     result["stage"] = "enter_masked_password"
-    if cn_document(scan(hwnd)) is None or not enter_secret(hwnd, password, secret):
+    password = unique(form(), 50004, "请输入密码", password=True)
+    if password is None or not enter_secret(hwnd, password, secret):
         return
     del secret, username, phone
 
