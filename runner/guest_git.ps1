@@ -20,7 +20,11 @@ $out = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
     $dirty = @(& $git -C $sb status --porcelain | Where-Object { $_ -notmatch '^\?\?' })
     if ($dirty) { "DIRTY: " + (($dirty | Select-Object -First 5) -join '; ') }
     else {
-      $fetch = & $git -C $sb fetch origin 2>&1
+      # explicit refspec: a single-branch clone's default fetch refspec won't
+      # bring the requested branch down at all. NOTE ${branch} bracing —
+      # "$branch:refs" would parse as a scope-qualified variable and vanish.
+      $spec = '+refs/heads/{0}:refs/remotes/origin/{0}' -f $branch
+      $fetch = & $git -C $sb fetch origin $spec 2>&1
       if ($LASTEXITCODE -ne 0) { "GIT_ERR fetch: $($fetch -join ' ')" }
       else {
         $co = & $git -C $sb checkout -B $branch "origin/$branch" 2>&1

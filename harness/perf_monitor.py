@@ -204,6 +204,13 @@ class PerfMonitor:
     # -- lifecycle ----------------------------------------------------------
 
     def start(self) -> "PerfMonitor":
+        if self._use_psutil:
+            try:
+                import psutil  # noqa: F401
+            except ImportError:
+                # detect BEFORE the meta row so the recorded mode is the real
+                # one (first guest run had meta=psutil while ticks ran ctypes)
+                self._use_psutil = False
         self._out_path.parent.mkdir(parents=True, exist_ok=True)
         self._f = self._out_path.open("a", encoding="utf-8")
         self._t0 = time.time()
