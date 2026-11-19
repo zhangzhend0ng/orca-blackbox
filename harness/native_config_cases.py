@@ -1,11 +1,13 @@
 """Generate the fixed-fixture value and dependency case plans from one catalog."""
 from decimal import Decimal
+import hashlib
 from itertools import combinations, permutations, product
 import json
 from pathlib import Path
 
 CATALOG_PATH = Path(__file__).resolve().parents[1] / "contracts/config_dependencies.json"
 CATALOG = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+CATALOG_SHA256 = hashlib.sha256(json.dumps(CATALOG, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 DOMAIN = CATALOG["legal_domain"]
 RULES = {rule["id"]: rule for rule in CATALOG["rules"]}
 

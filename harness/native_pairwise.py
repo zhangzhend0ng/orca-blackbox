@@ -4,7 +4,7 @@ from itertools import combinations
 import hashlib
 
 from .agent_protocol import LAYER_FIXTURE_SHA256, ProtocolError
-from .native_config_cases import CATALOG_PATH, DOMAIN, generate
+from .native_config_cases import CATALOG_SHA256, DOMAIN, generate
 
 
 @dataclass(frozen=True)
@@ -124,8 +124,7 @@ def compile_pair(scenario):
             "initial_state": sorted(INITIAL), "segments": segments, "save_recording_sha256": digest,
             "steps": steps}
     if case:
-        recipe.update(config_case=case, checkpoints=checkpoints,
-                      catalog_sha256=hashlib.sha256(CATALOG_PATH.read_bytes()).hexdigest())
+        recipe.update(config_case=case, checkpoints=checkpoints, catalog_sha256=CATALOG_SHA256)
     return recipe
 
 

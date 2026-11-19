@@ -4,12 +4,26 @@
   "sut": {
     "product_version": "2.4.0",
     "exe_sha256": "5c48644d7da18b50636ceeee4ef9fd2eaf6d4e8ac05bd88752f40e3717fc47bf",
-    "source_commit": null,
-    "source_relationship": "Comparison only; no binary-to-commit build receipt.",
+    "source_commit": "56e82d53c85457f530827d2488664015b2eae08e",
+    "source_relationship": "Embedded DLL build identifier references this commit. The compiled worktree cleanliness is unknown.",
     "guest": "win11-test",
     "preset_tree": "54b5b20b80253e4792cd9ec390b007f4f83cc1a5",
     "fixture_sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
-    "fixture_format_version": "2.3.6"
+    "fixture_format_version": "2.3.6",
+    "dll_sha256": "0485166d3c128320195d44c55db18fd43567e2fbbaa4aa5d3f163b71772fba35",
+    "dll_build_id": "56e82d53c8",
+    "installed_vendors": {
+      "Snapmaker": {
+        "version": "02.02.55.02",
+        "json_files": 707,
+        "json_tree_sha256": "92c779cf2eeef1e417b6e486be9a218e1fabd93a820936bf8b50aa1b1f117d64"
+      },
+      "BBL": {
+        "version": "02.00.00.55",
+        "json_files": 1140,
+        "json_tree_sha256": "c5ecff8ca5f50e684ece6e996314cfe4dd49818956134dc2700b62503626a2ce"
+      }
+    }
   },
   "rules": [
     {
@@ -31,6 +45,11 @@
         {
           "file": "src/libslic3r/Print.cpp",
           "line": 1950
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1888,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
         }
       ],
       "candidate_filter": {
@@ -62,6 +81,16 @@
         {
           "file": "src/libslic3r/Print.cpp",
           "line": 1946
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1869,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1883,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
         }
       ],
       "candidate_filter": {
@@ -97,6 +126,21 @@
         {
           "file": "src/slic3r/GUI/Tab.cpp",
           "line": 2721
+        },
+        {
+          "file": "src/libslic3r/PrintConfig.cpp",
+          "line": 3566,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
+        },
+        {
+          "file": "src/slic3r/GUI/OG_CustomCtrl.cpp",
+          "line": 722,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
+        },
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 2576,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
         }
       ],
       "replay": {
@@ -136,6 +180,11 @@
         {
           "file": "src/slic3r/GUI/ConfigManipulation.cpp",
           "line": 809
+        },
+        {
+          "file": "src/slic3r/GUI/ConfigManipulation.cpp",
+          "line": 766,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
         }
       ],
       "blocked_reason": "Requires a field-level observer and a bound reverse enum action."
@@ -162,6 +211,16 @@
         {
           "file": "src/slic3r/GUI/ConfigManipulation.cpp",
           "line": 811
+        },
+        {
+          "file": "src/slic3r/GUI/ConfigManipulation.cpp",
+          "line": 741,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
+        },
+        {
+          "file": "src/slic3r/GUI/ConfigManipulation.cpp",
+          "line": 770,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
         }
       ]
     },
@@ -203,6 +262,21 @@
         {
           "file": "src/libslic3r/Fill/Fill.cpp",
           "line": 1611
+        },
+        {
+          "file": "src/libslic3r/Fill/Fill.cpp",
+          "line": 1527,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
+        },
+        {
+          "file": "src/libslic3r/Fill/Fill.cpp",
+          "line": 1530,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
+        },
+        {
+          "file": "src/libslic3r/Fill/Fill.cpp",
+          "line": 1542,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
         }
       ],
       "replay": {
@@ -242,6 +316,610 @@
         {
           "file": "src/slic3r/GUI/ConfigManipulation.cpp",
           "line": 243
+        },
+        {
+          "file": "src/slic3r/GUI/ConfigManipulation.cpp",
+          "line": 236,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
+        }
+      ]
+    },
+    {
+      "id": "preset-inherit-system",
+      "kind": "preset_inheritance",
+      "scope": "Machine, filament and process system preset loader; load order and vendor bundle context matter",
+      "trigger": "inherits defined; config_maps[inherits] if present, otherwise base_bundle->m_config_maps[inherits] if present",
+      "affected": [
+        "inherits",
+        "preset settings",
+        "filament_id"
+      ],
+      "expected": "Copy parent config and overlay the child's declared values. Return a missing-parent reason if both lookups fail. Non-instantiated definitions can supply parents without appearing as selectable presets.",
+      "source": [
+        {
+          "file": "src/libslic3r/PresetBundle.cpp",
+          "line": 3499
+        },
+        {
+          "file": "src/libslic3r/PresetBundle.cpp",
+          "line": 3502
+        },
+        {
+          "file": "src/libslic3r/PresetBundle.cpp",
+          "line": 3505
+        },
+        {
+          "file": "src/libslic3r/PresetBundle.cpp",
+          "line": 3524
+        },
+        {
+          "file": "src/libslic3r/PresetBundle.cpp",
+          "line": 3541
+        },
+        {
+          "file": "src/libslic3r/PresetBundle.cpp",
+          "line": 3543
+        }
+      ],
+      "evidence": "source_confirmed"
+    },
+    {
+      "id": "preset-printer-compatibility",
+      "kind": "preset_compatibility",
+      "scope": "Process and filament compatibility with a selected printer",
+      "trigger": "Reject excluded OrcaFilamentLibrary filament/printer entries first. If compatible_printers list is empty and the condition is nonempty, evaluate against printer and extra config. Otherwise default/blank active name/empty list/name match/non-system direct parent match passes.",
+      "affected": [
+        "compatible_printers",
+        "compatible_printers_condition",
+        "printer_preset",
+        "nozzle_diameter",
+        "num_extruders",
+        "inherits"
+      ],
+      "expected": "Filter printer compatibility. Predicate evaluation errors return true in this source. Direct parent match does not recurse.",
+      "source": [
+        {
+          "file": "src/libslic3r/Preset.cpp",
+          "line": 745
+        },
+        {
+          "file": "src/libslic3r/Preset.cpp",
+          "line": 762
+        },
+        {
+          "file": "src/libslic3r/Preset.cpp",
+          "line": 771
+        },
+        {
+          "file": "src/libslic3r/Preset.cpp",
+          "line": 776
+        },
+        {
+          "file": "src/libslic3r/Preset.cpp",
+          "line": 783
+        },
+        {
+          "file": "src/libslic3r/Preset.cpp",
+          "line": 791
+        }
+      ],
+      "evidence": "source_confirmed"
+    },
+    {
+      "id": "preset-process-compatibility",
+      "kind": "preset_compatibility",
+      "scope": "Filament against selected process",
+      "trigger": "Empty compatible_prints list && nonempty compatible_prints_condition uses PlaceholderParser against the active process config. Otherwise accept default, empty active name, empty list or direct name match.",
+      "affected": [
+        "compatible_prints",
+        "compatible_prints_condition"
+      ],
+      "expected": "Filter process compatibility. On predicate parse error this implementation permits compatibility.",
+      "source": [
+        {
+          "file": "src/libslic3r/Preset.cpp",
+          "line": 719
+        },
+        {
+          "file": "src/libslic3r/Preset.cpp",
+          "line": 724
+        },
+        {
+          "file": "src/libslic3r/Preset.cpp",
+          "line": 727
+        },
+        {
+          "file": "src/libslic3r/Preset.cpp",
+          "line": 732
+        },
+        {
+          "file": "src/libslic3r/Preset.cpp",
+          "line": 736
+        }
+      ],
+      "evidence": "source_confirmed"
+    },
+    {
+      "id": "ui-layer-height-machine-range",
+      "kind": "value_normalization",
+      "scope": "Global process layer_height edit; min and max across machine profile slots",
+      "trigger": "opt_key == layer_height && (lh < min(min_layer_height) || lh > max(max_layer_height))",
+      "affected": [
+        "layer_height",
+        "min_layer_height",
+        "max_layer_height"
+      ],
+      "expected": "For lh < EPSILON the dialog applies the floor. Otherwise Adjust clamps to the exceeded boundary and Ignore preserves the submitted value. Print::validate has its own nozzle ceiling.",
+      "source": [
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 2156
+        },
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 2162
+        },
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 2165
+        },
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 2173
+        },
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 2176
+        },
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 2184
+        }
+      ],
+      "evidence": "source_confirmed"
+    },
+    {
+      "id": "object-layer-range-nozzle-fallback",
+      "kind": "validation",
+      "scope": "Object layer-range controls for the selected extruder slot",
+      "trigger": "max_layer_height[max(0, extruder_idx - 1)] < EPSILON",
+      "affected": [
+        "max_layer_height",
+        "nozzle_diameter",
+        "min_layer_height",
+        "layer_height"
+      ],
+      "expected": "Use 0.75 × selected nozzle diameter as the maximum for variable layer-height ranges. The minimum is read from the selected slot.",
+      "source": [
+        {
+          "file": "src/slic3r/GUI/GUI_ObjectList.cpp",
+          "line": 4367
+        },
+        {
+          "file": "src/slic3r/GUI/GUI_ObjectList.cpp",
+          "line": 4373
+        },
+        {
+          "file": "src/slic3r/GUI/GUI_ObjectList.cpp",
+          "line": 4380
+        },
+        {
+          "file": "src/slic3r/GUI/GUI_ObjectList.cpp",
+          "line": 4542
+        }
+      ],
+      "evidence": "source_confirmed"
+    },
+    {
+      "id": "slice-line-width-height",
+      "kind": "validation",
+      "scope": "FFF object and region widths; support width checked only when object has support or raft",
+      "trigger": "w_min = get_abs_value(key, min_nozzle_diameter); w_max = get_abs_value(key, max_nozzle_diameter); w_min != 0 && (w_min <= layer_height || w_max > max_nozzle_diameter * MAX_LINE_WIDTH_MULTIPLIER)",
+      "affected": [
+        "layer_height",
+        "nozzle_diameter",
+        "line_width",
+        "support_line_width",
+        "inner_wall_line_width",
+        "outer_wall_line_width",
+        "sparse_infill_line_width",
+        "internal_solid_infill_line_width",
+        "top_surface_line_width",
+        "skin_infill_line_width",
+        "skeleton_infill_line_width"
+      ],
+      "expected": "Reject too-small or too-large width. Auto width represented by zero is accepted by this check.",
+      "source": [
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1844
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1848
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1852
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1955
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1958
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1962
+        }
+      ],
+      "evidence": "source_confirmed"
+    },
+    {
+      "id": "ui-spiral-mutate",
+      "kind": "value_normalization",
+      "scope": "FFF global or object config except plate, with a variant dialog",
+      "trigger": "!is_plate_config && spiral_mode && !(wall_loops==1 && top_shell_layers==0 && sparse_infill_density==0 && !enable_support && enforce_support_layers==0 && !detect_thin_wall && !overhang_reverse && wall_direction==Auto && timelapse_type==tlTraditional)",
+      "affected": [
+        "spiral_mode",
+        "wall_loops",
+        "top_shell_layers",
+        "sparse_infill_density",
+        "enable_support",
+        "enforce_support_layers",
+        "detect_thin_wall",
+        "overhang_reverse",
+        "wall_direction",
+        "timelapse_type"
+      ],
+      "expected": "Accepting adjusts all conflicting fields to the listed values. Other dialog answer sets spiral_mode false.",
+      "source": [
+        {
+          "file": "src/slic3r/GUI/ConfigManipulation.cpp",
+          "line": 320
+        },
+        {
+          "file": "src/slic3r/GUI/ConfigManipulation.cpp",
+          "line": 333
+        },
+        {
+          "file": "src/slic3r/GUI/ConfigManipulation.cpp",
+          "line": 335
+        },
+        {
+          "file": "src/slic3r/GUI/ConfigManipulation.cpp",
+          "line": 350
+        },
+        {
+          "file": "src/slic3r/GUI/ConfigManipulation.cpp",
+          "line": 352
+        }
+      ],
+      "evidence": "source_confirmed"
+    },
+    {
+      "id": "slice-spiral-sequence-region",
+      "kind": "validation",
+      "scope": "FFF spiral mode, multiple copies or incompatible region perimeters",
+      "trigger": "spiral_mode && ((total_copies_count > 1 && print_sequence != ByObject) || (all_regions.size() > 1 && any region after the first is not perimeter-compatible with the first))",
+      "affected": [
+        "spiral_mode",
+        "print_sequence",
+        "region perimeter config",
+        "object instance count"
+      ],
+      "expected": "Reject with a sequence error or incompatible-region materials error, respectively. The branch also asserts m_objects.size()==1 after the sequence check.",
+      "source": [
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1637
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1642
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1644
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1647
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1651
+        }
+      ],
+      "evidence": "source_confirmed"
+    },
+    {
+      "id": "ui-filament-cut-retraction",
+      "kind": "ui_visibility",
+      "scope": "Material override UI; flow index or extruder index chosen from option type",
+      "trigger": "enable_long_retraction_when_cut == EnableFilament && filament_long_retractions_when_cut[flow_variant ? flow_index : extruder_idx] == 1",
+      "affected": [
+        "enable_long_retraction_when_cut",
+        "filament_long_retractions_when_cut",
+        "filament_retraction_distances_when_cut"
+      ],
+      "expected": "Show material retraction distance iff both gates pass, and enable its field only with the override checkbox and non-nil slot. The filament enable row itself is visible with the printer gate alone.",
+      "source": [
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 4151
+        },
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 4164
+        },
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 4168
+        },
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 4171
+        },
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 4178
+        }
+      ],
+      "evidence": "source_confirmed"
+    },
+    {
+      "id": "ui-u1-tower-plate",
+      "kind": "ui_visibility",
+      "scope": "Filament UI; selected printer and active bed/flow capabilities",
+      "trigger": "is_snapmaker_u1 = icontains(preset_name, 'Snapmaker U1') || (icontains(printer_model, 'Snapmaker') && icontains(printer_model, 'U1')); support_multi_bed_types = is_BBL_printer || cfg.opt_bool('support_multi_bed_types')",
+      "affected": [
+        "printer_model",
+        "support_multi_bed_types",
+        "filament_tower_interface_pre_extrusion_dist",
+        "filament_tower_interface_pre_extrusion_length",
+        "filament_tower_interface_print_temp",
+        "supertack_plate_temp",
+        "cool_plate_temp",
+        "textured_cool_plate_temp",
+        "eng_plate_temp",
+        "hot_plate_temp",
+        "textured_plate_temp",
+        "graphic_effect_plate_temp",
+        "corresponding initial-layer temperatures"
+      ],
+      "expected": "Show the three tower-interface options for U1. For U1 without multi-bed support, show Smooth PEI, textured and graphic-effect temperatures and hide other rows. With multi-bed support follow the expanded branch.",
+      "source": [
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 4598
+        },
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 4600
+        },
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 4605
+        },
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 4608
+        },
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 4625
+        },
+        {
+          "file": "src/slic3r/GUI/Tab.cpp",
+          "line": 4641
+        }
+      ],
+      "evidence": "source_confirmed"
+    },
+    {
+      "id": "object-config-precedence",
+      "kind": "override_resolution",
+      "scope": "FFF PrintObject and PrintRegion config; model part vs modifier",
+      "trigger": "Object config: default -> normalized object -> clamp support slots. Region config: default (model part) or parent region (modifier) -> object for model parts -> volume -> material if material_id nonempty -> layer interval if provided (model parts only).",
+      "affected": [
+        "object overrides",
+        "volume overrides",
+        "material overrides",
+        "layer-range overrides",
+        "support_filament",
+        "support_interface_filament",
+        "sparse_infill_filament",
+        "wall_filament",
+        "solid_infill_filament"
+      ],
+      "expected": "Apply the listed precedence for recognized keys. Clamp extruder IDs exceeding available physical plus virtual slots to 1. Explicit nonzero extruder selects region material slots before individual overrides.",
+      "source": [
+        {
+          "file": "src/libslic3r/PrintObject.cpp",
+          "line": 3227
+        },
+        {
+          "file": "src/libslic3r/PrintObject.cpp",
+          "line": 3234
+        },
+        {
+          "file": "src/libslic3r/PrintObject.cpp",
+          "line": 3252
+        },
+        {
+          "file": "src/libslic3r/PrintObject.cpp",
+          "line": 3276
+        },
+        {
+          "file": "src/libslic3r/PrintObject.cpp",
+          "line": 3285
+        },
+        {
+          "file": "src/libslic3r/PrintObject.cpp",
+          "line": 3290
+        },
+        {
+          "file": "src/libslic3r/PrintObject.cpp",
+          "line": 3295
+        }
+      ],
+      "evidence": "source_confirmed"
+    },
+    {
+      "id": "region-fuzzy-skin-threshold",
+      "kind": "value_normalization",
+      "scope": "FFF effective region config after object/volume/material/layer-range overrides",
+      "trigger": "fuzzy_skin != None && (fuzzy_skin_point_distance < 0.01 || fuzzy_skin_thickness < 0.001)",
+      "affected": [
+        "fuzzy_skin",
+        "fuzzy_skin_point_distance",
+        "fuzzy_skin_thickness"
+      ],
+      "expected": "Set region fuzzy_skin to None for slicing.",
+      "source": [
+        {
+          "file": "src/libslic3r/PrintObject.cpp",
+          "line": 3302
+        },
+        {
+          "file": "src/libslic3r/PrintObject.cpp",
+          "line": 3303
+        }
+      ],
+      "evidence": "source_confirmed"
+    },
+    {
+      "id": "slice-organic-support-diameter",
+      "kind": "validation",
+      "scope": "FFF with support material and tree type Organic or Default",
+      "trigger": "is_tree(support_type) && (support_style == smsTreeOrganic || support_style == smsDefault); extrusion_width = min(support_material_flow().width(), support_material_interface_flow().width())",
+      "affected": [
+        "support_type",
+        "support_style",
+        "support_line_width",
+        "tree_support_tip_diameter",
+        "tree_support_branch_diameter_organic"
+      ],
+      "expected": "Both revisions reject branch diameter < 2× flow width minus EPSILON or below tip diameter. Build-reference source additionally rejects tip diameter < flow width minus EPSILON. That separate tip-width rejection is absent in the comparison Print::validate branch.",
+      "source": [
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1858
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1881
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1882
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1899
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1903
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1817,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1840,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1846,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1848,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1850,
+          "revision": "56e82d53c85457f530827d2488664015b2eae08e"
+        }
+      ],
+      "evidence": "source_confirmed",
+      "blocked_reason": "Requires an admitted support enable/style/geometry path and an independent rejection or G-code oracle. PITFALLS_0901.md §8 preserves a prior U1 0.8 mm observation of the tip-width toast.",
+      "comparison": "version_delta"
+    },
+    {
+      "id": "material-temperature-mix-validator",
+      "kind": "validation",
+      "scope": "Material combination helper reads active extruder indices",
+      "trigger": "any active filament_type maps to HighTemp && any active filament_type maps to LowTemp",
+      "affected": [
+        "filament_type",
+        "active extruders"
+      ],
+      "expected": "Helper returns a diagnostic for the temperature class mix. Reachability from this revision's normal slice entry is pending review.",
+      "source": [
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1527
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1540
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1584
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 1594
+        },
+        {
+          "file": "src/libslic3r/Print.cpp",
+          "line": 3082
+        }
+      ],
+      "evidence": "inference_pending"
+    },
+    {
+      "id": "slice-seam-object-preference",
+      "kind": "slice_behavior",
+      "evidence": "source_confirmed",
+      "scope": "Effective object settings and actual perimeter candidates",
+      "trigger": "configured_seam_preference = po->config().seam_position.value; spRandom picks a random seam point per perimeter; spNearest defers selection to the nozzle-position-aware placement stage; spAligned/spRear/spAlignedBack invoke seam alignment",
+      "affected": [
+        "seam_position",
+        "object perimeter start"
+      ],
+      "expected": "Choose a seam path using the object preference and available perimeter geometry. The replay checks the setting in UI, project and G-code config. The geometric distribution has no independent oracle in this batch.",
+      "source": [
+        {
+          "file": "src/libslic3r/GCode/SeamPlacer.cpp",
+          "line": 1429
+        },
+        {
+          "file": "src/libslic3r/GCode/SeamPlacer.cpp",
+          "line": 1461
+        },
+        {
+          "file": "src/libslic3r/GCode/SeamPlacer.cpp",
+          "line": 1472
+        },
+        {
+          "file": "src/libslic3r/GCode/SeamPlacer.cpp",
+          "line": 1483
+        },
+        {
+          "file": "src/libslic3r/GCode/SeamPlacer.cpp",
+          "line": 1551
         }
       ]
     }
@@ -283,5 +961,19 @@
       "ironing_flow",
       "ironing_spacing"
     ]
+  },
+  "inventories": {
+    "upstream": {
+      "path": "artifacts/config_dependencies/inventory.ndjson.gz",
+      "sha256": "2c39663d086560a2c7514b9856851c043daaa385f2683f8e4266018c3f6bd478"
+    },
+    "build_reference": {
+      "path": "artifacts/config_dependencies/sut_build_source/inventory.ndjson.gz",
+      "sha256": "a4b987a6e9daceaee9038912e4e787b8870c884becc8145b8ea087a76b436538"
+    },
+    "guest_presets": {
+      "path": "artifacts/config_dependencies/guest-presets/installed-presets.ndjson.gz",
+      "sha256": "b33a1dff14270187b295b94ecf629325a10992d867d2d0024050c0e48eb162bd"
+    }
   }
 }

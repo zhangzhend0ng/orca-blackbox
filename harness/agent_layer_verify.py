@@ -69,7 +69,7 @@ def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", ca
             _require(active is None and tower == (line == "; WIPE_TOWER_END"), "gcode_tower_scope")
             tower = line == "; WIPE_TOWER_START"
         if inspect_ironing and line.startswith(";TYPE:"):
-            ironing = line == ";TYPE:Ironing"
+            ironing = active is not None and line == ";TYPE:Ironing"
         if not exclude_mode and line.startswith(("; printing object", "; stop printing object", "; start printing object")):
             label = _LABEL.fullmatch(line)
             _require(label is not None, "gcode_object_label")
@@ -82,6 +82,7 @@ def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", ca
             else:
                 _require(active == identity, "gcode_object_end")
                 active = None
+                ironing = False
             continue
         command = line.split(";", 1)[0].strip()
         if not command:
@@ -95,6 +96,7 @@ def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", ca
         if command.startswith("EXCLUDE_OBJECT_END NAME="):
             _require(active == command.split("NAME=", 1)[1], "gcode_object_end")
             active = None
+            ironing = False
             continue
         opcode, *words = command.split()
         # Fixed U1/mm scope. Never carry coordinates across a mode we cannot

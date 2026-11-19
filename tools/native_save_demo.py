@@ -119,7 +119,7 @@ def main():
         recording_scenarios = tuple(OPERATIONS[name].recording for name in PAIR_CASES[args.scenario]) + ("uia_replay_move_layer",)
     if args.scenario in CONFIG_CASES:
         sources += ("contracts/config_dependencies.json", "harness/native_config_cases.py",
-                    "harness/agent_layer_verify.py")
+                    "harness/agent_layer_verify.py", "tools/scan_config_dependencies.py")
         recording_scenarios += ("uia_replay_layer", "uia_replay_enums")
     for scenario in recording_scenarios:
         if scenario not in REPLAY_SOURCES:
@@ -156,16 +156,27 @@ def main():
     if args.scenario in CONFIG_CASES:
         from harness.native_config_cases import CATALOG
         sut = CATALOG["sut"]
+        profile_command = ("import json; from harness.profile import default_presets_dir; "
+                           "from tools.scan_config_dependencies import installed_vendor; "
+                           "root=default_presets_dir(); "
+                           "print(json.dumps({v: installed_vendor(root,v)[1] for v in ('Snapmaker','BBL')}))")
         sut_check = (
             "$sut=Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {param($sb,$git,$python) "
             "Push-Location $sb; try {$exe=& $python -B -c "
             "'from harness.launcher import default_exe; print(default_exe())'; "
             "if($LASTEXITCODE -ne 0){throw 'config_guest_exe_lookup'}; "
+            "$profiles=& $python -B -c " + quoted(profile_command) + "; "
+            "if($LASTEXITCODE -ne 0){throw 'config_guest_preset_lookup'}; "
             "@{hash=(Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash;"
+            "dll=(Get-FileHash -LiteralPath (Join-Path (Split-Path $exe) 'Snapmaker_Orca.dll')).Hash;"
+            "vendors=($profiles|ConvertFrom-Json);"
             "presets=(& $git -C $sb rev-parse 'HEAD:resources')} } finally {Pop-Location} "
             "} -ArgumentList $guestSandbox,$guestGit,$guestPython\n"
             "if($sut.hash -ne " + quoted(sut["exe_sha256"]) + " -or $sut.presets -ne "
-            + quoted(sut["preset_tree"]) + "){throw 'config_guest_build_or_preset_digest_changed'}\n"
+            + quoted(sut["preset_tree"]) + " -or $sut.dll -ne " + quoted(sut["dll_sha256"])
+            + "".join(f" -or $sut.vendors.{vendor}.json_tree_sha256 -ne " + quoted(info["json_tree_sha256"])
+                      for vendor, info in sut["installed_vendors"].items())
+            + "){throw 'config_guest_build_or_preset_digest_changed'}\n"
         )
     script.write_text("$ErrorActionPreference='Stop'\ntry {\n"
         "$env:ORCA_BB_GUEST_SANDBOX="+quoted(r"C:\coil\orca-blackbox-v3-r1")+"\n. "+quoted(REPO / "runner/_common.ps1")+"\n"
@@ -179,9 +190,9 @@ def main():
         "& "+quoted(REPO / "runner/hv_go.ps1")+" -NoSync -WindowsMcpProbe -NativeSave -ProbeRunId "+quoted(run_id)
         +" -NativeActor "+args.actor+" -NativeScenario "+args.scenario
         +(" -ProbeMixWaits" if args.probe_mix_waits else "")+" *> "+quoted(root / "launch.log")+"\n"
-        "$r=@{ok=$true;head="+quoted(head)+"}\n"
+        "$r=@{ok=$true;head="+quoted(head)+(";sut=$sut" if sut_check else "")+"}\n"
         "}catch{$r=@{ok=$false;error_type=$_.Exception.GetType().Name;message=$_.Exception.Message}}\n"
-        "$r|ConvertTo-Json|Set-Content "+quoted(launch_done)+" -Encoding UTF8\n", encoding="utf-8")
+        "$r|ConvertTo-Json -Depth 6|Set-Content "+quoted(launch_done)+" -Encoding UTF8\n", encoding="utf-8")
     print(json.dumps({"run_id": run_id, "source_sha": head, "phase": "launching"}), flush=True)
     detached(script, launch_done, 180)
     error, code = None, 1

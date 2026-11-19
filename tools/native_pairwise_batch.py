@@ -21,7 +21,7 @@ def read_if_present(directory, name):
     return json.loads(path.read_text(encoding="utf-8-sig")) if path.is_file() else {}
 
 
-def collect(run_id, elapsed, returncode):
+def collect(run_id, elapsed, returncode, planned_recipe):
     evidence = REPO / "artifacts/windows_mcp_harvest" / run_id
     host = read_if_present(REPO / "artifacts/native_save_demo" / run_id, "summary")
     outcome = read_if_present(evidence, "result")
@@ -32,10 +32,12 @@ def collect(run_id, elapsed, returncode):
     proof = read_if_present(evidence, "proof")
     cleaned = (receipt.get("run_id") == run_id and receipt.get("cleanup_confirmed") is True
                and receipt.get("active_processes") == 0 and receipt.get("token_exists") is False)
-    passed = cleaned and outcome.get("verified_pass") is True and returncode == 0
+    actual_recipe = worker.get("recording_sha256")
+    recipe_matches = actual_recipe == planned_recipe
+    passed = cleaned and outcome.get("verified_pass") is True and returncode == 0 and recipe_matches
     failure = None
     if not passed:
-        failure = worker.get("error")
+        failure = "guest_recipe_digest_mismatch" if actual_recipe and not recipe_matches else worker.get("error")
         if not failure:
             failure = outcome.get("checks", {}).get("business", {}).get("detail")
             if not failure or failure == "not checked":
@@ -43,6 +45,8 @@ def collect(run_id, elapsed, returncode):
                 failure = launch.get("message") or "guest_result_or_cleanup_unavailable"
     return {"status": "SHADOW" if passed else "NON_GREEN", "cleanup_confirmed": cleaned,
             "executed": bool(worker.get("script_action_started_at_ns") or worker.get("replay_cursor")),
+            "planned_recipe_sha256": planned_recipe, "guest_recipe_sha256": actual_recipe,
+            "recipe_matches_plan": recipe_matches,
             "failure": failure, "replay_cursor": worker.get("replay_cursor"),
             "prepare_s": (setup["finished_at_ns"] - manifest["started_at_ns"]) / 1e9 if setup and manifest else None,
             "script_s": worker["script_action_elapsed_ns"] / 1e9 if "script_action_elapsed_ns" in worker else None,
@@ -102,7 +106,7 @@ def main():
                     rc = subprocess.run([sys.executable, "-B", str(REPO / "tools/native_save_demo.py"),
                         "--actor", "script", "--scenario", scenario, "--run-id", ident],
                         cwd=REPO, stdout=log, stderr=subprocess.STDOUT).returncode
-                result.update(collect(ident, time.monotonic() - begin, rc))
+                result.update(collect(ident, time.monotonic() - begin, rc, row["recipe_sha256"]))
             results.append(result)
             line = json.dumps(result)
             stream.write(line + "\n")

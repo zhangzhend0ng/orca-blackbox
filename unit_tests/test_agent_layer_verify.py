@@ -39,6 +39,21 @@ def test_physical_object_layer_schedule_distinguishes_baseline_and_target():
     assert a["last_z"] == "27.2" and b["last_z"] == "27.04"
 
 
+def test_ironing_requires_labelled_positive_xy_e_motion_inside_the_object():
+    baseline = gcode()
+    last = baseline.rindex(b"G1 X20 Y20 E1")
+    tagged = baseline[:last] + b";TYPE:Ironing\n" + baseline[last:]
+    result = analyze_gcode(tagged, layer_height="0.4", inspect_ironing=True)
+    assert result["ironing_z"] == ["27.2"] and result["ironing_xy_e_moves"] == 1
+    header_only = baseline.replace(b"; CONFIG_BLOCK_START", b";TYPE:Ironing\n; CONFIG_BLOCK_START")
+    no_xy_e = tagged.replace(b";TYPE:Ironing\nG1 X20 Y20 E1",
+                             b"G1 X20 Y20 E1\n;TYPE:Ironing")
+    outside_object = baseline.replace(b"EXCLUDE_OBJECT_START NAME=cube",
+                                      b";TYPE:Ironing\nEXCLUDE_OBJECT_START NAME=cube")
+    for raw in (baseline, header_only, no_xy_e, outside_object):
+        assert analyze_gcode(raw, layer_height="0.4", inspect_ironing=True)["ironing_z"] == []
+
+
 @pytest.mark.parametrize("mode", ["M82", "M83"])
 def test_absolute_and_relative_extrusion_with_g92_are_supported(mode):
     assert analyze_gcode(gcode("0.24", e_mode=mode), layer_height="0.24")["layer_count"] == 112
