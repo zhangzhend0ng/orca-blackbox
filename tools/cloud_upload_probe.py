@@ -190,7 +190,7 @@ def find_send_button(hwnd):
     return None
 
 
-def run_upload(app, fixture, output_dir, result, poll):
+def run_upload(app, fixture, output_dir, result, poll, *, review_only=False):
     from harness import export_util, launcher, winutil
 
     result["upload_stage"] = "check_fixed_sut"
@@ -355,7 +355,16 @@ def run_upload(app, fixture, output_dir, result, poll):
             send = poll(send_candidate, 5)
     if send is None and picker_heading is not None:
         record_send_footer(only, picker_heading, output_dir / "upload-footer.png")
-    if send is None or not opens_send_only(only) or not click_client(only, send):
+    if send is None or not opens_send_only(only):
+        return False
+    if review_only:
+        import time
+
+        result["upload_stage"] = "send_ready_for_video"
+        result["upload_submitted"] = False
+        time.sleep(3)
+        return True
+    if not click_client(only, send):
         return False
     result["upload_submitted"] = True
     result["upload_stage"] = "verify_device_receipt"

@@ -8,8 +8,9 @@ class DesktopVideo:
     fps = 5
     size = (1280, 720)
 
-    def __init__(self, root):
+    def __init__(self, root, capture=None):
         self.path = root / "desktop.mp4"
+        self.capture = capture
         self.stop = threading.Event()
         self.ready = threading.Event()
         self.error = None
@@ -38,8 +39,11 @@ class DesktopVideo:
             self.started_at_ns = time.time_ns()
             previous = None
             while not self.stop.is_set():
-                with ImageGrab.grab() as image:
-                    frame = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
+                if self.capture is None:
+                    with ImageGrab.grab() as image:
+                        frame = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
+                else:
+                    frame = self.capture()
                 frame = cv2.resize(frame, self.size, interpolation=cv2.INTER_AREA)
                 target = int((time.monotonic() - start) * self.fps)
                 while previous is not None and self.frames < target:

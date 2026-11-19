@@ -380,7 +380,7 @@ def inspect(app, result, run_dir, authenticate_login):
     result["stage"] = "form_inspected"
 
 
-def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False):
+def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False, video_review=False):
     from harness import host_guard, launcher, profile
 
     host_guard.assert_guest_or_allow()
@@ -395,10 +395,11 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False):
     result = {
         "run_id": run_id, "region": "CN", "verdict": "NON_GREEN",
         "stage": "seed_profile", "private_removed": False,
-        "mode": ("upload" if upload_gcode else "devices" if discover_devices
+        "mode": ("upload_review" if video_review else "upload" if upload_gcode else "devices" if discover_devices
                  else "authenticate" if authenticate_login else "inspect"),
     }
     session = None
+    video = None
     try:
         profile.seed_profile(datadir, conf_extra={"app": {"region": "China", "language": "en_US", "default_page": "0"}})
         os.environ["WEBVIEW2_USER_DATA_FOLDER"] = str(private / "webview")
@@ -410,6 +411,12 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False):
         if discover_devices and result.get("home_signed_in"):
             from tools.cloud_device_probe import inspect_devices
 
+            if video_review:
+                from harness.native_desktop_video import DesktopVideo
+                from tools.cloud_upload_video import capture
+
+                video = DesktopVideo(run_dir, capture=lambda: capture(session, result))
+                video.start()
             result["device_page_observed"] = inspect_devices(session, result, poll)
             if upload_gcode:
                 result["upload_stage"] = "await_u1_device_panel"
@@ -418,11 +425,19 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False):
                 }:
                     from tools.cloud_upload_probe import run_upload
 
-                    result["device_upload_confirmed"] = run_upload(
-                        session, ROOT / "fixtures" / "agent_layer_cube.3mf", run_dir, result, poll)
+                    outcome = run_upload(
+                        session, ROOT / "fixtures" / "agent_layer_cube.3mf", run_dir, result, poll,
+                        review_only=video_review,
+                    )
+                    result["review_ready" if video_review else "device_upload_confirmed"] = outcome
     except Exception as exc:
         result["error"] = type(exc).__name__
     finally:
+        if video is not None:
+            try:
+                result["video"] = video.finish()
+            except Exception as exc:
+                result["video_error"] = type(exc).__name__
         try:
             if session is not None:
                 session.close(timeout_s=4)
@@ -441,7 +456,8 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False):
             result["cleanup_error"] = type(exc).__name__
         goal_observed = result.get("device_page_observed") if discover_devices else result.get("home_signed_in")
         if upload_gcode:
-            goal_observed = result.get("device_upload_confirmed")
+            goal_observed = (result.get("review_ready") and result.get("video") if video_review
+                             else result.get("device_upload_confirmed"))
         if goal_observed and result["private_removed"]:
             result["verdict"] = "SHADOW"
         result["duration_s"] = round(time.monotonic() - started, 2)
@@ -455,6 +471,7 @@ def main():
     parser.add_argument("--authenticate", action="store_true")
     parser.add_argument("--discover-devices", action="store_true")
     parser.add_argument("--upload-gcode", action="store_true")
+    parser.add_argument("--record-upload-review", action="store_true")
     args = parser.parse_args()
     if not re.fullmatch(r"[0-9a-f]{32}", args.run_id):
         parser.error("invalid run ID")
@@ -462,7 +479,10 @@ def main():
         parser.error("--discover-devices requires --authenticate")
     if args.upload_gcode and not args.discover_devices:
         parser.error("--upload-gcode requires --discover-devices")
-    return run(args.run_id, args.authenticate, args.discover_devices, args.upload_gcode)
+    if args.record_upload_review and not args.upload_gcode:
+        parser.error("--record-upload-review requires --upload-gcode")
+    return run(args.run_id, args.authenticate, args.discover_devices, args.upload_gcode,
+               args.record_upload_review)
 
 
 if __name__ == "__main__":
