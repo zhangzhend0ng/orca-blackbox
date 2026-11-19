@@ -246,17 +246,41 @@ def run_upload(app, fixture, output_dir, result, poll):
         return False
     result["send_only_page_verified"] = True
     result["upload_stage"] = "select_u1_in_send_page"
+    picked = False
+    open_picker = None
 
     def send_candidate():
+        nonlocal open_picker
         _, lines = visible_lines(only)
-        choices = [text for text, _, _ in lines if re.search(r"\bu1\b", text)]
+        choices = [(x, y) for text, x, y in lines if re.search(r"\bu1\b", text)]
         filename_visible = any(filename in text for text, _, _ in lines)
-        send = one([(x, y) for text, x, y in lines if text.strip() == "send"])
+        send = one([(x, y) for text, x, y in lines if re.fullmatch(r"[\W_]*send[\W_]*", text)])
+        open_picker = one([(x, y) for text, x, y in lines if re.fullmatch(
+            r"(?:please\s+)?(?:select|choose)(?:\s+(?:a|the))?\s+(?:device|printer)",
+            text.strip().rstrip("."),
+        )])
+        labels = re.compile(r"\b(?:select|choose|refresh|loading|device|printer|send|upload|connect|"
+                            r"offline|online|available|unavailable|no|cannot|lan|wan|working|"
+                            r"print|u1|cancel|file|network|error|model)\b")
         result["send_view"] = {"recognized_u1_labels": len(choices), "standalone_send_visible": send is not None,
-                               "filename_visible": filename_visible}
-        return send if len(choices) == 1 and filename_visible and send is not None else None
+                               "filename_visible": filename_visible, "device_picker_visible": open_picker is not None}
+        result["send_view_labels"] = [
+            {"labels": labels.findall(text), "x_band": x // 60, "y_band": y // 35}
+            for text, x, y in lines if labels.search(text)
+        ]
+        return send if len(choices) == 1 and filename_visible and send is not None and (picked or open_picker is None) else None
 
-    send = poll(send_candidate, 12)
+    send = poll(send_candidate, 8)
+    if send is None and open_picker is not None and opens_send_only(only) and click_client(only, open_picker):
+        def list_u1():
+            _, lines = visible_lines(only)
+            return one([(x, y) for text, x, y in lines if re.search(r"\bu1\b", text)])
+
+        choice = poll(list_u1, 8)
+        if choice is not None and click_client(only, choice):
+            picked = True
+            result["u1_picker_selection_clicked"] = True
+            send = poll(send_candidate, 8)
     if send is None or not opens_send_only(only) or not click_client(only, send):
         return False
     result["upload_submitted"] = True
@@ -268,6 +292,9 @@ def run_upload(app, fixture, output_dir, result, poll):
                 continue
             _, lines = visible_lines(current)
             words = "\n".join(text for text, _, _ in lines)
+            if filename in words and re.search(r"\bsent\s+successfully\s+to\s+the\s+device\b", words):
+                result["device_upload_receipt"] = "send_success_named_device_file"
+                return True
             if re.search(r"\bupload\s+(?:completed|successful)\b", words):
                 result["device_upload_receipt"] = "upload_completed_in_send_page"
                 return True
