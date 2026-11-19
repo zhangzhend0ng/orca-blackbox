@@ -73,7 +73,14 @@ if($spec.op -eq 'result' -and $spec.goal_save){
  $p=Join-Path (Split-Path $root -Parent) 'result.json'
  if(Test-Path -LiteralPath $p){
   try{$value=[IO.File]::ReadAllText($p);$value|ConvertFrom-Json -ErrorAction Stop|Out-Null;$value}catch{'{"pending":true}'}
- }else{'{"pending":true}'}
+ }else{
+  $task = if ($spec.require_suite_result) { Get-ScheduledTask suite -ErrorAction SilentlyContinue }
+  if ($task -and $task.State -eq 'Ready' -and
+      (Test-Path -LiteralPath 'C:\coil\run_suite.ps1') -and
+      [IO.File]::ReadAllText('C:\coil\run_suite.ps1').Contains("--run-id '$run'")) {
+   '{"suite_exited_without_result":true}'
+  }else{'{"pending":true}'}
+ }
  return
 }
 if ($spec.op -ne 'http') {throw 'op_rejected'}
