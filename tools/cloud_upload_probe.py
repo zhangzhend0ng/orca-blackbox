@@ -25,21 +25,43 @@ def click_client(hwnd, point):
             and winutil.real_click_screen(*winutil.client_to_screen(hwnd, *point)) == 2)
 
 
-def open_test_project(app, fixture, poll):
-    from harness import export_util, winutil
-    from harness.mix_dialog_util import _send_keys
+def open_test_project(app, fixture, result, poll):
+    from harness import export_util, topbar_util, winutil
 
-    if not click_client(app.hwnd, button_point(app.hwnd, "prepare", ymax=85)):
+    result["upload_stage"] = "open_fixture_file_menu"
+    if not winutil.force_set_foreground(app.hwnd):
         return False
-    if winutil.user32.GetForegroundWindow() != app.hwnd:
+    toolbar = topbar_util._topbar(app.hwnd)
+    if toolbar is None or winutil._window_pid(toolbar[2]) != app.pid:
         return False
-    _send_keys([(0x11, False), (ord("O"), False), (ord("O"), True), (0x11, True)])
+    rect = toolbar[1]
+    x, y = rect[0] + 20, (rect[1] + rect[3]) // 2
+    winutil.user32.SetCursorPos(x, y)
+    winutil.msg_click_screen(x, y, app.hwnd)
+    menu = poll(lambda: one(topbar_util._enum_menu_windows(app.pid)), 5)
+    if menu is None or winutil._window_pid(menu[4]) != app.pid:
+        return False
+    try:
+        hmenu = topbar_util.menu_hmenu(menu[4])
+        row = one([item for item in topbar_util.menu_items(hmenu)
+                   if item[1].replace("&", "").split("\t", 1)[0].strip().rstrip(".\u2026").lower()
+                   == "open project" and not item[2] & 3])
+        if row is None:
+            return False
+        item_id, _ = topbar_util.item_info(hmenu, row[0])
+        if not item_id:
+            return False
+        winutil._send_msg(app.hwnd, 0x0111, item_id, 0)
+    finally:
+        if winutil.user32.IsWindow(menu[4]):
+            winutil._send_msg(menu[4], 0x001F, 0, 0)
 
     def chooser():
         return one([hwnd for hwnd, pid in winutil.enum_windows()
                     if pid == app.pid and winutil.window_class(hwnd) == "#32770"
                     and winutil.window_title(hwnd).rstrip(":") == "Choose one file (3mf)"])
 
+    result["upload_stage"] = "open_fixture_chooser"
     hwnd = poll(chooser, 12)
     if hwnd is None:
         return False
@@ -58,6 +80,7 @@ def open_test_project(app, fixture, poll):
                 winutil.close_window(owned)
         return not winutil.user32.IsWindow(hwnd) and fixture.stem in winutil.window_title(app.hwnd)
 
+    result["upload_stage"] = "load_fixture_project"
     return bool(poll(loaded, 18))
 
 
@@ -107,9 +130,17 @@ def run_upload(app, fixture, output_dir, result, poll):
             return False
 
     result["upload_stage"] = "open_u1_project"
-    if not fixture.is_file() or not open_test_project(app, fixture, poll):
+    if not fixture.is_file() or not open_test_project(app, fixture, result, poll):
         return False
     result["upload_stage"] = "slice_u1_project"
+    # Opening a project normally switches from Device to Prepare itself.
+    # Re-enter from the exact topbar tab if slicing controls are still hidden.
+    if export_util.find_slice_buttons(app.hwnd)[1] is None:
+        _, lines = visible_lines(app.hwnd)
+        prepare = one([(x, y) for text, x, y in lines if y < 85 and x < 230
+                       and re.search(r"\bprepare\b", text)])
+        if not click_client(app.hwnd, prepare):
+            return False
     if not export_util.switch_to_export_mode(app):
         return False
     _, slice_button = export_util.find_slice_buttons(app.hwnd)
