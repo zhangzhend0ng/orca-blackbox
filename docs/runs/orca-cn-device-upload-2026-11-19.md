@@ -56,3 +56,15 @@ run 8a0ed84002694455ad9edce215044837（adb8226，60.34 s）为 SHADOW。同一�
 按用户要求，run d8b0fc896b3c4d42bfb8e280127bc584（fba5a28）重新实跑一次只上传。Orca 最大化，交互计划任务以隐藏窗口模式启动，捕获客机整屏。凭据输入由同步遮挡保护，录像计 48 帧遮挡和 0 帧前台命令行。脚本从首页登录、选择 U1、装载工程、切片、导出到进入只上传页，实际点击 Send，读取到 Upload completed。回执为 SHADOW，客机总耗时 74.56 s。该操作未触发开始打印。
 
 成片为 artifacts/windows_mcp_harvest/d8b0fc896b3c4d42bfb8e280127bc584/orca-u1-live-fullscreen.mp4，1920×1080，正常速度 55.00 秒。约 53.8 秒的成片帧复核到 Upload completed。上传文件为 orcabbd8b0fc896b.gcode，共 163003 字节，SHA-256 为 572808d8ebe179755ac4da9487643fad2e1bae8bea5e172438722067da0365cf。回收保留原录像、成片、G-code 和运行回执。
+
+## 新建工程的软件验收
+
+软件流程从 Orca 首页登录、新建工程、添加模型和切片走到 G-code 传输成功。只上传页核对目标设备与本次文件名，点击 Send 后读取 Orca 的 `Upload completed` 回执。设备的预热、热床检查和实际打印属于另一轮设备验证。
+
+客机入口为 `runner/hv_go.ps1 -WindowsMcpProbe -CloudLoginProbe -CloudLoginAuthenticate -CloudDeviceProbe -CloudUploadGcode -CloudUploadLiveVideo -CloudUploadNewProject -ProbeRunId <run ID>`。使用 `runner/hv_harvest.ps1 -CloudLoginProbe -WindowsMcpRunId <同一 run ID>` 回收。
+
+Run `026d8c7b8edd402b96bcf32ed9e88cf6`（`cf518d9`）执行 1 次并按软件验收通过，登记为 SHADOW。新工程添加 Orca 内置立方体，用 U1 0.4 mm 预设切片并导出 `orcabb026d8c7b8e.gcode`。只上传页 `path=5` 核对 U1 和本次文件名，点击 Send 一次，Orca 显示 `Upload completed`。实际打印提交次数为 0。
+
+客机总耗时 85.94 秒，原录像 62.1 秒。成片 59 秒，结束在传输成功回执，保留 1920×1080 整屏、正常速度及原始登录界面，前台命令行和登录遮挡均为 0 帧。成片 `orca-new-project-to-upload.mp4`、原录像、G-code 和回执在 `artifacts/windows_mcp_harvest/026d8c7b8edd402b96bcf32ed9e88cf6/`。G-code 为 347932 字节，SHA-256 `62160a3c85cf147653f4f9fe6571aea6e2a53281b4ae58a8d2314694978f0158`。
+
+切片界面使用 `Default Filament`，显示耗材长度 2.59 m、重量 0.00 g。该轮验证的回执对应文件传输，耗材重量单独记录。
