@@ -192,8 +192,10 @@ def verify_account_page(app, home_point, auth_hwnd, result):
         return True
     if home_point is None or not winutil.force_set_foreground(app.hwnd):
         return False
-    x, y = winutil.client_to_screen(app.hwnd, *home_point)
-    if winutil.real_click_screen(x, y) != 2:
+    # The account header exposes its menu at the dropdown end of the row.
+    # Move there without clicking any menu item.
+    x, y = winutil.client_to_screen(app.hwnd, home_point[0] + 90, home_point[1])
+    if not winutil.user32.SetCursorPos(x, y):
         return False
 
     def profile_ready():
@@ -207,7 +209,10 @@ def verify_account_page(app, home_point, auth_hwnd, result):
                 return "authenticated_profile"
         return None
 
-    proof = poll(profile_ready, 10)
+    proof = poll(profile_ready, 4)
+    if not proof and winutil.user32.GetForegroundWindow() == app.hwnd:
+        winutil.real_click_screen(x, y)
+        proof = poll(profile_ready, 6)
     if proof:
         result["home_proof"] = proof
     return bool(proof)
