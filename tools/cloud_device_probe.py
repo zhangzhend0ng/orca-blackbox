@@ -173,15 +173,19 @@ def connect_u1(app, card, result, poll):
             "offline": bool(re.search(r"\b(?:offline|not\s+available|disconnected|failed\s+to\s+connect|connection\s+failed)\b", words)),
             "local_files": bool(re.search(r"\b(?:local files|u-disk files)\b", words)),
             "temperature": bool(re.search(r"\b(?:temperature|heated bed|nozzle)\b", words)),
+            "files_tab": any(label.strip() == "files" for label, _, _ in lines),
             "still_on_home": bool(re.search(r"\b(?:my devices|model library|add device)\b", words)),
         }
         result["device_control"] = state
         return state["offline"] or (
-            not state["still_on_home"] and state["idle"] and (state["local_files"] or state["temperature"])
+            not state["still_on_home"] and state["files_tab"] and state["temperature"]
         )
 
     if poll(check_connection, 14):
-        result["device_stage"] = "device_reported_offline" if result["device_control"]["offline"] else "u1_connected_idle"
+        if result["device_control"]["offline"]:
+            result["device_stage"] = "device_reported_offline"
+        else:
+            inspect_files(app, result, poll)
         return
     _, lines = visible_lines(app.hwnd)
     tabs = [(tx, ty) for label, tx, ty in lines if ty < 95 and re.fullmatch(r"device", label)]
@@ -191,7 +195,42 @@ def connect_u1(app, card, result, poll):
         return
     result["device_stage"] = "device_tab_opened"
     if poll(check_connection, 14) and not result["device_control"]["offline"]:
-        result["device_stage"] = "u1_connected_idle"
+        inspect_files(app, result, poll)
+
+
+def inspect_files(app, result, poll):
+    from harness import winutil
+
+    result["device_stage"] = "u1_device_panel_observed"
+
+    def find_tab():
+        _, lines = visible_lines(app.hwnd)
+        tabs = [(x, y) for label, x, y in lines if label.strip() == "files"]
+        return tabs[0] if len(tabs) == 1 else None
+
+    point = poll(find_tab, 5)
+    if point is None or not winutil.force_set_foreground(app.hwnd):
+        return
+    if winutil.real_click_screen(*winutil.client_to_screen(app.hwnd, *point)) != 2:
+        return
+    result["device_stage"] = "device_files_opened"
+
+    def files():
+        _, lines = visible_lines(app.hwnd)
+        words = "\n".join(label for label, _, _ in lines)
+        result["device_file_labels"] = device_labels(lines)
+        state = {
+            "local_files": bool(re.search(r"\blocal\s+files\b", words)),
+            "usb_files": bool(re.search(r"\b(?:u-disk|usb)\s+files\b", words)),
+            "upload_button_label": any(label.strip() in {"upload", "upload file"} for label, _, _ in lines),
+            "stored_gcode_labels": len(re.findall(r"\.gcode(?:\b|$)", words)),
+            "network_error": bool(re.search(r"\b(?:failed\s+to\s+(?:fetch|load)|network\s+error)\b", words)),
+        }
+        result["device_files"] = state
+        return state["local_files"] and (state["usb_files"] or state["stored_gcode_labels"])
+
+    if poll(files, 14):
+        result["device_stage"] = "u1_device_files_observed"
 
 
 def inspect_nearby(app, add_target, result, poll):
