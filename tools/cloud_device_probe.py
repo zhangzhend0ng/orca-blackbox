@@ -5,6 +5,7 @@ import csv
 import io
 import re
 import subprocess
+import time
 
 
 def visible_lines(hwnd, *, sidebar=False):
@@ -59,9 +60,15 @@ def inspect_devices(app, result, poll):
         return False
     result["device_stage"] = "read_my_devices"
 
+    add_targets = []
+    page_seen_at = None
+
     def read_devices():
+        nonlocal add_targets, page_seen_at
         width, lines = visible_lines(app.hwnd)
         content = [label for label, x, _ in lines if x > width // 4]
+        add_targets = [(x, y) for label, x, y in lines if x > width // 4
+                       and re.search(r"\badd\s+device\b", label)]
 
         def count(pattern):
             return sum(bool(re.search(pattern, label)) for label in content)
@@ -70,21 +77,66 @@ def inspect_devices(app, result, poll):
             "heading": bool(count(r"\bmy\s+devices\b")),
             "add_device_visible": bool(count(r"\badd\s+device\b")),
             "idle_labels": count(r"\bidle\b"),
+            "online_labels": count(r"\bonline\b"),
             "offline_labels": count(r"\boffline\b"),
             "working_labels": count(r"\b(?:working|printing|paused)\b"),
             "empty_message": bool(count(r"\b(?:no\s+(?:device|data)s?|add\s+your\s+first\s+device)\b")),
             "network_error": bool(count(r"\b(?:network\s+error|failed\s+to\s+load)\b")),
             "file_tab_visible": bool(count(r"\b(?:local\s+files|uploaded\s+files|u-disk\s+files)\b")),
             "upload_label_visible": bool(count(r"\bupload\b")),
+            "content_text_lines": len(content),
         }
-        return result["device_page"]["heading"] and any(
-            result["device_page"][key]
-            for key in ("idle_labels", "offline_labels", "working_labels", "empty_message", "network_error")
-        )
+        page = result["device_page"]
+        if not page["heading"] or not page["add_device_visible"]:
+            return False
+        if page_seen_at is None:
+            page_seen_at = time.monotonic()
+        return time.monotonic() - page_seen_at >= 6
 
     poll(read_devices, 24)
     page = result.get("device_page", {})
     if page.get("heading") or page.get("add_device_visible"):
         result["device_stage"] = "device_page_observed"
+        if not (page.get("idle_labels") or page.get("online_labels")) and len(add_targets) == 1:
+            inspect_nearby(app, add_targets[0], result, poll)
         return True
     return False
+
+
+def inspect_nearby(app, add_target, result, poll):
+    from harness import winutil
+
+    if not winutil.force_set_foreground(app.hwnd):
+        return
+    if winutil.real_click_screen(*winutil.client_to_screen(app.hwnd, *add_target)) != 2:
+        return
+    result["nearby_stage"] = "discovery_opened"
+    ready_at = None
+
+    def discovery():
+        nonlocal ready_at
+        for hwnd, pid in winutil.enum_windows():
+            if pid != app.pid:
+                continue
+            _, lines = visible_lines(hwnd)
+            words = "\n".join(label for label, _, _ in lines)
+            nearby = bool(re.search(r"\bnearby\s+devices?\b|\bdiscovery\s+device\b", words))
+            manual = bool(re.search(r"\bmanual(?:ly)?\s+connect\b|\benter\s+ip\s+address\b", words))
+            if not (nearby or manual):
+                continue
+            if ready_at is None:
+                ready_at = time.monotonic()
+            result["nearby_page"] = {
+                "nearby_heading": nearby,
+                "manual_connect_visible": manual,
+                "searching": bool(re.search(r"\b(?:finding|searching\s+for)\s+(?:new\s+)?devices\b", words)),
+                "empty_message": bool(re.search(r"\bno\s+(?:nearby\s+)?devices?\b", words)),
+                "device_model_labels": len(re.findall(r"\b(?:snapmaker\s+)?(?:u1|j1s?|artisan|a[23]50|a150)\b", words)),
+                "content_text_lines": len(lines),
+            }
+            return time.monotonic() - ready_at >= 10
+        return False
+
+    poll(discovery, 25)
+    if result.get("nearby_page"):
+        result["nearby_stage"] = "discovery_observed"
