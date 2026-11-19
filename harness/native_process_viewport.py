@@ -82,6 +82,19 @@ def process_viewports(wu, main, pid, sidebar):
             {value: values[value] for value in sorted(values) if value not in duplicate_values})
 
 
+def recheck_viewport(wu, main, pid, sidebar, observed):
+    from win32gui import IsChild, IsWindowVisible
+
+    viewport, child = observed["hwnd"], observed["group_hwnd"]
+    if (sidebar is None or not IsChild(main, viewport) or not IsChild(viewport, child)
+            or any(wu._window_pid(item) != pid or wu.window_class(item) != "wxWindowNR"
+                   or not IsWindowVisible(item) for item in (viewport, child))
+            or wu.window_title(viewport) != "panel" or wu.window_title(child) != observed["group"]
+            or not _inside(observed["bounds"], sidebar) or list(wu.window_rect(viewport)) != observed["bounds"]):
+        return None
+    return dict(observed, group_bounds=list(wu.window_rect(child)))
+
+
 def read_ironing_selection(wu, main, pid, group, binding, root):
     """Read the same visible, previously opened custom combo after its rebuild."""
     from win32gui import IsChild

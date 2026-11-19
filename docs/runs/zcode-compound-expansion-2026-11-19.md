@@ -54,3 +54,11 @@
 失败均经 `hv_harvest.ps1` 回收，拥有的 Job 进程与临时令牌均已清理。目录 `artifacts/windows_mcp_harvest/<run-id>` 下保留工具轨迹、执行结果和回收回执。
 
 滚动实查见 `bd26e3d…` 第 10 条工具轨迹。Ironing 组初始屏幕 y=1725，视口范围 y=718–1031。视口支持 UIA ScrollPattern，组标题未返回 ScrollItemPattern。尝试 ScrollPattern 后由同一拥有的 wx 视口接收有界 `WM_VSCROLL` 行滚动。滚动条读回 0→45，Ironing 组 y=1725→825。下一次 Snapshot 读到 No ironing 下拉框。选择后该框在自绘界面显示 `Topmost sur...`。读回修复先尝试该拥有控件的 `WM_GETTEXT`，必要时仅对已绑定的下拉值区域做 OCR。3MF 与独立重切 G-code 仍须同时通过。
+
+源 `9c99497` 的带定位提示探索 `a4f5926dcc5243838d2baf7297227a6d` 通过，记 SHADOW。ZCode Snapmaker `glm-5.3-flash` 完成 26 次调用，其中 4 次命名裁图、4 次局部像素输入和 1 次视口导航。Seam 读回 Random，Ironing 的 `WM_GETTEXT` 原始值为 `Topmost surface only`，裁图 OCR 为 `Topmost sur...`。本轮使用 OCR 读回，录制器核对该裁图的摘要。后续脚本允许在同一绑定控件使用这条已实测的原生文本等价值。
+
+Save As 走 UIA ValuePattern 与 InvokePattern，两次独立产物的判据各自通过。冻结 3MF 的 SHA-256 为 `e536e151edad919177c12696461eb1f464f7ad6c1cbdc897148d0f74d359fc57`，独立重切 G-code 为 `08ea54a3e11e95706becf10abf159ea3440f0fb617df4a457d722a5869195de9`。两份产物同时读回 `topmost` 与 `random`，切片包含 68 层对象挤出。清理回执确认进程和令牌均已回收。
+
+已从该 run 录制 [双下拉框脚本](../../contracts/replays/uia_enums.json)，由 23 步组成，包含两次值读回检查、已观察的 Ironing 组导航和原生 Save As。3MF 输出路径在每次回放中重新分配。
+
+首次无模型回放 `dccc5d31f60e42fab130d089ca00fc5b`，源 `6a4562e`，完整 100.92 秒，NON_GREEN。Seam 与 Advanced 已完成，第 9 步导航超过本地调用的 15 秒超时。模型实跑中同一导航耗时 16.38 秒。修复在每次滚动前后按已绑定 HWND 复核视口和组标题，去掉重复的全窗子树枚举。单独给视口导航调用 25 秒上限，其他调用继续用原超时。

@@ -73,9 +73,9 @@ def loopback_client(root, name):
 
     opener = build_opener(ProxyHandler({}), NoRedirect())
 
-    def request(body):
+    def request(body, *, timeout=15):
         with opener.open(Request("http://127.0.0.1:18789/mcp", data=json.dumps(body).encode(),
-                                 headers=headers), timeout=15) as response:
+                                 headers=headers), timeout=timeout) as response:
             reply = response_json(response.read(2_000_000).decode("utf-8"))
         if reply.get("jsonrpc") != "2.0" or reply.get("id") != body["id"]:
             raise ValueError("native_loopback_response_identity")

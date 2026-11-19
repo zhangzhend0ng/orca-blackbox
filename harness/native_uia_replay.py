@@ -329,7 +329,7 @@ def play(ui, run_id, output_path, *, scenario=UIA_REPLAY_SCENARIO):
             ui.wait(lambda: ui.wu.user32.GetForegroundWindow() not in (0, ui.app.hwnd), 5)
         call = {"jsonrpc": "2.0", "id": seq, "method": "tools/call",
                 "params": {"name": tool, "arguments": args}}
-        response = request(call)
+        response = request(call, timeout=25) if "process_group" in args else request(call)
         receipt = authority_receipt(response, call, run_id, seq)
         if receipt["decision"] != "completed":
             raise ProtocolError("replay_tool_refused:" + receipt["error_code"])

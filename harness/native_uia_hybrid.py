@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from .agent_verify import _require
 from .native_matrix import UIA_DISTURBANCE_SCENARIO, UIA_ENUM_SCENARIOS, UIA_MIX_SCENARIOS, UIA_PROCESS_SCENARIOS
-from .native_process_viewport import PROCESS_VALUES, process_viewports, read_ironing_selection, scroll_group
+from .native_process_viewport import PROCESS_VALUES, process_viewports, read_ironing_selection, recheck_viewport, scroll_group
 from .native_save_policy import INPUT_TOOLS, PROCESS_POPUP, InputGuard, UIA_VISUAL_REGIONS, validate_input, validate_uia_selector
 from .native_uia import SAVE_DIALOG_TITLES, UiaSaveGuard, value_digest, verify_uia_save
 
@@ -503,13 +503,15 @@ class UiaHybridGuard(UiaSaveGuard):
             return {"popup": popup, "controls": [], "visual_regions": regions, "state": state}
         self._main_window(wu, hwnd)
         if "process_group" in arguments:
+            initial = self.last_window["process_viewport"]
+
             def current():
                 live_wu, live_hwnd = self.owned_foreground()
                 self._main_window(live_wu, live_hwnd)
-                return self._process_viewports(live_wu, live_hwnd)[0].get(arguments["process_group"])
+                return recheck_viewport(live_wu, live_hwnd, self.scope["app_pid"],
+                                        self._regions(live_wu).get("wx_sidebar"), initial)
 
-            receipt, reached = scroll_group(self.last_window["process_viewport"], current,
-                                            self.control_from_handle, self.check_revocation)
+            receipt, reached = scroll_group(initial, current, self.control_from_handle, self.check_revocation)
             self.last_window["process_scroll"] = receipt
             if not reached:
                 raise ValueError("native_process_group_not_reached")
