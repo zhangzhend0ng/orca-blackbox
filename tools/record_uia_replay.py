@@ -48,6 +48,19 @@ def record(run_id):
     fixture, project, gcode = (path.read_bytes() for path in files)
     if any(hashlib.sha256(raw).hexdigest() != digest for raw, digest in zip((fixture, project, gcode), expected)):
         raise ValueError("replay_source_artifact_digest")
+    for row in trace:
+        readback = row["window"].get("ironing_readback")
+        if readback is None or readback["backend"] != "scoped_ocr":
+            continue
+        digest = readback["sha256"]
+        filename = f"process_readback_{digest}.png"
+        if (len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest)
+                or readback["image"] != filename):
+            raise ValueError("replay_source_process_readback")
+        with (evidence / filename).open("rb") as stream:
+            pixels = stream.read(1_000_001)
+        if len(pixels) > 1_000_000 or hashlib.sha256(pixels).hexdigest() != digest:
+            raise ValueError("replay_source_process_readback")
     if scenario in TRIALS:
         verify_business(scenario, project, fixture, gcode)
     elif scenario == UIA_SAVE_SCENARIO:

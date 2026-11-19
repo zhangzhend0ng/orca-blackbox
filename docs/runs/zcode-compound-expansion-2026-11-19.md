@@ -37,3 +37,20 @@
 完整用时由宿主 Stopwatch 记录，含启动调度、收尾和回收；阶段由客机时间戳计算。单次配对中，脚本动作少用 44.11 秒，完整少用 43.81 秒（22.7%）。测量均使用常规冷启动和独立重开，范围为同一 Orca 构建、客机布局与立方体 fixture。
 
 本轮手写基线 2/2，首次目标式探索 0/2，带定位提示后 1/2 可生成脚本，且这 1 条无模型回放通过。两条业务均属于开发集。
+
+## 双下拉框续跑
+
+续跑从 `3bdb196` 出发。宿主与客机 HEAD 一致。客机工作树干净，suite 空闲，Orca 和 MCP 监听均为 0。宿主工作树已有的 `harness/launcher.py`、`harness/profile.py`、`draft_a284f25d_folder/` 和 `farm_runner.py` 保留。首两次复验用宿主干净检出执行已提交代码，回收结果也保存在主检出的同名 run 目录。已推送的提交通过校验 SHA-256 的 Git bundle 快进到客机。
+
+| 带定位提示的开发复验 | 源 | 宿主启动至回收 | 结果 |
+|---|---|---:|---|
+| `9d687afa68f2438082e354ec1de602e6` | `d65e4d4` | 107.07 秒 | NON_GREEN。首条 Snapshot 在新增视口属性查询路径返回 `native_tool_failed`。未派发鼠标输入。查询改用直接的 Win32 滚动属性读回。 |
+| `d95c7b0c72fb4ca49038ed0d267b9bb4` | `19a9f18` | 343.68 秒 | NON_GREEN。实际绑定并打开 Seam 弹层。模型从确认弹层到请求裁图间隔约 110 秒，超过旧的 45 秒绑定期。修复保留已经确认的同一弹层身份，持续检查 HWND、归属与边界，在弹层关闭时清理。 |
+| `5720158f8e6449ea995bfc77423bde25` | `5d4e91f` | 131.70 秒 | NON_GREEN。模型点中 `[302,888]` 后仍在主窗，随后请求未打开的弹层裁图被拒绝。Snapshot 增加唯一可见且位于参数视口内的已知值矩形，提供桌面绝对坐标。 |
+| `1c988ed4c26b43ebace2f83157727a7d` | `7a0a3d8` | 156.72 秒 | NON_GREEN。Seam 弹层选择与值读回通过，Advanced 已开启，找到 Ironing 组。`Click(process_group)` 在调用控件子类的滚动便捷方法时抛出 `AttributeError`。源码复核后改用固定 Windows-MCP 的通用 `Control.GetPattern(PatternId)`。 |
+| `bd26e3dac56441e08c008b5275570f92` | `dcbe70d` | 422.88 秒 | NON_GREEN。双下拉实际写入、原生 Save As、独立重开重切均完成。离线独立判据验出 `topmost`、`random` 与 68 层实际对象挤出。轨迹缺少 Ironing 的工具读回，报 `native_process_readback_missing`，留原判定且未录制。 |
+| `cec0893314f54afb9c8a549c564412e6` | `cfc6947` | 242.36 秒 | NON_GREEN。两个弹层均操作完成，第一次尝试 Ironing 属性读回时 `WM_GETTEXT` 的缓冲区参数未按 64 位指针传递，触发 `ArgumentError`。未保存。 |
+
+失败均经 `hv_harvest.ps1` 回收，拥有的 Job 进程与临时令牌均已清理。目录 `artifacts/windows_mcp_harvest/<run-id>` 下保留工具轨迹、执行结果和回收回执。
+
+滚动实查见 `bd26e3d…` 第 10 条工具轨迹。Ironing 组初始屏幕 y=1725，视口范围 y=718–1031。视口支持 UIA ScrollPattern，组标题未返回 ScrollItemPattern。尝试 ScrollPattern 后由同一拥有的 wx 视口接收有界 `WM_VSCROLL` 行滚动。滚动条读回 0→45，Ironing 组 y=1725→825。下一次 Snapshot 读到 No ironing 下拉框。选择后该框在自绘界面显示 `Topmost sur...`。读回修复先尝试该拥有控件的 `WM_GETTEXT`，必要时仅对已绑定的下拉值区域做 OCR。3MF 与独立重切 G-code 仍须同时通过。

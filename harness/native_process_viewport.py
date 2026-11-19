@@ -97,7 +97,7 @@ def read_ironing_selection(wu, main, pid, group, binding, root):
             or wu.window_class(target) != "wxWindowNR" or list(wu.window_rect(target)) != bounds):
         return None
     buffer = ctypes.create_unicode_buffer(128)
-    wu._send_msg(target, 0x000D, len(buffer), ctypes.addressof(buffer), timeout_ms=500)  # WM_GETTEXT
+    wu._send_msg(target, 0x000D, len(buffer), ctypes.cast(buffer, ctypes.c_void_p), timeout_ms=500)  # WM_GETTEXT
     proof = {"hwnd": target, "bounds": bounds, "raw": buffer.value}
     if buffer.value.strip().casefold() == "topmost surface":
         return dict(proof, backend="WM_GETTEXT")
