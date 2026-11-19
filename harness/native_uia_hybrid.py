@@ -4,7 +4,8 @@ import time
 from dataclasses import dataclass
 
 from .agent_verify import _require
-from .native_matrix import UIA_DISTURBANCE_SCENARIO, UIA_MIX_SCENARIOS, UIA_PROCESS_SCENARIOS
+from .native_matrix import UIA_DISTURBANCE_SCENARIO, UIA_ENUM_SCENARIOS, UIA_MIX_SCENARIOS, UIA_PROCESS_SCENARIOS
+from .native_process_viewport import PROCESS_VALUES, process_viewports, scroll_group
 from .native_save_policy import INPUT_TOOLS, PROCESS_POPUP, InputGuard, UIA_VISUAL_REGIONS, validate_input, validate_uia_selector
 from .native_uia import SAVE_DIALOG_TITLES, UiaSaveGuard, value_digest, verify_uia_save
 
@@ -27,7 +28,9 @@ def contains(rect, loc):
 
 
 def process_popup_near_sidebar(popup, bounds, sidebar, opened_at):
-    return (popup["class"] == "wxWindowNR" and popup["name"] == "panel" and within(sidebar, bounds)
+    # The held-open Ironing popup crosses the measured sidebar seam by one pixel.
+    bounded_sidebar = [sidebar[0], sidebar[1], sidebar[2] + 1, sidebar[3]]
+    return (popup["class"] == "wxWindowNR" and popup["name"] == "panel" and within(bounded_sidebar, bounds)
             and 80 <= bounds[2] - bounds[0] <= 260 and 70 <= bounds[3] - bounds[1] <= 180
             and bounds[0] <= opened_at[0] < bounds[2]
             and min(abs(opened_at[1] - bounds[1]), abs(opened_at[1] - bounds[3])) <= 60)
@@ -50,6 +53,7 @@ class UiaHybridGuard(UiaSaveGuard):
         super().__init__(scope, root, control_from_handle)
         self.control_from_point = control_from_point
         self.native_targets = {}
+        self.process_groups = {}
         self.visual_regions = {}
         self.crops = {}
         self.crop_id = 0
@@ -139,6 +143,9 @@ class UiaHybridGuard(UiaSaveGuard):
         if item is None or item[2] != self.native_targets.get(key):
             raise ValueError("native_uia_target_not_observed")
         return item
+
+    def _process_viewports(self, wu, hwnd):
+        return process_viewports(wu, hwnd, self.scope["app_pid"], self._regions(wu).get("wx_sidebar"))
 
     def _popup(self, wu, hwnd):
         from win32gui import GetAncestor, IsWindowVisible
@@ -339,6 +346,15 @@ class UiaHybridGuard(UiaSaveGuard):
                 raise ValueError("native_uia_main_observation_after_popup")
         if name == "Snapshot":
             self.last_window["route"] = "uia_tree"
+        elif "process_group" in args:
+            group = args["process_group"]
+            proof = self._process_viewports(wu, hwnd)[0].get(group)
+            if proof is None or proof != self.process_groups.get(group):
+                raise ValueError("native_process_group_not_observed")
+            self.last_window.update(route="process_viewport", process_viewport=proof)
+            self._clear_visual()
+            self.native_targets = {}
+            self.needs_main_snapshot = True
         elif "target" in args:
             self._clear_visual()
             if name == "Type" and args["text"] == self.scope["output_path"]:
@@ -370,6 +386,8 @@ class UiaHybridGuard(UiaSaveGuard):
             if mix_closure is not None:
                 self.last_window["mix_closed_dialog"] = mix_closure
                 self.needs_main_snapshot = False
+        if name != "Snapshot":
+            self.process_groups = {}
         return self.last_window
 
     def capture_region(self):
@@ -388,6 +406,32 @@ class UiaHybridGuard(UiaSaveGuard):
             raise ValueError("native_uia_visual_anchor_changed")
         self.last_window["visual_live_regions"] = live
         return self.last_window["visual_region"]
+
+    def uses_process_message(self, name, arguments):
+        if self.scope["scenario"] not in UIA_ENUM_SCENARIOS or name != "Click" or "loc" not in arguments:
+            return False
+        if self.last_window.get("route") == "process_popup_visual":
+            return True
+        if self.last_window.get("visual_fallback") != "wx_sidebar":
+            return False
+        from . import winutil
+
+        return winutil.window_title(self.last_window["target_hwnd"]) in PROCESS_VALUES
+
+    def click_drawn_process(self, arguments):
+        wu, hwnd = self.owned_foreground()
+        loc = arguments["loc"]
+        target = self.last_window["target_hwnd"]
+        if (hwnd != self.last_window["foreground_hwnd"] or wu.window_from_screen_point(*loc) != target
+                or wu._window_pid(target) != self.scope["app_pid"] or wu.window_class(target) != "wxWindowNR"):
+            raise ValueError("native_process_click_target_changed")
+        self.check_revocation()
+        point = wu._lparam_from_screen(target, *loc)
+        wu._send_msg(target, wu.WM_LBUTTONDOWN, wu.MK_LBUTTON, point)
+        self.check_revocation()
+        wu._send_msg(target, wu.WM_LBUTTONUP, 0, point)
+        self.last_window["input_backend"] = "owned_wx_message"
+        return {"target_hwnd": target, "method": "owned_wx_message"}
 
     def complete_view(self):
         region = self.capture_region()
@@ -440,6 +484,18 @@ class UiaHybridGuard(UiaSaveGuard):
                      if process_popup else "Owned popup is read-only. Wait for it to close, then Snapshot the main window.")
             return {"popup": popup, "controls": [], "visual_regions": regions, "state": state}
         self._main_window(wu, hwnd)
+        if "process_group" in arguments:
+            def current():
+                live_wu, live_hwnd = self.owned_foreground()
+                self._main_window(live_wu, live_hwnd)
+                return self._process_viewports(live_wu, live_hwnd)[0].get(arguments["process_group"])
+
+            receipt, reached = scroll_group(self.last_window["process_viewport"], current,
+                                            self.control_from_handle, self.check_revocation)
+            self.last_window["process_scroll"] = receipt
+            if not reached:
+                raise ValueError("native_process_group_not_reached")
+            return receipt
         if name == "Snapshot":
             controls = self._native_controls(wu, hwnd)
             self.visual_regions = self._regions(wu)
@@ -455,7 +511,13 @@ class UiaHybridGuard(UiaSaveGuard):
                 if record["pattern"] == "ValuePattern":
                     observed["value"] = implementation.Value
                 visible.append(observed)
-            return {"controls": visible, "visual_regions": self.visual_regions}
+            observation = {"controls": visible, "visual_regions": self.visual_regions}
+            if self.scope["scenario"] in UIA_ENUM_SCENARIOS:
+                self.process_groups, values = self._process_viewports(wu, hwnd)
+                observation.update(process_groups=sorted(self.process_groups), process_values=values)
+                self.last_window.update(process_groups=observation["process_groups"], process_values=values,
+                                        process_viewports=self.process_groups)
+            return observation
         element, pattern, record = self._find_native(wu, hwnd, arguments)
         if record["hwnd"] != self.last_window["target_hwnd"]:
             raise ValueError("native_uia_target_changed")
@@ -487,6 +549,37 @@ class UiaHybridGuard(UiaSaveGuard):
         return {"target": record["target"], "pattern": record["pattern"]}
 
 
+ENUM_READBACK_VALUES = frozenset({"Random", "Topmost surface"})
+
+
+def new_enum_readback(visible_values, completed_values):
+    fresh = (ENUM_READBACK_VALUES - completed_values).intersection(visible_values)
+    return next(iter(fresh)) if len(fresh) == 1 else None
+
+
+def verify_process_scroll(window, group, observed_viewports, sidebar):
+    before, scroll = window.get("process_viewport"), window.get("process_scroll")
+    _require(window.get("route") == "process_viewport" and before == observed_viewports.get(group)
+             and type(before) is dict and type(scroll) is dict and scroll.get("before") == before,
+             "native_process_viewport_binding")
+    patterns, attempted = scroll.get("patterns"), scroll.get("attempted")
+    backends = ("ScrollItemPattern", "ScrollPattern", "WM_VSCROLL")
+    _require(type(patterns) is list and all(pattern in backends[:2] for pattern in patterns)
+             and type(attempted) is list and attempted == [p for p in backends if p in attempted]
+             and all(p in patterns or p == "WM_VSCROLL" for p in attempted)
+             and scroll.get("backend") == (attempted[-1] if attempted else "none"), "native_process_viewport_backend")
+    after = scroll.get("after")
+    for position in (before, after):
+        _require(type(position) is dict and position.get("group") == group
+                 and all(type(position.get(key)) is int and position[key] > 0 for key in ("hwnd", "group_hwnd"))
+                 and all(type(position.get(key)) is list and len(position[key]) == 4
+                         and all(type(edge) is int for edge in position[key]) for key in ("bounds", "group_bounds"))
+                 and sidebar is not None and within(sidebar, position["bounds"]), "native_process_viewport_geometry")
+    _require(all(before[key] == after[key] for key in ("hwnd", "group_hwnd", "bounds"))
+             and after["bounds"][1] <= after["group_bounds"][1] < after["bounds"][3]
+             and (attempted or before == after), "native_process_viewport_readback")
+
+
 def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scenario, prepared_dialog=None,
                         allow_refresh=False, strict_crop_lifetime=False, named_crops_only=False):
     regions, crop, targets = {}, None, []
@@ -494,6 +587,10 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
     opener, popup_crop = None, None
     popup_open = pending_uia_snapshot = False
     counts = dict(uia_tree_calls=0, uia_actions=0, cropped_visual_calls=0, visual_inputs=0)
+    enum_readbacks, process_viewports = set(), {}
+    needs_enum_readback = needs_viewport_snapshot = False
+    if scenario in UIA_ENUM_SCENARIOS:
+        counts["process_viewport_actions"] = 0
     mix = None
     if scenario in UIA_MIX_SCENARIOS:
         from .native_mix_uia import MixTrace
@@ -531,6 +628,7 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
             regions, crop, targets = {}, None, []
             crops.clear()
             canvas_click = None
+            process_viewports = {}
             continue
         _require(row["dispatched"] is True and row["error"] is None, "native_uia_hybrid_identity")
         _require(not pending_uia_snapshot or name not in INPUT_TOOLS, "native_uia_snapshot_required_for_target_hint")
@@ -565,6 +663,9 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
         if window.get("uia_save"):
             _require(not pending_uia_snapshot and counts["uia_tree_calls"] and window["foreground_hwnd"] != main_hwnd,
                      "native_uia_hybrid_main_not_observed")
+            if scenario in UIA_ENUM_SCENARIOS:
+                _require(enum_readbacks == ENUM_READBACK_VALUES and not needs_enum_readback, "native_process_readback_missing")
+                counts["process_value_readbacks"] = sorted(enum_readbacks)
             save = verify_uia_save(trace[index:], run_id=run_id, app_pid=app_pid,
                 dialog_hwnd=window["foreground_hwnd"], output_path=output_path, first_seq=index + 1)
             return {"save_as": save, **counts, **(mix.summary() if mix is not None else {})}
@@ -594,8 +695,10 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
                          "native_process_popup_input")
                 counts["visual_inputs"] += 1
                 opener = popup_crop = None
+                needs_enum_readback = scenario in UIA_ENUM_SCENARIOS
             crops.clear()
             canvas_click = None
+            process_viewports = {}
             popup_open = True
             continue
         if window.get("route") == "uia_popup":
@@ -608,14 +711,31 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
             regions, crop, targets = {}, None, []
             crops.clear()
             canvas_click = None
+            process_viewports = {}
             popup_open = True
             continue
         _require(window.get("app_pid") == window.get("foreground_pid") == app_pid
                  and window.get("foreground_hwnd") == main_hwnd, "native_uia_hybrid_main_identity")
         _require(not popup_open or name == "Snapshot", "native_uia_main_observation_after_popup")
+        _require(not needs_viewport_snapshot or name == "Snapshot", "native_process_viewport_needs_snapshot")
+        _require(not needs_enum_readback or name not in INPUT_TOOLS or "process_group" in args,
+                 "native_process_readback_missing")
+        previous_viewports = process_viewports
+        process_viewports = {}
         if name == "Snapshot":
             _require(not args and window.get("route") == "uia_tree", "native_uia_tree_required")
             regions, targets = window["visual_regions"], window["native_targets"]
+            needs_viewport_snapshot = False
+            if scenario in UIA_ENUM_SCENARIOS:
+                process_viewports = window.get("process_viewports", {})
+                values = window.get("process_values", [])
+                _require(type(process_viewports) is dict and set(process_viewports) <= {"Seam", "Ironing"}
+                         and window.get("process_groups", []) == sorted(process_viewports)
+                         and type(values) is list and all(type(value) is str for value in values), "native_process_snapshot")
+                readback = new_enum_readback(values, enum_readbacks) if needs_enum_readback else None
+                if readback is not None:
+                    enum_readbacks.add(readback)
+                    needs_enum_readback = False
             if strict_crop_lifetime:
                 crops = {role: record for role, record in crops.items() if regions.get(role) == record[3]}
                 if canvas_click is not None and regions.get("imgui_canvas") != canvas_click[1][3]:
@@ -671,6 +791,13 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
             opener = ((args["loc"], window["visual_anchor_region"], row["finished_at_ns"])
                       if scenario in UIA_PROCESS_SCENARIOS and name == "Click" and kind == "wx_sidebar"
                       and window.get("target_class") == "wxWindowNR" else None)
+        elif "process_group" in args:
+            verify_process_scroll(window, args["process_group"], previous_viewports, regions.get("wx_sidebar"))
+            counts["process_viewport_actions"] += 1
+            needs_viewport_snapshot = True
+            crops.clear()
+            crop = canvas_click = opener = None
+            targets = []
         elif "target" in args:
             crops.clear()
             canvas_click = None

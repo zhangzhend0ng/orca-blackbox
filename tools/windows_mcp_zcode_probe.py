@@ -211,15 +211,15 @@ def main(argv=None):
                            "Call Snapshot again after all canvas work and before Save As. "
                            "Always observe the current native tree again when returning to a different UI area.")
             if args.scenario == UIA_QUALITY_ENUMS:
-                prompt += (" On this Quality fixture, Advanced starts off. Its unlabeled native ButtonControl was observed "
-                           "with automation_id='5014'. Find that exact target in the initial Snapshot and invoke it through Click(target). "
-                           "After a refresh-required rejection, your very next call must be Snapshot before any Click or Type. "
-                           "Use the new wx_sidebar crop to locate the dropdown arrow on the actual row. "
-                           "Change Seam while its row is visible, then navigate to Ironing with the process area's vertical scroll track. "
-                           "Resolve each click using the actual crop origin. After clicking a dropdown arrow, use Snapshot to check that an "
-                           "owned popup opened, then request Screenshot with region_name='wx_process_popup' and select the option. "
-                           "Call Snapshot when the popup closes, then take a fresh sidebar crop to read the selected value. "
-                           "If the main window is still active after attempting to open the dropdown, inspect a fresh sidebar crop before retrying.")
+                prompt += (" Change Seam first, while its Aligned value is already visible in the initial Quality view. "
+                           "Use Screenshot(region_name='wx_sidebar') and click the center of the painted value, accounting for the crop origin. "
+                           "After each dropdown opens, use Snapshot to confirm the owned popup, then Screenshot(region_name='wx_process_popup') "
+                           "to locate the desired option. Click it and Snapshot the main window to read process_values. "
+                           "Advanced starts off. Find the unlabeled ButtonControl with automation_id='5014' in that Snapshot and invoke it via Click(target). "
+                           "Take a fresh Snapshot then call Click with only process_group='Ironing', followed by Snapshot and a fresh wx_sidebar crop. "
+                           "Click the center of the painted No ironing value. In the popup select Topmost surface. "
+                           "Wait 12 seconds across bounded Wait calls for the page rebuild before trying to navigate again. "
+                           "Read back Topmost surface in process_values, navigating to Ironing again if needed, then use native Save As.")
         (root/"prompt.txt").write_text(prompt, encoding="utf-8")
         report["prompt_sha256"] = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
         bundle = Path(r"C:\Program Files\ZCode\resources\glm\zcode.cjs")

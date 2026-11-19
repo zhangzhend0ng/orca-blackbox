@@ -6,8 +6,9 @@ import re
 from copy import deepcopy
 from .native_diagnostic_recovery import COMMIT_SCENARIO
 from .native_matrix import (CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, SAVE_CLEAR_SCENARIOS,
-    UIA_HYBRID_SCENARIOS, UIA_MIX_SCENARIOS, UIA_PROCESS_SCENARIOS, UIA_REPLAY_CANVAS, UIA_REPLAY_MIX, UIA_REPLAY_PROCESS, UIA_REPLAY_SAVE,
+    UIA_ENUM_SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_MIX_SCENARIOS, UIA_PROCESS_SCENARIOS, UIA_REPLAY_CANVAS, UIA_REPLAY_MIX, UIA_REPLAY_PROCESS, UIA_REPLAY_SAVE,
     UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIOS)
+from .native_process_viewport import PROCESS_GROUPS
 
 NATIVE_TOOLS = frozenset({"Snapshot", "Screenshot", "Click", "Type", "Shortcut", "Wait", "ControlStatus"})
 INPUT_TOOLS = frozenset({"Click", "Type", "Shortcut"})
@@ -99,6 +100,9 @@ def hybrid_tool_schema(tool, output_path, scenario):
     action["properties"]["control_type"] = {"type": "string", "enum": list(action_types(scenario))}
     click = exact({"target": action, "loc": loc}, [])
     click["oneOf"] = [{"required": ["target"]}, {"required": ["loc"]}]
+    if scenario in UIA_ENUM_SCENARIOS:
+        click["properties"]["process_group"] = {"enum": list(PROCESS_GROUPS)}
+        click["oneOf"].append({"required": ["process_group"]})
     if scenario in UIA_MIX_SCENARIOS:
         click = exact({"target": action, "mix_role": {"type": "string", "enum": list(MIX_ROLES)}}, [])
         click["oneOf"] = [{"required": ["target"]}, {"required": ["mix_role"]}]
@@ -123,6 +127,8 @@ def hybrid_tool_schema(tool, output_path, scenario):
         "Shortcut": (exact({"shortcut": {"const": "ctrl+shift+s"}}), "Open Save As in the owned main application."),
     }
     tool["inputSchema"], tool["description"] = schemas[name]
+    if name == "Click" and scenario in UIA_ENUM_SCENARIOS:
+        tool["description"] += " To bring a Quality parameter group into view, pass only process_group from the latest Snapshot. Take a new Snapshot before navigating again. Observe the sidebar crop before using loc on a drawn combo."
 
 
 def scoped_tool_schemas(tools, output_path, scenario="base"):
@@ -218,6 +224,10 @@ def validate_input(name, args, output_path, scenario="base"):
     if scenario in UIA_HYBRID_SCENARIOS:
         if name == "Snapshot" and args:
             raise ValueError("native_uia_snapshot_options")
+        if name == "Click" and scenario in UIA_ENUM_SCENARIOS and set(args) == {"process_group"}:
+            if args["process_group"] not in PROCESS_GROUPS:
+                raise ValueError("native_process_group_rejected")
+            return
         if name == "Click" and scenario in UIA_MIX_SCENARIOS:
             if set(args) == {"mix_role"} and args["mix_role"] in MIX_ROLES:
                 return

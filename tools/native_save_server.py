@@ -88,12 +88,16 @@ def main():
                 name, arguments = context.message.name, context.message.arguments or {}
 
                 async def dispatch():
+                    if hybrid and guard.uses_process_message(name, arguments):
+                        value = json.dumps(guard.click_drawn_process(arguments))
+                        return ToolResult(content=[TextContent(type="text", text=value)],
+                                          structured_content={"result": value})
                     if hybrid and name == "Screenshot" and guard.last_window.get("route") == "uia_popup":
                         value = json.dumps(guard.perform(name, arguments), ensure_ascii=False)
                         return ToolResult(content=[TextContent(type="text", text=value)],
                                           structured_content={"result": value, "popup_observation": True})
                     if ((hybrid or scope["scenario"] in UIA_SAVE_SCENARIOS)
-                            and (name == "Snapshot" or "target" in arguments or "mix_role" in arguments)):
+                            and (name == "Snapshot" or {"target", "mix_role", "process_group"} & arguments.keys())):
                         value = json.dumps(guard.perform(name, arguments), ensure_ascii=False)
                         return ToolResult(content=[TextContent(type="text", text=value)],
                                           structured_content={"result": value})
