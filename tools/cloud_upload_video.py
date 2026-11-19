@@ -77,9 +77,10 @@ class LiveDesktopCapture:
                 "ConsoleWindowClass", "CASCADIA_HOSTING_WINDOW_CLASS",
             }:
                 self.foreground_console_frames += 1
-            if self.result.get("home_signed_in") and self.result.get("device_stage", "") in {
+            if (self.result.get("mode") != "print_live_video" and self.result.get("home_signed_in")
+                    and self.result.get("device_stage", "") in {
                 "", "find_my_devices", "read_my_devices", "device_page_observed", "find_u1_device_control",
-            }:
+                    }):
                 # Cover the account card only. Keep the title bar, tabs,
                 # navigation, and the device content of the desktop intact.
                 x, y = winutil.client_to_screen(self.app.hwnd, 0, 0)

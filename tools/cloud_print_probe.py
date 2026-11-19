@@ -181,7 +181,7 @@ def start_print(app, filename, result, poll):
     if not click_client(dialog, point):
         return False
     result["print_submitted"] = True
-    result["print_stage"] = "verify_print_started"
+    result["print_stage"] = "verify_first_printed_layer"
 
     def receipt():
         for current, pid in winutil.enum_windows():
@@ -189,18 +189,25 @@ def start_print(app, filename, result, poll):
                 continue
             _, lines = visible_lines(current)
             words = "\n".join(label for label, _, _ in lines)
-            if re.search(r"\bprint\s+task\s+was\s+sent\s+successfully\b", words):
+            if re.search(r"\b(?:print\s+task\s+was\s+sent\s+successfully|upload\s+completed)\b", words):
                 result["print_task_sent"] = True
+            if re.search(r"\b(?:foreign\s+object\s+detected\s+on\s+print\s+bed"
+                         r"|0002\s+0532\s+0000\s+0001)\b", words):
+                result["print_stage"] = "device_bed_check_blocked"
+                return "blocked"
             if (current == app.hwnd and filename.removesuffix(".gcode") in words and
                     re.search(r"\bprinting\s+task\b", words)):
                 state = observe_device_task(app, name)
                 result["print_device_after"] = state
-                if state["selected"] and state["active_job"]:
+                if state["selected"]:
                     result["print_receipt"] = "matching_job_on_device"
-                    return True
+                    layer = re.search(r"\b([1-9][0-9]*)\s*/\s*[0-9]+\s+layers?\b", words)
+                    if layer:
+                        result["printed_layer_observed"] = int(layer[1])
+                        return "printing"
         return False
 
-    if poll(receipt, 75):
+    if poll(receipt, 120) == "printing":
         result["print_stage"] = "print_started"
         return True
     return False
