@@ -75,14 +75,17 @@ def inspect_devices(app, result, poll):
     result["device_stage"] = "read_my_devices"
 
     add_targets = []
+    u1_cards = []
     page_seen_at = None
 
     def read_devices():
-        nonlocal add_targets, page_seen_at
+        nonlocal add_targets, u1_cards, page_seen_at
         width, lines = visible_lines(app.hwnd)
         content = [label for label, x, _ in lines if x > width // 4]
         add_targets = [(x, y) for label, x, y in lines if x > width // 4
                        and re.search(r"\badd\s+device\b", label)]
+        u1_cards = [(x, y) for label, x, y in lines if x > width // 4 and y > 230
+                    and re.search(r"\bu1\b", label)]
 
         def count(pattern):
             return sum(bool(re.search(pattern, label)) for label in content)
@@ -99,6 +102,7 @@ def inspect_devices(app, result, poll):
             "file_tab_visible": bool(count(r"\b(?:local\s+files|uploaded\s+files|u-disk\s+files)\b")),
             "upload_label_visible": bool(count(r"\bupload\b")),
             "content_text_lines": len(content),
+            "u1_card_labels": len(u1_cards),
         }
         result["device_layout"] = device_labels([
             (label, x, y) for label, x, y in lines if x > width // 4 and y > 90
@@ -114,10 +118,51 @@ def inspect_devices(app, result, poll):
     page = result.get("device_page", {})
     if page.get("heading") or page.get("add_device_visible"):
         result["device_stage"] = "device_page_observed"
-        if not (page.get("idle_labels") or page.get("online_labels")) and len(add_targets) == 1:
+        if u1_cards:
+            connect_u1(app, u1_cards[0], result, poll)
+        elif not (page.get("idle_labels") or page.get("online_labels")) and len(add_targets) == 1:
             inspect_nearby(app, add_targets[0], result, poll)
         return True
     return False
+
+
+def connect_u1(app, card, result, poll):
+    from harness import winutil
+
+    result["device_stage"] = "find_u1_device_control"
+    if not winutil.force_set_foreground(app.hwnd):
+        return
+    x, y = card
+    if not winutil.user32.SetCursorPos(*winutil.client_to_screen(app.hwnd, x, y - 82)):
+        return
+
+    def control():
+        _, lines = visible_lines(app.hwnd)
+        choices = [(cx, cy) for label, cx, cy in lines if abs(cx - x) < 140 and abs(cy - y) < 185
+                   and re.search(r"\bdevice\s+control\b", label)]
+        return choices[0] if len(choices) == 1 else None
+
+    point = poll(control, 8)
+    if point is None or winutil.user32.GetForegroundWindow() != app.hwnd:
+        return
+    if winutil.real_click_screen(*winutil.client_to_screen(app.hwnd, *point)) != 2:
+        return
+    result["device_stage"] = "device_control_opened"
+
+    def check_connection():
+        _, lines = visible_lines(app.hwnd)
+        words = "\n".join(label for label, _, _ in lines)
+        state = {
+            "idle": bool(re.search(r"\bidle\b", words)),
+            "offline": bool(re.search(r"\b(?:offline|not\s+available|disconnected)\b", words)),
+            "local_files": bool(re.search(r"\b(?:local files|u-disk files)\b", words)),
+            "temperature": bool(re.search(r"\b(?:temperature|heated bed|nozzle)\b", words)),
+        }
+        result["device_control"] = state
+        return not state["offline"] and state["idle"] and (state["local_files"] or state["temperature"])
+
+    if poll(check_connection, 25):
+        result["device_stage"] = "u1_connected_idle"
 
 
 def inspect_nearby(app, add_target, result, poll):
