@@ -79,10 +79,25 @@ def is_cn_document(nodes):
     return False
 
 
+def home_login_point(hwnd):
+    import numpy as np
+
+    from harness import winutil
+    from harness.mix_dialog_util import ocr_words_img
+
+    width, height, pixels = winutil.capture_window(hwnd)
+    bgr = np.frombuffer(pixels, dtype=np.uint8).reshape(height, width, 4)
+    sidebar = bgr[:height // 3, :width // 4, :3].copy()
+    matches = [(x + w // 2, y + h // 2)
+               for label, x, y, w, h in ocr_words_img(sidebar, scale=3, psm=11)
+               if label.casefold() == "login/register"]
+    return matches[0] if len(matches) == 1 else None
+
+
 def inspect(app, result, run_dir):
     from harness import winutil
 
-    login_names = {"login", "log in", "sign in", "登录", "登陆"}
+    login_names = {"login/register", "登录/注册"}
     result["stage"] = "find_entry"
     names = []
     semantics_enabled = False
@@ -103,19 +118,28 @@ def inspect(app, result, run_dir):
                     break
         return None
 
-    button = poll(entry, 32)
-    if button is None:
-        result["signed_out_controls"] = names
-        # Discovery only. No credential is read or entered in this probe.
-        from PIL import Image
+    button = poll(entry, 5)
+    if button is not None and invoke(button):
+        result["home_entry"] = "uia"
+    else:
+        point = poll(lambda: home_login_point(app.hwnd), 25)
+        if point is None:
+            result["signed_out_controls"] = names
+            # Discovery only. No credential is read or entered in this probe.
+            from PIL import Image
 
-        width, height, pixels = winutil.capture_window(app.hwnd)
-        Image.frombytes("RGB", (width, height), pixels, "raw", "BGRX").save(
-            run_dir / "signed_out.png")
-        return
-    if not invoke(button):
-        result["stage"] = "entry_not_invokable"
-        return
+            width, height, pixels = winutil.capture_window(app.hwnd)
+            Image.frombytes("RGB", (width, height), pixels, "raw", "BGRX").save(
+                run_dir / "signed_out.png")
+            return
+        if not winutil.force_set_foreground(app.hwnd):
+            result["stage"] = "home_foreground_unavailable"
+            return
+        x, y = winutil.client_to_screen(app.hwnd, *point)
+        if winutil.real_click_screen(x, y) != 2:
+            result["stage"] = "home_click_incomplete"
+            return
+        result["home_entry"] = "signed_out_ocr"
 
     result["stage"] = "find_form"
     form = []
@@ -132,6 +156,9 @@ def inspect(app, result, run_dir):
                 form = nodes
                 if any(kind == 50004 for kind, _, _ in nodes):
                     return True
+            elif nodes:
+                result["pre_auth_dialog_controls"] = list(dict.fromkeys(
+                    name[:80] for _, name, _ in nodes if name))[:25]
         return False
 
     poll(form_ready, 24)
