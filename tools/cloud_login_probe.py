@@ -380,7 +380,7 @@ def inspect(app, result, run_dir, authenticate_login):
     result["stage"] = "form_inspected"
 
 
-def run(run_id, authenticate_login):
+def run(run_id, authenticate_login, discover_devices=False):
     from harness import host_guard, launcher, profile
 
     host_guard.assert_guest_or_allow()
@@ -395,7 +395,7 @@ def run(run_id, authenticate_login):
     result = {
         "run_id": run_id, "region": "CN", "verdict": "NON_GREEN",
         "stage": "seed_profile", "private_removed": False,
-        "mode": "authenticate" if authenticate_login else "inspect",
+        "mode": "devices" if discover_devices else "authenticate" if authenticate_login else "inspect",
     }
     session = None
     try:
@@ -406,6 +406,10 @@ def run(run_id, authenticate_login):
         session = launcher.launch(datadir=datadir, wait_window_s=55, boot_demote_s=0,
                                   blocker_sweep_s=3, dismiss_wizard=True)
         inspect(session, result, run_dir, authenticate_login)
+        if discover_devices and result.get("home_signed_in"):
+            from tools.cloud_device_probe import inspect_devices
+
+            result["device_page_observed"] = inspect_devices(session, result, poll)
     except Exception as exc:
         result["error"] = type(exc).__name__
     finally:
@@ -425,7 +429,8 @@ def run(run_id, authenticate_login):
             result["private_removed"] = bool(poll(remove_private, 12))
         except Exception as exc:
             result["cleanup_error"] = type(exc).__name__
-        if result.get("home_signed_in") and result["private_removed"]:
+        goal_observed = result.get("device_page_observed") if discover_devices else result.get("home_signed_in")
+        if goal_observed and result["private_removed"]:
             result["verdict"] = "SHADOW"
         result["duration_s"] = round(time.monotonic() - started, 2)
         (run_dir / "result.json").write_text(json.dumps(result, ensure_ascii=True) + "\n", encoding="utf-8")
@@ -436,10 +441,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--authenticate", action="store_true")
+    parser.add_argument("--discover-devices", action="store_true")
     args = parser.parse_args()
     if not re.fullmatch(r"[0-9a-f]{32}", args.run_id):
         parser.error("invalid run ID")
-    return run(args.run_id, args.authenticate)
+    if args.discover_devices and not args.authenticate:
+        parser.error("--discover-devices requires --authenticate")
+    return run(args.run_id, args.authenticate, args.discover_devices)
 
 
 if __name__ == "__main__":
