@@ -330,24 +330,35 @@ def inspect(app, result, run_dir, authenticate_login, hide_sign_in=None):
     result["stage"] = "find_form"
     form = []
     dialog_hwnd = None
+    wizard_dismissed = set()
 
     def form_ready():
         nonlocal form, dialog_hwnd
         for hwnd, pid in winutil.enum_windows():
             if pid != app.pid or hwnd == app.hwnd:
                 continue
+            if winutil.window_title(hwnd).casefold() == "setup wizard":
+                if hwnd not in wizard_dismissed:
+                    wizard_dismissed.add(hwnd)
+                    winutil.close_window(hwnd)
+                    if poll(lambda: not winutil.user32.IsWindowVisible(hwnd), 3):
+                        retry = home_login_point(app.hwnd)
+                        if retry and winutil.force_set_foreground(app.hwnd):
+                            winutil.real_click_screen(*winutil.client_to_screen(app.hwnd, *retry))
+                            result["late_setup_wizard_dismissed"] = True
+                return False
             nodes = scan(hwnd)
             if any(kind == 50030 for kind, _, _ in nodes):
                 dialog_hwnd = hwnd
                 form = nodes
-                if any(kind == 50004 for kind, _, _ in nodes):
+                if cn_document(nodes) is not None and any(kind == 50004 for kind, _, _ in nodes):
                     return True
             elif nodes and not authenticate_login:
                 result["pre_auth_dialog_controls"] = list(dict.fromkeys(
                     name[:80] for _, name, _ in nodes if name))[:25]
         return False
 
-    poll(form_ready, 24)
+    poll(form_ready, 32)
     if dialog_hwnd is None:
         result["stage"] = "login_dialog_unavailable"
         return
@@ -412,7 +423,7 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
         os.environ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = "--force-renderer-accessibility"
         result["stage"] = "launch"
         session = launcher.launch(datadir=datadir, wait_window_s=55, boot_demote_s=0,
-                                  blocker_sweep_s=3, dismiss_wizard=True)
+                                  blocker_sweep_s=8 if print_new_project else 3, dismiss_wizard=True)
         if video_live:
             from ctypes.wintypes import HWND
 

@@ -87,14 +87,21 @@ def open_test_project(app, fixture, result, poll):
 
 
 def new_cube_project(app, result, poll):
-    from harness import add_shape, export_util, winutil
+    import sys
+    from pathlib import Path
+
+    from harness import export_util, winutil
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tests"))
+    import m7_common
 
     result["upload_stage"] = "create_empty_project"
     if not project_menu_command(app, "new project", poll):
         return False
     if not poll(lambda: "untitled" in winutil.window_title(app.hwnd).casefold(), 8):
         return False
-    if not export_util.find_slice_buttons(app.hwnd)[1]:
+    _, slice_button = export_util.find_slice_buttons(app.hwnd)
+    if slice_button is None or not winutil.user32.IsWindowVisible(slice_button[2]):
         _, lines = visible_lines(app.hwnd)
         prepare = one([(x, y) for text, x, y in lines if y < 85 and x < 230
                        and re.search(r"\bprepare\b", text)])
@@ -102,7 +109,12 @@ def new_cube_project(app, result, poll):
             return False
     result["new_project_observed"] = True
     result["upload_stage"] = "add_cube"
-    if not add_shape.add_primitive(app, "Cube"):
+    before = m7_common.model_colored_frac(app)
+    if not m7_common.context_click_row(
+        app, "bed", "cube", via="Add Primitive",
+        success_fn=lambda: m7_common.model_colored_frac(app) > before + .0015,
+        label="add-cube-to-new-project",
+    ):
         return False
     result["cube_visible"] = True
     return True
