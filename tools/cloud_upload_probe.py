@@ -295,12 +295,13 @@ def run_upload(app, fixture, output_dir, result, poll, *, review_only=False, pri
         result["upload_stage"] = "u1_gcode_not_verified"
         return False
     result["gcode"] = {"name": filename, "sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data)}
-    if print_project and not (
-        re.search(rb'^; nozzle_diameter = 0\.4(?:,0\.4)*\r?$', data, re.M)
-        and re.search(rb'^; filament_settings_id = "?Snapmaker PLA Basic @U1(?:"|;|\r?$)', data, re.M)
-    ):
-        result["upload_stage"] = "stock_pla_print_preset_not_verified"
-        return False
+    if print_project:
+        nozzle = re.search(rb"^; nozzle_diameter = 0\.4(?:,0\.4)*\r?$", data, re.M)
+        filament = re.search(rb"^; filament_type = PLA(?:;|\r?$)", data, re.M)
+        filament_ids = re.search(rb"^; filament_settings_id = ([^\r\n]+)", data, re.M)
+        if not (nozzle and filament and filament_ids and b"-TEST" not in filament_ids[1]):
+            result["upload_stage"] = "stock_pla_print_preset_not_verified"
+            return False
 
     result["upload_stage"] = "open_native_send_dialog"
     option, _ = export_util.find_print_buttons(app.hwnd)

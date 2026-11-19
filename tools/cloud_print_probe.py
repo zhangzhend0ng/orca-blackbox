@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 
 from tools.cloud_device_probe import visible_lines
-from tools.cloud_upload_probe import click_client, find_send_button, one, opens_preprint_page
+from tools.cloud_upload_probe import click_client, one, opens_preprint_page
 
 
 def find_device_name(hwnd, name, bounds, surface):
@@ -13,21 +13,40 @@ def find_device_name(hwnd, name, bounds, surface):
         _, lines = visible_lines(hwnd, crop=bounds, psm=11)
         return one([(x, y) for label, x, y in lines if label == "u1"])
 
+    variants = (surface, "card") if surface != "card" else ("card",)
+    for variant in variants:
+        point = match_label(hwnd, bounds, f"cloud_client_test_{variant}", .86)
+        if point is not None:
+            return point
+    return None
+
+
+def match_label(hwnd, bounds, template, threshold):
     import cv2
     import numpy as np
 
     from harness import anchors, winutil
 
+    x0, y0, x1, y1 = bounds
     width, height, raw = winutil.capture_window(hwnd)
     frame = cv2.cvtColor(np.frombuffer(raw, np.uint8).reshape(height, width, 4)[y0:y1, x0:x1],
                          cv2.COLOR_BGRA2BGR)
-    variants = (surface, "card") if surface != "card" else ("card",)
-    for variant in variants:
-        template = anchors.RESOURCE / f"cloud_client_test_{variant}.png"
-        score, x, y, width, height = anchors.match(frame, template)
-        if score >= .86:
-            return x0 + x + width // 2, y0 + y + height // 2
-    return None
+    score, x, y, w, h = anchors.match(frame, anchors.RESOURCE / (template + ".png"))
+    return (x0 + x + w // 2, y0 + y + h // 2) if score >= threshold else None
+
+
+def print_send_button(hwnd):
+    from harness import winutil
+
+    width, height, raw = winutil.capture_window(hwnd)
+    point = match_label(hwnd, (width - 145, height - 70, width - 24, height - 10),
+                        "cloud_print_send", .90)
+    if point is None:
+        return None
+    x, y = point
+    offset = (y * width + x - 36) * 4
+    blue, green, red = raw[offset:offset + 3]
+    return point if blue >= 190 and green >= 95 and red < 100 else None
 
 
 def observe_device_task(app, name):
@@ -138,7 +157,7 @@ def start_print(app, filename, result, poll):
         ))
         # The fixed build labels the footer Send in both WebView modes.
         # Only the already verified path=4 is the upload-and-print flow.
-        target = find_send_button(dialog)
+        target = print_send_button(dialog)
         filename_visible = filename in words or filename.removesuffix(".gcode") in words
         result["preprint"] = {"target_selected": selected is not None, "filename_visible": filename_visible,
                               "warning": warning, "print_button_enabled": target is not None}

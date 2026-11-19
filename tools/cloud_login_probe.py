@@ -431,6 +431,11 @@ def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False,
         if presets is not None:
             manifest = json.loads((datadir / "system" / "Snapmaker.json").read_bytes())
             result["snapmaker_preset_version"] = manifest["version"]
+            # The seed copies regression-only flow presets. Keep them outside
+            # this run's Orca profile, which will start a physical print.
+            regression_presets = datadir / "user"
+            if regression_presets.is_dir():
+                regression_presets.rename(private / "regression-presets")
         os.environ["WEBVIEW2_USER_DATA_FOLDER"] = str(private / "webview")
         os.environ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = "--force-renderer-accessibility"
         result["stage"] = "launch"
