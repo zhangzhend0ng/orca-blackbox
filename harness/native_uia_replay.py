@@ -11,7 +11,7 @@ from .native_matrix import (REPLAY_SOURCES, UIA_CANVAS_SCENARIO, UIA_LAYER_SCENA
     UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
 from .native_save_policy import PROCESS_POPUP, validate_input, validate_uia_selector
 from .native_uia import verify_uia_save
-from .native_uia_hybrid import contains, verify_hybrid_trace, within
+from .native_uia_hybrid import ENUM_READBACK_VALUES, contains, new_enum_readback, verify_hybrid_trace, within
 
 RECORDING = Path(__file__).resolve().parents[1] / "contracts/replays/uia_layer.json"
 OUTPUT = "$OUTPUT_3MF"
@@ -96,6 +96,10 @@ def verify_visual_steps(steps, scenario):
             raise ValueError("replay_step_schema")
         tool, args = step["tool"], step["arguments"]
         keys = {"tool", "arguments", "bounds"} if tool == "Screenshot" else {"tool", "arguments"}
+        if scenario == UIA_REPLAY_ENUMS and tool == "Snapshot" and "process_value" in step:
+            if step["process_value"] not in ENUM_READBACK_VALUES:
+                raise ValueError("replay_process_value")
+            keys.add("process_value")
         if step.keys() != keys:
             raise ValueError("replay_step_schema")
         validate_input(tool, args, OUTPUT, scenario)
@@ -113,18 +117,39 @@ def verify_visual_steps(steps, scenario):
 
 def verify_process_steps(steps, scenario=UIA_REPLAY_PROCESS):
     verify_visual_steps(steps, scenario)
+    enum_replay = scenario == UIA_REPLAY_ENUMS
     crops, values, menu_clicks = {}, [], 0
+    snapshot_observed = needs_readback = needs_viewport_snapshot = False
+    readbacks = set()
     for step in steps[:-5]:
         tool, args = step["tool"], step["arguments"]
-        if tool == "Screenshot":
+        if needs_viewport_snapshot and tool not in {"Snapshot", "Wait"}:
+            raise ValueError("replay_process_viewport_needs_snapshot")
+        if tool == "Snapshot":
+            snapshot_observed = True
+            needs_viewport_snapshot = False
+            if "process_value" in step:
+                if not needs_readback or step["process_value"] in readbacks:
+                    raise ValueError("replay_process_readback_order")
+                readbacks.add(step["process_value"])
+                needs_readback = False
+        elif tool == "Screenshot":
             region = args["region_name"]
             if region not in {"wx_sidebar", PROCESS_POPUP}:
                 raise ValueError("replay_process_region")
             crops[region] = step["bounds"]
+            snapshot_observed = False
         elif tool == "Type":
             values.append(Decimal(args["text"]))
             crops.clear()
         elif tool == "Click":
+            navigates = "process_group" in args
+            if needs_readback and not navigates:
+                raise ValueError("replay_process_readback_missing")
+            if navigates:
+                if not snapshot_observed:
+                    raise ValueError("replay_process_viewport_unobserved")
+                needs_viewport_snapshot = True
             point = args.get("loc")
             if point is not None:
                 popup = crops.get(PROCESS_POPUP)
@@ -132,10 +157,16 @@ def verify_process_steps(steps, scenario=UIA_REPLAY_PROCESS):
                     if not contains(popup, point):
                         raise ValueError("replay_process_popup_unobserved")
                     menu_clicks += 1
+                    needs_readback = enum_replay
                 elif "wx_sidebar" not in crops or not contains(crops["wx_sidebar"], point):
                     raise ValueError("replay_process_sidebar_unobserved")
             crops.clear()
-    expected_values, expected_clicks = ([], 2) if scenario == UIA_REPLAY_ENUMS else ([Decimal("0.3"), Decimal("30")], 1)
+            snapshot_observed = False
+    if needs_viewport_snapshot or (enum_replay and (needs_readback or readbacks != ENUM_READBACK_VALUES)):
+        raise ValueError("replay_process_readback_missing")
+    if enum_replay and any("process_value" in step for step in steps[-5:]):
+        raise ValueError("replay_process_readback_order")
+    expected_values, expected_clicks = ([], 2) if enum_replay else ([Decimal("0.3"), Decimal("30")], 1)
     if sorted(values) != expected_values or menu_clicks != expected_clicks:
         raise ValueError("replay_process_edit_scope")
 
@@ -212,12 +243,18 @@ def compile_recipe(raw, *, run_id, source_sha, app_pid, main_hwnd, output_path,
                             strict_crop_lifetime=strict or any("visual_crop_id" in row["window"] for row in trace),
                             allow_refresh=scenario in UIA_PROCESS_SCENARIOS | {UIA_MOVE_LAYER})
     actions = []
+    save_started = False
+    needs_readback = False
+    readbacks = set()
     for row in trace:
         tool, args = row["tool"], dict(row["arguments"])
-        if (tool in {"Wait", "ControlStatus"} or row.get("error") or row["window"].get("route") == "uia_popup"
+        if (tool == "ControlStatus" or row.get("error") or row["window"].get("route") == "uia_popup"
+                or (tool == "Wait" and (scenario != UIA_QUALITY_ENUMS or save_started))
                 or (scenario in {UIA_LAYER_SCENARIO, UIA_SAVE_SCENARIO} and tool in {"Snapshot", "Screenshot"})
                 or (scenario in UIA_PROCESS_SCENARIOS and tool == "Screenshot" and args.get("region_name") == "imgui_canvas")):
             continue
+        if tool == "Shortcut":
+            save_started = True
         if args.get("text") == output_path:
             args["text"] = OUTPUT
         if scenario == UIA_MIX_RECIPES and row["window"].get("route") == "mix_property":
@@ -229,6 +266,15 @@ def compile_recipe(raw, *, run_id, source_sha, app_pid, main_hwnd, output_path,
         action = {"tool": tool, "arguments": args}
         if tool == "Screenshot":
             action["bounds"] = row["window"]["visual_region"]
+        if scenario == UIA_QUALITY_ENUMS:
+            if tool == "Click" and row["window"].get("route") == "process_popup_visual":
+                needs_readback = True
+            elif tool == "Snapshot" and needs_readback:
+                value = new_enum_readback(row["window"].get("process_values", []), readbacks)
+                if value is not None:
+                    action["process_value"] = value
+                    readbacks.add(value)
+                    needs_readback = False
         actions.append(action)
     steps = actions
     snapshot = {"tool": "Snapshot", "arguments": {}}
@@ -266,8 +312,10 @@ def play(ui, run_id, output_path, *, scenario=UIA_REPLAY_SCENARIO):
     recipe, digest = read_recipe(scenario)
     request = loopback_client(ui.artifacts, "native-uia-replay")
     observations = None
+    popup_open = False
     dialog_snapshot = len(recipe["steps"]) - 3
     for seq, (tool, args) in enumerate(executable_steps(recipe, output_path), 1):
+        step = recipe["steps"][seq - 1]
         ui.guard()
         if seq == 2 and scenario == UIA_REPLAY_SCENARIO:
             values = [item.get("value") for item in observations["controls"] if item["target"] == args["target"]]
@@ -277,6 +325,8 @@ def play(ui, run_id, output_path, *, scenario=UIA_REPLAY_SCENARIO):
             ui.wait(lambda: ui.eu.wait_save_dialog(ui.app.pid, timeout_s=.2), 10)
         if seq == len(recipe["steps"]):
             ui.wait(lambda: ui.wu.user32.GetForegroundWindow() == ui.app.hwnd, 10)
+        if scenario == UIA_REPLAY_ENUMS and tool == "Screenshot" and args["region_name"] == PROCESS_POPUP:
+            ui.wait(lambda: ui.wu.user32.GetForegroundWindow() not in (0, ui.app.hwnd), 5)
         call = {"jsonrpc": "2.0", "id": seq, "method": "tools/call",
                 "params": {"name": tool, "arguments": args}}
         response = request(call)
@@ -286,9 +336,13 @@ def play(ui, run_id, output_path, *, scenario=UIA_REPLAY_SCENARIO):
         structured = response["result"]["structuredContent"]
         if tool == "Snapshot":
             observations = json.loads(structured["result"])
-        if tool == "Screenshot" and (structured.get("crop_region") != recipe["steps"][seq - 1]["bounds"]
+            if "process_value" in step and step["process_value"] not in observations.get("process_values", []):
+                raise ProtocolError("replay_process_value_readback")
+        if tool == "Screenshot" and (structured.get("crop_region") != step["bounds"]
                                      or structured.get("crop_region_name") != args["region_name"]):
             raise ProtocolError("replay_canvas_layout_changed")
+        if scenario == UIA_REPLAY_ENUMS and tool == "Screenshot" and args["region_name"] == PROCESS_POPUP:
+            popup_open = True
         if tool == "Type" and "target" in args:
             returned = json.loads(structured["result"])
             if returned.get("value") != args["text"]:
@@ -297,6 +351,9 @@ def play(ui, run_id, output_path, *, scenario=UIA_REPLAY_SCENARIO):
             ui.pause(.25)
         elif tool in {"Click", "Type"} and "loc" in args:
             ui.pause(.6)  # Allow the draw loop to render before the next crop.
+            if popup_open:
+                ui.wait(lambda: ui.wu.user32.GetForegroundWindow() == ui.app.hwnd, 10)
+                popup_open = False
     if observations.get("dialog_closed") is not True:
         raise ProtocolError("replay_dialog_not_closed")
     return digest
@@ -315,6 +372,9 @@ def verify_replay_trace(trace, run_id, scope, digest):
                                              for step, row in zip(recipe["steps"], trace)
                                              if step["tool"] == "Screenshot"):
         raise ValueError("replay_canvas_layout_receipt")
+    if scenario == UIA_REPLAY_ENUMS and any(step["process_value"] not in row["window"].get("process_values", ())
+                                            for step, row in zip(recipe["steps"], trace) if "process_value" in step):
+        raise ValueError("replay_process_value_readback")
     return verify_hybrid_trace(trace, run_id=run_id, app_pid=scope["app_pid"], main_hwnd=scope["hwnd"],
                                output_path=scope["output_path"], scenario=scope["scenario"],
                                named_crops_only=True, strict_crop_lifetime=True)

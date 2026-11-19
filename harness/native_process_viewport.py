@@ -1,4 +1,6 @@
 """Navigate owned wx process groups through their actual viewport."""
+import ctypes
+from ctypes import wintypes
 import time
 
 PROCESS_GROUPS = ("Seam", "Ironing")
@@ -19,12 +21,22 @@ def _children(hwnd):
 
 
 def _vertical_scroll(hwnd):
-    from win32gui import GetScrollInfo, GetWindowLong
+    from win32gui import GetWindowLong
 
     if not GetWindowLong(hwnd, -16) & 0x00200000:  # WS_VSCROLL
         return None
-    minimum, maximum, page, position, _ = GetScrollInfo(hwnd, 1)  # SB_VERT
-    return [minimum, maximum, page, position]
+    info = ScrollInfo(ctypes.sizeof(ScrollInfo), 0x0007)  # SIF_RANGE | SIF_PAGE | SIF_POS
+    if not ctypes.windll.user32.GetScrollInfo(wintypes.HWND(hwnd), 1, ctypes.byref(info)):
+        return None
+    return [info.minimum, info.maximum, info.page, info.position]
+
+
+class ScrollInfo(ctypes.Structure):
+    _fields_ = [
+        ("size", wintypes.UINT), ("mask", wintypes.UINT), ("minimum", ctypes.c_int),
+        ("maximum", ctypes.c_int), ("page", wintypes.UINT), ("position", ctypes.c_int),
+        ("track_position", ctypes.c_int),
+    ]
 
 
 def process_viewports(wu, main, pid, sidebar):
@@ -49,7 +61,7 @@ def process_viewports(wu, main, pid, sidebar):
                     and _inside(viewport, sidebar) and _vertical_scroll(parent) is not None):
                 break
             parent = GetParent(parent)
-        if not parent or parent == main:
+        else:
             continue
         if title in PROCESS_VALUES:
             if _inside(bounds, viewport):

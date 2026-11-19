@@ -1,15 +1,17 @@
 """Pure UIA contract and evidence checks. No desktop calls."""
 from copy import deepcopy
+import json
 import sys
 import time
 from types import SimpleNamespace
 
 import pytest
 
-from harness.native_matrix import UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_PROCESS_COMBO, UIA_SAVE_SCENARIO
+from harness.native_matrix import UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS, UIA_SAVE_SCENARIO
 from harness.native_save_policy import PROCESS_POPUP, native_tools, scoped_tool_schemas, validate_input
 from harness.native_uia import UiaSaveGuard, value_digest, verify_uia_save
 from harness.native_uia_hybrid import UiaHybridGuard, VisualCrop, process_popup_near_sidebar, verify_hybrid_trace
+from harness.native_uia_replay import compile_recipe, verify_recipe
 from tools.native_save_server import authority_refusal
 
 RUN = "a" * 32
@@ -383,3 +385,72 @@ def test_hybrid_audits_separate_crop_ids_and_click_to_type(fault):
             verify_hybrid_trace(prefix + suffix, **kwargs)
     else:
         assert verify_hybrid_trace(prefix + suffix, **kwargs)["visual_inputs"] == 2
+
+
+def enum_trace():
+    sidebar = [0, 67, 426, 1032]
+    regions = {"wx_sidebar": sidebar}
+    main = {"app_pid": 4, "foreground_pid": 4, "foreground_hwnd": 20}
+    rows = []
+
+    def add(tool, arguments, **window):
+        seq = len(rows) + 1
+        rows.append(dict(seq=seq, tool=tool, arguments=arguments, window={**main, **window},
+                         run_id=RUN, dispatched=True, error=None, started_at_ns=seq * 2, finished_at_ns=seq * 2 + 1))
+
+    def snapshot(viewports, values=()):
+        add("Snapshot", {}, route="uia_tree", visual_regions=regions, native_targets=[],
+            process_groups=sorted(viewports), process_viewports=viewports, process_values=list(values))
+
+    for index, (group, value) in enumerate((("Seam", "Random"), ("Ironing", "Topmost surface"))):
+        before = dict(group=group, hwnd=22, bounds=[0, 730, 426, 1032],
+                      group_hwnd=25 + index, group_bounds=[10, 1100, 400, 1130])
+        after = dict(before, group_bounds=[10, 750, 400, 780])
+        viewports = {group: before}
+        snapshot(viewports)
+        add("Click", {"process_group": group}, route="process_viewport", process_viewport=before,
+            process_scroll=dict(backend="WM_VSCROLL", patterns=[], attempted=["WM_VSCROLL"], before=before, after=after,
+                                scroll_before=[0, 100, 10, 0], scroll_after=[0, 100, 10, 14]))
+        snapshot({group: after})
+        crop = dict(visual_fallback="wx_sidebar", visual_region=sidebar,
+                    visual_anchor_region=sidebar, visual_crop_id=2 * index + 1)
+        add("Screenshot", {"region_name": "wx_sidebar"}, **crop, visual_region_name="wx_sidebar",
+            visual_live_regions=regions)
+        loc = [307, 794]
+        add("Click", {"loc": loc}, **crop, target_hwnd=30, target_pid=4, target_class="wxWindowNR")
+        popup = dict(hwnd=90, root_owner_hwnd=20, name="panel", **{"class": "wxWindowNR"})
+        bounds = [246, 813, 393, 925]
+        proof = dict(popup=popup, bounds=bounds, sidebar=sidebar, opened_by=loc)
+        crop = dict(process_popup=proof, foreground_hwnd=90, route="process_popup_visual", visual_fallback=PROCESS_POPUP,
+                    visual_region=bounds, visual_anchor_region=bounds, visual_crop_id=2 * index + 2)
+        add("Screenshot", {"region_name": PROCESS_POPUP}, **crop, visual_live_regions={PROCESS_POPUP: bounds})
+        add("Click", {"loc": [307, 830]}, **crop, target_hwnd=90, target_pid=4, target_class="wxWindowNR")
+        add("Wait", {"duration": 1})
+        snapshot({group: after}, (value,))
+    add("Shortcut", {"shortcut": "ctrl+shift+s"}, route="owned_command")
+    suffix = fake_trace()
+    suffix[0]["window"]["uia_save"] = True
+    return rows + [dict(row, seq=row["seq"] + len(rows)) for row in suffix]
+
+
+@pytest.mark.parametrize("fault", [None, "changed_viewport", "missing_readback"])
+def test_enums_compile_preserves_owned_navigation_and_readbacks(fault):
+    trace = enum_trace()
+    if fault == "changed_viewport":
+        trace[0]["window"]["process_viewports"]["Seam"] = {"hwnd": 60}
+    if fault == "missing_readback":
+        trace[8]["window"]["process_values"] = []
+    kwargs = dict(run_id=RUN, app_pid=4, main_hwnd=20, output_path=OUTPUT, scenario=UIA_QUALITY_ENUMS,
+                  source_sha="b" * 40)
+    raw = "\n".join(map(json.dumps, trace)).encode()
+    if fault:
+        with pytest.raises(ValueError, match="native_process_(viewport_binding|readback_missing)"):
+            compile_recipe(raw, **kwargs)
+        return
+    recipe = compile_recipe(raw, **kwargs)
+    assert [step["arguments"]["process_group"] for step in recipe["steps"] if "process_group" in step["arguments"]] == ["Seam", "Ironing"]
+    assert [step["process_value"] for step in recipe["steps"] if "process_value" in step] == ["Random", "Topmost surface"]
+    assert sum(step["tool"] == "Wait" for step in recipe["steps"]) == 2
+    del recipe["steps"][8]["process_value"]
+    with pytest.raises(ValueError, match="replay_process_readback_missing"):
+        verify_recipe(recipe)
