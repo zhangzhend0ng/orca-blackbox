@@ -2,10 +2,13 @@
 from __future__ import annotations
 
 import argparse
+import ctypes
+import io
 import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -24,12 +27,12 @@ def poll(read, seconds):
     return None
 
 
-def scan(hwnd):
+def scan(hwnd=None, *, root=None):
     from pywinauto.uia_defines import IUIA
 
     uia = IUIA().iuia
     walker = uia.RawViewWalker
-    stack = [uia.ElementFromHandle(hwnd)]
+    stack = [root if root is not None else uia.ElementFromHandle(hwnd)]
     nodes = []
     visited = 0
     while stack and visited < 700:
@@ -64,7 +67,7 @@ def invoke(node):
     return False
 
 
-def is_cn_document(nodes):
+def cn_document(nodes):
     from pywinauto import uia_defines
 
     for kind, _, node in nodes:
@@ -75,8 +78,158 @@ def is_cn_document(nodes):
         except (ValueError, uia_defines.NoPatternInterfaceError):
             continue
         if url.scheme == "https" and url.netloc == "id.snapmaker.cn":
-            return True
-    return False
+            return node
+    return None
+
+
+class Credential(ctypes.Structure):
+    _fields_ = [
+        ("flags", ctypes.c_uint32), ("kind", ctypes.c_uint32),
+        ("target", ctypes.c_void_p), ("comment", ctypes.c_void_p),
+        ("written", ctypes.c_uint32 * 2), ("size", ctypes.c_uint32),
+        ("blob", ctypes.c_void_p), ("persist", ctypes.c_uint32),
+        ("attribute_count", ctypes.c_uint32), ("attributes", ctypes.c_void_p),
+        ("alias", ctypes.c_void_p), ("user", ctypes.c_void_p),
+    ]
+
+
+def read_login():
+    vault = ctypes.WinDLL("Advapi32", use_last_error=True)
+    pointer = ctypes.POINTER(Credential)()
+    vault.CredReadW.argtypes = [ctypes.c_wchar_p, ctypes.c_uint32, ctypes.c_uint32,
+                                ctypes.POINTER(type(pointer))]
+    vault.CredFree.argtypes = [ctypes.c_void_p]
+    vault.CredFree.restype = None
+    if not vault.CredReadW("snapmaker-login", 1, 0, ctypes.byref(pointer)):
+        raise RuntimeError("credential_unavailable")
+    try:
+        entry = pointer.contents
+        if not entry.user or not entry.blob or not entry.size or entry.size % 2:
+            raise RuntimeError("credential_invalid")
+        account = ctypes.wstring_at(entry.user)
+        password = ctypes.string_at(entry.blob, entry.size).decode("utf-16-le").removesuffix("\0")
+        return account, password
+    finally:
+        vault.CredFree(pointer)
+
+
+def unique(nodes, kind, label, *, password=False):
+    matches = [node for node_kind, name, node in nodes
+               if node_kind == kind and name == label
+               and bool(node.CurrentIsPassword) == password]
+    return matches[0] if len(matches) == 1 else None
+
+
+def enter_secret(hwnd, node, value):
+    from pywinauto.uia_defines import IUIA
+
+    from harness import winutil
+    from harness.mix_dialog_util import _send_chars
+
+    if not winutil.force_set_foreground(hwnd):
+        return False
+    node.SetFocus()
+    uia = IUIA().iuia
+    if not poll(lambda: uia.CompareElements(uia.GetFocusedElement(), node), 2):
+        return False
+    if winutil.user32.GetForegroundWindow() != hwnd:
+        return False
+    # Windows SendInput expects UTF-16 code units.
+    units = value.encode("utf-16-le")
+    _send_chars("".join(chr(units[i] + 256 * units[i + 1]) for i in range(0, len(units), 2)))
+    return True
+
+
+def signed_in_sidebar(hwnd):
+    """Read narrow UI text in memory. No authenticated image or text artifact."""
+    from PIL import Image
+
+    from harness import ocr_util, winutil
+
+    width, height, pixels = winutil.capture_window(hwnd)
+    sidebar = Image.frombytes("RGB", (width, height), pixels, "raw", "BGRX").crop(
+        (0, 0, width // 3, height // 2))
+    payload = io.BytesIO()
+    sidebar.resize((sidebar.width * 2, sidebar.height * 2)).save(payload, format="PNG")
+    text = subprocess.run([ocr_util.TESSERACT_EXE, "stdin", "stdout", "-l", "eng", "--psm", "11"],
+                          input=payload.getvalue(), stdout=subprocess.PIPE,
+                          stderr=subprocess.DEVNULL, check=True, timeout=8).stdout.decode("utf-8")
+    lines = {line.strip().casefold() for line in text.splitlines()}
+    return bool(lines.intersection({"log out", "logout", "sign out"})), "login/register" in lines
+
+
+def authenticate(app, hwnd, home_point, result):
+    from pywinauto import uia_defines
+
+    from harness import winutil
+
+    def form():
+        root = cn_document(scan(hwnd))
+        return scan(root=root) if root is not None else []
+
+    nodes = form()
+    user = unique(nodes, 50004, "请输入手机号")
+    password = unique(nodes, 50004, "请输入密码", password=True)
+    terms = unique(nodes, 50002, "")
+    if any(node is None for node in (user, password, terms)):
+        result["stage"] = "password_form_controls_unconfirmed"
+        return
+
+    result["stage"] = "read_guest_credential"
+    username, secret = read_login()
+    phone = re.fullmatch(r"(?:\+86[ -]?)?(1[0-9]{10})", username.strip())
+    if phone is None:
+        result["stage"] = "china_form_requires_mobile_number"
+        return
+
+    result["stage"] = "confirm_login_terms"
+    toggle = uia_defines.get_elem_interface(terms, "Toggle")
+    if toggle.CurrentToggleState == 0:
+        toggle.Toggle()
+    if not poll(lambda: toggle.CurrentToggleState == 1, 3):
+        return
+
+    result["stage"] = "enter_account"
+    if not enter_secret(hwnd, user, phone[1]):
+        return
+    value = uia_defines.get_elem_interface(user, "Value")
+    if not poll(lambda: value.CurrentValue == phone[1], 3):
+        result["stage"] = "account_readback_failed"
+        return
+    result["stage"] = "enter_masked_password"
+    if cn_document(scan(hwnd)) is None or not enter_secret(hwnd, password, secret):
+        return
+    del secret, username, phone
+
+    def enabled_submit():
+        control = unique(form(), 50000, "登录")
+        return control if control is not None and control.CurrentIsEnabled else None
+
+    result["stage"] = "submit_disabled"
+    submit = poll(enabled_submit, 4)
+    if submit is None:
+        return
+    result["stage"] = "submit_password_login"
+    if not invoke(submit):
+        return
+    result["submitted"] = True
+    result["stage"] = "wait_for_orca_callback"
+    if not poll(lambda: not any(h == hwnd for h, _ in winutil.enum_windows()), 24):
+        result["challenge_or_rejection_visible"] = True
+        return
+
+    result["stage"] = "verify_home_account_state"
+    if not winutil.force_set_foreground(app.hwnd):
+        return
+    time.sleep(1)
+    signed_in, signed_out = signed_in_sidebar(app.hwnd)
+    if not signed_in and not signed_out and home_point is not None:
+        x, y = winutil.client_to_screen(app.hwnd, *home_point)
+        winutil.real_click_screen(x, y)
+        signed_in = bool(poll(lambda: signed_in_sidebar(app.hwnd)[0], 9))
+    if signed_in:
+        result["home_signed_in"] = True
+        result["stage"] = "home_signed_in"
 
 
 def home_login_point(hwnd):
@@ -94,7 +247,7 @@ def home_login_point(hwnd):
     return matches[0] if len(matches) == 1 else None
 
 
-def inspect(app, result, run_dir):
+def inspect(app, result, run_dir, authenticate_login):
     from harness import winutil
 
     login_names = {"login/register", "登录/注册"}
@@ -119,11 +272,14 @@ def inspect(app, result, run_dir):
         return None
 
     button = poll(entry, 5)
+    point = None
     if button is not None and invoke(button):
         result["home_entry"] = "uia"
     else:
         point = poll(lambda: home_login_point(app.hwnd), 25)
         if point is None:
+            if authenticate_login:
+                return
             result["signed_out_controls"] = names
             # Discovery only. No credential is read or entered in this probe.
             from PIL import Image
@@ -156,7 +312,7 @@ def inspect(app, result, run_dir):
                 form = nodes
                 if any(kind == 50004 for kind, _, _ in nodes):
                     return True
-            elif nodes:
+            elif nodes and not authenticate_login:
                 result["pre_auth_dialog_controls"] = list(dict.fromkeys(
                     name[:80] for _, name, _ in nodes if name))[:25]
         return False
@@ -165,21 +321,26 @@ def inspect(app, result, run_dir):
     if dialog_hwnd is None:
         result["stage"] = "login_dialog_unavailable"
         return
-    result["cn_document"] = is_cn_document(form)
+    document = cn_document(form)
+    result["cn_document"] = document is not None
     if not result["cn_document"]:
         result["stage"] = "login_origin_unconfirmed"
         return
 
-    password_tabs = [node for kind, name, node in form if kind == 50000 and name == "密码登录"]
+    password_tabs = [node for kind, name, node in scan(root=document)
+                     if kind == 50000 and name == "密码登录"]
     if len(password_tabs) == 1 and invoke(password_tabs[0]):
         def password_form():
             nodes = scan(dialog_hwnd)
-            if is_cn_document(nodes) and any(kind == 50004 and node.CurrentIsPassword
-                                             for kind, _, node in nodes):
+            if cn_document(nodes) is not None and any(kind == 50004 and node.CurrentIsPassword
+                                                      for kind, _, node in nodes):
                 return nodes
             return None
 
         form = poll(password_form, 8) or form
+    if authenticate_login:
+        authenticate(app, dialog_hwnd, point, result)
+        return
     result["signed_out_controls"] = [
         {"kind": kind, "name": name[:80], "password": bool(node.CurrentIsPassword),
          "enabled": bool(node.CurrentIsEnabled)}
@@ -189,7 +350,7 @@ def inspect(app, result, run_dir):
     result["stage"] = "form_inspected"
 
 
-def run(run_id):
+def run(run_id, authenticate_login):
     from harness import host_guard, launcher, profile
 
     host_guard.assert_guest_or_allow()
@@ -204,6 +365,7 @@ def run(run_id):
     result = {
         "run_id": run_id, "region": "CN", "verdict": "NON_GREEN",
         "stage": "seed_profile", "private_removed": False,
+        "mode": "authenticate" if authenticate_login else "inspect",
     }
     session = None
     try:
@@ -213,7 +375,7 @@ def run(run_id):
         result["stage"] = "launch"
         session = launcher.launch(datadir=datadir, wait_window_s=55, boot_demote_s=0,
                                   blocker_sweep_s=3, dismiss_wizard=True)
-        inspect(session, result, run_dir)
+        inspect(session, result, run_dir, authenticate_login)
     except Exception as exc:
         result["error"] = type(exc).__name__
     finally:
@@ -233,18 +395,21 @@ def run(run_id):
             result["private_removed"] = bool(poll(remove_private, 12))
         except Exception as exc:
             result["cleanup_error"] = type(exc).__name__
+        if result.get("home_signed_in") and result["private_removed"]:
+            result["verdict"] = "SHADOW"
         result["duration_s"] = round(time.monotonic() - started, 2)
         (run_dir / "result.json").write_text(json.dumps(result, ensure_ascii=True) + "\n", encoding="utf-8")
-    return 1
+    return 0 if result["verdict"] == "SHADOW" else 1
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-id", required=True)
+    parser.add_argument("--authenticate", action="store_true")
     args = parser.parse_args()
     if not re.fullmatch(r"[0-9a-f]{32}", args.run_id):
         parser.error("invalid run ID")
-    return run(args.run_id)
+    return run(args.run_id, args.authenticate)
 
 
 if __name__ == "__main__":

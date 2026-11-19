@@ -12,10 +12,13 @@ param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$W
       [switch]$WindowsMcpProbe, [string]$ProbeRunId = '', [switch]$NativeSave, [switch]$ProbeMixWaits,
       [ValidateSet('codex','zcode','script')][string]$NativeActor = 'codex',
       [ValidatePattern('\A[a-z0-9_]{1,64}\z')][string]$NativeScenario = 'base',
-      [switch]$CloudLoginProbe)
+      [switch]$CloudLoginProbe, [switch]$CloudLoginAuthenticate)
 . (Join-Path $PSScriptRoot '_common.ps1')
 if ($CloudLoginProbe -and (-not $WindowsMcpProbe -or $NativeSave -or $vm -ne 'win11-test' -or $guestUser -ne 'test')) {
     throw 'Cloud login requires the standalone probe slot on win11-test/test'
+}
+if ($CloudLoginAuthenticate -and -not $CloudLoginProbe) {
+    throw 'CloudLoginAuthenticate requires CloudLoginProbe and authorization to accept the login terms'
 }
 if ($NativeSave -and $NativeActor -eq 'zcode' -and -not $PSBoundParameters.ContainsKey('NativeScenario')) {
     $NativeScenario = 'uia_hybrid_layer'
@@ -266,7 +269,7 @@ Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
   # NOTE: this scriptblock runs ON THE GUEST — everything it needs must be
   # marshaled via param/-ArgumentList (host-side $warmup is not visible here;
   # measured 09-03 night: silent $false, warmup block never emitted).
-  param($caseStr, $sb, $py, $warmup, $suite, $v3, $v3Executor, $v3RunId, $mcpProbe, $probeRunId, $nativeSave, $nativeActor, $nativeScenario, $cloudLogin)
+  param($caseStr, $sb, $py, $warmup, $suite, $v3, $v3Executor, $v3RunId, $mcpProbe, $probeRunId, $nativeSave, $nativeActor, $nativeScenario, $cloudLogin, $cloudAuthenticate)
   # full run: the guest derives the list from cases.py itself (single
   # source of truth); explicit subset: split the passed string.
   # warmup fragment — the host-side decision ($warmup) must be baked into
@@ -363,9 +366,10 @@ exit `$LASTEXITCODE
 "@
   }
   if ($cloudLogin) {
+    $loginArg = if ($cloudAuthenticate) { ' --authenticate' } else { '' }
     $runner = @"
 Set-Location '$sb'
-& '$py' -B 'tools\cloud_login_probe.py' --run-id '$probeRunId' *> `$null
+& '$py' -B 'tools\cloud_login_probe.py' --run-id '$probeRunId'$loginArg *> `$null
 exit `$LASTEXITCODE
 "@
   }
@@ -377,7 +381,7 @@ exit `$LASTEXITCODE
   Register-ScheduledTask -TaskName "suite" -Action $a -Settings $st -Principal $p -Force | Out-Null
   Start-ScheduledTask -TaskName "suite"
   "suite launched: " + (Get-ScheduledTask suite).State
-} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, ([bool]$V3), $V3Executor, $V3RunId, ([bool]$WindowsMcpProbe), $ProbeRunId, ([bool]$NativeSave), $NativeActor, $NativeScenario, ([bool]$CloudLoginProbe)
+} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, ([bool]$V3), $V3Executor, $V3RunId, ([bool]$WindowsMcpProbe), $ProbeRunId, ([bool]$NativeSave), $NativeActor, $NativeScenario, ([bool]$CloudLoginProbe), ([bool]$CloudLoginAuthenticate)
 Write-Host "[4] DONE. Poll progress any time (admin window):"
 Write-Host "    Get-Content C:\coil\vm_setup\poll_rerun.txt | Set-Content C:\coil\vm_setup\relay_cmd.txt   # via relay"
 Write-Host "    or in guest: Get-Content C:\coil\regress_progress.txt -Tail 5"
