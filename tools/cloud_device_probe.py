@@ -8,7 +8,7 @@ import subprocess
 import time
 
 
-def visible_lines(hwnd, *, sidebar=False, crop=None):
+def visible_lines(hwnd, *, sidebar=False, crop=None, psm=11):
     """Read label positions in memory. Device identities are never retained."""
     from PIL import Image
 
@@ -26,7 +26,7 @@ def visible_lines(hwnd, *, sidebar=False, crop=None):
     scale = 4 if crop and not sidebar else 2
     picture.resize((picture.width * scale, picture.height * scale)).save(payload, format="PNG")
     data = subprocess.run(
-        [ocr_util.TESSERACT_EXE, "stdin", "stdout", "-l", "eng", "--psm", "11", "tsv"],
+        [ocr_util.TESSERACT_EXE, "stdin", "stdout", "-l", "eng", "--psm", str(psm), "tsv"],
         input=payload.getvalue(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
         check=True, timeout=10,
     ).stdout.decode("utf-8")

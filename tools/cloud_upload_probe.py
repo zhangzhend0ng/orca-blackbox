@@ -158,6 +158,18 @@ def record_picker_sample(hwnd, row_y, path):
     image.crop(box).save(path)
 
 
+def record_send_footer(hwnd, row_y, path):
+    """Record the controls below the picker for diagnosing a missing Send button."""
+    from PIL import Image
+
+    from harness import winutil
+
+    if opens_send_only(hwnd):
+        width, height, pixels = winutil.capture_window(hwnd)
+        image = Image.frombytes("RGB", (width, height), pixels, "raw", "BGRX")
+        image.crop((0, min(row_y + 48, height - 1), width, height)).save(path)
+
+
 def run_upload(app, fixture, output_dir, result, poll):
     from harness import export_util, launcher, winutil
 
@@ -260,11 +272,11 @@ def run_upload(app, fixture, output_dir, result, poll):
         return False
     result["send_only_page_verified"] = True
     result["upload_stage"] = "select_u1_in_send_page"
-    picked = False
     open_picker = None
+    picker_heading = None
 
     def send_candidate():
-        nonlocal open_picker
+        nonlocal open_picker, picker_heading
         width, lines = visible_lines(only)
         choices = [(x, y) for text, x, y in lines if re.search(r"\bu1\b", text)]
         filename_visible = any(filename in text for text, _, _ in lines)
@@ -276,12 +288,19 @@ def run_upload(app, fixture, output_dir, result, poll):
         open_picker = placeholder
         if open_picker is None and heading is not None and heading[0] < width // 4:
             open_picker = (width * 57 // 100, heading[1])
+        picked = False
+        if heading is not None:
+            picker_heading = heading[1]
+            label_crop = (width // 4 + 164, picker_heading, width // 4 + 240, picker_heading + 34)
+            _, label_lines = visible_lines(only, crop=label_crop, psm=7)
+            picked = any(text.strip() == "u1" for text, _, _ in label_lines)
         labels = re.compile(r"\b(?:select|choose|refresh|loading|device|printer|send|upload|connect|"
                             r"offline|online|available|unavailable|no|cannot|lan|wan|working|"
                             r"print|u1|cancel|file|network|error|model)\b")
         result["send_view"] = {"recognized_u1_labels": len(choices), "standalone_send_visible": send is not None,
                                "filename_visible": filename_visible, "device_picker_visible": open_picker is not None,
-                               "printer_placeholder_visible": placeholder is not None}
+                               "printer_placeholder_visible": placeholder is not None,
+                               "u1_selected": picked}
         result["send_view_labels"] = [
             {"labels": labels.findall(text), "x_band": x // 60, "y_band": y // 35}
             for text, x, y in lines if labels.search(text)
@@ -289,28 +308,33 @@ def run_upload(app, fixture, output_dir, result, poll):
         return send if picked and filename_visible and send is not None and placeholder is None else None
 
     send = poll(send_candidate, 8)
-    if send is None and open_picker is not None and opens_send_only(only) and click_client(only, open_picker):
+    if (send is None and not result["send_view"]["u1_selected"] and open_picker is not None
+            and opens_send_only(only) and click_client(only, open_picker)):
         picker_y = open_picker[1]
 
         def list_devices():
-            _, lines = visible_lines(only)
+            width, _ = visible_lines(only)
+            _, lines = visible_lines(
+                only, crop=(width // 4 + 154, picker_y + 49, width // 4 + 239, picker_y + 99), psm=6,
+            )
             result["u1_picker_labels"] = [
                 {"labels": re.findall(r"\bu1\b|\blan mode\b|\badd device\b", text),
                  "x_band": x // 60, "y_band": y // 35}
                 for text, x, y in lines if re.search(r"\bu1\b|\blan mode\b|\badd device\b", text)
             ]
-            # The deployed picker appends an Add Device row as a sentinel.
-            # A Lan Mode badge, when present, belongs to a real selectable row.
             u1 = one([(x, y) for text, x, y in lines if re.search(r"\bu1\b", text)])
-            lan = one([(x, y) for text, x, y in lines if re.search(r"\blan\s+mode\b", text)])
-            return u1 or lan
+            return u1
 
         choice = poll(list_devices, 18)
         record_picker_sample(only, picker_y, output_dir / "upload-picker.png")
         if choice is not None and click_client(only, choice):
-            picked = True
             result["u1_picker_selection_clicked"] = True
             send = poll(send_candidate, 8)
+        elif opens_send_only(only) and click_client(only, open_picker):
+            # Closing the expanded list lets us observe the selected value.
+            send = poll(send_candidate, 5)
+    if send is None and picker_heading is not None:
+        record_send_footer(only, picker_heading, output_dir / "upload-footer.png")
     if send is None or not opens_send_only(only) or not click_client(only, send):
         return False
     result["upload_submitted"] = True
