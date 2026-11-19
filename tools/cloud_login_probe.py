@@ -140,22 +140,62 @@ def enter_secret(hwnd, node, value):
     return True
 
 
-def signed_in_sidebar(hwnd):
+def private_ui_words(hwnd, *, sidebar=False):
     """Read narrow UI text in memory. No authenticated image or text artifact."""
     from PIL import Image
 
     from harness import ocr_util, winutil
 
     width, height, pixels = winutil.capture_window(hwnd)
-    sidebar = Image.frombytes("RGB", (width, height), pixels, "raw", "BGRX").crop(
-        (0, 0, width // 3, height // 2))
+    picture = Image.frombytes("RGB", (width, height), pixels, "raw", "BGRX")
+    if sidebar:
+        picture = picture.crop((0, 0, width // 3, height // 2))
     payload = io.BytesIO()
-    sidebar.resize((sidebar.width * 2, sidebar.height * 2)).save(payload, format="PNG")
+    picture.resize((picture.width * 2, picture.height * 2)).save(payload, format="PNG")
     text = subprocess.run([ocr_util.TESSERACT_EXE, "stdin", "stdout", "-l", "eng", "--psm", "11"],
                           input=payload.getvalue(), stdout=subprocess.PIPE,
                           stderr=subprocess.DEVNULL, check=True, timeout=8).stdout.decode("utf-8")
-    lines = {line.strip().casefold() for line in text.splitlines()}
-    return bool(lines.intersection({"log out", "logout", "sign out"})), "login/register" in lines
+    return {line.strip().casefold() for line in text.splitlines()}
+
+
+def verify_account_page(app, home_point, auth_hwnd, result):
+    from harness import winutil
+
+    sign_out = {"log out", "logout", "sign out", "signout"}
+
+    def home_ready():
+        words = private_ui_words(app.hwnd, sidebar=True)
+        result["home_login_button_visible"] = "login/register" in words
+        result["home_devices_entry_visible"] = "my devices" in words
+        return words if "my devices" in words and "login/register" not in words else None
+
+    words = poll(home_ready, 7)
+    if words is None:
+        return False
+    if sign_out.intersection(words):
+        result["home_proof"] = "logout_control"
+        return True
+    if home_point is None or not winutil.force_set_foreground(app.hwnd):
+        return False
+    x, y = winutil.client_to_screen(app.hwnd, *home_point)
+    if winutil.real_click_screen(x, y) != 2:
+        return False
+
+    def profile_ready():
+        for hwnd, pid in winutil.enum_windows():
+            if pid != app.pid or hwnd == auth_hwnd:
+                continue
+            words = private_ui_words(hwnd, sidebar=(hwnd == app.hwnd))
+            if sign_out.intersection(words):
+                return "logout_control"
+            if "nickname" in words and ("profile page" in words or "account" in words):
+                return "authenticated_profile"
+        return None
+
+    proof = poll(profile_ready, 10)
+    if proof:
+        result["home_proof"] = proof
+    return bool(proof)
 
 
 def authenticate(app, hwnd, home_point, result):
@@ -219,15 +259,8 @@ def authenticate(app, hwnd, home_point, result):
         return
 
     result["stage"] = "verify_home_account_state"
-    if not winutil.force_set_foreground(app.hwnd):
-        return
-    time.sleep(1)
-    signed_in, signed_out = signed_in_sidebar(app.hwnd)
-    if not signed_in and not signed_out and home_point is not None:
-        x, y = winutil.client_to_screen(app.hwnd, *home_point)
-        winutil.real_click_screen(x, y)
-        signed_in = bool(poll(lambda: signed_in_sidebar(app.hwnd)[0], 9))
-    if signed_in:
+    result["login_dialog_closed"] = True
+    if verify_account_page(app, home_point, hwnd, result):
         result["home_signed_in"] = True
         result["stage"] = "home_signed_in"
 
