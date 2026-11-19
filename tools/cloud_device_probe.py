@@ -204,19 +204,25 @@ def inspect_files(app, result, poll):
     result["device_stage"] = "u1_device_panel_observed"
 
     def find_tab():
-        _, lines = visible_lines(app.hwnd)
-        tabs = [(x, y) for label, x, y in lines if label.strip() == "files"]
+        tabs = []
+        for hwnd, pid in winutil.enum_windows():
+            if pid == app.pid:
+                _, lines = visible_lines(hwnd)
+                tabs.extend((hwnd, x, y) for label, x, y in lines if label.strip() == "files")
         return tabs[0] if len(tabs) == 1 else None
 
-    point = poll(find_tab, 5)
-    if point is None or not winutil.force_set_foreground(app.hwnd):
+    found = poll(find_tab, 5)
+    if found is None:
         return
-    if winutil.real_click_screen(*winutil.client_to_screen(app.hwnd, *point)) != 2:
+    hwnd, x, y = found
+    if not winutil.force_set_foreground(hwnd):
+        return
+    if winutil.real_click_screen(*winutil.client_to_screen(hwnd, x, y)) != 2:
         return
     result["device_stage"] = "device_files_opened"
 
     def files():
-        _, lines = visible_lines(app.hwnd)
+        _, lines = visible_lines(hwnd)
         words = "\n".join(label for label, _, _ in lines)
         result["device_file_labels"] = device_labels(lines)
         state = {

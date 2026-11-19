@@ -35,6 +35,19 @@ if ($WindowsMcpRunId) {
         throw 'Cloud login report rejected'
       }
       @{name='result.json';data=[Convert]::ToBase64String([IO.File]::ReadAllBytes($file))}
+      $report = [IO.File]::ReadAllText($file) | ConvertFrom-Json
+      if ($report.mode -eq 'upload' -and $report.gcode) {
+        $name = 'orcabb' + $id.Substring(0,10) + '.gcode'
+        if ($report.run_id -ne $id -or $report.gcode.name -ne $name) { throw 'Cloud G-code identity rejected' }
+        $gcode = Join-Path (Split-Path $file -Parent) $name
+        $item = Get-Item -LiteralPath $gcode -ErrorAction Stop
+        if ($item.Length -gt 2000000 -or $item.Length -ne $report.gcode.bytes -or
+            ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
+            (Get-FileHash -LiteralPath $gcode -Algorithm SHA256).Hash -ne $report.gcode.sha256) {
+          throw 'Cloud G-code content rejected'
+        }
+        @{name=$name;data=[Convert]::ToBase64String([IO.File]::ReadAllBytes($gcode))}
+      }
       $image = Join-Path (Split-Path $file -Parent) 'signed_out.png'
       if (Test-Path -LiteralPath $image -PathType Leaf) {
         $item = Get-Item -LiteralPath $image

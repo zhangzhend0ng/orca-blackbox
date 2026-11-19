@@ -380,7 +380,7 @@ def inspect(app, result, run_dir, authenticate_login):
     result["stage"] = "form_inspected"
 
 
-def run(run_id, authenticate_login, discover_devices=False):
+def run(run_id, authenticate_login, discover_devices=False, upload_gcode=False):
     from harness import host_guard, launcher, profile
 
     host_guard.assert_guest_or_allow()
@@ -395,7 +395,8 @@ def run(run_id, authenticate_login, discover_devices=False):
     result = {
         "run_id": run_id, "region": "CN", "verdict": "NON_GREEN",
         "stage": "seed_profile", "private_removed": False,
-        "mode": "devices" if discover_devices else "authenticate" if authenticate_login else "inspect",
+        "mode": ("upload" if upload_gcode else "devices" if discover_devices
+                 else "authenticate" if authenticate_login else "inspect"),
     }
     session = None
     try:
@@ -410,6 +411,15 @@ def run(run_id, authenticate_login, discover_devices=False):
             from tools.cloud_device_probe import inspect_devices
 
             result["device_page_observed"] = inspect_devices(session, result, poll)
+            if upload_gcode:
+                result["upload_stage"] = "await_u1_device_panel"
+                if result.get("device_stage") in {
+                    "u1_device_panel_observed", "device_files_opened", "u1_device_files_observed"
+                }:
+                    from tools.cloud_upload_probe import run_upload
+
+                    result["device_upload_confirmed"] = run_upload(
+                        session, ROOT / "fixtures" / "agent_layer_cube.3mf", run_dir, result, poll)
     except Exception as exc:
         result["error"] = type(exc).__name__
     finally:
@@ -430,6 +440,8 @@ def run(run_id, authenticate_login, discover_devices=False):
         except Exception as exc:
             result["cleanup_error"] = type(exc).__name__
         goal_observed = result.get("device_page_observed") if discover_devices else result.get("home_signed_in")
+        if upload_gcode:
+            goal_observed = result.get("device_upload_confirmed")
         if goal_observed and result["private_removed"]:
             result["verdict"] = "SHADOW"
         result["duration_s"] = round(time.monotonic() - started, 2)
@@ -442,12 +454,15 @@ def main():
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--authenticate", action="store_true")
     parser.add_argument("--discover-devices", action="store_true")
+    parser.add_argument("--upload-gcode", action="store_true")
     args = parser.parse_args()
     if not re.fullmatch(r"[0-9a-f]{32}", args.run_id):
         parser.error("invalid run ID")
     if args.discover_devices and not args.authenticate:
         parser.error("--discover-devices requires --authenticate")
-    return run(args.run_id, args.authenticate, args.discover_devices)
+    if args.upload_gcode and not args.discover_devices:
+        parser.error("--upload-gcode requires --discover-devices")
+    return run(args.run_id, args.authenticate, args.discover_devices, args.upload_gcode)
 
 
 if __name__ == "__main__":
