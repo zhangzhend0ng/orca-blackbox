@@ -52,7 +52,8 @@ def device_labels(lines):
         r"\b(?:my devices|add device|no devices?|no data|lan mode|cloud mode|"
         r"manual(?:ly)? connect|manual add|connect|device control|device discovery|"
         r"devices? nearby|nearby devices?|finding new devices|enter ip address|"
-        r"offline|online|idle|working|printing|unavailable|disconnected|"
+        r"offline|online|idle|working|printing|unavailable|disconnected|connecting|"
+        r"lan|wan|ready|local files|u-disk files|temperature|nozzle|heated bed|files|"
         r"snapmaker|u1|j1s?|artisan|a[23]50|a150)\b"
     )
     return [
@@ -157,20 +158,39 @@ def connect_u1(app, card, result, poll):
     if winutil.real_click_screen(*winutil.client_to_screen(app.hwnd, *point)) != 2:
         return
     result["device_stage"] = "device_control_opened"
+    seen = set()
 
     def check_connection():
-        _, lines = visible_lines(app.hwnd)
+        lines = []
+        for hwnd, pid in winutil.enum_windows():
+            if pid == app.pid:
+                lines.extend(visible_lines(hwnd)[1])
         words = "\n".join(label for label, _, _ in lines)
+        seen.update(label for row in device_labels(lines) for label in row["labels"])
+        result["device_control_labels_seen"] = sorted(seen)
         state = {
-            "idle": bool(re.search(r"\bidle\b", words)),
-            "offline": bool(re.search(r"\b(?:offline|not\s+available|disconnected)\b", words)),
+            "idle": bool(re.search(r"\b(?:idle|ready)\b", words)),
+            "offline": bool(re.search(r"\b(?:offline|not\s+available|disconnected|failed\s+to\s+connect|connection\s+failed)\b", words)),
             "local_files": bool(re.search(r"\b(?:local files|u-disk files)\b", words)),
             "temperature": bool(re.search(r"\b(?:temperature|heated bed|nozzle)\b", words)),
+            "still_on_home": bool(re.search(r"\b(?:my devices|model library|add device)\b", words)),
         }
         result["device_control"] = state
-        return not state["offline"] and state["idle"] and (state["local_files"] or state["temperature"])
+        return state["offline"] or (
+            not state["still_on_home"] and state["idle"] and (state["local_files"] or state["temperature"])
+        )
 
-    if poll(check_connection, 25):
+    if poll(check_connection, 14):
+        result["device_stage"] = "device_reported_offline" if result["device_control"]["offline"] else "u1_connected_idle"
+        return
+    _, lines = visible_lines(app.hwnd)
+    tabs = [(tx, ty) for label, tx, ty in lines if ty < 95 and re.fullmatch(r"device", label)]
+    if len(tabs) != 1 or not winutil.force_set_foreground(app.hwnd):
+        return
+    if winutil.real_click_screen(*winutil.client_to_screen(app.hwnd, *tabs[0])) != 2:
+        return
+    result["device_stage"] = "device_tab_opened"
+    if poll(check_connection, 14) and not result["device_control"]["offline"]:
         result["device_stage"] = "u1_connected_idle"
 
 
