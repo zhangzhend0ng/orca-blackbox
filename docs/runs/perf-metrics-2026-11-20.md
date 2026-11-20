@@ -32,3 +32,13 @@
 PresentMon 启动 ETW 会话返回 `access denied`（退出码 6），因此逐帧数据缺失。WDDM 未返回 Orca PID 的 GPU 引擎或显存样本。真实 GPU 基线仍待采集。[PresentMon CLI 说明](https://github.com/GameTechDev/PresentMon/blob/v2.3.1/README-ConsoleApplication.md)
 
 先前通过新建工程或整板清空构造循环的诊断未能连续验证清空。批次 `da9bda8ae512430a89485661408678bc` 还记录到关闭请求后 10.110 秒触发强制结束。当前循环固定为同一项目的 Prepare／Preview 切换。
+
+## ETW 权限复测
+
+`suite` 以 `INTERACTIVE` 的 Limited 令牌运行，`win11-test` 客机的本地 `test` 账号原先不属于 `Performance Log Users`。按授权添加该组成员并正常重启，确认自动登录、组成员关系和 PresentMon 资产哈希。
+
+刚重启的批次 `4f77aa931d5743ce91a77bef9a02968d` 在启动 Orca 前被 `host_guard` 拦截，JUnit exit 2。该 VM 的 Hyper-V 键值交换处于关闭状态，重启后旧的 KVP 注册表键消失。提交 `06d2257` 增加了 Hyper-V 固件厂商与机型识别，宿主机仍被判为宿主。客机识别与性能单测共 25 项通过。
+
+批次 `f5d82ae41ab54869a1ec9dfc24e717cb` 在提交 `06d2257453fa78b27a25e1fe23fc7561db6d1cb3` 上实跑。PresentMon 正常结束约 17 秒的 ETW 会话，退出码 0。四个视口动作均完成，四个区间的结果均为 `presentmon_csv_missing`。仍无 Orca 逐帧结果。进程样本有 193 个，Prepare／Preview 两轮均完成，JUnit PASS=1、FAIL=0。
+
+授权后原始文件为 `artifacts/perf_harvest/f5d82ae41ab54869a1ec9dfc24e717cb/m2_slice_chain__25f8a8a913884b9dbb696498695260b6.jsonl`，SHA-256 为 `509a13e427784352b83bed575d92f55d126cab285c99c10af8db28f292940eec`。客机已恢复原 `software_testing`，测试任务空闲，ETW 组成员关系保留。
