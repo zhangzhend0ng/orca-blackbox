@@ -60,7 +60,7 @@
 | m5b_quality_params | Quality 页参数主流程 | uia_hybrid_layer / uia_replay_layer | native-SHADOW(hist)+replay-ok |
 | m5c_strength_infill | Strength 页参数主流程 | uia_hybrid_layer_strength / 壁环数 | native-SHADOW(hist)（f65ba49e 11-18 目标式） |
 | m5d_support_enable | Support 页参数主流程 | Support 页 UIA 合同未登记 | gap-cap |
-| m5e_combo_params | 跨页参数组合 | pair_*（已 7/7 回放）+ cfg_value_* | replay-ok（pairwise 11-19） |
+| m5e_combo_params | 跨页参数组合 | pair_*（已 7/7 回放）+ cfg_value_01..12（layer/seam/ironing 值组合域，01/04/06/07 已过） | replay-ok（pairwise 11-19）+ cfg 4 例 SHADOW |
 | m5f_negative_params | Quality 负参数路径 | 负参数拒绝读回未登记 | gap-neg |
 | m5g_preset_manage | 预设保存/管理 | 预设名保存已被 oracle 拒（v3-project 第三批） | blocked（保存配置预设名判据待修） |
 | m5h_ironing_combos | 熨烫+Advanced 组合 | uia_quality_enums | native-SHADOW(hist)（a4f5926d 11-19）+replay-ok |
@@ -133,8 +133,8 @@
 |---|---|---|---|
 | m2_perf_showcase | 大工程切片+录像演示 | 独立 perf 轨道 | off（禁用，perf 批次另计） |
 | m8a_fit_view | 一键还原视图（#16-19） | 视图合同未登记 | gap-cap |
-| m8d/m8e | 净化器 gcode/弱冷 | cfg_value 参数编辑族（顶盖 SET_PURIFIER_MODE 分支翻转） | adapted（候选：cfg_value 扩展） |
-| m8x_123 | 软化温度→温类→gcode | cfg_value（参数→G-code 分支） | adapted（候选） |
+| m8d/m8e | 净化器 gcode/弱冷 | cfg_value 域=layer/seam/ironing，**不含温度/净化器参数**——需扩 cfg 规则域（温度→SET_PURIFIER_MODE 分支翻转判据已有旧脚本实现） | gap-cap（cfg 域扩展，正例判据可从 m8x_123 旧脚本移植） |
+| m8x_123 | 软化温度→温类→gcode | 同上 | gap-cap（同上） |
 | m7k_flush_options | 冲洗选项（PARTIAL） | 冲洗面板读回未登记 | gap-cap（PARTIAL 保留） |
 | m3a_empty_slice | 空场景拒绝切片 | 负例门禁 | gap-neg |
 | uia_process_combo | 工艺页签组合（cfg/dep 族） | uia_process_combo + dep_ironing_* | adapted（dep 族已有正反例设计） |
