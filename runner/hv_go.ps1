@@ -419,8 +419,15 @@ foreach (`$c in `$cases) {
   & '$py' -B tools\v3_session.py $v3Command `$c --root '$sb\artifacts\v3'$runIdArgs 2>&1 | Out-File -FilePath `$log -Encoding utf8
   `$rc = `$LASTEXITCODE
   `$verdict = if (`$rc -eq 0) { 'SHADOW' } else { 'NON_GREEN' }
+  `$caseRunId = '$v3RunId'
+  if (-not `$caseRunId) {
+    try {
+      `$result = Get-Content -LiteralPath `$log -Encoding UTF8 -Tail 1 | ConvertFrom-Json -ErrorAction Stop
+      if (`$result.run_id -cmatch '\A[0-9a-f]{32}\z') { `$caseRunId = `$result.run_id }
+    } catch { }
+  }
   "`$c `$verdict rc=`$rc" | Add-Content C:\coil\v3_progress.txt
-  `$rows += @{ case_id=`$c; run_id='$v3RunId'; exit_code=`$rc; verdict=`$verdict; log=`$log }
+  `$rows += @{ case_id=`$c; run_id=`$caseRunId; exit_code=`$rc; verdict=`$verdict; log=`$log }
 }
 @{ schema_version=1; mode='$v3Mode'; release_eligible=`$false; cases=`$rows } | ConvertTo-Json -Depth 6 | Set-Content artifacts\v3_suite.json -Encoding utf8
 'V3 COMPLETE' | Add-Content C:\coil\v3_progress.txt
