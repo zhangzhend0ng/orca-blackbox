@@ -209,5 +209,5 @@
   `git fetch origin codex/glm-flash-expansion-20261121-0217 && git switch codex/glm-flash-expansion-20261121-0217 && git log -1`
   然后读本文件「本批运行记录」最后一条 + `docs/runs/glm-flash-expansion-2026-11-21.md`。
 - 源提交：本文件最后一次 commit（见 git log -- docs/V3_MIGRATION_LEDGER.md）。
-- 客机恢复：`runner/hv_go.ps1` 自动校验客机 HEAD=宿主 HEAD；v3 检出 `C:\coil\orca-blackbox-v3-r1` 需 bundle 快进（模式见 runner/v3_project_batch_phase.ps1 setup_bundle）。
+- 客机恢复：`runner/hv_go.ps1` 自动校验客机 HEAD=宿主 HEAD；v3 检出 `C:\coil\orca-blackbox-v3-r1` 用 `runner/guest_v3_bundle_sync.ps1 -Head <sha>`（本批固化，36b9463）快进——**每次宿主提交后、下次 native run 前都要同步**（本批曾因漏同步浪费 4 个 run 槽，见 a66a86ac）。
 - 恢复后先做：①`git log -1` 核对源；②读最后 run 记录决定回收或续跑；③`tools/check_registry.py` 核对分母仍 89。
