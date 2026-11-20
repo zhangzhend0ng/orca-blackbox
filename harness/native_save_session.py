@@ -200,7 +200,7 @@ class NativeSaveExecutor:
         self.plan = plan
 
     def start(self, context):
-        from . import host_guard
+        from . import host_guard, perf_monitor
         from .win32_job import OwnedJobProcess
         if not host_guard.in_guest() or contract_digest(context.contract) != self.contract_sha256:
             raise PermissionError("native_registered_guest_only")
@@ -213,6 +213,7 @@ class NativeSaveExecutor:
         for key in ("ORCA_BB_ALLOW_HOST", "ORCA_BB_CONF_EXTRA", "ORCA_GUI_TEST_MODE"):
             env.pop(key, None)
         env["PYTHONIOENCODING"] = "utf-8"
+        perf_monitor.configure_worker_env(env, context)
         started = time.time_ns()
         process = OwnedJobProcess.start([sys.executable, "-B", str(REPO / "tools/native_save_guest.py"),
             "--run-id", context.run_id, "--actor", self.actor, "--scenario", self.scenario], cwd=REPO, log_path=artifacts / "native_worker.log", env=env)

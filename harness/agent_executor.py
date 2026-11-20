@@ -5,7 +5,7 @@ import os
 import sys
 import time
 
-from . import host_guard
+from . import host_guard, perf_monitor
 from .agent_protocol import agent_profile
 from .run_verdict import contract_digest
 from .script_executor import REPO, _ScriptHandle
@@ -37,6 +37,7 @@ class AgentExecutor:
         for key in ("ORCA_BB_ALLOW_HOST", "ORCA_BB_CONF_EXTRA", "ORCA_GUI_TEST_MODE"):
             env.pop(key, None)
         env["PYTHONIOENCODING"] = "utf-8"
+        perf_monitor.configure_worker_env(env, context)
         argv = [sys.executable, str(REPO / "harness" / "agent_guest.py"),
                 "--artifact-dir", str(artifacts), "--run-id", context.run_id,
                 "--contract-sha256", self.contract_sha256]

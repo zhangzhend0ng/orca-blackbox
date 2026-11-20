@@ -190,6 +190,7 @@ def main() -> int:
         results["model loaded"] = "PASS" if ok_model else "FAIL (no chromatic model content)"
         time.sleep(1.0)
 
+        launcher.perf_monitor.set_step("slice", monitor=session.perf)
         # 2) click "Slice plate" and wait for the button to come back idle
         empty_frac0 = has_colored_content(capture_bgr(session))
         started = click_slice_start(session)
@@ -205,6 +206,7 @@ def main() -> int:
         print(f"[m2] slicing started={started} done={done} (idle score {done_score:.3f})")
         results["slice + completion"] = "PASS" if done else "FAIL"
 
+        launcher.perf_monitor.set_step("preview", monitor=session.perf)
         # 3) switch to Preview and assert the toolpath rendering
         ok_pv, _ = click_and_verify(session, RESOURCE / "tab_preview_inactive.png",
                                     RESOURCE / "tab_preview_active.png")

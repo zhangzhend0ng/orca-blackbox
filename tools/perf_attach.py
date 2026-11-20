@@ -29,10 +29,13 @@ def main() -> int:
     ap.add_argument("--interval", type=float, default=0.5)
     ap.add_argument("--out", default=None, help="output jsonl (default auto)")
     args = ap.parse_args()
-    names = args.name or ["snapmaker-orca"]
+    if args.pid is not None and (args.name or args.pid <= 0):
+        ap.error("--pid must be positive and cannot be combined with --name")
+    names = args.name or ([] if args.pid is not None else ["snapmaker-orca"])
+    label = f"pid{args.pid}" if args.pid is not None else names[0].removesuffix(".exe")
 
     out = Path(args.out) if args.out else pm.resolve_out_path(
-        names[0].removesuffix(".exe") + "__attach")
+        label + "__attach")
     mon = pm.PerfMonitor(targets=names, anchor_pid=args.pid,
                          out_path=out, interval_s=args.interval,
                          use_psutil=True)
@@ -48,7 +51,7 @@ def main() -> int:
     pids = summary.get("pids", {})
     print(f"[perf-attach] stopped: {len(pids)} pid(s), samples="
           f"{sum(p.get('samples', 0) for p in pids.values())}", file=sys.stderr)
-    return 0
+    return 0 if summary["status"] == "complete" else 2
 
 
 if __name__ == "__main__":

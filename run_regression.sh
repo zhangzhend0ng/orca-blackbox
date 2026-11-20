@@ -15,9 +15,12 @@ BATCH=""
 rm -f artifacts/junit.xml artifacts/failed_cases.txt
 for c in $CASES; do
   echo "=== $c ==="
-  # ORCA_BB_PERF_LABEL=$c — when the caller exports ORCA_BB_PERF=1 the
-  # launcher hook writes artifacts/perf/${c}__<ts>.jsonl for this case
-  ORCA_BB_PERF_LABEL=$c $PY tests/${c}.py > artifacts/regress_${c}.log 2>&1
+  case_file=$("$PY" -c 'import sys; from cases import case_path; p = case_path(sys.argv[1]); sys.exit(2) if p is None else print(p)' "$c")
+  if [ $? -ne 0 ] || [ -z "$case_file" ]; then
+    echo "ERROR: no registry path for $c"; exit 2
+  fi
+  run_id=$("$PY" -c 'from uuid import uuid4; print(uuid4().hex)') || exit 2
+  ORCA_BB_PERF_RUN_ID=$run_id ORCA_BB_PERF_LABEL=$c "$PY" "$case_file" > "artifacts/regress_${c}.log" 2>&1
   rc=$?
   BATCH="$BATCH ${c}|${rc}|artifacts/regress_${c}.log"
   if [ $rc -eq 0 ]; then PASS=$((PASS+1)); echo "[$c] GREEN (rc=0)";

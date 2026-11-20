@@ -14,7 +14,8 @@ param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$W
       [ValidatePattern('\A[a-z0-9_]{1,64}\z')][string]$NativeScenario = 'base',
       [switch]$CloudLoginProbe, [switch]$CloudLoginAuthenticate, [switch]$CloudDeviceProbe,
       [switch]$CloudUploadGcode, [switch]$CloudUploadVideoReview, [switch]$CloudUploadLiveVideo,
-      [switch]$CloudPrintNewProject, [switch]$CloudUploadNewProject)
+      [switch]$CloudPrintNewProject, [switch]$CloudUploadNewProject,
+      [ValidatePattern('\A[0-9a-f]{32}\z')][string]$PerfBatchId)
 . (Join-Path $PSScriptRoot '_common.ps1')
 if ($CloudLoginProbe -and (-not $WindowsMcpProbe -or $NativeSave -or $vm -ne 'win11-test' -or $guestUser -ne 'test')) {
     throw 'Cloud login requires the standalone probe slot on win11-test/test'
@@ -65,9 +66,11 @@ if ($WindowsMcpProbe) {
 if (-not $V3 -and ($V3Executor -ne 'script' -or $V3RunId)) {
   throw 'V3 executor/run identity requires -V3'
 }
-if ($Perf -and ($V3 -or $WindowsMcpProbe -or $CloudLoginProbe)) {
-  throw '-Perf applies to the regression suite lane only'
+if ($Perf -and $WindowsMcpProbe -and -not $NativeSave) {
+  throw '-Perf applies to regression, V3, and native-save runs'
 }
+if ($PerfBatchId -and -not $Perf) { throw '-PerfBatchId requires -Perf' }
+if ($Perf -and -not $PerfBatchId) { $PerfBatchId = [guid]::NewGuid().ToString('N') }
 
 # Guest passthrough gate: ONLY caller-supplied selections (-Cases, -OnlyFailed)
 # may go on the scheduled-task command line. A registry-derived default list
@@ -156,7 +159,7 @@ if ($V3) {
 # checklist printout (README top section points here; keep in sync by hand).
 Write-Host "[preflight] PITFALLS 0901 §15 checklist:"
 Write-Host "   (1) relay heartbeat: relay_alive.txt fresh (it refreshes on command completion only)"
-if ($V3 -or $WindowsMcpProbe) {
+if ($V3 -or $WindowsMcpProbe -or $Perf) {
   Write-Host "   (2) V3 requires an idle desktop; cleanup targets only this run's owned Job"
 } else {
   Write-Host "   (2) guest orphan sweep: relay Stop-Process snapmaker-orca,python before the batch"
@@ -187,7 +190,7 @@ while (-not ($q -match $guestUser) -and (Get-Date) -lt $deadline) {
 if ($q -notmatch $guestUser) { throw "guest not logged on after 6 min (autologon broken?)" }
 Write-Host "    logged on."
 
-if ($V3 -or $WindowsMcpProbe) {
+if ($V3 -or $WindowsMcpProbe -or $Perf) {
   # Legacy scripts do not hold the v3 runtime lease. Refuse their active
   # desktop instead of unregistering a running task or killing its app.
   $desktopGate = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
@@ -197,18 +200,18 @@ if ($V3 -or $WindowsMcpProbe) {
     $apps = @(Get-Process snapmaker-orca -ErrorAction SilentlyContinue)
     if ($running.Count -or $apps.Count) { 'DESKTOP_BUSY' } else { 'DESKTOP_READY' }
   } -ErrorAction Stop
-  if ("$desktopGate" -ne 'DESKTOP_READY') { throw 'V3 desktop busy; existing work left untouched' }
+  if ("$desktopGate" -ne 'DESKTOP_READY') { throw 'Guest desktop busy' }
 }
 
-# 2.5) sync the guest checkout — the guest tracks ORIGIN (git clone since
-# 09-03), so unpushed host work never reaches it. Warn on host drift, pull
-# the guest --ff-only, and refuse to launch on a dirty/diverged sandbox:
-# silently running stale tests is exactly what this step exists to prevent.
+# Sync the exact host revision. A single-branch clone's default pull can
+# report success after fetching a different branch.
 Push-Location (Split-Path $PSScriptRoot -Parent)
 # rev-parse does NOT do range semantics — on 'A..B' it prints BOTH endpoints
 # (sha + ^sha), which once falsely reported "2 commits ahead"; rev-list counts.
 $hostBranch = git symbolic-ref --quiet --short HEAD
 if ($LASTEXITCODE -ne 0) { throw 'host checkout must be on a branch' }
+$hostCommit = git rev-parse HEAD
+if ($LASTEXITCODE -ne 0) { throw 'cannot read host HEAD' }
 $trackingRef = git for-each-ref '--format=%(upstream:short)' "refs/heads/$hostBranch"
 if ($LASTEXITCODE -ne 0) { throw 'cannot read host tracking branch' }
 $aheadCount = 0
@@ -223,19 +226,31 @@ Pop-Location
 if ($aheadCount -gt 0) { Write-Warning "host is $aheadCount commit(s) ahead of $trackingRef — guest will NOT see them until pushed" }
 if ($dirty) { Write-Warning "host worktree has $($dirty.Count) uncommitted entries — these do not reach the guest either" }
 if (-not $NoSync) {
-  Write-Host "[2.5] syncing guest checkout (git pull --ff-only)..."
+  Write-Host "[2.5] syncing guest checkout to $hostBranch at $hostCommit..."
   $sync = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
-    param($git, $sb)
+    param($git, $sb, $expectedBranch, $expectedCommit)
     $dirty = @(& $git -C $sb status --porcelain |
       Where-Object { $_ -notmatch '^\?\?' })
+    if ($LASTEXITCODE -ne 0) { return 'SYNC_FAILED: cannot read guest status' }
     if ($dirty) { return "DIRTY: " + (($dirty | Select-Object -First 5) -join '; ') }
-    $pull = (& $git -C $sb pull --ff-only 2>&1 | ForEach-Object { "$_" }) -join ' | '
-    $pullExit = $LASTEXITCODE
-    if ($pullExit -ne 0) { return "SYNC_FAILED: git pull exit=$pullExit $pull" }
-    $head = & $git -C $sb log --oneline -1
-    if ($LASTEXITCODE -ne 0) { return 'SYNC_FAILED: cannot read guest HEAD' }
-    "SYNC_OK: $pull HEAD: $head"
-  } -ArgumentList $guestGit, $guestSandbox
+    $branch = & $git -C $sb symbolic-ref --quiet --short HEAD
+    if ($LASTEXITCODE -ne 0 -or $branch -cne $expectedBranch) {
+      return "SYNC_FAILED: guest branch '$branch', expected '$expectedBranch'"
+    }
+    $fetch = & $git -C $sb fetch origin "refs/heads/$expectedBranch" 2>&1
+    if ($LASTEXITCODE -ne 0) { return "SYNC_FAILED: fetch $fetch" }
+    $fetched = & $git -C $sb rev-parse FETCH_HEAD
+    if ($LASTEXITCODE -ne 0 -or $fetched -cne $expectedCommit) {
+      return "SYNC_FAILED: fetched '$fetched', expected '$expectedCommit'"
+    }
+    $merge = & $git -C $sb merge --ff-only $fetched 2>&1
+    if ($LASTEXITCODE -ne 0) { return "SYNC_FAILED: fast-forward $merge" }
+    $head = & $git -C $sb rev-parse HEAD
+    if ($LASTEXITCODE -ne 0 -or $head -cne $expectedCommit) {
+      return "SYNC_FAILED: guest HEAD '$head', expected '$expectedCommit'"
+    }
+    "SYNC_OK: $branch $head"
+  } -ArgumentList $guestGit, $guestSandbox, $hostBranch, $hostCommit
   Write-Host "    $sync"
   # Commit subjects and informational Git output may contain words such as
   # 'errors'. Only the explicit status produced above determines success.
@@ -287,12 +302,16 @@ else { Write-Host "[2.6] guest resolution ok ($res)" }
 # -Cases/-OnlyFailed selections pass through (the guest runner aggregates
 # ALL positional tokens, so command-line re-tokenization is safe).
 Write-Host "[3] launching suite: $(if ($explicitCases) { $Cases.Count } else { 'full (guest reads cases.py)' }) cases (warmup=$warmup perf=$(if ($Perf) {'ON'} else {'off'}))"
+if ($Perf) { Write-Host "    PERF_BATCH_ID=$PerfBatchId (harvest with hv_harvest.ps1 -PerfBatchId $PerfBatchId)" }
 $guestCaseStr = if ($explicitCases) { $Cases -join ' ' } else { '' }
 Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
   # NOTE: this scriptblock runs ON THE GUEST — everything it needs must be
   # marshaled via param/-ArgumentList (host-side $warmup is not visible here;
   # measured 09-03 night: silent $false, warmup block never emitted).
-  param($caseStr, $sb, $py, $warmup, $suite, $perf, $v3, $v3Executor, $v3RunId, $mcpProbe, $probeRunId, $nativeSave, $nativeActor, $nativeScenario, $cloudLogin, $cloudAuthenticate, $cloudDevice, $cloudUpload, $cloudVideoReview, $cloudLiveVideo, $cloudPrint, $cloudNewProject)
+  param($caseStr, $sb, $py, $warmup, $suite, $perfBatchId, $v3, $v3Executor, $v3RunId, $mcpProbe, $probeRunId, $nativeSave, $nativeActor, $nativeScenario, $cloudLogin, $cloudAuthenticate, $cloudDevice, $cloudUpload, $cloudVideoReview, $cloudLiveVideo, $cloudPrint, $cloudNewProject, $git)
+  if ((Get-ScheduledTask -TaskName suite -ErrorAction SilentlyContinue).State -eq 'Running') {
+    throw 'Guest suite is already running'
+  }
   # full run: the guest derives the list from cases.py itself (single
   # source of truth); explicit subset: split the passed string.
   # warmup fragment — the host-side decision ($warmup) must be baked into
@@ -307,14 +326,27 @@ if (`$cases.Count -gt 1) {
 }
 "@
   }
-  # perf fragment — baked host-side (like $warmupCode) because the generated
-  # run_suite.ps1 has no $perf variable of its own. Per-case label so each
-  # case's jsonl is distinguishable (harness/perf_monitor.py reads the env).
-  $perfCode = ''
-  if ($perf) {
-    $perfCode = @'
+  $perfInit = '$env:ORCA_BB_PERF = ''0'''
+  $perfCase = ''
+  if ($perfBatchId) {
+    $perfDir = Join-Path $sb "artifacts\perf\$perfBatchId"
+    $sha = & $git -C $sb rev-parse HEAD
+    if ($LASTEXITCODE -ne 0 -or $sha -cnotmatch '\A[0-9a-f]{40,64}\z') {
+      throw 'Cannot identify guest revision for perf batch'
+    }
+    New-Item -ItemType Directory -Force (Split-Path $perfDir -Parent) -ErrorAction Stop | Out-Null
+    New-Item -ItemType Directory $perfDir -ErrorAction Stop | Out-Null
+    @{schema=1; batch_id=$perfBatchId; commit=$sha; worker=$env:COMPUTERNAME; started_utc=[DateTime]::UtcNow.ToString('o')} |
+      ConvertTo-Json | Set-Content -LiteralPath (Join-Path $perfDir 'batch.json') -Encoding UTF8 -ErrorAction Stop
+    $perfInit = @"
+`$env:ORCA_BB_PERF_BATCH_DIR = '$($perfDir.Replace("'", "''"))'
+`$env:ORCA_BB_PERF_OUT = `$env:ORCA_BB_PERF_BATCH_DIR
+`$env:ORCA_BB_PERF_COMMIT = '$sha'
+"@
+    $perfCase = @'
 $env:ORCA_BB_PERF = '1'
 $env:ORCA_BB_PERF_LABEL = $c
+$env:ORCA_BB_PERF_RUN_ID = [guid]::NewGuid().ToString('N')
 '@
   }
   $runner = @"
@@ -342,12 +374,14 @@ function Case-File(`$c) {
   }
   return (Join-Path `$sb (`$rel -replace '/', '\'))
 }
+$perfInit
+`$env:ORCA_BB_PERF = '0'
 $warmupCode
 `$pass=0; `$fail=0; `$failed=@(); `$batch=''
 foreach (`$c in `$cases) {
   "=== `$c ===" | Add-Content C:\coil\regress_progress.txt
   `$env:PYTHONIOENCODING='utf-8'
-$perfCode
+$perfCase
   # PS 5.1 '>' writes UTF-16LE — junit_report reads UTF-8; route through
   # Out-File -Encoding utf8 or the emitter embeds mojibake (measured 09-03).
   & "$py" (Case-File `$c) 2>&1 | Out-File -FilePath "artifacts\regress_`$c.log" -Encoding utf8
@@ -367,9 +401,12 @@ if (`$failed) { "FAILED: `$(`$failed -join ' ')" | Add-Content C:\coil\regress_s
     $v3Command = if ($v3Executor -eq 'agent_mcp') { 'run-agent' } else { 'run-script' }
     $v3Mode = if ($v3Executor -eq 'agent_mcp') { 'agent_shadow' } else { 'script_shadow' }
     $runIdArgs = if ($v3Executor -eq 'agent_mcp') { " --run-id '$v3RunId'" } else { '' }
+    $v3Perf = if ($perfBatchId) { '$env:ORCA_BB_PERF = ''1''' } else { '' }
     $runner = @"
 `$ErrorActionPreference = 'Continue'
 Set-Location '$sb'
+$perfInit
+$v3Perf
 New-Item -ItemType Directory -Force artifacts | Out-Null
 Remove-Item artifacts\v3_suite.json -ErrorAction SilentlyContinue
 'V3 $v3Mode RUN' | Set-Content C:\coil\v3_progress.txt
@@ -392,8 +429,11 @@ foreach (`$c in `$cases) {
   if ($mcpProbe) {
     $probeScript = if ($nativeSave) { 'tools\native_save_run.py' } else { 'tools\windows_mcp_probe.py' }
     $actorArg = if ($nativeSave) { " --actor '$nativeActor' --scenario '$nativeScenario'" } else { '' }
+    $nativePerf = if ($perfBatchId) { '$env:ORCA_BB_PERF = ''1''' } else { '' }
     $runner = @"
 Set-Location '$sb'
+$perfInit
+$nativePerf
 `$env:PYTHONIOENCODING='utf-8'
 & '$py' -B '$probeScript' --run-id '$probeRunId'$actorArg 2>&1 | Out-File 'artifacts\windows_mcp_probe.log' -Encoding utf8
 exit `$LASTEXITCODE
@@ -422,7 +462,7 @@ exit `$LASTEXITCODE
   Register-ScheduledTask -TaskName "suite" -Action $a -Settings $st -Principal $p -Force | Out-Null
   Start-ScheduledTask -TaskName "suite"
   "suite launched: " + (Get-ScheduledTask suite).State
-} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, ([bool]$Perf), ([bool]$V3), $V3Executor, $V3RunId, ([bool]$WindowsMcpProbe), $ProbeRunId, ([bool]$NativeSave), $NativeActor, $NativeScenario, ([bool]$CloudLoginProbe), ([bool]$CloudLoginAuthenticate), ([bool]$CloudDeviceProbe), ([bool]$CloudUploadGcode), ([bool]$CloudUploadVideoReview), ([bool]$CloudUploadLiveVideo), ([bool]$CloudPrintNewProject), ([bool]$CloudUploadNewProject)
+} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, $PerfBatchId, ([bool]$V3), $V3Executor, $V3RunId, ([bool]$WindowsMcpProbe), $ProbeRunId, ([bool]$NativeSave), $NativeActor, $NativeScenario, ([bool]$CloudLoginProbe), ([bool]$CloudLoginAuthenticate), ([bool]$CloudDeviceProbe), ([bool]$CloudUploadGcode), ([bool]$CloudUploadVideoReview), ([bool]$CloudUploadLiveVideo), ([bool]$CloudPrintNewProject), ([bool]$CloudUploadNewProject), $guestGit -ErrorAction Stop
 Write-Host "[4] DONE. Poll progress any time (admin window):"
 Write-Host "    Get-Content C:\coil\vm_setup\poll_rerun.txt | Set-Content C:\coil\vm_setup\relay_cmd.txt   # via relay"
 Write-Host "    or in guest: Get-Content C:\coil\regress_progress.txt -Tail 5"

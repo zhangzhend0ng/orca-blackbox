@@ -1,53 +1,35 @@
-# deploy/monitoring — 指标看板（L5 层，可选后置）
+# 性能采样与看板
 
-本目录是「整套指标方案」的看板半边：**进程级 jsonl（harness/perf_monitor.py）
-是主证据道，永远先于本目录启用**。这里只做整机趋势与跨 run 对齐。
+Orca 的进程样本按实例写入 JSONL。Schema 2 记录运行 ID、实例 ID、进程创建时间、实际客机提交、阶段和单调时钟。v3 使用已有 run ID，fixture 子用例通过阶段里的 case_run_id 引用共享实例；重开验证生成新实例文件。报告也读取已有 schema 1 文件。
 
-## 分 lane 事实（先读）
-
-- **宿主 farm lane（本目录直接可用）**：宿主机装 windows_exporter，Prometheus
-  直接拉 `localhost:9182`。
-- **客机 win11-test lane（当前不可拉取）**：该客机**没有可用 NIC**
-  （docs/WINDOWS_MCP_PROBE.md 传输桥一节），PS Direct 不是 HTTP 通道——
-  Prometheus 拉不到客机。客机侧继续走 jsonl（`artifacts/perf/*.jsonl` 随
-  hv_harvest 回收）；等客机有 IP 后在 prometheus.yml 里取消注释
-  `windows-guest` job 即可，harness 侧零改动。
-
-## 启动（宿主，一次性）
+## 客机采集与回收
 
 ```powershell
-# 1) windows_exporter（MSI，装成服务）
-msiexec /i windows_exporter-<ver>.amd64.msi /
-  ENABLE_COLLECTORS="cpu,memory,net,gpu,process" /
-  LISTEN_PORT=9182
-# process collector 只盯被测 app（可选，减基数）：
-#   在服务参数里加 --collector.process.whitelist="snapmaker-orca\.exe"
+$id = [guid]::NewGuid().ToString('N')
+& runner\hv_go.ps1 -Cases m2_slice_chain -Perf -PerfBatchId $id
+# 等 suite 停止后执行
+& runner\hv_harvest.ps1 -PerfBatchId $id
+Get-ChildItem "artifacts\perf_harvest\$id" -Filter *.jsonl |
+  ForEach-Object { python -B tools/perf_report.py $_.FullName }
+```
 
-# 2) Prometheus + Grafana
+`-Perf` 也支持 `-V3` 和 `-WindowsMcpProbe -NativeSave`。省略 `-PerfBatchId` 时，启动日志会给出生成的 ID。性能回收按 ID 拉取并校验 SHA-256，常规 JUnit 和 v3 回收仍用各自的入口。只有批次清单而没有 JSONL 时，查看对应的用例日志；无终止记录的 JSONL 会显示为 partial。
+
+Windows 有 psutil 时采集主进程和可归属的子进程，缺 psutil 时使用 ctypes 采集主进程。装包应针对 `ORCA_BB_GUEST_PYTHON` 指定的解释器。Linux 和 macOS 的独立采样需要 psutil，权限和平台所限的字段为 null。采样器统一支持显式 PID；按名称采集用于人工诊断。各平台的 GUI 执行器独立验收。
+
+```powershell
+python -B tools/perf_attach.py --pid 1234 --seconds 10
+```
+
+## Grafana
+
+宿主的 windows_exporter 监听 9182 时，Docker Desktop 内的 Prometheus 通过 `host.docker.internal:9182` 访问。无可达网络的客机通过 JSONL 回收。主机趋势和进程样本可以按时间对照。
+
+```powershell
 docker compose -f deploy/monitoring/docker-compose.yml up -d
+$env:ORCA_BB_GRAFANA_URL = 'http://localhost:3000'
+# 在当前环境提供 ORCA_BB_GRAFANA_TOKEN，再按需导出。
+python -B tools/perf_report.py --grafana path/to/run.jsonl
 ```
 
-Grafana (`http://localhost:3000`)：加 Prometheus datasource（URL
-`http://prometheus:9090`）→ Dashboards → Import → ID **12949**（Windows
-主机模板，社区公认）。
-
-## 用例步骤 ↔ 指标对齐
-
-跑用例前导出两个变量，perf_monitor 会在每步边界打 Grafana 区间标注：
-
-```bash
-export ORCA_BB_PERF=1
-export ORCA_BB_GRAFANA_URL=http://<grafana-host>:3000
-export ORCA_BB_GRAFANA_TOKEN=<service account token>   # 无匿名写入时必填
-```
-
-看板 Annotations 里按 tag（label / step / perf-run）过滤即可看到步骤色带
-叠在指标曲线上。
-
-## 深挖工具（instrumented 用例按需挂，平时不跑）
-
-| 指标 | 工具 | 一条命令 |
-|---|---|---|
-| 帧率/帧间隔 | PresentMon (Intel) | `PresentMon.exe -process_name snapmaker-orca.exe -output_file fps.csv -timed 120 -simple -stop_existing` |
-| 文件/注册表事件 | procmon (Sysinternals) | `procmon /AcceptEula /Quiet /Minimized /BackingFile case.pml` … `/Terminate /SaveAs case.csv` |
-| 每进程网络字节 | ETW (Windows 自带) | `wpr -start GeneralProfile -filemode` → `wpr -stop trace.etl`（WPA 看，或 Performance Toolkit SDK 解析） |
+在 Grafana 添加 Prometheus 数据源 `http://prometheus:9090`。标注可按标签或 run ID 过滤。

@@ -92,6 +92,7 @@ def prove_project(ui, root, run_id, contract_sha256, guard, sut_sha, stopped, ol
                   saved_sha=None, probe_boot=False, probe_waits=False, report=None):
     from harness.agent_guest import _WindowsUI, _encode_capture
     from harness.agent_protocol import write_json_once
+    from harness.perf_monitor import launch_phase
     if probe_waits:
         from harness.mix_dialog_util import mix_entry_labels
     output = ui._project_path()
@@ -108,7 +109,8 @@ def prove_project(ui, root, run_id, contract_sha256, guard, sut_sha, stopped, ol
     frozen_ns = time.time_ns()
     started = time.time_ns()
     options = {"boot_ready": lambda app: len(mix_entry_labels(app)) == 3, "guard": guard} if probe_boot else {}
-    base = _WindowsUI(root, model=frozen, profile_name="profile_reopen", **options)
+    with launch_phase("proof_reopen", run_id):
+        base = _WindowsUI(root, model=frozen, profile_name="profile_reopen", **options)
     if probe_boot:
         report["mix_boot_probe"]["reopen"] = base.boot_scan
     ui.base, ui.app, ui.wu = base, base.app, base.winutil

@@ -26,5 +26,5 @@ $out = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
     $lines += @(Get-ChildItem $perf | ForEach-Object { $_.Name + ' ' + $_.Length + 'B' } | Select-Object -First 6)
   } else { $lines += '(missing)' }
   $lines
-} 
+}
 Write-Host ($out -join "`n")

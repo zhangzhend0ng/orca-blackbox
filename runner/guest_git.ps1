@@ -1,37 +1,47 @@
-# guest_git.ps1 -Branch <name> — switch the guest sandbox checkout to a
-# branch (fetch + checkout -B tracking origin/<branch>) via PS Direct, from
-# the relay daemon's elevated host context. Records the previous branch to
-# the guest's C:\coil\git_branch_prev.txt so a later run can restore it.
-#
-# Relay-safe BY CONSTRUCTION: no exit/return/throw — the relay daemon runs
-# command strings via Invoke-Expression in its own runspace (PITFALLS_0901.md
-# 18.6); script-termination keywords there would kill the daemon. Errors are
-# reported via output; the script always ends naturally.
-#
-# Usage (via relay): & '<repo>\runner\guest_git.ps1' -Branch glm
+# Switch an idle guest checkout to the named origin branch without resetting
+# local history. hv_go itself fetches that branch explicitly on every sync.
 param([Parameter(Mandatory = $true)][string]$Branch)
 . (Join-Path $PSScriptRoot '_common.ps1')
 $out = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
   param($git, $sb, $branch)
-  $cur = & $git -C $sb rev-parse --abbrev-ref HEAD 2>&1
-  if ($LASTEXITCODE -ne 0) { "GIT_ERR rev-parse: $($cur -join ' ')" }
+  & $git -C $sb check-ref-format --branch $branch 2>&1 | Out-Null
+  if ($LASTEXITCODE -ne 0) { 'GIT_ERR invalid branch' }
+  elseif ((Get-ScheduledTask -TaskName suite -ErrorAction SilentlyContinue).State -eq 'Running') {
+    'GIT_ERR suite is running'
+  }
   else {
-    [IO.File]::WriteAllText('C:\coil\git_branch_prev.txt', "$cur")
-    $dirty = @(& $git -C $sb status --porcelain | Where-Object { $_ -notmatch '^\?\?' })
-    if ($dirty) { "DIRTY: " + (($dirty | Select-Object -First 5) -join '; ') }
+    $cur = & $git -C $sb symbolic-ref --quiet --short HEAD 2>&1
+    $dirty = @(& $git -C $sb status --porcelain --untracked-files=no 2>&1)
+    if ($LASTEXITCODE -ne 0) { "GIT_ERR status: $dirty" }
+    elseif ($dirty.Count) { "DIRTY: $($dirty -join '; ')" }
     else {
-      # explicit refspec: a single-branch clone's default fetch refspec won't
-      # bring the requested branch down at all. NOTE ${branch} bracing —
-      # "$branch:refs" would parse as a scope-qualified variable and vanish.
-      $spec = '+refs/heads/{0}:refs/remotes/origin/{0}' -f $branch
-      $fetch = & $git -C $sb fetch origin $spec 2>&1
-      if ($LASTEXITCODE -ne 0) { "GIT_ERR fetch: $($fetch -join ' ')" }
+      $fetch = & $git -C $sb fetch origin "refs/heads/$branch" 2>&1
+      if ($LASTEXITCODE -ne 0) { "GIT_ERR fetch: $fetch" }
       else {
-        $co = & $git -C $sb checkout -B $branch "origin/$branch" 2>&1
-        if ($LASTEXITCODE -ne 0) { "GIT_ERR checkout: $($co -join ' ')" }
+        $tip = & $git -C $sb rev-parse FETCH_HEAD
+        & $git -C $sb show-ref --verify --quiet "refs/heads/$branch"
+        $exists = $LASTEXITCODE -eq 0
+        if ($exists) {
+          & $git -C $sb merge-base --is-ancestor "refs/heads/$branch" $tip
+          $safe = $LASTEXITCODE -eq 0
+        } else { $safe = $true }
+        if (-not $safe) { 'GIT_ERR local branch has commits absent from origin' }
         else {
-          $head = & $git -C $sb log --oneline -1
-          "SWITCH_OK prev=$cur HEAD: $head"
+          $switch = if ($exists) {
+            & $git -C $sb switch $branch 2>&1
+          } else {
+            & $git -C $sb switch -c $branch $tip 2>&1
+          }
+          if ($LASTEXITCODE -ne 0) { "GIT_ERR switch: $switch" }
+          else {
+            $merge = & $git -C $sb merge --ff-only $tip 2>&1
+            $head = & $git -C $sb rev-parse HEAD
+            if ($head -cne $tip) { "GIT_ERR fast-forward: $merge" }
+            else {
+              [IO.File]::WriteAllText('C:\coil\git_branch_prev.txt', "$cur")
+              "SWITCH_OK prev=$cur HEAD=$head"
+            }
+          }
         }
       }
     }

@@ -112,6 +112,7 @@ class _WindowsUI:
         self.winutil.msg_click_client(self.app.hwnd, x, y, root_hwnd=self.app.hwnd)
 
     def close(self):
+        from harness.perf_monitor import finish_session
         if self.app.alive():
             if self.winutil._window_pid(self.app.hwnd) != self.app.pid:
                 raise ProtocolError("window_identity_changed")
@@ -121,6 +122,7 @@ class _WindowsUI:
                 time.sleep(0.1)
             if self.app.alive():
                 raise ProtocolError("graceful_close_unconfirmed")
+        finish_session(self.app)
 
 
 def run_guest(artifact_dir: Path, run_id: str, digest: str) -> int:

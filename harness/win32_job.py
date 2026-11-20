@@ -37,6 +37,27 @@ class _Accounting(C.Structure):
         (name, W.DWORD) for name in ("Faults", "Total", "Active", "Terminated")]
 
 
+def current_job_process_ids() -> set[int]:
+    """Read the member PIDs of this worker's immediate Job, including nested jobs."""
+    query = C.WinDLL("kernel32", use_last_error=True).QueryInformationJobObject
+    query.argtypes = [W.HANDLE, C.c_int, C.c_void_p, W.DWORD, C.c_void_p]
+    query.restype = W.BOOL
+    capacity = 32
+    while capacity <= 32768:
+        class ProcessList(C.Structure):
+            _fields_ = [("assigned", W.DWORD), ("listed", W.DWORD),
+                        ("pids", C.c_size_t * capacity)]
+
+        members = ProcessList()
+        if query(None, 3, C.byref(members), C.sizeof(members), None):
+            if members.assigned == members.listed:
+                return set(members.pids[:members.listed])
+        elif C.get_last_error() != 234:  # ERROR_MORE_DATA
+            raise C.WinError(C.get_last_error())
+        capacity = max(capacity * 2, members.assigned)
+    raise OSError("Job member list exceeds sample capacity")
+
+
 class OwnedJobProcess:
     """Trusted low-level adapter. Keep handles open until query confirms zero."""
 

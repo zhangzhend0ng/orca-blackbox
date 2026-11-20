@@ -11,7 +11,8 @@
 #   "FAILED: <name> <name> ..."  -> names written one per line
 #   "SUMMARY: PASS=n FAIL=0"     -> host list cleared (no stale reruns)
 #   no summary file              -> host list untouched (unknown state)
-param([switch]$V3, [string]$WindowsMcpRunId = '', [switch]$NativeSave, [switch]$CloudLoginProbe)
+param([switch]$V3, [string]$WindowsMcpRunId = '', [switch]$NativeSave, [switch]$CloudLoginProbe,
+      [ValidatePattern('\A[0-9a-f]{32}\z')][string]$PerfBatchId)
 . (Join-Path $PSScriptRoot '_common.ps1')
 if($NativeSave -and -not $WindowsMcpRunId){throw '-NativeSave requires -WindowsMcpRunId'}
 if($CloudLoginProbe -and (-not $WindowsMcpRunId -or $NativeSave)){throw 'Invalid cloud login harvest selection'}
@@ -21,7 +22,91 @@ $artifacts = Join-Path $repo 'artifacts'
 New-Item -ItemType Directory -Force $artifacts | Out-Null
 $ff = Join-Path $artifacts 'failed_cases.txt'
 
-if ($WindowsMcpRunId) {
+if ($PerfBatchId) {
+  if ($V3 -or $WindowsMcpRunId) { throw 'Select only the perf batch for this harvest' }
+  $target = Join-Path $artifacts "perf_harvest\$PerfBatchId"
+  $guest = New-PSSession -VMName $vm -Credential $cred -ErrorAction Stop
+  try {
+    $inventory = @(Invoke-Command -Session $guest -ErrorAction Stop -ScriptBlock {
+      param($sb, $id)
+      if ((Get-ScheduledTask -TaskName suite -ErrorAction SilentlyContinue).State -eq 'Running') {
+        throw 'Wait for the guest suite to stop before harvesting perf'
+      }
+      $base = Join-Path $sb 'artifacts\perf'
+      $directory = Join-Path $base $id
+      $manifestPath = Join-Path $directory 'batch.json'
+      foreach ($path in @((Split-Path $base -Parent), $base, $directory, $manifestPath)) {
+        $entry = Get-Item -LiteralPath $path -ErrorAction Stop
+        if ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Perf path is a link' }
+      }
+      if ($entry.PSIsContainer -or $entry.Length -gt 4096) { throw 'Invalid perf manifest' }
+      $manifest = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
+      if ($manifest.schema -ne 1 -or $manifest.batch_id -cne $id) { throw 'Perf batch identity mismatch' }
+      Get-ChildItem -LiteralPath $directory -File |
+        Where-Object { $_.Name -ceq 'batch.json' -or $_.Name -cmatch '\A[A-Za-z0-9_-]{1,60}__[0-9a-f]{32}\.jsonl\z' } |
+        ForEach-Object {
+          if ($_.Length -gt 64MB -or ($_.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+            throw 'Unsupported perf artifact'
+          }
+          [pscustomobject]@{ name=$_.Name; bytes=$_.Length; sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash }
+        }
+    } -ArgumentList $guestSandbox, $PerfBatchId)
+    if (-not ($inventory | Where-Object name -ceq 'batch.json')) { throw 'Perf batch manifest missing' }
+    foreach ($directory in @($artifacts, (Split-Path $target -Parent), $target)) {
+      $item = New-Item -ItemType Directory -Path $directory -Force -ErrorAction Stop
+      if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Perf output is a link' }
+    }
+    foreach ($file in $inventory) {
+      if ($file.name -cne 'batch.json' -and $file.name -cnotmatch '\A[A-Za-z0-9_-]{1,60}__[0-9a-f]{32}\.jsonl\z') {
+        throw 'Unexpected perf artifact name'
+      }
+      $destination = Join-Path $target $file.name
+      if (Test-Path -LiteralPath $destination) {
+        $local = Get-Item -LiteralPath $destination -ErrorAction Stop
+        if ($local.PSIsContainer -or ($local.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
+            (Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash -cne $file.sha256) {
+          throw "Existing perf artifact differs: $($file.name)"
+        }
+      } else {
+        $tempFile = Join-Path $target ([guid]::NewGuid().ToString('N') + '.part')
+        try {
+          $stream = [IO.File]::Open($tempFile, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write)
+          try {
+            $offset = [long]0
+            while ($offset -lt $file.bytes) {
+              $length = [int][Math]::Min(192KB, $file.bytes - $offset)
+              $chunk = Invoke-Command -Session $guest -ErrorAction Stop -ScriptBlock {
+                param($sb, $id, $name, $offset, $length)
+                $path = Join-Path $sb ("artifacts\perf\$id\" + $name)
+                $entry = Get-Item -LiteralPath $path -ErrorAction Stop
+                if ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Perf input is a link' }
+                $source = [IO.File]::OpenRead($path)
+                try {
+                  $source.Position = $offset
+                  $buffer = New-Object byte[] $length
+                  $read = $source.Read($buffer, 0, $length)
+                  [Convert]::ToBase64String($buffer, 0, $read)
+                } finally { $source.Dispose() }
+              } -ArgumentList $guestSandbox, $PerfBatchId, $file.name, $offset, $length
+              $bytes = [Convert]::FromBase64String([string]$chunk)
+              if ($bytes.Length -ne $length) { throw "Incomplete perf artifact: $($file.name)" }
+              $stream.Write($bytes, 0, $length)
+              $offset += $length
+            }
+          } finally { $stream.Dispose() }
+          if ((Get-FileHash -LiteralPath $tempFile -Algorithm SHA256).Hash -cne $file.sha256) {
+            throw "Perf artifact hash mismatch: $($file.name)"
+          }
+          [IO.File]::Move($tempFile, $destination)
+        } finally {
+          if (Test-Path -LiteralPath $tempFile) { Remove-Item -LiteralPath $tempFile }
+        }
+      }
+    }
+    ('Perf batch {0}: {1} sample file(s) harvested -> {2}' -f $PerfBatchId, ($inventory.Count - 1), $target)
+  } finally { Remove-PSSession $guest }
+}
+elseif ($WindowsMcpRunId) {
   if ($V3 -or $WindowsMcpRunId -cnotmatch '^[0-9a-f]{32}$') { throw 'Invalid probe harvest selection' }
   $target = Join-Path $artifacts ('windows_mcp_harvest\' + $WindowsMcpRunId)
   New-Item -ItemType Directory -Force $target | Out-Null

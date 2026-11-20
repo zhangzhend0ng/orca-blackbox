@@ -11,7 +11,7 @@ scrape_configs:
   # The machine running the GUI farm (host lane).
   - job_name: windows-host
     static_configs:
-      - targets: ["localhost:9182"]
+      - targets: ["host.docker.internal:9182"]
 
   # Guest lane — ENABLE ONLY once the guest has a reachable IP.
   # windows_exporter on the guest must run with at least:

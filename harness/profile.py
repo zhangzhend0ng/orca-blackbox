@@ -149,7 +149,10 @@ def seed_profile(dest: Path,
     source_printers = Path(source_printers) if source_printers else resources / "printers"
 
     if fresh and dest.exists():
-        _kill_lingering_app()
+        # Owned workers hold a datadir lease and clean up their own Job.
+        # A locked file in this profile must never trigger a global sweep.
+        if os.environ.get("ORCA_BB_OWNED_PROFILE") != "1":
+            _kill_lingering_app()
         for attempt in range(3):
             try:
                 shutil.rmtree(dest)

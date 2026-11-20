@@ -11,6 +11,7 @@ import uuid
 
 from .agent_protocol import ProtocolError, write_json_once
 from .native_matrix import REPLAY_SOURCES, UIA_REPLAY_ENUMS, UIA_REPLAY_MOVE_LAYER
+from .perf_monitor import launch_phase, set_step
 from .run_evidence import RunEvidence
 from .run_verdict import CheckResult, aggregate_result, contract_digest
 from .runtime_ports import ExecutionOutcome, VerificationOutcome, VerificationSnapshot
@@ -283,6 +284,8 @@ def run_fixture_worker(run_id, scenario):
                     source = previous.root / "input/fixture.3mf"
                     candidate = copy(active)
                     candidate.artifacts, candidate.guard = art, case_guard
+                    set_step("fixture_reset", monitor=getattr(candidate.app, "perf", None),
+                             case_run_id=writer.run_id)
                     try:
                         case.timing["reopen"] = open_fixture(candidate, source)
                     except Exception as exc:
@@ -304,8 +307,11 @@ def run_fixture_worker(run_id, scenario):
                         active = case.ui = candidate
                         case.timing["reused"] = True
                 if active is None:
-                    active = case.ui = ProjectUI(art, case_guard, fixture=native_fixture(s))
+                    with launch_phase("fixture_boot", writer.run_id):
+                        active = case.ui = ProjectUI(art, case_guard, fixture=native_fixture(s))
                     case.timing["reused"] = False
+                set_step("fixture_edit", monitor=getattr(case.ui.app, "perf", None),
+                         case_run_id=writer.run_id)
                 (art / "input/fixture.3mf").chmod(stat.S_IREAD)
                 (art / "projects").mkdir()
                 (art / "proof").mkdir()

@@ -69,14 +69,7 @@ class AppSession:
         finally:
             # Always finalize the perf monitor (close() may early-return above)
             # — a partial-but-valid jsonl beats a lost one.
-            if self.perf is not None:
-                try:
-                    summary = self.perf.stop()
-                    print(f"[launcher] perf done: label={summary.get('label')} "
-                          f"pids={len(summary.get('pids', {}))}")
-                except Exception as exc:  # noqa: BLE001 — teardown must not mask
-                    print(f"[launcher] perf stop failed: {exc!r}")
-                self.perf = None
+            perf_monitor.finish_session(self)
 
     def __enter__(self):
         return self
@@ -226,39 +219,44 @@ def launch(exe: Path | str | None = None,
     si.wShowWindow = 4  # SW_SHOWNOACTIVATE (ineffective for wx, kept anyway)
     # FARM FIX (2026-11-08): cwd=exe.parent breaks this packaged build's boot (no main window in 90s; cwd elsewhere boots fine — DLLs resolve from the exe dir regardless, so inherit the driver's cwd instead).
     popen = subprocess.Popen(args, env=env, startupinfo=si)
+    monitor = None
     try:
+        monitor = perf_monitor.attach_for_session(popen, exe)
         hwnd = winutil.find_main_window(popen.pid, timeout_s=wait_window_s)
-    except BaseException:
-        # Never leak a launched app when window discovery fails.
-        popen.kill()
+        # Without early demotion the main frame pops to the TOP of the user's
+        # desktop at boot (see the SW_SHOWNOACTIVATE note) and — under the
+        # drivers' hands-off rule — sits there ~12s until demote_window()
+        # runs. The watchdog closes that hole PASSIVELY: ex-style + HWND_BOTTOM
+        # demotion every tick, plus foreground RESTORATION to prev_fg when the
+        # app holds it (never foreground-GRABBING or window moves — README
+        # pitfall #3). diag_early_stealth.py verifies the CLI model auto-load
+        # survives it. Set boot_demote_s=0 for control runs.
+        if boot_demote_s > 0:
+            winutil.demote_watchdog(pid=popen.pid, duration_s=boot_demote_s,
+                                    fg_restore_to=prev_fg)
+        dismissed: list[str] = []
+        if dismiss_blockers:
+            dismissed = sweep_boot_blockers(popen.pid, hwnd, budget_s=blocker_sweep_s,
+                                            dismiss_wizard=dismiss_wizard)
+        # NOTE: still do NOT touch window position/foreground here. Early
+        # interference (before post_init's first-idle input_files load) BREAKS
+        # the CLI model auto-load — proven experimentally: hands-off boots load
+        # the model, foreground-grabbing boots do not. Late, conditional
+        # repositioning is the caller's job (see m2_slice_chain after boot
+        # settles).
+        dpi = winutil.get_dpi_for_window(hwnd)
+        print(f"[launcher] pid={popen.pid} hwnd=0x{hwnd:x} rect={winutil.window_rect(hwnd)} dpi={dpi}")
+        session = AppSession(popen, hwnd)
+        session.blockers = dismissed  # forensic trail: titles WM_CLOSEd at boot
+        session.perf = monitor
+        return session
+    except BaseException as error:
+        try:
+            if popen.poll() is None:
+                popen.kill()
+        except OSError as cleanup_error:
+            error.add_note(f"launcher cleanup failed: {type(cleanup_error).__name__}")
+        finally:
+            if monitor is not None:
+                monitor.stop()
         raise
-    # Without early demotion the main frame pops to the TOP of the user's
-    # desktop at boot (see the SW_SHOWNOACTIVATE note) and — under the
-    # drivers' hands-off rule — sits there ~12s until demote_window()
-    # runs. The watchdog closes that hole PASSIVELY: ex-style + HWND_BOTTOM
-    # demotion every tick, plus foreground RESTORATION to prev_fg when the
-    # app holds it (never foreground-GRABBING or window moves — README
-    # pitfall #3). diag_early_stealth.py verifies the CLI model auto-load
-    # survives it. Set boot_demote_s=0 for control runs.
-    if boot_demote_s > 0:
-        winutil.demote_watchdog(pid=popen.pid, duration_s=boot_demote_s,
-                                fg_restore_to=prev_fg)
-    dismissed: list[str] = []
-    if dismiss_blockers:
-        dismissed = sweep_boot_blockers(popen.pid, hwnd, budget_s=blocker_sweep_s,
-                                        dismiss_wizard=dismiss_wizard)
-    # NOTE: still do NOT touch window position/foreground here. Early
-    # interference (before post_init's first-idle input_files load) BREAKS
-    # the CLI model auto-load — proven experimentally: hands-off boots load
-    # the model, foreground-grabbing boots do not. Late, conditional
-    # repositioning is the caller's job (see m2_slice_chain after boot
-    # settles).
-    dpi = winutil.get_dpi_for_window(hwnd)
-    print(f"[launcher] pid={popen.pid} hwnd=0x{hwnd:x} rect={winutil.window_rect(hwnd)} dpi={dpi}")
-    session = AppSession(popen, hwnd)
-    session.blockers = dismissed  # forensic trail: titles WM_CLOSEd at boot
-    if perf_monitor.env_enabled():
-        # ORCA_BB_PERF=1 — external metric sampling for this run (see
-        # harness/perf_monitor.py header for the row schema and env knobs)
-        session.perf = perf_monitor.attach_for_session(popen, exe=exe)
-    return session

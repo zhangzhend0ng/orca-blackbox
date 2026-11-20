@@ -9,6 +9,7 @@ import sys
 import time
 
 from .agent_protocol import LAYER_FIXTURE, LAYER_FIXTURE_SHA256, ProtocolError, write_json_once
+from .perf_monitor import finish_session
 
 GW_OWNER = 4  # winuser.h: 2 is GW_HWNDNEXT (Z order), not window ownership.
 
@@ -311,7 +312,10 @@ class BusinessUI:
             "close_attempts": getattr(self, "_close_attempts", [])[:16]})
 
     def close(self):
-        if self.base is None or not self.app.alive():
+        if self.base is None:
+            return
+        if not self.app.alive():
+            finish_session(self.app)
             return
         if self.wu._window_pid(self.app.hwnd) != self.app.pid:
             raise ProtocolError("window_identity_changed")
@@ -347,3 +351,4 @@ class BusinessUI:
             except Exception as diagnostic_error:
                 print(f"[business_ui] close diagnosis: {type(diagnostic_error).__name__}", file=sys.stderr)
             raise ProtocolError("graceful_close_unconfirmed")
+        finish_session(self.app)
