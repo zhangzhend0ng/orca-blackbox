@@ -852,7 +852,7 @@ def file_menu_dispatch(session, item_substr, expect_dialog=False,
     if not menu:
         print(f"{LOG} file menu did not open")
         return False, None
-    _rect, hwnd, hmenu = menu
+    _rect, _hwnd, hmenu = menu
     rows = list_menu(hmenu)
     print(f"{LOG} file menu: {[l for _i, l in rows]}")
     target_hmenu = hmenu
@@ -861,15 +861,14 @@ def file_menu_dispatch(session, item_substr, expect_dialog=False,
         if idx is None:
             topbar_util.close_menu_windows(session.pid)
             return False, None
-        # open the submenu popup so its rows are live (row geometry only
-        # exists while the menu is shown), then match the row inside it
-        got = click_menu_row(session, hwnd, hmenu, via, nested=True)
-        if not got:
+        # The parent HMENU identifies the submenu even when the native
+        # popup reuses a window handle. No cursor hover is needed to read
+        # its state or dispatch one of its commands.
+        _, target_hmenu = topbar_util.item_info(hmenu, idx)
+        if not target_hmenu:
             topbar_util.close_menu_windows(session.pid)
             return False, None
-        _idx, (_shwnd, shmenu_live) = got
-        target_hmenu = shmenu_live
-        rows = list_menu(shmenu_live)
+        rows = list_menu(target_hmenu)
         print(f"{LOG} {via} menu: {[l for _i, l in rows]}")
     idx = topbar_util.find_item(target_hmenu, item_substr)
     if idx is None:

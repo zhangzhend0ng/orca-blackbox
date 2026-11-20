@@ -35,7 +35,7 @@ Windows 有 psutil 时采集主进程和可归属的子进程，缺 psutil 时�
 
 ### Orca 测试构建的提交帧
 
-对独立导出的 Orca 源码副本运行 `frame_trace/apply_overlay.py`，并编译该副本。源码目录中的 `.orca-frame-trace-build.json` 应记录 `source_commit` 和 `profiles_commit`。测试构建沿 `GLCanvas3D::render()` 记录 Windows QPC 时间戳。默认关闭，启用时写入每个进程独占的有界缓冲文件，正常退出后收尾。
+对独立导出的 Orca 源码副本运行 `frame_trace/apply_overlay.py`，并编译该副本。源码目录中的 `.orca-frame-trace-build.json` 应记录 `source_commit` 和 `profiles_commit`。配置直接随源码版本管理时，`profiles_commit` 填 `null`。测试构建沿 `GLCanvas3D::render()` 记录 Windows QPC 时间戳。默认关闭，启用时写入每个进程独占的有界缓冲文件，正常退出后收尾。
 
 ```powershell
 & runner\hv_go.ps1 -Cases m2_perf_showcase -Perf -PerfViewport -FrameTraceExe $guestInstrumentedExe
