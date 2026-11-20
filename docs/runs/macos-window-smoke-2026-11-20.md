@@ -29,3 +29,11 @@
 ### 录屏权限的实际归属
 
 在测试账号的前台会话运行 Xcode 内置 Python，并以管理员账号限时读取 15 秒的 TCC 日志。测试进程发出五次 ScreenCaptureKit 查询，对应十条预检与正式判定。十次均以 `com.apple.python3` 为访问进程、`com.apple.replayd` 为请求方、`com.apple.dt.Xcode` 为授权对象，结果为 `Denied (System Set)`。同一账号的录屏设置中，Python 开关为 1、Xcode 开关为 0。针对这条启动路径，需要由用户决定是否向 Xcode 授予录屏权限。采样摘要及逐条判定保存在 `artifacts/mac_smoke/20261120-foreground/tcc-decisions.json`。
+
+### 授权 Xcode 后的实测
+
+在原测试账号前台重新启动 Python 和 Orca，辅助功能及录屏预检均为 true。ScreenCaptureKit 按本次 Orca 进程与主窗口 ID 成功捕获 1200 × 800 的图像。首轮图像显示配置包更新对话框遮挡盘面，保存在 `artifacts/mac_smoke/20261120-03HooSYK/`。
+
+第二轮在新建的测试 datadir 中沿用 `runner/boot_probe.py` 的本地更新源配置。回收截图中，Prepare 页的 U1 盘面中央可见金黄色立方体，标题为 `agent_layer_cube`。同一实例随后通过 File 菜单打开原生另存为面板，识别到可编辑控件和 Save、Cancel 按钮，执行 Cancel 后退出。复核测试账号下 Orca 主程序为 0。截图和探针日志逐份校验 SHA-256，保存在 `artifacts/mac_smoke/20261120-XX0PZk6h/`。
+
+本轮作为前台截图和对话框能力的 SHADOW 证据。实际写入工程、独立重开切片和切换用户后的后台捕获仍待验证。
