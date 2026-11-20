@@ -50,3 +50,11 @@
 测试账号没有读取系统统一日志的权限，面板也没有给出禁用理由。本轮保持了用户指定的前台账号，尚无相同程序在测试账号前台的对照，不能由此断定 macOS 对所有后台会话实施相同限制。
 
 原始日志已回收到同一证据目录，分别为 `native_panel_controls.log`、`native_input_pair.log`、`native_launch_services.log` 和 `native_session_diag.log`。同目录保留 `panel_comparison.m`、`panel_input_pair.m` 和 `native_control_driver.py` 供核对实验条件。
+
+## 后台另存工程的两条路径
+
+在 Mac 版的“文件 → 项目另存为…”（⌘⇧S）中，实测菜单项可用，系统面板能显示新的工程名。后台账号的 Save 按钮在输入新名字前后均禁用，取消后目标文件不存在。证据见 `standalone_native_as.log`。本次只在后台复测了这条菜单路径。
+
+对于已有的 3MF，可在开始编辑前，以新名字复制原件，打开副本编辑，展开“文件”并选择“保存项目”。本轮副本名为 `layer-024-copy.3mf`。首次探针直接读取未展开菜单的保存项，读到禁用后中止。复试激活测试账号中的 Orca 窗口并展开“文件”菜单，保存项可用，保存后标题的未保存标记清除。
+
+另一进程使用新配置重开同名副本，读到常规层高 0.24 mm、首层 0.40 mm。原件 SHA-256 与仓库夹具一致，修改前后保持不变。回收件 SHA-256 为 `a73d4238df01f01e1c039014035043f5385d9d95b89a3396fd78d485770be3fc`，独立工程检查确认网格几何一致。副本和日志 `standalone_copy_flow.log`、`standalone_copy_menu.log` 均保存在本轮证据目录。该操作适用于编辑前已经有磁盘原件的场景。
