@@ -45,7 +45,7 @@ def test_psutil_monitor_jsonl_schema_and_steps(tmp_path):
     out = tmp_path / "m.jsonl"
     mon = pm.PerfMonitor(targets=[], anchor_pid=os.getpid(),
                          include_children=False, out_path=out, interval_s=0.05)
-    mon.start()
+    mon.start(step="startup", case_run_id="case_a")
     time.sleep(0.25)
     mon.set_step("phase_b")
     time.sleep(0.25)
@@ -58,6 +58,7 @@ def test_psutil_monitor_jsonl_schema_and_steps(tmp_path):
     procs = [r for r in rows if r["ev"] == "proc"]
     own = [r for r in procs if r["pid"] == os.getpid()]
     assert own, "anchor pid must be sampled"
+    assert (own[0]["step"], own[0]["case_run_id"]) == ("startup", "case_a")
     for key in ("cpu_pct", "rss_mb", "private_mb", "gdi", "user_obj", "conns"):
         assert key in own[0]
     assert any(r["ev"] == "sys" for r in rows)

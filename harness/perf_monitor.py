@@ -120,12 +120,14 @@ class PerfMonitor:
         self._errors = 0
         self._tick = 0
 
-    def start(self) -> PerfMonitor:
+    def start(self, *, step: str | None = None, case_run_id: str | None = None) -> PerfMonitor:
         if self._thread is not None:
             raise RuntimeError("sample streams cannot restart")
         self._started = time.monotonic()
         self._wall_start = time.time()
         self._thread = threading.Thread(target=self._collect, name="perf-monitor", daemon=True)
+        if step is not None:
+            self.set_step(step, case_run_id)
         self._thread.start()
         return self
 
@@ -478,9 +480,8 @@ def attach_for_session(popen, exe: Path | str) -> PerfMonitor | None:
                           label=label, instance_id=instance, include_system=False,
                           run_id=os.environ.get("ORCA_BB_PERF_RUN_ID"),
                           commit=os.environ.get("ORCA_BB_PERF_COMMIT"), members=members)
-        mon.start()
         name, case_run_id = _PHASE.get()
-        mon.set_step(name or "startup", case_run_id)
+        mon.start(step=name or "startup", case_run_id=case_run_id)
     except Exception as error:
         _stderr(f"{label}: attach failed ({type(error).__name__})")
         return None
