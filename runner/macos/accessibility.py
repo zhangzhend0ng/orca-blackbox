@@ -1,6 +1,7 @@
 """Small ApplicationServices binding for the two-field Mac project-copy case."""
 import ctypes as ct
 import os
+import time
 from contextlib import ExitStack
 
 
@@ -50,6 +51,27 @@ class Point(ct.Structure):
     _fields_ = [("x", ct.c_double), ("y", ct.c_double)]
 
 
+class Rect(ct.Structure):
+    _fields_ = [("origin", Point), ("size", Point)]
+
+
+cg = framework("CoreGraphics")
+window_info = bind(cg, "CGWindowListCopyWindowInfo", ptr, ct.c_uint32, ct.c_uint32)
+decode_bounds = bind(cg, "CGRectMakeWithDictionaryRepresentation", boolean, ptr, ct.POINTER(Rect))
+post_allowed = bind(cg, "CGPreflightPostEventAccess", boolean)
+set_location = bind(cg, "CGEventSetLocation", None, ptr, Point)
+post_to_pid = bind(cg, "CGEventPostToPid", None, integer, ptr)
+appkit = framework("AppKit")  # Register NSEvent in the signed worker process.
+objc = ct.CDLL("/usr/lib/libobjc.A.dylib")
+objc_class = bind(objc, "objc_getClass", ptr, ct.c_char_p)
+selector = bind(objc, "sel_registerName", ptr, ct.c_char_p)
+send_address = ct.cast(objc.objc_msgSend, ptr).value
+mouse_event = ct.CFUNCTYPE(ptr, ptr, ptr, ct.c_ulong, Point, ct.c_ulong, ct.c_double,
+                           ct.c_long, ptr, ct.c_long, ct.c_long, ct.c_float)(send_address)
+event_window = ct.CFUNCTYPE(ct.c_long, ptr, ptr)(send_address)
+event_cg = ct.CFUNCTYPE(ptr, ptr, ptr)(send_address)
+
+
 class Desktop(ExitStack):
     """Keep copied CF objects alive while using borrowed AX children."""
 
@@ -93,7 +115,10 @@ class Desktop(ExitStack):
             return self.own(value.value)
 
     def text(self, element, key):
-        value = self.attr(element, key)
+        return self.cf_text(self.attr(element, key))
+
+    @staticmethod
+    def cf_text(value):
         if not value or type_id(value) != string_type:
             return ""
         buffer = ct.create_string_buffer(4 * string_size(value) + 1)
@@ -126,12 +151,75 @@ class Desktop(ExitStack):
             raise RuntimeError("Missing field position")
         return point
 
-    def act(self, pid, element, action, value=None):
+    def check_owned(self, pid, element):
         self.check_session()
         owner = integer()
         if not element or get_pid(element, ct.byref(owner)) or owner.value != pid:
             raise RuntimeError("AX control is outside the test process")
+
+    def act(self, pid, element, action, value=None):
+        self.check_owned(pid, element)
         name = self.string(action)
         error = perform(element, name) if value is None else set_attr(element, name, value)
         if error:
             raise RuntimeError(f"{action} failed with AX error {error}")
+
+    def slice_window(self, pid, root, window, title):
+        self.check_owned(pid, window)
+        if self.text(window, "AXTitle") != title:
+            raise RuntimeError("Project title changed before Slice plate")
+        for candidate in self.children(root, "AXWindows"):
+            if (self.text(candidate, "AXSubrole") in {"AXDialog", "AXSystemDialog"}
+                    or self.text(candidate, "AXIdentifier") == "save-panel" or self.children(candidate, "AXSheets")):
+                raise RuntimeError("A modal dialog is covering the project")
+        position = self.position(window)
+        size = Point()
+        value = self.attr(window, "AXSize")
+        if not value or not read_point(value, 2, ct.byref(size)) or (size.x, size.y) != (1200, 800):
+            raise RuntimeError("Unrecognized Orca slice toolbar layout (expected 1200 x 800)")
+        windows = self.own(window_info(0, 0))
+        if not windows:
+            raise RuntimeError("Cannot enumerate test session windows")
+
+        def number(info, key):
+            obj = dict_value(info, self.string(key))
+            result = ct.c_int64()
+            return result.value if obj and number_value(obj, 4, ct.byref(result)) else None
+
+        matches = []
+        for i in range(array_size(windows)):
+            info = array_item(windows, i)
+            if number(info, "kCGWindowOwnerPID") != pid or number(info, "kCGWindowLayer") != 0:
+                continue
+            if self.cf_text(dict_value(info, self.string("kCGWindowName"))) != title:
+                continue
+            bounds = Rect()
+            obj = dict_value(info, self.string("kCGWindowBounds"))
+            if (obj and decode_bounds(obj, ct.byref(bounds))
+                    and (position.x, position.y, size.x, size.y)
+                    == (bounds.origin.x, bounds.origin.y, bounds.size.x, bounds.size.y)):
+                matches.append(number(info, "kCGWindowNumber"))
+        if len(matches) != 1 or not matches[0]:
+            raise RuntimeError("Cannot match a unique Orca window by title, PID and bounds")
+        return matches[0], position
+
+    def click_slice(self, pid, root, window, title):
+        # The wx toolbar is custom drawn. These window-local coordinates were measured
+        # on the 1200 x 800 Prepare screen with the two Quality controls visible.
+        wid, origin = self.slice_window(pid, root, window, title)
+        if not post_allowed():
+            raise RuntimeError("Targeted input requires event posting permission")
+        make_mouse = selector(b"mouseEventWithType:location:modifierFlags:timestamp:windowNumber:context:eventNumber:clickCount:pressure:")
+        for kind in (1, 2):
+            self.check_owned(pid, window)
+            event = mouse_event(objc_class(b"NSEvent"), make_mouse, kind, Point(1000, 800 - 45), 0,
+                                time.monotonic(), wid, None, 1, 1, 1.0 if kind == 1 else 0.0)
+            if not event or event_window(event, selector(b"windowNumber")) != wid:
+                raise RuntimeError("Slice event has no matching target window")
+            native = event_cg(event, selector(b"CGEvent"))
+            if not native:
+                raise RuntimeError("Slice event is unavailable")
+            set_location(native, Point(origin.x + 1000, origin.y + 45))
+            post_to_pid(pid, native)
+            time.sleep(0.16)
+        return wid
