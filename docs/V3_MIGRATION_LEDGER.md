@@ -187,6 +187,22 @@
 - **clash-guard OFF_SAFE**（02:37:45 起，代理被关，非本会话操作）：ip_guard 纪律性阻断全部 zcode 模型跑批；`~/.clash-guard/status-token` 集成文件丢失已按 status-api.md 恢复。guard 恢复 ready 前只跑 script 轨道。
 - 11-20 客机识别故障（KVP 关）已被 06d2257 BIOS 兜底修复，本轮实测通过。
 
+## 本批分族迁移汇总（截至第五轮，2026-11-21 04:0x）
+
+口径：**本 HEAD 独立通过** = 本批真实客机执行并独立验收（SHADOW）；**历史 SHADOW** = 旧源通过待复验；**缺口** = gap-cap/gap-neg/blocked 合计。分母 89 不变（含 2 禁用）。
+
+| 族 | 条数 | 本 HEAD 独立通过（代表链） | 历史 SHADOW（旧源） | 缺口/blocked | 未跑（已适配） |
+|---|---:|---|---|---|---|
+| F1 启动/页签/工程 | 9 | 3（m7t83 导入链=bound_model_move；m0/m7a 链隐含于每 run 收据） | 0 | 4（tab、view menu、anchor 视觉、m1b 禁用） | 2（m7b/m7t73=fixture_cold 未跑） |
+| F2 导入/预设/工艺/切片 | 16 | 9（m5b/m7t74=replay_layer；m5h=enums；m5e=pair×7+cfg×4；m7c/m7t72=bound_model_move；m8x_137 部分=replay_process） | 1（m5c 壁环数 goal-only 11-18） | 6（损坏×2、预设×2、Support 页、负参数、m5g 预设名 oracle） | 0 |
+| F3 保存重开导出 | 4 | 3（replay_save=另存副本；m3d=A/B 重切；uia_save_as 门禁链） | 1（overwrite 同路径冲突） | 0 | m3g 完整导出面板=v3_project blocked |
+| F4 多盘/对象/变换/撤销 | 20 | 3（m6a=replay_canvas；组合=move_layer；undo 负面证据=6165 假通过拦截不计数） | 2（m7j 材料槽；m7f 缩放 0/2） | 14（rotate/undo/多盘/删除/排列/原始体/分割/朝向/支撑绘制/布尔/剪贴/预设耗材×组合） | 1（m7f 复验候选） |
+| F5 混色/渐变/多材料/高流量 | 31 | 5（Add Mix 比例/渐变回放=m3t/m3u/m3y/m3x/m3w 脚本化） | 3（pilot 材料、混色 compound） | 15（负例 6+高流量/颜色/温混 4+面板/视图/模板 5） | 8（持久化 m3p、m4g、m4i 候选未跑） |
+| F6 性能与专项 | 9 | 3（dep 负例×2=safety 同层；cfg 判据层） | 3（zcode safety 3/3，11-17） | 3（m8a 视图、m3a 空切、m7k） | 0（perf=off 轨道另计） |
+| **合计** | **89** | **26** | **10** | **45** | **11**（另 perf/禁用 3 在 F1/F6 内） |
+
+注：F1 的"隐含"指启动/退出/清理链在每个原生 run 的 ready/teardown 收据中逐次验证（本批 24+ 次），非独立用例形态。第五轮手写基线完成后"本 HEAD 独立通过"代表链数不变（同链复验）。
+
 ## Checkpoint（恢复用）
 
 - 恢复命令（宿主 Git Bash，本仓根）：

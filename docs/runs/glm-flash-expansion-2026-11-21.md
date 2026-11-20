@@ -32,6 +32,28 @@ zcode 轨道待 guard 恢复后续跑。
 | `d1d12e57` | cfg_value_07 | **SHADOW 独立通过**（141.6s）——layer+seam 值组合 |
 | `fa2ec36f` | pair_layer_move | **SHADOW 独立通过**（145.2s） |
 | `9def6142` | bound_model_move（Prusa.stl） | **SHADOW 独立通过**（183.3s）——STL 几何导入→U1 工程→X 平移→保存重开全链 |
+| `851d655d` | uia_replay_canvas | **SHADOW 独立通过**（144.9s）——画布 X+10 回放 |
+| `2248e3b7` | uia_replay_process | **SHADOW 独立通过**（152.7s） |
+| `67dae249` | dep_ironing_topmost | **SHADOW 独立通过**（174.0s）——依赖链正例 |
+| `5fc5ceda` | dep_ironing_disabled | **SHADOW 独立通过**（138.2s）——依赖拒绝负例 |
+| `112c8fbf` | cfg_value_01 | **SHADOW 独立通过**（138.2s） |
+| `441f0f26` | cfg_value_04 | **SHADOW 独立通过**（178.0s） |
+| `4283f5c9` | pair_layer_ironing | **SHADOW 独立通过**（172.8s） |
+| `d35b3397` | pair_move_ironing | **SHADOW 独立通过**（180.6s） |
+| `50a7fa3a` | pair_move_layer | **SHADOW 独立通过**（144.8s） |
+| `10460efd` | pair_layer_seam | **SHADOW 独立通过**（141.2s） |
+| `fc4ae0a9` | pair_move_seam | **SHADOW 独立通过**（145.1s） |
+| `c2d18783` | pair_seam_ironing | **SHADOW 独立通过**（172.8s） |
+| `49f1cecd` | uia_hybrid_layer（手写基线） | **SHADOW 独立通过**（144.7s） |
+| `a47e895f` | uia_hybrid_layer_strength（手写基线） | **SHADOW 独立通过**（148.7s） |
+| `3784e528` | uia_hybrid_canvas（手写基线） | **SHADOW 独立通过**（180.9s） |
+| `fa448238` | uia_save_as（手写基线） | **SHADOW 独立通过**（136.9s） |
+| `99616c25` | uia_process_combo（手写基线） | **SHADOW 独立通过**（205.0s） |
+| `c0b2a5c3` | uia_mix_recipes（手写基线） | **SHADOW 独立通过**（168.7s） |
+| `382b92d4` | uia_quality_enums（手写基线） | **SHADOW 独立通过**（229.4s） |
+| `c09c1abb` | uia_move_layer（手写基线） | **SHADOW 独立通过**（189.0s） |
+
+**脚本轨道终计 29/29 SHADOW 独立通过**（源 bf108f7→11c3cec）：手写 UIA 基线 8 + 无模型回放 7 + pair 7 + cfg_value 4 + bound_model_move 1 + dep 负例 2。每轮 business/path 双检查 + 冻结 3MF/G-code SHA + 新进程独立重开 + 清理回据。
 
 第二轮后累计 9/9。第三轮（uia_replay_canvas/process + dep_ironing_topmost/disabled 负例）运行中。
 
