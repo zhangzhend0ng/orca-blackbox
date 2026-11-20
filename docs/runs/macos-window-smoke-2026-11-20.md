@@ -37,3 +37,15 @@
 第二轮在新建的测试 datadir 中沿用 `runner/boot_probe.py` 的本地更新源配置。回收截图中，Prepare 页的 U1 盘面中央可见金黄色立方体，标题为 `agent_layer_cube`。同一实例随后通过 File 菜单打开原生另存为面板，识别到可编辑控件和 Save、Cancel 按钮，执行 Cancel 后退出。复核测试账号下 Orca 主程序为 0。截图和探针日志逐份校验 SHA-256，保存在 `artifacts/mac_smoke/20261120-XX0PZk6h/`。
 
 本轮作为前台截图和对话框能力的 SHADOW 证据。实际写入工程、独立重开切片和切换用户后的后台捕获仍待验证。
+
+### 切换用户后的后台实测
+
+日常账号回到前台，测试账号保持登录。每轮均在测试账号的后台 Aqua 会话冷启动一个独立的 Orca 实例，使用新的 datadir，并将同一份立方体 3MF 改为本轮唯一文件名。捕获前核对会话身份，仅以本轮 Orca PID 和窗口 ID 或唯一标题选择 ScreenCaptureKit 单窗目标。三轮都保留了结果。
+
+| 运行 | 启动与观察 | 结果 |
+| --- | --- | --- |
+| `nk0oVww5` | 直接启动 Orca 可执行文件，两次查询可捕获窗口。 | 未找到目标窗口，无图。 |
+| `Fsng4ESY` | 通过 Launch Services 启动，等待 84.8 秒，AX 与 CoreGraphics 均未找到模型窗口。主线程采样位于 `wxGetCpuArchitectureName → fgets → read`。 | 两次 ScreenCaptureKit 查询均无目标窗口，无图。采样只说明当时的等待位置。 |
+| `MV0zNh36` | 测试会话内先运行系统架构查询，返回 `arm64`。通过 Launch Services 启动 Orca，4.3 秒后 AX 和 CoreGraphics 确认本轮唯一标题。 | 捕获两张相隔约五秒的 1200 × 800 静态图。截图标题与本轮 fixture 名匹配，U1 盘面中央可见金黄色立方体。两张图 SHA-256 均为 `4aa060ca1f99528ee431fcea110fb88fa2080ac8465bf9a46884ce485c2bf4bd`。 |
+
+三轮的本地证据目录分别为 `artifacts/mac_smoke/20261120-bg-nk0oVww5/`、`artifacts/mac_smoke/20261120-bg-Fsng4ESY/` 和 `artifacts/mac_smoke/20261120-bg-MV0zNh36/`，已核对回收件摘要。成功轮在捕获前后均确认测试会话不在控制台，收尾时该账号的 Orca 主程序数量为零。已取得一次后台冷启动、加载模型并静态截图的 SHADOW 证据。三轮条件有差异，尚未确定启动延迟的根因，也未验证后台输入、动态刷新或业务切片。
