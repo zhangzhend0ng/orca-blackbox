@@ -17,6 +17,20 @@ Get-ChildItem "artifacts\perf_harvest\$id" -Filter *.jsonl |
 
 Windows 有 psutil 时采集主进程和可归属的子进程，缺 psutil 时使用 ctypes 采集主进程。装包应针对 `ORCA_BB_GUEST_PYTHON` 指定的解释器。Linux 和 macOS 的独立采样需要 psutil，权限和平台所限的字段为 null。采样器统一支持显式 PID；按名称采集用于人工诊断。各平台的 GUI 执行器独立验收。
 
+### m2 性能场景
+
+```powershell
+& runner\hv_go.ps1 -Cases m2_slice_chain -Perf -PerfViewport -PerfCycles 3
+# 已备好 PresentMon 2.x CLI 时，追加 -PresentMonExe，传客机绝对路径。
+```
+
+- **动作耗时**：记录启动到稳定主窗和模型可见、切片点击到按钮变更及完成态、预览点击到观测到刀路。保留尝试编号和未观察到的结果。启动包含安全等待，预览包含稳定性确认。计时终点是驱动看到视觉判据的时刻。
+- **视口交互**：`-PerfViewport` 分别尝试旋转、平移、缩放和预览层切换，记录输入到首次检测到视口变化的时间和观察区间。通过验证的动作才进入逐帧采集。PresentMon CSV 按 Orca PID、动作时段和交换链解析，输出显示 FPS、P50/P95/P99 帧时间、最长帧、丢帧和可用的 CPU/GPU 忙碌时间。多条交换链保留各自数据。工具、事件或数据不足会写入原因。CSV 和 JSONL 随批次回收。
+- **重复操作后的资源**：`-PerfCycles` 先记录 G-code 导出到文件大小和修改时间稳定，再在同一 Orca 进程中以固定 STL 重复导入、切片和清空工程。取每轮清空后的空闲样本中位数，记录 RSS、私有内存、进程句柄、GDI、USER 及相对首轮空闲的差值。
+- **进程指标**：报告保留 CPU、内存、系统提供的进程工作集峰值、Windows 句柄、GDI/USER 和可用的线程数。I/O 是进程读写字节累计量，系统还能返回累计页错误数。报告展示从首个到最后一个有效样本的增量。缺失值保留为 null。整机 CPU、内存和网络走独立诊断采样。
+
+性能试跑按固定构建、夹具、渲染器、分辨率和输入序列比较。Mesa 软件 GL 客机的帧时间只代表该环境。产品流畅度基线需要有代表性的 GPU 环境和重复试跑。
+
 ```powershell
 python -B tools/perf_attach.py --pid 1234 --seconds 10
 ```

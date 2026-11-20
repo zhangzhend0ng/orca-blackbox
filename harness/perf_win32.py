@@ -17,6 +17,11 @@ class _Memory(C.Structure):
     ]
 
 
+class _Io(C.Structure):
+    _fields_ = [(name, C.c_ulonglong) for name in
+                ("read_ops", "write_ops", "other_ops", "read_bytes", "write_bytes", "other_bytes")]
+
+
 def _api(dll, name, result, *arguments):
     function = getattr(dll, name)
     function.restype = result
@@ -32,6 +37,8 @@ _times = _api(_kernel, "GetProcessTimes", W.BOOL, W.HANDLE, *([C.POINTER(W.FILET
 _exit_code = _api(_kernel, "GetExitCodeProcess", W.BOOL, W.HANDLE, C.POINTER(W.DWORD))
 _memory = _api(_kernel, "K32GetProcessMemoryInfo", W.BOOL, W.HANDLE, C.POINTER(_Memory), W.DWORD)
 _resources = _api(_user, "GetGuiResources", W.DWORD, W.HANDLE, W.DWORD)
+_io = _api(_kernel, "GetProcessIoCounters", W.BOOL, W.HANDLE, C.POINTER(_Io))
+_handles = _api(_kernel, "GetProcessHandleCount", W.BOOL, W.HANDLE, C.POINTER(W.DWORD))
 
 
 def _filetime(value):
@@ -70,10 +77,18 @@ class Process:
         info.cb = C.sizeof(info)
         readable = _memory(self.handle, C.byref(info), info.cb)
         gdi, user_obj = self.resources()
-        return (
-            _filetime(first),
-            (_filetime(kernel) + _filetime(user)) / 10_000_000,
-            info.WorkingSetSize if readable else None,
-            info.PrivateUsage if readable else None,
-            gdi, user_obj,
-        )
+        io = _Io()
+        io_readable = _io(self.handle, C.byref(io))
+        handles = W.DWORD()
+        handle_count = handles.value if _handles(self.handle, C.byref(handles)) else None
+        return {
+            "created": _filetime(first),
+            "cpu": (_filetime(kernel) + _filetime(user)) / 10_000_000,
+            "rss": info.WorkingSetSize if readable else None,
+            "private": info.PrivateUsage if readable else None,
+            "peak_rss_bytes": info.PeakWorkingSetSize if readable else None,
+            "page_faults": info.PageFaultCount if readable else None,
+            "gdi": gdi, "user": user_obj, "handles": handle_count,
+            "read_bytes": io.read_bytes if io_readable else None,
+            "write_bytes": io.write_bytes if io_readable else None,
+        }

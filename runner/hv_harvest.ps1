@@ -43,7 +43,7 @@ if ($PerfBatchId) {
       $manifest = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
       if ($manifest.schema -ne 1 -or $manifest.batch_id -cne $id) { throw 'Perf batch identity mismatch' }
       Get-ChildItem -LiteralPath $directory -File |
-        Where-Object { $_.Name -ceq 'batch.json' -or $_.Name -cmatch '\A[A-Za-z0-9_-]{1,60}__[0-9a-f]{32}\.jsonl\z' } |
+        Where-Object { $_.Name -ceq 'batch.json' -or $_.Name -cmatch '\A[A-Za-z0-9_-]{1,60}__[0-9a-f]{32}\.(jsonl|frames\.csv)\z' } |
         ForEach-Object {
           if ($_.Length -gt 64MB -or ($_.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
             throw 'Unsupported perf artifact'
@@ -57,7 +57,7 @@ if ($PerfBatchId) {
       if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Perf output is a link' }
     }
     foreach ($file in $inventory) {
-      if ($file.name -cne 'batch.json' -and $file.name -cnotmatch '\A[A-Za-z0-9_-]{1,60}__[0-9a-f]{32}\.jsonl\z') {
+      if ($file.name -cne 'batch.json' -and $file.name -cnotmatch '\A[A-Za-z0-9_-]{1,60}__[0-9a-f]{32}\.(jsonl|frames\.csv)\z') {
         throw 'Unexpected perf artifact name'
       }
       $destination = Join-Path $target $file.name

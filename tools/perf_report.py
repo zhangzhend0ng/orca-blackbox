@@ -7,7 +7,16 @@ import argparse
 import json
 import os
 from pathlib import Path
+from statistics import median
 import sys
+
+if __package__ is None:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from harness.perf_frames import percentiles
+
+_RESOURCES = ("rss_mb", "private_mb", "handles", "gdi", "user_obj")
+_PEAKS = (*_RESOURCES, "threads", "peak_rss_bytes", "conns")
+_COUNTERS = ("read_bytes", "write_bytes", "page_faults", "cpu_seconds")
 
 
 def load_rows(path: Path) -> list[dict]:
@@ -57,6 +66,42 @@ def _network(rows, schema):
             "net_recv_mb": round(recv / 1048576, 3) if n else None}
 
 
+def _measurements(rows, anchor_pid):
+    groups = {}
+    frames = []
+    idle = []
+    for row in rows:
+        if row.get("ev") != "measurement":
+            continue
+        name = row["name"]
+        if name == "frame_capture":
+            frames.append(row)
+            continue
+        groups.setdefault(name, []).append(row)
+        if name == "soak_idle" and row["status"] == "observed":
+            samples = [s for s in rows if s.get("ev") == "proc" and s.get("pid") == anchor_pid
+                       and s.get("step") == "soak_idle"
+                       and row["start_rel"] <= s["t_rel"] <= row["t_rel"]]
+            if len({s["process_id"] for s in samples}) != 1:
+                samples = []
+            values = {}
+            for key in _RESOURCES:
+                observed = [s[key] for s in samples if s.get(key) is not None]
+                values[key] = median(observed) if observed else None
+            idle.append({"cycle": row["cycle"], "sample_count": len(samples), "median": values,
+                         "process_id": samples[0]["process_id"] if samples else None})
+    baseline = next((row for row in idle if row["cycle"] == 0), {})
+    for point in idle:
+        comparison = baseline.get("median", {}) if point["process_id"] == baseline.get("process_id") else {}
+        point["delta_from_baseline"] = {
+            key: value - comparison[key] if value is not None and comparison.get(key) is not None else None
+            for key, value in point["median"].items()
+        }
+    return ({name: {"events": events, "duration_ms": percentiles(
+                [event["duration_ms"] for event in events if event.get("duration_ms") is not None])}
+             for name, events in groups.items()}, frames, idle)
+
+
 def summarize(rows: list[dict]) -> dict:
     meta_rows = [row for row in rows if row.get("ev") == "meta"]
     if len(meta_rows) > 1:
@@ -88,6 +133,8 @@ def summarize(rows: list[dict]) -> dict:
             "samples": 0, "cpu_sum": 0.0, "cpu_duration": 0.0, "cpu_max": None,
             "private_max_mb": None, "rss_max_mb": None, "gdi_first": None,
             "gdi_last": None, "conns_max": None,
+            "metric_peaks": dict.fromkeys(_PEAKS),
+            "counter_bounds": {},
         })
         proc["samples"] += 1
         if cpu is not None and duration:
@@ -97,6 +144,15 @@ def summarize(rows: list[dict]) -> dict:
         for max_field, sample_field in (("private_max_mb", "private_mb"), ("rss_max_mb", "rss_mb"),
                                         ("conns_max", "conns")):
             proc[max_field] = _peak(proc[max_field], row.get(sample_field))
+        for key in _PEAKS:
+            proc["metric_peaks"][key] = _peak(proc["metric_peaks"][key], row.get(key))
+        for key in _COUNTERS:
+            value = row.get(key)
+            if value is not None:
+                bounds = proc["counter_bounds"].setdefault(key, [value, value, 0, False])
+                bounds[3] |= value < bounds[1]
+                bounds[1] = value
+                bounds[2] += 1
         gdi = row.get("gdi")
         if gdi is not None:
             if proc["gdi_first"] is None:
@@ -128,8 +184,16 @@ def summarize(rows: list[dict]) -> dict:
         if "gdi_first" in result:
             first, last = result["gdi_first"], result["gdi_last"]
             result["gdi_delta"] = None if first is None else last - first
+            bounds = result.pop("counter_bounds")
+            result["counter_deltas"] = {
+                key: (bounds[key][1] - bounds[key][0] if key in bounds
+                      and bounds[key][2] >= 2 and not bounds[key][3] else None)
+                for key in _COUNTERS
+            }
+    operations, frames, soak = _measurements(rows, meta.get("anchor_pid"))
     return {"meta": meta, "status": status, "reason": terminal.get("reason") if terminal else None,
-            "pids": pids, "steps": steps, "sys": _network(host, schema)}
+            "pids": pids, "steps": steps, "sys": _network(host, schema),
+            "measurements": operations, "frame_captures": frames, "soak_checkpoints": soak}
 
 
 def _number(n):
@@ -153,6 +217,22 @@ def _print_report(path: Path, summary: dict) -> None:
     host = summary["sys"]
     print(f"sys: samples={host['samples']} net_sent={host['net_sent_mb']} MiB "
           f"net_recv={host['net_recv_mb']} MiB")
+    for name, measurement in summary["measurements"].items():
+        duration = measurement["duration_ms"]
+        value = f"{duration['p50']:.1f} ms (n={duration['count']})" if duration else "unavailable"
+        print(f"{name}: {value}")
+    for capture in summary["frame_captures"]:
+        metrics = capture.get("frame_summary", {}).get("metrics")
+        label = capture.get("activity", "viewport")
+        if metrics:
+            frame = metrics["displayed_frame_ms"]
+            print(f"{label}: {metrics['displayed_fps']:.1f} displayed FPS, "
+                  f"P95/P99 {frame['p95']:.1f}/{frame['p99']:.1f} ms, max {frame['max']:.1f} ms")
+        else:
+            print(f"{label} frames: {capture.get('reason', capture['status'])}")
+    for point in summary["soak_checkpoints"]:
+        print(f"idle cycle {point['cycle']}: n={point['sample_count']} "
+              f"delta={point['delta_from_baseline']}")
 
 
 def _export_annotations(rows, meta, client):

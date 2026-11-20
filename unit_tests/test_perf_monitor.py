@@ -286,6 +286,51 @@ def test_monitor_handles_no_network_and_keeps_system_samples(tmp_path):
     assert row["net_sent_bytes"] is None
 
 
+def test_measurements_keep_missing_values_and_same_process_idle_baseline():
+    meta = {"ev": "meta", "schema": 2, "run_id": "run", "instance_id": "app", "anchor_pid": 10}
+    rows = [meta]
+    for cycle, rss in ((0, 20), (1, 23)):
+        for offset in (.2, .7):
+            rows.append({"ev": "proc", "pid": 10, "process_id": "10@1",
+                         "t_rel": cycle * 3 + offset, "step": "soak_idle", "rss_mb": rss,
+                         "read_bytes": 100 + cycle * 20, "handles": 3})
+        rows.append({"ev": "measurement", "name": "soak_idle", "status": "observed",
+                     "cycle": cycle, "start_rel": cycle * 3, "t_rel": cycle * 3 + 1,
+                     "duration_ms": 1000})
+    rows.append({"ev": "measurement", "name": "slice_click_to_completion_detected",
+                 "status": "not_observed", "duration_ms": None})
+    summary = perf_report.summarize(rows)
+    delta = summary["soak_checkpoints"][1]["delta_from_baseline"]
+    assert delta["rss_mb"] == 3 and delta["private_mb"] is None and delta["handles"] == 0
+    assert summary["measurements"]["slice_click_to_completion_detected"]["duration_ms"] is None
+    assert summary["pids"]["10@1"]["counter_deltas"]["read_bytes"] == 20
+    assert summary["pids"]["10@1"]["counter_deltas"]["write_bytes"] is None
+
+
+def test_presentmon_csv_filters_pid_window_and_separates_swapchains(tmp_path):
+    from harness import perf_frames
+
+    path = tmp_path / "app.frames.csv"
+    path.write_text(
+        "ProcessID,SwapChainAddress,CPUStartQPC,DisplayedTime,MsGPUBusy,MsCPUBusy\n"
+        "99,a,105,600,600,1\n"
+        "10,a,105,20,5,2\n"
+        "10,a,110,NA,6,2\n"
+        "10,a,115,40,8,3\n"
+        "10,a,125,300,4,2\n"
+        "10,b,150,16,NA,1\n"
+        "10,b,160,16,NA,1\n", encoding="utf-8",
+    )
+    frames = perf_frames.read_frames(path, 10)
+    result = perf_frames.frame_metrics(frames, 100, 130)
+    assert result["status"] == "observed"
+    assert result["metrics"]["displayed_frame_ms"]["max"] == 40
+    assert result["metrics"]["displayed_fps"] == pytest.approx(1000 / 30)
+    assert result["metrics"]["dropped_frames"] == 1
+    assert perf_frames.frame_metrics(frames, 100, 180)["status"] == "ambiguous_swapchain"
+    assert perf_frames.frame_metrics(frames, 1, 30)["metrics"] is None
+
+
 def test_import_without_win32_dll(monkeypatch):
     import subprocess
 

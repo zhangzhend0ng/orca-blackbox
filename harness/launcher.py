@@ -218,11 +218,14 @@ def launch(exe: Path | str | None = None,
     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     si.wShowWindow = 4  # SW_SHOWNOACTIVATE (ineffective for wx, kept anyway)
     # FARM FIX (2026-11-08): cwd=exe.parent breaks this packaged build's boot (no main window in 90s; cwd elsewhere boots fine — DLLs resolve from the exe dir regardless, so inherit the driver's cwd instead).
+    launch_started = time.monotonic()
     popen = subprocess.Popen(args, env=env, startupinfo=si)
     monitor = None
     try:
         monitor = perf_monitor.attach_for_session(popen, exe)
         hwnd = winutil.find_main_window(popen.pid, timeout_s=wait_window_s)
+        if monitor is not None:
+            monitor.measure("launch_to_stable_main_window", launch_started)
         # Without early demotion the main frame pops to the TOP of the user's
         # desktop at boot (see the SW_SHOWNOACTIVATE note) and — under the
         # drivers' hands-off rule — sits there ~12s until demote_window()
@@ -249,6 +252,7 @@ def launch(exe: Path | str | None = None,
         session = AppSession(popen, hwnd)
         session.blockers = dismissed  # forensic trail: titles WM_CLOSEd at boot
         session.perf = monitor
+        session.launch_started = launch_started
         return session
     except BaseException as error:
         try:

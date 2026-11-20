@@ -148,15 +148,34 @@ class PerfMonitor:
             if self._thread is None or self._stop.is_set():
                 return
             self._phase = (name, case_run_id or self.run_id)
-            if len(self._steps) == self._steps.maxlen:
-                self._step_drops += 1
-            self._steps.append({
+            self._enqueue({
                 "ev": "step", "t": time.time(), "t_rel": time.monotonic() - self._started,
                 "step": name, "case_run_id": self._phase[1],
             })
 
+    def _enqueue(self, row: dict) -> None:
+        if len(self._steps) == self._steps.maxlen:
+            self._step_drops += 1
+        self._steps.append(row)
+
+    def measure(self, name: str, start: float, *, end: float | None = None,
+                status: str = "observed", **details) -> None:
+        """Record a driver measurement using monotonic timestamps, even across phases."""
+        end = time.monotonic() if end is None else end
+        with self._lock:
+            if self._thread is not None and not self._stop.is_set():
+                self._enqueue({"ev": "measurement", "name": name, "status": status,
+                               "case_run_id": self._phase[1], "t_rel": end - self._started,
+                               "start_rel": start - self._started,
+                               "duration_ms": (end - start) * 1000 if status == "observed" else None,
+                               **details})
+
     def __enter__(self) -> PerfMonitor:
         return self.start()
+
+    @property
+    def frame_csv_path(self) -> Path:
+        return self._out_path.with_suffix(".frames.csv")
 
     def __exit__(self, *exc):
         self.stop()
@@ -326,6 +345,7 @@ class PerfMonitor:
                     name = process.name()
                     threads = process.num_threads()
                     io = self._optional(psutil, process.io_counters) if hasattr(process, "io_counters") else None
+                    handles = self._optional(psutil, process.num_handles) if hasattr(process, "num_handles") else None
                 # Connection enumeration can be costly and platform-dependent.
                 # Keep it in the standalone diagnostics that also collect host counters.
                 connections = None
@@ -341,6 +361,8 @@ class PerfMonitor:
                     memory.rss, getattr(memory, "private", None), gdi, user,
                     threads=threads, read_bytes=getattr(io, "read_bytes", None),
                     write_bytes=getattr(io, "write_bytes", None),
+                    handles=handles, peak_rss_bytes=getattr(memory, "peak_wset", None),
+                    page_faults=getattr(memory, "num_page_faults", None),
                     conns=len(connections) if connections is not None else None,
                 ))
             except psutil.Error:
@@ -357,9 +379,8 @@ class PerfMonitor:
     def _ctypes_rows(self, snapshot, now, tag):
         if snapshot is None:
             return []
-        created, cpu, rss, private, gdi, user = snapshot
-        return [self._process_row(self._anchor_pid, created, "anchor", "", now, tag,
-                                  cpu, rss, private, gdi, user)]
+        return [self._process_row(self._anchor_pid, role="anchor", name="", now=now,
+                                  tag=tag, **snapshot)]
 
     def _process_row(self, pid, created, role, name, now, tag, cpu, rss, private, gdi, user,
                      **optional):
