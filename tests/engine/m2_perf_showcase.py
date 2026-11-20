@@ -162,9 +162,17 @@ def _run(label, model, directory, faces, objects, plates):
                 if dims["preview"]:
                     if os.environ.get("ORCA_BB_PERF_VIEWPORT") == "1":
                         monitor.set_step("viewport")
-                        run_viewport(session)
+                        started = time.monotonic()
+                        try:
+                            run_viewport(session)
+                        except (OSError, RuntimeError, ValueError, cv2.error) as error:
+                            monitor.measure("frame_capture", started, status="unavailable", reason=str(error))
                     if os.environ.get("ORCA_BB_PERF_CYCLES", "0") != "0":
-                        run_soak(session, int(os.environ["ORCA_BB_PERF_CYCLES"]))
+                        started = time.monotonic()
+                        try:
+                            run_soak(session, int(os.environ["ORCA_BB_PERF_CYCLES"]))
+                        except (OSError, RuntimeError, ValueError, cv2.error) as error:
+                            monitor.measure("soak_cycle", started, status="unavailable", reason=str(error))
                     monitor.set_step("export")
                     dims["gcode"] = _measure_export(session, verify=lambda path: _verify_export(session, path))
                     time.sleep(.6)

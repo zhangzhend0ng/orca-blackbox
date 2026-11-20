@@ -153,11 +153,17 @@ def run_viewport(session):
                     limit = time.monotonic() + 3
                     count = 0
                     while time.monotonic() < limit:
-                        action(1 if count % 2 else -1)
+                        try:
+                            action(1 if count % 2 else -1)
+                        except (OSError, RuntimeError, ValueError) as error:
+                            monitor.measure("frame_activity_interrupted", frame_start,
+                                            status="not_observed", activity=name, reason=str(error))
+                            break
                         count += 1
                         time.sleep(0.065)
                     end, _ = perf_frames.clock()
-                    spans[name] = (start, end, hz, count)
+                    if count:
+                        spans[name] = (start, end, hz, count)
         reason, frames = capture.reason, []
         if not reason:
             try:
