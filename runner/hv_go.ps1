@@ -17,7 +17,8 @@ param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$W
       [switch]$CloudPrintNewProject, [switch]$CloudUploadNewProject,
       [ValidatePattern('\A[0-9a-f]{32}\z')][string]$PerfBatchId,
       [switch]$PerfViewport, [ValidateRange(0, 20)][int]$PerfCycles = 0,
-      [string]$PresentMonExe = '', [string]$FrameTraceExe = '')
+      [string]$PresentMonExe = '', [string]$FrameTraceExe = '',
+      [string]$PortablePerfExe = '', [string]$PortableMesaDir = '')
 . (Join-Path $PSScriptRoot '_common.ps1')
 if ($CloudLoginProbe -and (-not $WindowsMcpProbe -or $NativeSave -or $vm -ne 'win11-test' -or $guestUser -ne 'test')) {
     throw 'Cloud login requires the standalone probe slot on win11-test/test'
@@ -111,6 +112,17 @@ $Cases = @($Cases + @($args)) | Where-Object { $_ }
 if (($PerfViewport -or $PerfCycles) -and (@($Cases).Count -ne 1 -or
     $Cases[0] -notin @('m2_slice_chain', 'm2_perf_showcase') -or $OnlyFailed)) {
   throw 'Select exactly m2_slice_chain or m2_perf_showcase for viewport and soak diagnostics'
+}
+if ($PortablePerfExe) {
+  if (-not $Perf -or $V3 -or $WindowsMcpProbe -or $OnlyFailed -or $Warmup -or
+      $PerfViewport -or $PerfCycles -or $PresentMonExe -or $FrameTraceExe -or
+      @($Cases).Count -ne 1 -or $Cases[0] -cne 'm2_perf_showcase' -or
+      $PortablePerfExe -notmatch '\A[A-Za-z]:[\\/].+\.exe\z') {
+    throw '-PortablePerfExe requires -Perf and only m2_perf_showcase, with a local guest exe'
+  }
+}
+if ($PortableMesaDir -and (-not $PortablePerfExe -or $PortableMesaDir -notmatch '\A[A-Za-z]:[\\/].+\z')) {
+  throw '-PortableMesaDir requires -PortablePerfExe and a local guest directory'
 }
 $explicitCases = $PSBoundParameters.ContainsKey('Cases') -or @($args).Count -gt 0
 
@@ -321,7 +333,7 @@ Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
   # NOTE: this scriptblock runs ON THE GUEST — everything it needs must be
   # marshaled via param/-ArgumentList (host-side $warmup is not visible here;
   # measured 09-03 night: silent $false, warmup block never emitted).
-  param($caseStr, $sb, $py, $warmup, $suite, $perfBatchId, $v3, $v3Executor, $v3RunId, $mcpProbe, $probeRunId, $nativeSave, $nativeActor, $nativeScenario, $cloudLogin, $cloudAuthenticate, $cloudDevice, $cloudUpload, $cloudVideoReview, $cloudLiveVideo, $cloudPrint, $cloudNewProject, $git, $perfViewport, $perfCycles, $presentMon, $frameTraceExe)
+  param($caseStr, $sb, $py, $warmup, $suite, $perfBatchId, $v3, $v3Executor, $v3RunId, $mcpProbe, $probeRunId, $nativeSave, $nativeActor, $nativeScenario, $cloudLogin, $cloudAuthenticate, $cloudDevice, $cloudUpload, $cloudVideoReview, $cloudLiveVideo, $cloudPrint, $cloudNewProject, $git, $perfViewport, $perfCycles, $presentMon, $frameTraceExe, $portablePerfExe, $portableMesaDir)
   if ((Get-ScheduledTask -TaskName suite -ErrorAction SilentlyContinue).State -eq 'Running') {
     throw 'Guest suite is already running'
   }
@@ -341,6 +353,7 @@ if (`$cases.Count -gt 1) {
   }
   $perfInit = '$env:ORCA_BB_PERF = ''0'''
   $perfCase = ''
+  $runCase = '& "$py" (Case-File $c)'.Replace('$py', $py)
   if ($perfBatchId) {
     $frameTraceInit = '$env:ORCA_BB_FRAME_TRACE = ''0'''
     if ($frameTraceExe) {
@@ -362,6 +375,20 @@ if (`$cases.Count -gt 1) {
     New-Item -ItemType Directory $perfDir -ErrorAction Stop | Out-Null
     @{schema=1; batch_id=$perfBatchId; commit=$sha; worker=$env:COMPUTERNAME; started_utc=[DateTime]::UtcNow.ToString('o')} |
       ConvertTo-Json | Set-Content -LiteralPath (Join-Path $perfDir 'batch.json') -Encoding UTF8 -ErrorAction Stop
+    if ($portablePerfExe) {
+      $portable = Get-Item -LiteralPath $portablePerfExe -ErrorAction Stop
+      if ($portable.PSIsContainer -or ($portable.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+        throw 'Portable performance executable must be a regular guest file'
+      }
+      $runCase = "& '$($portable.FullName.Replace("'", "''"))' --output '$($perfDir.Replace("'", "''"))' --no-open"
+      if ($portableMesaDir) {
+        $mesa = Get-Item -LiteralPath $portableMesaDir -ErrorAction Stop
+        if (-not $mesa.PSIsContainer -or ($mesa.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+          throw 'Portable Mesa path must be a regular guest directory'
+        }
+        $runCase += " --mesa-dir '$($mesa.FullName.Replace("'", "''"))'"
+      }
+    }
     $perfInit = @"
 `$env:ORCA_BB_PERF_BATCH_DIR = '$($perfDir.Replace("'", "''"))'
 `$env:ORCA_BB_PERF_OUT = `$env:ORCA_BB_PERF_BATCH_DIR
@@ -412,7 +439,7 @@ foreach (`$c in `$cases) {
 $perfCase
   # PS 5.1 '>' writes UTF-16LE — junit_report reads UTF-8; route through
   # Out-File -Encoding utf8 or the emitter embeds mojibake (measured 09-03).
-  & "$py" (Case-File `$c) 2>&1 | Out-File -FilePath "artifacts\regress_`$c.log" -Encoding utf8
+  $runCase 2>&1 | Out-File -FilePath "artifacts\regress_`$c.log" -Encoding utf8
   if (`$LASTEXITCODE -eq 0) { `$pass++; "`$c GREEN" | Add-Content C:\coil\regress_progress.txt }
   else { `$fail++; `$failed += `$c; "`$c RED rc=`$LASTEXITCODE" | Add-Content C:\coil\regress_progress.txt }
   `$batch = "`$batch `$c|`$LASTEXITCODE|artifacts\regress_`$c.log"
@@ -497,7 +524,7 @@ exit `$LASTEXITCODE
   Register-ScheduledTask -TaskName "suite" -Action $a -Settings $st -Principal $p -Force | Out-Null
   Start-ScheduledTask -TaskName "suite"
   "suite launched: " + (Get-ScheduledTask suite).State
-} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, $PerfBatchId, ([bool]$V3), $V3Executor, $V3RunId, ([bool]$WindowsMcpProbe), $ProbeRunId, ([bool]$NativeSave), $NativeActor, $NativeScenario, ([bool]$CloudLoginProbe), ([bool]$CloudLoginAuthenticate), ([bool]$CloudDeviceProbe), ([bool]$CloudUploadGcode), ([bool]$CloudUploadVideoReview), ([bool]$CloudUploadLiveVideo), ([bool]$CloudPrintNewProject), ([bool]$CloudUploadNewProject), $guestGit, ([bool]$PerfViewport), $PerfCycles, $PresentMonExe, $FrameTraceExe -ErrorAction Stop
+} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, $PerfBatchId, ([bool]$V3), $V3Executor, $V3RunId, ([bool]$WindowsMcpProbe), $ProbeRunId, ([bool]$NativeSave), $NativeActor, $NativeScenario, ([bool]$CloudLoginProbe), ([bool]$CloudLoginAuthenticate), ([bool]$CloudDeviceProbe), ([bool]$CloudUploadGcode), ([bool]$CloudUploadVideoReview), ([bool]$CloudUploadLiveVideo), ([bool]$CloudPrintNewProject), ([bool]$CloudUploadNewProject), $guestGit, ([bool]$PerfViewport), $PerfCycles, $PresentMonExe, $FrameTraceExe, $PortablePerfExe, $PortableMesaDir -ErrorAction Stop
 Write-Host "[4] DONE. Poll progress any time (admin window):"
 Write-Host "    Get-Content C:\coil\vm_setup\poll_rerun.txt | Set-Content C:\coil\vm_setup\relay_cmd.txt   # via relay"
 Write-Host "    or in guest: Get-Content C:\coil\regress_progress.txt -Tail 5"
