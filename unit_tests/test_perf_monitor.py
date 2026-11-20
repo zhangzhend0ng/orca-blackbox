@@ -344,6 +344,26 @@ def test_import_without_win32_dll(monkeypatch):
     assert p.returncode == 0, p.stderr
 
 
+@pytest.mark.skipif(os.name != "nt", reason="Windows session lifecycle")
+def test_session_monitor_records_unexpected_exit_without_losing_terminal_event(tmp_path, monkeypatch):
+    import subprocess
+    from harness.launcher import AppSession
+
+    path = tmp_path / "exit.jsonl"
+    monkeypatch.setenv("ORCA_BB_PERF", "1")
+    monkeypatch.setenv("ORCA_BB_PERF_OUT", str(path))
+    monkeypatch.delenv("ORCA_BB_PERF_JOB", raising=False)
+    with subprocess.Popen([sys.executable, "-B", "-c", "import time; time.sleep(.3); raise SystemExit(27)"]) as process:
+        session = AppSession(process, 0)
+        session.perf = pm.attach_for_session(process, sys.executable, finish_on_anchor_exit=False)
+        assert process.wait(timeout=5) == 27
+        session.close()
+    result = perf_report.summarize(perf_report.load_rows(path))
+    event = result["measurements"]["close_request_to_exit"]["events"][0]
+    assert event["status"] == "unexpected_exit" and event["exit_code"] == 27
+    assert event["duration_ms"] is None
+
+
 @pytest.mark.skipif(os.name != "nt", reason="Windows Job integration")
 def test_two_owned_workers_capture_only_their_process_tree(tmp_path):
     pytest.importorskip("psutil")

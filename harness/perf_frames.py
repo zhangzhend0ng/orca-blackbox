@@ -58,6 +58,7 @@ class FrameCapture:
         self.seconds = seconds
         self.process = None
         self.reason = "presentmon_unconfigured"
+        self.error = None
 
     def __enter__(self):
         exe = os.environ.get("ORCA_BB_PRESENTMON_EXE", "")
@@ -76,7 +77,7 @@ class FrameCapture:
                 [str(binary), "--process_id", str(self.pid), "--session_name", f"OrcaPerf-{self.instance}",
                  "--output_file", str(self.path), "--v2_metrics", "--qpc_time",
                  "--timed", str(self.seconds), "--terminate_after_timed", "--no_console_stats"],
-                stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
                 creationflags=subprocess.CREATE_NO_WINDOW,
             )
             self.deadline = time.monotonic() + self.seconds + 4
@@ -90,16 +91,22 @@ class FrameCapture:
             return
         try:
             # Preserve a fully flushed trace. Only this owned process is stopped on timeout.
-            code = self.process.wait(timeout=max(0, self.deadline - time.monotonic()))
+            _, stderr = self.process.communicate(timeout=max(0, self.deadline - time.monotonic()))
+            code = self.process.returncode
+            self.error = stderr.decode(errors="replace").strip()[:2000] or None
             if code:
                 self.reason = f"presentmon_exit_{code}"
+            elif self.error and any(term in self.error for term in ("ETW buffers were lost",
+                                                                   "ETW events were lost",
+                                                                   "overflowed present events")):
+                self.reason = "presentmon_events_lost"
             elif not self.path.is_file():
                 self.reason = "presentmon_csv_missing"
         except subprocess.TimeoutExpired:
             self.reason = "presentmon_timeout"
             try:
                 self.process.kill()
-                self.process.wait(timeout=2)
+                self.process.communicate(timeout=2)
             except (OSError, subprocess.TimeoutExpired):
                 self.reason = "presentmon_stop_unconfirmed"
 

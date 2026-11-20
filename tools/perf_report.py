@@ -14,8 +14,8 @@ if __package__ is None:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from harness.perf_frames import percentiles
 
-_RESOURCES = ("rss_mb", "private_mb", "handles", "gdi", "user_obj")
-_PEAKS = (*_RESOURCES, "threads", "peak_rss_bytes", "conns")
+_RESOURCES = ("rss_mb", "private_mb", "handles", "gdi", "user_obj", "gpu_dedicated_mb", "gpu_shared_mb")
+_PEAKS = (*_RESOURCES, "threads", "peak_rss_bytes", "conns", "gpu_engine_pct")
 _COUNTERS = ("read_bytes", "write_bytes", "page_faults", "cpu_seconds")
 
 
@@ -222,7 +222,7 @@ def _print_report(path: Path, summary: dict) -> None:
         value = f"{duration['p50']:.1f} ms (n={duration['count']})" if duration else "unavailable"
         print(f"{name}: {value}")
     for capture in summary["frame_captures"]:
-        metrics = capture.get("frame_summary", {}).get("metrics")
+        metrics = (capture.get("frame_summary") or {}).get("metrics")
         label = capture.get("activity", "viewport")
         if metrics:
             frame = metrics["displayed_frame_ms"]

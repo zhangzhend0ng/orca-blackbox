@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from contextlib import contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import time
@@ -11,6 +12,18 @@ import cv2
 import numpy as np
 
 from harness import anchors, perf_frames, winutil
+
+
+@contextmanager
+def _activate_window(session):
+    user = winutil.user32
+    ex_style = user.GetWindowLongW(session.hwnd, -20)
+    user.SetWindowLongW(session.hwnd, -20, ex_style & ~0x08000000)
+    try:
+        yield winutil.move_to_primary_and_foreground(session.hwnd)
+    finally:
+        if session.alive():
+            user.SetWindowLongW(session.hwnd, -20, ex_style)
 
 
 def _surface(session):
@@ -103,13 +116,6 @@ def run_viewport(session):
     tools_ready_at = time.monotonic()
     # This happens after functional Preview validation and outside the
     # read-only startup window. Make only the owned Orca window activatable.
-    user = winutil.user32
-    ex_style = user.GetWindowLongW(session.hwnd, -20)
-    user.SetWindowLongW(session.hwnd, -20, ex_style & ~0x08000000)
-    if not winutil.move_to_primary_and_foreground(session.hwnd):
-        monitor.measure("frame_capture", tools_ready_at, status="unavailable", reason="foreground_unavailable")
-        return
-
     actions = {
         "zoom": lambda direction: _zoom(session, direction),
         "orbit": lambda direction: _drag(session, direction, pan=False),
@@ -117,7 +123,10 @@ def run_viewport(session):
         "preview_layer_scrub": lambda direction: _scrub(session, direction),
     }
     supported = {}
-    try:
+    with _activate_window(session) as active:
+        if not active:
+            monitor.measure("frame_capture", tools_ready_at, status="unavailable", reason="foreground_unavailable")
+            return
         for name, action in actions.items():
             start = time.monotonic()
             try:
@@ -138,6 +147,8 @@ def run_viewport(session):
             if capture.process is not None:
                 time.sleep(0.8)
                 for name, action in supported.items():
+                    if capture.process.poll() is not None:
+                        break
                     start, hz = perf_frames.clock()
                     limit = time.monotonic() + 3
                     count = 0
@@ -155,17 +166,14 @@ def run_viewport(session):
                 reason = str(error)
         if not spans:
             monitor.measure("frame_capture", frame_start, status="unavailable",
-                            reason=reason or "no_activity_window")
+                            reason=reason or "no_activity_window", collector_error=capture.error)
         for name, (start, end, hz, count) in spans.items():
             summary = perf_frames.frame_metrics(frames, start, end) if not reason else None
             monitor.measure("frame_capture", frame_start,
                             status=summary["status"] if summary else "unavailable",
-                            reason=reason, activity=name,
+                            reason=reason, activity=name, collector_error=capture.error,
                             qpc_start=start, qpc_end=end, qpc_hz=hz, inputs=count,
                             csv=csv_path.name, frame_summary=summary)
-    finally:
-        if session.alive():
-            user.SetWindowLongW(session.hwnd, -20, ex_style)
 
 
 def _clear_plate(session, m7):
@@ -176,7 +184,32 @@ def _clear_plate(session, m7):
             return False
     if not session.alive() or not winutil.user32.IsWindowEnabled(session.hwnd):
         return False
-    return m7.model_colored_frac(session) < m7.EMPTY_BED_FLOOR or m7.step_delete_all(session, {})
+    if m7.model_colored_frac(session) < m7.EMPTY_BED_FLOOR:
+        return True
+    with _activate_window(session) as active:
+        if not active:
+            return False
+        x, y = _point(session)
+        target = _canvas(session, x, y)
+        if "canvas" not in winutil.window_class(target).lower():
+            return False
+        winutil.msg_click_screen(x, y, session.hwnd)
+        if winutil.user32.GetForegroundWindow() != session.hwnd:
+            return False
+        # Prepare's Delete All accelerator is Ctrl+D.
+        user = winutil.user32
+        user.keybd_event(winutil.VK_CONTROL, 0, 0, 0)
+        try:
+            user.keybd_event(ord("D"), 0, 0, 0)
+            user.keybd_event(ord("D"), 0, 2, 0)
+        finally:
+            user.keybd_event(winutil.VK_CONTROL, 0, 2, 0)
+    deadline = time.monotonic() + 6
+    while session.alive() and time.monotonic() < deadline:
+        if m7.model_colored_frac(session) < m7.EMPTY_BED_FLOOR:
+            return True
+        time.sleep(.15)
+    return False
 
 
 def _idle_checkpoint(session, cycle):
@@ -269,6 +302,7 @@ def run_soak(session, cycles):
 def run_diagnostics(session):
     if os.environ.get("ORCA_BB_PERF_VIEWPORT") == "1":
         started = time.monotonic()
+        session.perf.set_step("viewport")
         try:
             run_viewport(session)
         except (OSError, RuntimeError, ValueError) as error:
@@ -281,11 +315,13 @@ def run_diagnostics(session):
         started = time.monotonic()
         try:
             session.perf.frame_csv_path.parent.mkdir(parents=True, exist_ok=True)
+            session.perf.set_step("export")
             try:
                 _measure_export(session)
             except (OSError, RuntimeError, ValueError) as error:
                 session.perf.measure("export_request_to_stable_file", started, status="unavailable",
                                      reason=type(error).__name__)
+            session.perf.set_step("soak_prepare")
             run_soak(session, cycles)
         except (OSError, RuntimeError, ValueError) as error:
             session.perf.measure("soak_cycle", started, status="unavailable", reason=type(error).__name__)

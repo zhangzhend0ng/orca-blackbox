@@ -83,6 +83,7 @@ class PerfMonitor:
                  anchor_pid: int | None = None, anchor_alive=None, members=None,
                  interval_s: float = 0.5, include_children: bool = True,
                  use_psutil: bool = True, include_system: bool = True,
+                 include_gpu: bool = False, finish_on_anchor_exit: bool = True,
                  label: str = "", run_id: str | None = None,
                  instance_id: str | None = None, commit: str | None = None):
         if not math.isfinite(interval_s) or interval_s <= 0:
@@ -99,6 +100,8 @@ class PerfMonitor:
         self._include_children = include_children
         self._use_psutil = use_psutil
         self._include_system = include_system
+        self._include_gpu = include_gpu and anchor_pid is not None and os.name == "nt"
+        self._finish_on_anchor_exit = finish_on_anchor_exit
         self._label = label or self._out_path.stem
         self.run_id = run_id or uuid4().hex
         self.instance_id = instance_id or uuid4().hex
@@ -183,6 +186,8 @@ class PerfMonitor:
     def _collect(self) -> None:
         psutil = None
         windows_process = None
+        gpu = None
+        next_gpu_sample = 0
         mode = "unavailable"
         reason = None
         try:
@@ -215,6 +220,12 @@ class PerfMonitor:
                     reason = "anchor_unavailable"
             else:
                 reason = "backend_unavailable"
+            if reason is None and self._include_gpu:
+                try:
+                    from .perf_gpu_win32 import GpuCounters
+                    gpu = GpuCounters(self._anchor_pid)
+                except (OSError, AttributeError):
+                    _stderr("WDDM counters unavailable")
             self._out_path.parent.mkdir(parents=True, exist_ok=True)
             with self._out_path.open("x", encoding="utf-8", newline="\n") as stream:
                 def write(row):
@@ -230,6 +241,7 @@ class PerfMonitor:
                     if self._anchor_pid is not None and mode == "psutil"
                     else ("anchor_only" if self._anchor_pid is not None else "name_diagnostic"),
                     "system_scope": "worker" if self._include_system and psutil else None,
+                    "gpu_scope": "anchor_wddm" if gpu and gpu.counters else None,
                 })
                 stream.flush()
                 # Take an initial snapshot even when the caller stops immediately.
@@ -250,6 +262,13 @@ class PerfMonitor:
                             owned = self._members is None or self._anchor_pid in self._members()
                             snapshot = windows_process.snapshot() if owned and self._anchor_running() else None
                             rows = self._ctypes_rows(snapshot, now, tag)
+                        if gpu and now >= next_gpu_sample:
+                            anchor = next((row for row in rows if row["role"] == "anchor"), None)
+                            if anchor is not None and self._anchor_running():
+                                info = gpu.snapshot()
+                                if self._anchor_running():
+                                    anchor.update(info)
+                            next_gpu_sample = now + 1
                         self._write_samples(write, rows, tag)
                         if psutil is not None and self._include_system:
                             write(self._system_row(psutil, now, tag))
@@ -258,7 +277,8 @@ class PerfMonitor:
                         if self._errors == 1:
                             _stderr(f"sample failed: {type(error).__name__}")
                     stream.flush()
-                    if self._anchor_alive is not None and not self._anchor_running() and not self._tracked:
+                    if (self._finish_on_anchor_exit and self._anchor_alive is not None
+                            and not self._anchor_running() and not self._tracked):
                         break
                     if self._stop.wait(self._interval_s):
                         break
@@ -274,6 +294,8 @@ class PerfMonitor:
             _stderr(f"{self._label}: collector failed ({type(error).__name__})")
             self._summary = self._finish("collector_failed")
         finally:
+            if gpu is not None:
+                gpu.close()
             if windows_process is not None:
                 windows_process.close()
 
@@ -486,7 +508,7 @@ def launch_phase(name: str, case_run_id: str):
         _PHASE.reset(token)
 
 
-def attach_for_session(popen, exe: Path | str) -> PerfMonitor | None:
+def attach_for_session(popen, exe: Path | str, *, finish_on_anchor_exit: bool = True) -> PerfMonitor | None:
     if not env_enabled():
         return None
     label = os.environ.get("ORCA_BB_PERF_LABEL") or Path(exe).stem
@@ -499,6 +521,9 @@ def attach_for_session(popen, exe: Path | str) -> PerfMonitor | None:
         mon = PerfMonitor(anchor_pid=popen.pid, anchor_alive=lambda: popen.poll() is None,
                           out_path=resolve_out_path(label, instance),
                           label=label, instance_id=instance, include_system=False,
+                          include_gpu=(os.environ.get("ORCA_BB_PERF_VIEWPORT") == "1"
+                                       or os.environ.get("ORCA_BB_PERF_CYCLES", "0") != "0"),
+                          finish_on_anchor_exit=finish_on_anchor_exit,
                           run_id=os.environ.get("ORCA_BB_PERF_RUN_ID"),
                           commit=os.environ.get("ORCA_BB_PERF_COMMIT"), members=members)
         name, case_run_id = _PHASE.get()

@@ -57,16 +57,37 @@ class AppSession:
 
     def close(self, timeout_s: float = 10.0) -> None:
         """Graceful WM_CLOSE, then wait, then hard kill."""
+        monitor = self.perf
+        started = time.monotonic()
+        method = "already_exited"
         try:
             if not self.alive():
                 return
+            method = "window_close"
+            if monitor is not None:
+                monitor.set_step("shutdown")
+                started = time.monotonic()
             winutil.close_window(self.hwnd)
             deadline = time.monotonic() + timeout_s
             while self.alive() and time.monotonic() < deadline:
-                time.sleep(0.5)
+                time.sleep(0.1 if monitor is not None else 0.5)
             if self.alive():
+                method = "forced_kill"
                 self.popen.kill()
+                if monitor is not None:
+                    try:
+                        self.popen.wait(timeout=1)
+                    except subprocess.TimeoutExpired:
+                        pass
         finally:
+            if monitor is not None:
+                code = self.popen.poll()
+                name = ("close_request_to_forced_exit" if method == "forced_kill"
+                        else "close_request_to_exit")
+                status = ("unexpected_exit" if method == "already_exited"
+                          else "observed" if code is not None else "not_observed")
+                monitor.measure(name, started, status=status, method=method, exit_code=code,
+                                observer="process", poll_interval_ms=100)
             # Always finalize the perf monitor (close() may early-return above)
             # — a partial-but-valid jsonl beats a lost one.
             perf_monitor.finish_session(self)
@@ -222,7 +243,7 @@ def launch(exe: Path | str | None = None,
     popen = subprocess.Popen(args, env=env, startupinfo=si)
     monitor = None
     try:
-        monitor = perf_monitor.attach_for_session(popen, exe)
+        monitor = perf_monitor.attach_for_session(popen, exe, finish_on_anchor_exit=False)
         hwnd = winutil.find_main_window(popen.pid, timeout_s=wait_window_s)
         if monitor is not None:
             monitor.measure("launch_to_stable_main_window", launch_started)
@@ -255,6 +276,8 @@ def launch(exe: Path | str | None = None,
         session.launch_started = launch_started
         return session
     except BaseException as error:
+        failed_at = time.monotonic()
+        failed_code = popen.poll()
         try:
             if popen.poll() is None:
                 popen.kill()
@@ -262,5 +285,7 @@ def launch(exe: Path | str | None = None,
             error.add_note(f"launcher cleanup failed: {type(cleanup_error).__name__}")
         finally:
             if monitor is not None:
+                monitor.measure("launch_failed", launch_started, end=failed_at, status="not_observed",
+                                exit_code=failed_code, reason=type(error).__name__)
                 monitor.stop()
         raise
