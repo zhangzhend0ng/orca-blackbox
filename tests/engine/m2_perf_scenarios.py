@@ -177,37 +177,35 @@ def run_viewport(session):
 
 
 def _clear_plate(session, m7):
-    score, _, _ = anchors.wait_for(session, "tab_prepare_active", timeout_s=.6)
-    if score < anchors.MATCH_THRESHOLD:
-        ready, _ = anchors.click_and_verify(session, "tab_prepare_inactive", "tab_prepare_active")
-        if not ready:
-            return False
-    if not session.alive() or not winutil.user32.IsWindowEnabled(session.hwnd):
+    from harness.agent_business_ui import _discard_choice
+    from harness import export_util
+
+    sent, _ = m7.file_menu_dispatch(session, "New Project")
+    if not sent:
         return False
-    if m7.model_colored_frac(session) < m7.EMPTY_BED_FLOOR:
-        return True
-    with _activate_window(session) as active:
-        if not active:
-            return False
-        x, y = _point(session)
-        target = _canvas(session, x, y)
-        if "canvas" not in winutil.window_class(target).lower():
-            return False
-        winutil.msg_click_screen(x, y, session.hwnd)
-        if winutil.user32.GetForegroundWindow() != session.hwnd:
-            return False
-        # Prepare's Delete All accelerator is Ctrl+D.
-        user = winutil.user32
-        user.keybd_event(winutil.VK_CONTROL, 0, 0, 0)
-        try:
-            user.keybd_event(ord("D"), 0, 0, 0)
-            user.keybd_event(ord("D"), 0, 2, 0)
-        finally:
-            user.keybd_event(winutil.VK_CONTROL, 0, 2, 0)
-    deadline = time.monotonic() + 6
+    deadline = time.monotonic() + 12
+    handled = set()
     while session.alive() and time.monotonic() < deadline:
-        if m7.model_colored_frac(session) < m7.EMPTY_BED_FLOOR:
-            return True
+        if winutil.user32.IsWindowEnabled(session.hwnd):
+            score, _, _ = anchors.wait_for(session, "tab_prepare_active", timeout_s=.25)
+            if score >= anchors.MATCH_THRESHOLD and m7.model_colored_frac(session) < m7.EMPTY_BED_FLOOR:
+                return True
+        else:
+            dialog = m7.wait_dialog(session.pid, timeout_s=.3)
+            if dialog and dialog[3] not in handled:
+                _, title, _, hwnd = dialog
+                children = export_util._children_texts(hwnd)
+                button = None
+                if title == "Snapmaker Orca - Save":
+                    button = _discard_choice(title, children, close_requested=True)
+                elif title in ("Transfer or discard changes", "Creating a new project"):
+                    choices = [child for child in children if child[0].strip().replace("&", "") == "Discard"]
+                    button = choices[0] if len(choices) == 1 else None
+                handled.add(hwnd)
+                print(f"[perf] New Project dialog {title!r}, known discard={bool(button)}")
+                if button and winutil._window_pid(button[2]) == session.pid:
+                    x0, y0, x1, y1 = button[1]
+                    winutil.msg_click_screen((x0 + x1) // 2, (y0 + y1) // 2, hwnd)
         time.sleep(.15)
     return False
 

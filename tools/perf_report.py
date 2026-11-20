@@ -229,7 +229,7 @@ def _print_report(path: Path, summary: dict) -> None:
             print(f"{label}: {metrics['displayed_fps']:.1f} displayed FPS, "
                   f"P95/P99 {frame['p95']:.1f}/{frame['p99']:.1f} ms, max {frame['max']:.1f} ms")
         else:
-            print(f"{label} frames: {capture.get('reason', capture['status'])}")
+            print(f"{label} frames: {capture.get('reason') or capture['status']}")
     for point in summary["soak_checkpoints"]:
         print(f"idle cycle {point['cycle']}: n={point['sample_count']} "
               f"delta={point['delta_from_baseline']}")
