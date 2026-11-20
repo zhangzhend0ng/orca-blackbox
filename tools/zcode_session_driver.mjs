@@ -46,6 +46,12 @@ readline.createInterface({input:server.stdout}).on('line',line=>{
   if(data.method==='session/requestRuntimePreferences'){
    write({id:data.id,result:{nativeSearchEnhancementsEnabled:false,toolSearchMode:'off',
     subagentRuntimeConfigEnabled:false,memoryEnabled:false,askUserQuestionAutoResolutionEnabled:false}});
+  }else if(data.method==='session/readReplyLanguage'){
+   // Newer app-server builds ask the client for the reply language before a
+   // main turn; the server treats a rejected request as "skip" but any
+   // unknown request poisons this driver's report. Answer with the language
+   // the frozen prompts are written in.
+   write({id:data.id,result:{language:'en'}});
   }else if(data.method==='interaction/requestPermission'){
    const tool=data.params?.toolName;const permit=allowed.has(tool);
    report.permissions.push({tool,decision:permit?'allow':'deny'});
