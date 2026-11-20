@@ -58,3 +58,20 @@
 对于已有的 3MF，可在开始编辑前，以新名字复制原件，打开副本编辑，展开“文件”并选择“保存项目”。本轮副本名为 `layer-024-copy.3mf`。首次探针直接读取未展开菜单的保存项，读到禁用后中止。复试激活测试账号中的 Orca 窗口并展开“文件”菜单，保存项可用，保存后标题的未保存标记清除。
 
 另一进程使用新配置重开同名副本，读到常规层高 0.24 mm、首层 0.40 mm。原件 SHA-256 与仓库夹具一致，修改前后保持不变。回收件 SHA-256 为 `a73d4238df01f01e1c039014035043f5385d9d95b89a3396fd78d485770be3fc`，独立工程检查确认网格几何一致。副本和日志 `standalone_copy_flow.log`、`standalone_copy_menu.log` 均保存在本轮证据目录。该操作适用于编辑前已经有磁盘原件的场景。
+
+## 可复跑的仓库入口
+
+从 Windows 仓库运行以下命令。将 `TEST_USER@MAC_HOST` 替换为实际 SSH 目标，也可使用已有 SSH 配置中的别名。独立密钥和主机指纹文件分别用 `--identity` 和 `--known-hosts` 指定。测试账号需已登录为后台桌面用户，所用的 Xcode 签名 Python 应已获辅助功能授权。安装包路径为 `/Applications/Snapmaker Orca.app`。
+
+```powershell
+.\.venv\Scripts\python.exe -B runner/macos_project_copy.py TEST_USER@MAC_HOST
+```
+
+每轮均从仓库传入固定夹具，在独立目录中新建 `layer-024-copy.3mf`，经 GUI 将常规层高从 0.40 改为 0.24 mm，首层保留 0.40 mm。保存、退出并冻结文件后再以新配置重开。宿主检查原件摘要、两次进程身份、重开字段、回收文件摘要以及网格。结果写入 `artifacts/mac_project_copy/<run_id>/result.json`，并保留 3MF。结果为 SHADOW 时退出码为 0，失败时记录 NON_GREEN 并返回非零。原生另存为与 GUI G-code 导出在此用例中分别记为 `NOT_TESTED`。
+
+| 实机运行 ID | 编辑 → 重开 PID | 原件摘要前后一致 | 回收副本验证 |
+| --- | --- | --- | --- |
+| `b6ca5a53d7f244f19ffadc0329519214` | 196 → 240 | 是 | 0.24 / 0.40 mm，网格一致 |
+| `87a39c6b95fc41bea9bf7f1c59bbc0bf` | 460 → 505 | 是 | 0.24 / 0.40 mm，网格一致 |
+
+第二轮还在卸载后查询了本轮 LaunchAgent，确认注册项已移除，并复查本次 Orca 进程均已退出。
