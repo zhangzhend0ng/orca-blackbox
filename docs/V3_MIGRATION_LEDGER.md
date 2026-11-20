@@ -203,6 +203,19 @@
 
 注：F1 的"隐含"指启动/退出/清理链在每个原生 run 的 ready/teardown 收据中逐次验证（本批 24+ 次），非独立用例形态。第五轮手写基线完成后"本 HEAD 独立通过"代表链数不变（同链复验）。
 
+## 下一批即取计划（guard 恢复 ready 后按序执行）
+
+前置：①clash-guard `/status` ready=true（代理已开+US 出口）；②宿主与客机 v3 检出同 HEAD（`runner/guest_v3_bundle_sync.ps1 -Head <sha>`）；③客机 suite Ready 无孤儿。
+
+1. **zcode 锚点复验**（验证 0b81f5d+bf108f7 两修复在新 app-server 下端到端）：
+   `python -B tools/native_save_demo.py --actor zcode --scenario uia_general_wall --goal-only --run-id <新32hex>`
+   预期：模型请求 toolNames=7 工具、≥10 次工具调用、独立重开 68 层+壁环数 3。
+2. **泛化八槽复验批**（开发集复验口径，非 held-out；三份门禁收据已在本仓验证可用）：
+   `python -B tools/zcode_matrix.py --suite uia_generalization --uia-gate-runs d7299035e33b80969e0064a8d9b3e4fc bfd5c93af9571ba3ddc53f7099d7e407 52a21e14b5e0456bf5e965cb98970cf4`
+   （跑前需把三份收据 artifacts 目录留在工作树——主检出已有，本 worktree 已复制核心文件。）预计 60-90 分钟；达标判据见 V3_PLAN §4。
+3. 锚点通过后可再跑 `uia_general_slot2`（0/3 历史账）与 `uia_general_y_quality`（0/5，串行调度修复后未复验）单场景复验。
+4. 探索轮门槛按 V3_PLAN 现行阈值评估；未达标继续修阻塞/迁移确定性用例。
+
 ## Checkpoint（恢复用）
 
 - 恢复命令（宿主 Git Bash，本仓根）：
