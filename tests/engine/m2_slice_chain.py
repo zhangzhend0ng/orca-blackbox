@@ -154,8 +154,7 @@ def click_slice_start(session, attempts=3):
             monitor.measure("slice_click_to_button_change", dispatched, end=observed,
                             status="observed" if s2 < 0.7 else "not_observed", attempt=i + 1)
             session.slice_dispatch = (dispatched, i + 1)
-        if getattr(session, "perf_soak_cycle", None) is None:
-            cv2.imwrite(str(HERE / "artifacts" / f"m2_diag_click{i}.png"), img)
+        cv2.imwrite(str(HERE / "artifacts" / f"m2_diag_click{i}.png"), img)
         if s2 < 0.7:
             print(f"[m2] slicing started (button left idle, score {s2:.3f})")
             return True

@@ -176,43 +176,9 @@ def run_viewport(session):
                             csv=csv_path.name, frame_summary=summary)
 
 
-def _clear_plate(session, m7):
-    from harness.agent_business_ui import _discard_choice
-    from harness import export_util
-
-    sent, _ = m7.file_menu_dispatch(session, "New Project")
-    if not sent:
-        return False
-    deadline = time.monotonic() + 12
-    handled = set()
-    while session.alive() and time.monotonic() < deadline:
-        if winutil.user32.IsWindowEnabled(session.hwnd):
-            score, _, _ = anchors.wait_for(session, "tab_prepare_active", timeout_s=.25)
-            if score >= anchors.MATCH_THRESHOLD and m7.model_colored_frac(session) < m7.EMPTY_BED_FLOOR:
-                return True
-        else:
-            dialog = m7.wait_dialog(session.pid, timeout_s=.3)
-            if dialog and dialog[3] not in handled:
-                _, title, _, hwnd = dialog
-                children = export_util._children_texts(hwnd)
-                button = None
-                if title == "Snapmaker Orca - Save":
-                    button = _discard_choice(title, children, close_requested=True)
-                elif title in ("Transfer or discard changes", "Creating a new project"):
-                    choices = [child for child in children if child[0].strip().replace("&", "") == "Discard"]
-                    button = choices[0] if len(choices) == 1 else None
-                handled.add(hwnd)
-                print(f"[perf] New Project dialog {title!r}, known discard={bool(button)}")
-                if button and winutil._window_pid(button[2]) == session.pid:
-                    x0, y0, x1, y1 = button[1]
-                    winutil.msg_click_screen((x0 + x1) // 2, (y0 + y1) // 2, hwnd)
-        time.sleep(.15)
-    return False
-
-
 def _idle_checkpoint(session, cycle):
     session.perf.set_step("soak_idle")
-    # Exclude the first second after clearing the plate from the idle window.
+    # Exclude the first second after the UI action from the idle window.
     time.sleep(1)
     start = time.monotonic()
     time.sleep(2.5)
@@ -265,34 +231,25 @@ def _measure_export(session):
 
 
 def run_soak(session, cycles):
-    import m7_common as m7
-    from m7t83 import import_stl
-
     monitor = session.perf
-    begin = time.monotonic()
-    if not _clear_plate(session, m7):
-        monitor.measure("soak_cycle", begin, status="not_observed", cycle=0, reason="empty_bed_not_observed")
-        return
     _idle_checkpoint(session, 0)
     for cycle in range(1, cycles + 1):
-        session.perf_soak_cycle = cycle
         monitor.set_step("soak_work")
         start = time.monotonic()
-        results = {}
-        imported = import_stl(session) and m7.step_model_arrives(session, results, timeout_s=60, min_frac=.0025)
-        monitor.measure("soak_import_to_model_observed", start, cycle=cycle,
-                        status="observed" if imported else "not_observed")
-        slice_at = time.monotonic()
-        sliced = imported and m7.op_slice(session, results, timeout_s=60)
-        monitor.measure("soak_slice_to_completion", slice_at, cycle=cycle,
-                        status="observed" if sliced else "not_observed" if imported else "skipped")
-        clear_at = time.monotonic()
-        cleared = sliced and _clear_plate(session, m7)
-        monitor.measure("soak_clear_to_empty_plate", clear_at, cycle=cycle,
-                        status="observed" if cleared else "not_observed" if sliced else "skipped")
-        monitor.measure("soak_cycle", start, status="observed" if cleared else "not_observed",
-                        cycle=cycle, imported=bool(imported), sliced=bool(sliced), cleared=bool(cleared))
-        if not cleared:
+        prepare, _ = anchors.click_and_verify(session, "tab_prepare_inactive", "tab_prepare_active", attempts=2)
+        preview_at = time.monotonic()
+        monitor.measure("soak_prepare_transition", start, end=preview_at, cycle=cycle,
+                        status="observed" if prepare else "not_observed")
+        preview = False
+        if prepare:
+            active, _ = anchors.click_and_verify(session, "tab_preview_inactive", "tab_preview_active", attempts=2)
+            preview = active and (anchors.has_colored_content(anchors.capture_bgr(session))
+                                  >= anchors.TOOLPATH_COLORED_FLOOR)
+        monitor.measure("soak_preview_transition", preview_at, cycle=cycle,
+                        status="observed" if preview else "not_observed" if prepare else "skipped")
+        monitor.measure("soak_cycle", start, status="observed" if preview else "not_observed",
+                        cycle=cycle, prepare=prepare, preview_toolpath=preview)
+        if not preview:
             return
         _idle_checkpoint(session, cycle)
 
@@ -313,13 +270,13 @@ def run_diagnostics(session):
         started = time.monotonic()
         try:
             session.perf.frame_csv_path.parent.mkdir(parents=True, exist_ok=True)
-            session.perf.set_step("export")
-            try:
-                _measure_export(session)
-            except (OSError, RuntimeError, ValueError) as error:
-                session.perf.measure("export_request_to_stable_file", started, status="unavailable",
-                                     reason=type(error).__name__)
-            session.perf.set_step("soak_prepare")
             run_soak(session, cycles)
         except (OSError, RuntimeError, ValueError) as error:
             session.perf.measure("soak_cycle", started, status="unavailable", reason=type(error).__name__)
+        started = time.monotonic()
+        try:
+            session.perf.set_step("export")
+            _measure_export(session)
+        except (OSError, RuntimeError, ValueError) as error:
+            session.perf.measure("export_request_to_stable_file", started, status="unavailable",
+                                 reason=type(error).__name__)
