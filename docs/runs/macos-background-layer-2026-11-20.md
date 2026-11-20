@@ -34,3 +34,19 @@
 本机证据位于 `artifacts/mac_layer/fKtKvC5a/`。其中 `comparison.json` 包含工程检查、两次 G-code 检查及 SHA-256。`baseline-preview.png` 和 `after-slice-button.png` 分别是原始与修改后的预览。`save_existing.log`、`reopen_slice.log`、`export_confirm_close.log` 和 `baseline_slice.log` 记录了保存、重开、导出阻塞和进程收尾。
 
 回收时再次校验文件摘要。最后复核测试账号的 Orca 主进程为零，本轮 19 个临时 LaunchAgent 均已卸载，前台仍属于日常账号。Linux 本轮没有可用测试机。
+
+## 原生保存面板对照
+
+同日保持日常账号在前台，在测试账号的后台 Aqua 会话运行独立编译的 AppKit 小程序。五次原生保存面板试验均复现 Save 禁用。程序在显示面板前已指定本次测试目录和合法的新文件名，观察初始按钮状态时无需自动化输入文件名。
+
+| 对照条件 | 实测结果 |
+| --- | --- |
+| 同一目录，分别配置不限类型、G-code 和 3MF | 三个独立进程中，文件名和目录均正确，文件名框有焦点，Save 均禁用，Cancel 均可用。 |
+| 同一进程依次直接写文件、显示普通确认框、显示保存面板 | AppKit 程序在新建的专用子目录中成功创建并读回文件。普通确认按钮可用，辅助功能点击后程序收到了确认返回值。随后在该子目录打开系统保存面板，Save 禁用。 |
+| 通过 Launch Services 正常启动同一个不限类型程序 | 在测试账号自己的桌面中，程序处于最前，保存面板为主窗口。约 11 秒内四次读取均为 Save 禁用、Cancel 可用。Save 的辅助功能帮助及描述均为空。 |
+
+目前能定位到后台测试会话中的系统文件面板。独立程序已复现，因此复现不依赖 Orca、切片结果或特定扩展名。测试目录写入和普通辅助功能确认均通过。macOS 使用独立进程显示保存面板，程序在测试桌面最前与测试账号占用物理控制台是两个条件。[Apple NSSavePanel 文档](https://developer.apple.com/documentation/appkit/nssavepanel)
+
+测试账号没有读取系统统一日志的权限，面板也没有给出禁用理由。本轮保持了用户指定的前台账号，尚无相同程序在测试账号前台的对照，不能由此断定 macOS 对所有后台会话实施相同限制。
+
+原始日志已回收到同一证据目录，分别为 `native_panel_controls.log`、`native_input_pair.log`、`native_launch_services.log` 和 `native_session_diag.log`。同目录保留 `panel_comparison.m`、`panel_input_pair.m` 和 `native_control_driver.py` 供核对实验条件。
