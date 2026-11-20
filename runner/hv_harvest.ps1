@@ -21,6 +21,7 @@ $repo = Split-Path $PSScriptRoot -Parent
 $artifacts = Join-Path $repo 'artifacts'
 New-Item -ItemType Directory -Force $artifacts | Out-Null
 $ff = Join-Path $artifacts 'failed_cases.txt'
+$perfArtifact = '\A(?:[A-Za-z0-9_-]{1,60}__[0-9a-f]{32}\.(?:jsonl|frames\.csv)|showcase_[a-z_]+__[0-9a-f]{32}\.(?:mp4|video\.json))\z'
 
 if ($PerfBatchId) {
   if ($V3 -or $WindowsMcpRunId) { throw 'Select only the perf batch for this harvest' }
@@ -28,7 +29,7 @@ if ($PerfBatchId) {
   $guest = New-PSSession -VMName $vm -Credential $cred -ErrorAction Stop
   try {
     $inventory = @(Invoke-Command -Session $guest -ErrorAction Stop -ScriptBlock {
-      param($sb, $id)
+      param($sb, $id, $pattern)
       if ((Get-ScheduledTask -TaskName suite -ErrorAction SilentlyContinue).State -eq 'Running') {
         throw 'Wait for the guest suite to stop before harvesting perf'
       }
@@ -43,21 +44,21 @@ if ($PerfBatchId) {
       $manifest = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
       if ($manifest.schema -ne 1 -or $manifest.batch_id -cne $id) { throw 'Perf batch identity mismatch' }
       Get-ChildItem -LiteralPath $directory -File |
-        Where-Object { $_.Name -ceq 'batch.json' -or $_.Name -cmatch '\A[A-Za-z0-9_-]{1,60}__[0-9a-f]{32}\.(jsonl|frames\.csv)\z' } |
+        Where-Object { $_.Name -ceq 'batch.json' -or $_.Name -cmatch $pattern } |
         ForEach-Object {
           if ($_.Length -gt 64MB -or ($_.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
             throw 'Unsupported perf artifact'
           }
           [pscustomobject]@{ name=$_.Name; bytes=$_.Length; sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash }
         }
-    } -ArgumentList $guestSandbox, $PerfBatchId)
+    } -ArgumentList $guestSandbox, $PerfBatchId, $perfArtifact)
     if (-not ($inventory | Where-Object name -ceq 'batch.json')) { throw 'Perf batch manifest missing' }
     foreach ($directory in @($artifacts, (Split-Path $target -Parent), $target)) {
       $item = New-Item -ItemType Directory -Path $directory -Force -ErrorAction Stop
       if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Perf output is a link' }
     }
     foreach ($file in $inventory) {
-      if ($file.name -cne 'batch.json' -and $file.name -cnotmatch '\A[A-Za-z0-9_-]{1,60}__[0-9a-f]{32}\.(jsonl|frames\.csv)\z') {
+      if ($file.name -cne 'batch.json' -and $file.name -cnotmatch $perfArtifact) {
         throw 'Unexpected perf artifact name'
       }
       $destination = Join-Path $target $file.name

@@ -73,7 +73,7 @@ if ($Perf -and $WindowsMcpProbe -and -not $NativeSave) {
 }
 if ($PerfBatchId -and -not $Perf) { throw '-PerfBatchId requires -Perf' }
 if (($PerfViewport -or $PerfCycles -or $PresentMonExe) -and (-not $Perf -or $V3 -or $WindowsMcpProbe)) {
-  throw 'Viewport and soak diagnostics require the legacy m2 case with -Perf'
+  throw 'Viewport and soak diagnostics require an m2 case with -Perf'
 }
 if ($PresentMonExe -and -not $PerfViewport) { throw '-PresentMonExe requires -PerfViewport' }
 if ($Perf -and -not $PerfBatchId) { $PerfBatchId = [guid]::NewGuid().ToString('N') }
@@ -105,8 +105,9 @@ if ($Suite -and ($knownSuites -notcontains $Suite)) {
     $Suite = 'regression'
 }
 $Cases = @($Cases + @($args)) | Where-Object { $_ }
-if (($PerfViewport -or $PerfCycles) -and (@($Cases).Count -ne 1 -or $Cases -ne 'm2_slice_chain' -or $OnlyFailed)) {
-  throw 'Select exactly m2_slice_chain for viewport and soak diagnostics'
+if (($PerfViewport -or $PerfCycles) -and (@($Cases).Count -ne 1 -or
+    $Cases[0] -notin @('m2_slice_chain', 'm2_perf_showcase') -or $OnlyFailed)) {
+  throw 'Select exactly m2_slice_chain or m2_perf_showcase for viewport and soak diagnostics'
 }
 $explicitCases = $PSBoundParameters.ContainsKey('Cases') -or @($args).Count -gt 0
 

@@ -185,7 +185,7 @@ def _idle_checkpoint(session, cycle):
     session.perf.measure("soak_idle", start, cycle=cycle)
 
 
-def _measure_export(session):
+def _measure_export(session, *, verify=None):
     from harness import export_util
     import m7_common as m7
 
@@ -200,7 +200,7 @@ def _measure_export(session):
         if not edit or winutil._window_pid(edit) != session.pid:
             session.perf.measure("export_request_to_stable_file", start, status="not_observed",
                                  reason="save_filename_edit_unavailable")
-            return
+            return False
         winutil.select_all(edit)
         winutil.msg_text(edit, str(target))
         confirm_at = time.monotonic()
@@ -228,6 +228,9 @@ def _measure_export(session):
             session.perf.measure(name, began, end=stable_at,
                                  status="observed" if stable_at else "not_observed",
                                  stable_window_ms=250, bytes=previous[0] if stable_at else None)
+        if stable_at and verify is not None:
+            return verify(target)
+        return bool(stable_at)
 
 
 def run_soak(session, cycles):
