@@ -24,6 +24,15 @@
 
 `native-SHADOW(hist)` 历史独立通过（旧源，需本 HEAD 复验才计入本批）；`replay-ok` 无模型回放通过；`adapted` 场景已登记未跑；`gap-cap` 缺 UI 能力；`gap-neg` 负例缺拒绝合同；`blocked` 有具体阻塞；`off` 禁用/perf 轨道。首轮与复验分列（复验=同场景新 run ID 标 re-）。
 
+## 旧判据摘要（逐族，出处 BLACKBOX_CASES.md 对应表行；迁入原生时判据等价或更强）
+
+- **F1**：主窗出现/可见/尺寸>0（m0）；tab 选中色 teal(0,150,136) 翻转（m1）；启动→关闭往返 + fresh profile 干净（m7a/m7t73）。原生等价：ready 收据含 hwnd/pid/窗口矩形 + teardown 清理确认。
+- **F2**：done 绿勾模板 + 色度占比≥2×基线（m2）；`; layer_height` gcode 头跟随（m3e）；WM_SETTEXT+KILLFOCUS 提交链→重切 gcode 字节 diff（m3d）；损坏文件错误弹窗+app 存活（m3c/m7d）。原生等价：独立重开切片 oracle（层数/参数/G-code 分支），已强于模板断言。
+- **F3**：zip 有效+3D/3dmodel.model 存在+`printer_settings_id` 保留+二次加载模型到达（m3g）；Save As 对话框往返+同路径冲突确认（overwrite）。原生等价：project_3mf 解析+冻结 SHA+新 profile 重开。
+- **F4**：`<build><item transform>` 平移 X 精确=60.0、Y/Z 不变（m6a，导出 3mf 明文矩阵）；Undo/Redo 后色度 ≥1%/<0.4%（m3h）；视角切换 viewport diff>10（m3i）。
+- **F5**：混色表 48 条——比例/循环/匹配/渐变的 UI 状态机断言（红幅/OK 禁用/徽章/预览重绘/持久化 5.9% 色度 + 面板保留）；混切 gcode 1.36MB 含 5 种换刀标记（m4i）；64 上限增禁恢复（m4f）；同色可登记+5 色橙幅（m4j）。
+- **F6**：顶盖 SET_PURIFIER_MODE 分支翻转（vitr≤50→MODE=1，>50→MODE=3，m8x_123）；高流量三配置对比（m8f/m8g）；Fit 视图色度恢复（m8a）；性能=进程指标采样（perf 轨道，非 GUI 断言）。
+
 ## F1 启动/页签/工程基本操作（9）
 
 | ID | 业务目标（旧判据→BLACKBOX_CASES.md） | 原生映射 | 状态 |
@@ -136,9 +145,9 @@
 
 | # | 时间 | 场景 | Run ID | 结果 | 备注 |
 |---|---|---|---|---|---|
-| 1 | 02:53 | uia_general_wall (zcode goal-only) | `3140ae8257294e36a5f2dd25c25f8163` | 基础设施失败 | ZCode app-server 已升级（zcode.cjs d9afd58d→6b84e928），新增 `session/readReplyLanguage` 请求，驱动判 unexpected_host_request，0 工具调用，清理确认 |
-| 2 | 03:29 | 同上 | `6165a41c440543e9893dc55e8a1d0dd7` | 基础设施失败（假通过被拦截） | readReplyLanguage 已答 en；新版在 turn 开始即取工具快照，windows_mcp ferry（stdio→relay→客机HTTP）未完成握手 → 模型请求 toolNames=[]，glm-5.3-flash 单轮**虚构完成**（声称改壁环数+已保存），0 工具调用；驱动 `native_calls_incomplete` 正确拦截，客机 ready/setup 全好，清理确认 |
-| 3 | 04:00 | 同上 | `38535cc0a2de450ebd5748ebd945888d` | 运行中 | 修复=create 后 send 前有界等待 25s（bf108f7） |
+| 1 | 02:26 | uia_general_wall (zcode goal-only) | `3140ae8257294e36a5f2dd25c25f8163` | 基础设施失败 | ZCode app-server 已升级（zcode.cjs d9afd58d→6b84e928），新增 `session/readReplyLanguage` 请求，驱动判 unexpected_host_request，0 工具调用，清理确认 |
+| 2 | 02:29 | 同上 | `6165a41c440543e9893dc55e8a1d0dd7` | 基础设施失败（假通过被拦截） | readReplyLanguage 已答 en；新版在 turn 开始即取工具快照，windows_mcp ferry（stdio→relay→客机HTTP）未完成握手 → 模型请求 toolNames=[]，glm-5.3-flash 单轮**虚构完成**（声称改壁环数+已保存），0 工具调用；驱动 `native_calls_incomplete` 正确拦截，客机 ready/setup 全好，清理确认 |
+| 3 | 02:46 | 同上 | `38535cc0a2de450ebd5748ebd945888d` | blocked（基础设施） | 修复已提交（bf108f7）但 clash-guard 02:37:45 起 OFF_SAFE（代理被关，非本会话操作）→ ip_guard 纪律性拒绝；未进入客机 |
 
 ## 历史证据指针（native-SHADOW(hist) 的 run 出处）
 
