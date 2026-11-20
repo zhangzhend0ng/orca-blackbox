@@ -5,3 +5,5 @@ customtkinter
 Pillow
 pytest
 pytest-html
+psutil
+pytesseract

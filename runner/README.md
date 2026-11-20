@@ -53,8 +53,10 @@ python runner\fetch_mp4.py C:\guest\x.mp4 host_x.mp4
 
 - `relay_cmd.txt`/`relay_out.txt` 的宿主 FIFO 与客机 relay 守护不在本仓（属
   vm_setup/vm_setup_guest 基础设施）；`send_to_guest.ps1` 同理——push_verify 依赖它。
-- 客机检出 = git clone 跟踪 origin（09-03 起；hv_go.ps1 §2.5 每批 `pull --ff-only`，
-  宿主未推送的改动因此到不了客机——这也是"及时 commit+push"纪律的机械根）。
+- 客机检出跟踪 origin。常规同步显式 fetch 宿主分支并 fast-forward，核对客机 HEAD 与
+  宿主提交一致后才启动。客机分支切换走 `guest_git.ps1`，刻意测试其他已部署版本时用 `-NoSync`。
+- `hv_go.ps1 -Perf` 输出性能批次 ID。套件停止后用 `hv_harvest.ps1 -PerfBatchId <id>` 回收，
+  用法和字段边界见 [性能采样与看板](../deploy/monitoring/README.md)。
   无 git 时代的旧法（tarball）已废弃：`Invoke-WebRequest
   https://codeload.github.com/zhangzhend0ng/orca-blackbox/tar.gz/refs/heads/main`
   解包到 `C:\coil\orca-blackbox` 仅作灾备参考，解包后仍需 `tools/check_registry.py` 验证。

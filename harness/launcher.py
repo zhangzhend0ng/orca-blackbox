@@ -13,8 +13,9 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from uuid import uuid4
 
-from . import host_guard, winutil
+from . import host_guard, perf_monitor, winutil
 
 # App-under-test resolution order (see default_exe):
 #   1. ORCA_VISION_APP_EXE env var (any layout, CI/packaged)
@@ -43,6 +44,8 @@ class AppSession:
     def __init__(self, popen: subprocess.Popen, hwnd: int):
         self.popen = popen
         self.hwnd = hwnd
+        self.perf = None  # optional perf_monitor.PerfMonitor (env-gated)
+        self.render_trace_path = None
 
     @property
     def pid(self) -> int:
@@ -56,14 +59,40 @@ class AppSession:
 
     def close(self, timeout_s: float = 10.0) -> None:
         """Graceful WM_CLOSE, then wait, then hard kill."""
-        if not self.alive():
-            return
-        winutil.close_window(self.hwnd)
-        deadline = time.monotonic() + timeout_s
-        while self.alive() and time.monotonic() < deadline:
-            time.sleep(0.5)
-        if self.alive():
-            self.popen.kill()
+        monitor = self.perf
+        started = time.monotonic()
+        method = "already_exited"
+        try:
+            if not self.alive():
+                return
+            method = "window_close"
+            if monitor is not None:
+                monitor.set_step("shutdown")
+                started = time.monotonic()
+            winutil.close_window(self.hwnd)
+            deadline = time.monotonic() + timeout_s
+            while self.alive() and time.monotonic() < deadline:
+                time.sleep(0.1 if monitor is not None else 0.5)
+            if self.alive():
+                method = "forced_kill"
+                self.popen.kill()
+                if monitor is not None:
+                    try:
+                        self.popen.wait(timeout=1)
+                    except subprocess.TimeoutExpired:
+                        pass
+        finally:
+            if monitor is not None:
+                code = self.popen.poll()
+                name = ("close_request_to_forced_exit" if method == "forced_kill"
+                        else "close_request_to_exit")
+                status = ("unexpected_exit" if method == "already_exited"
+                          else "observed" if code is not None else "not_observed")
+                monitor.measure(name, started, status=status, method=method, exit_code=code,
+                                observer="process", poll_interval_ms=100)
+            # Always finalize the perf monitor (close() may early-return above)
+            # — a partial-but-valid jsonl beats a lost one.
+            perf_monitor.finish_session(self)
 
     def __enter__(self):
         return self
@@ -195,6 +224,14 @@ def launch(exe: Path | str | None = None,
         args.append(str(model))
 
     env = {k: v for (k, v) in os.environ.items() if k.upper() != "ORCA_GUI_TEST_MODE"}
+    env.pop("ORCA_BB_FRAME_TRACE_FILE", None)
+    trace_path = instance = None
+    if os.name == "nt" and perf_monitor.env_enabled() and os.environ.get("ORCA_BB_FRAME_TRACE") == "1":
+        instance = uuid4().hex
+        label = os.environ.get("ORCA_BB_PERF_LABEL") or exe.stem
+        trace_path = perf_monitor.resolve_out_path(label, instance).resolve().with_suffix(".render.bin")
+        trace_path.parent.mkdir(parents=True, exist_ok=True)
+        env["ORCA_BB_FRAME_TRACE_FILE"] = str(trace_path)
     print(f"[launcher] {args[0]} --datadir {args[2]}" + (f" {args[3]}" if model else ""))
 
     winutil.make_dpi_aware()
@@ -211,36 +248,61 @@ def launch(exe: Path | str | None = None,
     si = subprocess.STARTUPINFO()
     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     si.wShowWindow = 4  # SW_SHOWNOACTIVATE (ineffective for wx, kept anyway)
-    popen = subprocess.Popen(args, env=env, cwd=str(exe.parent), startupinfo=si)
+    # FARM FIX (2026-11-08): cwd=exe.parent breaks this packaged build's boot (no main window in 90s; cwd elsewhere boots fine — DLLs resolve from the exe dir regardless, so inherit the driver's cwd instead).
+    launch_started = time.monotonic()
+    popen = subprocess.Popen(args, env=env, startupinfo=si)
+    monitor = None
     try:
+        monitor = perf_monitor.attach_for_session(popen, exe, finish_on_anchor_exit=False, instance_id=instance)
+        if monitor is not None and trace_path is not None:
+            from .perf_frames import clock
+            before = time.monotonic()
+            qpc, hz = clock()
+            monitor.measure("render_clock_sync", before, qpc=qpc, qpc_hz=hz,
+                            artifact=trace_path.name, observer="orca_swap_buffers")
         hwnd = winutil.find_main_window(popen.pid, timeout_s=wait_window_s)
-    except BaseException:
-        # Never leak a launched app when window discovery fails.
-        popen.kill()
+        if monitor is not None:
+            monitor.measure("launch_to_stable_main_window", launch_started)
+        # Without early demotion the main frame pops to the TOP of the user's
+        # desktop at boot (see the SW_SHOWNOACTIVATE note) and — under the
+        # drivers' hands-off rule — sits there ~12s until demote_window()
+        # runs. The watchdog closes that hole PASSIVELY: ex-style + HWND_BOTTOM
+        # demotion every tick, plus foreground RESTORATION to prev_fg when the
+        # app holds it (never foreground-GRABBING or window moves — README
+        # pitfall #3). diag_early_stealth.py verifies the CLI model auto-load
+        # survives it. Set boot_demote_s=0 for control runs.
+        if boot_demote_s > 0:
+            winutil.demote_watchdog(pid=popen.pid, duration_s=boot_demote_s,
+                                    fg_restore_to=prev_fg)
+        dismissed: list[str] = []
+        if dismiss_blockers:
+            dismissed = sweep_boot_blockers(popen.pid, hwnd, budget_s=blocker_sweep_s,
+                                            dismiss_wizard=dismiss_wizard)
+        # NOTE: still do NOT touch window position/foreground here. Early
+        # interference (before post_init's first-idle input_files load) BREAKS
+        # the CLI model auto-load — proven experimentally: hands-off boots load
+        # the model, foreground-grabbing boots do not. Late, conditional
+        # repositioning is the caller's job (see m2_slice_chain after boot
+        # settles).
+        dpi = winutil.get_dpi_for_window(hwnd)
+        print(f"[launcher] pid={popen.pid} hwnd=0x{hwnd:x} rect={winutil.window_rect(hwnd)} dpi={dpi}")
+        session = AppSession(popen, hwnd)
+        session.blockers = dismissed  # forensic trail: titles WM_CLOSEd at boot
+        session.perf = monitor
+        session.render_trace_path = trace_path
+        session.launch_started = launch_started
+        return session
+    except BaseException as error:
+        failed_at = time.monotonic()
+        failed_code = popen.poll()
+        try:
+            if popen.poll() is None:
+                popen.kill()
+        except OSError as cleanup_error:
+            error.add_note(f"launcher cleanup failed: {type(cleanup_error).__name__}")
+        finally:
+            if monitor is not None:
+                monitor.measure("launch_failed", launch_started, end=failed_at, status="not_observed",
+                                exit_code=failed_code, reason=type(error).__name__)
+                monitor.stop()
         raise
-    # Without early demotion the main frame pops to the TOP of the user's
-    # desktop at boot (see the SW_SHOWNOACTIVATE note) and — under the
-    # drivers' hands-off rule — sits there ~12s until demote_window()
-    # runs. The watchdog closes that hole PASSIVELY: ex-style + HWND_BOTTOM
-    # demotion every tick, plus foreground RESTORATION to prev_fg when the
-    # app holds it (never foreground-GRABBING or window moves — README
-    # pitfall #3). diag_early_stealth.py verifies the CLI model auto-load
-    # survives it. Set boot_demote_s=0 for control runs.
-    if boot_demote_s > 0:
-        winutil.demote_watchdog(pid=popen.pid, duration_s=boot_demote_s,
-                                fg_restore_to=prev_fg)
-    dismissed: list[str] = []
-    if dismiss_blockers:
-        dismissed = sweep_boot_blockers(popen.pid, hwnd, budget_s=blocker_sweep_s,
-                                        dismiss_wizard=dismiss_wizard)
-    # NOTE: still do NOT touch window position/foreground here. Early
-    # interference (before post_init's first-idle input_files load) BREAKS
-    # the CLI model auto-load — proven experimentally: hands-off boots load
-    # the model, foreground-grabbing boots do not. Late, conditional
-    # repositioning is the caller's job (see m2_slice_chain after boot
-    # settles).
-    dpi = winutil.get_dpi_for_window(hwnd)
-    print(f"[launcher] pid={popen.pid} hwnd=0x{hwnd:x} rect={winutil.window_rect(hwnd)} dpi={dpi}")
-    session = AppSession(popen, hwnd)
-    session.blockers = dismissed  # forensic trail: titles WM_CLOSEd at boot
-    return session

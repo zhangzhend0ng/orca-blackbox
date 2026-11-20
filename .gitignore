@@ -22,3 +22,6 @@ vision_profile*/
 
 # pytest 工作缓存（shell 见 tests/test_blackbox.py）
 .pytest_cache/
+
+# 并行 worktree（见 using-git-worktrees 约定）
+.worktrees/

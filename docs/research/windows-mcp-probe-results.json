@@ -1,0 +1,136 @@
+{
+  "run_id": "9c95fb4b95bc447294534fbe77b5e70a",
+  "source_sha": "40ecf3327a66075a4a13d386fca1c2424d04572a",
+  "verdict": "COMPATIBILITY_SHADOW",
+  "release_eligible": false,
+  "native_tool_calls": [
+    {
+      "tool": "Snapshot",
+      "status": "completed",
+      "arguments": {
+        "use_vision": true,
+        "use_annotation": false
+      },
+      "error": null,
+      "is_error": false
+    },
+    {
+      "tool": "Click",
+      "status": "completed",
+      "arguments": {
+        "loc": [
+          258,
+          49
+        ]
+      },
+      "error": null,
+      "is_error": false
+    },
+    {
+      "tool": "Screenshot",
+      "status": "completed",
+      "arguments": {},
+      "error": null,
+      "is_error": false
+    },
+    {
+      "tool": "Click",
+      "status": "completed",
+      "arguments": {
+        "loc": [
+          115,
+          49
+        ]
+      },
+      "error": null,
+      "is_error": false
+    },
+    {
+      "tool": "Screenshot",
+      "status": "completed",
+      "arguments": {},
+      "error": null,
+      "is_error": false
+    },
+    {
+      "tool": "ControlStatus",
+      "status": "completed",
+      "arguments": {
+        "release": true
+      },
+      "error": null,
+      "is_error": false
+    }
+  ],
+  "states": [
+    {
+      "at_ns": 1794894741350008100,
+      "file": "state_00_prepare.bmp",
+      "png": "state_00_prepare.png",
+      "png_sha256": "c94858e12c4acd121c7e4e57628a570fd53b8d66a06f7738cf2973fe49a1e147",
+      "sha256": "03c921c777b44755c33e688b6396f9e9c367b7fb61493ce9a07e6e903c17c8dd",
+      "state": "prepare"
+    },
+    {
+      "at_ns": 1794894764751094600,
+      "file": "state_01_preview.bmp",
+      "png": "state_01_preview.png",
+      "png_sha256": "86d7bc1887571bfc38eddd42e1c050b66ecec20bd3de1c85226a227a43f3a8d8",
+      "sha256": "6a536a6299a86696eb70548a632f5ea6917bffc9cf21f7f50ed81fd65ebfc487",
+      "state": "preview"
+    },
+    {
+      "at_ns": 1794894772884424800,
+      "file": "state_02_prepare.bmp",
+      "png": "state_02_prepare.png",
+      "png_sha256": "beeaa5060436fbbd2e3eff874fea16a706cc8259534f8301e6a263d71ca78185",
+      "sha256": "1344e053e545d548e6b79bca5d20b611886cab3a10e1d8130f013365c72a0253",
+      "state": "prepare"
+    }
+  ],
+  "host_job": {
+    "active_processes": 0,
+    "forced_termination": false
+  },
+  "guest_process": {
+    "active_processes": 0,
+    "exit_code": 0,
+    "forced_termination": false,
+    "release_eligible": false,
+    "run_id": "9c95fb4b95bc447294534fbe77b5e70a",
+    "schema_version": 1
+  },
+  "desktop_ownership_hooks": false,
+  "evaluation_date": "2026-11-17",
+  "windows_mcp_version": "0.8.9",
+  "python_version": "3.14.10",
+  "runtime_zip_sha256": "9b8fd5d91cab3c6bcbff201d37d9c535fb0c65fcc18c6da779c56ee056c690de",
+  "codex_sha256": "094d4db493de22025712cc5963854e7654b7c97f4cee795e3e986270a0f4f6b4",
+  "prior_failed_runs": [
+    "7078bc61be5b4f5aac4fb755a9d6e03d",
+    "42203831e02244778f60e59567543d45",
+    "50d3d4d34395492385c10b15f3d88ecf",
+    "fabe9936b2324b7dbcd497fed0eb603d"
+  ],
+  "artifact_sha256": {
+    "artifacts/windows_mcp_host/9c95fb4b95bc447294534fbe77b5e70a/codex.log": "386393cf6b657eeedb09c8831502b687dac7bb222466b83eec660031504b4743",
+    "artifacts/windows_mcp_host/9c95fb4b95bc447294534fbe77b5e70a/host.json": "bad122f736bcd478cb48096cca94044b61ebd7f135c6397ae628b170755df005",
+    "artifacts/windows_mcp_host/9c95fb4b95bc447294534fbe77b5e70a/prompt.txt": "951c9a6bd0553507b0ceb735a0eee7d4b58323a8fab7891ba1ea5cc5fd91a6e6",
+    "artifacts/windows_mcp_harvest/9c95fb4b95bc447294534fbe77b5e70a/process.json": "dc37f2cedebf44fa906b666860749b71f2b0cdc104b8f69e1f893405acecd1d9",
+    "artifacts/windows_mcp_harvest/9c95fb4b95bc447294534fbe77b5e70a/ready.json": "a84e265c829fdabc32c19f18d0f631f0e699cc91c445c312496e4a21bda66327",
+    "artifacts/windows_mcp_harvest/9c95fb4b95bc447294534fbe77b5e70a/server.log": "3d96a947118602703dcb353d578851ddbb48c91884e8dba3aed7d3ae2b2ca185",
+    "artifacts/windows_mcp_harvest/9c95fb4b95bc447294534fbe77b5e70a/state_00_prepare.png": "c94858e12c4acd121c7e4e57628a570fd53b8d66a06f7738cf2973fe49a1e147",
+    "artifacts/windows_mcp_harvest/9c95fb4b95bc447294534fbe77b5e70a/state_01_preview.png": "86d7bc1887571bfc38eddd42e1c050b66ecec20bd3de1c85226a227a43f3a8d8",
+    "artifacts/windows_mcp_harvest/9c95fb4b95bc447294534fbe77b5e70a/state_02_prepare.png": "beeaa5060436fbbd2e3eff874fea16a706cc8259534f8301e6a263d71ca78185",
+    "artifacts/windows_mcp_harvest/9c95fb4b95bc447294534fbe77b5e70a/worker.json": "157ad8b310bd5d2197867b1aef9fbc98afb93216f2bfe60d0ef05e657b564771",
+    "artifacts/windows_mcp_harvest/9c95fb4b95bc447294534fbe77b5e70a/worker.log": "d7f1b485b0f4ae6e107bdf565bab8387f03190e666a9a308f84f838da439ccac"
+  },
+  "postflight": {
+    "head": "40ecf3327a66075a4a13d386fca1c2424d04572a",
+    "dirty": [],
+    "apps": 0,
+    "suite": "Ready",
+    "sut_sha256": "5c48644d7da18b50636ceeee4ef9fd2eaf6d4e8ac05bd88752f40e3717fc47bf",
+    "checked_at": "2026-11-17T05:57:19.2112487Z"
+  }
+}

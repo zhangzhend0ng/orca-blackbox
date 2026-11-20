@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "scenario": "uia_hybrid_layer",
+  "initial_tab": "Quality",
+  "fixture_sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+  "steps": [
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Type",
+      "arguments": {
+        "target": {
+          "automation_id": "-30587",
+          "control_type": "EditControl",
+          "name": ""
+        },
+        "text": "0.24"
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Shortcut",
+      "arguments": {
+        "shortcut": "ctrl+shift+s"
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Type",
+      "arguments": {
+        "target": {
+          "automation_id": "1001",
+          "control_type": "EditControl",
+          "name": "File name:"
+        },
+        "text": "$OUTPUT_3MF"
+      }
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "target": {
+          "automation_id": "1",
+          "control_type": "ButtonControl",
+          "name": "Save"
+        }
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    }
+  ],
+  "source": {
+    "run_id": "06af33e3e7184f6fb83a3f36bb4a7811",
+    "source_sha": "de819ad938564ba04b68dc067799a3ba65a5fb70",
+    "trace_sha256": "4722fda85f6b06cf082bbd6ca207c65565502b9244336983df773f60b32ddd57"
+  }
+}

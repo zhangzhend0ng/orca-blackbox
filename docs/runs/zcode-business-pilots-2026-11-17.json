@@ -1,0 +1,451 @@
+{
+  "batch_id": "044125a695d44694beed52cad7d2d228",
+  "suite": "pilots",
+  "run_source_sha": "cc2ae8340f69ade6a56f0099b195cd514ad52a75",
+  "new_pilot_acceptance": "2/3",
+  "legacy_smoke_acceptance": "1/1",
+  "acceptance_pass": false,
+  "release_eligible": false,
+  "rows": [
+    {
+      "scenario": "quality_a",
+      "run_id": "184e78aec4074aedbe45896da5e3e3b4",
+      "original_status": "pass",
+      "completion_hardened_acceptance": true,
+      "coordinator_exit": 0,
+      "host_error": null,
+      "runtime_result": {
+        "checks": {
+          "business": {
+            "detail": "Saved .24/initial .4, unchanged cube, reopened actual 112-layer G-code",
+            "evidence": [
+              "artifact:proof.json",
+              "artifact:process.json",
+              "artifact:native_trace.ndjson",
+              "artifact:proof/0001.3mf:sha256:008daa8cb7b9c8060114e8c24b0dca833f4049e8abc69ec7c578ad027b43e961",
+              "artifact:exports/0001.gcode:sha256:e18ffdfd0ace9ca98d342c8f1e5d3fd8727eaef9c4868c31173b12cec9a0c11a"
+            ],
+            "status": "pass"
+          },
+          "path": {
+            "detail": "Native GUI save; stopped input; old exit; frozen-file fresh-profile reslice",
+            "evidence": [
+              "artifact:proof.json",
+              "artifact:process.json",
+              "artifact:native_trace.ndjson",
+              "artifact:proof/0001.3mf:sha256:008daa8cb7b9c8060114e8c24b0dca833f4049e8abc69ec7c578ad027b43e961",
+              "artifact:exports/0001.gcode:sha256:e18ffdfd0ace9ca98d342c8f1e5d3fd8727eaef9c4868c31173b12cec9a0c11a"
+            ],
+            "status": "pass"
+          },
+          "visual": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          }
+        },
+        "cleanup_confirmed": true,
+        "execution_status": "completed",
+        "gui_execution_requested": true,
+        "mode": "agent_shadow",
+        "reasons": [],
+        "recovery_used": false,
+        "release_eligible": false,
+        "release_verdict": "SHADOW",
+        "runtime_status": "completed",
+        "verified_pass": true
+      },
+      "host_job": {
+        "active_processes": 0,
+        "forced_termination": false,
+        "stopped_at_ns": 1794928208864489900
+      },
+      "guest_process": {
+        "active_processes": 0,
+        "backend": "win32_job",
+        "cancel_reason": null,
+        "case_id": "m3g_export_3mf",
+        "exit_code": 0,
+        "finished_at_ns": 1794928263632473200,
+        "forced_termination": false,
+        "job_assigned": true,
+        "pid": 1752,
+        "run_id": "184e78aec4074aedbe45896da5e3e3b4",
+        "schema_version": 1,
+        "started_at_ns": 1794928034654865600
+      },
+      "teardown": {
+        "run_id": "184e78aec4074aedbe45896da5e3e3b4",
+        "active_processes": 0,
+        "cleanup_confirmed": true,
+        "token_exists": false
+      },
+      "sources_unchanged": true,
+      "native_model_receipts": 16,
+      "native_tool_calls": 15,
+      "executed_mcp_calls": 15,
+      "cli_bundle_sha256": "d9afd58d694f98a5279bf548cdc7646413c125762e86730605a6071f9e0346d6",
+      "tool_errors": [],
+      "evidence_sha256": {
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\agent_final.png": "eefbd335533f63ccfcf8629504b182019adfa15ac56df3e4002f39e3bb4f3b6f",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\contract.json": "68144cef3377414665b7ffc1a5ac7df89d0d54f3ea0c88f5947c8932995ff9d5",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\host_done.json": "0169dfe24fd260c8665fc22537c7a1ae2ab84e09033c5358c3f14474b4653db3",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\initial.png": "71790f9b642af304719bcf5a944e50adbf641a294648e32710e1067187c10cc4",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\manifest.json": "66bfd041810af31f23f1eefb9fb046a08e98fb3a6281153525ff7e580eb54413",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\native_trace.ndjson": "231712642efc650c5da51747c3862c14d6655aeeaa17fe3f5bac3b91f500ec90",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\native_worker.json": "a79dd4969b54ddf489ec7c27de4a5699bc04f1489b3c3f1ba6e975011480fd9d",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\native_worker.log": "2664f2c8c3c9952f553e8830a6e835a7fc36da24117222584a87b5bf88791fa5",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\process.json": "4828dc5ee31a179e2e348373322978fa1fa9dbb0601e80f65bd9ee251ee8d26f",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\proof.json": "a0cc7d6495095c19abb5a536ee90e995187b9ee93e9f4aa87a1efd1fa6c8aa11",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\proof_final.png": "ff37f109336c665f830e8deef8a21a734c0fb7b579f607f3a6b0fed0fb01d609",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\ready.json": "3553d008f235e7034e72dfe70abe848629d5b8215f25060ffb63ab386206b3ed",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\result.json": "84c907189866451ad367082900ab58271cc48cdb71980f022bf20d3665133311",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\scope.json": "daccae7b368d02f272bf5ca2da9abfda52b1d69abb261e1281d8d8a103464c14",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\server.log": "cde43eb663a311dfc0ea071633ee049a7491dd2ee350a6eab0a78c1bfa438d45",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\setup.json": "38813032527c90d7304c901038515fb028760c2e1ccd3345538b73858ac8cab1",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\teardown.json": "6e84a1f5cea9522a0a641c99fbaf2aca5342979b530e80c1145dc0173bb5f0f0",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\exports\\0001.gcode": "e18ffdfd0ace9ca98d342c8f1e5d3fd8727eaef9c4868c31173b12cec9a0c11a",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\projects\\0001.3mf": "008daa8cb7b9c8060114e8c24b0dca833f4049e8abc69ec7c578ad027b43e961",
+        "artifacts\\windows_mcp_harvest\\184e78aec4074aedbe45896da5e3e3b4\\proof\\0001.3mf": "008daa8cb7b9c8060114e8c24b0dca833f4049e8abc69ec7c578ad027b43e961"
+      }
+    },
+    {
+      "scenario": "pilot_strength",
+      "run_id": "74d5b3e9f21545af8dc4856e29566571",
+      "original_status": "pass",
+      "completion_hardened_acceptance": true,
+      "coordinator_exit": 0,
+      "host_error": null,
+      "runtime_result": {
+        "checks": {
+          "business": {
+            "detail": "pilot_strength_wallloops: {\"detail\": \"Wall loops 3 saved; unchanged .4/.4 cube; reopened 68-layer extrusion\", \"gcode\": {\"first_layer_height\": \"0.4\", \"first_z\": \"0.4\", \"last_z\": \"27.2\", \"layer_count\": 68, \"layer_height\": \"0.4\", \"object_tools\": [0], \"positive_xy_e_moves\": 2154, \"sha256\": \"818e40b4903b6bce3670f2f8c1f1250399ba3c8494291960e2778d9d4c5b396c\"}, \"other_fixture_settings_preserved\": true, \"physical_wall_count_verified\": false, \"project\": {\"geometry_unchanged\": true, \"initial_layer_print_height\": \"0.4\", \"layer_height\": \"0.4\", \"sha256\": \"d1677e7918fae4c17ed1faa8bdd40e76999f02df4d588e22140a70970f5cfeb2\", \"triangles\": 12, \"vertices\": 8}, \"wall_loops\": 3}",
+            "evidence": [
+              "artifact:proof.json",
+              "artifact:process.json",
+              "artifact:native_trace.ndjson",
+              "artifact:proof/0001.3mf:sha256:d1677e7918fae4c17ed1faa8bdd40e76999f02df4d588e22140a70970f5cfeb2",
+              "artifact:exports/0001.gcode:sha256:818e40b4903b6bce3670f2f8c1f1250399ba3c8494291960e2778d9d4c5b396c"
+            ],
+            "status": "pass"
+          },
+          "path": {
+            "detail": "Native GUI save; stopped input; old exit; frozen-file fresh-profile reslice",
+            "evidence": [
+              "artifact:proof.json",
+              "artifact:process.json",
+              "artifact:native_trace.ndjson",
+              "artifact:proof/0001.3mf:sha256:d1677e7918fae4c17ed1faa8bdd40e76999f02df4d588e22140a70970f5cfeb2",
+              "artifact:exports/0001.gcode:sha256:818e40b4903b6bce3670f2f8c1f1250399ba3c8494291960e2778d9d4c5b396c"
+            ],
+            "status": "pass"
+          },
+          "visual": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          }
+        },
+        "cleanup_confirmed": true,
+        "execution_status": "completed",
+        "gui_execution_requested": true,
+        "mode": "agent_shadow",
+        "reasons": [],
+        "recovery_used": false,
+        "release_eligible": false,
+        "release_verdict": "SHADOW",
+        "runtime_status": "completed",
+        "verified_pass": true
+      },
+      "host_job": {
+        "active_processes": 0,
+        "forced_termination": false,
+        "stopped_at_ns": 1794928427780521700
+      },
+      "guest_process": {
+        "active_processes": 0,
+        "backend": "win32_job",
+        "cancel_reason": null,
+        "case_id": "pilot_strength_wallloops",
+        "exit_code": 0,
+        "finished_at_ns": 1794928482019100300,
+        "forced_termination": false,
+        "job_assigned": true,
+        "pid": 3696,
+        "run_id": "74d5b3e9f21545af8dc4856e29566571",
+        "schema_version": 1,
+        "started_at_ns": 1794928287046326500
+      },
+      "teardown": {
+        "run_id": "74d5b3e9f21545af8dc4856e29566571",
+        "active_processes": 0,
+        "cleanup_confirmed": true,
+        "token_exists": false
+      },
+      "sources_unchanged": true,
+      "native_model_receipts": 14,
+      "native_tool_calls": 13,
+      "executed_mcp_calls": 13,
+      "cli_bundle_sha256": "d9afd58d694f98a5279bf548cdc7646413c125762e86730605a6071f9e0346d6",
+      "tool_errors": [],
+      "evidence_sha256": {
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\agent_final.png": "b6d5ad6988c56cc3138635637cc1275fcd8abc6f21c17375b4bf7861ef7c5717",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\contract.json": "f3ad9764f20ff9d7638a2d49557ff00f439c7c4dc8463976e10f0c2912d99088",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\host_done.json": "e0924d9bdb2aa01569c72fcb3a949d97cf3ca01bc7b1bacac947202e1f37a4a6",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\initial.png": "71790f9b642af304719bcf5a944e50adbf641a294648e32710e1067187c10cc4",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\manifest.json": "54e977cfcf5ecc9605691df0a5cc1fc6bea796a29298abab4b8514b3bd43c2c7",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\native_trace.ndjson": "55d6b4f7518af0898d05c032065e6f79131c614cf47c9b9aa76d9e1d80a94d50",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\native_worker.json": "80e5db3f72ee177277bb6aa6bd366a9c97f9c16eba831aa896236ad067c2a90d",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\native_worker.log": "e6fb748511f1d2067ae66c9cb18bdf30634b53676156aa934c49c27337657aa2",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\process.json": "8887c6aee314dc8aee425c3328a07d8048e5bc2e732c4b17186a5912e85d430e",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\proof.json": "89a2543f4e43086d017259e2d36dd7465aae140a6c93c9055c3a44903e6ef132",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\proof_final.png": "448edf839468d907a9f166adecd664049b5a54960fd1e242b755e96f94e0b231",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\ready.json": "accfe281ee274052e320b3123d4bafc78e06526985dde0ec4dedc214dc9075c4",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\result.json": "98caf4a4482898746047f80045f0a1bfbaa4050dbf8647cbf9b4a771f47f1bd9",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\scope.json": "742131c94dbd4bfdd32371eba2aa8e7d1e2f3979a9b00cbf4371fddde94d64ee",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\server.log": "da0ed5d76560d4d94a45e317ba09b745065a00ba1b903d3bc0acd8b6eac739fe",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\setup.json": "3f9f1827ec1b38191c4f901001b52cf23d17ff2d5a3b67bcdf0eed47b92cacaf",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\teardown.json": "6446594be4931632e3758f9e98f5e2174ce7989996796a9b5acef7951b9c1b37",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\exports\\0001.gcode": "818e40b4903b6bce3670f2f8c1f1250399ba3c8494291960e2778d9d4c5b396c",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\projects\\0001.3mf": "d1677e7918fae4c17ed1faa8bdd40e76999f02df4d588e22140a70970f5cfeb2",
+        "artifacts\\windows_mcp_harvest\\74d5b3e9f21545af8dc4856e29566571\\proof\\0001.3mf": "d1677e7918fae4c17ed1faa8bdd40e76999f02df4d588e22140a70970f5cfeb2"
+      }
+    },
+    {
+      "scenario": "pilot_transform",
+      "run_id": "cf9b252849044022822255bfc5627820",
+      "original_status": "fail",
+      "completion_hardened_acceptance": false,
+      "coordinator_exit": 1,
+      "host_error": "RuntimeError:zcode_actor_failed:native_action_budget",
+      "runtime_result": {
+        "checks": {
+          "business": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          },
+          "path": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          },
+          "visual": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          }
+        },
+        "cleanup_confirmed": true,
+        "execution_status": "failed",
+        "gui_execution_requested": true,
+        "mode": "agent_shadow",
+        "reasons": [
+          "execution_not_completed",
+          "evidence_incomplete",
+          "execution_noncompliant",
+          "business_unknown",
+          "path_unknown"
+        ],
+        "recovery_used": false,
+        "release_eligible": false,
+        "release_verdict": "NON_GREEN",
+        "runtime_status": "failed",
+        "verified_pass": false
+      },
+      "host_job": {
+        "active_processes": 0,
+        "forced_termination": false,
+        "stopped_at_ns": 1794928977150394800
+      },
+      "guest_process": {
+        "active_processes": 0,
+        "backend": "win32_job",
+        "cancel_reason": null,
+        "case_id": "pilot_model_move_x",
+        "exit_code": 1,
+        "finished_at_ns": 1794928982132058500,
+        "forced_termination": false,
+        "job_assigned": true,
+        "pid": 2668,
+        "run_id": "cf9b252849044022822255bfc5627820",
+        "schema_version": 1,
+        "started_at_ns": 1794928505326604700
+      },
+      "teardown": {
+        "run_id": "cf9b252849044022822255bfc5627820",
+        "active_processes": 0,
+        "cleanup_confirmed": true,
+        "token_exists": false
+      },
+      "sources_unchanged": true,
+      "native_model_receipts": 42,
+      "native_tool_calls": 41,
+      "executed_mcp_calls": 40,
+      "cli_bundle_sha256": "d9afd58d694f98a5279bf548cdc7646413c125762e86730605a6071f9e0346d6",
+      "tool_errors": [
+        {
+          "seq": 27,
+          "tool": "Type",
+          "error": "ValueError:native_type_text_rejected"
+        },
+        {
+          "seq": 36,
+          "tool": "Type",
+          "error": "ValueError:native_type_requires_owned_edit"
+        },
+        {
+          "seq": 38,
+          "tool": "Type",
+          "error": "ValueError:native_type_requires_owned_edit"
+        },
+        {
+          "seq": 40,
+          "tool": "Type",
+          "error": "ValueError:native_type_requires_owned_edit"
+        }
+      ],
+      "evidence_sha256": {
+        "artifacts\\windows_mcp_harvest\\cf9b252849044022822255bfc5627820\\contract.json": "90e225189cdfc51c5b69fb48dd2a4d396fa99194444d8468cb6f88fd246c029a",
+        "artifacts\\windows_mcp_harvest\\cf9b252849044022822255bfc5627820\\host_done.json": "4da9c40003ff121cf1e7c19c7a16218b268070323d7cf5cb41ab797db0380561",
+        "artifacts\\windows_mcp_harvest\\cf9b252849044022822255bfc5627820\\initial.png": "71790f9b642af304719bcf5a944e50adbf641a294648e32710e1067187c10cc4",
+        "artifacts\\windows_mcp_harvest\\cf9b252849044022822255bfc5627820\\manifest.json": "f55b5781b442a97d5855e54b328d2789469a4600ea6b673ed263e82b18e0909f",
+        "artifacts\\windows_mcp_harvest\\cf9b252849044022822255bfc5627820\\native_trace.ndjson": "ad4ab33a309686bab3a066759c05cb0f9a85150937dda59b6c34680f0d1b4758",
+        "artifacts\\windows_mcp_harvest\\cf9b252849044022822255bfc5627820\\native_worker.json": "a9984b0edf7e714787d862e297c3115a1915072b561a960a2213fa5ca0216df9",
+        "artifacts\\windows_mcp_harvest\\cf9b252849044022822255bfc5627820\\native_worker.log": "5f2cb2fd764f99a11df44cb4494f5c07611acc57d3fc815b9ff816878f823048",
+        "artifacts\\windows_mcp_harvest\\cf9b252849044022822255bfc5627820\\process.json": "4a2d6628611e9eec493c845f8204e73512e5402f8d9de7d8978dec64006c988d",
+        "artifacts\\windows_mcp_harvest\\cf9b252849044022822255bfc5627820\\ready.json": "29326f845493ad95f6cc2d0cfdfe0f81ec50fda7202025b3abb46500243ffd1b",
+        "artifacts\\windows_mcp_harvest\\cf9b252849044022822255bfc5627820\\result.json": "1885c35a4ee9dd512fb77ef0bdac9633b503550d1c26aa176f54374a4d2b4aa6",
+        "artifacts\\windows_mcp_harvest\\cf9b252849044022822255bfc5627820\\scope.json": "42803f492178a6f6acfe24020550ca148ba0ce995bb98f2a33abdf79757a50da",
+        "artifacts\\windows_mcp_harvest\\cf9b252849044022822255bfc5627820\\server.log": "3f55861e946b540b87bc2bb3b8afd5b82ea9b7d39059b22dd507483c10ee6996",
+        "artifacts\\windows_mcp_harvest\\cf9b252849044022822255bfc5627820\\setup.json": "3e764566edc5f425dbb200c37159f546c9c6c254e8bb37f36409dbaf837f0b84",
+        "artifacts\\windows_mcp_harvest\\cf9b252849044022822255bfc5627820\\teardown.json": "bfc10650dc114f06de73737d4db9bbdf937efda3716258b2c385acf99b577fa9"
+      }
+    },
+    {
+      "scenario": "pilot_material",
+      "run_id": "91933c76b0cc4064ab0e581dd08883a2",
+      "original_status": "pass",
+      "completion_hardened_acceptance": true,
+      "coordinator_exit": 0,
+      "host_error": null,
+      "runtime_result": {
+        "checks": {
+          "business": {
+            "detail": "pilot_material_slot2: {\"case_id\": \"pilot_material_slot2\", \"gcode_sha256\": \"6900feb816167f9914d6e282714045c8708d400edf92b45628fc75dc239a9f1a\", \"geometry_unchanged\": true, \"last_z\": \"27.2\", \"layer_count\": 68, \"object_filament_slot\": 2, \"object_tools\": [1], \"physical_nozzle_mapping_verified\": false, \"printing_verified\": false, \"project_sha256\": \"85436a7dc7fbad31467468ccf34881a85875f01bf924c58da4d2323aa4d59d30\"}",
+            "evidence": [
+              "artifact:proof.json",
+              "artifact:process.json",
+              "artifact:native_trace.ndjson",
+              "artifact:proof/0001.3mf:sha256:85436a7dc7fbad31467468ccf34881a85875f01bf924c58da4d2323aa4d59d30",
+              "artifact:exports/0001.gcode:sha256:6900feb816167f9914d6e282714045c8708d400edf92b45628fc75dc239a9f1a"
+            ],
+            "status": "pass"
+          },
+          "path": {
+            "detail": "Native GUI save; stopped input; old exit; frozen-file fresh-profile reslice",
+            "evidence": [
+              "artifact:proof.json",
+              "artifact:process.json",
+              "artifact:native_trace.ndjson",
+              "artifact:proof/0001.3mf:sha256:85436a7dc7fbad31467468ccf34881a85875f01bf924c58da4d2323aa4d59d30",
+              "artifact:exports/0001.gcode:sha256:6900feb816167f9914d6e282714045c8708d400edf92b45628fc75dc239a9f1a"
+            ],
+            "status": "pass"
+          },
+          "visual": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          }
+        },
+        "cleanup_confirmed": true,
+        "execution_status": "completed",
+        "gui_execution_requested": true,
+        "mode": "agent_shadow",
+        "reasons": [],
+        "recovery_used": false,
+        "release_eligible": false,
+        "release_verdict": "SHADOW",
+        "runtime_status": "completed",
+        "verified_pass": true
+      },
+      "host_job": {
+        "active_processes": 0,
+        "forced_termination": false,
+        "stopped_at_ns": 1794929247248819700
+      },
+      "guest_process": {
+        "active_processes": 0,
+        "backend": "win32_job",
+        "cancel_reason": null,
+        "case_id": "pilot_material_slot2",
+        "exit_code": 0,
+        "finished_at_ns": 1794929300518261700,
+        "forced_termination": false,
+        "job_assigned": true,
+        "pid": 3400,
+        "run_id": "91933c76b0cc4064ab0e581dd08883a2",
+        "schema_version": 1,
+        "started_at_ns": 1794929007116403100
+      },
+      "teardown": {
+        "run_id": "91933c76b0cc4064ab0e581dd08883a2",
+        "active_processes": 0,
+        "cleanup_confirmed": true,
+        "token_exists": false
+      },
+      "sources_unchanged": true,
+      "native_model_receipts": 28,
+      "native_tool_calls": 27,
+      "executed_mcp_calls": 27,
+      "cli_bundle_sha256": "d9afd58d694f98a5279bf548cdc7646413c125762e86730605a6071f9e0346d6",
+      "tool_errors": [],
+      "evidence_sha256": {
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\agent_final.png": "1e5826e5243d15594055de566b3feda6a00d1d51ea4fbf66dd7544e2b46b13f1",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\contract.json": "da6eb537c2434ad2d45723b34062f6d93b2600f53fa651d3464dd98398381c2e",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\host_done.json": "1504c959017fb5dcc20705b97a6c75a781f2f11b32a873ce57a56c4a04ec11ef",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\initial.png": "71790f9b642af304719bcf5a944e50adbf641a294648e32710e1067187c10cc4",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\manifest.json": "53889aa0d15338ed0b8ee11e80f76d6b627ce7601e19adcbb910925bd32baa72",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\native_trace.ndjson": "45150d39ec9ef8dd1f241a5b4f0d1cb5251e2ffacf8873417d18de174c0a9963",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\native_worker.json": "a2e3e6c3d1f20e62037653cd410cc2269f385ceaf278ee0ab6874d1b826bb1ec",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\native_worker.log": "7a53ab4debd682b52fa8eff08ca06262ac7d8e9e61f2eb99a5218d6fbff4d2e5",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\process.json": "06c06f5d9ff6f6830f5b7ab9334782ccee590a2800adc6e3fba93da879357ba7",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\proof.json": "fccb7e950bf136203c7232cc44933fa6ad29e3ada54ac379e4fff0604881e8f4",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\proof_final.png": "002535158567af06fd8899baae6ae81e4fa60418e90d1d4f13346f225c71bfea",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\ready.json": "1cd58559a1724a0e0485d378a961f4f411e8580e96d17a4054ede8e294c6e5d7",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\result.json": "4caf2ec2767c0dabca9c9582ecf912c4b4a301ee0c122f4cb627e48ad7c38158",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\scope.json": "2efc419c719d932036ca3b19de99ff907cc0f6b83ebbe396b0ea62d33217c7fa",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\server.log": "104ef6e3dc5267b0911c9a75aa326e9412e431b0b91b6db7e0eb70f01da8fd0e",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\setup.json": "05a45273035174ea6078a0880c1b2407c42189e655aebbfedaf32f010eed6569",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\teardown.json": "6300a0458117215455e9dcce6065f71168ab1a09a9fc995cf6906563ca2a3260",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\exports\\0001.gcode": "6900feb816167f9914d6e282714045c8708d400edf92b45628fc75dc239a9f1a",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\projects\\0001.3mf": "85436a7dc7fbad31467468ccf34881a85875f01bf924c58da4d2323aa4d59d30",
+        "artifacts\\windows_mcp_harvest\\91933c76b0cc4064ab0e581dd08883a2\\proof\\0001.3mf": "85436a7dc7fbad31467468ccf34881a85875f01bf924c58da4d2323aa4d59d30"
+      }
+    }
+  ],
+  "postflight": {
+    "mcp_listeners": 0,
+    "tokens_present": [],
+    "apps": 0,
+    "dirty": [],
+    "suite": "Ready",
+    "head": "cc2ae8340f69ade6a56f0099b195cd514ad52a75",
+    "PSComputerName": "win11-test",
+    "RunspaceId": "ea0d0d47-a038-4614-841a-da4057b5ebad",
+    "PSShowComputerName": true
+  },
+  "known_aggregation_bug_reaudited": true,
+  "transformation_capability_state": "blocked_numeric_range_and_non_native_edit",
+  "global_guard_after": {
+    "ready": true,
+    "state": "OK",
+    "time": 1794929879.93595,
+    "last_us_age": 5.0,
+    "evidence_ttl": 1800.0,
+    "guard_pid": 22040,
+    "client_checked_at_ns": 1794929884902336700
+  },
+  "aggregation_review_disposition": "fixed and independently reviewed; positive slots reaudited with explicit host/coordinator completion"
+}

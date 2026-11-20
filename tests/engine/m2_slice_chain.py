@@ -136,12 +136,25 @@ def click_slice_start(session, attempts=3):
         if score < MATCH_THRESHOLD:
             print(f"[m2] slice button not found ({score:.3f})")
             continue
+        dispatched = time.monotonic()
         winutil.msg_click_screen(sx, sy, session.hwnd)
-        time.sleep(3.0)
-        img = capture_bgr(session)
+        monitor = getattr(session, "perf", None)
+        if monitor is None:
+            time.sleep(3.0)
+        deadline = dispatched + 3.0
+        while True:
+            img = capture_bgr(session)
+            res = cv2.matchTemplate(img, tpl, cv2.TM_CCOEFF_NORMED)
+            _, s2, _, _ = cv2.minMaxLoc(res)
+            observed = time.monotonic()
+            if s2 < 0.7 or observed >= deadline:
+                break
+            time.sleep(0.1)
+        if monitor is not None:
+            monitor.measure("slice_click_to_button_change", dispatched, end=observed,
+                            status="observed" if s2 < 0.7 else "not_observed", attempt=i + 1)
+            session.slice_dispatch = (dispatched, i + 1)
         cv2.imwrite(str(HERE / "artifacts" / f"m2_diag_click{i}.png"), img)
-        res = cv2.matchTemplate(img, tpl, cv2.TM_CCOEFF_NORMED)
-        _, s2, _, _ = cv2.minMaxLoc(res)
         if s2 < 0.7:
             print(f"[m2] slicing started (button left idle, score {s2:.3f})")
             return True
@@ -164,6 +177,7 @@ def main() -> int:
     results = {}
     profile.seed_profile(args.datadir, fresh=not args.reuse)
     session = launcher.launch(exe=args.exe, datadir=args.datadir, model=args.model)
+    monitor = session.perf
     try:
         env_check.print_preflight(session.hwnd)
 
@@ -183,6 +197,10 @@ def main() -> int:
         print(f"[m2] boot state: Prepare tab score {score:.3f} "
               f"(rect {session.rect()})")
         ok_model, col_frac = wait_model_loaded(session)
+        if monitor is not None:
+            monitor.measure("launch_to_model_visible", session.launch_started,
+                            status="observed" if ok_model else "not_observed",
+                            startup_fixed_wait_s=12)
         print(f"[m2] model arrival observed: {ok_model} (viewport colored {col_frac:.2%})")
         # Slicing an empty plate produces nothing, so a successful slice also
         # proves the model loaded — the detector verdict is upgraded below
@@ -190,6 +208,7 @@ def main() -> int:
         results["model loaded"] = "PASS" if ok_model else "FAIL (no chromatic model content)"
         time.sleep(1.0)
 
+        launcher.perf_monitor.set_step("slice", monitor=session.perf)
         # 2) click "Slice plate" and wait for the button to come back idle
         empty_frac0 = has_colored_content(capture_bgr(session))
         started = click_slice_start(session)
@@ -202,25 +221,52 @@ def main() -> int:
             # slice inside the cap and get upgraded below.
             timeout_s = 1500 if ok_model else 60
             done, done_score = wait_slicing_done(session, timeout_s=timeout_s)
+            if monitor is not None:
+                dispatched, attempt = session.slice_dispatch
+                monitor.measure("slice_click_to_completion_detected", dispatched,
+                                status="observed" if done else "not_observed", attempt=attempt)
         print(f"[m2] slicing started={started} done={done} (idle score {done_score:.3f})")
         results["slice + completion"] = "PASS" if done else "FAIL"
 
+        launcher.perf_monitor.set_step("preview", monitor=session.perf)
         # 3) switch to Preview and assert the toolpath rendering
+        preview_started = None
+        preview_attempt = None
+
+        def preview_dispatch(attempt, timestamp):
+            nonlocal preview_started, preview_attempt
+            preview_started, preview_attempt = timestamp, attempt
+
         ok_pv, _ = click_and_verify(session, RESOURCE / "tab_preview_inactive.png",
-                                    RESOURCE / "tab_preview_active.png")
-        time.sleep(2.0)  # toolpath load
-        img = capture_bgr(session)
+                                    RESOURCE / "tab_preview_active.png", on_dispatch=preview_dispatch)
+        if monitor is None:
+            time.sleep(2.0)  # toolpath load
+        deadline = time.monotonic() + (4.0 if monitor is not None and ok_pv else 0)
+        while True:
+            img = capture_bgr(session)
+            colored = has_colored_content(img)
+            toolpath_visible = (ok_pv and colored > TOOLPATH_COLORED_FLOOR
+                                and colored >= 2 * max(empty_frac0, 1e-4))
+            observed = time.monotonic()
+            if toolpath_visible or observed >= deadline:
+                break
+            time.sleep(0.1)
+        if monitor is not None and preview_started is not None:
+            monitor.measure("preview_click_to_toolpath_detected", preview_started, end=observed,
+                            status="observed" if toolpath_visible else "not_observed",
+                            attempt=preview_attempt, stable_tab_settle_s=1)
         cv2.imwrite(str(HERE / "artifacts" / "m2_preview.png"), img)
-        colored = has_colored_content(img)
         print(f"[m2] Preview switched={ok_pv}, colored-viewport fraction: "
               f"{colored:.3%} (was {empty_frac0:.3%} before slicing)")
         # toolpath = colored fraction well above the noise floor AND >=2x
         # the pre-slice colored-model baseline (a colored MODEL alone used
         # to false-positive the old fixed threshold; the ratio gate already
         # excludes that — the floor only excludes sub-1% empty-bed jitter)
-        results["preview toolpath"] = (
-            "PASS" if (ok_pv and colored > TOOLPATH_COLORED_FLOOR
-                       and colored >= 2 * max(empty_frac0, 1e-4)) else "FAIL")
+        results["preview toolpath"] = "PASS" if toolpath_visible else "FAIL"
+
+        if monitor is not None and toolpath_visible:
+            from m2_perf_scenarios import run_diagnostics
+            run_diagnostics(session)
 
         print("\n[m2] === verdict ===")
         # A successful end-to-end slice is itself proof the model loaded

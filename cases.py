@@ -72,6 +72,7 @@ CASES: dict[str, dict] = {
         "milestone": "m2", "tier": "A",
         "suite": "smoke", "enabled": True,
     },
+    "m2_perf_showcase": _o("m2", "A", enabled=False),  # explicit Hyper-V performance demo
     # --- m3a-m3i: early business-path cases (runnable, not in the suite) -----
     "m3a_empty_slice": _o("m3", "A"),
     "m3b_delete_scene": _o("m3", "A"),

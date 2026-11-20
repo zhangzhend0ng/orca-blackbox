@@ -1,0 +1,40 @@
+# ZCode Snapmaker actor 自检
+
+结论：已取得一次完整客机SHADOW，前五次开发失败保留；仅允许受控试验，不作为发布GREEN。此次是原生ZCode会话协议客户端，未自建agent循环。用户已明确指定Snapmaker供应商，固定new-provider/glm-5.3-flash，不继续BigModel个人套餐。
+
+## Harness 条件、动作与tier
+
+- harness-driven-review（A）：实现前加载INDEX、协议及tool-calling、input-validation、error-handling、logging、risk-verification、testing-strategy、AIevaluation。自检和实际运行状态分开，本文保留NOT VERIFIED边界。
+- input-validation Items1–4（N/C）：run ID固定32hex；CLI actor枚举；host供应商名称、现有HTTP主机、路径、协议和模型白名单；只使用参数数组调用Node；PS NativeActor为ValidateSet固定枚举。守卫状态检查精确bool、有限数值、时间/TTL与阻断状态；解析错误不放行。
+- tool-calling Items1–7（C/A）：保留原生agent；模型无路径脚本/坐标清单。原生allowlist和权限回调只准七项本轮GUI工具，guest仍有owned HWND/PID/数值/保存路径门禁。session原生事件计数、40动作/有界超时、原始错误保留；模型不能直接给业务pass。native model-io再次核验每次实际供应商、模型及工具清单。
+- error-handling Items1–7（C）：host使用owned Job，guard失败回收actor进程树；guest关闭输入、自然退出、独立证明沿用已有实现。actor/import失败仍走既有协调器取消与harvest。注册只扩展两个固定合同，原Codex合同hash回归保持；不开放任意执行适配器。
+- logging Items1–6（N/C）：客户配置由原生ZCode读取，客户端只输出配置元信息和hash，不归档Key或认证文件。守卫status-token只在内存进入本地header。只归档任务UI和原生调用元信息；native model-io保留本地、只提取安全字段，不作为通用日志DLP证明。
+- risk-verification/testing/AI-evaluation（C/A）：本次改模型、会话权限、固定合同，视为高风险；反例覆盖失效守卫、错误供应商、额外工具、假安全收据、模型漂移和Bash权限请求。协议反例通过本地假server验证拒绝，不计真实GUI覆盖。独立业务oracle不随模型更换。
+
+## 验证
+
+初版受影响纯测试60 passed（11.64秒），Python compile、Node语法和hv_go PowerShell parser通过；全仓794 passed、1 skipped（33.50秒）。最后复核发现原生客户端确有session/requestRuntimePreferences请求，已补齐明确关闭搜索/记忆/子agent及自动问答的会话回复；按此最终改动重跑后再冻结。
+
+最终会话偏好回复补齐后，假协议server复核其关闭记忆、子agent和工具搜索；全仓再次794 passed、1 skipped（33.23秒），Python编译及Node语法通过。以下准备冻结同步，在取得实际GUI收据之前仍为NOT VERIFIED。
+
+首轮真实run `77cf7e8ec1724e63b80fe96635b3eace`（27a55ca）因客户端误把既有公司HTTP地址限定成HTTPS，被provider校验拒绝，未发模型请求；guest收到失败收据后自然exit1、active=0、forced=false、cleanup_confirmed=true，保留NON_GREEN。修复为精确匹配用户现有`http://ai-gateway.s.com/v1`，补充真实配置形状正例及Key不输出检查；并把供应商/守卫前置校验移到GUI启动之前。没有修改公司网关地址或凭据。下一轮必须使用新run。
+
+第二轮 `2ac0a1c371a0417cb81e6487113222f2`（e879187）在ZCode session/create阶段被模型初始化拒绝：正式driver漏传最小探针已有的model.options.reasoningLevel。协议需要它和thoughtLevel同时存在；仅后者不足以在bootstrap时创建模型。补齐low/low，并让假server拒绝漏传任一字段以覆盖该差异。该轮没有GUI工具调用、无业务模型请求，host Job自然清空，guest统一结果NON_GREEN且cleanup_confirmed=true，保留原记录。
+
+第三轮 `5efb10ab5c37487c9cf68761490c8370`（0ed9f78）已创建原生会话，但正式driver读取session.id，实际原生协议字段为session.sessionId；最小探针保留了兼容fallback，假server初版则错误返回id，导致漏检。现按原版schema修正driver和假server。该轮未发session/send、无GUI输入，保留NON_GREEN及清理收据。
+
+随后先做真实原生传输验证`artifacts/zcode_probe/20261117-snapmaker-transport-1`：使用同一个正式driver、真实ZCode、真实公司Flash及静态MCP夹具，完成一次Snapshot调用及两次模型请求，回复PROTOCOL_TRANSPORT_OK；actual model-io均为new-provider/glm-5.3-flash、每次恰好七项GUI工具，exit0/active0/未强杀，三份个人配置hash保持。静态夹具不操作桌面、不算GUI覆盖；此验证先于下一轮真实GUI，避免继续用客机发现基础协议差异。
+
+第四轮 `3464272d1bc84ad4a7d5fffc71c4b302`（cea30fe）完成真实模型交互及九次MCP调用，但三个Click的loc是字符串，被客机整数数组门禁拒绝；无Type/保存动作，模型明确报告未完成，独立业务链拒绝，结果NON_GREEN、清理确认。原生调用事件的completed只表示返回，不等于GUI动作成功，应以native_trace中的error为准。模型将原版ControlStatus disabled误诊成输入通道关闭；实际为既定--no-control全局租约配置，阻断原因是loc类型。
+
+修复为传输tools/list只暴露与authority一致的窄schema（loc整数数组、标志bool、数值/本run保存路径、快捷键白名单），不改原版MCP源码、不放宽门禁，也不预置GUI坐标；ControlStatus说明补充专用客机的租约语义。Snapshot同步拒绝字符串bool及未知参数。真实静态传输验证transport-2已得到Click loc=[264,765]、Snapshot use_vision=true，两次参数门禁均通过，exit0/active0、个人配置未改；该坐标只用于静态fixture参数测试，不进入业务prompt或真实动作脚本。新回归用JSON Schema验证观察到的错误包被拒绝、合法输入与原门禁一致。
+
+第五轮 `d5f41d1f6cff4e83a2598c235d44e062`（f394ea3）在进度actor.json替换时遭遇Windows EPERM，共享读取与rename竞争导致客户端退出并取消尚在生成的模型请求，无GUI工具输入。host/guest均收尾归零，保留NON_GREEN。已将进度改为append-only progress.ndjson，actor.json仅在会话和server收尾后以CreateNew写一次；结果消费者在Job退出后读取，不再替换正在被监控读取的文件。回归检查两类协议失败仍产生可解析进度与最终单次结果。
+
+schema修复后的全仓796 passed、1 skipped（31.35秒）；随后进度修复按受影响的ZCode协议测试复核。所有真实run保持在分母，不能以静态夹具或单测抵消失败。
+
+最终进度修复专项29 passed（10.55秒）。第六轮 `4ba6b094412d435398826502d94f69e9` / 02a6201：16个native_trace均error=null，17个原生模型请求均绑定Snapmaker Flash和七项工具，原生日志含实际图片消息；host/guest自然退出、owned Job归零，无强杀收据。独立3MF/G-code验证.24/初层.4、模型不变、112层/末Z27.04，verified_pass与cleanup_confirmed均true、release_eligible=false，SHADOW。AI在保存错误提示后自行改另存为，是观测到的GUI内恢复，不等同runtime恢复计数。guest收尾复核clean、apps0、suite Ready、临时token删除；三份个人配置hash未变。详见[完整运行记录](../runs/zcode-snapmaker-2026-11-17.md)。
+
+守卫目标间隔3秒，但本轮收据time来自守卫发布快照，不是客户端采样时间；不得宣称硬性≤5秒或已经通过运行中撤销测试。守卫对公司网关的地理出口覆盖仍不作扩大解释。当前仅证明接入与单个业务闭环，八次矩阵/真实取消/跨版本维护验收后续另做。
+
+残余边界：用户已启用的插件仍可能在ZCode bootstrap初始化；会话过滤不构成同权限攻击的沙箱。guard检查既有OpenAI组，不证明Snapmaker网关实际出口国家。模型服务真实版本与USD不可见记unknown。实际中途取消、稳定性矩阵与跨版本可靠性尚未验收，单个正例不得推广为87条覆盖。

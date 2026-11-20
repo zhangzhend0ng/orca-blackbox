@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "scenario": "uia_move_layer",
+  "initial_tab": "Quality",
+  "fixture_sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+  "steps": [
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Screenshot",
+      "arguments": {
+        "region_name": "wx_sidebar"
+      },
+      "bounds": [
+        0,
+        67,
+        426,
+        1032
+      ]
+    },
+    {
+      "tool": "Type",
+      "arguments": {
+        "target": {
+          "automation_id": "-30587",
+          "control_type": "EditControl",
+          "name": ""
+        },
+        "text": "0.24"
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Screenshot",
+      "arguments": {
+        "region_name": "imgui_canvas"
+      },
+      "bounds": [
+        426,
+        67,
+        1920,
+        1032
+      ]
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "loc": [
+          1172,
+          513
+        ]
+      }
+    },
+    {
+      "tool": "Screenshot",
+      "arguments": {
+        "region_name": "imgui_canvas"
+      },
+      "bounds": [
+        426,
+        67,
+        1920,
+        1032
+      ]
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "loc": [
+          1070,
+          92
+        ]
+      }
+    },
+    {
+      "tool": "Screenshot",
+      "arguments": {
+        "region_name": "imgui_canvas"
+      },
+      "bounds": [
+        426,
+        67,
+        1920,
+        1032
+      ]
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "loc": [
+          1252,
+          162
+        ]
+      }
+    },
+    {
+      "tool": "Type",
+      "arguments": {
+        "loc": [
+          1252,
+          162
+        ],
+        "press_enter": true,
+        "text": "145.50"
+      }
+    },
+    {
+      "tool": "Screenshot",
+      "arguments": {
+        "region_name": "imgui_canvas"
+      },
+      "bounds": [
+        426,
+        67,
+        1920,
+        1032
+      ]
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Shortcut",
+      "arguments": {
+        "shortcut": "ctrl+shift+s"
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Type",
+      "arguments": {
+        "target": {
+          "automation_id": "1001",
+          "control_type": "EditControl",
+          "name": "File name:"
+        },
+        "text": "$OUTPUT_3MF"
+      }
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "target": {
+          "automation_id": "1",
+          "control_type": "ButtonControl",
+          "name": "Save"
+        }
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    }
+  ],
+  "source": {
+    "run_id": "e251f0f23b0338083fdb5919edde5f74",
+    "source_sha": "b9266e1dcb2e92ba87bed39ad0a279df234ca5f4",
+    "trace_sha256": "749c4e99f815e8ce78b8f12a1bf51cda79106a1d447c58c2d6e11783dfbf9489"
+  }
+}

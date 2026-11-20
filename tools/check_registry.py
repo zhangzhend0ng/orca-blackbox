@@ -22,8 +22,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from cases import CASES, enabled_cases  # noqa: E402
 
-_SKIP = {"m3_common.py", "m5_common.py", "m7_common.py", "m8_common.py",
-         "m9_baseline.py"}   # m9_baseline is a driver (tools/baseline_batch.py), not a case
+_SKIP = {"m2_perf_scenarios.py", "m3_common.py", "m5_common.py",
+         "m7_common.py", "m8_common.py", "m9_baseline.py"}
 
 problems: list[str] = []
 

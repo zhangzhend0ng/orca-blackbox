@@ -1,0 +1,237 @@
+{
+  "schema_version": 1,
+  "scenario": "uia_process_combo",
+  "initial_tab": "Quality",
+  "fixture_sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+  "steps": [
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Screenshot",
+      "arguments": {
+        "region_name": "wx_sidebar"
+      },
+      "bounds": [
+        0,
+        67,
+        426,
+        1032
+      ]
+    },
+    {
+      "tool": "Type",
+      "arguments": {
+        "target": {
+          "automation_id": "-30587",
+          "control_type": "EditControl",
+          "name": ""
+        },
+        "text": "0.30"
+      }
+    },
+    {
+      "tool": "Screenshot",
+      "arguments": {
+        "region_name": "wx_sidebar"
+      },
+      "bounds": [
+        0,
+        67,
+        426,
+        1032
+      ]
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "loc": [
+          121,
+          697
+        ]
+      }
+    },
+    {
+      "tool": "Screenshot",
+      "arguments": {
+        "region_name": "wx_sidebar"
+      },
+      "bounds": [
+        0,
+        67,
+        426,
+        1032
+      ]
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "loc": [
+          213,
+          850
+        ]
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Type",
+      "arguments": {
+        "target": {
+          "automation_id": "-30575",
+          "control_type": "EditControl",
+          "name": ""
+        },
+        "text": "30"
+      }
+    },
+    {
+      "tool": "Screenshot",
+      "arguments": {
+        "region_name": "wx_sidebar"
+      },
+      "bounds": [
+        0,
+        67,
+        426,
+        1032
+      ]
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "loc": [
+          198,
+          697
+        ]
+      }
+    },
+    {
+      "tool": "Screenshot",
+      "arguments": {
+        "region_name": "wx_sidebar"
+      },
+      "bounds": [
+        0,
+        67,
+        426,
+        1032
+      ]
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "target": {
+          "automation_id": "-30531",
+          "control_type": "ButtonControl",
+          "name": ""
+        }
+      }
+    },
+    {
+      "tool": "Screenshot",
+      "arguments": {
+        "region_name": "wx_sidebar"
+      },
+      "bounds": [
+        0,
+        67,
+        426,
+        1032
+      ]
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "loc": [
+          305,
+          793
+        ]
+      }
+    },
+    {
+      "tool": "Screenshot",
+      "arguments": {
+        "region_name": "wx_process_popup"
+      },
+      "bounds": [
+        246,
+        813,
+        393,
+        925
+      ]
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "loc": [
+          300,
+          827
+        ]
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Screenshot",
+      "arguments": {
+        "region_name": "wx_sidebar"
+      },
+      "bounds": [
+        0,
+        67,
+        426,
+        1032
+      ]
+    },
+    {
+      "tool": "Shortcut",
+      "arguments": {
+        "shortcut": "ctrl+shift+s"
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    },
+    {
+      "tool": "Type",
+      "arguments": {
+        "target": {
+          "automation_id": "1001",
+          "control_type": "EditControl",
+          "name": "File name:"
+        },
+        "text": "$OUTPUT_3MF"
+      }
+    },
+    {
+      "tool": "Click",
+      "arguments": {
+        "target": {
+          "automation_id": "1",
+          "control_type": "ButtonControl",
+          "name": "Save"
+        }
+      }
+    },
+    {
+      "tool": "Snapshot",
+      "arguments": {}
+    }
+  ],
+  "source": {
+    "run_id": "f7fae3bb90104f0e84990f032e8b3d10",
+    "source_sha": "272249a9415ac299f424249dce84cf452ee399de",
+    "trace_sha256": "ab325eca0b5eee1b645cb4b5eb5e23a338ad49b4151733c6c81c66fb7242e9b3"
+  }
+}

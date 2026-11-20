@@ -16,9 +16,21 @@ RELAY_CMD = os.path.join(VM_SETUP, "relay_cmd.txt")
 RELAY_OUT = os.path.join(VM_SETUP, "relay_out.txt")
 
 
+def _await_fresh_tick(previous):
+    # The existing daemon identifies responses by wall-clock seconds only.
+    # A nested background launch can submit within the same second and receive
+    # an identical RUN header even though the command executed successfully.
+    cutoff = time.monotonic()+2
+    while previous == "=== RUN "+time.strftime("%H:%M:%S")+" ===":
+        if time.monotonic() >= cutoff:
+            raise RuntimeError("relay_clock_not_advancing")
+        time.sleep(.05)
+
+
 def relay_transact(cmd, timeout_s=300):
     with open(RELAY_OUT, "r", errors="replace") as f:
         prev_header = f.readline().strip()
+    _await_fresh_tick(prev_header)
     with open(RELAY_CMD, "w") as f:
         f.write(cmd)
     t0 = time.time()

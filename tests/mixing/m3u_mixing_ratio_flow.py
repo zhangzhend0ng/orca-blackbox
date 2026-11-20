@@ -61,7 +61,7 @@ def compat_blocked(dlg):
                for b in low)
 
 
-def make_compatible(session, dlg):
+def make_compatible(session, dlg, *, observe_popup=None):
     """Switch row 1 via its popup until the cross-type banner clears."""
     combos = mdu.filament_combos(dlg)
     crect = combos[0][1]
@@ -75,6 +75,9 @@ def make_compatible(session, dlg):
             pop = mdu.popup_panel(session, crect[2] - crect[0])
             if not pop:
                 continue
+            if observe_popup is not None:
+                observe_popup(pop)
+                observe_popup = None
             for row in range(0, 4):
                 mdu.popup_pick(session, pop, row)
                 if not compat_blocked(dlg):

@@ -841,17 +841,18 @@ def dismiss_dialog(session, timeout_s=15.0):
 
 
 def file_menu_dispatch(session, item_substr, expect_dialog=False,
-                       timeout_s=12.0, via=None):
+                       timeout_s=12.0, via=None, *, inspect_enabled=False):
     """Open the topbar File menu, dispatch item_substr via WM_COMMAND
     (m3g's proven path — frame commands don't need real clicks). `via`
     enters a SUBMENU first ('Import' holds the STL/3MF rows — dispatching
     the submenu title itself is a no-op, measured 09-08). Returns
-    (ok, dialog) where dialog is a #32770 that popped (imports/opens)."""
+    (ok, dialog) where dialog is a #32770 that popped (imports/opens).
+    With inspect_enabled, only read the live native menu state."""
     menu = topbar_util.open_file_menu(session)
     if not menu:
         print(f"{LOG} file menu did not open")
         return False, None
-    _rect, hwnd, hmenu = menu
+    _rect, _hwnd, hmenu = menu
     rows = list_menu(hmenu)
     print(f"{LOG} file menu: {[l for _i, l in rows]}")
     target_hmenu = hmenu
@@ -860,20 +861,24 @@ def file_menu_dispatch(session, item_substr, expect_dialog=False,
         if idx is None:
             topbar_util.close_menu_windows(session.pid)
             return False, None
-        # open the submenu popup so its rows are live (row geometry only
-        # exists while the menu is shown), then match the row inside it
-        got = click_menu_row(session, hwnd, hmenu, via, nested=True)
-        if not got:
+        # The parent HMENU identifies the submenu even when the native
+        # popup reuses a window handle. No cursor hover is needed to read
+        # its state or dispatch one of its commands.
+        _, target_hmenu = topbar_util.item_info(hmenu, idx)
+        if not target_hmenu:
             topbar_util.close_menu_windows(session.pid)
             return False, None
-        _idx, (_shwnd, shmenu_live) = got
-        target_hmenu = shmenu_live
-        rows = list_menu(shmenu_live)
+        rows = list_menu(target_hmenu)
         print(f"{LOG} {via} menu: {[l for _i, l in rows]}")
     idx = topbar_util.find_item(target_hmenu, item_substr)
     if idx is None:
         topbar_util.close_menu_windows(session.pid)
         return False, None
+    if inspect_enabled:
+        enabled = any(i == idx and not flags & 0x0003
+                      for i, _, flags in topbar_util.menu_items(target_hmenu))
+        topbar_util.close_menu_windows(session.pid)
+        return enabled, None
     topbar_util.activate_menu_item(session, target_hmenu, idx)
     dlg = wait_dialog(session.pid, timeout_s=timeout_s) if expect_dialog \
         else None

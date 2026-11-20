@@ -252,7 +252,7 @@ def wait_for(session, template, timeout_s: float = 30.0, poll_s: float = 0.5,
     return best
 
 
-def click_and_verify(session, click_tpl, expect_tpl, attempts: int = 4):
+def click_and_verify(session, click_tpl, expect_tpl, attempts: int = 4, *, on_dispatch=None):
     """Click the control matching `click_tpl`, retry until `expect_tpl`
     shows AND STAYS for the bounce window.
 
@@ -274,6 +274,8 @@ def click_and_verify(session, click_tpl, expect_tpl, attempts: int = 4):
         if score < MATCH_THRESHOLD:
             print(f"[anchors] attempt {i+1}: click target not found ({score:.3f})")
             continue
+        if on_dispatch is not None:
+            on_dispatch(i + 1, time.monotonic())
         hwnd = winutil.msg_click_screen(sx, sy, session.hwnd)
         print(f"[anchors] attempt {i+1}: clicked {click_path.name} at ({sx},{sy}) -> hwnd 0x{hwnd:x}")
         score2, _, _ = wait_for(session, expect_path, timeout_s=6.0)

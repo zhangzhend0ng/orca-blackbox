@@ -6,9 +6,10 @@
 # the mechanical half of that rule: launcher.launch() refuses to start the
 # app on a host unless ORCA_BB_ALLOW_HOST is set.
 #
-# Guest detection needs no hardcoded machine names: Hyper-V guests expose
-# HKLM\SOFTWARE\Microsoft\Virtual Machine\Guest\Parameters (the key does not
-# exist on a host). Historical violations this guard exists for (README
+# Guest detection needs no hardcoded machine names. The Hyper-V KVP key
+# depends on the VM's Data Exchange integration service. When it is absent,
+# check the guest firmware's manufacturer and model. Historical violations
+# this guard exists for (README
 # discipline section, baseline): 09-02 / 09-08 / 09-16 / 09-17 — the agent
 # kept running the suite on the host until told otherwise.
 from __future__ import annotations
@@ -22,6 +23,7 @@ except ImportError:  # non-Windows: never a Hyper-V guest, treat as host
     winreg = None
 
 _GUEST_KEY = r"SOFTWARE\Microsoft\Virtual Machine\Guest\Parameters"
+_FIRMWARE_KEY = r"HARDWARE\DESCRIPTION\System\BIOS"
 
 
 def in_guest() -> bool:
@@ -29,10 +31,17 @@ def in_guest() -> bool:
     if winreg is None:
         return False
     try:
-        winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, _GUEST_KEY)
-        return True
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, _GUEST_KEY):
+            return True
+    except OSError:
+        pass
+    try:
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, _FIRMWARE_KEY) as key:
+            manufacturer, _ = winreg.QueryValueEx(key, "SystemManufacturer")
+            model, _ = winreg.QueryValueEx(key, "SystemProductName")
     except OSError:
         return False
+    return manufacturer == "Microsoft Corporation" and model == "Virtual Machine"
 
 
 def allow_host() -> bool:

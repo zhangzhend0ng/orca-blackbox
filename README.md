@@ -1,5 +1,7 @@
 # orca-blackbox — Snapmaker Orca 黑盒视觉 GUI 测试套件
 
+当前GUI AI路线与下一阶段统一见[**v3主方案**](docs/V3_PLAN.md)：先修永久撤销/有限恢复与画布能力，再冻结未见任务泛化评估；历史运行结果不重标，发布闸不变。
+
 对 `snapmaker-orca.exe` 做**外部黑盒**驱动：截图 → 模板匹配定位 → 消息级输入注入 →
 截图断言。全程不接触 app 内部 API（与上游仓库 `tests/wx_gui/` 的进程内白盒路线互补）。
 
@@ -18,6 +20,22 @@
 4. **收尾三步**：`runner/hv_harvest.ps1` 拉结果 → commit+push → `tools/feishu_writeback.py`（仅 GREEN/已覆盖项，宿主 lark-cli，**禁止把扫码/授权 URL 甩给用户**）。
 5. **边界**：上游源码 `C:\coil\Projects\SnapmakerOrca` 只读，禁止修改；任务范围外的事不做。
 
+v3 运行骨架入口见 [架构设计](docs/V3_RUNTIME_ARCHITECTURE.md) 和 [使用与边界](docs/V3_FOUNDATION.md)。当前 `python tools/v3_session.py smoke` 仅验证无 GUI 的 synthetic 完整调用链，不能作为产品回归通过证据。
+
+原生 Codex + Windows-MCP 的编辑保存业务 demo 见 [冻结路线与验收](docs/V3_NATIVE_SAVE_DEMO.md)，宿主入口 `python -B tools/native_save_demo.py`。AI 自主保存后，由停止输入后的可信阶段独立重开、切片导出，统一复用 run_once；已完成一次真实客机 SHADOW，首轮收尾失败保留，见 [两轮运行记录](docs/runs/native-save-2026-11-17.md)，不能计发布 GREEN。
+
+当前指定的 **ZCode / Snapmaker glm-5.3-flash** 路线入口为 `python -B tools/native_save_demo.py --actor zcode`；[接口与边界](docs/V3_ZCODE_ACTOR.md)。已通过一次真实客机编辑保存、新profile重开及112层G-code独立验证；五个开发失败run保留，详见[运行记录](docs/runs/zcode-snapmaker-2026-11-17.md)。使用现有公司供应商配置，仅计SHADOW，不进入发布GREEN。
+
+三业务线并行探索入口见[业务pilot](docs/V3_BUSINESS_PILOTS.md)：检查器并行开发、客机GUI串行试跑，工艺壁环数与逻辑材料槽各取得一次SHADOW，模型平移因输入能力不足已预检阻塞；详见[首批记录](docs/runs/zcode-business-pilots-2026-11-17.md)。不替换[旧稳定性7/8结果](docs/runs/zcode-matrix-2026-11-17.md)，不计87条或发布GREEN。
+
+首个真实 Script 的接入与验证方式见 [m0 Script adapter](docs/V3_SCRIPT_ADAPTER.md)，客机入口为 `runner/hv_go.ps1 -V3 -Cases m0_boot_check`；结果单独记 SHADOW，不进入发布 GREEN。
+
+首个真实 AI 页签闭环见 [AI adapter](docs/V3_AGENT_ADAPTER.md) 与 [正反例运行记录](docs/runs/v3-agent-2026-11-16.md)：codex_chat 和无人值守 codex_cli 看图，经受限 stdio MCP 操作客机，独立检查通过；无变化反例被拒绝。页签能力仅为 SHADOW。
+
+首个 AI 业务闭环见 [层高架构](docs/V3_AGENT_LAYER.md) 与 [首次运行记录](docs/runs/v3-layer-2026-11-16.md)：无人值守 AI 看图编辑 0.40→0.24 mm，经 GUI 切片导出 A/B，独立检查实际对象层序 68→112 层、初层保持 0.40 mm，并确认正常退出与 Job 清空。后续冻结版本的 5 次新 profile AI 运行均为 SHADOW；改错参数、漏重切、导出目标冲突三个固定故障探针均被相关检查拒绝，详见 [评估记录](docs/runs/v3-layer-evaluation-2026-11-16.md)。历史失败保留，不代表 87 条回归、跨版本可靠性或发布验收完成。
+
+第二项业务已实现“参数编辑 → 保存 3mf → 关闭并以新 profile 重开 → GUI 重切导出”的整链，复用同一运行骨架；[接口与边界](docs/V3_PROJECT_CONTRACT.md)。前两批保存标题问题已定位；第三批首槽 GUI 整链自然完成，但保存配置的预设名称被业务 oracle 拒绝，原结果仍为 NON_GREEN，各批四个未执行槽位保留，第四批待验，见 [本批记录](docs/runs/v3-project-2026-11-17.md)；不把代码实现或纯测试通过写成 GUI 通过，结果仍限定 SHADOW/NON_GREEN。
+
 - 范式参照：[MaaAssistantArknights](https://github.com/MaaAssistantArknights/MaaAssistantArknights) /
   [ok-wuthering-waves](https://github.com/ok-oldking/ok-wuthering-waves)
 - 引擎选型：**MaaFramework (pip MaaFw) 优先**，其 Win32 控制器消息注入若无法路由到
@@ -33,6 +51,9 @@ harness/            驱动核心（纯 ctypes，零第三方依赖即可跑 m0�
   env_check.py      环境预检（GameViewer 等远控层、DPI）— 移植自 wx_gui 的 C++ 门禁
   profile.py        沙盒 datadir 种子（数据源 = 仓内 vendored resources/，非用户 %APPDATA%）
   launcher.py       黑盒启动（显式剥除 ORCA_GUI_TEST_MODE！）
+  perf_monitor.py   进程指标采样（ORCA_BB_PERF=1，随 launcher 按实例生成 JSONL；
+                    Windows 支持 ctypes 降级，tools/perf_report.py 出报告；
+                    看板配置见 deploy/monitoring/README.md）
 m0_boot_check.py    里程碑0：启动→定位→截图→关闭 冒烟
 m1/m2/m3*/m4*/m5*   用例（m1 层驱动验证 → m2 切片链 → m3 业务路径 →
                     m4 混色全链路 → m5 工艺参数主流程；35 例全绿套件 = m3j..m5h）

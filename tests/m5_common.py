@@ -92,11 +92,11 @@ def open_plate_menu(session):
 
 def menu_click(session, seq, dismiss=True):
     """Click the context-menu row matching `seq`; True when clicked."""
-    menu = open_plate_menu(session)
-    if not menu:
+    mr, words = open_plate_menu(session)
+    if mr is None:
+        print(f"{LOG} context menu or OCR unavailable")
         return False
-    mr, words = menu
-    pt = _seq_point(mr, words, seq)
+    pt = _seq_point(mr, words, seq) if words else None
     if not pt:
         if dismiss:
             for _ in range(2):
@@ -129,12 +129,14 @@ def delete_all_models(session, timeout_s=20.0):
     """Right-click Delete until the plate loses its chromatic content.
     The on-model menu row is 'Delete' (Del); the blank-plate menu row is
     'Delete All' — try both sequences, per attempt (measured 09-01)."""
+    delete_clicked = False
     for attempt in range(3):
-        menu = open_plate_menu(session)
-        if not menu:
+        mr, words = open_plate_menu(session)
+        if mr is None:
+            print(f"{LOG} delete menu or OCR unavailable (attempt {attempt})")
             time.sleep(1.0)
             continue
-        mr, words = menu
+        words = words or []
         print(f"{LOG} delete menu ocr: "
               f"{' | '.join(w for w, *_ in words)[:200]!r}")
         pt = _delete_row_point(mr, words)
@@ -147,6 +149,7 @@ def delete_all_models(session, timeout_s=20.0):
         winutil.user32.SetCursorPos(*pt)
         time.sleep(0.2)
         winutil.real_click_screen(*pt)
+        delete_clicked = True
         time.sleep(2.0)
         deadline = time.monotonic() + timeout_s
         while time.monotonic() < deadline:
@@ -158,7 +161,8 @@ def delete_all_models(session, timeout_s=20.0):
         print(f"{LOG} chroma still high after attempt {attempt}")
     frac = has_colored_content(capture_bgr(session))
     print(f"{LOG} delete gave up, chroma {frac:.3%}")
-    return frac < 0.006
+    # A low-color frame alone cannot prove the requested Delete path ran.
+    return delete_clicked and frac < 0.006
 
 
 def close_setup_wizard(session, attempts=4):
@@ -176,21 +180,33 @@ def boot_cube_session(args, shape="Cube"):
     dance — measured 09-01 — which breaks every maximized-window
     calibration downstream. Re-assert and verify."""
     session = boot_session(args, model=MIXED_3MF)
-    print(f"{LOG} wizard relocated: "
-          f"{pp.relocate_wizard(session, log='[m5]')}")
-    ok_model, _frac = wait_model_loaded(session, timeout_s=240)
-    print(f"{LOG} fixture model loaded: {ok_model}")
-    ok_del = delete_all_models(session) if ok_model else False
-    print(f"{LOG} fixture model deleted: {ok_del}")
-    if not ok_del:
-        session.close()
-        return session, False
-    ok_add = add_shape.add_primitive(session, shape)
-    print(f"{LOG} standard {shape} added: {ok_add}")
-    l, t, r, b = winutil.window_rect(session.hwnd)
-    if (r - l) < 1900:
-        winutil.user32.ShowWindow(session.hwnd, 3)  # SW_MAXIMIZE
-        time.sleep(1.5)
+    close_attempted = False
+    try:
+        print(f"{LOG} wizard relocated: "
+              f"{pp.relocate_wizard(session, log='[m5]')}")
+        ok_model, _frac = wait_model_loaded(session, timeout_s=240)
+        print(f"{LOG} fixture model loaded: {ok_model}")
+        ok_del = delete_all_models(session) if ok_model else False
+        print(f"{LOG} fixture model deleted: {ok_del}")
+        if not ok_del:
+            close_attempted = True
+            session.close()
+            return session, False
+        ok_add = add_shape.add_primitive(session, shape)
+        print(f"{LOG} standard {shape} added: {ok_add}")
         l, t, r, b = winutil.window_rect(session.hwnd)
-        print(f"{LOG} re-maximized: rect=({l},{t},{r},{b})")
-    return session, ok_add
+        if (r - l) < 1900:
+            winutil.user32.ShowWindow(session.hwnd, 3)  # SW_MAXIMIZE
+            time.sleep(1.5)
+            l, t, r, b = winutil.window_rect(session.hwnd)
+            print(f"{LOG} re-maximized: rect=({l},{t},{r},{b})")
+        return session, ok_add
+    except BaseException:
+        # Setup has not transferred ownership to the case yet. Keep the
+        # original error even if cleanup itself fails, so diagnosis survives.
+        if not close_attempted:
+            try:
+                session.close()
+            except BaseException as close_error:
+                print(f"{LOG} setup cleanup failed: {close_error!r}", file=sys.stderr)
+        raise

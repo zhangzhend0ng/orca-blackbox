@@ -1,0 +1,22 @@
+# prometheus.yml — scrape config for the orca-blackbox monitoring lane.
+# Hosted on the machine that reaches the exporters (see README.md: the
+# win11-test guest currently has NO usable NIC — PS Direct is not HTTP — so
+# the guest lane stays jsonl-first until a NIC/vGPU-NIC exists).
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # The machine running the GUI farm (host lane).
+  - job_name: windows-host
+    static_configs:
+      - targets: ["host.docker.internal:9182"]
+
+  # Guest lane — ENABLE ONLY once the guest has a reachable IP.
+  # windows_exporter on the guest must run with at least:
+  #   --collectors.enabled=cpu,memory,net,gpu,process
+  #   --collector.process.whitelist="snapmaker-orca\.exe"
+  # - job_name: windows-guest
+  #   static_configs:
+  #     - targets: ["<guest-ip>:9182"]

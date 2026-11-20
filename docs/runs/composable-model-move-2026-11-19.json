@@ -1,0 +1,444 @@
+{
+  "schema_version": 1,
+  "release_eligible": false,
+  "cases": [
+    {
+      "run_id": "425c967c274a45968d7e31c6cfef17dc",
+      "source_sha": "e78459be5dfdeacc7629d8d1497ed8d532e9a064",
+      "model": {
+        "format": "3mf",
+        "name": "agent_layer_cube.3mf",
+        "sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+        "size": 30292
+      },
+      "verdict": "SHADOW",
+      "failure": null,
+      "canonical_plan_sha256": "92b4b228dee43ac80664f5e0fc582b861ec8e6ecb9b0b39758d3f89471c09335",
+      "prepared_sha256": "15bc053939d899750f374be09d632c22c7e1335f4e4ce9885e0c3add6152732c",
+      "initial_sha256": "71790f9b642af304719bcf5a944e50adbf641a294648e32710e1067187c10cc4",
+      "frozen_sha256": "e363f08f1256fe37b53aa81823636fbbd23b643ef9c65429c10760a4da6d87f7",
+      "gcode_sha256": "4df5005244ade297912e67fc48bd30929675b20e6a8fbb35d99d0b233bd85d08",
+      "resolved_plan_match": true,
+      "old_pid": 7660,
+      "reopened_pid": 3276,
+      "cleanup_confirmed": true,
+      "model_calls": 0,
+      "prepare_s": 53.8188553,
+      "script_s": 54.343,
+      "independent_reopen_export_s": 51.4747516,
+      "harvest_s": 2.01500000001397,
+      "host_wall_s": 192.01500000001397,
+      "move_ui_receipt": {
+        "before": "135.50",
+        "observed_after": "",
+        "submitted": "145.5"
+      },
+      "current_oracle_recheck": {
+        "translation_mm": [
+          10,
+          0,
+          0
+        ],
+        "old_xyz": [
+          "135.5",
+          "136",
+          "13.5"
+        ],
+        "new_xyz": [
+          "145.5",
+          "136",
+          "13.5"
+        ],
+        "triangles": 12,
+        "gcode": {
+          "layer_height": "0.4",
+          "first_layer_height": "0.4",
+          "layer_count": 68,
+          "first_z": "0.4",
+          "last_z": "27.2",
+          "positive_xy_e_moves": 1907,
+          "object_tools": [
+            0
+          ],
+          "sha256": "4df5005244ade297912e67fc48bd30929675b20e6a8fbb35d99d0b233bd85d08"
+        },
+        "object_xy_bounds": [
+          [
+            "132.41",
+            "158.59"
+          ],
+          [
+            "122.91",
+            "149.09"
+          ]
+        ]
+      },
+      "evidence_directory": "artifacts/windows_mcp_harvest/425c967c274a45968d7e31c6cfef17dc"
+    },
+    {
+      "run_id": "5ad35362b05043278306fe40d7ceb720",
+      "source_sha": "e78459be5dfdeacc7629d8d1497ed8d532e9a064",
+      "model": {
+        "format": "3mf",
+        "name": "3DBenchy.3mf",
+        "sha256": "8f5ed26af64ff3bd65bac34eaf92b19e9aefd5a84bfc9c14ea8b67adf75e67f1",
+        "size": 2474876
+      },
+      "verdict": "SHADOW",
+      "failure": null,
+      "canonical_plan_sha256": "ce66160a8c7b1b959a2e039b2eb289fa765eb6410c9f1c266418395fa4b494cd",
+      "prepared_sha256": "6b3e5f5eb047b31ed1c4497c56d3c8e0c74f69b37e76dd1f98e2d36b9f96613d",
+      "initial_sha256": "f6a28c30ee531b2b5d248edd02fc4b19a5b1fb7b5970592f70b0b30038d422b1",
+      "frozen_sha256": "954b8d35c02670e10baaccf8b0d47b7ff94ad0853499733e95c179e28dd4e4c4",
+      "gcode_sha256": "e83db0ea03c6a555849439c876f5c2cff24bf6eaa93e245c5e12d94d105bddc7",
+      "resolved_plan_match": true,
+      "old_pid": 896,
+      "reopened_pid": 4276,
+      "cleanup_confirmed": true,
+      "model_calls": 0,
+      "prepare_s": 53.3919352,
+      "script_s": 46.891,
+      "independent_reopen_export_s": 51.4332204,
+      "harvest_s": 2.0,
+      "host_wall_s": 192.32800000003772,
+      "move_ui_receipt": {
+        "before": "135.50",
+        "observed_after": "145.50",
+        "submitted": "145.5"
+      },
+      "current_oracle_recheck": {
+        "translation_mm": [
+          10,
+          0,
+          0
+        ],
+        "old_xyz": [
+          "135.5",
+          "136",
+          "24.0"
+        ],
+        "new_xyz": [
+          "145.5",
+          "136",
+          "24"
+        ],
+        "triangles": 225154,
+        "gcode": {
+          "layer_height": "0.4",
+          "first_layer_height": "0.4",
+          "layer_count": 120,
+          "first_z": "0.4",
+          "last_z": "48",
+          "positive_xy_e_moves": 26122,
+          "object_tools": [
+            0
+          ],
+          "sha256": "e83db0ea03c6a555849439c876f5c2cff24bf6eaa93e245c5e12d94d105bddc7"
+        },
+        "object_xy_bounds": [
+          [
+            "115.909",
+            "175.054"
+          ],
+          [
+            "120.91",
+            "151.091"
+          ]
+        ]
+      },
+      "evidence_directory": "artifacts/windows_mcp_harvest/5ad35362b05043278306fe40d7ceb720"
+    },
+    {
+      "run_id": "22764e72f1ac457f9e8d9cd1132df8fe",
+      "source_sha": "e78459be5dfdeacc7629d8d1497ed8d532e9a064",
+      "model": {
+        "format": "stl",
+        "name": "Prusa.stl",
+        "sha256": "8664c4f13706680ecf31e60d0d27fa5664742d0c7f93d774d2691662b44a7ea0",
+        "size": 30784
+      },
+      "verdict": "NON_GREEN",
+      "failure": "model_local_mesh_changed",
+      "canonical_plan_sha256": "5558da6283c2086bb00905d5da63c758a07c273ac10586d4feeee9828b264cac",
+      "prepared_sha256": "4e46a22ba3df3c7b55380425cd1eebc964382ed3420a139bb61119108ade8534",
+      "initial_sha256": "3eb60ad71248b08e9e017cfa933f6e050278e682ba876faef5fe1a36066a13e3",
+      "frozen_sha256": "57cad17ca7801fac913a555ec5009dc2d65d68b13d0ddac436a2889b37042671",
+      "gcode_sha256": "a681a4f88769e527e38afab202315d5dc48e9876ad1f39f22f975ea136bea7b9",
+      "resolved_plan_match": true,
+      "old_pid": 7900,
+      "reopened_pid": 8352,
+      "cleanup_confirmed": true,
+      "model_calls": 0,
+      "prepare_s": 51.6909203,
+      "script_s": 52.187,
+      "independent_reopen_export_s": 50.9879032,
+      "harvest_s": 2.0,
+      "host_wall_s": 187.70300000003772,
+      "move_ui_receipt": {
+        "before": "135.50",
+        "observed_after": "136.00",
+        "submitted": "145.5"
+      },
+      "current_oracle_recheck": {
+        "translation_mm": [
+          10,
+          0,
+          0
+        ],
+        "old_xyz": [
+          "135.5",
+          "136",
+          "1.5015"
+        ],
+        "new_xyz": [
+          "145.5",
+          "136",
+          "1.50150001"
+        ],
+        "triangles": 614,
+        "gcode": {
+          "layer_height": "0.4",
+          "first_layer_height": "0.4",
+          "layer_count": 8,
+          "first_z": "0.4",
+          "last_z": "3.2",
+          "positive_xy_e_moves": 4437,
+          "object_tools": [
+            0
+          ],
+          "sha256": "a681a4f88769e527e38afab202315d5dc48e9876ad1f39f22f975ea136bea7b9"
+        },
+        "object_xy_bounds": [
+          [
+            "100.159",
+            "190.841"
+          ],
+          [
+            "126.659",
+            "145.342"
+          ]
+        ]
+      },
+      "evidence_directory": "artifacts/windows_mcp_harvest/22764e72f1ac457f9e8d9cd1132df8fe"
+    },
+    {
+      "run_id": "7df4bb9f7b164aa7affefecec804c69c",
+      "source_sha": "e78459be5dfdeacc7629d8d1497ed8d532e9a064",
+      "model": {
+        "format": "3mf",
+        "name": "Voron_Design_Cube_v7.3mf",
+        "sha256": "dea8930b6a363bcf2a162391a4198b7a2864b8d2039e264cde0fde0fa96361e9",
+        "size": 33971
+      },
+      "verdict": "NON_GREEN",
+      "failure": "model_local_mesh_changed",
+      "canonical_plan_sha256": "28856457446ed1d22c5656f3efcf73b667c948bde9c29338b6809893de019f5f",
+      "prepared_sha256": "0d1193b34b36dc2b0bbabb6c8f21d257dd93220c6bf94f605055850aa2e6c179",
+      "initial_sha256": "5f6c5530461cc3776e645c3847e60e9fd08478dc873e119a3a9316bf984f3692",
+      "frozen_sha256": "cfadb5f51798e712fe09d820cb62b18f144779588d6258a21ff46dc46b90342a",
+      "gcode_sha256": "35c47e16ed4668608d69ab11e45d2e6fdfbd13d23f814c949821aa2d38c234ab",
+      "resolved_plan_match": true,
+      "old_pid": 6996,
+      "reopened_pid": 2900,
+      "cleanup_confirmed": true,
+      "model_calls": 0,
+      "prepare_s": 51.6719299,
+      "script_s": 52.969,
+      "independent_reopen_export_s": 50.6754314,
+      "harvest_s": 2.0,
+      "host_wall_s": 185.2970000000205,
+      "move_ui_receipt": {
+        "before": "135.50",
+        "observed_after": "136.00",
+        "submitted": "145.5"
+      },
+      "current_oracle_recheck": {
+        "translation_mm": [
+          10,
+          0,
+          0
+        ],
+        "old_xyz": [
+          "135.5",
+          "136",
+          "15.0"
+        ],
+        "new_xyz": [
+          "145.5",
+          "136",
+          "15"
+        ],
+        "triangles": 3414,
+        "gcode": {
+          "layer_height": "0.4",
+          "first_layer_height": "0.4",
+          "layer_count": 75,
+          "first_z": "0.4",
+          "last_z": "30",
+          "positive_xy_e_moves": 20837,
+          "object_tools": [
+            0
+          ],
+          "sha256": "35c47e16ed4668608d69ab11e45d2e6fdfbd13d23f814c949821aa2d38c234ab"
+        },
+        "object_xy_bounds": [
+          [
+            "130.91",
+            "160.09"
+          ],
+          [
+            "121.41",
+            "150.59"
+          ]
+        ]
+      },
+      "evidence_directory": "artifacts/windows_mcp_harvest/7df4bb9f7b164aa7affefecec804c69c"
+    },
+    {
+      "run_id": "a6e6d4f07dfc44a7a8ecd0107a0f4d31",
+      "source_sha": "e8f1e03772791ad0d7067e8bb11c8706556c9dcf",
+      "model": {
+        "format": "stl",
+        "name": "Prusa.stl",
+        "sha256": "8664c4f13706680ecf31e60d0d27fa5664742d0c7f93d774d2691662b44a7ea0",
+        "size": 30784
+      },
+      "verdict": "SHADOW",
+      "failure": null,
+      "canonical_plan_sha256": "39109fb4b304b1540a88dbaba12d192f3164de4f8b9ad40b4fd6482fe35bd41c",
+      "prepared_sha256": "4e46a22ba3df3c7b55380425cd1eebc964382ed3420a139bb61119108ade8534",
+      "initial_sha256": "3eb60ad71248b08e9e017cfa933f6e050278e682ba876faef5fe1a36066a13e3",
+      "frozen_sha256": "de362a481bcd45ff4b423211c9ec235e3d6c30409e009af992bb6c7a7d63c73c",
+      "gcode_sha256": "8d8fba28604e236685edd9d7209740679aea0fe57a914cfb04f450636bfac675",
+      "resolved_plan_match": true,
+      "old_pid": 5032,
+      "reopened_pid": 6016,
+      "cleanup_confirmed": true,
+      "model_calls": 0,
+      "prepare_s": 51.7184371,
+      "script_s": 52.125,
+      "independent_reopen_export_s": 49.9939523,
+      "harvest_s": 2.0,
+      "host_wall_s": 187.85999999998603,
+      "move_ui_receipt": {
+        "before": "135.50",
+        "observed_after": "136.00",
+        "submitted": "145.5"
+      },
+      "current_oracle_recheck": {
+        "translation_mm": [
+          10,
+          0,
+          0
+        ],
+        "old_xyz": [
+          "135.5",
+          "136",
+          "1.5015"
+        ],
+        "new_xyz": [
+          "145.5",
+          "136",
+          "1.50150001"
+        ],
+        "triangles": 614,
+        "gcode": {
+          "layer_height": "0.4",
+          "first_layer_height": "0.4",
+          "layer_count": 8,
+          "first_z": "0.4",
+          "last_z": "3.2",
+          "positive_xy_e_moves": 4437,
+          "object_tools": [
+            0
+          ],
+          "sha256": "8d8fba28604e236685edd9d7209740679aea0fe57a914cfb04f450636bfac675"
+        },
+        "object_xy_bounds": [
+          [
+            "100.159",
+            "190.841"
+          ],
+          [
+            "126.659",
+            "145.342"
+          ]
+        ]
+      },
+      "evidence_directory": "artifacts/windows_mcp_harvest/a6e6d4f07dfc44a7a8ecd0107a0f4d31"
+    },
+    {
+      "run_id": "0a6d110df91b4d02980bd484e98af425",
+      "source_sha": "e8f1e03772791ad0d7067e8bb11c8706556c9dcf",
+      "model": {
+        "format": "3mf",
+        "name": "Voron_Design_Cube_v7.3mf",
+        "sha256": "dea8930b6a363bcf2a162391a4198b7a2864b8d2039e264cde0fde0fa96361e9",
+        "size": 33971
+      },
+      "verdict": "SHADOW",
+      "failure": null,
+      "canonical_plan_sha256": "978a04fcf63b84e6fbb7ee05e9689d6b9c0873c591eba7a89ca1ae6731b09e64",
+      "prepared_sha256": "0d1193b34b36dc2b0bbabb6c8f21d257dd93220c6bf94f605055850aa2e6c179",
+      "initial_sha256": "5f6c5530461cc3776e645c3847e60e9fd08478dc873e119a3a9316bf984f3692",
+      "frozen_sha256": "deb9f5789080106c7b2977f6a3741e5a273a2e541ca8ca34408f0e7e5dc992a9",
+      "gcode_sha256": "beb8b690e28434a3d7f1f0769d9772e8fc721e763b6d4e52276449adf8fdf0fa",
+      "resolved_plan_match": true,
+      "old_pid": 8276,
+      "reopened_pid": 10220,
+      "cleanup_confirmed": true,
+      "model_calls": 0,
+      "prepare_s": 51.7060882,
+      "script_s": 52.875,
+      "independent_reopen_export_s": 51.2341116,
+      "harvest_s": 2.0,
+      "host_wall_s": 187.625,
+      "move_ui_receipt": {
+        "before": "135.50",
+        "observed_after": "136.00",
+        "submitted": "145.5"
+      },
+      "current_oracle_recheck": {
+        "translation_mm": [
+          10,
+          0,
+          0
+        ],
+        "old_xyz": [
+          "135.5",
+          "136",
+          "15.0"
+        ],
+        "new_xyz": [
+          "145.5",
+          "136",
+          "15"
+        ],
+        "triangles": 3414,
+        "gcode": {
+          "layer_height": "0.4",
+          "first_layer_height": "0.4",
+          "layer_count": 75,
+          "first_z": "0.4",
+          "last_z": "30",
+          "positive_xy_e_moves": 21004,
+          "object_tools": [
+            0
+          ],
+          "sha256": "beb8b690e28434a3d7f1f0769d9772e8fc721e763b6d4e52276449adf8fdf0fa"
+        },
+        "object_xy_bounds": [
+          [
+            "130.91",
+            "160.09"
+          ],
+          [
+            "121.41",
+            "150.59"
+          ]
+        ]
+      },
+      "evidence_directory": "artifacts/windows_mcp_harvest/0a6d110df91b4d02980bd484e98af425"
+    }
+  ]
+}

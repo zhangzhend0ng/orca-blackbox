@@ -1,0 +1,1288 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-17",
+  "actor": "native ZCode app-server",
+  "provider_id": "new-provider",
+  "provider_name": "Snapmaker",
+  "model_id": "glm-5.3-flash",
+  "gateway": "http://ai-gateway.s.com/v1",
+  "dollar_cost": null,
+  "release_eligible": false,
+  "actual_gui_starts": 6,
+  "shadow_count": 1,
+  "non_green_count": 5,
+  "runs": [
+    {
+      "run_id": "77cf7e8ec1724e63b80fe96635b3eace",
+      "source_sha": "27a55ca582d28708810a27420fecddcfb0a7aa1b",
+      "result": {
+        "checks": {
+          "business": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          },
+          "path": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          },
+          "visual": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          }
+        },
+        "cleanup_confirmed": true,
+        "execution_status": "failed",
+        "gui_execution_requested": true,
+        "mode": "agent_shadow",
+        "reasons": [
+          "execution_not_completed",
+          "evidence_incomplete",
+          "execution_noncompliant",
+          "business_unknown",
+          "path_unknown"
+        ],
+        "recovery_used": false,
+        "release_eligible": false,
+        "release_verdict": "NON_GREEN",
+        "runtime_status": "failed",
+        "verified_pass": false
+      },
+      "failure_category": "provider_scheme_mismatch",
+      "process": {
+        "exit_code": 1,
+        "active_processes": 0,
+        "forced_termination": false,
+        "started_at_ns": 1794911967804167200,
+        "finished_at_ns": 1794912020991391300
+      },
+      "native_tool_calls": 0,
+      "native_tool_error_count": 0,
+      "native_model_receipts": [],
+      "sources_unchanged": true,
+      "guard_receipt_count": 0,
+      "toolset_verified": false,
+      "artifact_hashes": [
+        {
+          "path": "artifacts/native_save_demo/77cf7e8ec1724e63b80fe96635b3eace/summary.json",
+          "bytes": 1069,
+          "sha256": "24b29ce1d754b9be5bfe0a8965a873886921c92095b7448c90f33917849fd7fc"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/77cf7e8ec1724e63b80fe96635b3eace/contract.json",
+          "bytes": 627,
+          "sha256": "63877b2dd26fa6564e843c32cba40c5cc4e54cd940f3c18b412c1c55e21c938c"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/77cf7e8ec1724e63b80fe96635b3eace/host_done.json",
+          "bytes": 268,
+          "sha256": "6d09992aef72f1a937ec59b460222c5cc86aaf5ac953088806d9d1016aa94601"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/77cf7e8ec1724e63b80fe96635b3eace/initial.png",
+          "bytes": 96896,
+          "sha256": "71790f9b642af304719bcf5a944e50adbf641a294648e32710e1067187c10cc4"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/77cf7e8ec1724e63b80fe96635b3eace/manifest.json",
+          "bytes": 298,
+          "sha256": "fc3bc9cdb794add95a93e6bbbfef5524e9d7bd674276c6e96380be0efba35166"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/77cf7e8ec1724e63b80fe96635b3eace/native_worker.json",
+          "bytes": 226,
+          "sha256": "ce8db134be3a3656f60d17852d13a226042cbf3953aabf71a94de616fdf0ebd0"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/77cf7e8ec1724e63b80fe96635b3eace/native_worker.log",
+          "bytes": 1043,
+          "sha256": "b9ec504f4acd22f06b3c18198e770a2b67de197fae33d693c26829355ff71c75"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/77cf7e8ec1724e63b80fe96635b3eace/process.json",
+          "bytes": 325,
+          "sha256": "a6072efa6e8eb4f19754e3559fdda765b56c668f8ad1d864ed4ee097e3ecaa9f"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/77cf7e8ec1724e63b80fe96635b3eace/ready.json",
+          "bytes": 361,
+          "sha256": "646d08d8156ace2fa50942ecdcc863091b20ea5d1282911a6bd48ffcdafa8c97"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/77cf7e8ec1724e63b80fe96635b3eace/result.json",
+          "bytes": 564,
+          "sha256": "1885c35a4ee9dd512fb77ef0bdac9633b503550d1c26aa176f54374a4d2b4aa6"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/77cf7e8ec1724e63b80fe96635b3eace/scope.json",
+          "bytes": 209,
+          "sha256": "db3310226f6f484aa1049d49f2c7960e38f1ea71a25af1bd13fb3e4aa4ef2027"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/77cf7e8ec1724e63b80fe96635b3eace/server.log",
+          "bytes": 526,
+          "sha256": "0d364f7c0de04cfea9430942826e4c0f341ecd66d3d08dcc9406cc54d6a62a3a"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/77cf7e8ec1724e63b80fe96635b3eace/host.json",
+          "bytes": 1181,
+          "sha256": "9da97d44d322ea27e8a78e58f9a902813aca10f88e46f3ca996393c3451e4c7d"
+        }
+      ]
+    },
+    {
+      "run_id": "2ac0a1c371a0417cb81e6487113222f2",
+      "source_sha": "e87918752ccdfc36b2157843a80dd301ec08ac22",
+      "result": {
+        "checks": {
+          "business": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          },
+          "path": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          },
+          "visual": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          }
+        },
+        "cleanup_confirmed": true,
+        "execution_status": "failed",
+        "gui_execution_requested": true,
+        "mode": "agent_shadow",
+        "reasons": [
+          "execution_not_completed",
+          "evidence_incomplete",
+          "execution_noncompliant",
+          "business_unknown",
+          "path_unknown"
+        ],
+        "recovery_used": false,
+        "release_eligible": false,
+        "release_verdict": "NON_GREEN",
+        "runtime_status": "failed",
+        "verified_pass": false
+      },
+      "failure_category": "reasoning_option_missing",
+      "process": {
+        "exit_code": 1,
+        "active_processes": 0,
+        "forced_termination": false,
+        "started_at_ns": 1794912198520029300,
+        "finished_at_ns": 1794912261841159900
+      },
+      "native_tool_calls": 0,
+      "native_tool_error_count": 0,
+      "native_model_receipts": [],
+      "sources_unchanged": true,
+      "guard_receipt_count": 5,
+      "toolset_verified": false,
+      "artifact_hashes": [
+        {
+          "path": "artifacts/native_save_demo/2ac0a1c371a0417cb81e6487113222f2/summary.json",
+          "bytes": 1069,
+          "sha256": "79f26d336c317d76cbc901363aa413087e71945214e3e0525a4dc302c4cb308d"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/2ac0a1c371a0417cb81e6487113222f2/contract.json",
+          "bytes": 627,
+          "sha256": "63877b2dd26fa6564e843c32cba40c5cc4e54cd940f3c18b412c1c55e21c938c"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/2ac0a1c371a0417cb81e6487113222f2/host_done.json",
+          "bytes": 267,
+          "sha256": "122f529c4a46e47cb683d467731ad1248b4dc77156b689992ee1eef82a468f4f"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/2ac0a1c371a0417cb81e6487113222f2/initial.png",
+          "bytes": 96896,
+          "sha256": "71790f9b642af304719bcf5a944e50adbf641a294648e32710e1067187c10cc4"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/2ac0a1c371a0417cb81e6487113222f2/manifest.json",
+          "bytes": 298,
+          "sha256": "ccc26414da3bf9769fb861b62d9c926e1b44321f41d78501f001fffc775324f3"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/2ac0a1c371a0417cb81e6487113222f2/native_worker.json",
+          "bytes": 226,
+          "sha256": "067500b02ee04f34caf9c1278e4a74b9c6f612fd9fff29a23cf89c79dac38cc2"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/2ac0a1c371a0417cb81e6487113222f2/native_worker.log",
+          "bytes": 1044,
+          "sha256": "800875e3ab820774ea5ec1634d67adad20fdc1c7bb1e94bdbe7f409c27d1bbbe"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/2ac0a1c371a0417cb81e6487113222f2/process.json",
+          "bytes": 325,
+          "sha256": "772aec63386477343c960f0686b009ef43e1207c0ef7a3b4c6848925c368e779"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/2ac0a1c371a0417cb81e6487113222f2/ready.json",
+          "bytes": 362,
+          "sha256": "d71932f6b584ae94e23702ad9e6dad3ac91a05f5916e2031d28fa7c97fcf8b8f"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/2ac0a1c371a0417cb81e6487113222f2/result.json",
+          "bytes": 564,
+          "sha256": "1885c35a4ee9dd512fb77ef0bdac9633b503550d1c26aa176f54374a4d2b4aa6"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/2ac0a1c371a0417cb81e6487113222f2/scope.json",
+          "bytes": 210,
+          "sha256": "b27a88586ca97daf41ce1fc631a13daa5353f36a8bb2510f216cfb9e5fee5756"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/2ac0a1c371a0417cb81e6487113222f2/server.log",
+          "bytes": 526,
+          "sha256": "25bb0b2a3d36bf14441ed60cf19802a093d76169154c49fd0885a1539c018a3d"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/2ac0a1c371a0417cb81e6487113222f2/actor.json",
+          "bytes": 277,
+          "sha256": "ea7f17318f50bc3c166988ef80d74b20cfaf8c49627187e078c0eb0e6ac0cb22"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/2ac0a1c371a0417cb81e6487113222f2/host.json",
+          "bytes": 2619,
+          "sha256": "d90ad33901951a18cdf0b5377838f5e97d5ce439f8bea04d3f9d3d0bceb0465f"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/2ac0a1c371a0417cb81e6487113222f2/prompt.txt",
+          "bytes": 1124,
+          "sha256": "49a94dc853606fdf62f8eb389d9637517ab07b11ded584a46b5f5bbccbf09678"
+        }
+      ]
+    },
+    {
+      "run_id": "5efb10ab5c37487c9cf68761490c8370",
+      "source_sha": "0ed9f78fe7b390f24ebc805dbeffe5ad2fad37bb",
+      "result": {
+        "checks": {
+          "business": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          },
+          "path": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          },
+          "visual": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          }
+        },
+        "cleanup_confirmed": true,
+        "execution_status": "failed",
+        "gui_execution_requested": true,
+        "mode": "agent_shadow",
+        "reasons": [
+          "execution_not_completed",
+          "evidence_incomplete",
+          "execution_noncompliant",
+          "business_unknown",
+          "path_unknown"
+        ],
+        "recovery_used": false,
+        "release_eligible": false,
+        "release_verdict": "NON_GREEN",
+        "runtime_status": "failed",
+        "verified_pass": false
+      },
+      "failure_category": "session_id_field_mismatch",
+      "process": {
+        "exit_code": 1,
+        "active_processes": 0,
+        "forced_termination": true,
+        "started_at_ns": 1794912397198840200,
+        "finished_at_ns": 1794912460495213300
+      },
+      "native_tool_calls": 0,
+      "native_tool_error_count": 0,
+      "native_model_receipts": [],
+      "sources_unchanged": true,
+      "guard_receipt_count": 5,
+      "toolset_verified": false,
+      "artifact_hashes": [
+        {
+          "path": "artifacts/native_save_demo/5efb10ab5c37487c9cf68761490c8370/summary.json",
+          "bytes": 1069,
+          "sha256": "d4b678c25111239ac3b55ef5a975dbb708639414f721eaa3362449c86e564a29"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/5efb10ab5c37487c9cf68761490c8370/contract.json",
+          "bytes": 627,
+          "sha256": "63877b2dd26fa6564e843c32cba40c5cc4e54cd940f3c18b412c1c55e21c938c"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/5efb10ab5c37487c9cf68761490c8370/host_done.json",
+          "bytes": 267,
+          "sha256": "82f86b0e36ae55119307d2d65c4ff555d4ccde595f91a19239fe098b3a1ad949"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/5efb10ab5c37487c9cf68761490c8370/initial.png",
+          "bytes": 96896,
+          "sha256": "71790f9b642af304719bcf5a944e50adbf641a294648e32710e1067187c10cc4"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/5efb10ab5c37487c9cf68761490c8370/manifest.json",
+          "bytes": 298,
+          "sha256": "fda149da7a440596b5c6c45bf8cfffdd54f50616fdff24b0323af1e07498626b"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/5efb10ab5c37487c9cf68761490c8370/native_worker.json",
+          "bytes": 226,
+          "sha256": "04e86d52cb6cfb460d12ce3a883a232cd1c3cfecea95ed22bc3795cf7f5cb555"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/5efb10ab5c37487c9cf68761490c8370/native_worker.log",
+          "bytes": 1043,
+          "sha256": "dfb3803d138dd1b215747961f10d34a91492b4d3a5a5009c905fdfa60d643a28"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/5efb10ab5c37487c9cf68761490c8370/process.json",
+          "bytes": 335,
+          "sha256": "e95dc955fd621863ed2c792fc9bb720043adf684ebf0495339fc858865bd5c93"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/5efb10ab5c37487c9cf68761490c8370/ready.json",
+          "bytes": 361,
+          "sha256": "e6e47469132b8165c0e34989162a01d9b70e6d45e1eaa7717affe6ae78589638"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/5efb10ab5c37487c9cf68761490c8370/result.json",
+          "bytes": 564,
+          "sha256": "1885c35a4ee9dd512fb77ef0bdac9633b503550d1c26aa176f54374a4d2b4aa6"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/5efb10ab5c37487c9cf68761490c8370/scope.json",
+          "bytes": 209,
+          "sha256": "61cc1e426113b7549f393b692f345a8d6e345880a4264e5716938bc30ec48de4"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/5efb10ab5c37487c9cf68761490c8370/server.log",
+          "bytes": 583,
+          "sha256": "f4a786a93f175898abd9ea14cd25f801d0775187b515976276c7a1589e3f6a1f"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/5efb10ab5c37487c9cf68761490c8370/actor.json",
+          "bytes": 409,
+          "sha256": "d4adad8753ad06ee852773d03f58d88cd16f597b065e5dd1a8227629980bf2d1"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/5efb10ab5c37487c9cf68761490c8370/host.json",
+          "bytes": 2678,
+          "sha256": "a2a8a65c1ca2d47420ba18523963654bf71ebf4ad785d953b89c8c82ef788ffc"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/5efb10ab5c37487c9cf68761490c8370/prompt.txt",
+          "bytes": 1124,
+          "sha256": "879ffeb2d243ba7705b71c5006acdbb6fe66b0ed9fef7483ef9f99e71abf95e5"
+        }
+      ]
+    },
+    {
+      "run_id": "3464272d1bc84ad4a7d5fffc71c4b302",
+      "source_sha": "cea30fe8e9a199098e42ad51b2691edee8f29f3c",
+      "result": {
+        "checks": {
+          "business": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          },
+          "path": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          },
+          "visual": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          }
+        },
+        "cleanup_confirmed": true,
+        "execution_status": "failed",
+        "gui_execution_requested": true,
+        "mode": "agent_shadow",
+        "reasons": [
+          "execution_not_completed",
+          "evidence_incomplete",
+          "execution_noncompliant",
+          "business_unknown",
+          "path_unknown"
+        ],
+        "recovery_used": false,
+        "release_eligible": false,
+        "release_verdict": "NON_GREEN",
+        "runtime_status": "failed",
+        "verified_pass": false
+      },
+      "failure_category": "coordinate_schema_mismatch",
+      "process": {
+        "exit_code": 1,
+        "active_processes": 0,
+        "forced_termination": true,
+        "started_at_ns": 1794912763298595100,
+        "finished_at_ns": 1794912919395817900
+      },
+      "native_tool_calls": 9,
+      "native_tool_error_count": 3,
+      "native_model_receipts": [
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 6643,
+            "outputTokens": 20,
+            "totalTokens": 6663,
+            "cacheReadTokens": 0,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 6702
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 10460,
+            "outputTokens": 96,
+            "totalTokens": 10556,
+            "cacheReadTokens": 6592,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 5953
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 10575,
+            "outputTokens": 123,
+            "totalTokens": 10698,
+            "cacheReadTokens": 10432,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 12786
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 13532,
+            "outputTokens": 100,
+            "totalTokens": 13632,
+            "cacheReadTokens": 10560,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 5863
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 13651,
+            "outputTokens": 162,
+            "totalTokens": 13813,
+            "cacheReadTokens": 13504,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 7580
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 14001,
+            "outputTokens": 73,
+            "totalTokens": 14074,
+            "cacheReadTokens": 13632,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 2791
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 14102,
+            "outputTokens": 13,
+            "totalTokens": 14115,
+            "cacheReadTokens": 13952,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 3269
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 14301,
+            "outputTokens": 24,
+            "totalTokens": 14325,
+            "cacheReadTokens": 14080,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 5698
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 14344,
+            "outputTokens": 340,
+            "totalTokens": 14684,
+            "cacheReadTokens": 14272,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 8420
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 14872,
+            "outputTokens": 98,
+            "totalTokens": 14970,
+            "cacheReadTokens": 14336,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 6005
+        }
+      ],
+      "sources_unchanged": true,
+      "guard_receipt_count": 35,
+      "toolset_verified": true,
+      "artifact_hashes": [
+        {
+          "path": "artifacts/native_save_demo/3464272d1bc84ad4a7d5fffc71c4b302/summary.json",
+          "bytes": 1069,
+          "sha256": "5ade14a6b2d0381c370f555e20cbcdf61426c119819b62aeb42188df6bb1f2bf"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/3464272d1bc84ad4a7d5fffc71c4b302/agent_final.png",
+          "bytes": 96896,
+          "sha256": "71790f9b642af304719bcf5a944e50adbf641a294648e32710e1067187c10cc4"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/3464272d1bc84ad4a7d5fffc71c4b302/contract.json",
+          "bytes": 627,
+          "sha256": "63877b2dd26fa6564e843c32cba40c5cc4e54cd940f3c18b412c1c55e21c938c"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/3464272d1bc84ad4a7d5fffc71c4b302/host_done.json",
+          "bytes": 265,
+          "sha256": "f698b3574457eef95ec37269ba09015ff9f98248443f9ddd454dd8f6ca1a2454"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/3464272d1bc84ad4a7d5fffc71c4b302/initial.png",
+          "bytes": 96896,
+          "sha256": "71790f9b642af304719bcf5a944e50adbf641a294648e32710e1067187c10cc4"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/3464272d1bc84ad4a7d5fffc71c4b302/manifest.json",
+          "bytes": 298,
+          "sha256": "05b618f551a481f900f25083da8e593ea96e7e7c6173dc525e3782d72921d7dc"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/3464272d1bc84ad4a7d5fffc71c4b302/native_trace.ndjson",
+          "bytes": 2374,
+          "sha256": "411615c0448675b9bf59425ed0d236d79bb56bfd3da58957ae38d6de5c928267"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/3464272d1bc84ad4a7d5fffc71c4b302/native_worker.json",
+          "bytes": 225,
+          "sha256": "2f016a8c5e61139cdf547b9f8d6fec0275625919cf05e178d0b01a1cc7131723"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/3464272d1bc84ad4a7d5fffc71c4b302/native_worker.log",
+          "bytes": 1042,
+          "sha256": "8bc6cb76cd4304f6f6b8c8db893fc25f2d6be9f1ae0a66274cfafb3d0f06ae66"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/3464272d1bc84ad4a7d5fffc71c4b302/process.json",
+          "bytes": 335,
+          "sha256": "a9aba9f3bb76a423acdbdfc57e47e6eee4ffa001efbab275aa0bec06b81bccfc"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/3464272d1bc84ad4a7d5fffc71c4b302/ready.json",
+          "bytes": 360,
+          "sha256": "24aba7213e5cd640fec4caaefe899154124801966fedccee5ce349574069a27b"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/3464272d1bc84ad4a7d5fffc71c4b302/result.json",
+          "bytes": 564,
+          "sha256": "1885c35a4ee9dd512fb77ef0bdac9633b503550d1c26aa176f54374a4d2b4aa6"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/3464272d1bc84ad4a7d5fffc71c4b302/scope.json",
+          "bytes": 208,
+          "sha256": "79fc2f93d7f6a5f1e2ffdc7ec9ae6fa2d1788d6389c3f3c2644aeda7359db151"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/3464272d1bc84ad4a7d5fffc71c4b302/server.log",
+          "bytes": 1216,
+          "sha256": "046eebc94567fe5d732759e080dc83d727974a80708008b0203057c8b4838c7d"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/3464272d1bc84ad4a7d5fffc71c4b302/actor.json",
+          "bytes": 2536,
+          "sha256": "6becbb0bf2e97a74f983e9f3c5142a87f25a5a4eb4ebe2bfe3f058ca04178871"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/3464272d1bc84ad4a7d5fffc71c4b302/host.json",
+          "bytes": 15896,
+          "sha256": "e2752c4e9d3694da55bec6398e985c2491e5e22d99dd80381d520a8ea3ec2bd5"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/3464272d1bc84ad4a7d5fffc71c4b302/prompt.txt",
+          "bytes": 1124,
+          "sha256": "8281ee7ab886fd061ca3edb267973149aa9ac37049f5393d314b5af3864da1ae"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/3464272d1bc84ad4a7d5fffc71c4b302/storage/cli/rollout/model-io-sess_ce1f34c1-0373-4820-ba72-dd276c1dbdfd.jsonl",
+          "bytes": 407818,
+          "sha256": "86c6c17989979833386128569c372d624fa44275a49e04896aed324bae2c6dd0"
+        }
+      ]
+    },
+    {
+      "run_id": "d5f41d1f6cff4e83a2598c235d44e062",
+      "source_sha": "f394ea38d7c791b383675eae948cd016b69f3ee3",
+      "result": {
+        "checks": {
+          "business": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          },
+          "path": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          },
+          "visual": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          }
+        },
+        "cleanup_confirmed": true,
+        "execution_status": "failed",
+        "gui_execution_requested": true,
+        "mode": "agent_shadow",
+        "reasons": [
+          "execution_not_completed",
+          "evidence_incomplete",
+          "execution_noncompliant",
+          "business_unknown",
+          "path_unknown"
+        ],
+        "recovery_used": false,
+        "release_eligible": false,
+        "release_verdict": "NON_GREEN",
+        "runtime_status": "failed",
+        "verified_pass": false
+      },
+      "failure_category": "progress_file_sharing_conflict",
+      "process": {
+        "exit_code": 1,
+        "active_processes": 0,
+        "forced_termination": false,
+        "started_at_ns": 1794913361925280400,
+        "finished_at_ns": 1794913435483423800
+      },
+      "native_tool_calls": 0,
+      "native_tool_error_count": 0,
+      "native_model_receipts": [
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {},
+          "duration_ms": 3624
+        }
+      ],
+      "sources_unchanged": true,
+      "guard_receipt_count": 8,
+      "toolset_verified": false,
+      "artifact_hashes": [
+        {
+          "path": "artifacts/native_save_demo/d5f41d1f6cff4e83a2598c235d44e062/summary.json",
+          "bytes": 1069,
+          "sha256": "32c67e373f2cc5ddca9e3b2856da1fbc6af4e2324ad62488c2f4900a9d47f645"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/d5f41d1f6cff4e83a2598c235d44e062/contract.json",
+          "bytes": 627,
+          "sha256": "63877b2dd26fa6564e843c32cba40c5cc4e54cd940f3c18b412c1c55e21c938c"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/d5f41d1f6cff4e83a2598c235d44e062/host_done.json",
+          "bytes": 267,
+          "sha256": "6a6b48a91d5fc8a3d38d836302d6eaa06f0a0f7fb93076219ddca7311c310416"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/d5f41d1f6cff4e83a2598c235d44e062/initial.png",
+          "bytes": 96896,
+          "sha256": "71790f9b642af304719bcf5a944e50adbf641a294648e32710e1067187c10cc4"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/d5f41d1f6cff4e83a2598c235d44e062/manifest.json",
+          "bytes": 298,
+          "sha256": "c884cb792ee0f5d00decea4ad7ea924ffed2057829d74c6570404490956ae0e7"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/d5f41d1f6cff4e83a2598c235d44e062/native_worker.json",
+          "bytes": 226,
+          "sha256": "2f289733a3da2984ac35a4917b55d033f9210af5367351d6a08eb33e7ca4c716"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/d5f41d1f6cff4e83a2598c235d44e062/native_worker.log",
+          "bytes": 1043,
+          "sha256": "b8dabad1b08a42535edd3ad3d460d73ea5b35f3205b626190e72050d513296ba"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/d5f41d1f6cff4e83a2598c235d44e062/process.json",
+          "bytes": 325,
+          "sha256": "cd5f2bb5c134a2b9bd99381774fd29d0fd0cb22c579a0e8619a9d02669f6e8f8"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/d5f41d1f6cff4e83a2598c235d44e062/ready.json",
+          "bytes": 361,
+          "sha256": "e536736da75ad6dddc20678a99ac156eca185e0b0718f334931239d4fe69b180"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/d5f41d1f6cff4e83a2598c235d44e062/result.json",
+          "bytes": 564,
+          "sha256": "1885c35a4ee9dd512fb77ef0bdac9633b503550d1c26aa176f54374a4d2b4aa6"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/d5f41d1f6cff4e83a2598c235d44e062/scope.json",
+          "bytes": 209,
+          "sha256": "137868b81e8cdba0aacda69644e5ee4c856e01abd96a4516e7d8766d518bff28"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/d5f41d1f6cff4e83a2598c235d44e062/server.log",
+          "bytes": 703,
+          "sha256": "a24b94b2e7bf8c545e01e2f7e87d15dcd502e5ab9e507de6507e2cfea14b0bf0"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/d5f41d1f6cff4e83a2598c235d44e062/actor.json",
+          "bytes": 851,
+          "sha256": "7f1054a721817f0970f682e090f10e9fd6610c7f152ce290539aa177c3b12356"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/d5f41d1f6cff4e83a2598c235d44e062/host.json",
+          "bytes": 3426,
+          "sha256": "2103fb379e99b353db3635618a04c033484c2bd685b3be17bd73e9bcb966025a"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/d5f41d1f6cff4e83a2598c235d44e062/prompt.txt",
+          "bytes": 1124,
+          "sha256": "d50c420b306a0975a9210af7eef6416b243791aad0e6419fa7dc23b326f6e31d"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/d5f41d1f6cff4e83a2598c235d44e062/storage/cli/rollout/model-io-sess_6bec0359-4a5f-4697-96e7-f986ea556f8e.jsonl",
+          "bytes": 45582,
+          "sha256": "8bd8b1955e157c0c9662c8592cda81f43fb7ea5b365f75ffe272c74e50fd5d9d"
+        }
+      ]
+    },
+    {
+      "run_id": "4ba6b094412d435398826502d94f69e9",
+      "source_sha": "02a6201a62c7a4522df25518c02840217472383d",
+      "result": {
+        "checks": {
+          "business": {
+            "detail": "Saved .24/initial .4, unchanged cube, reopened actual 112-layer G-code",
+            "evidence": [
+              "artifact:proof.json",
+              "artifact:process.json",
+              "artifact:native_trace.ndjson",
+              "artifact:proof/0001.3mf:sha256:b81ce91248e8bbd43d9e7636898c6e400c11b7d1a2f7a7195247b337e420b9c3",
+              "artifact:exports/0001.gcode:sha256:87751eb525b39c5b13ddaced9690c6b3b47b49eecc2ca52243bec2528dda63a0"
+            ],
+            "status": "pass"
+          },
+          "path": {
+            "detail": "Native GUI save; stopped input; old exit; frozen-file fresh-profile reslice",
+            "evidence": [
+              "artifact:proof.json",
+              "artifact:process.json",
+              "artifact:native_trace.ndjson",
+              "artifact:proof/0001.3mf:sha256:b81ce91248e8bbd43d9e7636898c6e400c11b7d1a2f7a7195247b337e420b9c3",
+              "artifact:exports/0001.gcode:sha256:87751eb525b39c5b13ddaced9690c6b3b47b49eecc2ca52243bec2528dda63a0"
+            ],
+            "status": "pass"
+          },
+          "visual": {
+            "detail": "not checked",
+            "evidence": [],
+            "status": "unknown"
+          }
+        },
+        "cleanup_confirmed": true,
+        "execution_status": "completed",
+        "gui_execution_requested": true,
+        "mode": "agent_shadow",
+        "reasons": [],
+        "recovery_used": false,
+        "release_eligible": false,
+        "release_verdict": "SHADOW",
+        "runtime_status": "completed",
+        "verified_pass": true
+      },
+      "failure_category": null,
+      "process": {
+        "exit_code": 0,
+        "active_processes": 0,
+        "forced_termination": false,
+        "started_at_ns": 1794913699132148400,
+        "finished_at_ns": 1794913938854397500
+      },
+      "native_tool_calls": 16,
+      "native_tool_error_count": 0,
+      "native_model_receipts": [
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 6401,
+            "outputTokens": 19,
+            "totalTokens": 6420,
+            "cacheReadTokens": 0,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 5852
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 7591,
+            "outputTokens": 61,
+            "totalTokens": 7652,
+            "cacheReadTokens": 6400,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 3977
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 10486,
+            "outputTokens": 91,
+            "totalTokens": 10577,
+            "cacheReadTokens": 7552,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 3535
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 10612,
+            "outputTokens": 45,
+            "totalTokens": 10657,
+            "cacheReadTokens": 10432,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 3577
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 10740,
+            "outputTokens": 12,
+            "totalTokens": 10752,
+            "cacheReadTokens": 10560,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 3351
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 13585,
+            "outputTokens": 116,
+            "totalTokens": 13701,
+            "cacheReadTokens": 10688,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 5640
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 13736,
+            "outputTokens": 45,
+            "totalTokens": 13781,
+            "cacheReadTokens": 13568,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 4341
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 13864,
+            "outputTokens": 49,
+            "totalTokens": 13913,
+            "cacheReadTokens": 13696,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 4541
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 13921,
+            "outputTokens": 12,
+            "totalTokens": 13933,
+            "cacheReadTokens": 13824,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 3105
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 16766,
+            "outputTokens": 81,
+            "totalTokens": 16847,
+            "cacheReadTokens": 13888,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 6922
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 16884,
+            "outputTokens": 21,
+            "totalTokens": 16905,
+            "cacheReadTokens": 16704,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 3191
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 16915,
+            "outputTokens": 12,
+            "totalTokens": 16927,
+            "cacheReadTokens": 16832,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 4546
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 19761,
+            "outputTokens": 87,
+            "totalTokens": 19848,
+            "cacheReadTokens": 16896,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 5012
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 19885,
+            "outputTokens": 94,
+            "totalTokens": 19979,
+            "cacheReadTokens": 19712,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 4066
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 20264,
+            "outputTokens": 12,
+            "totalTokens": 20276,
+            "cacheReadTokens": 19840,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 2526
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 23110,
+            "outputTokens": 200,
+            "totalTokens": 23310,
+            "cacheReadTokens": 20224,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 7808
+        },
+        {
+          "model": {
+            "modelId": "glm-5.3-flash",
+            "providerId": "new-provider"
+          },
+          "usage": {
+            "inputTokens": 23498,
+            "outputTokens": 301,
+            "totalTokens": 23799,
+            "cacheReadTokens": 23104,
+            "cacheWriteTokens": 0
+          },
+          "duration_ms": 7579
+        }
+      ],
+      "sources_unchanged": true,
+      "guard_receipt_count": 45,
+      "toolset_verified": true,
+      "artifact_hashes": [
+        {
+          "path": "artifacts/native_save_demo/4ba6b094412d435398826502d94f69e9/summary.json",
+          "bytes": 1728,
+          "sha256": "84742fbb4c886577d7f12bba0c59596e7dc9e93d7cd22003fda7408c86319c22"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/agent_final.png",
+          "bytes": 97927,
+          "sha256": "fe8641904f6452550a15d465d16f3924349b5d57aee4bf1d4eb5eb8cfbb64765"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/contract.json",
+          "bytes": 627,
+          "sha256": "63877b2dd26fa6564e843c32cba40c5cc4e54cd940f3c18b412c1c55e21c938c"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/exports/0001.gcode",
+          "bytes": 235710,
+          "sha256": "87751eb525b39c5b13ddaced9690c6b3b47b49eecc2ca52243bec2528dda63a0"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/host_done.json",
+          "bytes": 266,
+          "sha256": "5e629d27a9b709473ac89b5e73fdb9da99f02876e9f450793f9d8460c9dc1425"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/initial.png",
+          "bytes": 96896,
+          "sha256": "71790f9b642af304719bcf5a944e50adbf641a294648e32710e1067187c10cc4"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/manifest.json",
+          "bytes": 298,
+          "sha256": "98a6eb15241d0ea01d3fa6ec342c7f60948efa68ceca360018aa228a32d80225"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/native_trace.ndjson",
+          "bytes": 5026,
+          "sha256": "f0d04219f161e9ad02136e40278350b10f004501d0b615b79c99deddc094f194"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/native_worker.json",
+          "bytes": 196,
+          "sha256": "70e69f8ccf0f1766a37fc58da52c5ae3f6e4f6784467204180c62243954c0371"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/native_worker.log",
+          "bytes": 2097,
+          "sha256": "cede72a091e84f6fedbc41305015b16b48a7e4a21314f205717a2d2557d4b8c0"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/process.json",
+          "bytes": 325,
+          "sha256": "b21f8ff70dc53031e1f7c5f903d22327f0973a23b49a893761e3300bd64f6396"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/projects/0001.3mf",
+          "bytes": 34362,
+          "sha256": "b81ce91248e8bbd43d9e7636898c6e400c11b7d1a2f7a7195247b337e420b9c3"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/proof/0001.3mf",
+          "bytes": 34362,
+          "sha256": "b81ce91248e8bbd43d9e7636898c6e400c11b7d1a2f7a7195247b337e420b9c3"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/proof.json",
+          "bytes": 856,
+          "sha256": "be70c5239d549869f567422901b7f1237f1aaeb2a568a5552edbaf221fb358fd"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/proof_final.png",
+          "bytes": 217185,
+          "sha256": "4362b2e42371bfdab5440b967bdf796799a658f7340f73af8cd7a64a9c731cd1"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/ready.json",
+          "bytes": 361,
+          "sha256": "062d8537a0fb68071a1d4d4da76f730c3ed38c4ad2b5fad672fc5458a4f342dc"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/result.json",
+          "bytes": 1129,
+          "sha256": "854cea0783b77238f44a87154afae721d4ae6329c88872be34abcd9fd8426ec6"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/scope.json",
+          "bytes": 209,
+          "sha256": "4a3ab8d6b442f1b7f85664d7c91bdc2ecff1a8ff36e3044b26ecbd608287e0a5"
+        },
+        {
+          "path": "artifacts/windows_mcp_harvest/4ba6b094412d435398826502d94f69e9/server.log",
+          "bytes": 1615,
+          "sha256": "bc4486b9967283a889a34b22e5942d71bee8b03efb4e076403c2104a4ff9f890"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/4ba6b094412d435398826502d94f69e9/actor.json",
+          "bytes": 4062,
+          "sha256": "90014d3cb9365b3b35ebf3d713ea7b1a4126de558ae70e83f8de0c2289e88ca7"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/4ba6b094412d435398826502d94f69e9/host.json",
+          "bytes": 23895,
+          "sha256": "18c160c71e02dc5124a2b635a4d73f5af2a4181cb8b23b9cd8ea6938f5264de3"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/4ba6b094412d435398826502d94f69e9/progress.ndjson",
+          "bytes": 287718,
+          "sha256": "f0f222839857bf2910349a2af8cbb45b9ab259f6e8681c3e8df12578126f8c51"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/4ba6b094412d435398826502d94f69e9/prompt.txt",
+          "bytes": 1124,
+          "sha256": "729972fb027d64cda99d290eeae7ca39f72f2f37fb7a8d05b98e3ff3c0b015f0"
+        },
+        {
+          "path": "artifacts/windows_mcp_host/4ba6b094412d435398826502d94f69e9/storage/cli/rollout/model-io-sess_49f8605d-982b-44ca-adae-6a73164eddbb.jsonl",
+          "bytes": 717121,
+          "sha256": "3eacdaf1cbe6bd1322e740afffec4da7f2153200b2c13459337eeaca38973b88"
+        }
+      ]
+    }
+  ],
+  "non_gui_positive_probes": [
+    {
+      "path": "artifacts/zcode_probe/20261117-snapmaker-3",
+      "gui_coverage": false,
+      "exit_code": 0,
+      "final_process_state": [
+        0,
+        0
+      ],
+      "personal_configs_unchanged": true,
+      "report_sha256": "120e85f5537f3ead3d6fc55350e97cee2186a044902be92a81b251e37ac5fb4a"
+    },
+    {
+      "path": "artifacts/zcode_probe/20261117-snapmaker-transport-1",
+      "gui_coverage": false,
+      "exit_code": 0,
+      "final_process_state": [
+        0,
+        0
+      ],
+      "personal_configs_unchanged": true,
+      "report_sha256": "0e84f71fb4dbfd3ebd32e6bb49ac0aef562584bf1bc2efef2c8782be737abc6d"
+    },
+    {
+      "path": "artifacts/zcode_probe/20261117-snapmaker-transport-2",
+      "gui_coverage": false,
+      "exit_code": 0,
+      "final_process_state": [
+        0,
+        0
+      ],
+      "personal_configs_unchanged": true,
+      "report_sha256": "c66ad335320de607a83b3546b8e1d576001167f8dba6ec1f6d6ab0331571375d"
+    }
+  ],
+  "postflight": {
+    "head": "02a6201a62c7a4522df25518c02840217472383d",
+    "dirty": [],
+    "apps": 0,
+    "suite": "Ready",
+    "token_exists": false
+  }
+}

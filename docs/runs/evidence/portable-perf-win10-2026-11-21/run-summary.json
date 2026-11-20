@@ -1,0 +1,278 @@
+{
+  "scope": "local diagnostic",
+  "os": "Windows 10 x64 build 19045",
+  "display": {
+    "width_px": 1920,
+    "height_px": 1080,
+    "scale_percent": 100
+  },
+  "software_gl_override": false,
+  "renderer_evidence": {
+    "provider": "AMD OpenGL",
+    "loaded_modules": [
+      "atio6axx.dll",
+      "amdihk64.dll"
+    ]
+  },
+  "runner_exe_sha256": "fdfccb9ef76c728775b3fee1735c784b33e000494e9b59dccf75526ba391ff00",
+  "runs": [
+    {
+      "id": "win10-679db201",
+      "capture_variant": "Interactive task",
+      "runner_exit_code": 1,
+      "original_archive_sha256": "a4052e0ad355e33c1400e144222cfadbab3a8d2c688d554104b852685d74b6b7",
+      "display_capture": {
+        "elevated_filter": "process_name",
+        "coverage": "partial_run",
+        "elevated_exit_code": 0,
+        "status": "no_csv"
+      },
+      "scenario_verdicts": [
+        "showcase_dense slice: PASS",
+        "showcase_dense preview: PASS",
+        "showcase_dense gcode: FAIL",
+        "showcase_dense close: PASS",
+        "showcase_dense video: PASS",
+        "showcase_snapmates: FAIL (Orca could not become foreground for video)"
+      ],
+      "models": {
+        "ribbed-towers": {
+          "process_samples": 215,
+          "gpu_engine_samples": 106,
+          "peaks": {
+            "rss_mb": 1201.566,
+            "private_mb": 1008.836,
+            "handles": 1017,
+            "gdi": 1072,
+            "user_obj": 1693,
+            "gpu_dedicated_mb": 5.03125,
+            "gpu_shared_mb": 365.453125,
+            "threads": null,
+            "peak_rss_bytes": 1261907968,
+            "conns": null,
+            "gpu_engine_pct": 57.619142244945834
+          },
+          "native_frame_trace": {
+            "status": "observed",
+            "frames": 602,
+            "discarded_capture_records": 0,
+            "activity_streams": {
+              "orbit": {
+                "preview:2": {
+                  "submitted_fps": 44.25026635433765,
+                  "frame_interval_ms_p95": 86.9304
+                }
+              },
+              "pan": {
+                "preview:2": {
+                  "submitted_fps": 44.29940536877194,
+                  "frame_interval_ms_p95": 86.38730000000001
+                }
+              },
+              "preview_layer_scrub": {
+                "preview:2": {
+                  "submitted_fps": 5.000633913692459,
+                  "frame_interval_ms_p95": 265.3444
+                }
+              }
+            }
+          },
+          "embedded_display_capture_reasons": [
+            "presentmon_exit_6"
+          ]
+        },
+        "snapmates": {
+          "process_samples": 84,
+          "gpu_engine_samples": 40,
+          "peaks": {
+            "rss_mb": 813.461,
+            "private_mb": 679.824,
+            "handles": 934,
+            "gdi": 1115,
+            "user_obj": 1725,
+            "gpu_dedicated_mb": 3.328125,
+            "gpu_shared_mb": 187.546875,
+            "threads": null,
+            "peak_rss_bytes": 854052864,
+            "conns": null,
+            "gpu_engine_pct": 2.0210039029329963
+          },
+          "native_frame_trace": {
+            "status": "observed",
+            "frames": 30,
+            "discarded_capture_records": 0,
+            "activity_streams": {}
+          },
+          "embedded_display_capture_reasons": []
+        }
+      }
+    },
+    {
+      "id": "win10-retry-f1d8b732",
+      "capture_variant": "Hidden runner console",
+      "runner_exit_code": 1,
+      "original_archive_sha256": "1c5f493cefcc2f9c9cca96ceea3fb96a4394652e4dad6637d17846bb7ddefdbd",
+      "display_capture": {
+        "elevated_filter": "process_name",
+        "coverage": "full_run",
+        "elevated_exit_code": 0,
+        "status": "no_csv"
+      },
+      "scenario_verdicts": [
+        "showcase_dense slice: PASS",
+        "showcase_dense preview: PASS",
+        "showcase_dense gcode: PASS",
+        "showcase_dense close: PASS",
+        "showcase_dense video: PASS",
+        "showcase_snapmates slice: PASS",
+        "showcase_snapmates preview: FAIL",
+        "showcase_snapmates close: FAIL",
+        "showcase_snapmates video: PASS"
+      ],
+      "models": {
+        "ribbed-towers": {
+          "process_samples": 177,
+          "gpu_engine_samples": 87,
+          "peaks": {
+            "rss_mb": 1189.008,
+            "private_mb": 1012.168,
+            "handles": 1372,
+            "gdi": 1243,
+            "user_obj": 1810,
+            "gpu_dedicated_mb": 5.234375,
+            "gpu_shared_mb": 417.453125,
+            "threads": null,
+            "peak_rss_bytes": 1248018432,
+            "conns": null,
+            "gpu_engine_pct": 50.01689183722683
+          },
+          "native_frame_trace": {
+            "status": "observed",
+            "frames": 617,
+            "discarded_capture_records": 0,
+            "activity_streams": {
+              "orbit": {
+                "preview:2": {
+                  "submitted_fps": 44.31867924919111,
+                  "frame_interval_ms_p95": 88.53020000000001
+                }
+              },
+              "pan": {
+                "preview:2": {
+                  "submitted_fps": 43.965171781679,
+                  "frame_interval_ms_p95": 86.8939
+                }
+              },
+              "preview_layer_scrub": {
+                "preview:2": {
+                  "submitted_fps": 5.398358942068482,
+                  "frame_interval_ms_p95": 268.7409
+                }
+              }
+            }
+          },
+          "embedded_display_capture_reasons": [
+            "presentmon_exit_6"
+          ]
+        },
+        "snapmates": {
+          "process_samples": 158,
+          "gpu_engine_samples": 77,
+          "peaks": {
+            "rss_mb": 1766.996,
+            "private_mb": 1640.047,
+            "handles": 1010,
+            "gdi": 1117,
+            "user_obj": 1725,
+            "gpu_dedicated_mb": 4.6796875,
+            "gpu_shared_mb": 328.390625,
+            "threads": null,
+            "peak_rss_bytes": 1855279104,
+            "conns": null,
+            "gpu_engine_pct": 4.858606598005263
+          },
+          "native_frame_trace": {
+            "status": "partial",
+            "frames": 80,
+            "discarded_capture_records": 0,
+            "activity_streams": {}
+          },
+          "embedded_display_capture_reasons": []
+        }
+      }
+    },
+    {
+      "id": "win10-focus-41c7f298",
+      "capture_variant": "Hidden console and test-owned Orca window topmost",
+      "runner_exit_code": 1,
+      "original_archive_sha256": "d856372950f80d813fcdf5969b600841350c22d4575d75aa70823e0315d6846d",
+      "display_capture": {
+        "elevated_filter": "process_id",
+        "coverage": "dense_pid_only",
+        "elevated_exit_code": 0,
+        "status": "no_csv"
+      },
+      "scenario_verdicts": [
+        "showcase_dense: FAIL (Orca could not become foreground for video)",
+        "showcase_snapmates slice: PASS",
+        "showcase_snapmates preview: FAIL",
+        "showcase_snapmates close: FAIL",
+        "showcase_snapmates video: PASS"
+      ],
+      "models": {
+        "ribbed-towers": {
+          "process_samples": 84,
+          "gpu_engine_samples": 41,
+          "peaks": {
+            "rss_mb": 750.453,
+            "private_mb": 545.859,
+            "handles": 1009,
+            "gdi": 1071,
+            "user_obj": 1694,
+            "gpu_dedicated_mb": 3.328125,
+            "gpu_shared_mb": 187.546875,
+            "threads": null,
+            "peak_rss_bytes": 786911232,
+            "conns": null,
+            "gpu_engine_pct": 0.8536205110988823
+          },
+          "native_frame_trace": {
+            "status": "observed",
+            "frames": 18,
+            "discarded_capture_records": 0,
+            "activity_streams": {}
+          },
+          "embedded_display_capture_reasons": []
+        },
+        "snapmates": {
+          "process_samples": 158,
+          "gpu_engine_samples": 77,
+          "peaks": {
+            "rss_mb": 1772.133,
+            "private_mb": 1658.996,
+            "handles": 1010,
+            "gdi": 1117,
+            "user_obj": 1725,
+            "gpu_dedicated_mb": 3.875,
+            "gpu_shared_mb": 328.390625,
+            "threads": null,
+            "peak_rss_bytes": 1859645440,
+            "conns": null,
+            "gpu_engine_pct": 5.433627499895232
+          },
+          "native_frame_trace": {
+            "status": "partial",
+            "frames": 80,
+            "discarded_capture_records": 0,
+            "activity_streams": {}
+          },
+          "embedded_display_capture_reasons": []
+        }
+      }
+    }
+  ],
+  "orca_source": "56e82d53c85457f530827d2488664015b2eae08e",
+  "runner_commit": "34a8809ea2d64b198334eddb0e1a6f4a0dd24ae5",
+  "archive_sha256": "349558351498dfd7bca4ff7fec3c6bee0ababd05babc4460752494ca50870a43",
+  "presentmon_sha256": "364e5d98d4d134bd54dd25c22ed2ca2f4883f8bc3ed6502bee0c151e3436d30c"
+}
