@@ -18,10 +18,11 @@ import numpy as np
 
 from m2_slice_chain import (
     HERE, anchors, click_slice_start, launcher, profile, wait_model_loaded,
-    wait_slicing_done, winutil,
+    winutil,
 )
 from m2_perf_scenarios import _activate_window, _measure_export, run_soak, run_viewport
 from m3f_multi_plate import switch_to_slice_all
+from m7_common import file_menu_dispatch
 from harness import export_util, host_guard, perf_monitor
 from harness.showcase_mesh import build_dense_plate
 
@@ -95,10 +96,23 @@ def _slice(session, all_plates):
         started = click_slice_start(session)
         if started:
             dispatched, _ = session.slice_dispatch
-    done = started and wait_slicing_done(session, timeout_s=420)[0]
-    monitor.measure("slice_click_to_completion_detected", dispatched,
-                    status="observed" if done else "not_observed", all_plates=all_plates)
-    return done
+    # The old checkmark template also matches the disabled button while the
+    # slicer is still generating G-code. The live export menu is gated on
+    # actual result readiness. Check the all-plate command for the 7-plate job.
+    item = "Export all plate sliced file" if all_plates else "Export G-code"
+    ready = False
+    deadline = dispatched + 150
+    if started:
+        time.sleep(2.5)
+        while session.alive() and time.monotonic() < deadline:
+            ready, _ = file_menu_dispatch(session, item, via="Export", inspect_enabled=True)
+            if ready:
+                break
+            time.sleep(2.5)
+    monitor.measure("slice_click_to_export_enabled", dispatched,
+                    status="observed" if ready else "not_observed", all_plates=all_plates,
+                    observer="file_export_menu", command=item)
+    return ready
 
 
 def _preview(session):
