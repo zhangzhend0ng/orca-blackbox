@@ -59,3 +59,12 @@ markers. Both traces closed normally with no discarded records. The
 generated HTML references resolved and both H.264 recordings decoded
 in full. JUnit reports one passing showcase case, and the guest was
 restored to `software_testing`.
+
+## Physical Windows 10 evidence
+
+The same EXE was staged and run on a Windows 10 x64 machine using the AMD
+OpenGL driver. Orca process GPU engine and video memory counters were observed.
+Ribbed Towers completed and its exported G-code was verified. Snapmates reached
+slice readiness and failed preview validation. Elevated PresentMon traces did
+not produce display-frame records. See the [physical Windows 10 run record](../../docs/runs/portable-perf-win10-2026-11-21.md)
+for measurements, retries, and reproducible evidence.
