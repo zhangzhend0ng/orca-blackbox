@@ -144,13 +144,16 @@ def run_viewport(session):
         spans = {}
         frame_start = time.monotonic()
         with perf_frames.FrameCapture(session.pid, csv_path, monitor.instance_id, 17) as capture:
-            if capture.process is not None:
-                time.sleep(0.8)
+            tracing = session.render_trace_path is not None
+            if capture.process is not None or tracing:
+                if capture.process is not None:
+                    time.sleep(0.8)
                 for name, action in supported.items():
-                    if capture.process.poll() is not None:
+                    if not tracing and capture.process.poll() is not None:
                         break
                     start, hz = perf_frames.clock()
-                    limit = time.monotonic() + 3
+                    began = time.monotonic()
+                    limit = began + 3
                     count = 0
                     while time.monotonic() < limit:
                         try:
@@ -164,6 +167,9 @@ def run_viewport(session):
                     end, _ = perf_frames.clock()
                     if count:
                         spans[name] = (start, end, hz, count)
+                    if tracing:
+                        monitor.measure("render_activity", began, status="observed" if count else "not_observed",
+                                        activity=name, qpc_start=start, qpc_end=end, qpc_hz=hz, inputs=count)
         reason, frames = capture.reason, []
         if not reason:
             try:

@@ -233,6 +233,16 @@ def _print_report(path: Path, summary: dict) -> None:
     for point in summary["soak_checkpoints"]:
         print(f"idle cycle {point['cycle']}: n={point['sample_count']} "
               f"delta={point['delta_from_baseline']}")
+    native = summary.get("native_frame_trace")
+    if native:
+        print(f"Orca submissions: {native['status']}, {native.get('frames', 0)} frames"
+              f" {native.get('reason', '')}".rstrip())
+        for activity in native.get("activities", []):
+            for stream, metrics in activity["streams"].items():
+                fps = _number(metrics["submitted_fps"])
+                print(f"  {activity['activity']} / {stream}: {fps} submitted FPS "
+                      f"(n={metrics['frames']}, P95 interval "
+                      f"{_number((metrics['frame_interval_ms'] or {}).get('p95'))} ms)")
 
 
 def _export_annotations(rows, meta, client):
@@ -274,6 +284,10 @@ def main(argv: list[str]) -> int:
         try:
             rows = load_rows(path)
             summary = summarize(rows)
+            from harness.native_frame_trace import analyze
+            native = analyze(path, rows, summary["meta"].get("anchor_pid"), write_csv=True)
+            if native is not None:
+                summary["native_frame_trace"] = native
             _print_report(path, summary)
             out = path.with_suffix(".summary.json")
             out.write_text(json.dumps(summary, ensure_ascii=False, allow_nan=False, indent=1),

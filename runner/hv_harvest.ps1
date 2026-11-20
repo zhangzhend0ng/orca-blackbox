@@ -21,7 +21,7 @@ $repo = Split-Path $PSScriptRoot -Parent
 $artifacts = Join-Path $repo 'artifacts'
 New-Item -ItemType Directory -Force $artifacts | Out-Null
 $ff = Join-Path $artifacts 'failed_cases.txt'
-$perfArtifact = '\A(?:[A-Za-z0-9_-]{1,60}__[0-9a-f]{32}\.(?:jsonl|frames\.csv)|showcase_[a-z_]+__[0-9a-f]{32}\.(?:mp4|video\.json))\z'
+$perfArtifact = '\A(?:[A-Za-z0-9_-]{1,60}__[0-9a-f]{32}\.(?:jsonl|frames\.csv|render\.bin)|showcase_[a-z_]+__[0-9a-f]{32}\.(?:mp4|video\.json))\z'
 
 if ($PerfBatchId) {
   if ($V3 -or $WindowsMcpRunId) { throw 'Select only the perf batch for this harvest' }

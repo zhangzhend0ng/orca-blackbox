@@ -508,11 +508,12 @@ def launch_phase(name: str, case_run_id: str):
         _PHASE.reset(token)
 
 
-def attach_for_session(popen, exe: Path | str, *, finish_on_anchor_exit: bool = True) -> PerfMonitor | None:
+def attach_for_session(popen, exe: Path | str, *, finish_on_anchor_exit: bool = True,
+                       instance_id: str | None = None) -> PerfMonitor | None:
     if not env_enabled():
         return None
     label = os.environ.get("ORCA_BB_PERF_LABEL") or Path(exe).stem
-    instance = uuid4().hex
+    instance = instance_id or uuid4().hex
     try:
         members = None
         if os.environ.get("ORCA_BB_PERF_JOB") == "1":

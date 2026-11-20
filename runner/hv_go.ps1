@@ -17,7 +17,7 @@ param([string[]]$Cases = @(), [switch]$OnlyFailed, [switch]$NoWarmup, [switch]$W
       [switch]$CloudPrintNewProject, [switch]$CloudUploadNewProject,
       [ValidatePattern('\A[0-9a-f]{32}\z')][string]$PerfBatchId,
       [switch]$PerfViewport, [ValidateRange(0, 20)][int]$PerfCycles = 0,
-      [string]$PresentMonExe = '')
+      [string]$PresentMonExe = '', [string]$FrameTraceExe = '')
 . (Join-Path $PSScriptRoot '_common.ps1')
 if ($CloudLoginProbe -and (-not $WindowsMcpProbe -or $NativeSave -or $vm -ne 'win11-test' -or $guestUser -ne 'test')) {
     throw 'Cloud login requires the standalone probe slot on win11-test/test'
@@ -76,6 +76,9 @@ if (($PerfViewport -or $PerfCycles -or $PresentMonExe) -and (-not $Perf -or $V3 
   throw 'Viewport and soak diagnostics require an m2 case with -Perf'
 }
 if ($PresentMonExe -and -not $PerfViewport) { throw '-PresentMonExe requires -PerfViewport' }
+if ($FrameTraceExe -and (-not $PerfViewport -or $FrameTraceExe -notmatch '\A[A-Za-z]:[\\/].+\.exe\z')) {
+  throw '-FrameTraceExe requires -PerfViewport and a local absolute guest executable path'
+}
 if ($Perf -and -not $PerfBatchId) { $PerfBatchId = [guid]::NewGuid().ToString('N') }
 
 # Guest passthrough gate: ONLY caller-supplied selections (-Cases, -OnlyFailed)
@@ -318,7 +321,7 @@ Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
   # NOTE: this scriptblock runs ON THE GUEST — everything it needs must be
   # marshaled via param/-ArgumentList (host-side $warmup is not visible here;
   # measured 09-03 night: silent $false, warmup block never emitted).
-  param($caseStr, $sb, $py, $warmup, $suite, $perfBatchId, $v3, $v3Executor, $v3RunId, $mcpProbe, $probeRunId, $nativeSave, $nativeActor, $nativeScenario, $cloudLogin, $cloudAuthenticate, $cloudDevice, $cloudUpload, $cloudVideoReview, $cloudLiveVideo, $cloudPrint, $cloudNewProject, $git, $perfViewport, $perfCycles, $presentMon)
+  param($caseStr, $sb, $py, $warmup, $suite, $perfBatchId, $v3, $v3Executor, $v3RunId, $mcpProbe, $probeRunId, $nativeSave, $nativeActor, $nativeScenario, $cloudLogin, $cloudAuthenticate, $cloudDevice, $cloudUpload, $cloudVideoReview, $cloudLiveVideo, $cloudPrint, $cloudNewProject, $git, $perfViewport, $perfCycles, $presentMon, $frameTraceExe)
   if ((Get-ScheduledTask -TaskName suite -ErrorAction SilentlyContinue).State -eq 'Running') {
     throw 'Guest suite is already running'
   }
@@ -339,6 +342,17 @@ if (`$cases.Count -gt 1) {
   $perfInit = '$env:ORCA_BB_PERF = ''0'''
   $perfCase = ''
   if ($perfBatchId) {
+    $frameTraceInit = '$env:ORCA_BB_FRAME_TRACE = ''0'''
+    if ($frameTraceExe) {
+      $instrumented = Get-Item -LiteralPath $frameTraceExe -ErrorAction Stop
+      if ($instrumented.PSIsContainer -or ($instrumented.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+        throw 'Frame trace executable must be a regular guest file'
+      }
+      $frameTraceInit = @"
+`$env:ORCA_BB_FRAME_TRACE = '1'
+`$env:ORCA_VISION_APP_EXE = '$($instrumented.FullName.Replace("'", "''"))'
+"@
+    }
     $perfDir = Join-Path $sb "artifacts\perf\$perfBatchId"
     $sha = & $git -C $sb rev-parse HEAD
     if ($LASTEXITCODE -ne 0 -or $sha -cnotmatch '\A[0-9a-f]{40,64}\z') {
@@ -355,6 +369,7 @@ if (`$cases.Count -gt 1) {
 `$env:ORCA_BB_PERF_VIEWPORT = '$(if ($perfViewport) { 1 } else { 0 })'
 `$env:ORCA_BB_PERF_CYCLES = '$perfCycles'
 `$env:ORCA_BB_PRESENTMON_EXE = '$(([string]$presentMon).Replace("'", "''"))'
+$frameTraceInit
 "@
     $perfCase = @'
 $env:ORCA_BB_PERF = '1'
@@ -482,7 +497,7 @@ exit `$LASTEXITCODE
   Register-ScheduledTask -TaskName "suite" -Action $a -Settings $st -Principal $p -Force | Out-Null
   Start-ScheduledTask -TaskName "suite"
   "suite launched: " + (Get-ScheduledTask suite).State
-} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, $PerfBatchId, ([bool]$V3), $V3Executor, $V3RunId, ([bool]$WindowsMcpProbe), $ProbeRunId, ([bool]$NativeSave), $NativeActor, $NativeScenario, ([bool]$CloudLoginProbe), ([bool]$CloudLoginAuthenticate), ([bool]$CloudDeviceProbe), ([bool]$CloudUploadGcode), ([bool]$CloudUploadVideoReview), ([bool]$CloudUploadLiveVideo), ([bool]$CloudPrintNewProject), ([bool]$CloudUploadNewProject), $guestGit, ([bool]$PerfViewport), $PerfCycles, $PresentMonExe -ErrorAction Stop
+} -ArgumentList $guestCaseStr, $guestSandbox, $guestPython, $warmup, $Suite, $PerfBatchId, ([bool]$V3), $V3Executor, $V3RunId, ([bool]$WindowsMcpProbe), $ProbeRunId, ([bool]$NativeSave), $NativeActor, $NativeScenario, ([bool]$CloudLoginProbe), ([bool]$CloudLoginAuthenticate), ([bool]$CloudDeviceProbe), ([bool]$CloudUploadGcode), ([bool]$CloudUploadVideoReview), ([bool]$CloudUploadLiveVideo), ([bool]$CloudPrintNewProject), ([bool]$CloudUploadNewProject), $guestGit, ([bool]$PerfViewport), $PerfCycles, $PresentMonExe, $FrameTraceExe -ErrorAction Stop
 Write-Host "[4] DONE. Poll progress any time (admin window):"
 Write-Host "    Get-Content C:\coil\vm_setup\poll_rerun.txt | Set-Content C:\coil\vm_setup\relay_cmd.txt   # via relay"
 Write-Host "    or in guest: Get-Content C:\coil\regress_progress.txt -Tail 5"

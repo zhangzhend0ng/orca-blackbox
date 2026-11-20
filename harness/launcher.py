@@ -13,6 +13,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from uuid import uuid4
 
 from . import host_guard, perf_monitor, winutil
 
@@ -44,6 +45,7 @@ class AppSession:
         self.popen = popen
         self.hwnd = hwnd
         self.perf = None  # optional perf_monitor.PerfMonitor (env-gated)
+        self.render_trace_path = None
 
     @property
     def pid(self) -> int:
@@ -222,6 +224,14 @@ def launch(exe: Path | str | None = None,
         args.append(str(model))
 
     env = {k: v for (k, v) in os.environ.items() if k.upper() != "ORCA_GUI_TEST_MODE"}
+    env.pop("ORCA_BB_FRAME_TRACE_FILE", None)
+    trace_path = instance = None
+    if os.name == "nt" and perf_monitor.env_enabled() and os.environ.get("ORCA_BB_FRAME_TRACE") == "1":
+        instance = uuid4().hex
+        label = os.environ.get("ORCA_BB_PERF_LABEL") or exe.stem
+        trace_path = perf_monitor.resolve_out_path(label, instance).resolve().with_suffix(".render.bin")
+        trace_path.parent.mkdir(parents=True, exist_ok=True)
+        env["ORCA_BB_FRAME_TRACE_FILE"] = str(trace_path)
     print(f"[launcher] {args[0]} --datadir {args[2]}" + (f" {args[3]}" if model else ""))
 
     winutil.make_dpi_aware()
@@ -243,7 +253,13 @@ def launch(exe: Path | str | None = None,
     popen = subprocess.Popen(args, env=env, startupinfo=si)
     monitor = None
     try:
-        monitor = perf_monitor.attach_for_session(popen, exe, finish_on_anchor_exit=False)
+        monitor = perf_monitor.attach_for_session(popen, exe, finish_on_anchor_exit=False, instance_id=instance)
+        if monitor is not None and trace_path is not None:
+            from .perf_frames import clock
+            before = time.monotonic()
+            qpc, hz = clock()
+            monitor.measure("render_clock_sync", before, qpc=qpc, qpc_hz=hz,
+                            artifact=trace_path.name, observer="orca_swap_buffers")
         hwnd = winutil.find_main_window(popen.pid, timeout_s=wait_window_s)
         if monitor is not None:
             monitor.measure("launch_to_stable_main_window", launch_started)
@@ -273,6 +289,7 @@ def launch(exe: Path | str | None = None,
         session = AppSession(popen, hwnd)
         session.blockers = dismissed  # forensic trail: titles WM_CLOSEd at boot
         session.perf = monitor
+        session.render_trace_path = trace_path
         session.launch_started = launch_started
         return session
     except BaseException as error:

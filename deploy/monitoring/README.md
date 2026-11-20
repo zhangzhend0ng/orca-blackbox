@@ -33,6 +33,19 @@ Windows 有 psutil 时采集主进程和可归属的子进程，缺 psutil 时�
 
 性能试跑按固定构建、夹具、渲染器、分辨率和输入序列比较。Mesa 软件 GL 客机的帧时间只代表该环境。产品流畅度基线需要有代表性的 GPU 环境和重复试跑。
 
+### Orca 测试构建的提交帧
+
+对独立导出的 Orca 源码副本运行 `frame_trace/apply_overlay.py`，并编译该副本。源码目录中的 `.orca-frame-trace-build.json` 应记录 `source_commit` 和 `profiles_commit`。测试构建沿 `GLCanvas3D::render()` 记录 Windows QPC 时间戳。默认关闭，启用时写入每个进程独占的有界缓冲文件，正常退出后收尾。
+
+```powershell
+& runner\hv_go.ps1 -Cases m2_perf_showcase -Perf -PerfViewport -FrameTraceExe $guestInstrumentedExe
+& runner\hv_harvest.ps1 -PerfBatchId $batch
+Get-ChildItem "artifacts\perf_harvest\$batch" -Filter '*.jsonl' |
+    ForEach-Object { python -B tools/perf_report.py $_.FullName }
+```
+
+`.render.bin` 保存视口开始渲染、调用 SwapBuffers 前和返回后的时间，以及视口、是否仅更新叠层、调用是否成功。报告按不同画布和 QPC 交互窗口分别计算提交 FPS、帧间隔、提交前耗时、SwapBuffers 调用耗时及各自分位数。`.render.csv` 的相对时间与进程采样、录屏使用同一驱动时间轴。实际显示率与 GPU 指标继续由各自采集器记录。
+
 ```powershell
 python -B tools/perf_attach.py --pid 1234 --seconds 10
 ```
