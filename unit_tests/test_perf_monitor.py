@@ -312,14 +312,14 @@ def test_presentmon_csv_filters_pid_window_and_separates_swapchains(tmp_path):
 
     path = tmp_path / "app.frames.csv"
     path.write_text(
-        "ProcessID,SwapChainAddress,CPUStartQPC,DisplayedTime,MsGPUBusy,MsCPUBusy\n"
-        "99,a,105,600,600,1\n"
-        "10,a,105,20,5,2\n"
-        "10,a,110,NA,6,2\n"
-        "10,a,115,40,8,3\n"
-        "10,a,125,300,4,2\n"
-        "10,b,150,16,NA,1\n"
-        "10,b,160,16,NA,1\n", encoding="utf-8",
+        "ProcessID,SwapChainAddress,CPUStartQPC,DisplayedTime,MsGPUBusy,MsCPUBusy,DisplayLatency\n"
+        "99,a,105,600,600,1,900\n"
+        "10,a,105,20,5,2,25\n"
+        "10,a,110,NA,6,2,NA\n"
+        "10,a,115,40,8,3,30\n"
+        "10,a,125,300,4,2,32\n"
+        "10,b,150,16,NA,1,NA\n"
+        "10,b,160,16,NA,1,NA\n", encoding="utf-8",
     )
     frames = perf_frames.read_frames(path, 10)
     result = perf_frames.frame_metrics(frames, 100, 130)
@@ -327,6 +327,9 @@ def test_presentmon_csv_filters_pid_window_and_separates_swapchains(tmp_path):
     assert result["metrics"]["displayed_frame_ms"]["max"] == 40
     assert result["metrics"]["displayed_fps"] == pytest.approx(1000 / 30)
     assert result["metrics"]["dropped_frames"] == 1
+    assert result["metrics"]["dropped_frame_pct"] == 25
+    assert result["metrics"]["slow_frame_pct"]["over_33.3333_ms"] == 50
+    assert result["metrics"]["display_latency_ms"]["p50"] == 30
     assert perf_frames.frame_metrics(frames, 100, 180)["status"] == "ambiguous_swapchain"
     assert perf_frames.frame_metrics(frames, 1, 30)["metrics"] is None
 

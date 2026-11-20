@@ -147,13 +147,20 @@ def run_viewport(session):
                         time.sleep(0.065)
                     end, _ = perf_frames.clock()
                     spans[name] = (start, end, hz, count)
-        if capture.reason:
-            monitor.measure("frame_capture", frame_start, status="unavailable", reason=capture.reason)
-            return
-        frames = perf_frames.read_frames(csv_path, session.pid)
+        reason, frames = capture.reason, []
+        if not reason:
+            try:
+                frames = perf_frames.read_frames(csv_path, session.pid)
+            except (OSError, ValueError) as error:
+                reason = str(error)
+        if not spans:
+            monitor.measure("frame_capture", frame_start, status="unavailable",
+                            reason=reason or "no_activity_window")
         for name, (start, end, hz, count) in spans.items():
-            summary = perf_frames.frame_metrics(frames, start, end)
-            monitor.measure("frame_capture", frame_start, status=summary["status"], activity=name,
+            summary = perf_frames.frame_metrics(frames, start, end) if not reason else None
+            monitor.measure("frame_capture", frame_start,
+                            status=summary["status"] if summary else "unavailable",
+                            reason=reason, activity=name,
                             qpc_start=start, qpc_end=end, qpc_hz=hz, inputs=count,
                             csv=csv_path.name, frame_summary=summary)
     finally:
@@ -161,34 +168,20 @@ def run_viewport(session):
             user.SetWindowLongW(session.hwnd, -20, ex_style)
 
 
-def _close_project(session, m7):
-    sent, _ = m7.file_menu_dispatch(session, "New Project")
-    if not sent:
-        return False
-    deadline = time.monotonic() + 12
-    while time.monotonic() < deadline:
-        if not session.alive():
+def _clear_plate(session, m7):
+    score, _, _ = anchors.wait_for(session, "tab_prepare_active", timeout_s=.6)
+    if score < anchors.MATCH_THRESHOLD:
+        ready, _ = anchors.click_and_verify(session, "tab_prepare_inactive", "tab_prepare_active")
+        if not ready:
             return False
-        if winutil.user32.IsWindowEnabled(session.hwnd):
-            if m7.model_colored_frac(session) < m7.EMPTY_BED_FLOOR:
-                return True
-        else:
-            dlg = m7.wait_dialog(session.pid, timeout_s=.4, title_substr="Snapmaker Orca - Save")
-            if dlg:
-                labels = [label.strip().replace("&", "").casefold() for label, _ in m7.dialog_buttons(dlg[3])]
-                for label in ("don't save", "discard", "no"):
-                    if label in labels:
-                        m7.click_dialog_button(dlg[3], label, fallback_first=False)
-                        break
-                else:
-                    return False
-        time.sleep(0.2)
-    return False
+    if not session.alive() or not winutil.user32.IsWindowEnabled(session.hwnd):
+        return False
+    return m7.model_colored_frac(session) < m7.EMPTY_BED_FLOOR or m7.step_delete_all(session, {})
 
 
 def _idle_checkpoint(session, cycle):
     session.perf.set_step("soak_idle")
-    # Exclude the first second after closing the project from the idle window.
+    # Exclude the first second after clearing the plate from the idle window.
     time.sleep(1)
     start = time.monotonic()
     time.sleep(2.5)
@@ -197,26 +190,47 @@ def _idle_checkpoint(session, cycle):
 
 def _measure_export(session):
     from harness import export_util
+    import m7_common as m7
+
     with TemporaryDirectory(prefix="perf-export-", dir=session.perf.frame_csv_path.parent) as directory:
         target = Path(directory) / "sample.gcode"
         start = time.monotonic()
-        exported = export_util.export_gcode(session, target, timeout_s=25)
-        # The existing export helper confirms creation. Keep a separate
-        # measurement for stable size/mtime, with a documented sampling bound.
+        sent, _ = m7.file_menu_dispatch(session, "Export G-code", via="Export")
+        dialog = m7.wait_dialog(session.pid, timeout_s=8, title_substr="Save G-code file as") if sent else None
+        session.perf.measure("export_request_to_save_dialog", start,
+                             status="observed" if dialog else "not_observed")
+        edit = export_util.find_edit(dialog[3]) if dialog else None
+        if not edit or winutil._window_pid(edit) != session.pid:
+            session.perf.measure("export_request_to_stable_file", start, status="not_observed",
+                                 reason="save_filename_edit_unavailable")
+            return
+        winutil.select_all(edit)
+        winutil.msg_text(edit, str(target))
+        confirm_at = time.monotonic()
+        winutil._send_msg(dialog[3], 0x0111, 1, 0)  # WM_COMMAND IDOK on the owned Save dialog
         previous = None
+        first_seen = None
         stable_at = None
-        deadline = time.monotonic() + 3
-        while exported and time.monotonic() < deadline:
-            stat = target.stat()
+        deadline = confirm_at + 25
+        while time.monotonic() < deadline and session.alive():
+            try:
+                stat = target.stat()
+            except (FileNotFoundError, PermissionError):
+                time.sleep(.1)
+                continue
             current = (stat.st_size, stat.st_mtime_ns)
-            if current == previous:
-                stable_at = time.monotonic()
+            now = time.monotonic()
+            if current != previous:
+                previous, first_seen = current, now
+            elif current[0] > 0 and now - first_seen >= .25:
+                stable_at = now
                 break
-            previous = current
-            time.sleep(0.25)
-        session.perf.measure("export_request_to_stable_file", start, end=stable_at,
-                             status="observed" if stable_at else "not_observed",
-                             stable_window_ms=250, bytes=previous[0] if stable_at else None)
+            time.sleep(.1)
+        for name, began in (("export_request_to_stable_file", start),
+                            ("export_confirm_to_stable_file", confirm_at)):
+            session.perf.measure(name, began, end=stable_at,
+                                 status="observed" if stable_at else "not_observed",
+                                 stable_window_ms=250, bytes=previous[0] if stable_at else None)
 
 
 def run_soak(session, cycles):
@@ -225,7 +239,7 @@ def run_soak(session, cycles):
 
     monitor = session.perf
     begin = time.monotonic()
-    if not _close_project(session, m7):
+    if not _clear_plate(session, m7):
         monitor.measure("soak_cycle", begin, status="not_observed", cycle=0, reason="empty_bed_not_observed")
         return
     _idle_checkpoint(session, 0)
@@ -235,8 +249,16 @@ def run_soak(session, cycles):
         start = time.monotonic()
         results = {}
         imported = import_stl(session) and m7.step_model_arrives(session, results, timeout_s=60, min_frac=.0025)
-        sliced = imported and m7.op_slice(session, results)
-        cleared = sliced and _close_project(session, m7)
+        monitor.measure("soak_import_to_model_observed", start, cycle=cycle,
+                        status="observed" if imported else "not_observed")
+        slice_at = time.monotonic()
+        sliced = imported and m7.op_slice(session, results, timeout_s=60)
+        monitor.measure("soak_slice_to_completion", slice_at, cycle=cycle,
+                        status="observed" if sliced else "not_observed" if imported else "skipped")
+        clear_at = time.monotonic()
+        cleared = sliced and _clear_plate(session, m7)
+        monitor.measure("soak_clear_to_empty_plate", clear_at, cycle=cycle,
+                        status="observed" if cleared else "not_observed" if sliced else "skipped")
         monitor.measure("soak_cycle", start, status="observed" if cleared else "not_observed",
                         cycle=cycle, imported=bool(imported), sliced=bool(sliced), cleared=bool(cleared))
         if not cleared:

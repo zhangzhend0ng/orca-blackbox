@@ -11,6 +11,17 @@ from pathlib import Path
 import statistics
 import subprocess
 import time
+from typing import NamedTuple
+
+
+class Frame(NamedTuple):
+    qpc: int
+    swapchain: str
+    displayed_ms: float | None
+    dropped: bool
+    gpu_busy_ms: float | None
+    cpu_busy_ms: float | None
+    display_latency_ms: float | None
 
 
 def percentiles(values):
@@ -109,32 +120,40 @@ def read_frames(path, pid):
                 continue
             duration = _number(row["DisplayedTime"])
             display = row["DisplayedTime"]
-            frames.append((qpc, row["SwapChainAddress"], duration,
-                           bool(display and display.strip().upper() == "NA"),
-                           _number(row.get("MsGPUBusy", row.get("GPUBusy"))),
-                           _number(row.get("MsCPUBusy", row.get("CPUBusy")))))
+            frames.append(Frame(qpc, row["SwapChainAddress"], duration,
+                                bool(display and display.strip().upper() == "NA"),
+                                _number(row.get("MsGPUBusy", row.get("GPUBusy"))),
+                                _number(row.get("MsCPUBusy", row.get("CPUBusy"))),
+                                _number(row.get("DisplayLatency"))))
     return frames
 
 
 def frame_metrics(frames, start, end):
     streams = defaultdict(list)
     for sample in frames:
-        if start <= sample[0] <= end:
-            streams[sample[1]].append(sample)
+        if start <= sample.qpc <= end:
+            streams[sample.swapchain].append(sample)
     results = {}
     for name, stream in streams.items():
         # DisplayedTime of the last visible frame can include the subsequent
         # idle period. Keep intervals only between frames inside this window.
-        displayed = [row[2] for row in sorted(stream) if row[2] is not None and row[2] > 0]
+        displayed = [row.displayed_ms for row in sorted(stream, key=lambda row: row.qpc)
+                     if row.displayed_ms is not None and row.displayed_ms > 0]
         intervals = displayed[:-1]
-        dropped = sum(row[3] for row in stream)
+        dropped = sum(row.dropped for row in stream)
+        drop_known = len(displayed) + dropped == len(stream)
         result = {
             "displayed_frame_ms": percentiles(intervals),
             "displayed_fps": len(intervals) * 1000 / sum(intervals) if intervals else None,
             "presented_frames": len(stream), "displayed_frames": len(displayed),
-            "dropped_frames": dropped if len(displayed) + dropped == len(stream) else None,
-            "gpu_busy_ms": percentiles([r[4] for r in stream if r[4] is not None]),
-            "cpu_busy_ms": percentiles([r[5] for r in stream if r[5] is not None]),
+            "dropped_frames": dropped if drop_known else None,
+            "dropped_frame_pct": dropped * 100 / len(stream) if drop_known else None,
+            "slow_frame_pct": {f"over_{ms:g}_ms": sum(d > ms for d in intervals) * 100 / len(intervals)
+                               for ms in (1000 / 30, 50, 100)} if intervals else None,
+            "display_latency_ms": percentiles([r.display_latency_ms for r in stream
+                                               if r.display_latency_ms is not None]),
+            "gpu_busy_ms": percentiles([r.gpu_busy_ms for r in stream if r.gpu_busy_ms is not None]),
+            "cpu_busy_ms": percentiles([r.cpu_busy_ms for r in stream if r.cpu_busy_ms is not None]),
         }
         results[name] = result
     visible_streams = [s for s in results.values() if s["displayed_frames"]]
