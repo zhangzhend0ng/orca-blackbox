@@ -25,3 +25,7 @@
 | 单窗捕获 | 按本次 Orca 的 PID 和窗口 ID 调用系统截图工具，退出码 1，未生成图片。另一次独立启动由同一测试 Python 进程直接调用 ScreenCaptureKit，获取可分享内容时返回 `com.apple.ScreenCaptureKit.SCStreamErrorDomain` 的 `-3801`。 |
 
 窗口标题和原生保存面板已有前台实测证据。模型像素、后台截图和切片仍待验证，整项保留 NON_GREEN。结束后复查测试账号下 Orca 主程序为 0。宿主已逐份校验并回收七份原始日志，位置为 `artifacts/mac_smoke/20261120-foreground/`。
+
+### 录屏权限的实际归属
+
+在测试账号的前台会话运行 Xcode 内置 Python，并以管理员账号限时读取 15 秒的 TCC 日志。测试进程发出五次 ScreenCaptureKit 查询，对应十条预检与正式判定。十次均以 `com.apple.python3` 为访问进程、`com.apple.replayd` 为请求方、`com.apple.dt.Xcode` 为授权对象，结果为 `Denied (System Set)`。同一账号的录屏设置中，Python 开关为 1、Xcode 开关为 0。针对这条启动路径，需要由用户决定是否向 Xcode 授予录屏权限。采样摘要及逐条判定保存在 `artifacts/mac_smoke/20261120-foreground/tcc-decisions.json`。
