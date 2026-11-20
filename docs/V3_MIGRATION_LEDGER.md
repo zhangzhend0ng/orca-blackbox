@@ -136,11 +136,47 @@
 
 | # | 时间 | 场景 | Run ID | 结果 | 备注 |
 |---|---|---|---|---|---|
-| — | — | — | — | — | （启动后追加） |
+| 1 | 02:53 | uia_general_wall (zcode goal-only) | `3140ae8257294e36a5f2dd25c25f8163` | 基础设施失败 | ZCode app-server 已升级（zcode.cjs d9afd58d→6b84e928），新增 `session/readReplyLanguage` 请求，驱动判 unexpected_host_request，0 工具调用，清理确认 |
+| 2 | 03:29 | 同上 | `6165a41c440543e9893dc55e8a1d0dd7` | 基础设施失败（假通过被拦截） | readReplyLanguage 已答 en；新版在 turn 开始即取工具快照，windows_mcp ferry（stdio→relay→客机HTTP）未完成握手 → 模型请求 toolNames=[]，glm-5.3-flash 单轮**虚构完成**（声称改壁环数+已保存），0 工具调用；驱动 `native_calls_incomplete` 正确拦截，客机 ready/setup 全好，清理确认 |
+| 3 | 04:00 | 同上 | `38535cc0a2de450ebd5748ebd945888d` | 运行中 | 修复=create 后 send 前有界等待 25s（bf108f7） |
+
+## 历史证据指针（native-SHADOW(hist) 的 run 出处）
+
+| 能力/场景 | 历史 Run | 记录 |
+|---|---|---|
+| Save As 门禁 | `d7299035e33b80969e0064a8d9b3e4fc` | runs/zcode-uia-first-2026-11-18.md |
+| wx 层高门禁 | `bfd5c93af9571ba3ddc53f7099d7e407` | 同上 |
+| ImGui 画布门禁 | `52a21e14b5e0456bf5e965cb98970cf4` | 同上 |
+| 壁环数 goal-only | `f65ba49e6330436fa6a41d98758831f0` | V3_PLAN §7 |
+| 画布 X+10 goal-only | `8c8b135fa05c437eaf6deef108dffc53` | 同上 |
+| 底层数/Strength | `4aab27286416496a86916d5378ff3356` | 八槽 1/8 |
+| 双下拉 enums | `a4f5926dcc5243838d2baf7297227a6d` | runs/zcode-compound-expansion-2026-11-19.md |
+| 平移+层高组合+回放 | `e251f0f23b0338083fdb5919edde5f74` / `b1d0ecff0f77bdaedd26dc847dcddfab` | 同上 |
+| pairwise 7/7 | 批 `c32661e9c8e14b3f9304ababd88e4033` | runs/pairwise-replay-2026-11-19.md |
+| pilot 材料/壁环 | `d301c03a` / `af89824f` | runs/zcode-business-pilots-2026-11-17.md |
+| cfg_value 01/04/06/07 | `2a6b9643`/`c96a3498`/`d13fa858`/`a38b163f` | artifacts/native_save_demo |
+| dep_ironing 三件 | `f43a0013`/`aff32323`/`98890a09` | 同上 |
+| 安全 3/3 | 批 `caff045271da4ec4a6ef62c516b643a1` | runs/zcode-matrix-2026-11-17.md |
+| 泛化八槽 1/8 | 批 `05793ef532d7468374fc9a6332de264a` | runs/zcode-uia-first-2026-11-18.md |
 
 ## 候选/缺口登记（探索轮输入）
 
-（首轮探索后追加：候选 ID、去重依据、最短复现、独立判据、清理方式。）
+按用户影响×可复现性×验证成本排序的缺口（本轮如开不了探索轮，供下批直接取用）：
+
+1. **预设切换读回**（m3e/m5a/m5g 族）：预设 combo 自绘+预设名读回无合同 → 需预设下拉 UIA/裁图混合合同 + gcode 头跟随判据（旧判据在 BLACKBOX_CASES.md m3e）。解锁 6+ 条。
+2. **撤销/重做**（m3h）：Ctrl+Z 未开放、撤销语义判据未定义 → 需快照 diff 判据（保存前后 3MF config 对比）。解锁 1 条+组合场景。
+3. **右键菜单**（m7h/m3b）：上下文菜单合同未登记 → 菜单弹出+菜单项 UIA Invoke + 场景状态读回。
+4. **多盘**（m3f）：盘选择/每盘切片判据（旧判据=每盘 gcode 存在）。
+5. **导入损坏负例**（m7d/m3c）：错误弹窗读回+无副作用（无新对象、进程活着）。
+6. **高流量/官方颜色**（m8f/m8g/m8b）：喷嘴/流量组合框与耗材颜色——cfg_value 族扩展的好候选（该族合同已验证）。
+7. **空场景切片拒绝**（m3a）：按钮门禁状态读回负例。
+8. **rotate45**（m7e）：画布数值编辑 rotate 字段——CANVAS_REPLACE_SCENARIOS 合同扩展。
+
+## 本批基础设施发现（给团队）
+
+- **ZCode app-server 已升级**（zcode.cjs d9afd58d→6b84e928，11-19 后）：①新增 `session/readReplyLanguage` 宿主请求（已在驱动白名单应答 en，0b81f5d）；②turn 开始即取工具快照、不再等 MCP 就绪——windows_mcp 走 stdio→relay→客机 HTTP，握手未完成时模型请求 toolNames=[]，**glm-5.3-flash 会单轮虚构完整业务成功**（运行 6165a41c 实证，驱动 `native_calls_incomplete` 拦截）；已在 create/send 之间加 25s 有界等待（bf108f7）。建议后续把 ferry 握手改为无 relay 的直连或预热。
+- **clash-guard OFF_SAFE**（02:37:45 起，代理被关，非本会话操作）：ip_guard 纪律性阻断全部 zcode 模型跑批；`~/.clash-guard/status-token` 集成文件丢失已按 status-api.md 恢复。guard 恢复 ready 前只跑 script 轨道。
+- 11-20 客机识别故障（KVP 关）已被 06d2257 BIOS 兜底修复，本轮实测通过。
 
 ## Checkpoint（恢复用）
 
