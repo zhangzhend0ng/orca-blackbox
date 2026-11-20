@@ -175,6 +175,15 @@ try{
  session=snapshot.session?.sessionId;
  if(!session)throw new Error('session_id_missing');
  report.session_id=session;report.stage='ready';saveProgress();
+ // Newer app-server builds start the turn immediately and snapshot the tool
+ // registry as-is: run 6165a41c went out with toolNames=[] because the
+ // windows_mcp ferry (stdio -> relay -> guest HTTP) had not finished its
+ // initialize/initialized/tools/list round trips yet, and the model narrated
+ // a fake completion without a single tool. Hold the single turn until the
+ // MCP connections have had time to register their tools. The wait is not
+ // contract time: the guest's 900 s budget starts at its own ready receipt.
+ const readyWaitMs=Math.min(Math.max(Number(spec.mcp_ready_wait_s??25),0),60)*1000;
+ await delay(readyWaitMs);
  await request('session/send',{sessionId:session,content:spec.prompt});
  let after=0;
  const deadline=Date.now()+540000;
