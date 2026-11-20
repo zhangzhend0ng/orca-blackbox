@@ -24,6 +24,8 @@ v3 运行骨架入口见 [架构设计](docs/V3_RUNTIME_ARCHITECTURE.md) 和 [�
 
 原生 Codex + Windows-MCP 的编辑保存业务 demo 见 [冻结路线与验收](docs/V3_NATIVE_SAVE_DEMO.md)，宿主入口 `python -B tools/native_save_demo.py`。AI 自主保存后，由停止输入后的可信阶段独立重开、切片导出，统一复用 run_once；已完成一次真实客机 SHADOW，首轮收尾失败保留，见 [两轮运行记录](docs/runs/native-save-2026-11-17.md)，不能计发布 GREEN。
 
+Mac 后台工程编辑用例从原始立方体切片开始，以新名字编辑并保存副本，再用独立进程重开切片。入口为 [macos_project_copy.py](runner/macos_project_copy.py)。Windows 和 Mac 的候选运行用[构建报告工具](tools/gui_build_report.py)汇总。[跨平台回归安排](docs/V3_PLAN.md#9-跨平台-gui-回归安排) · [本轮命令和实机证据](docs/runs/gui-layer-candidate-2026-11-20.md)
+
 当前指定的 **ZCode / Snapmaker glm-5.3-flash** 路线入口为 `python -B tools/native_save_demo.py --actor zcode`；[接口与边界](docs/V3_ZCODE_ACTOR.md)。已通过一次真实客机编辑保存、新profile重开及112层G-code独立验证；五个开发失败run保留，详见[运行记录](docs/runs/zcode-snapmaker-2026-11-17.md)。使用现有公司供应商配置，仅计SHADOW，不进入发布GREEN。
 
 三业务线并行探索入口见[业务pilot](docs/V3_BUSINESS_PILOTS.md)：检查器并行开发、客机GUI串行试跑，工艺壁环数与逻辑材料槽各取得一次SHADOW，模型平移因输入能力不足已预检阻塞；详见[首批记录](docs/runs/zcode-business-pilots-2026-11-17.md)。不替换[旧稳定性7/8结果](docs/runs/zcode-matrix-2026-11-17.md)，不计87条或发布GREEN。
