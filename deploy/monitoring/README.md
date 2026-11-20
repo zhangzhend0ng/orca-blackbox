@@ -24,6 +24,8 @@ Windows 有 psutil 时采集主进程和可归属的子进程，缺 psutil 时�
 # 已备好 PresentMon 2.x CLI 时，追加 -PresentMonExe，传客机绝对路径。
 ```
 
+受限交互账号运行 PresentMon 时，需加入该客机的本地 `Performance Log Users` 组并重新登录，使新令牌获得 ETW 权限。采集器的启动失败和采集成功但没有 Orca 逐帧数据分别记录。[微软 ETW 权限说明](https://learn.microsoft.com/en-us/windows/win32/etw/controlling-event-tracing-sessions)
+
 - **动作耗时与退出**：记录启动到稳定主窗和模型可见、切片点击到按钮变更及完成态、预览点击到观测到刀路，以及关闭请求到进程结束。保留尝试编号、未观察到的结果和退出码，分别标记主动关闭、强制结束和提前退出。启动到模型包含安全等待，预览包含稳定性确认。
 - **视口交互**：`-PerfViewport` 分别尝试旋转、平移、缩放和预览层切换，记录输入到首次检测到视口变化的时间和观察区间。通过验证的动作才进入逐帧采集。PresentMon CSV 按 Orca PID、动作时段和交换链解析。输出显示 FPS、P50/P95/P99 帧时间、最长帧、慢帧率（超过 33.3、50、100 ms）、丢帧数与比例、帧开始到显示的延迟、可用的 CPU/GPU 忙碌时间。多条交换链保留各自数据。工具、事件或数据不足会写入原因。CSV 和 JSONL 随批次回收。
 - **导出与重复操作**：`-PerfCycles` 在同一 Orca 进程和固定项目里重复从 Prepare 切回 Preview 并确认刀路存在。记录两次页面切换耗时及回到 Preview 后的空闲中位数。报告展示 RSS、私有内存、进程句柄、GDI、USER 和可用的显存指标相对初始空闲窗口的差值。随后记录 G-code 导出发起到保存对话框、发起到文件稳定和确认保存到文件稳定。
