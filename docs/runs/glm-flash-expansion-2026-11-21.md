@@ -225,3 +225,16 @@ guard 于会话后恢复 ready（OK/US 出口）。客机重新同步至 edcaa13
 | `2f20d2a3` | dep_ironing_disabled | **SHADOW**（138.1s） |
 
 单源证据链齐备：每 run 冻结 3MF/G-code SHA + 独立重开进程 + 清理回执。本表即评估要求的"`6df44ca` 后单源整套"补齐（于后续源 a501339 完成，代码相对 6df44ca 仅门禁改版一项，已单测覆盖）。
+
+
+## P0-1 闭环：slot2 Script 正对照（2026-11-22，源 5de8616）
+
+按评估 P0 顺序先建确定性对照再验 ZCode。三步落地（两修一验）：
+
+| 步 | 内容 | 结果 |
+|---|---|---|
+| 1 | 注册 `pilot_material` 为 script 场景 + `assign_filament_slot2()`（m7j 的右键菜单 Change Filament 路由，选第二个物理行） | `578c564b`：死于潜伏 `UnboundLocalError`（binding 仅画布族赋值）——已修 |
+| 2 | 修复后 `e6668fef`：脚本执行正确、本地对收割产物全量 verify 通过（槽2/T1/68层/27.2），但客机校验拒于 `project_layer_config`——`pilot_material` 缺 TRIALS 键，落入默认层高判据（要求层高改变，而业务禁止）——已修 | — |
+| 3 | `30482d62`：**SHADOW 独立通过**（181.9s）——object_filament_slot=2、object_tools=[1]、68 层、last_z 27.2、几何不变、层高 0.4 保持 | ✅ |
+
+**结论：slot2 业务路径+oracle 确定可行。ZCode 在该业务上的失败自此正式归因模型执行（时序纪律），非路径/判据问题。**
