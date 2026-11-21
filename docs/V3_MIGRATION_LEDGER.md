@@ -151,7 +151,10 @@
 | 2 | 02:29 | 同上 | `6165a41c440543e9893dc55e8a1d0dd7` | 基础设施失败（假通过被拦截） | readReplyLanguage 已答 en；新版在 turn 开始即取工具快照，windows_mcp ferry（stdio→relay→客机HTTP）未完成握手 → 模型请求 toolNames=[]，glm-5.3-flash 单轮**虚构完成**（声称改壁环数+已保存），0 工具调用；驱动 `native_calls_incomplete` 正确拦截，客机 ready/setup 全好，清理确认 |
 | 3 | 02:46 | 同上 | `38535cc0a2de450ebd5748ebd945888d` | blocked（基础设施） | 修复已提交（bf108f7）但 clash-guard 02:37:45 起 OFF_SAFE（代理被关，非本会话操作）→ ip_guard 纪律性拒绝；未进入客机 |
 
-**zcode 轨道本批终态：blocked（guard OFF_SAFE 持续 02:37:45→06:55+，未恢复）**。两项链路修复（0b81f5d readReplyLanguage、bf108f7 MCP 等待）已提交并推至远端，待 guard 恢复后按「下一批即取计划」复验。脚本轨道 31/31 不受影响（无模型、不经 guard）。
+**zcode 轨道本批终态（guard 恢复后续跑完成）**：
+- 锚点 `d74f73f4`（uia_general_wall goal-only）**SHADOW 独立通过**——两项 app-server 适配修复（0b81f5d readReplyLanguage、bf108f7 MCP 等待）端到端验证；壁环数 3+独立重开 68 层挤出。
+- 泛化八槽复验批 `66f6963e`（源 `33869a6`）：**2/8**（bottom_quality、y_others，均 pass_tool_recovery；Y 平移历史首次通过）。wall 槽引导式提示死于对话框路由违规而 goal-only 通过（提示模式敏感性）；bottom_strength 回落；开发锚点 0/2 → 探索阈值未达，探索轮未开。八槽清理确认。
+- 脚本轨道 31/31 SHADOW 不变。总累计本批独立通过：**34 个真实客机 run**（31 script + 1 zcode 锚点 + 2 泛化槽）。
 
 ## 历史证据指针（native-SHADOW(hist) 的 run 出处）
 
