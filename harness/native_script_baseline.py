@@ -185,7 +185,9 @@ def edit_param_layer_pair(ui):
     edit_layer(ui, "0.2")
     ui.pause(1.5)
     ui.main_input()
-    updated, _old, _new = pp.set_option_float(app, "Initial layer", "0.25")
+    # The UI paints "First layer height" (the config key is
+    # initial_layer_print_height) - measured OCR band 35211f872.
+    updated, _old, _new = pp.set_option_float(app, "First layer", "0.25")
     if not updated:
         raise ProtocolError("param_layer_pair_initial_edit")
     pp.neutralize_focus(app)
