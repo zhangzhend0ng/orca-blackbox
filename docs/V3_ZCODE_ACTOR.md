@@ -10,7 +10,7 @@
 
 致命换窗或归属失败锁存撤销，桥停止转发。混合 UIA 路径允许最多两次有明确归属且尚未派发的恢复。命中可操作的原生目标时回传已核实的属性，必须重新 Snapshot 再操作。ZCode app-server 子进程通过原生并发上限串行执行，宿主核对实际启动与可信收据的次序。旧填充失败与新受控恢复证据分别保留。[停止与恢复证据](runs/zcode-capabilities-2026-11-18.md) · [执行层复验](runs/zcode-uia-execution-recheck-2026-11-18.md)
 
-宿主模型期间轮询既有clash-guard；guard不可达或未ready停止本轮owned Job。守卫针对既有OpenAI分组，ready不证明公司网关出口美国；不修改Clash/guard规则。前台失配和原版MCP的ControlStatus disabled不是要求开启宿主控制的理由。
+宿主模型期间轮询既有clash-guard；guard不可达或未ready停止本轮owned Job。守卫针对既有OpenAI分组，ready不证明公司网关出口美国；不修改Clash/guard规则。前台失配和原版MCP的ControlStatus disabled不是要求开启宿主控制的理由。（2026-11-21 复核修订：Snapmaker 供应商流量走内网 `ai-gateway.s.com`，不经 Clash；常规 zcode 场景的门禁改为该网关的无凭据直连可达性检查（`harness/zcode_gateway.check_gateway`，200/401 即就绪），clash-guard 仍完整适用于 `safety_guard_disconnect` 场景与其既有 OpenAI 分组职责。）
 
 AI业务保存后，可信阶段撤销输入、停MCP、自然退出旧Orca、冻结同一3MF字节，fresh profile重开GUI切片，再由只读oracle检查目标、几何/配置、实际G-code和运行时来源/时序。模型回复不是通过证据。清理未知、模型/工具集漂移、缺证明均不晋级。
 

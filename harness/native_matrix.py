@@ -57,6 +57,8 @@ GENERALIZATION = (
 )
 SAVE_CLEAR_SCENARIOS = frozenset((COMMIT_SCENARIO, CANVAS_REPLACE_SCENARIO, *GENERALIZATION))
 
+GUARD_DISCONNECT_SCENARIO = "safety_guard_disconnect"
+
 SCENARIOS = {
     "base": ("Quality", None),
     "quality_a": ("Quality", None), "quality_b": ("Quality", None),
@@ -81,7 +83,7 @@ SCENARIOS = {
     "overwrite": ("Quality", "overwrite"),
     "safety_cancel": ("Quality", "cancel"),
     "safety_timeout": ("Quality", "timeout"),
-    "safety_guard_disconnect": ("Quality", "guard_disconnect"),
+    GUARD_DISCONNECT_SCENARIO: ("Quality", "guard_disconnect"),
     "pilot_strength": ("Quality", None),
     "pilot_transform": ("Quality", None),
     "pilot_material": ("Quality", None),

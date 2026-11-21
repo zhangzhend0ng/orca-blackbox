@@ -34,7 +34,8 @@ HOST_SOURCES = ("tools/native_save_demo.py", "tools/windows_mcp_codex_probe.py",
     "tools/native_mix_census.py", "tests/mixing/m4i_mixing_slice.py", "tests/mixing/m3u_mixing_ratio_flow.py",
     "harness/native_uia.py", "harness/native_uia_hybrid.py", "harness/native_process_viewport.py", "harness/pilot_uia_goals.py", "harness/agent_guest.py",
     "harness/native_mix_uia.py", "harness/native_mix_badges.py", "tools/native_mix_accessibility.ps1",
-    "harness/native_save_session.py", "harness/project_3mf.py", "harness/runtime.py", "harness/native_matrix.py", "harness/native_pilots.py", "harness/pilot_common.py", "harness/pilot_infill.py", "harness/pilot_material3.py", "harness/canvas_input.py", "harness/pilot_strength.py", "harness/pilot_transform.py", "harness/pilot_material.py", "harness/guard_fault.py", "tools/zcode_matrix.py", "tools/windows_mcp_zcode_probe.py", "tools/zcode_session_driver.mjs", "harness/ip_guard.py")
+    "harness/native_save_session.py", "harness/project_3mf.py", "harness/runtime.py", "harness/native_matrix.py", "harness/native_pilots.py", "harness/pilot_common.py", "harness/pilot_infill.py", "harness/pilot_material3.py", "harness/canvas_input.py", "harness/pilot_strength.py", "harness/pilot_transform.py", "harness/pilot_material.py", "harness/guard_fault.py", "tools/zcode_matrix.py", "tools/windows_mcp_zcode_probe.py", "tools/zcode_session_driver.mjs", "harness/ip_guard.py",
+    "harness/zcode_gateway.py")
 
 
 def quoted(value):
@@ -191,9 +192,14 @@ def main():
         raise ValueError("demo_executed_host_source_not_committed")
     if args.actor == "zcode":
         from tools.windows_mcp_zcode_probe import provider_metadata
-        from harness.ip_guard import IPGuard
+        from harness.native_matrix import GUARD_DISCONNECT_SCENARIO
+        from harness.zcode_gateway import check_gateway
         provider_metadata(Path.home()/".zcode/v2/provider_config.json")
-        IPGuard().check()
+        if args.scenario == GUARD_DISCONNECT_SCENARIO:
+            from harness.ip_guard import IPGuard
+            IPGuard().check()
+        else:
+            check_gateway()
     root = REPO / "artifacts/native_save_demo" / run_id
     root.mkdir(parents=True, exist_ok=False)
     launch_done = root / "launch.json"
