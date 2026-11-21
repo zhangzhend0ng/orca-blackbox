@@ -244,6 +244,7 @@ def worker(run_id, actor="codex", scenario="base"):
         # A modal disables the canvas. Bind the enabled child before applying the disturbance.
         if bound_plan:
             scope["resolved_plan_sha256"] = report["resolved_plan_sha256"]
+        binding = None
         if bound_plan or scenario in CANVAS_SCENARIOS | UIA_HYBRID_SCENARIOS:
             binding = bind_native_canvas(ui, scope, root, sut_sha)
         if disturbance == "save_dialog":
@@ -292,7 +293,7 @@ def worker(run_id, actor="codex", scenario="base"):
                         mix_census = census.is_file()
                         if mix_census:
                             census.unlink()
-                        edit_project(ui, scenario, binding.hwnd, mix_census=mix_census)
+                        edit_project(ui, scenario, ui.app.hwnd if binding is None else binding.hwnd, mix_census=mix_census)
                         report["script_steps"].append("edit")
                     ui.save_project(prepared_dialog=setup.get("dialog_hwnd"))
                     report["script_steps"].append("save")
