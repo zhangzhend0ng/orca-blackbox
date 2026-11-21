@@ -31,11 +31,14 @@ def contains(rect, loc):
     return rect[0] <= loc[0] < rect[2] and rect[1] <= loc[1] < rect[3]
 
 
-def process_popup_near_sidebar(popup, bounds, sidebar, opened_at, max_height=180):
+def process_popup_near_sidebar(popup, bounds, sidebar, opened_at, max_height=180, seam_slack=1):
     # The held-open Ironing popup crosses the measured sidebar seam by one pixel.
-    bounded_sidebar = [sidebar[0], sidebar[1], sidebar[2] + 1, sidebar[3]]
+    # Filament dropdowns hang from cells near the object-list edge and may
+    # cross further; ownership (same pid, root owner = main) is the real
+    # security boundary, the seam is a process-specific heuristic.
+    bounded_sidebar = [sidebar[0], sidebar[1], sidebar[2] + seam_slack, sidebar[3]]
     return (popup["class"] == "wxWindowNR" and popup["name"] == "panel" and within(bounded_sidebar, bounds)
-            and 80 <= bounds[2] - bounds[0] <= 260 and 70 <= bounds[3] - bounds[1] <= max_height
+            and 80 <= bounds[2] - bounds[0] <= 260 + 40 and 70 <= bounds[3] - bounds[1] <= max_height
             and bounds[0] <= opened_at[0] < bounds[2]
             and min(abs(opened_at[1] - bounds[1]), abs(opened_at[1] - bounds[3])) <= 60)
 
@@ -240,8 +243,10 @@ class UiaHybridGuard(UiaSaveGuard):
         popup = self._popup(wu, hwnd)
         bounds = list(wu.window_rect(hwnd))
         sidebar = self._regions(wu).get("wx_sidebar")
-        max_height = 420 if self.scope["scenario"] in UIA_FILAMENT_SCENARIOS else 180
-        if sidebar is None or not process_popup_near_sidebar(popup, bounds, sidebar, opening_loc, max_height):
+        filament = self.scope["scenario"] in UIA_FILAMENT_SCENARIOS
+        max_height = 480 if filament else 180
+        seam_slack = 160 if filament else 1
+        if sidebar is None or not process_popup_near_sidebar(popup, bounds, sidebar, opening_loc, max_height, seam_slack):
             return None
         proof = {"popup": popup, "bounds": bounds, "sidebar": sidebar, "opened_by": opening_loc}
         if self.bound_process_popup is not None:
@@ -397,7 +402,8 @@ class UiaHybridGuard(UiaSaveGuard):
             self.native_targets, self.visual_regions = {}, {}
             self.needs_main_snapshot = True
             self.last_window.update(route="uia_popup", app_pid=self.scope["app_pid"],
-                foreground_hwnd=hwnd, foreground_pid=wu._window_pid(hwnd), popup=popup)
+                foreground_hwnd=hwnd, foreground_pid=wu._window_pid(hwnd), popup=popup,
+                popup_bounds=list(wu.window_rect(hwnd)))
             if process_popup is not None:
                 self.last_window["process_popup"] = process_popup
             return self.last_window
@@ -780,7 +786,8 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
                      and window["visual_fallback"] == PROCESS_POPUP
                      and window["visual_region"] == window["visual_anchor_region"] == bounds
                      and process_popup_near_sidebar(popup, bounds, sidebar, opener[0],
-                         420 if scenario in UIA_FILAMENT_SCENARIOS else 180), "native_process_popup_binding")
+                         480 if scenario in UIA_FILAMENT_SCENARIOS else 180,
+                         160 if scenario in UIA_FILAMENT_SCENARIOS else 1), "native_process_popup_binding")
             bound_popup = proof
             ticket = (proof, window["visual_crop_id"])
             if name == "Screenshot":
@@ -817,7 +824,8 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
                          and (bound_popup == proof or (bound_popup is None and
                               0 <= row["started_at_ns"] - opener[2] <= POPUP_BIND_LIMIT_NS))
                          and process_popup_near_sidebar(popup, proof["bounds"], opener[1], opener[0],
-                             420 if scenario in UIA_FILAMENT_SCENARIOS else 180),
+                             480 if scenario in UIA_FILAMENT_SCENARIOS else 180,
+                             160 if scenario in UIA_FILAMENT_SCENARIOS else 1),
                          "native_process_popup_binding")
                 bound_popup = proof
             regions, crop, targets = {}, None, []

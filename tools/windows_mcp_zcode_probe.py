@@ -175,7 +175,9 @@ def main(argv=None):
                       + " The assigned output path is " + output + ". Save the complete project there as a 3MF. "
                       "Choose and check the UI route yourself. Prefer native control properties. Use named local "
                       "observations for drawn controls that have no actionable UIA node. Use a popup's named region "
-                      "if the tool advertises one. Follow the tool schemas "
+                      "if the tool advertises one; when an observation reports a bound process_popup, take "
+                      "Screenshot with its advertised region_name and click inside that popup's bounds only from "
+                      "that fresh crop. Follow the tool schemas "
                       "and authority decisions. After a recoverable refusal, observe again before any input. "
                       "Finish with ControlStatus(release=true). Independent verification reopens and slices.")
         elif args.scenario == UIA_SAVE_SCENARIO:
