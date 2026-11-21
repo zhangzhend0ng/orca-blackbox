@@ -41,7 +41,11 @@ UIA_SAVE_SCENARIOS = frozenset((UIA_SAVE_SCENARIO, UIA_REPLAY_SAVE))
 SCRIPT_COMPARISON_SCENARIOS = (UIA_LAYER_SCENARIO, UIA_CANVAS_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO, UIA_SAVE_SCENARIO,
                                UIA_PROCESS_COMBO, UIA_MIX_RECIPES, UIA_QUALITY_ENUMS, UIA_MOVE_LAYER)
 FIXTURE_SCENARIOS = ("fixture_cold", "fixture_shared")
-SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *PAIR_CASES, *FIXTURE_SCENARIOS, BOUND_MODEL_MOVE)
+SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *PAIR_CASES, *FIXTURE_SCENARIOS, BOUND_MODEL_MOVE,
+    # deterministic positive control for the filament-slot business: the
+    # ZCode route (uia_general_slot2/pilot_material) never passed end to
+    # end, so the script baseline proves the path and oracle first.
+    "pilot_material")
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
 UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",

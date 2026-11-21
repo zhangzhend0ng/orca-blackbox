@@ -176,6 +176,45 @@ def add_mix_recipes(ui, *, census=False):
             raise ProtocolError("mix_recipe_registration:" + mode)
 
 
+def assign_filament_slot2(ui):
+    """Deterministic slot2 positive control: the object context menu's
+    Change Filament submenu (the same route m7j_change_filament has run
+    GREEN since 09-08), picking the second physical filament row."""
+    import ctypes
+    from types import SimpleNamespace
+
+    tests = Path(__file__).resolve().parents[1] / "tests"
+    sys.path.insert(0, str(tests))
+    import m7_common as m7
+
+    session = SimpleNamespace(hwnd=ui.app.hwnd, pid=ui.app.pid)
+    ui.main_input()
+    if not m7.select_model(session):
+        raise ProtocolError("slot2_select_model")
+    menu = m7.open_context_menu(session, where="model")
+    if not menu:
+        raise ProtocolError("slot2_context_menu")
+    hwnd, hmenu = menu
+    got = m7.click_menu_row(session, hwnd, hmenu, "change filament", nested=True)
+    if not got:
+        m7.dismiss_menus(session)
+        raise ProtocolError("slot2_change_filament_submenu")
+    _idx, (shwnd, shmenu) = got
+    rows = [(i, label) for i, label in m7.list_menu(shmenu)
+            if label.strip() and label.lower() != "default"]
+    if len(rows) < 2:
+        m7.dismiss_menus(session)
+        raise ProtocolError("slot2_filament_rows:" + str([l for _i, l in rows]))
+    slot2_index, slot2_label = rows[1]
+    state = ctypes.WinDLL("user32").GetMenuState(shmenu, slot2_index, 0x400)
+    if state & 0x8:  # already checked - the fixture would be wrong
+        m7.dismiss_menus(session)
+        raise ProtocolError("slot2_row_already_checked")
+    m7.click_menu_row(session, shwnd, shmenu, slot2_label)
+    ui.pause(2.0)
+    ui.main_input()
+
+
 def edit_project(ui, scenario, canvas, *, mix_census=False):
     if scenario in {UIA_LAYER_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO}:
         if scenario == UIA_LAYER_STRENGTH_SCENARIO:
@@ -194,5 +233,7 @@ def edit_project(ui, scenario, canvas, *, mix_census=False):
         move_x(ui, canvas)
     elif scenario == UIA_MIX_RECIPES:
         add_mix_recipes(ui, census=mix_census)
+    elif scenario == "pilot_material":
+        assign_filament_slot2(ui)
     else:
         raise ProtocolError("script_comparison_scenario")
