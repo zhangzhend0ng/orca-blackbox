@@ -180,6 +180,19 @@ def uia_set_float(ui, label_substr, value, group_substr=None):
 
     EnumChildWindows(app.hwnd, collect, None)
     if len(matches) != 1:
+        from win32gui import EnumChildWindows as _ecw2
+        seen = []
+
+        def survey(handle, _):
+            if (wu.window_class(handle) != "Edit" or not IsWindowVisible(handle)
+                    or wu._window_pid(handle) != app.pid):
+                return True
+            b = wu.window_rect(handle)
+            seen.append(f"@{handle} cy={(b[1]+b[3])//2-origin_y} sx={b[0]}; ")
+            return True
+
+        _ecw2(app.hwnd, survey, None)
+        print(f"[param-uia] row_y={y_row} canvas_left={left} edits=" + "".join(seen)[:600], flush=True)
         raise ProtocolError("param_uia_field:" + label_substr + ":" + str(len(matches)))
     handle, bounds = matches[0]
     x = (bounds[0] + bounds[2]) // 2 - origin_x
