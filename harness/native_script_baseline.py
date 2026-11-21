@@ -209,8 +209,9 @@ def edit_param_cases(ui, scenario):
         "uia_param_ironing_top": [
             {"tab": "Quality", "tab_hint": "height", "op": "combo", "current": "No ironing",
              "target": "Topmost surface", "group": "Ironing"},
-            {"op": "float", "label": "Flow", "value": "10", "group": "Ironing"},
-            {"op": "float", "label": "Spacing", "value": "0.15", "group": "Ironing"},
+            # Flow (10%) and Spacing (0.15) already equal the case targets;
+            # typing into the ratio-clamped Flow spin corrupted it (run
+            # 60237e59 read back '2') - only Speed needs an edit.
             {"op": "float", "label": "Speed", "value": "60", "group": "Ironing"},
         ],
         "uia_param_wall_thin": [
