@@ -212,7 +212,7 @@ def edit_param_cases(ui, scenario):
             # Flow (10%) and Spacing (0.15) already equal the case targets;
             # typing into the ratio-clamped Flow spin corrupted it (run
             # 60237e59 read back '2') - only Speed needs an edit.
-            {"op": "float", "label": "Speed", "value": "60", "group": "Ironing"},
+            {"op": "float", "label": ["Speed", "Ironing speed", "speed"], "value": "60", "group": "Ironing"},
         ],
         "uia_param_wall_thin": [
             {"tab": "Strength", "tab_hint": "loops", "op": "float", "label": "Wall loops", "value": "4"},

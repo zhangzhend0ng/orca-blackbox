@@ -77,12 +77,15 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
         if clicked:
             break
         # Long lists (Gyroid sits pages down, run 9866d291): wheel the
-        # popup itself via WM_MOUSEWHEEL (mouse_event misses when the
-        # cursor is not over the popup).
+        # deepest popup child under the point (posting to the popup root
+        # did nothing, run 7968a6db).
         import ctypes
+        from win32gui import WindowFromPoint, ScreenToClient
         u32 = ctypes.windll.user32
-        lparam = ((pr[1] + 10) << 16) | ((pr[0] + pr[2]) // 2 & 0xFFFF)
-        u32.PostMessageW(ph, 0x020A, (0xFFFFFFFF << 16) & 0xFFFFFFFF, lparam)
+        pt = ((pr[0] + pr[2]) // 2, (pr[1] + pr[3]) // 2)
+        target_hwnd = WindowFromPoint(pt)
+        lparam = (pt[1] << 16) | (pt[0] & 0xFFFF)
+        u32.PostMessageW(target_hwnd, 0x020A, (0xFFFFFFFF << 16) & 0xFFFFFFFF, lparam)
         time.sleep(0.7)
         w, hgt, bgra = winutil.capture_window(ph)
         img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]

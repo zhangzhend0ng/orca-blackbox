@@ -242,7 +242,17 @@ def run_ops(ui, ops):
         ui.main_input()
         kind = op["op"]
         if kind == "float":
-            uia_set_float(ui, op["label"], str(op["value"]), group_substr=op.get("group"))
+            labels = op["label"] if isinstance(op["label"], (tuple, list)) else (op["label"],)
+            last = None
+            for candidate in labels:
+                try:
+                    uia_set_float(ui, candidate, str(op["value"]), group_substr=op.get("group"))
+                    last = None
+                    break
+                except ProtocolError as exc:
+                    last = exc
+            if last is not None:
+                raise last
             pp.neutralize_focus(app)
         elif kind == "checkbox":
             ok = pp.set_option_checkbox(app, op["label"], op["value"], group_substr=op.get("group"))
