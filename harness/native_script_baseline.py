@@ -209,28 +209,27 @@ def edit_param_cases(ui, scenario):
         "uia_param_ironing_top": [
             {"tab": "Quality", "tab_hint": "height", "op": "combo", "current": "No ironing",
              "target": "Topmost surface", "group": "Ironing"},
-            {"op": "float", "label": "Ironing flow", "value": "10", "group": "Ironing"},
-            {"op": "float", "label": "Ironing spacing", "value": "0.15", "group": "Ironing"},
-            {"op": "float", "label": "Ironing speed", "value": "60", "group": "Ironing"},
+            {"op": "float", "label": "Flow", "value": "10", "group": "Ironing"},
+            {"op": "float", "label": "Spacing", "value": "0.15", "group": "Ironing"},
+            {"op": "float", "label": "Speed", "value": "60", "group": "Ironing"},
         ],
         "uia_param_wall_thin": [
             {"tab": "Strength", "tab_hint": "loops", "op": "float", "label": "Wall loops", "value": "4"},
-            {"op": "checkbox", "label": "Detect thin wall", "value": True},
+            {"op": "checkbox", "label": "Detect", "value": True},
         ],
         "uia_param_shells_pattern": [
             {"tab": "Strength", "tab_hint": "loops", "op": "float", "label": "Top shell layers", "value": "5"},
             {"op": "float", "label": "Bottom shell layers", "value": "3"},
-            {"tab": "Quality", "tab_hint": "height", "op": "combo", "current": "Monotonic",
-             "target": "Concentric"},
-            {"op": "combo", "current": "Monotonic", "target": "Rectilinear"},
+            {"op": "rowcombo", "label": "Top surface pattern", "target": "Concentric"},
+            {"op": "rowcombo", "label": "Bottom surface pattern", "target": "Rectilinear"},
         ],
         "uia_param_infill_combo": [
             {"tab": "Strength", "tab_hint": "loops", "op": "float", "label": "Density", "value": "20",
              "group": "Infill"},
-            {"op": "combo", "current": "Grid", "target": "Gyroid", "group": "Infill"},
-            {"tab": "Quality", "tab_hint": "height", "op": "float", "label": "Infill direction", "value": "45"},
-            {"op": "float", "label": "Infill wall overlap", "value": "15"},
-            {"op": "combo", "current": "Top and bottom", "target": "Everywhere"},
+            {"op": "rowcombo", "label": "Sparse infill pattern", "target": "Gyroid", "group": "Infill"},
+            {"op": "float", "label": "Infill direction", "value": "45", "group": "Infill"},
+            {"op": "float", "label": "overlap", "value": "15"},
+            {"op": "rowcombo", "label": "Gap fill", "target": "Everywhere"},
         ],
     }.get(scenario)
     if ops is None:

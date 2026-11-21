@@ -240,6 +240,9 @@ def run_ops(ui, ops):
             ok = pp.set_option_checkbox(app, op["label"], op["value"], group_substr=op.get("group"))
             if ok is not True and not (isinstance(ok, tuple) and ok[0] is True):
                 raise ProtocolError("param_checkbox:" + op["label"])
+        elif kind == "rowcombo":
+            from .param_combo_row import pick_combo_at_label
+            pick_combo_at_label(ui, op["label"], op["target"], group_substr=op.get("group"))
         elif kind == "combo":
             ok = pp.set_combo_by_popup(app, op["current"], op["target"],
                                        group_substr=op.get("group"),
