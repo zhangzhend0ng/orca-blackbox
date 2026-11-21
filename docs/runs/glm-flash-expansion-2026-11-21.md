@@ -184,3 +184,44 @@ guard 于会话后恢复 ready（OK/US 出口）。客机重新同步至 edcaa13
 ## 并行补充：实体机 Win10 七盘流程第 4 次复现（2026-11-22，D:\GUI_Test\out-p4）
 
 用户提示第二台 SSH 可达 Windows（DESKTOP-FA706G3，admin@172.18.6.193，控制台会话在线）。零搭设复跑便携 OrcaPerfRunner（--check 过，校验和一致）：**exit_code 1，第 4 次稳定复现**。run.log 根因：`showcase_snapmates: FAIL (Orca could not become foreground for video)`——SSH 触发的交互计划任务下 Orca 无法成为前台（demote_watchdog 两次将前台归还启动前窗口）。与 11-21 三轮同因合并：**真机控制台前台获取问题，非切片/渲染问题**（VM 上同二进制通过、GL 栈不同）。修法属性能轨道：让控制台前台空闲（关闭 UU 远程等常驻前台窗）或改前台捕获策略。产物：out-p4/run.json+run.log+两段 pending.mp4+两个 showcase 摘要留在机内未拉取（gitignored 级）。
+
+
+## P0-2：单源整套复验（2026-11-22 00:1x–01:2x，源 a501339）
+
+31 个 Script 场景在同一提交下全部重跑：**31/31 SHADOW 独立通过，零失败**（中途一次因并行提交造成 HEAD 失配损失 5 个 run 槽，已按"批中零提交"纪律整批重启重跑）。
+
+| Run | 场景 | 结果 |
+|---|---|---|
+| `6b178c5d` | uia_replay_layer | **SHADOW**（144.8s） |
+| `fb481167` | uia_replay_save | **SHADOW**（145.4s） |
+| `6f3ed5f7` | uia_replay_canvas | **SHADOW**（149.1s） |
+| `4dcb2b88` | uia_replay_process | **SHADOW**（153.3s） |
+| `ba79e6b1` | uia_replay_mix | **SHADOW**（149.5s） |
+| `22118444` | uia_replay_enums | **SHADOW**（178.7s） |
+| `a6c8b72b` | uia_replay_move_layer | **SHADOW**（145.3s） |
+| `a19d20ca` | pair_layer_move | **SHADOW**（150.6s） |
+| `0fe99870` | pair_layer_seam | **SHADOW**（145.5s） |
+| `77231f23` | pair_layer_ironing | **SHADOW**（173.0s） |
+| `b7f1cdb9` | pair_move_layer | **SHADOW**（174.0s） |
+| `7797c47a` | pair_move_seam | **SHADOW**（167.8s） |
+| `9fcdccf6` | pair_move_ironing | **SHADOW**（180.9s） |
+| `bb245c03` | pair_seam_ironing | **SHADOW**（181.5s） |
+| `5f68bb1e` | cfg_value_01 | **SHADOW**（142.5s） |
+| `55eae296` | cfg_value_04 | **SHADOW**（178.7s） |
+| `acf976c5` | cfg_value_06 | **SHADOW**（179.3s） |
+| `37222cc8` | cfg_value_07 | **SHADOW**（146.9s） |
+| `4ea831e5` | uia_hybrid_layer | **SHADOW**（145.1s） |
+| `32e6d486` | uia_hybrid_layer_strength | **SHADOW**（149.6s） |
+| `563608f4` | uia_hybrid_canvas | **SHADOW**（186.0s） |
+| `77198db9` | uia_save_as | **SHADOW**（141.6s） |
+| `09887fdf` | uia_process_combo | **SHADOW**（209.4s） |
+| `95792d16` | uia_mix_recipes | **SHADOW**（169.3s） |
+| `e04df341` | uia_quality_enums | **SHADOW**（233.8s） |
+| `9448609e` | uia_move_layer | **SHADOW**（193.7s） |
+| `148865ff` | bound_model_move | **SHADOW**（184.5s） |
+| `d43fc6fe` | fixture_cold | **SHADOW**（329.3s） |
+| `eee638dd` | fixture_shared | **SHADOW**（285.8s） |
+| `c9062724` | dep_ironing_topmost | **SHADOW**（174.8s） |
+| `2f20d2a3` | dep_ironing_disabled | **SHADOW**（138.1s） |
+
+单源证据链齐备：每 run 冻结 3MF/G-code SHA + 独立重开进程 + 清理回执。本表即评估要求的"`6df44ca` 后单源整套"补齐（于后续源 a501339 完成，代码相对 6df44ca 仅门禁改版一项，已单测覆盖）。
