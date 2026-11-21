@@ -251,3 +251,15 @@ guard 于会话后恢复 ready（OK/US 出口）。客机重新同步至 edcaa13
 ## 飞书补充实现段（2026-11-22 03:0x 起）
 
 **#254 层高组合（P0）→ `uia_param_layer_pair` SHADOW**（`95cd45f5`，161.8s）：0.2/0.25 写入、首层 Z=0.25、135 层、末层 27.05、其余设置保持——表内判据逐项落进 V3 oracle。实现路径三修：①标签实为"First layer height"（OCR 实证）；②该行无可定位 Edit（值列校准不含它）→ 改 float_edits_in_view 第二行位置编辑（edit_layer 同款已证机制）。变更集 LAYER_PAIR 入白名单+合成单测 4 条。
+
+
+## 飞书补充段进展（2026-11-22 05:0x–07:0x）
+
+**已闭环 3/5**（全部 SHADOW：参数写入+保持项+冻结重开+G-code 排程）：
+- **#266 墙圈数与薄壁** `05dd9020`（168.8s）：wall_loops=4 + detect_thin_wall=1，68 层保持。
+- **#267 外壳层数与图案** `f324120d`（185.2s）：top=5/bottom=3 + concentric/rectilinear 双图案切换。top_color_penetration_layers 缺席为记录的口径缩减。
+- （#254 见前段）
+
+**打通的共享能力**（后续 39 条待实现用例直接受益）：行标签是 OG_CustomCtrl 绘制（无 HWND，census f5acdb1a 实证）→ 落地"OCR 短语找行 + 枚举 Edit/ComboBox 按行 y 配对"引擎（param_case_lib + param_combo_row）；修复 4 处 `EnumChildWindows` 少传 lparam 的宿疾（含 hybrid 标签增强自 a4a53a6 起被静默降级的事实——bottom_strength 通过实为模型自选对，先前"标签修复闭环"归因有误，予以更正）；预设脏清单键 `different_settings_to_system` 的合法规则。
+
+**在攻 2 条**：#268（Gyroid 在图案弹窗第 2+ 页，滚动投递未生效）、#259（熨烫组 Speed 行 OCR 未中）。失败 run 全留证据。
