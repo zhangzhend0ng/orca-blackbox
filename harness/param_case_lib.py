@@ -123,65 +123,41 @@ def _row_label_at(labels, field):
 
 
 def uia_set_float(ui, label_substr, value):
-    """Set a sidebar float Edit via UIA ValuePattern + native Enter.
+    """Set a sidebar float Edit by label pairing + the proven ui.edit commit.
 
-    The painted label left of the field identifies it (the same pairing
-    the zcode observations expose); the m4g x-column calibration does not
-    hold on every page, but UIA reaches the Edit regardless of layout."""
-    import sys
-    sys.path.insert(0, r"C:\coil\tools\windows-mcp-0.8.9\Lib\site-packages")
-    from windows_mcp.uia import ControlFromHandle
+    Pure Win32: enumerate visible Edit children, pair each with its painted
+    row label (no x-column calibration - runs 47bccc5a+ proved the m4g band
+    does not hold on every page), then drive ui.edit (msg-level typing with
+    readback), the same mechanism edit_layer has used GREEN since the
+    script baselines landed."""
+    from win32gui import EnumChildWindows, IsWindowVisible, IsWindowEnabled
 
-    app = ui.app
-    root = ControlFromHandle(app.hwnd)
+    wu, app = ui.wu, ui.app
     labels = _sidebar_label_rows(ui)
     wanted = label_substr.strip().casefold()
     matches = []
-    pending = [(root, 0)]
-    visited = 0
-    while pending:
-        element, depth = pending.pop()
-        try:
-            child = element.GetFirstChildControl()
-            while child is not None:
-                pending.append((child, depth + 1))
-                child = child.GetNextSiblingControl()
-        except Exception as exc:  # pragma: no cover - diagnostic surface
-            import traceback
-            traceback.print_exc()
-            raise ProtocolError("param_uia_walk:" + type(exc).__name__) from None
-        if depth == 0:
-            continue
-        visited += 1
-        if element.ControlTypeName != "EditControl" or not element.NativeWindowHandle:
-            continue
-        if not element.IsEnabled or element.IsOffscreen:
-            continue
-        rect = element.BoundingRectangle
-        field = [rect.left, rect.top, rect.right, rect.bottom]
-        label = _row_label_at(labels, field)
+
+    def collect(handle, _):
+        if (wu.window_class(handle) != "Edit" or not IsWindowVisible(handle)
+                or not IsWindowEnabled(handle) or wu._window_pid(handle) != app.pid):
+            return True
+        bounds = list(wu.window_rect(handle))
+        label = _row_label_at(labels, bounds)
         if label and wanted in label.casefold():
-            matches.append((element, label))
-    print(f"[param-uia] {label_substr!r}: visited={visited} edits-matched={len(matches)}",
-          file=sys.stderr, flush=True)
+            matches.append((handle, label, bounds))
+        return True
+
+    EnumChildWindows(app.hwnd, collect)
     if len(matches) != 1:
         raise ProtocolError("param_uia_field:" + label_substr + ":" + str(len(matches)))
-    element, _ = matches[0]
-    try:
-        pattern = element.GetValuePattern()
-        written = pattern.SetValue(str(value))
-        readback = element.GetValuePattern().Value
-    except Exception as exc:  # pragma: no cover - diagnostic surface
-        import traceback
-        traceback.print_exc()
-        raise ProtocolError("param_uia_write:" + type(exc).__name__) from None
-    if not written or readback != str(value):
-        raise ProtocolError("param_uia_write:" + label_substr)
-    from win32gui import IsWindow
-    handle = element.NativeWindowHandle
-    if IsWindow(handle):
-        ui.wu.msg_text(handle, "\r")  # the proven native-Enter commit
-    if element.GetValuePattern().Value != str(value):
+    handle, _label, bounds = matches[0]
+    origin_x, origin_y = wu.client_to_screen(app.hwnd, 0, 0)
+    x = (bounds[0] + bounds[2]) // 2 - origin_x
+    y = (bounds[1] + bounds[3]) // 2 - origin_y
+    receipt = ui.edit(x, y, str(value))
+    from decimal import Decimal as _D
+    if (receipt["target_hwnd"] != handle
+            or _D(str(receipt["after_text"])) != _D(str(value))):
         raise ProtocolError("param_uia_readback:" + label_substr)
 
 
