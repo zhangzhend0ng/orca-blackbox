@@ -178,19 +178,25 @@ def add_mix_recipes(ui, *, census=False):
 
 def edit_param_layer_pair(ui):
     """Feishu #254: regular 0.20 mm + initial layer 0.25 mm on Quality."""
-    from . import process_panel as pp
+    from .process_panel import float_edits_in_view
 
-    app = ui.app
     ui.main_input()
     edit_layer(ui, "0.2")
     ui.pause(1.5)
     ui.main_input()
-    # The UI paints "First layer height" (the config key is
-    # initial_layer_print_height) - measured OCR band 35211f872.
-    updated, _old, _new = pp.set_option_float(app, "First layer", "0.25")
-    if not updated:
-        raise ProtocolError("param_layer_pair_initial_edit")
-    pp.neutralize_focus(app)
+    # 'First layer height' sits directly under Layer height on the same
+    # Quality view; its painted label row carries no Edit in the calibrated
+    # value column (runs 35211f/d70ef26), but float_edits_in_view sees the
+    # field itself - positional edit like edit_layer, second row.
+    edits = ui.wait(lambda: float_edits_in_view(ui.app), 16)
+    if len(edits) < 2 or Decimal("0.4") != Decimal(edits[1][2]):
+        raise ProtocolError("param_layer_pair_initial_field")
+    rect, edit_hwnd, _ = edits[1]
+    origin_x, origin_y = ui.wu.client_to_screen(ui.app.hwnd, 0, 0)
+    x, y = (rect[0] + rect[2]) // 2 - origin_x, (rect[1] + rect[3]) // 2 - origin_y
+    receipt = ui.edit(x, y, "0.25")
+    if receipt["target_hwnd"] != edit_hwnd or Decimal(receipt["after_text"]) != Decimal("0.25"):
+        raise ProtocolError("param_layer_pair_initial_readback")
     ui.pause(6)
     ui.main_input()
 
