@@ -238,3 +238,11 @@ guard 于会话后恢复 ready（OK/US 出口）。客机重新同步至 edcaa13
 | 3 | `30482d62`：**SHADOW 独立通过**（181.9s）——object_filament_slot=2、object_tools=[1]、68 层、last_z 27.2、几何不变、层高 0.4 保持 | ✅ |
 
 **结论：slot2 业务路径+oracle 确定可行。ZCode 在该业务上的失败自此正式归因模型执行（时序纪律），非路径/判据问题。**
+
+
+### P0-1 后续：ZCode 对照验证（源 d446ba1）
+
+- `c40850f8`：死于 probe 运行期 clash-guard 轮询（guard 又 BLOCKED）——暴露评估门禁改版不完整（demo 预检改了、probe 轮询没改）。已补齐：常规场景运行期改轮询 `GatewayGuard`（内网网关事实入收据），safety 场景保留真 guard（d446ba1）。
+- `95a8f324`（新门禁下）：模型第 6 种路线——自己发现了 m7j 式右键菜单路由（canvas 裁图→右键→菜单弹窗出现→请求裁图→点击菜单项），被正确拒绝（上下文菜单窗口不在弹窗绑定合同内，`native_uia_main_window_required`），清理确认。
+
+**P0-1 最终结论：Script 正对照确定通过（30482d62）+ ZCode 同业务 0/7（六种路线六种失败，每次权威层拦截正确）。slot2 的差距被精确定位为模型执行层；框架、路径、判据、门禁全部证明就绪。**
