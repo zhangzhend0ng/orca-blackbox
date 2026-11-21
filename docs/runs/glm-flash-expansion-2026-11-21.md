@@ -263,3 +263,14 @@ guard 于会话后恢复 ready（OK/US 出口）。客机重新同步至 edcaa13
 **打通的共享能力**（后续 39 条待实现用例直接受益）：行标签是 OG_CustomCtrl 绘制（无 HWND，census f5acdb1a 实证）→ 落地"OCR 短语找行 + 枚举 Edit/ComboBox 按行 y 配对"引擎（param_case_lib + param_combo_row）；修复 4 处 `EnumChildWindows` 少传 lparam 的宿疾（含 hybrid 标签增强自 a4a53a6 起被静默降级的事实——bottom_strength 通过实为模型自选对，先前"标签修复闭环"归因有误，予以更正）；预设脏清单键 `different_settings_to_system` 的合法规则。
 
 **在攻 2 条**：#268（Gyroid 在图案弹窗第 2+ 页，滚动投递未生效）、#259（熨烫组 Speed 行 OCR 未中）。失败 run 全留证据。
+
+
+## 飞书补充段终态（2026-11-22 08:0x）
+
+**补充用例 3/5 SHADOW 独立通过**：#254 层高组合（`95cd45f5`）、#266 墙圈数薄壁（`05dd9020`）、#267 外壳层数图案（`f324120d`）。
+
+**两条在攻、精确归档**：
+- **#268 填充组合**（5 跑：9866d291/79ca1e8c/ce169b74/7968a6db/a8837dcc/08f6904b/96c325d3）：密度/方向/重叠/Gap fill 全链已通，唯一卡点=图案弹窗中 **Gyroid 在列表深处且自绘弹窗滚动回弹**（真光标轮与 PostMessage 轮均不累积；列表可见页恒从 Aligned 起）。下一步：专项探针（拖动弹窗滚动条或逐行小步轮+沉降）。
+- **#259 熨烫组合**（60237e59/7eadbe35/a3fd0bff）：组合切换已通、Flow/Spacing 为目标值故跳过编辑；卡点=Topmost 选后页面重建中 **Speed 行的绘制标签未OCR命中**（Speed/Ironing speed/speed 三变体全空）。下一步：重建后带 band 打印定位真实标签。
+
+**共享引擎沉淀**（供剩余 39 条直接复用）：行定位（OCR 短语+多词）→ 控件配对（Edit/ComboBox 枚举按行 y，侧栏恒在画布左）→ ui.edit 已证提交链；弹窗选取（捕获+OCR+点击+容错匹配+真光标轮）；脏清单规则；变更集注册表。全部带失败 run 实证注释。
