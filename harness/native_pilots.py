@@ -33,6 +33,7 @@ TRIALS = {
     "uia_general_bottom_strength": "bottom", "uia_general_bottom_quality": "bottom",
     **dict.fromkeys(UIA_Y_SCENARIOS, "move_y"),
     "uia_general_combo": "combo", UIA_DISTURBANCE_SCENARIO: "combo",
+    "uia_param_layer_pair": "pilot_param_layer_pair",
 }
 
 

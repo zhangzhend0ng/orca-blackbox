@@ -176,6 +176,23 @@ def add_mix_recipes(ui, *, census=False):
             raise ProtocolError("mix_recipe_registration:" + mode)
 
 
+def edit_param_layer_pair(ui):
+    """Feishu #254: regular 0.20 mm + initial layer 0.25 mm on Quality."""
+    from . import process_panel as pp
+
+    app = ui.app
+    ui.main_input()
+    edit_layer(ui, "0.2")
+    ui.pause(1.5)
+    ui.main_input()
+    updated, _old, _new = pp.set_option_float(app, "Initial layer", "0.25")
+    if not updated:
+        raise ProtocolError("param_layer_pair_initial_edit")
+    pp.neutralize_focus(app)
+    ui.pause(6)
+    ui.main_input()
+
+
 def assign_filament_slot2(ui):
     """Deterministic slot2 positive control: the object context menu's
     Change Filament submenu (the same route m7j_change_filament has run
@@ -235,5 +252,7 @@ def edit_project(ui, scenario, canvas, *, mix_census=False):
         add_mix_recipes(ui, census=mix_census)
     elif scenario == "pilot_material":
         assign_filament_slot2(ui)
+    elif scenario == "uia_param_layer_pair":
+        edit_param_layer_pair(ui)
     else:
         raise ProtocolError("script_comparison_scenario")
