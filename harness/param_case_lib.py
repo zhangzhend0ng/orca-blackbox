@@ -128,6 +128,8 @@ def uia_set_float(ui, label_substr, value):
     The painted label left of the field identifies it (the same pairing
     the zcode observations expose); the m4g x-column calibration does not
     hold on every page, but UIA reaches the Edit regardless of layout."""
+    import sys
+    sys.path.insert(0, r"C:\coil\tools\windows-mcp-0.8.9\Lib\site-packages")
     from windows_mcp.uia import ControlFromHandle
 
     app = ui.app
