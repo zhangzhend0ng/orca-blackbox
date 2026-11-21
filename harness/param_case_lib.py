@@ -151,6 +151,19 @@ def uia_set_float(ui, label_substr, value):
 
     EnumChildWindows(app.hwnd, collect, None)
     if len(matches) != 1:
+        dump = []
+
+        def survey(handle, _):
+            if (wu.window_class(handle) != "Edit" or not IsWindowVisible(handle)
+                    or not IsWindowEnabled(handle) or wu._window_pid(handle) != app.pid):
+                return True
+            b = list(wu.window_rect(handle))
+            dump.append(f"Edit@{handle} {b} label={_row_label_at(labels, b)!r}; ")
+            return True
+
+        EnumChildWindows(app.hwnd, survey, None)
+        print("[param-uia] labels=" + repr([t for t, _ in labels])[:400], flush=True)
+        print("[param-uia] edits=" + ("".join(dump)[:900] or "NONE"), flush=True)
         raise ProtocolError("param_uia_field:" + label_substr + ":" + str(len(matches)))
     handle, _label, bounds = matches[0]
     origin_x, origin_y = wu.client_to_screen(app.hwnd, 0, 0)
