@@ -174,7 +174,9 @@ def uia_set_float(ui, label_substr, value, group_substr=None):
             return True
         b = wu.window_rect(handle)
         cy = (b[1] + b[3]) // 2 - origin_y
-        if abs(cy - y_row) <= 14 and left <= (b[0] + b[2]) // 2 < right + 200:
+        # the parameter sidebar sits LEFT of the canvas (calibration run
+        # 6bc47e55: row_y 762 vs Edit cy 764 at x 267, canvas_left 426).
+        if abs(cy - y_row) <= 14 and 0 <= (b[0] + b[2]) // 2 < left:
             matches.append((handle, list(b)))
         return True
 
