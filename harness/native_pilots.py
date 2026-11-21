@@ -34,6 +34,10 @@ TRIALS = {
     **dict.fromkeys(UIA_Y_SCENARIOS, "move_y"),
     "uia_general_combo": "combo", UIA_DISTURBANCE_SCENARIO: "combo",
     "uia_param_layer_pair": "pilot_param_layer_pair",
+    "uia_param_ironing_top": "pilot_param_259_ironing_top",
+    "uia_param_wall_thin": "pilot_param_266_wall_thin",
+    "uia_param_shells_pattern": "pilot_param_267_shells_pattern",
+    "uia_param_infill_combo": "pilot_param_268_infill_combo",
 }
 
 

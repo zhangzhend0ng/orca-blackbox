@@ -47,7 +47,8 @@ SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *PAIR_CASES, 
     # end, so the script baseline proves the path and oracle first.
     "pilot_material",
     # Feishu #254 layer-height combination on the standard fixture.
-    "uia_param_layer_pair")
+    "uia_param_layer_pair", "uia_param_ironing_top", "uia_param_wall_thin",
+    "uia_param_shells_pattern", "uia_param_infill_combo")
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
 UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
@@ -118,6 +119,10 @@ SCENARIOS = {
     "uia_general_combo": ("Quality", None),
     UIA_DISTURBANCE_SCENARIO: ("Quality", "save_dialog"),
     "uia_param_layer_pair": ("Quality", None),
+    "uia_param_ironing_top": ("Quality", None),
+    "uia_param_wall_thin": ("Strength", None),
+    "uia_param_shells_pattern": ("Strength", None),
+    "uia_param_infill_combo": ("Strength", None),
     "authority_probe": ("Quality", None),
 }
 BUSINESS = ("quality_a", "quality_b", "strength_a", "strength_b", "others_a", "others_b", "save_dialog", "overwrite")

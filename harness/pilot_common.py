@@ -37,6 +37,17 @@ QUALITY_ENUMS = {"ironing_type": "topmost", "seam_position": "random"}
 MOVE_LAYER = {"layer_height": "0.24"}
 # Feishu #254 层高组合: regular 0.20 mm with the initial layer raised to 0.25 mm.
 LAYER_PAIR = {"layer_height": "0.2", "initial_layer_print_height": "0.25"}
+# Feishu 常用工艺参数 supplement cases register their change scopes here at
+# import time (harness.param_case_lib.make_verify); the whitelist below
+# admits exactly these registered dicts plus the historical frozen scopes.
+PARAM_CHANGE_SCOPES = set()
+
+
+def _register_param_change_scope(values):
+    if type(values) is dict and values:
+        PARAM_CHANGE_SCOPES.add(tuple(sorted(values.items())))
+
+
 PAIR_SETTINGS = tuple(expected_settings(scenario) for scenario in PAIR_CASES)
 
 
@@ -55,7 +66,8 @@ def inspect_preserved_settings(actual, expected, *, allowed_changes=None, cancel
     _require(type(changes) is dict and (not changes or changes in
              ({"wall_loops": "3"}, {"sparse_infill_density": "30%"}, {"top_shell_layers": "5"},
               {"bottom_shell_layers": "6"}, PROCESS_COMBO, QUALITY_ENUMS, MOVE_LAYER, LAYER_PAIR,
-              *PAIR_SETTINGS)),
+              *PAIR_SETTINGS)
+             or tuple(sorted(changes.items())) in PARAM_CHANGE_SCOPES),
              "pilot_config_change_scope")
     if changes == {"wall_loops": "3"}:
         _require(expected.get("wall_loops") == "2" and actual.get("wall_loops") == "3",
