@@ -179,3 +179,8 @@ guard 于会话后恢复 ready（OK/US 出口）。客机重新同步至 edcaa13
 - **slot2** 最终合同 `5841436` 下 `df2b6784` 与 `0a7680b4` 均有拒绝和清理收据，均无独立业务通过。早期 `07ab7efb` 有 UIA opener 合同缺口。结论为端到端未闭环，下一步按相同判据建立 Script 正对照。
 - **标签与提示模式** 直接核对了两份冻结 3MF。`ce43098a` 顶壳 6、底壳 3，`6cba9296` 顶壳 3、底壳 6。开发复跑确认修订后选对字段。两轮同时变更了代码和提示模式，标签的独立贡献待做对照。壁环数 goal-only 成功、引导式失败各一次，且源 SHA 不同。空工具 run `6165a41c` 的完成自述被 `native_calls_incomplete` 拒绝。
 - **迁移与探索** 89 条登记册与 31 个 Script 场景分别统计。台账的 21 项是待签核证据候选，其中至少 9 项已知只映射部分断言。独立复核发现 F5 缺一条明细，已补 `m8x_125_aux_mix_pref`。已用于修复的路径归开发回归，另行冻结未参与调试的目标来评估探索闸。此次没有新增客机运行或发布 GREEN。
+
+
+## 并行补充：实体机 Win10 七盘流程第 4 次复现（2026-11-22，D:\GUI_Test\out-p4）
+
+用户提示第二台 SSH 可达 Windows（DESKTOP-FA706G3，admin@172.18.6.193，控制台会话在线）。零搭设复跑便携 OrcaPerfRunner（--check 过，校验和一致）：**exit_code 1，第 4 次稳定复现**。run.log 根因：`showcase_snapmates: FAIL (Orca could not become foreground for video)`——SSH 触发的交互计划任务下 Orca 无法成为前台（demote_watchdog 两次将前台归还启动前窗口）。与 11-21 三轮同因合并：**真机控制台前台获取问题，非切片/渲染问题**（VM 上同二进制通过、GL 栈不同）。修法属性能轨道：让控制台前台空闲（关闭 UU 远程等常驻前台窗）或改前台捕获策略。产物：out-p4/run.json+run.log+两段 pending.mp4+两个 showcase 摘要留在机内未拉取（gitignored 级）。
