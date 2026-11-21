@@ -2,6 +2,8 @@
 
 可续跑的唯一权威台账。分母以 `cases.py` + `tools/check_registry.py` 冻结；旧业务判据以 `BLACKBOX_CASES.md` 与各用例脚本头为准（本表不复述全文，只存一行业务目标与判据指针）；原生场景以 `harness/native_matrix.py` SCENARIOS 为准。恢复流程见文末 checkpoint。
 
+见[后续任务表](#后续任务表)和[独立复核记录](runs/glm-flash-expansion-2026-11-21.md#独立复核2026-11-21)。
+
 ## 冻结分母（2026-11-21 02:20 实测 check_registry PASS）
 
 **89 条登记 | regression=74 smoke=4 other=11（9 启用专项 suite=None + 2 禁用）**
@@ -66,7 +68,7 @@
 | m5h_ironing_combos | 熨烫+Advanced 组合 | uia_quality_enums | native-SHADOW(hist)（a4f5926d 11-19）+replay-ok |
 | m7t72 | 模型导入（模板） | bound_model_move | adapted |
 | m7t74 | 单模型切片调整（模板） | uia_replay_layer 链 | replay-ok |
-| m8x_137_flow_param_tabs | 流量喷嘴参数页签 | uia_process_combo（工艺页签组合） | adapted |
+| m8x_137_flow_param_tabs | 流量喷嘴参数页签 | uia_process_combo（工艺页签组合） | 部分覆盖候选，旧判据待签核 |
 
 ## F3 保存重开和导出（登记册 2：m3d/m3g；另含 uia_save_as/overwrite 两个场景行）
 
@@ -110,7 +112,7 @@
 |---|---|---|---|
 | m3t-m3w（4） | Add Mix 比例/循环输入往返 | uia_mix_recipes / uia_replay_mix | scripted-probe（11-18 回放探针通过；AI 侧目标式未跑） |
 | m3j/m3k/m3l/m3r | 混色匹配入口/模式/进度 | mix recipes 含 match 段 | scripted-probe（部分） |
-| m3m/m4d | 耗材卡/物理耗材操作 | 材料槽合同（slot2 已过）部分复用 | adapted（部分） |
+| m3m/m4d | 耗材卡/物理耗材操作 | 材料槽合同可部分复用，slot2 端到端尚未通过 | adapted（部分） |
 | m3n | 取消确认（#25） | 业务取消弹窗读回未登记 | gap-neg |
 | m3o | 无多色模型门禁（#28） | 入口门禁负例未登记 | gap-neg |
 | m3p | 匹配方案持久化 | 混色保存重开（V3_PLAN §8 已设计，组共享 fixture） | adapted（未跑） |
@@ -126,6 +128,7 @@
 | m4i | 混切+导出链 | mix+slice 组合 | adapted（候选） |
 | m8b_official_color | 官方颜色 | 耗材颜色 UIA 未登记 | gap-cap |
 | m8c_temp_mix_gate | 高低温混用门（#111/112） | 偏好开关+切片门禁（类 m8x_125） | gap-cap |
+| m8x_125_aux_mix_pref | 涂色辅材与主材温类冲突，偏好关闭时拒绝切片，打开后经风险确认完成切片，最后还原偏好（#125） | 旧判据见 [`m8x_125_aux_mix_pref.py`](../tests/topcap/m8x_125_aux_mix_pref.py) 头部；V3 待补涂色、偏好、警告与风险确认合同 | gap-cap |
 | m8f_nozzle_flow | 高流量喷嘴（#133/135/136） | 喷嘴/流量组合框未登记 | gap-cap |
 | m8g_flow_single | 单一变量流量对比 | 同上 | gap-cap |
 
@@ -194,11 +197,11 @@
 - **clash-guard OFF_SAFE**（02:37:45 起，代理被关，非本会话操作）：ip_guard 纪律性阻断全部 zcode 模型跑批；`~/.clash-guard/status-token` 集成文件丢失已按 status-api.md 恢复。guard 恢复 ready 前只跑 script 轨道。
 - 11-20 客机识别故障（KVP 关）已被 06d2257 BIOS 兜底修复，本轮实测通过。
 
-## 本批分族迁移汇总（终版，2026-11-21 07:0x，登记册逐条重算）
+## 本批分族迁移汇总（初算，判据待签核）
 
-口径：**本批独立通过** = 本批真实客机执行并独立验收（SHADOW，全部 31 个脚本场景 + 代表链映射回登记册条目）；**历史** = 旧源通过待复验；**blocked** = 有具体阻塞；**gap** = 需新 UI 能力（cap）或拒绝合同（neg）；**未跑** = 场景已适配本批未执行。分母 89 不变（含 2 禁用）。
+分母为 89 个 ID，含 2 个禁用项。展开合并行与简称、补齐 `m8x_125_aux_mix_pref` 后，六族明细为 9/16/2/23/32/7。下表保留原批分类；**本批证据候选**指有 SHADOW 证据可以用于逐案签核的映射。21 个候选中已标明部分映射 9 个（F2 1 个、F5 8 个），其余 12 个仍须核对旧必验断言。**历史**为旧源通过待复验，**blocked** 为有具体阻塞，**gap** 为缺 UI 能力或拒绝合同，**未跑**为已登记适配但本批未执行。
 
-| 族 | 条数 | 本批独立通过 | 历史 | blocked | gap | 未跑 | n/a | off |
+| 族 | 条数 | 本批证据候选 | 历史 | blocked | gap | 未跑 | n/a | off |
 |---|---:|---|---|---|---|---|---|---|
 | F1 启动/页签/工程 | 9 | 3（m0/m7a 链隐含于每 run 收据；m7t83=bound_model_move） | 0 | 0 | 2（m1 tab、m3i 视图） | 2（m7b/m7t73） | 1（m0_anchor） | 1（m1b） |
 | F2 导入/预设/工艺/切片 | 16 | 8（m5b/m7t74/m5h/m5e/m7c/m7t72/m2/m8x_137部分） | 1（m5c） | 1（m5g 预设名） | 6（损坏2、预设2、Support、负参数） | 0 | 0 | 0 |
@@ -208,29 +211,23 @@
 | F6 性能与专项 | 7 | 0 | 0 | 0 | 6（m8a/m8d/m8e/m8x_123/m7k/m3a） | 0 | 0 | 1（m2_perf） |
 | **合计** | **89** | **21** | **2** | **3** | **50** | **8** | **3** | **2** |
 
-（21+2+3+50+8+3+2=89 ✓）另：31 个本批 SHADOW 场景中含登记册外场景行（uia_save_as/overwrite/uia_move_layer/safety×3/cfg×4/dep×2/fixture×2/bound_model_move 等），它们的独立通过支撑表中"代表链"映射；zcode 泛化八槽与探索轮因 guard 阻塞未跑，历史 1/8 不变。
+原分类合计为 89。31 个 Script 场景使用独立的场景分母，其中含登记册外场景。ZCode 在 guard 恢复后完成开发集八槽，结果为 2/8，历史冻结结果保留 1/8。探索投入闸未达，探索轮未启动。
 
-### slot2 弹窗合同修复票（证据：26739846/1d145d63/94f09686/9a433e77 四败）
+## 后续任务表
 
-现状：`_popup` 验 owned、`_process_popup` 只绑侧栏旁 `wxWindowNR`"panel"值弹窗（45s），Save As 走 UIA；Objects 页签的材料弹窗不在任何合同内 → 模型只能等待或放弃。两条候选路线（可并行评估）：
-- **A 扩弹窗解除**：对已验 owned 的弹窗开放 UIA Invoke 取消/关闭目标（同 Save As Cancel 模式，版本化合同+正反例）。
-- **B 改业务路由**：材料槽 2 目标改走 Prepare 页耗材列（避开 Objects 弹窗），先证 UIA 可达性。
-另注意 goal 提示已含"未列弹窗→报告标题收尾"，本轮行为符合合同——这是能力缺口不是违规。
+按优先级推进。用例和探针在 Hyper-V `win11-test` 执行，沿用仓库登记入口和验收链。每个 run 绑定宿主与客机源 SHA、SUT、合同、fixture 和验收收据。模型运行先验证所选供应商路由与预期工具集。当前 ZCode 启动器还会强制检查 Clash guard，路由核验与门禁调整按下表执行。预检拦截与同步故障留在计划分母，单列基础设施结果。
 
-### bottom_strength 标签绑定修复（已实现 a4a53a6，待复验）
-
-Snapshot 现给侧栏内 ValuePattern 控件附加同排左侧最近 wx 标签（`label` 字段，只读、护栏、歧义丢弃）。复验：`uia_general_bottom_strength --goal-only`。
-
-前置：①clash-guard `/status` ready=true（代理已开+US 出口）；②宿主与客机 v3 检出同 HEAD（`runner/guest_v3_bundle_sync.ps1 -Head <sha>`）；③客机 suite Ready 无孤儿。
-
-1. **zcode 锚点复验**（验证 0b81f5d+bf108f7 两修复在新 app-server 下端到端）：
-   `python -B tools/native_save_demo.py --actor zcode --scenario uia_general_wall --goal-only --run-id <新32hex>`
-   预期：模型请求 toolNames=7 工具、≥10 次工具调用、独立重开 68 层+壁环数 3。
-2. **泛化八槽复验批**（开发集复验口径，非 held-out；三份门禁收据已在本仓验证可用）：
-   `python -B tools/zcode_matrix.py --suite uia_generalization --uia-gate-runs d7299035e33b80969e0064a8d9b3e4fc bfd5c93af9571ba3ddc53f7099d7e407 52a21e14b5e0456bf5e965cb98970cf4`
-   （跑前需把三份收据 artifacts 目录留在工作树——主检出已有，本 worktree 已复制核心文件。）预计 60-90 分钟；达标判据见 V3_PLAN §4。
-3. 锚点通过后可再跑 `uia_general_slot2`（0/3 历史账）与 `uia_general_y_quality`（0/5，串行调度修复后未复验）单场景复验。
-4. 探索轮门槛按 V3_PLAN 现行阈值评估；未达标继续修阻塞/迁移确定性用例。
+| 优先级 | 任务 | 当前状态 | 验收条件 |
+|---|---|---|---|
+| P0 | slot2 先跑 Script 正对照，再验 ZCode | 弹窗合同已扩展，最终合同业务 0/2，`NON_GREEN` | 在同一 SUT、初态和合同下，Script 打开弹窗、刷新观察、选择槽 2 并保存。独立新进程重开验证目标对象绑定槽 2，其他对象和槽位保持，清理确认。再按同一判据验收模型，保留首轮与复跑。 |
+| P0 | 固定单一源提交复跑 31 个 Script 场景 | 已有跨六个源提交的 31/31 SHADOW，目标提交整套待跑 | 冻结拟纳入日常回归的源 SHA、SUT 和场景清单。逐场景确认业务、路径、清理收据。含 fixture 组的共享与冷启判据，以及涉及保存的冻结产物和独立重开。 |
+| P0 | 独立重算 89 条迁移覆盖 | 89 个 ID 均已入表，旧判据未逐案签核 | 逐条登记旧必验断言、V3 判据、执行模式、run ID、源 SHA 和证据位置。分别汇总完整、部分、历史通过和未验证。优先审 F5 的 8 条和 F2 的 `m8x_137_flow_param_tabs`。 |
+| P0 | 核验 Snapmaker GLM 网关与 Clash guard 的依赖 | GLM 使用公司网关，现启动器仍强制检查面向 OpenAI 出口的 Clash guard | 核实 ZCode 实际使用的代理与公司批准的网关路由。若该路由独立于 Clash guard，按供应商配置门禁，并以公司网关身份、可用性及工具就绪作为 GLM 的准入条件。适用 Clash guard 的路由保留原有检查；相关断连用例按对应路由单列。调整实现前按当前门禁运行。 |
+| P0 | 核实源同步与工具就绪门禁 | 已见同步失误及零工具假通过被拒 | 给预检、模型实际启动和业务验收分别留收据。确认源不一致或工具未注册时停止推进。报告计划槽位、实际开跑、基础设施受阻和有效业务验收数。 |
+| P1 | 回补历史业务矩阵证据 | 本批六项有收据，`quality_a` / `strength_b` 待补 | 定位同批有效收据或在目标提交独立复跑，按八项冻结矩阵汇总。 |
+| P1 | 对照标签辅助和提示模式 | bottom_strength 开发复跑一次通过，wall 有单场景模式差异 | 固定源、SUT、fixture、模型、初态和判据。每组只切换标签辅助或提示模式中的一项，保留各次原始结果，并覆盖未经调试的相邻易混字段。此表的开发场景留在开发回归。 |
+| P1 | 推进已登记的确定性缺口 | 预设、撤销和菜单等仍缺合同或判据 | 按上方候选清单逐项落实旧必验断言，先做可独立验收的 Script 正反例，再评估 AI 路径。 |
+| P2 | 冻结新保留集并重评探索投入闸 | 开发集 2/8，探索轮未开启 | 由评估方冻结未参与调试的目标与初态，依据 [V3_PLAN §4](V3_PLAN.md#4-最小有决策价值的评估) 单次执行各槽。锚点 2/2、新目标至少 3/4 且两目标均有成功、组合与干扰 2/2，并满足安全与清理条件，才考虑受控探索。 |
 
 ## Checkpoint（恢复用）
 
@@ -239,4 +236,4 @@ Snapshot 现给侧栏内 ValuePattern 控件附加同排左侧最近 wx 标签�
   然后读本文件「本批运行记录」最后一条 + `docs/runs/glm-flash-expansion-2026-11-21.md`。
 - 源提交：本文件最后一次 commit（见 git log -- docs/V3_MIGRATION_LEDGER.md）。
 - 客机恢复：`runner/hv_go.ps1` 自动校验客机 HEAD=宿主 HEAD；v3 检出 `C:\coil\orca-blackbox-v3-r1` 用 `runner/guest_v3_bundle_sync.ps1 -Head <sha>`（本批固化，36b9463）快进——**每次宿主提交后、下次 native run 前都要同步**（本批曾因漏同步浪费 4 个 run 槽，见 a66a86ac）。
-- 恢复后先做：①`git log -1` 核对源；②读最后 run 记录决定回收或续跑；③`tools/check_registry.py` 核对分母仍 89。
+- 恢复时核对源提交、读取最后一次运行和上方任务表，再用 `tools/check_registry.py` 校验登记册分母。按任务验收条件决定续跑。

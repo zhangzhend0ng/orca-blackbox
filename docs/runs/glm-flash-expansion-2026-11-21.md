@@ -1,5 +1,7 @@
 # GLM 总控扩样批次 2026-11-21
 
+批次终态与口径见[独立复核](#独立复核2026-11-21)，续跑顺序见[迁移任务表](../V3_MIGRATION_LEDGER.md#后续任务表)。
+
 分支 `codex/glm-flash-expansion-20261121-0217`（自 `codex/orca-integration@44034f8`）。台账与逐族映射见 [V3_MIGRATION_LEDGER](../V3_MIGRATION_LEDGER.md)；本页只记运行叙事。
 
 ## 环境
@@ -19,7 +21,7 @@
 
 zcode 轨道待 guard 恢复后续跑。
 
-## script 轨道（无模型复验，HEAD=bf108f7/ceaf295）
+## script 轨道（无模型复验，六个源提交 bf108f7 至 0b4b919）
 
 | Run | 场景 | 结果 |
 |---|---|---|
@@ -118,7 +120,7 @@ guard 于会话后恢复 ready（OK/US 出口）。客机重新同步至 edcaa13
 | `1d145d63` | uia_general_slot2 (goal-only) | NON_GREEN：`native_uia_refresh_required` 致命（点击后未刷新观察）——材料槽 2 本批 0/4，确认持续缺口 |
 | `f33c1744` | uia_general_y_quality (goal-only) | NON_GREEN：`native_uia_main_window_required`（前台离主窗后正确拒绝）——0/7 终身 |
 
-## 全会话终计
+## 截至第三段累计
 
 真实客机独立验收 **39 个通过/预期拒绝 run**：脚本 31（SCRIPT_SCENARIOS 全项）+ zcode 8（锚点 wall goal-only、泛化 bottom_quality/y_others、安全 3/3、overwrite、pilot_infill）。所有失败均留证据：2 次 app-server 基础设施（已修复）、6 次管理层同步失误（已固化教训）、guard 两翻一阻、业务失败各含权威层/独立判据回执。客机终态干净。
 
@@ -151,14 +153,14 @@ guard 于会话后恢复 ready（OK/US 出口）。客机重新同步至 edcaa13
 | `dd08dda2` | save_dialog | SHADOW（275.1s） |
 | `48989b69` | quality_b | SHADOW（236.6s，源 8f281d3 段） |
 
-历史业务矩阵（quality_a/b、strength_a、others_a/b、save_dialog、overwrite）至此在新 HEAD **全项复验通过**。泛化槽 bottom_strength 在 goal-only+标签辅助下通过（dev 口径，冻结矩阵 guided 结果不变）。
+历史业务矩阵本批已复核 `quality_b`、`strength_a`、`others_a`、`others_b`、`save_dialog`、`overwrite` 六项的通过收据。泛化槽 bottom_strength 在 goal-only 和标签辅助同时启用时通过开发复跑，保留原矩阵 guided 判定。
 
-**全会话终计：45 个独立验收通过**（脚本 31 + zcode 14）。slot2 弹窗合同修复票两条路线已登记台账。
+**本批累计 31 条 Script SHADOW 通过、11 条 ZCode 业务或路径 SHADOW 通过、3 条安全预期拒绝通过。**
 
 
-## slot2 闭环段（20:1x–20:4x，源 532e370→5841436）
+## slot2 弹窗合同修复（20:1x–20:4x，源 532e370→5841436）
 
-按用户指令连续闭环，不逐步停。三轮修复三轮复跑：
+三轮合同修改及各轮客机复跑如下。
 
 | 修复（提交） | 证据 | 复跑 |
 |---|---|---|
@@ -166,4 +168,14 @@ guard 于会话后恢复 ready（OK/US 出口）。客机重新同步至 edcaa13
 | 几何放宽（缝 160/宽 300/高 480）+popup_bounds 记录+goal 提示教弹窗裁图（e47e13c/69d302d） | `81587927`：死于 recovery_observation（模型恢复协议失误） | `07ab7efb`：模型用 **UIA Invoke** 合法开下拉，但 opener 只认坐标点击→死锁 |
 | **UIA 动作点击也登记 opener**+轨迹携带 popup_opener+验证器重建（5841436） | `df2b6784`：opener=[147,617] 已入轨迹✓、模型主动请求 wx_process_popup 裁图✓，但假定弹窗已开而未观察→致命；`0a7680b4`：UIA 动作后未刷新观察即点击→RecoveryViolation | — |
 
-**终态定性：能力闭环完成，通过受模型时序纪律限制。** 后四跑证明全部合同环节可用（族域、视觉 opener、UIA opener、几何、schema 广告、提示引导），四次失败为四种不同的单步模型失误，每次均被权威层正确拦截、清理确认。泛化锚点 wall(goal-only)✓ / slot2✗（能力口径已通，通过口径待模型/合同提示后续迭代）。
+**终态为端到端未闭环（NON_GREEN）。** 弹窗合同已扩展，UIA opener 登记与失败拒绝有运行证据。`07ab7efb` 发生在 UIA opener 补齐之前，属于合同缺口。最终合同 `5841436` 下两次运行均在观察或刷新阶段被拒，清理均确认，业务验收 0/2。
+
+## 独立复核（2026-11-21）
+
+审查对象为 `codex/glm-flash-expansion-20261121-0217@6df44ca`。`44034f8..6df44ca` 实际为 30 个提交。以下为本地收据、冻结产物和矩阵判定的离线复核。
+
+- **Script** 31 个登记场景均为 SHADOW 通过，业务、路径和清理收据齐全。源提交共六个（`bf108f7`、`ceaf295`、`87c3d28`、`11c3cec`、`74ae046`、`0b4b919`）。29 个单场景与两组 fixture 的 4 条子运行均核对了冻结 3MF/G-code 哈希与独立重开收据。可作为相应场景的 SHADOW 回归依据，`6df44ca` 的单源整套结果待补。
+- **ZCode** 11 条业务或路径 SHADOW 通过，3 条安全预期拒绝经矩阵判定器复算通过。开发集 `66f6963e156b424fbbc542cc8883da6a` 重算为 **2/8**，两个通过槽均使用受控恢复，`acceptance_pass=false`。历史 1/8 和本次 2/8 分别留档。guard 阻断与同步故障单列，不把计划未启动槽计成模型失败。
+- **slot2** 最终合同 `5841436` 下 `df2b6784` 与 `0a7680b4` 均有拒绝和清理收据，均无独立业务通过。早期 `07ab7efb` 有 UIA opener 合同缺口。结论为端到端未闭环，下一步按相同判据建立 Script 正对照。
+- **标签与提示模式** 直接核对了两份冻结 3MF。`ce43098a` 顶壳 6、底壳 3，`6cba9296` 顶壳 3、底壳 6。开发复跑确认修订后选对字段。两轮同时变更了代码和提示模式，标签的独立贡献待做对照。壁环数 goal-only 成功、引导式失败各一次，且源 SHA 不同。空工具 run `6165a41c` 的完成自述被 `native_calls_incomplete` 拒绝。
+- **迁移与探索** 89 条登记册与 31 个 Script 场景分别统计。台账的 21 项是待签核证据候选，其中至少 9 项已知只映射部分断言。独立复核发现 F5 缺一条明细，已补 `m8x_125_aux_mix_pref`。已用于修复的路径归开发回归，另行冻结未参与调试的目标来评估探索闸。此次没有新增客机运行或发布 GREEN。
