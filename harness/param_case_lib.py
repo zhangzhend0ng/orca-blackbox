@@ -211,7 +211,7 @@ def uia_set_float(ui, label_substr, value, group_substr=None):
 
     if (receipt["target_hwnd"] != handle
             or _num(receipt["after_text"]) != _num(value)):
-        raise ProtocolError("param_uia_readback:" + label_substr)
+        raise ProtocolError("param_uia_readback:" + label_substr + ":" + repr(receipt.get("after_text"))[:40])
 
 
 def run_ops(ui, ops):

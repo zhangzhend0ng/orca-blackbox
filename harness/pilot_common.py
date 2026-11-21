@@ -87,6 +87,15 @@ def inspect_preserved_settings(actual, expected, *, allowed_changes=None, cancel
     for key, before in expected.items():
         _check_cancel(cancelled)
         after = actual[key]
+        if key == "different_settings_to_system" and key not in changes:
+            # The app maintains a manifest of keys diverging from the
+            # system preset; any allowed edit legitimately extends it
+            # (run 14bd2fb9). New entries must be within the allowed keys.
+            before_keys = set(str(before[0]).split(";")) if before else set()
+            after_keys = set(str(after[0]).split(";")) if after else set()
+            _require(before_keys <= after_keys <= before_keys | set(changes),
+                     "pilot_dirty_manifest_out_of_scope")
+            continue
         if key in changes:
             _require(after == changes[key], "pilot_target_setting_mismatch")
             continue

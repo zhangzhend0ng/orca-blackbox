@@ -68,11 +68,22 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
             break
         time.sleep(0.6)
     clicked = False
-    for t, x, y, ww, hh in words:
-        if target.lower() in t.lower():
-            winutil.msg_click_screen(pr[0] + x + ww // 2, pr[1] + y + hh // 2)
-            clicked = True
+    for page in range(4):
+        for t, x, y, ww, hh in words:
+            if target.lower() in t.lower():
+                winutil.msg_click_screen(pr[0] + x + ww // 2, pr[1] + y + hh // 2)
+                clicked = True
+                break
+        if clicked:
             break
+        # Long lists (Gyroid sits pages down, run 9866d291): wheel the
+        # popup and re-capture.
+        import ctypes
+        ctypes.windll.user32.mouse_event(0x0800, 0, 0, -2, 0)  # wheel down
+        time.sleep(0.7)
+        w, hgt, bgra = winutil.capture_window(ph)
+        img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
+        words = mdu.ocr_words_img(img, scale=3)
     if not clicked:
         raise ProtocolError("param_combo_target:" + target + ":" +
                             "|".join(t for t, *_ in words)[:80])
