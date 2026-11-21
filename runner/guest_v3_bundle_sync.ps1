@@ -15,7 +15,12 @@ if (-not $Base) {
     param($git, $sb) (& $git -C $sb rev-parse HEAD).Trim()
   } -ArgumentList $guestGit, $guestSandbox
 }
-git -C $PSScriptRoot\.. bundle create $bundlePath "$Base..$Head"
+$repo = Join-Path $PSScriptRoot '..'
+# A raw sha range (A..<sha>) carries no ref name and git refuses it as an
+# empty bundle; bundle with HEAD and verify the checkout is at -Head first.
+$actualHead = (git -C $repo rev-parse HEAD).Trim()
+if ($actualHead -cne $Head) { throw "repo_head_is_$actualHead" }
+git -C $repo bundle create $bundlePath "$Base..HEAD"
 if ($LASTEXITCODE -ne 0) { throw "bundle_create_failed ($Base..$Head)" }
 $sha = (Get-FileHash -LiteralPath $bundlePath -Algorithm SHA256).Hash.ToLowerInvariant()
 $encoded = [Convert]::ToBase64String([IO.File]::ReadAllBytes($bundlePath))
