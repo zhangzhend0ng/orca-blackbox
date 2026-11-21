@@ -67,10 +67,13 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
         if words:
             break
         time.sleep(0.6)
+    def _soft(word):
+        return "".join(ch for ch in word.lower() if ch.isalpha())
+
     clicked = False
-    for page in range(4):
+    for page in range(8):
         for t, x, y, ww, hh in words:
-            if target.lower() in t.lower():
+            if target.lower() in t.lower() or _soft(t).endswith(_soft(target)):
                 winutil.msg_click_screen(pr[0] + x + ww // 2, pr[1] + y + hh // 2)
                 clicked = True
                 break
@@ -84,7 +87,7 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
         pt = ((pr[0] + pr[2]) // 2, (pr[1] + pr[3]) // 2)
         u32.SetCursorPos(pt[0], pt[1])
         time.sleep(0.15)
-        u32.mouse_event(0x0800, 0, 0, ctypes.c_short(-3).value, 0)
+        u32.mouse_event(0x0800, 0, 0, ctypes.c_short(-5).value, 0)
         time.sleep(0.7)
         w, hgt, bgra = winutil.capture_window(ph)
         img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
