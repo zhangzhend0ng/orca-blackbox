@@ -60,12 +60,115 @@ def _numeric(value):
 
 # ---- baseline-side: declarative process-panel operations -------------------
 
+def _sidebar_label_rows(ui):
+    """[(title, bounds)] of drawn wx label windows left of the canvas."""
+    from win32gui import EnumChildWindows, IsWindowVisible
+
+    wu, app = ui.wu, ui.app
+    from .native_uia_hybrid import within
+    left, top, right, bottom = wu.window_rect(_canvas_hwnd(ui))
+    sidebar = [0, top, left, bottom]
+    found, ambiguous = {}, set()
+
+    def collect(handle, _):
+        if (wu.window_class(handle) != "wxWindowNR" or not IsWindowVisible(handle)
+                or wu._window_pid(handle) != app.pid):
+            return True
+        title = wu.window_title(handle).strip()
+        bounds = list(wu.window_rect(handle))
+        if (not title or title == "panel" or len(title) < 3
+                or bounds[2] - bounds[0] > 400 or not within(sidebar, bounds)):
+            return True
+        if title in found:
+            ambiguous.add(title)
+        else:
+            found[title] = bounds
+        return True
+
+    EnumChildWindows(app.hwnd, collect)
+    return [(t, found[t]) for t in found if t not in ambiguous]
+
+
+def _canvas_hwnd(ui):
+    """The wxGLCanvas child anchor (same source as the hybrid guard)."""
+    from win32gui import EnumChildWindows
+
+    wu, app = ui.wu, ui.app
+    hits = []
+
+    def collect(handle, _):
+        if wu.window_class(handle) == "wxGLCanvas" and wu._window_pid(handle) == app.pid:
+            hits.append(handle)
+        return True
+
+    EnumChildWindows(app.hwnd, collect)
+    if len(hits) != 1:
+        raise ProtocolError("param_canvas_anchor:" + str(len(hits)))
+    return hits[0]
+
+
+def _row_label_at(labels, field):
+    best_title, best_gap = None, 10**6
+    center_field = (field[1] + field[3]) / 2
+    for title, bounds in labels:
+        if bounds[2] > field[0] or bounds[3] < field[1] or bounds[1] > field[3]:
+            continue
+        center_label = (bounds[1] + bounds[3]) / 2
+        if abs(center_label - center_field) > 14:
+            continue
+        gap = field[0] - bounds[2]
+        if 0 <= gap < best_gap:
+            best_title, best_gap = title, gap
+    return best_title if best_title is not None and best_gap <= 300 else None
+
+
+def uia_set_float(ui, label_substr, value):
+    """Set a sidebar float Edit via UIA ValuePattern + native Enter.
+
+    The painted label left of the field identifies it (the same pairing
+    the zcode observations expose); the m4g x-column calibration does not
+    hold on every page, but UIA reaches the Edit regardless of layout."""
+    from windows_mcp.uia import ControlFromHandle
+
+    app = ui.app
+    root = ControlFromHandle(app.hwnd)
+    labels = _sidebar_label_rows(ui)
+    wanted = label_substr.strip().casefold()
+    pending = [(root, 0)]
+    matches = []
+    while pending:
+        element, depth = pending.pop()
+        if depth < 12:
+            pending.extend((child, depth + 1) for child in element.GetChildren())
+        if element.ControlTypeName != "EditControl" or not element.NativeWindowHandle:
+            continue
+        if not element.IsEnabled or element.IsOffscreen:
+            continue
+        rect = element.BoundingRectangle
+        field = [rect.left, rect.top, rect.right, rect.bottom]
+        label = _row_label_at(labels, field)
+        if label and wanted in label.casefold():
+            matches.append((element, label))
+    if len(matches) != 1:
+        raise ProtocolError("param_uia_field:" + label_substr + ":" + str(len(matches)))
+    element, _ = matches[0]
+    pattern = element.GetValuePattern()
+    if not pattern.SetValue(str(value)) or element.GetValuePattern().Value != str(value):
+        raise ProtocolError("param_uia_write:" + label_substr)
+    from win32gui import IsWindow
+    handle = element.NativeWindowHandle
+    if IsWindow(handle):
+        ui.wu.msg_text(handle, "\r")  # the proven native-Enter commit
+    if element.GetValuePattern().Value != str(value):
+        raise ProtocolError("param_uia_readback:" + label_substr)
+
+
 def run_ops(ui, ops):
     """Execute a list of process-panel operations on the running app.
 
     op forms:
       {"tab": "Quality", ...} switches the parameter tab first;
-      {"op": "float",   "label": ..., "value": ..., ["group": ...]}
+      {"op": "float",   "label": ..., "value": ...}  (UIA, label-paired)
       {"op": "checkbox","label": ..., "value": True, ["group": ...]}
       {"op": "combo",   "current": ..., "target": ..., ["group": ...]}
     """
@@ -88,9 +191,7 @@ def run_ops(ui, ops):
         ui.main_input()
         kind = op["op"]
         if kind == "float":
-            ok = pp.set_option_float(app, op["label"], op["value"], group_substr=op.get("group"))
-            if not ok or (isinstance(ok, tuple) and not ok[0]):
-                raise ProtocolError("param_float:" + op["label"])
+            uia_set_float(ui, op["label"], str(op["value"]))
             pp.neutralize_focus(app)
         elif kind == "checkbox":
             ok = pp.set_option_checkbox(app, op["label"], op["value"], group_substr=op.get("group"))
