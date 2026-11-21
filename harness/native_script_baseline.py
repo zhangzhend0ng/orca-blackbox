@@ -235,7 +235,12 @@ def edit_param_cases(ui, scenario):
     }.get(scenario)
     if ops is None:
         raise ProtocolError("param_case_ops:" + scenario)
-    run_ops(ui, ops)
+    try:
+        run_ops(ui, ops)
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        raise
 
 
 def assign_filament_slot2(ui):
