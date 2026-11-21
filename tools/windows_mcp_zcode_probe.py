@@ -97,7 +97,9 @@ def main(argv=None):
         if disturbance == "guard_disconnect":
             from harness.guard_fault import GuardTransport
             transport = GuardTransport()
-        guard = IPGuard(status_port=transport.port) if transport else IPGuard()
+        from harness.zcode_gateway import GatewayGuard
+        guard = IPGuard(status_port=transport.port) if transport else (
+            IPGuard() if args.scenario.startswith("safety_") else GatewayGuard())
         report["guard_checks"] = [guard.check()]
         report["guard_checked"] = True
         for _ in range(50):

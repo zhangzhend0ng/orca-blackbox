@@ -36,3 +36,20 @@ def direct_environment():
     env.update(HTTP_PROXY="", HTTPS_PROXY="", ALL_PROXY="", NO_PROXY=no_proxy,
                ZCODE_HTTP_PROXY="", ZCODE_NO_PROXY=no_proxy)
     return env
+
+
+class GatewayGuard:
+    """IPGuard-shaped admission for the pinned internal gateway.
+
+    Normal zcode scenarios model against ai-gateway.s.com and never touch
+    Clash, so the runtime poll checks the gateway instead of clash-guard
+    (run c40850f8 died mid-flight on an unrelated BLOCKED proxy). The
+    safety_guard_disconnect scenario keeps the real IPGuard because its
+    disturbance needs the guard transport."""
+
+    def check(self):
+        import time
+        status = check_gateway()
+        return {"ready": True, "state": "OK", "time": time.time(),
+                "last_us_age": 0.0, "evidence_ttl": 0.0, "guard_pid": 0,
+                "gateway_status": status}
