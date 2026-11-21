@@ -401,9 +401,10 @@ class UiaHybridGuard(UiaSaveGuard):
             self._clear_visual()
             self.native_targets, self.visual_regions = {}, {}
             self.needs_main_snapshot = True
+            rect = getattr(wu, "window_rect", None)
             self.last_window.update(route="uia_popup", app_pid=self.scope["app_pid"],
                 foreground_hwnd=hwnd, foreground_pid=wu._window_pid(hwnd), popup=popup,
-                popup_bounds=list(wu.window_rect(hwnd)))
+                popup_bounds=list(rect(hwnd)) if rect else None)
             if process_popup is not None:
                 self.last_window["process_popup"] = process_popup
             return self.last_window
