@@ -102,9 +102,11 @@ def _canvas_hwnd(ui):
         return True
 
     EnumChildWindows(app.hwnd, collect, None)
-    if len(hits) != 1:
-        raise ProtocolError("param_canvas_anchor:" + str(len(hits)))
-    return hits[0]
+    if not hits:
+        raise ProtocolError("param_canvas_anchor:0")
+    # The 3D viewport dwarfs thumbnail/preview GL canvases (measured: 3
+    # wxGLCanvas children on this build) - anchor the sidebar on the largest.
+    return max(hits, key=lambda h: (lambda r: (r[2] - r[0]) * (r[3] - r[1]))(wu.window_rect(h)))
 
 
 def _row_label_at(labels, field):
