@@ -237,3 +237,15 @@
 - 源提交：本文件最后一次 commit（见 git log -- docs/V3_MIGRATION_LEDGER.md）。
 - 客机恢复：`runner/hv_go.ps1` 自动校验客机 HEAD=宿主 HEAD；v3 检出 `C:\coil\orca-blackbox-v3-r1` 用 `runner/guest_v3_bundle_sync.ps1 -Head <sha>`（本批固化，36b9463）快进——**每次宿主提交后、下次 native run 前都要同步**（本批曾因漏同步浪费 4 个 run 槽，见 a66a86ac）。
 - 恢复时核对源提交、读取最后一次运行和上方任务表，再用 `tools/check_registry.py` 校验登记册分母。按任务验收条件决定续跑。
+
+
+## 飞书新表补充路线图（base JB5jbAczEa7vZUsWFencTmNnnob / tblKjIVV8KA53kUQ，2026-11-22 拉取 216 条）
+
+| 桶 | 条数 | 处置 |
+|---|---:|---|
+| 已自动化 | 92 | 与登记册 89 基本重合，走既有 P0-3 签核 |
+| **待实现·常用工艺参数** | **44**（P0 33/P1 11，#254-297） | **本轮主攻**：全部为参数组合用例，映射到已验证 cfg_value/pairwise 域；按组扩展 config_dependencies + process_panel 基线（uia_process_combo 模式）+ 标准 oracle |
+| 状态空缺 | 26 | 分诊：打印板右键菜单 14（菜单合同缺口族）、文件导入导出 12（F3 扩展）、主流程 4 |
+| 不适用 | 49 | 联机业务/AI监控/同步耗材/延时摄影——需真机/云，维持本地不适用 |
+
+实现顺序（按 P0×组共享度）：层高组合(#254) → 熨烫(#259) → 墙圈数(#266) → 外壳(#267) → 填充(#268) → 速度链(#270/271) → 支撑(#277) → 其余按表。每条=确定性 script 基线+保存重开+3MF 设置/G-code 双判据（V3 标准），fixture 用现行立方体（与表内"球"差异记录在案）。判据等价性：表内判据（参数写入+首层 Z/步进语义）⊆ V3 oracle 检查面。
