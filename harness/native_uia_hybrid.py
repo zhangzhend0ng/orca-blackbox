@@ -638,6 +638,15 @@ class UiaHybridGuard(UiaSaveGuard):
             success = pattern.Select()
         if not success:
             raise ValueError("native_uia_action_failed")
+        # A UIA Invoke on a sidebar cell opens the same wx "panel" dropdown a
+        # visual click does (run 07ab7efb opened the filament list this way);
+        # register it as the popup opener so the bind contract can engage.
+        if self.scope["scenario"] in POPUP_BIND_SCENARIOS:
+            rect = element.BoundingRectangle
+            center = [(rect.left + rect.right) // 2, (rect.top + rect.bottom) // 2]
+            self.bound_process_popup = None
+            self.sidebar_opener = (center, time.monotonic_ns())
+            self.last_window["popup_opener"] = center
         if self.mix is not None:
             from .native_mix_uia import OPEN_MIX
             if record["target"] == OPEN_MIX:
@@ -912,7 +921,7 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
                      "native_uia_visual_input_proof")
             counts["visual_inputs"] += 1
             opener = ((args["loc"], window["visual_anchor_region"], row["finished_at_ns"])
-                      if scenario in UIA_PROCESS_SCENARIOS and name == "Click" and kind == "wx_sidebar"
+                      if scenario in POPUP_BIND_SCENARIOS and name == "Click" and kind == "wx_sidebar"
                       and window.get("target_class") == "wxWindowNR" else None)
         elif "process_group" in args:
             verify_process_scroll(window, args["process_group"], previous_viewports, regions.get("wx_sidebar"))
@@ -925,6 +934,8 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
             crops.clear()
             canvas_click = None
             opener = None
+            if scenario in POPUP_BIND_SCENARIOS and window.get("popup_opener") and name == "Click":
+                opener = (window["popup_opener"], regions.get("wx_sidebar"), row["finished_at_ns"])
             _require({"target": args["target"], "hwnd": window["target_hwnd"], "pattern": window["pattern"]}
                      in targets and window["target_pid"] == app_pid, "native_uia_target_binding")
             if name == "Type":
