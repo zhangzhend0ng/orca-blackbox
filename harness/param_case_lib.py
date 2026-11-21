@@ -124,6 +124,34 @@ def _row_label_at(labels, field):
     return best_title if best_title is not None and best_gap <= 300 else None
 
 
+def _find_phrase_row(app, phrase, group_substr=None):
+    """Row y of a painted label that may span several OCR words.
+
+    pp.find_option_row only matches a substring inside ONE word (why
+    'density' works and 'Wall loops' never did); join adjacent words and
+    match the phrase, falling back to single-word containment."""
+    from . import process_panel as pp
+    import time
+
+    if group_substr:
+        pp.scroll_group_into_view(app, group_substr)
+    want = phrase.lower().split()
+    for _ in range(6):
+        words = pp.ocr_band(app, psm=3)
+        for i, (w, x, y, ww, hh) in enumerate(words):
+            if len(want) == 1 and want[0] in w.lower():
+                return y + hh // 2
+            if len(want) > 1 and w.lower().startswith(want[0]):
+                tail = " ".join(t for t, *_ in words[i:i + len(want)]).lower()
+                if tail.startswith(phrase.lower()):
+                    return y + hh // 2
+        vp = pp.options_viewport(app)
+        if vp:
+            pp.wheel_viewport(app, vp, 1, delta=-120)
+        time.sleep(0.4)
+    return None
+
+
 def uia_set_float(ui, label_substr, value, group_substr=None):
     """Set a sidebar float Edit: OCR locates the painted row (OG_CustomCtrl
     draws row labels without HWNDs - only group headers are windows, the
@@ -131,11 +159,10 @@ def uia_set_float(ui, label_substr, value, group_substr=None):
     through the proven ui.edit commit. No x-column calibration (the m4g
     band does not hold on every page - runs 47bccc5a+)."""
     from win32gui import EnumChildWindows, IsWindowVisible, IsWindowEnabled
-    from . import process_panel as pp
 
     wu, app = ui.wu, ui.app
-    word, y_row = pp.find_option_row(app, label_substr, group_substr)
-    if not word:
+    y_row = _find_phrase_row(app, label_substr, group_substr)
+    if y_row is None:
         raise ProtocolError("param_row:" + label_substr)
     left, top, right, bottom = wu.window_rect(_canvas_hwnd(ui))
     origin_x, origin_y = wu.client_to_screen(app.hwnd, 0, 0)
