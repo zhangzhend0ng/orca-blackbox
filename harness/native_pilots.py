@@ -17,6 +17,11 @@ PILOT_BLOCKS = {
 TRIALS = {
     "canvas_trial": "pilot_transform", CANVAS_REPLACE_SCENARIO: "pilot_transform",
     UIA_CANVAS_SCENARIO: "pilot_transform",
+    # the script positive control for the slot2 business runs the same
+    # module/oracle as its zcode scenarios; without this key the script
+    # verifier fell through to the layer-height default and rejected the
+    # correctly-unchanged 0.4 mm project (measured run e6668fef).
+    "pilot_material": "pilot_material",
     UIA_PROCESS_COMBO: "pilot_process_combo",
     UIA_MIX_RECIPES: "pilot_mix_recipes",
     UIA_QUALITY_ENUMS: "quality_enums", UIA_MOVE_LAYER: "move_layer",
