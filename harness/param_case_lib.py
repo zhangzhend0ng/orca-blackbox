@@ -138,14 +138,21 @@ def uia_set_float(ui, label_substr, value):
     wanted = label_substr.strip().casefold()
     matches = []
     pending = [(root, 0)]
+    visited = 0
     while pending:
         element, depth = pending.pop()
-        child = element.GetFirstChildControl()
-        while child is not None:
-            pending.append((child, depth + 1))
-            child = child.GetNextSiblingControl()
+        try:
+            child = element.GetFirstChildControl()
+            while child is not None:
+                pending.append((child, depth + 1))
+                child = child.GetNextSiblingControl()
+        except Exception as exc:  # pragma: no cover - diagnostic surface
+            import traceback
+            traceback.print_exc()
+            raise ProtocolError("param_uia_walk:" + type(exc).__name__) from None
         if depth == 0:
             continue
+        visited += 1
         if element.ControlTypeName != "EditControl" or not element.NativeWindowHandle:
             continue
         if not element.IsEnabled or element.IsOffscreen:
@@ -155,11 +162,20 @@ def uia_set_float(ui, label_substr, value):
         label = _row_label_at(labels, field)
         if label and wanted in label.casefold():
             matches.append((element, label))
+    print(f"[param-uia] {label_substr!r}: visited={visited} edits-matched={len(matches)}",
+          file=sys.stderr, flush=True)
     if len(matches) != 1:
         raise ProtocolError("param_uia_field:" + label_substr + ":" + str(len(matches)))
     element, _ = matches[0]
-    pattern = element.GetValuePattern()
-    if not pattern.SetValue(str(value)) or element.GetValuePattern().Value != str(value):
+    try:
+        pattern = element.GetValuePattern()
+        written = pattern.SetValue(str(value))
+        readback = element.GetValuePattern().Value
+    except Exception as exc:  # pragma: no cover - diagnostic surface
+        import traceback
+        traceback.print_exc()
+        raise ProtocolError("param_uia_write:" + type(exc).__name__) from None
+    if not written or readback != str(value):
         raise ProtocolError("param_uia_write:" + label_substr)
     from win32gui import IsWindow
     handle = element.NativeWindowHandle
