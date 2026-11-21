@@ -182,7 +182,7 @@ try{
  // a fake completion without a single tool. Hold the single turn until the
  // MCP connections have had time to register their tools. The wait is not
  // contract time: the guest's 900 s budget starts at its own ready receipt.
- const readyWaitMs=Math.min(Math.max(Number(spec.mcp_ready_wait_s??25),0),60)*1000;
+ const readyWaitMs=Math.min(Math.max(Number(spec.mcp_ready_wait_s??0),0),60)*1000;
  await delay(readyWaitMs);
  await request('session/send',{sessionId:session,content:spec.prompt});
  let after=0;

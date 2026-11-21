@@ -231,6 +231,7 @@ def main(argv=None):
                 "authority_protocol": "native-authority-1", "authority_log": str(root/"authority.ndjson"),
                 "recovery_enabled": args.scenario in RECOVERY_SCENARIOS,
                 "uia_refresh_enabled": args.scenario in UIA_HYBRID_SCENARIOS, "scenario": args.scenario,
+                "mcp_ready_wait_s": 25,
                 "tools": sorted(native_tools(args.scenario))}
         (root/"spec.json").write_text(json.dumps(spec), encoding="utf-8")
         env, report["proxy_source"] = _child_environment()

@@ -115,6 +115,58 @@ class UiaHybridGuard(UiaSaveGuard):
                 return "SelectionItemPattern", select
         return None, None
 
+    def _sidebar_labels(self, wu, hwnd, sidebar):
+        """(title, bounds) of drawn wx label windows inside the parameter
+        sidebar (read-only).
+
+        Numeric Edits on the process pages have empty UIA names, so the drawn
+        label left of each Edit is the only way to tell e.g. "Top shell
+        layers" from "Bottom shell layers" apart — run ce43098a typed 6 into
+        the top-shell Edit for a bottom-shell goal. Titles that appear on
+        more than one label window are dropped as ambiguous."""
+        try:
+            from win32gui import EnumChildWindows, IsWindowVisible
+        except ImportError:  # mocked win32gui in unit tests — labels are optional
+            return []
+        if not sidebar:
+            return []
+        pid = self.scope["app_pid"]
+        found, ambiguous = {}, set()
+
+        def collect(handle, _):
+            if (wu.window_class(handle) != "wxWindowNR" or not IsWindowVisible(handle)
+                    or wu._window_pid(handle) != pid):
+                return True
+            title = wu.window_title(handle).strip()
+            bounds = list(wu.window_rect(handle))
+            if (not title or title == "panel" or len(title) < 3
+                    or bounds[2] - bounds[0] > 400 or not within(sidebar, bounds)):
+                return True
+            if title in found:
+                ambiguous.add(title)
+            else:
+                found[title] = bounds
+            return True
+
+        EnumChildWindows(hwnd, collect)
+        return [(title, found[title]) for title in found if title not in ambiguous]
+
+    @staticmethod
+    def _row_label(labels, field):
+        """Nearest sidebar label sharing the field's row (label to the left)."""
+        best_title, best_gap = None, 10**6
+        center_field = (field[1] + field[3]) / 2
+        for title, bounds in labels:
+            if bounds[2] > field[0] or bounds[3] < field[1] or bounds[1] > field[3]:
+                continue  # not left-of / not overlapping the row
+            center_label = (bounds[1] + bounds[3]) / 2
+            if abs(center_label - center_field) > 14:
+                continue
+            gap = field[0] - bounds[2]
+            if 0 <= gap < best_gap:
+                best_title, best_gap = title, gap
+        return best_title if best_title is not None and best_gap <= 300 else None
+
     def _native_controls(self, wu, hwnd):
         from win32gui import IsChild
 
@@ -526,11 +578,18 @@ class UiaHybridGuard(UiaSaveGuard):
             self.needs_uia_snapshot = False
             self.last_window.update(native_targets=list(self.native_targets.values()), visual_regions=self.visual_regions)
             visible = []
+            try:
+                labels = self._sidebar_labels(wu, hwnd, self.visual_regions.get("wx_sidebar"))
+            except Exception:  # label enrichment must never break observation
+                labels = []
             for element, implementation, record in controls.values():
                 bounds = element.BoundingRectangle
                 observed = {"target": record["target"], "bounds": [bounds.left, bounds.top, bounds.right, bounds.bottom]}
                 if record["pattern"] == "ValuePattern":
                     observed["value"] = implementation.Value
+                    label = self._row_label(labels, observed["bounds"])
+                    if label is not None:
+                        observed["label"] = label
                 visible.append(observed)
             observation = {"controls": visible, "visual_regions": self.visual_regions}
             if self.scope["scenario"] in UIA_ENUM_SCENARIOS:
