@@ -136,12 +136,16 @@ def uia_set_float(ui, label_substr, value):
     root = ControlFromHandle(app.hwnd)
     labels = _sidebar_label_rows(ui)
     wanted = label_substr.strip().casefold()
-    pending = [(root, 0)]
     matches = []
+    pending = [(root, 0)]
     while pending:
         element, depth = pending.pop()
-        if depth < 12:
-            pending.extend((child, depth + 1) for child in element.GetChildren())
+        child = element.GetFirstChildControl()
+        while child is not None:
+            pending.append((child, depth + 1))
+            child = child.GetNextSiblingControl()
+        if depth == 0:
+            continue
         if element.ControlTypeName != "EditControl" or not element.NativeWindowHandle:
             continue
         if not element.IsEnabled or element.IsOffscreen:
