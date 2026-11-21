@@ -72,6 +72,10 @@ def run_ops(ui, ops):
     from . import process_panel as pp
 
     app = ui.app
+    ui.main_input()
+    # Without Advanced the parameter pages show summary rows only - no
+    # individual float Edits (m5c precedent; runs d536b165/4fb3929a).
+    pp.ensure_advanced(app, want=True)
     current_tab = None
     for op in ops:
         tab = op.get("tab") or current_tab
