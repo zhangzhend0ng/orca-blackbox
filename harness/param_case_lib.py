@@ -124,49 +124,37 @@ def _row_label_at(labels, field):
     return best_title if best_title is not None and best_gap <= 300 else None
 
 
-def uia_set_float(ui, label_substr, value):
-    """Set a sidebar float Edit by label pairing + the proven ui.edit commit.
-
-    Pure Win32: enumerate visible Edit children, pair each with its painted
-    row label (no x-column calibration - runs 47bccc5a+ proved the m4g band
-    does not hold on every page), then drive ui.edit (msg-level typing with
-    readback), the same mechanism edit_layer has used GREEN since the
-    script baselines landed."""
+def uia_set_float(ui, label_substr, value, group_substr=None):
+    """Set a sidebar float Edit: OCR locates the painted row (OG_CustomCtrl
+    draws row labels without HWNDs - only group headers are windows, the
+    f5acdb1a census), then the visible Edit whose row-y matches is driven
+    through the proven ui.edit commit. No x-column calibration (the m4g
+    band does not hold on every page - runs 47bccc5a+)."""
     from win32gui import EnumChildWindows, IsWindowVisible, IsWindowEnabled
+    from . import process_panel as pp
 
     wu, app = ui.wu, ui.app
-    labels = _sidebar_label_rows(ui)
-    wanted = label_substr.strip().casefold()
+    word, y_row = pp.find_option_row(app, label_substr, group_substr)
+    if not word:
+        raise ProtocolError("param_row:" + label_substr)
+    left, top, right, bottom = wu.window_rect(_canvas_hwnd(ui))
+    origin_x, origin_y = wu.client_to_screen(app.hwnd, 0, 0)
     matches = []
 
     def collect(handle, _):
         if (wu.window_class(handle) != "Edit" or not IsWindowVisible(handle)
                 or not IsWindowEnabled(handle) or wu._window_pid(handle) != app.pid):
             return True
-        bounds = list(wu.window_rect(handle))
-        label = _row_label_at(labels, bounds)
-        if label and wanted in label.casefold():
-            matches.append((handle, label, bounds))
+        b = wu.window_rect(handle)
+        cy = (b[1] + b[3]) // 2 - origin_y
+        if abs(cy - y_row) <= 14 and left <= (b[0] + b[2]) // 2 < right + 200:
+            matches.append((handle, list(b)))
         return True
 
     EnumChildWindows(app.hwnd, collect, None)
     if len(matches) != 1:
-        dump = []
-
-        def survey(handle, _):
-            if (wu.window_class(handle) != "Edit" or not IsWindowVisible(handle)
-                    or not IsWindowEnabled(handle) or wu._window_pid(handle) != app.pid):
-                return True
-            b = list(wu.window_rect(handle))
-            dump.append(f"Edit@{handle} {b} label={_row_label_at(labels, b)!r}; ")
-            return True
-
-        EnumChildWindows(app.hwnd, survey, None)
-        print("[param-uia] labels=" + repr([t for t, _ in labels])[:400], flush=True)
-        print("[param-uia] edits=" + ("".join(dump)[:900] or "NONE"), flush=True)
         raise ProtocolError("param_uia_field:" + label_substr + ":" + str(len(matches)))
-    handle, _label, bounds = matches[0]
-    origin_x, origin_y = wu.client_to_screen(app.hwnd, 0, 0)
+    handle, bounds = matches[0]
     x = (bounds[0] + bounds[2]) // 2 - origin_x
     y = (bounds[1] + bounds[3]) // 2 - origin_y
     receipt = ui.edit(x, y, str(value))
@@ -204,7 +192,7 @@ def run_ops(ui, ops):
         ui.main_input()
         kind = op["op"]
         if kind == "float":
-            uia_set_float(ui, op["label"], str(op["value"]))
+            uia_set_float(ui, op["label"], str(op["value"]), group_substr=op.get("group"))
             pp.neutralize_focus(app)
         elif kind == "checkbox":
             ok = pp.set_option_checkbox(app, op["label"], op["value"], group_substr=op.get("group"))
