@@ -4,7 +4,8 @@ import time
 from dataclasses import dataclass
 
 from .agent_verify import _require
-from .native_matrix import UIA_DISTURBANCE_SCENARIO, UIA_ENUM_SCENARIOS, UIA_MIX_SCENARIOS, UIA_PROCESS_SCENARIOS
+from .native_matrix import (POPUP_BIND_SCENARIOS, UIA_DISTURBANCE_SCENARIO, UIA_ENUM_SCENARIOS,
+    UIA_FILAMENT_SCENARIOS, UIA_MIX_SCENARIOS, UIA_PROCESS_SCENARIOS)
 from .native_pairwise import PAIR_ENUM_CASES, enum_values
 from .native_process_viewport import PROCESS_VALUES, process_viewports, read_ironing_selection, recheck_viewport, scroll_group
 from .native_save_policy import INPUT_TOOLS, PROCESS_POPUP, InputGuard, UIA_VISUAL_REGIONS, validate_input, validate_uia_selector
@@ -30,11 +31,11 @@ def contains(rect, loc):
     return rect[0] <= loc[0] < rect[2] and rect[1] <= loc[1] < rect[3]
 
 
-def process_popup_near_sidebar(popup, bounds, sidebar, opened_at):
+def process_popup_near_sidebar(popup, bounds, sidebar, opened_at, max_height=180):
     # The held-open Ironing popup crosses the measured sidebar seam by one pixel.
     bounded_sidebar = [sidebar[0], sidebar[1], sidebar[2] + 1, sidebar[3]]
     return (popup["class"] == "wxWindowNR" and popup["name"] == "panel" and within(bounded_sidebar, bounds)
-            and 80 <= bounds[2] - bounds[0] <= 260 and 70 <= bounds[3] - bounds[1] <= 180
+            and 80 <= bounds[2] - bounds[0] <= 260 and 70 <= bounds[3] - bounds[1] <= max_height
             and bounds[0] <= opened_at[0] < bounds[2]
             and min(abs(opened_at[1] - bounds[1]), abs(opened_at[1] - bounds[3])) <= 60)
 
@@ -228,18 +229,19 @@ class UiaHybridGuard(UiaSaveGuard):
         super().record_click(loc, clicks=clicks)
         self.bound_process_popup = None
         self.sidebar_opener = ((list(loc), time.monotonic_ns())
-            if self.scope["scenario"] in UIA_PROCESS_SCENARIOS
+            if self.scope["scenario"] in POPUP_BIND_SCENARIOS
             and self.last_window.get("visual_fallback") == "wx_sidebar"
             and self.last_window.get("target_class") == "wxWindowNR" else None)
 
     def _process_popup(self, wu, hwnd):
-        if self.scope["scenario"] not in UIA_PROCESS_SCENARIOS or self.sidebar_opener is None:
+        if self.scope["scenario"] not in POPUP_BIND_SCENARIOS or self.sidebar_opener is None:
             return None
         opening_loc, opened = self.sidebar_opener
         popup = self._popup(wu, hwnd)
         bounds = list(wu.window_rect(hwnd))
         sidebar = self._regions(wu).get("wx_sidebar")
-        if sidebar is None or not process_popup_near_sidebar(popup, bounds, sidebar, opening_loc):
+        max_height = 420 if self.scope["scenario"] in UIA_FILAMENT_SCENARIOS else 180
+        if sidebar is None or not process_popup_near_sidebar(popup, bounds, sidebar, opening_loc, max_height):
             return None
         proof = {"popup": popup, "bounds": bounds, "sidebar": sidebar, "opened_by": opening_loc}
         if self.bound_process_popup is not None:
@@ -767,7 +769,7 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
         if window.get("route") == "process_popup_visual":
             proof = window["process_popup"]
             popup, bounds, sidebar = proof["popup"], proof["bounds"], proof["sidebar"]
-            _require(scenario in UIA_PROCESS_SCENARIOS and opener is not None
+            _require(scenario in POPUP_BIND_SCENARIOS and opener is not None
                      and proof["opened_by"] == opener[0] and sidebar == opener[1]
                      and (bound_popup == proof
                           or (bound_popup is None
@@ -777,7 +779,8 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
                      and window["app_pid"] == window["foreground_pid"] == app_pid
                      and window["visual_fallback"] == PROCESS_POPUP
                      and window["visual_region"] == window["visual_anchor_region"] == bounds
-                     and process_popup_near_sidebar(popup, bounds, sidebar, opener[0]), "native_process_popup_binding")
+                     and process_popup_near_sidebar(popup, bounds, sidebar, opener[0],
+                         420 if scenario in UIA_FILAMENT_SCENARIOS else 180), "native_process_popup_binding")
             bound_popup = proof
             ticket = (proof, window["visual_crop_id"])
             if name == "Screenshot":
@@ -808,12 +811,13 @@ def verify_hybrid_trace(trace, *, run_id, app_pid, main_hwnd, output_path, scena
                      and type(popup.get("class")) is str and popup["class"], "native_uia_popup_binding")
             proof = window.get("process_popup")
             if proof is not None:
-                _require(scenario in UIA_PROCESS_SCENARIOS and opener is not None
+                _require(scenario in POPUP_BIND_SCENARIOS and opener is not None
                          and proof["popup"] == popup and proof["opened_by"] == opener[0]
                          and proof["sidebar"] == opener[1]
                          and (bound_popup == proof or (bound_popup is None and
                               0 <= row["started_at_ns"] - opener[2] <= POPUP_BIND_LIMIT_NS))
-                         and process_popup_near_sidebar(popup, proof["bounds"], opener[1], opener[0]),
+                         and process_popup_near_sidebar(popup, proof["bounds"], opener[1], opener[0],
+                             420 if scenario in UIA_FILAMENT_SCENARIOS else 180),
                          "native_process_popup_binding")
                 bound_popup = proof
             regions, crop, targets = {}, None, []

@@ -5,7 +5,7 @@ import math
 import re
 from copy import deepcopy
 from .native_diagnostic_recovery import COMMIT_SCENARIO
-from .native_matrix import (CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, SAVE_CLEAR_SCENARIOS,
+from .native_matrix import (CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, SAVE_CLEAR_SCENARIOS, POPUP_BIND_SCENARIOS,
     UIA_ENUM_SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_MIX_SCENARIOS, UIA_PROCESS_SCENARIOS, UIA_REPLAY_CANVAS, UIA_REPLAY_MIX, UIA_REPLAY_PROCESS, UIA_REPLAY_SAVE,
     UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIOS)
 from .native_process_viewport import PROCESS_GROUPS
@@ -39,7 +39,7 @@ def native_tools(scenario):
 def visual_regions(scenario):
     if scenario in UIA_MIX_SCENARIOS:
         return ("wx_sidebar", MIX_DIALOG, MIX_CHOICES)
-    return (*UIA_VISUAL_REGIONS, PROCESS_POPUP) if scenario in UIA_PROCESS_SCENARIOS else UIA_VISUAL_REGIONS
+    return (*UIA_VISUAL_REGIONS, PROCESS_POPUP) if scenario in POPUP_BIND_SCENARIOS else UIA_VISUAL_REGIONS
 
 
 def action_types(scenario):

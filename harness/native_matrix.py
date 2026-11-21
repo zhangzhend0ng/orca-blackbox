@@ -28,6 +28,13 @@ REPLAY_SOURCES = {UIA_REPLAY_SCENARIO: UIA_LAYER_SCENARIO, UIA_REPLAY_SAVE: UIA_
 RECORDED_SCENARIOS = frozenset(REPLAY_SOURCES) | PAIR_CASES.keys()
 UIA_ENUM_SCENARIOS = frozenset((UIA_QUALITY_ENUMS, UIA_REPLAY_ENUMS)) | PAIR_ENUM_CASES
 UIA_PROCESS_SCENARIOS = frozenset((UIA_PROCESS_COMBO, UIA_REPLAY_PROCESS)) | UIA_ENUM_SCENARIOS
+# The filament-slot dropdown in the object list is the same wxWindowNR
+# "panel" popup as the process-value combos (measured: run 26739846 got
+# stuck on it with no legal way to click inside), but its item list is
+# taller than a single-value combo. Bind it under the same ownership and
+# time limits with a taller height budget.
+UIA_FILAMENT_SCENARIOS = frozenset(("uia_general_slot2", "general_slot2", "pilot_material", "pilot_material3"))
+POPUP_BIND_SCENARIOS = UIA_PROCESS_SCENARIOS | UIA_FILAMENT_SCENARIOS
 UIA_MOVE_LAYER_SCENARIOS = frozenset((UIA_MOVE_LAYER, UIA_REPLAY_MOVE_LAYER))
 UIA_MIX_SCENARIOS = frozenset((UIA_MIX_RECIPES, UIA_REPLAY_MIX))
 UIA_SAVE_SCENARIOS = frozenset((UIA_SAVE_SCENARIO, UIA_REPLAY_SAVE))
