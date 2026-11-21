@@ -200,9 +200,17 @@ def uia_set_float(ui, label_substr, value, group_substr=None):
     x = (bounds[0] + bounds[2]) // 2 - origin_x
     y = (bounds[1] + bounds[3]) // 2 - origin_y
     receipt = ui.edit(x, y, str(value))
-    from decimal import Decimal as _D
+    from decimal import Decimal as _D, InvalidOperation as _Inv
+
+    def _num(text):
+        digits = "".join(ch for ch in str(text) if ch.isdigit() or ch == ".")
+        try:
+            return _D(digits)
+        except _Inv:
+            return None
+
     if (receipt["target_hwnd"] != handle
-            or _D(str(receipt["after_text"])) != _D(str(value))):
+            or _num(receipt["after_text"]) != _num(value)):
         raise ProtocolError("param_uia_readback:" + label_substr)
 
 

@@ -40,10 +40,15 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
         return True
 
     EnumChildWindows(app.hwnd, collect, None)
-    if len(combo) != 1:
+    if len(combo) == 1:
+        _handle, bounds = combo[0]
+        cx, cy = (bounds[0] + bounds[2]) // 2, (bounds[1] + bounds[3]) // 2
+    elif len(combo) == 0:
+        # Painted-value combos carry no ComboBox HWND (runs 5e095f2c/
+        # 79ca1e8c): the value zone at the row's right opens the popup.
+        cx, cy = canvas_left - 90, y_row + origin_y
+    else:
         raise ProtocolError("param_combo_field:" + label + ":" + str(len(combo)))
-    _handle, bounds = combo[0]
-    cx, cy = (bounds[0] + bounds[2]) // 2, (bounds[1] + bounds[3]) // 2
     winutil.msg_click_screen(cx, cy, app.hwnd)
     popup = None
     for _ in range(20):
