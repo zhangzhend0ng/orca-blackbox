@@ -1,0 +1,242 @@
+{
+  "manifest_version": "v1",
+  "format": "ndjson",
+  "base_token": "JB5jbAczEa7vZUsWFencTmNnnob",
+  "table_id": "tblKjIVV8KA53kUQ",
+  "rev": 0,
+  "timezone": "Asia/Shanghai",
+  "query_context": {
+    "field_scope": "view_visible_fields",
+    "record_scope": "view_filtered_records"
+  },
+  "requested_limit": 3,
+  "records_count": 3,
+  "page_count": 1,
+  "has_more": true,
+  "next_offset": 3,
+  "record_file": "C:\\coil\\Projects\\SnapmakerOrca\\external\\orca-blackbox\\.worktrees\\glm\\tblKjIVV8KA53kUQ_20261122_024048_407.ndjson",
+  "record_file_size_bytes": 2762,
+  "manifest_file": "C:\\coil\\Projects\\SnapmakerOrca\\external\\orca-blackbox\\.worktrees\\glm\\tblKjIVV8KA53kUQ_20261122_024048_407.manifest.json",
+  "columns": {
+    "record_id": {
+      "physical_type": "string",
+      "stats": {
+        "max_length": 14
+      },
+      "example": "recvuCvWgTS1cX"
+    },
+    "一级分类": {
+      "field_id": "fldavWGyLw",
+      "field_type": "select",
+      "physical_type": "array<string>",
+      "stats": {
+        "empty_count": 0,
+        "max_length": 1,
+        "avg_length": 1
+      },
+      "example": [
+        "ORCA测试"
+      ]
+    },
+    "二级分类": {
+      "field_id": "fldw0kcDfC",
+      "field_type": "select",
+      "physical_type": "array<string>",
+      "stats": {
+        "empty_count": 0,
+        "max_length": 1,
+        "avg_length": 1
+      },
+      "example": [
+        "AI监控"
+      ]
+    },
+    "优先级": {
+      "field_id": "flde69c34Q",
+      "field_type": "select",
+      "physical_type": "array<string>",
+      "stats": {
+        "empty_count": 0,
+        "max_length": 1,
+        "avg_length": 1
+      },
+      "example": [
+        "P0"
+      ]
+    },
+    "前置条件": {
+      "field_id": "fld1qfIqdO",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 0,
+        "max_length": 55
+      },
+      "example": "1. 已启动 Orca 桌面端\n2. 已连接支持缺陷检测的设备"
+    },
+    "功能名称": {
+      "field_id": "fldAEotIia",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 0,
+        "max_length": 16
+      },
+      "example": "打印偏好设置弹窗完整展示"
+    },
+    "功能域": {
+      "field_id": "fldC4rUwsi",
+      "field_type": "select",
+      "physical_type": "array<string>",
+      "stats": {
+        "empty_count": 0,
+        "max_length": 1,
+        "avg_length": 1
+      },
+      "example": [
+        "9 监控-AI打印偏好"
+      ]
+    },
+    "功能模块": {
+      "field_id": "fldfcjo6Iq",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 0,
+        "max_length": 11
+      },
+      "example": "打印偏好设置-入口"
+    },
+    "基线分层": {
+      "field_id": "fldjiN5o4Z",
+      "field_type": "select",
+      "physical_type": "array<string>",
+      "stats": {
+        "empty_count": 0,
+        "max_length": 1,
+        "avg_length": 1
+      },
+      "example": [
+        "核心回归"
+      ]
+    },
+    "备注": {
+      "field_id": "fld1umjyZH",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 3,
+        "max_length": 0
+      },
+      "hint": "All values are empty; type inference may be ambiguous. Avoid analyzing this column unless required."
+    },
+    "执行结果": {
+      "field_id": "fldn6QCcdv",
+      "field_type": "select",
+      "physical_type": "array<string>",
+      "stats": {
+        "empty_count": 3,
+        "max_length": 0,
+        "avg_length": 0
+      },
+      "hint": "All values are empty; type inference may be ambiguous. Avoid analyzing this column unless required."
+    },
+    "来源": {
+      "field_id": "fld9zsv0dL",
+      "field_type": "select",
+      "physical_type": "array<string>",
+      "stats": {
+        "empty_count": 0,
+        "max_length": 1,
+        "avg_length": 1
+      },
+      "example": [
+        "ai监控"
+      ]
+    },
+    "测试步骤": {
+      "field_id": "fld0tQHg5u",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 0,
+        "max_length": 43
+      },
+      "example": "1. 点击「打印偏好设置」按钮\n2. 查看弹窗布局与内容"
+    },
+    "父记录": {
+      "field_id": "fldM3VP25J",
+      "field_type": "link",
+      "physical_type": "array<struct<id string>>",
+      "stats": {
+        "empty_count": 3,
+        "max_length": 0,
+        "avg_length": 0
+      },
+      "hint": "All values are empty; type inference may be ambiguous. Avoid analyzing this column unless required."
+    },
+    "用例标题": {
+      "field_id": "fldXrXuWtl",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 0,
+        "max_length": 20
+      },
+      "example": "Orca端-打印偏好设置弹窗完整展示"
+    },
+    "用例类型": {
+      "field_id": "fldFIIaj25",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 0,
+        "max_length": 7
+      },
+      "example": "UI/功能测试"
+    },
+    "用例编号": {
+      "field_id": "fldvTeeAgW",
+      "field_type": "auto_number",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 0,
+        "max_length": 1
+      },
+      "example": "1"
+    },
+    "自动化状态": {
+      "field_id": "fldKVqf6NU",
+      "field_type": "select",
+      "physical_type": "array<string>",
+      "stats": {
+        "empty_count": 0,
+        "max_length": 1,
+        "avg_length": 1
+      },
+      "example": [
+        "不适用"
+      ]
+    },
+    "路径": {
+      "field_id": "fldejuz6q8",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 0,
+        "max_length": 24
+      },
+      "example": "Orca > Control页 > 打印偏好设置"
+    },
+    "预期结果": {
+      "field_id": "fldDnh8OwQ",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 0,
+        "max_length": 69
+      },
+      "example": "1. 标题栏右侧出现「打印偏好设置」按钮\n2. 按钮可点击\n3. 点击后弹出设置浮层"
+    }
+  }
+}

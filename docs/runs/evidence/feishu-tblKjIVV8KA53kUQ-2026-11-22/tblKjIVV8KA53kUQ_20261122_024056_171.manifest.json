@@ -1,0 +1,241 @@
+{
+  "manifest_version": "v1",
+  "format": "ndjson",
+  "base_token": "JB5jbAczEa7vZUsWFencTmNnnob",
+  "table_id": "tblKjIVV8KA53kUQ",
+  "rev": 0,
+  "timezone": "Asia/Shanghai",
+  "query_context": {
+    "field_scope": "view_visible_fields",
+    "record_scope": "view_filtered_records"
+  },
+  "requested_limit": 500,
+  "records_count": 216,
+  "page_count": 1,
+  "has_more": false,
+  "record_file": "C:\\coil\\Projects\\SnapmakerOrca\\external\\orca-blackbox\\.worktrees\\glm\\tblKjIVV8KA53kUQ_20261122_024056_171.ndjson",
+  "record_file_size_bytes": 228137,
+  "manifest_file": "C:\\coil\\Projects\\SnapmakerOrca\\external\\orca-blackbox\\.worktrees\\glm\\tblKjIVV8KA53kUQ_20261122_024056_171.manifest.json",
+  "columns": {
+    "record_id": {
+      "physical_type": "string",
+      "stats": {
+        "max_length": 16
+      },
+      "example": "recvuCvWgTS1cX"
+    },
+    "一级分类": {
+      "field_id": "fldavWGyLw",
+      "field_type": "select",
+      "physical_type": "array<string>",
+      "stats": {
+        "empty_count": 0,
+        "max_length": 1,
+        "avg_length": 1
+      },
+      "example": [
+        "ORCA测试"
+      ]
+    },
+    "二级分类": {
+      "field_id": "fldw0kcDfC",
+      "field_type": "select",
+      "physical_type": "array<string>",
+      "stats": {
+        "empty_count": 0,
+        "max_length": 1,
+        "avg_length": 1
+      },
+      "example": [
+        "校准"
+      ]
+    },
+    "优先级": {
+      "field_id": "flde69c34Q",
+      "field_type": "select",
+      "physical_type": "array<string>",
+      "stats": {
+        "empty_count": 0,
+        "max_length": 1,
+        "avg_length": 1
+      },
+      "example": [
+        "P0"
+      ]
+    },
+    "前置条件": {
+      "field_id": "fld1qfIqdO",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 4,
+        "max_length": 183
+      },
+      "example": "盘上有对象 A"
+    },
+    "功能名称": {
+      "field_id": "fldAEotIia",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 0,
+        "max_length": 23
+      },
+      "example": "图标"
+    },
+    "功能域": {
+      "field_id": "fldC4rUwsi",
+      "field_type": "select",
+      "physical_type": "array<string>",
+      "stats": {
+        "empty_count": 26,
+        "max_length": 1,
+        "avg_length": 0.8796296296296297
+      },
+      "example": [
+        "性能"
+      ]
+    },
+    "功能模块": {
+      "field_id": "fldfcjo6Iq",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 0,
+        "max_length": 14
+      },
+      "example": "温度"
+    },
+    "基线分层": {
+      "field_id": "fldjiN5o4Z",
+      "field_type": "select",
+      "physical_type": "array<string>",
+      "stats": {
+        "empty_count": 26,
+        "max_length": 1,
+        "avg_length": 0.8796296296296297
+      },
+      "example": [
+        "冒烟"
+      ]
+    },
+    "备注": {
+      "field_id": "fld1umjyZH",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 208,
+        "max_length": 16
+      },
+      "example": "在线主库ID:32"
+    },
+    "执行结果": {
+      "field_id": "fldn6QCcdv",
+      "field_type": "select",
+      "physical_type": "array<string>",
+      "stats": {
+        "empty_count": 216,
+        "max_length": 0,
+        "avg_length": 0
+      },
+      "hint": "All values are empty; type inference may be ambiguous. Avoid analyzing this column unless required."
+    },
+    "来源": {
+      "field_id": "fld9zsv0dL",
+      "field_type": "select",
+      "physical_type": "array<string>",
+      "stats": {
+        "empty_count": 24,
+        "max_length": 1,
+        "avg_length": 0.8888888888888888
+      },
+      "example": [
+        "ai监控"
+      ]
+    },
+    "测试步骤": {
+      "field_id": "fld0tQHg5u",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 0,
+        "max_length": 340
+      },
+      "example": "1. 断开设备连接\n2. 观察弹窗变化"
+    },
+    "父记录": {
+      "field_id": "fldM3VP25J",
+      "field_type": "link",
+      "physical_type": "array<struct<id string>>",
+      "stats": {
+        "empty_count": 216,
+        "max_length": 0,
+        "avg_length": 0
+      },
+      "hint": "All values are empty; type inference may be ambiguous. Avoid analyzing this column unless required."
+    },
+    "用例标题": {
+      "field_id": "fldXrXuWtl",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 0,
+        "max_length": 57
+      },
+      "example": "比较预设"
+    },
+    "用例类型": {
+      "field_id": "fldFIIaj25",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 0,
+        "max_length": 7
+      },
+      "example": "功能测试"
+    },
+    "用例编号": {
+      "field_id": "fldvTeeAgW",
+      "field_type": "auto_number",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 0,
+        "max_length": 3
+      },
+      "example": "1"
+    },
+    "自动化状态": {
+      "field_id": "fldKVqf6NU",
+      "field_type": "select",
+      "physical_type": "array<string>",
+      "stats": {
+        "empty_count": 27,
+        "max_length": 1,
+        "avg_length": 0.875
+      },
+      "example": [
+        "不适用"
+      ]
+    },
+    "路径": {
+      "field_id": "fldejuz6q8",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 20,
+        "max_length": 39
+      },
+      "example": "Orca > 切片"
+    },
+    "预期结果": {
+      "field_id": "fldDnh8OwQ",
+      "field_type": "text",
+      "physical_type": "string|null",
+      "stats": {
+        "null_count": 0,
+        "max_length": 375
+      },
+      "example": "1. 耗材类型切换成功"
+    }
+  }
+}
