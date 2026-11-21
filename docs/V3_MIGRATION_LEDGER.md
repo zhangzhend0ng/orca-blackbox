@@ -210,7 +210,16 @@
 
 （21+2+3+50+8+3+2=89 ✓）另：31 个本批 SHADOW 场景中含登记册外场景行（uia_save_as/overwrite/uia_move_layer/safety×3/cfg×4/dep×2/fixture×2/bound_model_move 等），它们的独立通过支撑表中"代表链"映射；zcode 泛化八槽与探索轮因 guard 阻塞未跑，历史 1/8 不变。
 
-## 下一批即取计划（guard 恢复 ready 后按序执行）
+### slot2 弹窗合同修复票（证据：26739846/1d145d63/94f09686/9a433e77 四败）
+
+现状：`_popup` 验 owned、`_process_popup` 只绑侧栏旁 `wxWindowNR`"panel"值弹窗（45s），Save As 走 UIA；Objects 页签的材料弹窗不在任何合同内 → 模型只能等待或放弃。两条候选路线（可并行评估）：
+- **A 扩弹窗解除**：对已验 owned 的弹窗开放 UIA Invoke 取消/关闭目标（同 Save As Cancel 模式，版本化合同+正反例）。
+- **B 改业务路由**：材料槽 2 目标改走 Prepare 页耗材列（避开 Objects 弹窗），先证 UIA 可达性。
+另注意 goal 提示已含"未列弹窗→报告标题收尾"，本轮行为符合合同——这是能力缺口不是违规。
+
+### bottom_strength 标签绑定修复（已实现 a4a53a6，待复验）
+
+Snapshot 现给侧栏内 ValuePattern 控件附加同排左侧最近 wx 标签（`label` 字段，只读、护栏、歧义丢弃）。复验：`uia_general_bottom_strength --goal-only`。
 
 前置：①clash-guard `/status` ready=true（代理已开+US 出口）；②宿主与客机 v3 检出同 HEAD（`runner/guest_v3_bundle_sync.ps1 -Head <sha>`）；③客机 suite Ready 无孤儿。
 

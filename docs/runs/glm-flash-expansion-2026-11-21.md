@@ -135,3 +135,22 @@ guard 于会话后恢复 ready（OK/US 出口）。客机重新同步至 edcaa13
 ## 分析段终计
 
 本段产出三项定性：①bottom_strength=模型字段误绑（顶/底壳），提交链正常，oracle 拒绝正确；②slot2=材料槽 owned 弹窗导航合同缺口（四败归一）；③Strength 页代表件复验通过。全会话独立验收通过累计 **40**（脚本 31 + zcode 9）。
+
+
+## 并行段（19:2x–20:0x，源 a4a53a6）
+
+**B 线修复**：Snapshot 标签绑定辅助（a4a53a6）——侧栏 ValuePattern 控件附加同排左侧最近 wx 标签；MCP 等待策略移至 probe（驱动默认 0，单测 15s 预算恢复）。全量单测 1428 通过、仅原 2 个先前已存在失败。
+
+**A 线复验（全部零恢复 SHADOW）**：
+
+| Run | 场景 | 结果 |
+|---|---|---|
+| `6cba9296` | uia_general_bottom_strength (goal-only) | **SHADOW（240.6s）——标签绑定修复闭环**：bottom=6 落对字段、top=3 保持（与修复前 top=6/bottom=3 精确镜像） |
+| `213374f7` | others_a | SHADOW（270.6s） |
+| `081c8500` | others_b | SHADOW（257.7s）——11-18 该场景曾失败，本轮过 |
+| `dd08dda2` | save_dialog | SHADOW（275.1s） |
+| `48989b69` | quality_b | SHADOW（236.6s，源 8f281d3 段） |
+
+历史业务矩阵（quality_a/b、strength_a、others_a/b、save_dialog、overwrite）至此在新 HEAD **全项复验通过**。泛化槽 bottom_strength 在 goal-only+标签辅助下通过（dev 口径，冻结矩阵 guided 结果不变）。
+
+**全会话终计：45 个独立验收通过**（脚本 31 + zcode 14）。slot2 弹窗合同修复票两条路线已登记台账。
