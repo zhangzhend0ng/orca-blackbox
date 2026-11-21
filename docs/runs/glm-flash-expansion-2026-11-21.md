@@ -154,3 +154,16 @@ guard 于会话后恢复 ready（OK/US 出口）。客机重新同步至 edcaa13
 历史业务矩阵（quality_a/b、strength_a、others_a/b、save_dialog、overwrite）至此在新 HEAD **全项复验通过**。泛化槽 bottom_strength 在 goal-only+标签辅助下通过（dev 口径，冻结矩阵 guided 结果不变）。
 
 **全会话终计：45 个独立验收通过**（脚本 31 + zcode 14）。slot2 弹窗合同修复票两条路线已登记台账。
+
+
+## slot2 闭环段（20:1x–20:4x，源 532e370→5841436）
+
+按用户指令连续闭环，不逐步停。三轮修复三轮复跑：
+
+| 修复（提交） | 证据 | 复跑 |
+|---|---|---|
+| 弹窗合同开放给耗材槽族+高度预算（532e370） | 卡死弹窗=同款 wxWindowNR/"panel" | `7cae138f`：绑定未触发——弹窗跨侧栏缝超 +1px 容差，弹窗期无裁图可用=死锁 |
+| 几何放宽（缝 160/宽 300/高 480）+popup_bounds 记录+goal 提示教弹窗裁图（e47e13c/69d302d） | `81587927`：死于 recovery_observation（模型恢复协议失误） | `07ab7efb`：模型用 **UIA Invoke** 合法开下拉，但 opener 只认坐标点击→死锁 |
+| **UIA 动作点击也登记 opener**+轨迹携带 popup_opener+验证器重建（5841436） | `df2b6784`：opener=[147,617] 已入轨迹✓、模型主动请求 wx_process_popup 裁图✓，但假定弹窗已开而未观察→致命；`0a7680b4`：UIA 动作后未刷新观察即点击→RecoveryViolation | — |
+
+**终态定性：能力闭环完成，通过受模型时序纪律限制。** 后四跑证明全部合同环节可用（族域、视觉 opener、UIA opener、几何、schema 广告、提示引导），四次失败为四种不同的单步模型失误，每次均被权威层正确拦截、清理确认。泛化锚点 wall(goal-only)✓ / slot2✗（能力口径已通，通过口径待模型/合同提示后续迭代）。
