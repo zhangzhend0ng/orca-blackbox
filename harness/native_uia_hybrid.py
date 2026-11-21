@@ -152,7 +152,7 @@ class UiaHybridGuard(UiaSaveGuard):
                 found[title] = bounds
             return True
 
-        EnumChildWindows(hwnd, collect)
+        EnumChildWindows(hwnd, collect, None)
         return [(title, found[title]) for title in found if title not in ambiguous]
 
     @staticmethod

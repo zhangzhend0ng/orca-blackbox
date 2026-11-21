@@ -85,7 +85,7 @@ def _sidebar_label_rows(ui):
             found[title] = bounds
         return True
 
-    EnumChildWindows(app.hwnd, collect)
+    EnumChildWindows(app.hwnd, collect, None)
     return [(t, found[t]) for t in found if t not in ambiguous]
 
 
@@ -101,7 +101,7 @@ def _canvas_hwnd(ui):
             hits.append(handle)
         return True
 
-    EnumChildWindows(app.hwnd, collect)
+    EnumChildWindows(app.hwnd, collect, None)
     if len(hits) != 1:
         raise ProtocolError("param_canvas_anchor:" + str(len(hits)))
     return hits[0]
@@ -147,7 +147,7 @@ def uia_set_float(ui, label_substr, value):
             matches.append((handle, label, bounds))
         return True
 
-    EnumChildWindows(app.hwnd, collect)
+    EnumChildWindows(app.hwnd, collect, None)
     if len(matches) != 1:
         raise ProtocolError("param_uia_field:" + label_substr + ":" + str(len(matches)))
     handle, _label, bounds = matches[0]
