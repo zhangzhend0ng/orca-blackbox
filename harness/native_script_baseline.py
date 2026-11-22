@@ -291,12 +291,19 @@ def edit_param_cases(ui, scenario):
             {"tab": "Others", "op": "float", "label": "Skirt loops", "value": "3", "group": "Skirt"},
             {"op": "float", "label": "Skirt distance", "value": "5", "group": "Skirt"},
             {"op": "float", "label": "Skirt height", "value": "2", "group": "Skirt"},
-            {"op": "rowcombo", "label": "Draft shield", "target": "Enabled", "group": "Skirt"},
+            # rowcombo on this two-item enum popup twice no-oped (saved
+            # draft_shield stayed 'disabled', runs a4396ae2/2da24319); the
+            # value-anchored combo op is the proven path (#259 ironing type).
+            {"op": "combo", "current": "Disabled", "target": "Enabled", "group": "Skirt"},
         ],
         "uia_param_brim": [
-            {"tab": "Others", "op": "float", "label": "Brim width", "value": "5", "group": "Brim"},
+            # Brim-width Edit renders DISABLED under auto_brim (runs
+            # c84c9bd9/a97ed9b7: param_uia_field 0 matches); pick the type
+            # first so the row edits enable.
+            {"tab": "Others", "op": "rowcombo", "label": "Brim type", "target": "Outer only",
+             "group": "Brim"},
+            {"op": "float", "label": "Brim width", "value": "5", "group": "Brim"},
             {"op": "float", "label": "Brim object gap", "value": "0.2", "group": "Brim"},
-            {"op": "rowcombo", "label": "Brim type", "target": "Outer only", "group": "Brim"},
         ],
     }.get(scenario)
     if ops is None:
