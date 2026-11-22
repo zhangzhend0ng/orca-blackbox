@@ -38,6 +38,10 @@ TRIALS = {
     "uia_param_wall_thin": "pilot_param_266_wall_thin",
     "uia_param_shells_pattern": "pilot_param_267_shells_pattern",
     "uia_param_infill_combo": "pilot_param_268_infill_combo",
+    "uia_param_bridge": "pilot_param_263_bridge",
+    "uia_param_first_speeds": "pilot_param_270_first_speeds",
+    "uia_param_feature_speeds": "pilot_param_271_feature_speeds",
+    "uia_param_fuzzy": "pilot_param_295_fuzzy",
 }
 
 

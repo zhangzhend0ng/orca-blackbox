@@ -84,24 +84,33 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
         # 96c325d3 rebound to the top); wx popup lists page with VK_NEXT,
         # so drive the keyboard first and keep the wheel as fallback.
         import ctypes
+        from win32gui import EnumChildWindows
         u32 = ctypes.windll.user32
-        u32.PostMessageW(ph, 0x0100, 0x22, 0)          # WM_KEYDOWN VK_NEXT
-        u32.PostMessageW(ph, 0x0101, 0x22, 0)          # WM_KEYUP
-        time.sleep(0.6)
-        w, hgt, bgra = winutil.capture_window(ph)
-        img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
-        words = mdu.ocr_words_img(img, scale=3)
-        if any(target.lower() in t.lower() or _soft(t).endswith(_soft(target))
-               for t, *_ in words):
-            continue
-        pt = ((pr[0] + pr[2]) // 2, (pr[1] + pr[3]) // 2)
-        u32.SetCursorPos(pt[0], pt[1])
-        time.sleep(0.15)
-        u32.mouse_event(0x0800, 0, 0, ctypes.c_short(-5).value, 0)
-        time.sleep(0.7)
-        w, hgt, bgra = winutil.capture_window(ph)
-        img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
-        words = mdu.ocr_words_img(img, scale=3)
+        if page == 0:
+            kids = []
+
+            def census(handle, _):
+                kids.append((handle, wu.window_class(handle)))
+                return True
+
+            EnumChildWindows(ph, census, None)
+            print("[popup] children: " + repr(kids)[:300], flush=True)
+        # VK_NEXT closes this popup (run 04b71bcd). wx list popups accept
+        # type-ahead: send the target's first letter, then walk with
+        # VK_DOWN so the list scrolls under the selection, capturing
+        # between steps.
+        u32.PostMessageW(ph, 0x0102, ord(target[0].lower()), 0)   # WM_CHAR
+        time.sleep(0.4)
+        for _step in range(3):
+            u32.PostMessageW(ph, 0x0100, 0x28, 0)                 # VK_DOWN
+            u32.PostMessageW(ph, 0x0101, 0x28, 0)
+            time.sleep(0.25)
+            w, hgt, bgra = winutil.capture_window(ph)
+            img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
+            words = mdu.ocr_words_img(img, scale=3)
+            if any(target.lower() in t.lower() or _soft(t).endswith(_soft(target))
+                   for t, *_ in words):
+                break
     if not clicked:
         raise ProtocolError("param_combo_target:" + target + ":" +
                             "|".join(t for t, *_ in words)[:80])

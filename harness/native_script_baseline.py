@@ -224,6 +224,33 @@ def edit_param_cases(ui, scenario):
             {"op": "rowcombo", "label": "Top surface pattern", "target": "Concentric"},
             {"op": "rowcombo", "label": "Bottom surface pattern", "target": "Rectilinear"},
         ],
+        "uia_param_bridge": [
+            {"tab": "Quality", "tab_hint": "height", "op": "float", "label": "Bridge flow", "value": "1",
+             "group": "Bridge"},
+            {"op": "float", "label": "Bridge density", "value": "100", "group": "Bridge"},
+            {"op": "checkbox", "label": "Thick", "value": True, "group": "Bridge"},
+            {"op": "float", "label": "Max bridge length", "value": "30", "group": "Bridge"},
+        ],
+        "uia_param_first_speeds": [
+            {"tab": "Speed", "tab_hint": "speed", "op": "float", "label": "Initial layer speed",
+             "value": "30", "group": "Initial layer"},
+            {"op": "float", "label": "Initial layer infill", "value": "40", "group": "Initial layer"},
+            {"op": "float", "label": "Initial layer travel", "value": "150", "group": "Initial layer"},
+        ],
+        "uia_param_feature_speeds": [
+            {"tab": "Speed", "tab_hint": "speed", "op": "float", "label": "Outer wall", "value": "100"},
+            {"op": "float", "label": "Inner wall", "value": "150"},
+            {"op": "float", "label": "Sparse infill speed", "value": "200"},
+            {"op": "float", "label": "Top surface", "value": "120"},
+            {"op": "float", "label": "Small perimeter threshold", "value": "10"},
+            {"op": "float", "label": "Small perimeter speed", "value": "50"},
+        ],
+        "uia_param_fuzzy": [
+            {"tab": "Quality", "tab_hint": "height", "op": "rowcombo", "label": "Fuzzy skin",
+             "target": "All external walls", "group": "Fuzzy"},
+            {"op": "float", "label": "point distance", "value": "0.6", "group": "Fuzzy"},
+            {"op": "float", "label": "thickness", "value": "0.3", "group": "Fuzzy"},
+        ],
         "uia_param_infill_combo": [
             {"tab": "Strength", "tab_hint": "loops", "op": "float", "label": "Density", "value": "20",
              "group": "Infill"},
