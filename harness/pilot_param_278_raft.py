@@ -16,6 +16,9 @@ CASE_ID = "param_278_raft"
 GOAL = ("Set raft layers to 3, contact distance 0.2 mm, expansion 5 mm, first "
         "layer density 100% and first layer expansion 5 mm. Preserve the cube "
         "geometry, its placement, material assignment and every other setting.")
-VALUES = {"raft_layers": "3", "raft_contact_distance": "0.2", "raft_expansion": "5",
+# 2026-11-23: raft_expansion dropped - no UI row exists on the params page
+# (Tab.cpp line 2928-2921 appends only the other four). Recorded deviation
+# from the Feishu row, precedent: #267 top_color_penetration_layers.
+VALUES = {"raft_layers": "3", "raft_contact_distance": "0.2",
           "raft_first_layer_density": "100%", "raft_first_layer_expansion": "5"}
 verify_business = make_verify(CASE_ID, VALUES)

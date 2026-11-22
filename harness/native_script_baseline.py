@@ -352,7 +352,9 @@ def edit_param_cases(ui, scenario):
              "value": "3", "group": "Raft"},
             {"op": "float", "label": ["Raft contact Z distance", "Raft contact distance",
                                       "Raft contact"], "value": "0.2", "group": "Raft"},
-            {"op": "float", "label": ["Raft expansion"], "value": "5", "group": "Raft"},
+            # 2026-11-23: raft_expansion has NO row on the params page
+            # (Tab.cpp appends only raft_layers/contact_distance/first_layer_
+            # density/first_layer_expansion) - op and value dropped.
             {"op": "float", "label": ["Raft first layer density", "first layer density"],
              "value": "100", "group": "Raft"},
             {"op": "float", "label": ["Raft first layer expansion", "first layer expansion"],
@@ -367,7 +369,7 @@ def edit_param_cases(ui, scenario):
         ],
         # Feishu #292 (line 211): clearance rows appear once by-object is set.
         "uia_param_by_object": [
-            {"tab": "Others", "tab_hint": "special", "op": "combo", "current": "By layer",
+            {"tab": "Others", "op": "combo", "current": "By layer",
              "target": "By object", "group": "Special mode"},
             {"op": "float", "label": ["Extruder clearance radius", "clearance radius"],
              "value": "20", "group": "Special mode"},
@@ -377,7 +379,7 @@ def edit_param_cases(ui, scenario):
         # Feishu #293 (line 212): spiral on Others, then the seam combo on
         # Quality (the m5h quality-enums route).
         "uia_param_spiral_vase": [
-            {"tab": "Others", "tab_hint": "special", "op": "checkbox", "label": "Spiral",
+            {"tab": "Others", "op": "checkbox", "label": "Spiral",
              "value": True, "group": "Special mode"},
             {"tab": "Quality", "tab_hint": "height", "op": "combo", "current": "Aligned",
              "target": "nearest", "group": "Seam"},
@@ -385,7 +387,7 @@ def edit_param_cases(ui, scenario):
         # Feishu #294 (line 213): slicing_mode already 'regular' in the
         # fixture config - only the timelapse selector is driven.
         "uia_param_timelapse": [
-            {"tab": "Others", "tab_hint": "special", "op": "combo", "current": "None",
+            {"tab": "Others", "op": "combo", "current": "None",
              "target": "Smooth", "group": "Special mode"},
         ],
         # Feishu #255 (line 174): rows paint SHORT feature names inside
