@@ -309,3 +309,13 @@ batch2 四例与两个老卡点的全部证据就绪；引擎与注册链完好�
 **合并**（宿主唯一合并点）：fa 分支（诊断+7 pilot+物理首跑，b4fd7d7）+ Mac 分支（runner 移植+签核表，6dc02a7）均并入本分支并推送；agent 分支 origin 侧同步（codex/mac-author 代理推送；fa 中转检出接力）。
 
 **下一批**：#259 combo 提交步 band 校准；#270 复跑；fa 7 条 authored 首跑；租约释放失败根因（runner 异常路径不释放）。
+
+
+## 续会话（2026-11-22 22:00–23 日 00:25）：#259/#268 双卡点全灭
+
+- **#259 熨烫 `073f086f` SHADOW**：补充路线 **5/5 全闭环**（#254/#259/#266/#267/#268）。收敛链（六轮实证迭代，每轮失败即修）：①combo 元组未解包静默吞错→解包 raise；②find_option_row 滚深 6→12（"lroning type ~ No ironing" 行入 band 但双词值永远匹配不上单 OCR 词）；③词序定位元组 ("No","ironing")+单词 popup target "Topmost"→combo 提交成功、Ironing 组六行重建；④Speed 页行 OCR "lroning"（I→l）需单词包含变体 "roning"（前缀匹配救不了）；⑤编辑值序列化为单元素数组 ['60']→make_verify+inspect_preserved_settings 双处规范化；⑥**键名错位**：分析器返回 ironing_xy_e_moves 而判据读 ironing_moves（恒 0，从未被熨烫用例触发过）。
+- **fa 作者链首验**：#277 support_basic `91678bcb` **SHADOW**（agent 编写→宿主审查合并→VM 首跑一次通过）。
+- fa B2 闭环（04fa1ff）：第二批 7 条（#255-257/#260-261/#272-273）夹具实测键名零偏差+四方注册断言；已合入主线 54582a9。**fa 累计 authored 14 条**。
+- Mac A2 闭环（5c503ca，blocked 精确归因）：wall_loops 控件在硬虚拟化 outline 未物化区、该页所有滚动通道失效、Mac build 预设行无 edit 图标；修正两处上轮误判（AXValue/AXHelp 可读、扁平页滚动箭头有效）；解锁三路径=屏幕录制 TCC/Automation TCC/上游 AX 补全。
+- queue9 其余留证：speed_limits/raft/support_filament/by_object/spiral_vase/timelapse 六族 band 证据归档待校准；first_speeds 三度被陈旧租约楔（unlock 前置未覆盖其场景，租约释放根因仍未修——下一批首项）。
+- 验证器/引擎七项修复全部入主线（a9bcb6f→…→073f086f 前共 5 提交），#259 收敛链本身即引擎硬化史。
