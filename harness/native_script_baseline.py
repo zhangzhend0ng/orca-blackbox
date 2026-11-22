@@ -485,6 +485,101 @@ def edit_param_cases(ui, scenario):
              "label": ["Travel 500", "Travel speed", "Travel"], "value": "300",
              "group": "Travel speed"},
         ],
+        # Feishu #258 (line 177): resolution / slice_closing_radius already
+        # at target - no ops. The two Precision checkboxes anchor on single
+        # band-unique words ('fitting' = Arc fitting; 'height' = Precise Z
+        # height - the Layer height group above is scrolled out of band).
+        "uia_param_arc_resolution": [
+            {"tab": "Quality", "tab_hint": "height", "op": "checkbox",
+             "label": "fitting", "value": True, "group": "Precision"},
+            {"op": "checkbox", "label": "height", "value": True,
+             "group": "Precision"},
+        ],
+        # Feishu #262 (line 181): print_flow_ratio already at target - no
+        # op. Candidates stay prefixed to the painted rows so the group's
+        # 'Only one wall on top surfaces' row ('top surfaces' tail) can
+        # never prefix-match 'Top surface flow'.
+        "uia_param_surface_flow": [
+            {"tab": "Quality", "tab_hint": "height", "op": "float",
+             "label": ["Top surface flow ratio", "Top surface flow"],
+             "value": "1.1", "group": "Walls and surfaces"},
+            {"op": "float", "label": ["Bottom surface flow ratio",
+                                      "Bottom surface flow"], "value": "0.9",
+             "group": "Walls and surfaces"},
+        ],
+        # Feishu #265 (line 184): the three fan keys are Filament-scope
+        # (Cooling page, Tab.cpp:3847) - unreachable from the process panel
+        # (#276 precedent). 'curled' is the band-unique word for the Slow
+        # down for curled perimeters checkbox inside the Speed Overhang
+        # speed group ('Slow down' alone would hit enable_overhang_speed).
+        "uia_param_overhang_curl": [
+            {"tab": "Speed", "tab_hint": "speed", "op": "checkbox",
+             "label": "curled", "value": True, "group": "Overhang"},
+        ],
+        # Feishu #269 (line 188): internal_bridge_support_thickness is in
+        # the loader ignore list (PrintConfig.cpp:7281) - not writable.
+        # The combination checkbox precedes its max-layer sub-row, so the
+        # first 'combination' word anchors the bool; the enum combo runs
+        # LAST (a commit rebuilds the page) with the fork's slot-1 label
+        # Critical Only (popup word 'Critical').
+        "uia_param_infill_structure": [
+            {"tab": "Strength", "tab_hint": "loops", "op": "checkbox",
+             "label": "combination", "value": True, "group": "Advanced"},
+            {"op": "float", "label": ["Minimum sparse infill threshold",
+                                      "Minimum sparse infill"], "value": "10",
+             "group": "Advanced"},
+            {"op": "float", "label": ["External bridge infill direction",
+                                      "External bridge infill",
+                                      "External bridge"], "value": "45",
+             "group": "Advanced"},
+            {"op": "combo", "current": "All", "target": "Critical",
+             "group": "Advanced"},
+        ],
+        # Feishu #275 (line 194): infill_jerk already at target - no op.
+        # Jerk(XY) is second from the page bottom, so the speed and
+        # acceleration rows sharing these short names sit ABOVE and scroll
+        # out of band; value-anchored phrases lead (#272 recipe, fixture
+        # paints 0/9/9/9/12), plain fallbacks resolve top-down (default_jerk
+        # precedes 'Default junction deviation').
+        "uia_param_jerk": [
+            {"tab": "Speed", "tab_hint": "speed", "op": "float",
+             "label": ["Default 0", "Default"], "value": "8", "group": "Jerk"},
+            {"op": "float", "label": ["Outer wall 9", "Outer wall"],
+             "value": "5", "group": "Jerk"},
+            {"op": "float", "label": ["Inner wall 9", "Inner wall"],
+             "value": "6", "group": "Jerk"},
+            {"op": "float", "label": ["Initial layer 9", "Initial layer"],
+             "value": "4", "group": "Jerk"},
+            {"op": "float", "label": ["Travel 12", "Travel"], "value": "10",
+             "group": "Jerk"},
+        ],
+        # Feishu #283 (line 202): five of eight keys already at target -
+        # no ops. 'Prime' alone would anchor the group TITLE ('Prime
+        # tower', no Edit); 'sparse' is the band-unique word for the No
+        # sparse layers checkbox.
+        "uia_param_prime_tower": [
+            {"tab": "Multimaterial", "tab_hint": "tower", "op": "float",
+             "label": ["Prime volume", "Prime vol"], "value": "40",
+             "group": "Prime tower"},
+            {"op": "checkbox", "label": "sparse", "value": True,
+             "group": "Prime tower"},
+            {"op": "float", "label": ["Stabilization cone apex angle",
+                                      "Stabilization cone"], "value": "15",
+             "group": "Prime tower"},
+        ],
+        # Feishu #285 (line 204): ooze_prevention already at target - no
+        # op. 'variation' anchors Temperature variation; the two Preheat
+        # rows sit adjacent, so the phrase join ('Preheat time' vs
+        # 'Preheat steps') tells them apart.
+        "uia_param_ooze_prevention": [
+            {"tab": "Multimaterial", "tab_hint": "tower", "op": "float",
+             "label": ["Temperature variation", "variation"], "value": "-100",
+             "group": "Ooze prevention"},
+            {"op": "float", "label": ["Preheat time", "Preheat"], "value": "15",
+             "group": "Ooze prevention"},
+            {"op": "float", "label": ["Preheat steps"], "value": "2",
+             "group": "Ooze prevention"},
+        ],
     }.get(scenario)
     if ops is None:
         raise ProtocolError("param_case_ops:" + scenario)

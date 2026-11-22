@@ -60,7 +60,11 @@ SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *PAIR_CASES, 
     # Feishu #255-257/#260-261 quality batch + #272-273 speed batch.
     "uia_param_line_width_all", "uia_param_seam_wipe", "uia_param_precision_comp",
     "uia_param_wall_generator", "uia_param_single_wall_avoid",
-    "uia_param_overhang_bridge", "uia_param_travel_speed")
+    "uia_param_overhang_bridge", "uia_param_travel_speed",
+    # Feishu #258/#262/#265/#269/#275 P1 batch + #283/#285 multimaterial batch.
+    "uia_param_arc_resolution", "uia_param_surface_flow",
+    "uia_param_overhang_curl", "uia_param_infill_structure", "uia_param_jerk",
+    "uia_param_prime_tower", "uia_param_ooze_prevention")
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
 UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
@@ -160,6 +164,15 @@ SCENARIOS = {
     "uia_param_single_wall_avoid": ("Quality", None),
     "uia_param_overhang_bridge": ("Speed", None),
     "uia_param_travel_speed": ("Speed", None),
+    # Feishu #258/#262 Quality, #265/#275 Speed, #269 Strength;
+    # #283/#285 begin on the Multimaterial page (verified by 'tower').
+    "uia_param_arc_resolution": ("Quality", None),
+    "uia_param_surface_flow": ("Quality", None),
+    "uia_param_overhang_curl": ("Speed", None),
+    "uia_param_infill_structure": ("Strength", None),
+    "uia_param_jerk": ("Speed", None),
+    "uia_param_prime_tower": ("Multimaterial", None),
+    "uia_param_ooze_prevention": ("Multimaterial", None),
     "authority_probe": ("Quality", None),
 }
 BUSINESS = ("quality_a", "quality_b", "strength_a", "strength_b", "others_a", "others_b", "save_dialog", "overwrite")
