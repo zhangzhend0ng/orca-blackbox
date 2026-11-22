@@ -274,3 +274,16 @@ guard 于会话后恢复 ready（OK/US 出口）。客机重新同步至 edcaa13
 - **#259 熨烫组合**（60237e59/7eadbe35/a3fd0bff）：组合切换已通、Flow/Spacing 为目标值故跳过编辑；卡点=Topmost 选后页面重建中 **Speed 行的绘制标签未OCR命中**（Speed/Ironing speed/speed 三变体全空）。下一步：重建后带 band 打印定位真实标签。
 
 **共享引擎沉淀**（供剩余 39 条直接复用）：行定位（OCR 短语+多词）→ 控件配对（Edit/ComboBox 枚举按行 y，侧栏恒在画布左）→ ui.edit 已证提交链；弹窗选取（捕获+OCR+点击+容错匹配+真光标轮）；脏清单规则；变更集注册表。全部带失败 run 实证注释。
+
+
+## 交接快照（2026-11-22 13:0x，供三机并行新会话接手）
+
+VM 批已收完、桌面空闲、客机 HEAD=6288f47（与远端一致）。最后一批结果：
+
+| Run | 场景 | 错误 | 诊断 |
+|---|---|---|---|
+| `6ec6f4c0` | #268 infill | Gyroid 弹窗空行 | **[popup] children: []**——图案弹窗零子窗，纯自绘列表；VK_NEXT 关弹窗、WM_CHAR 无渲染、滚轮回弹。下一步=真桌面现场试验（拖自绘滚动条/按住列表底部自动滚动），正是 fa706g3 agent 任务A |
+| `eacfc6ff` | #263 bridge | Bridge flow 行未找到 | band 实拍：'Extra briage layers (peta)'/'Filter out small internal bridges'/'Bridge counterbore holes'——Bridge 组实际标签与配置键名不同，Flow/Density 或在折叠区下方 |
+| `121abf7b`/`8946a225` | #270/#271 | gui_wait_timeout | 93s 快败，疑 Speed 页 tab hint/Advanced 流程问题，待 band |
+
+batch2 四例与两个老卡点的全部证据就绪；引擎与注册链完好（batch2 四例合同/单测已过，只差 ops 标签校准）。
