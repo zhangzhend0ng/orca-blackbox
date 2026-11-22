@@ -287,3 +287,25 @@ VM 批已收完、桌面空闲、客机 HEAD=6288f47（与远端一致）。最�
 | `121abf7b`/`8946a225` | #270/#271 | gui_wait_timeout | 93s 快败，疑 Speed 页 tab hint/Advanced 流程问题，待 band |
 
 batch2 四例与两个老卡点的全部证据就绪；引擎与注册链完好（batch2 四例合同/单测已过，只差 ops 标签校准）。
+
+
+## 四面并行会话（2026-11-22 12:45–18:00，GLM 总控）
+
+**编队**：driver v2（teammate_loop2.py：yolo 建会话+权限兜底+轮询到 turn 完成末条提取；v1 三缺陷=blob 令牌污染/权限空答死等/首读即退）。五任务全闭环 REPLY SEEN：
+
+- **fa706g3 任务A**（诊断，008bab6）：#268 配方=真滚轮 −1 格×2、≥400ms 沉降→Gyroid 完整入镜（第 21 项），点词框中心提交；typeahead/VK_DOWN(真+PM)/VK_END 全灭；触摸式伪滚动条上拖=深处；重开弹窗自动定位选中项。#259 真相=ironing_speed("Ironing speed")在 Speed 页 other-layers 组（PrintConfig.cpp:3618+Tab.cpp:2433），Advanced 前置，tesseract 首字母 I→l 须匹配 "roning speed"。侧栏病理：弹窗交互后滚轮死锁、大格复位、页签切换/Advanced 切换复活。
+- **fa706g3 任务B**（6a73dbb）：7 条 pilot（#276-279/#292-294）夹具实测校准（"by object"/"100%"/"normal(auto)"），三方注册+check_registry PASS。
+- **fa706g3 任务C**（3fc337e）：物理 Win10 口径 m0/m1/m2 GREEN；m3j-l RED=SUT 构建差异（nightly c98c6d3 无 MixedFilamentBatchDialog，探针实证）。
+- **Mac 任务A**（1a391d8）：层高正例 `0a24557a` **SHADOW**（68→112 独立重开）；0.32 负对照 `b715f843` 按合同拒绝；壁环数/X+10 NON_GREEN 精确归因（Mac 参数页扁平无页签、后台会话画布不消费合成点击）。
+- **Mac 任务B**（e6eee4d）：P0-3 签核表 89/89（完整 9/部分 15/未覆盖 60/不适用 5、无法评估 0）。
+
+**VM 产线**（batch2 收尾→batch3→校准轮）：
+- 基础设施链修：agent_bridge 轮询 25→45s（app-boot 饱和误杀）；bundle_sync EAP Stop→Continue（git stderr "okay" 在 PS Direct 终止同步）；param 族跳过预点击（Speed 页签 named_child 6/6 gui_wait_timeout）；Speed 标签实证校准（First layer speed/infill、travel="150%"）。
+- **楔子根因**：客机 `.desktop_locks` 陈旧租约→新 run FileExistsError 秒退→demo 等满上限。自愈=批前清锁+timeout 900 看门狗（queue7 起）。
+- **#268 填充组合 `f307ef1f` SHADOW**（3.5min）：Gyroid 弹窗首次选中+参数写入+保持项+冻结重开+G-code 排程全绿。唯二修复=fa 配方入引擎（真滚轮+触摸条兜底+real_drag_screen）与 pilot 键名 top_bottom_infill_wall_overlap（74fe62e3 diff 实证；验证器既有规则已覆盖类型噪声）。
+- 在攻：#259 combo 提交步（row 已达、点击未落，text=None）；#264/#271 标签族与 #290/#291 combo/enable 族——全部留 band 证据；#270 first_speeds 标签已校准待复跑。
+- 补充路线 44 条进度：**已闭环 4/5 → 5 项在库可攻**（#254/#266/#267/#268 + Mac 侧口径）；fa 新 authored 7 条（#276-279/#292-294）注册待跑。
+
+**合并**（宿主唯一合并点）：fa 分支（诊断+7 pilot+物理首跑，b4fd7d7）+ Mac 分支（runner 移植+签核表，6dc02a7）均并入本分支并推送；agent 分支 origin 侧同步（codex/mac-author 代理推送；fa 中转检出接力）。
+
+**下一批**：#259 combo 提交步 band 校准；#270 复跑；fa 7 条 authored 首跑；租约释放失败根因（runner 异常路径不释放）。
