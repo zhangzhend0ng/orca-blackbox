@@ -782,10 +782,12 @@ def find_option_row(session, label_substr, group_substr=None,
               f"{'hit' if hit else 'NOT FOUND'}")
         if not hit:
             return None, None
-    # 2026-11-22: deep groups (Ironing sits 8+ notches down the Quality
-    # page, run 9b9048c4) need more than 6 single-notch wheels; multi-notch
-    # steps reset to top (fa706g3 pathology), so extend depth instead.
-    for _ in range(12):
+    # 2026-11-22: deep groups need more than 6 single-notch wheels;
+    # multi-notch steps reset to top (fa706g3 pathology).
+    # 2026-11-23: an edit commit rebuilds the panel and the scroll lands
+    # anywhere (run 983bab81) - scan down first, then back up.
+    for direction in (-120, 120):
+      for _ in range(12 if direction == -120 else 26):
         words = ocr_band(session, psm=psm)
         print(f"[panel] find_option_row({label_substr!r}) band: "
               f"{' '.join(w for w, *_ in words)[:120]!r}")
@@ -794,7 +796,7 @@ def find_option_row(session, label_substr, group_substr=None,
                 return (x, y, x + ww, y + hh), y + hh // 2
         vp = options_viewport(session)
         if vp:
-            wheel_viewport(session, vp, 1, delta=-120)
+            wheel_viewport(session, vp, 1, delta=direction)
         time.sleep(0.4)
     return None, None
 

@@ -146,23 +146,25 @@ def _find_phrase_row(app, phrase, group_substr=None):
     if group_substr:
         pp.scroll_group_into_view(app, group_substr)
     want = phrase.lower().split()
-    # 2026-11-22: 6 single-notch wheels never reach deep groups (Ironing /
-    # Fuzzy / Overhang sit 8+ notches down, runs c2c8a399/896d2428); the
-    # fa706g3 pathology forbids multi-notch steps (they reset to top), so
-    # extend single-notch depth instead.
-    for _ in range(12):
-        words = pp.ocr_band(app, psm=3)
-        for i, (w, x, y, ww, hh) in enumerate(words):
-            if len(want) == 1 and want[0] in w.lower():
-                return y + hh // 2
-            if len(want) > 1 and w.lower().startswith(want[0]):
-                tail = " ".join(t for t, *_ in words[i:i + len(want)]).lower()
-                if tail.startswith(phrase.lower()):
+    # 2026-11-22: 6 single-notch wheels never reach deep groups; the fa706g3
+    # pathology forbids multi-notch steps (they reset to top).
+    # 2026-11-23: an edit commit REBUILDS the panel and the scroll can land
+    # anywhere (run 983bab81: search started at the page bottom after an
+    # edit) - scan down first, then back up past the start position.
+    for direction in (-120, 120):
+        for _ in range(12 if direction == -120 else 26):
+            words = pp.ocr_band(app, psm=3)
+            for i, (w, x, y, ww, hh) in enumerate(words):
+                if len(want) == 1 and want[0] in w.lower():
                     return y + hh // 2
-        vp = pp.options_viewport(app)
-        if vp:
-            pp.wheel_viewport(app, vp, 1, delta=-120)
-        time.sleep(0.4)
+                if len(want) > 1 and w.lower().startswith(want[0]):
+                    tail = " ".join(t for t, *_ in words[i:i + len(want)]).lower()
+                    if tail.startswith(phrase.lower()):
+                        return y + hh // 2
+            vp = pp.options_viewport(app)
+            if vp:
+                pp.wheel_viewport(app, vp, 1, delta=direction)
+            time.sleep(0.4)
     print("[param-phrase] not found: " + phrase + " | last band: " +
           " ".join(w for w, *_ in words)[:160], flush=True)
     return None
