@@ -382,6 +382,103 @@ def edit_param_cases(ui, scenario):
             {"tab": "Others", "tab_hint": "special", "op": "combo", "current": "None",
              "target": "Smooth", "group": "Special mode"},
         ],
+        # Feishu #255 (line 174): rows paint SHORT feature names inside
+        # the Quality 'Line width' group (PrintConfig labels: Default /
+        # Initial layer / Outer wall / ... - Tab.cpp:2261), not the
+        # table's *_line_width key names; 'Outer wall' also proven by the
+        # #276 run pair.
+        "uia_param_line_width_all": [
+            {"tab": "Quality", "tab_hint": "height", "op": "float", "label": "Default",
+             "value": "0.42", "group": "Line width"},
+            {"op": "float", "label": "Initial layer", "value": "0.5", "group": "Line width"},
+            {"op": "float", "label": ["Outer wall line width", "Outer wall"], "value": "0.42",
+             "group": "Line width"},
+            {"op": "float", "label": ["Inner wall line width", "Inner wall"], "value": "0.45",
+             "group": "Line width"},
+            {"op": "float", "label": "Top surface", "value": "0.4", "group": "Line width"},
+            {"op": "float", "label": "Sparse infill", "value": "0.45", "group": "Line width"},
+            {"op": "float", "label": ["Support line width", "Support"], "value": "0.42",
+             "group": "Line width"},
+        ],
+        # Feishu #256 (line 175): seam_position/seam_gap/role_based_wipe_
+        # speed already at target - no ops. Checkbox labels match ONE
+        # OCR word (find_option_row is word-containment): 'Role' and
+        # 'loops' are unique in the Seam band (band evidence: rows paint
+        # 'Role base wipe speed' - sic, no d - and 'Wipe on loops').
+        # Wipe speed may gray under role-based wipe, so uncheck -> type
+        # -> recheck; final state matches the table.
+        "uia_param_seam_wipe": [
+            {"tab": "Quality", "tab_hint": "height", "op": "checkbox", "label": "Role",
+             "value": False, "group": "Seam"},
+            {"op": "float", "label": "Wipe speed", "value": "50", "group": "Seam"},
+            {"op": "checkbox", "label": "Role", "value": True, "group": "Seam"},
+            {"op": "checkbox", "label": "loops", "value": True, "group": "Seam"},
+        ],
+        # Feishu #257 (line 176): elefant_foot already 0.15 - no op. The
+        # X-Y rows paint exactly 'X-Y hole/contour compensation' (band
+        # result_28417). The 'Precise wall' checkbox is matched by the
+        # word 'wall': every substring of 'Precise' also sits inside the
+        # 'Precision' GROUP TITLE (word-containment would anchor the
+        # title, which has no checkbox), and no word above the row
+        # inside the group contains 'wall'.
+        "uia_param_precision_comp": [
+            {"tab": "Quality", "tab_hint": "height", "op": "float",
+             "label": ["X-Y hole compensation", "hole compensation"], "value": "-0.1",
+             "group": "Precision"},
+            {"op": "float", "label": ["X-Y contour compensation", "contour compensation"],
+             "value": "0.1", "group": "Precision"},
+            {"op": "checkbox", "label": "wall", "value": True, "group": "Precision"},
+        ],
+        # Feishu #260 (line 179): five of seven targets already equal the
+        # fixture values; the combo goes first because the Arachne
+        # sub-rows stay inert while the generator reads Classic.
+        "uia_param_wall_generator": [
+            {"tab": "Quality", "tab_hint": "height", "op": "combo", "current": "Classic",
+             "target": "Arachne", "group": "Wall generator"},
+            {"op": "float", "label": ["Wall distribution count", "distribution count"],
+             "value": "3", "group": "Wall generator"},
+        ],
+        # Feishu #261 (line 180): only_one_wall_top/min_width_top_surface
+        # already at target - no ops. 'layer' anchors the first-layer
+        # checkbox: no row with a checkbox above it paints 'layer'
+        # ('Print infill first' / 'Wall loop direction' do not). The
+        # detour Edit stays grayed until 'Avoid crossing walls' is on,
+        # so that checkbox leads ('crossing' is band-unique).
+        "uia_param_single_wall_avoid": [
+            {"tab": "Quality", "tab_hint": "height", "op": "checkbox", "label": "layer",
+             "value": True, "group": "Walls and surfaces"},
+            {"op": "checkbox", "label": "crossing", "value": True,
+             "group": "Walls and surfaces"},
+            {"op": "float", "label": ["Max detour length", "detour length"], "value": "2",
+             "group": "Walls and surfaces"},
+        ],
+        # Feishu #272 (line 191): the row label 'Overhang speed' equals
+        # the group TITLE text, so a plain phrase anchors the title (no
+        # Edit there -> clean raise). The value-anchored candidates pick
+        # the field row itself - re-anchored per op to the values the
+        # previous edit just painted (fixture paints 0 50 25 5).
+        # overhang_totally_speed does not exist in this fork; bridge
+        # speed and the enable flag already sit at the table targets.
+        "uia_param_overhang_bridge": [
+            {"tab": "Speed", "tab_hint": "speed", "op": "float",
+             "label": ["Overhang speed 0", "Overhang speed"], "value": "40",
+             "group": "Overhang", "field": 0},
+            {"op": "float", "label": ["Overhang speed 40", "Overhang speed"], "value": "30",
+             "group": "Overhang", "field": 1},
+            {"op": "float", "label": ["Overhang speed 40 30", "Overhang speed"], "value": "20",
+             "group": "Overhang", "field": 2},
+            {"op": "float", "label": ["Overhang speed 40 30 20", "Overhang speed"],
+             "value": "10", "group": "Overhang", "field": 3},
+        ],
+        # Feishu #273 (line 192): the row paints just 'Travel' + the
+        # value while the group TITLE reads 'Travel speed' - a plain
+        # 'Travel' label anchors the title (no Edit -> raise), so lead
+        # with the value-anchored phrase (fixture paints 500).
+        "uia_param_travel_speed": [
+            {"tab": "Speed", "tab_hint": "speed", "op": "float",
+             "label": ["Travel 500", "Travel speed", "Travel"], "value": "300",
+             "group": "Travel speed"},
+        ],
     }.get(scenario)
     if ops is None:
         raise ProtocolError("param_case_ops:" + scenario)

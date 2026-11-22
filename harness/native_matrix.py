@@ -56,7 +56,11 @@ SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *PAIR_CASES, 
     # Feishu #276-279 speed/support/raft batch + #292-294 others batch.
     "uia_param_speed_limits", "uia_param_support_basic", "uia_param_raft",
     "uia_param_support_filament", "uia_param_by_object", "uia_param_spiral_vase",
-    "uia_param_timelapse")
+    "uia_param_timelapse",
+    # Feishu #255-257/#260-261 quality batch + #272-273 speed batch.
+    "uia_param_line_width_all", "uia_param_seam_wipe", "uia_param_precision_comp",
+    "uia_param_wall_generator", "uia_param_single_wall_avoid",
+    "uia_param_overhang_bridge", "uia_param_travel_speed")
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
 UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
@@ -148,6 +152,14 @@ SCENARIOS = {
     "uia_param_by_object": ("Others", None),
     "uia_param_spiral_vase": ("Others", None),
     "uia_param_timelapse": ("Others", None),
+    # Feishu #255-257/#260-261 all live on Quality; #272-273 on Speed.
+    "uia_param_line_width_all": ("Quality", None),
+    "uia_param_seam_wipe": ("Quality", None),
+    "uia_param_precision_comp": ("Quality", None),
+    "uia_param_wall_generator": ("Quality", None),
+    "uia_param_single_wall_avoid": ("Quality", None),
+    "uia_param_overhang_bridge": ("Speed", None),
+    "uia_param_travel_speed": ("Speed", None),
     "authority_probe": ("Quality", None),
 }
 BUSINESS = ("quality_a", "quality_b", "strength_a", "strength_b", "others_a", "others_b", "save_dialog", "overwrite")
