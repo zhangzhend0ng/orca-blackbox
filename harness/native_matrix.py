@@ -49,7 +49,10 @@ SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *PAIR_CASES, 
     # Feishu #254 layer-height combination on the standard fixture.
     "uia_param_layer_pair", "uia_param_ironing_top", "uia_param_wall_thin",
     "uia_param_shells_pattern", "uia_param_infill_combo", "uia_param_bridge",
-    "uia_param_first_speeds", "uia_param_feature_speeds", "uia_param_fuzzy")
+    "uia_param_first_speeds", "uia_param_feature_speeds", "uia_param_fuzzy",
+    # Feishu batch 3: overhang tiered speeds, acceleration combo, skirt, brim.
+    "uia_param_overhang_speeds", "uia_param_accelerations", "uia_param_skirt",
+    "uia_param_brim")
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
 UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
@@ -128,6 +131,10 @@ SCENARIOS = {
     "uia_param_first_speeds": ("Speed", None),
     "uia_param_feature_speeds": ("Speed", None),
     "uia_param_fuzzy": ("Quality", None),
+    "uia_param_overhang_speeds": ("Speed", None),
+    "uia_param_accelerations": ("Speed", None),
+    "uia_param_skirt": ("Others", None),
+    "uia_param_brim": ("Others", None),
     "authority_probe": ("Quality", None),
 }
 BUSINESS = ("quality_a", "quality_b", "strength_a", "strength_b", "others_a", "others_b", "save_dialog", "overwrite")

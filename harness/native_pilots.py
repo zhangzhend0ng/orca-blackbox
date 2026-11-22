@@ -42,6 +42,10 @@ TRIALS = {
     "uia_param_first_speeds": "pilot_param_270_first_speeds",
     "uia_param_feature_speeds": "pilot_param_271_feature_speeds",
     "uia_param_fuzzy": "pilot_param_295_fuzzy",
+    "uia_param_overhang_speeds": "pilot_param_264_overhang_speeds",
+    "uia_param_accelerations": "pilot_param_274_accelerations",
+    "uia_param_skirt": "pilot_param_290_skirt",
+    "uia_param_brim": "pilot_param_291_brim",
 }
 
 

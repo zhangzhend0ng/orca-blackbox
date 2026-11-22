@@ -154,7 +154,7 @@ def _find_phrase_row(app, phrase, group_substr=None):
     return None
 
 
-def uia_set_float(ui, label_substr, value, group_substr=None):
+def uia_set_float(ui, label_substr, value, group_substr=None, field_index=0):
     """Set a sidebar float Edit: OCR locates the painted row (OG_CustomCtrl
     draws row labels without HWNDs - only group headers are windows, the
     f5acdb1a census), then the visible Edit whose row-y matches is driven
@@ -183,7 +183,18 @@ def uia_set_float(ui, label_substr, value, group_substr=None):
         return True
 
     EnumChildWindows(app.hwnd, collect, None)
-    if len(matches) != 1:
+    # 2026-11-22 #264: the five overhang degree-band speeds render as ONE
+    # labelled row with five inline Edits (Tab.cpp: Line{L("Overhang speed")}
+    # ...append_option x5); select left-to-right by field_index instead of
+    # failing on the multi-match.
+    matches.sort(key=lambda m: m[1][0])
+    if len(matches) > 1 and 0 <= field_index < len(matches):
+        print(f"[param-uia] row '{label_substr}' has {len(matches)} edits; "
+              f"driving field[{field_index}]", flush=True)
+        handle, bounds = matches[field_index]
+    elif len(matches) == 1:
+        handle, bounds = matches[0]
+    else:
         from win32gui import EnumChildWindows as _ecw2
         seen = []
 
@@ -198,7 +209,6 @@ def uia_set_float(ui, label_substr, value, group_substr=None):
         _ecw2(app.hwnd, survey, None)
         print(f"[param-uia] row_y={y_row} canvas_left={left} edits=" + "".join(seen)[:600], flush=True)
         raise ProtocolError("param_uia_field:" + label_substr + ":" + str(len(matches)))
-    handle, bounds = matches[0]
     x = (bounds[0] + bounds[2]) // 2 - origin_x
     y = (bounds[1] + bounds[3]) // 2 - origin_y
     receipt = ui.edit(x, y, str(value))
@@ -248,7 +258,8 @@ def run_ops(ui, ops):
             last = None
             for candidate in labels:
                 try:
-                    uia_set_float(ui, candidate, str(op["value"]), group_substr=op.get("group"))
+                    uia_set_float(ui, candidate, str(op["value"]), group_substr=op.get("group"),
+                                  field_index=op.get("field", 0))
                     last = None
                     break
                 except ProtocolError as exc:

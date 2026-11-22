@@ -259,6 +259,45 @@ def edit_param_cases(ui, scenario):
             {"op": "float", "label": "overlap", "value": "15"},
             {"op": "rowcombo", "label": "Gap fill", "target": "Everywhere"},
         ],
+        # Feishu #264: detect checkbox lives on Quality; the five band speeds
+        # are one "Overhang speed" row with five inline Edits (field 0..4).
+        "uia_param_overhang_speeds": [
+            {"tab": "Quality", "tab_hint": "height", "op": "checkbox", "label": "Detect overhang",
+             "value": True},
+            {"tab": "Speed", "tab_hint": "speed", "op": "checkbox", "label": "Slow down",
+             "value": True, "group": "Overhang"},
+            {"op": "float", "label": "Overhang speed", "value": "40", "group": "Overhang", "field": 0},
+            {"op": "float", "label": "Overhang speed", "value": "30", "group": "Overhang", "field": 1},
+            {"op": "float", "label": "Overhang speed", "value": "20", "group": "Overhang", "field": 2},
+            {"op": "float", "label": "Overhang speed", "value": "10", "group": "Overhang", "field": 3},
+            {"op": "float", "label": "Overhang speed", "value": "5", "group": "Overhang", "field": 4},
+        ],
+        "uia_param_accelerations": [
+            {"tab": "Speed", "tab_hint": "speed", "op": "float",
+             "label": ["Normal printing", "Default acceleration"], "value": "3000",
+             "group": "Acceleration"},
+            {"op": "float", "label": ["Outer wall", "Outer wall acceleration"], "value": "2000",
+             "group": "Acceleration"},
+            {"op": "float", "label": ["Inner wall", "Inner wall acceleration"], "value": "4000",
+             "group": "Acceleration"},
+            {"op": "float", "label": ["Sparse infill", "Sparse infill acceleration"], "value": "5000",
+             "group": "Acceleration"},
+            {"op": "float", "label": ["Initial layer", "Initial layer acceleration"], "value": "500",
+             "group": "Acceleration"},
+            {"op": "float", "label": ["Travel", "Travel acceleration"], "value": "8000",
+             "group": "Acceleration"},
+        ],
+        "uia_param_skirt": [
+            {"tab": "Others", "op": "float", "label": "Skirt loops", "value": "3", "group": "Skirt"},
+            {"op": "float", "label": "Skirt distance", "value": "5", "group": "Skirt"},
+            {"op": "float", "label": "Skirt height", "value": "2", "group": "Skirt"},
+            {"op": "rowcombo", "label": "Draft shield", "target": "Enabled", "group": "Skirt"},
+        ],
+        "uia_param_brim": [
+            {"tab": "Others", "op": "float", "label": "Brim width", "value": "5", "group": "Brim"},
+            {"op": "float", "label": "Brim object gap", "value": "0.2", "group": "Brim"},
+            {"op": "rowcombo", "label": "Brim type", "target": "Outer only", "group": "Brim"},
+        ],
     }.get(scenario)
     if ops is None:
         raise ProtocolError("param_case_ops:" + scenario)
