@@ -46,7 +46,12 @@ def make_verify(case_id, values, *, schedule=None, ironing=None, cancelled_guard
                 _require(layers["layer_count"] == schedule["layer_count"], "param_layer_count")
                 _require(Decimal(layers["last_z"]) == Decimal(schedule["last_z"]), "param_last_z")
             if ironing:
-                _require(layers.get("ironing_moves", 0) >= ironing["min_moves"], "param_ironing_moves")
+                # 2026-11-23 run 4380d8ff: analyze_gcode reports the count
+                # under 'ironing_xy_e_moves' (agent_layer_verify.py:193);
+                # the old key 'ironing_moves' never existed, so every
+                # ironing case failed the schedule check with 0.
+                _require(layers.get("ironing_xy_e_moves", 0) >= ironing["min_moves"],
+                         "param_ironing_moves")
             result["layer_count"] = layers["layer_count"]
             result["last_z"] = layers["last_z"]
             result["gcode_sha256"] = layers["sha256"]
