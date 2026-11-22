@@ -23,7 +23,10 @@ WORK = Path(__file__).resolve().parent
 APP = Path("/Applications/Snapmaker Orca.app")
 EXE = str(APP / "Contents/MacOS/Snapmaker_Orca")
 SOURCE = WORK / "reference.3mf"
-COPY = WORK / "layer-024-copy.3mf"
+GOAL = (WORK / "goal").read_text().strip() if (WORK / "goal").is_file() else "layer"
+COPY_NAME = (WORK / "copy-name").read_text().strip() if (WORK / "copy-name").is_file() else "layer-024-copy.3mf"
+COPY = WORK / COPY_NAME
+PAN_PRESSES = int((WORK / "pan-presses").read_text().strip()) if (WORK / "pan-presses").is_file() else 10
 BASELINE = WORK / "baseline.3mf"
 PHASES = ("baseline", "edit", "reopen")
 PLATES = {"baseline": "baseline", "reopen": "edited"}
@@ -166,6 +169,18 @@ def read_values(desktop, fields):
     return [desktop.text(e, "AXValue") for e in fields]
 
 
+def save_project(desktop, pid, root, window):
+    bar = desktop.attr(root, "AXMenuBar")
+    file_menu = exactly_one(e for e in desktop.children(bar) if desktop.text(e, "AXTitle") == "File")
+    desktop.act(pid, file_menu, "AXPress")
+    save = exactly_one(e for e in desktop.descendants(file_menu)
+                       if desktop.text(e, "AXRole") == "AXMenuItem" and desktop.text(e, "AXTitle") == "Save Project")
+    wait_for(lambda: desktop.enabled(save), "Save Project did not become available")
+    desktop.act(pid, save, "AXPress")
+    wait_for(lambda: desktop.text(window, "AXTitle") == COPY.stem and COPY.is_file() and digest(COPY) != digest(SOURCE),
+             "Save did not update the named copy", 20)
+
+
 def edit_and_save(desktop, pid, root, window, fields, edit_height):
     import accessibility as ax
 
@@ -176,15 +191,49 @@ def edit_and_save(desktop, pid, root, window, fields, edit_height):
     desktop.act(pid, first_layer, "AXFocused", ax.true_value)
     wait_for(lambda: desktop.text(window, "AXTitle") == "*" + COPY.stem, "Missing unsaved marker")
     require(read_values(desktop, fields) == [edit_height, "0.4"], "Edited fields mismatch")
-    bar = desktop.attr(root, "AXMenuBar")
-    file_menu = exactly_one(e for e in desktop.children(bar) if desktop.text(e, "AXTitle") == "File")
-    desktop.act(pid, file_menu, "AXPress")
-    save = exactly_one(e for e in desktop.descendants(file_menu)
-                       if desktop.text(e, "AXRole") == "AXMenuItem" and desktop.text(e, "AXTitle") == "Save Project")
-    wait_for(lambda: desktop.enabled(save), "Save Project did not become available")
-    desktop.act(pid, save, "AXPress")
-    wait_for(lambda: desktop.text(window, "AXTitle") == COPY.stem and COPY.is_file() and digest(COPY) != digest(SOURCE),
-             "Save did not update the named copy", 20)
+    save_project(desktop, pid, root, window)
+
+
+def open_tab(desktop, pid, window, name):
+    hits = [e for e in desktop.descendants(window)
+            if name in (desktop.text(e, "AXTitle"), desktop.text(e, "AXDescription"))]
+    require(hits, f"No {name} tab candidate in the process panel")
+    clickable = [e for e in hits if desktop.text(e, "AXRole") in ("AXButton", "AXRadioButton", "AXTabButton")]
+    desktop.act(pid, exactly_one(clickable or hits), "AXPress")
+
+
+def wall_field(desktop, window, value):
+    # The Strength page lists Wall loops as its topmost text field (uia_param_wall_thin layout).
+    fields = [e for e in desktop.descendants(window) if desktop.text(e, "AXRole") == "AXTextField"]
+    if not fields:
+        return None
+    fields.sort(key=lambda e: desktop.position(e).y)
+    return fields[0] if desktop.text(fields[0], "AXValue") == value else None
+
+
+def edit_walls_and_save(desktop, pid, root, window):
+    import accessibility as ax
+
+    field = wait_for(lambda: wall_field(desktop, window, "2"), "Strength wall-loops field did not read 2")
+    desktop.act(pid, field, "AXFocused", ax.true_value)
+    desktop.act(pid, field, "AXValue", desktop.string("3"))
+    desktop.act(pid, field, "AXConfirm")
+    wait_for(lambda: desktop.text(window, "AXTitle") == "*" + COPY.stem, "Missing unsaved marker")
+    require(desktop.text(field, "AXValue") == "3", "Wall-loops readback mismatch")
+    save_project(desktop, pid, root, window)
+    return desktop.text(field, "AXValue")
+
+
+PAN_X, PAN_DEPTH, RIGHT_ARROW = 490, 420, 124
+
+
+def pan_and_save(desktop, pid, root, window):
+    # The cube fixture loads centred on the bed; the canvas click selects it and
+    # focuses the OpenGL canvas, then each right arrow nudges the selection in +X.
+    desktop.click_point(pid, root, window, COPY.stem, PAN_X, PAN_DEPTH)
+    desktop.post_key(pid, root, window, COPY.stem, RIGHT_ARROW, PAN_PRESSES)
+    wait_for(lambda: desktop.text(window, "AXTitle") == "*" + COPY.stem, "Missing unsaved marker")
+    save_project(desktop, pid, root, window)
 
 
 def open_plate(pid):
@@ -250,7 +299,11 @@ def worker(report):
     report["test_uid"] = os.getuid()
     source_hash = digest(SOURCE)
     edit_height = (WORK / "edit-height").read_text().strip()
-    require(edit_height in ("0.24", "0.32"), "Unexpected requested GUI edit")
+    require(GOAL in ("layer", "walls", "pan"), "Unexpected requested goal")
+    if GOAL == "layer":
+        require(edit_height in ("0.24", "0.32"), "Unexpected requested GUI edit")
+    if GOAL == "pan":
+        require(1 <= PAN_PRESSES <= 40, "Unexpected pan press count")
     for copy in (COPY, BASELINE):
         with SOURCE.open("rb") as src, copy.open("xb") as dst:
             shutil.copyfileobj(src, dst)
@@ -268,16 +321,32 @@ def worker(report):
             report["failure_stage"] = phase + ".fields"
             fields = wait_for(lambda: layer_fields(desktop, window), "Layer fields did not load")
             values = read_values(desktop, fields)
-            report["phases"][phase] = {"pid": pid, "window": desktop.text(window, "AXTitle"), "layers": values}
-            expected = [edit_height if phase == "reopen" else "0.4", "0.4"]
+            entry = {"pid": pid, "window": desktop.text(window, "AXTitle"), "layers": values}
+            report["phases"][phase] = entry
+            expected = [edit_height if (GOAL == "layer" and phase == "reopen") else "0.4", "0.4"]
             require(values == expected, f"{phase}: expected layers {expected}, got {values}")
+            if GOAL == "walls":
+                report["failure_stage"] = phase + ".wall"
+                open_tab(desktop, pid, window, "Strength")
+                if phase == "edit":
+                    report["failure_stage"] = "edit.wall_save"
+                    entry["wall"] = edit_walls_and_save(desktop, pid, root, window)
+                else:
+                    wanted = "2" if phase == "baseline" else "3"
+                    field = wait_for(lambda: wall_field(desktop, window, wanted),
+                                     f"Strength wall-loops field mismatch in {phase}")
+                    entry["wall"] = desktop.text(field, "AXValue")
+            elif phase == "edit":
+                if GOAL == "layer":
+                    report["failure_stage"] = "edit.save"
+                    edit_and_save(desktop, pid, root, window, fields, edit_height)
+                else:
+                    report["failure_stage"] = "edit.pan_save"
+                    pan_and_save(desktop, pid, root, window)
             if phase in PLATES:
                 report["failure_stage"] = phase + ".slice"
                 project = BASELINE if phase == "baseline" else COPY
                 report["slice_receipts"][PLATES[phase]] = slice_plate(desktop, pid, root, window, phase, project)
-            else:
-                report["failure_stage"] = "edit.save"
-                edit_and_save(desktop, pid, root, window, fields, edit_height)
             desktop.check_session()
             report["failure_stage"] = phase + ".close"
         if phase == "edit":

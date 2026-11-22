@@ -1,4 +1,8 @@
-"""Run the fixed layer-height project-copy case in a Mac's inactive test login."""
+"""Run the fixed layer-height project-copy case in a Mac's inactive test login.
+
+Goals: layer (Quality layer-height edit), walls (Strength wall-loops 2->3),
+pan (canvas +10 mm global-X object move). All goals edit a named copy, save,
+reopen it in a new process and slice; the host verifies independently."""
 import argparse
 import base64
 from datetime import datetime, timezone
@@ -12,23 +16,35 @@ import subprocess
 import sys
 import tarfile
 import uuid
+import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from harness.agent_protocol import LAYER_FIXTURE, LAYER_FIXTURE_SHA256
 from harness.agent_layer_verify import analyze_gcode
+from harness.gcode_check import config_value_all
+from harness.pilot_common import inspect_preserved_settings
+from harness.pilot_transform import verify_translation
 from harness.profile import MINIMAL_CONF, write_conf
 from harness.project_3mf import inspect_project
 
+COPY_NAMES = {"layer": "layer-024-copy.3mf", "walls": "wall-3-copy.3mf", "pan": "pan-x10-copy.3mf"}
 
-def payload(output, run_id, fixture, edit_height):
+
+def settings_of(raw):
+    with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+        return json.loads(archive.read("Metadata/project_settings.config"))
+
+
+def payload(output, run_id, fixture, edit_height, goal, copy_name, pan_presses):
     config = {**MINIMAL_CONF, "app": dict(MINIMAL_CONF["app"])}
     for key in ("orca_upgrade_url", "profile_upgrade_url", "flutter_upgrade_url"):
         config["app"][key] = "http://127.0.0.1:1/version.json"
     seed = output / "seed.conf"
     write_conf(seed, config)
     files = {"reference.3mf": fixture, "run-id": run_id.encode(), "seed.conf": seed.read_bytes(),
-             "edit-height": edit_height.encode()}
+             "edit-height": edit_height.encode(), "goal": goal.encode(), "copy-name": copy_name.encode(),
+             "pan-presses": str(pan_presses).encode()}
     for filename in ("project_copy.py", "accessibility.py"):
         files[filename] = (ROOT / "runner" / "macos" / filename).read_bytes()
     buffer = io.BytesIO()
@@ -74,8 +90,13 @@ def run(args):
     output = ROOT / "artifacts" / "mac_project_copy" / run_id
     output.mkdir(parents=True)
     control = args.wrong_layer_control
-    summary = {"run_id": run_id, "verdict": "NON_GREEN", "candidate": args.candidate,
-               "test_kind": "wrong_layer_control" if control else "layer_comparison",
+    goal = args.goal
+    copy_name = COPY_NAMES[goal]
+    if control and goal != "layer":
+        print("--wrong-layer-control only applies to the layer goal", file=sys.stderr)
+        return 2
+    summary = {"run_id": run_id, "verdict": "NON_GREEN", "candidate": args.candidate, "goal": goal,
+               "test_kind": "wrong_layer_control" if control else f"{goal}_comparison",
                "started_at": datetime.now(timezone.utc).isoformat(), "slices": {},
                "native_save_as": "NOT_TESTED", "gui_gcode_export": "NOT_TESTED"}
     stage = "host.fixture"
@@ -85,7 +106,9 @@ def run(args):
         if hashlib.sha256(fixture).hexdigest() != LAYER_FIXTURE_SHA256:
             raise ValueError("Repository fixture digest mismatch")
         stage = "transport"
-        result = subprocess.run(ssh_command(args), input=payload(output, run_id, fixture, "0.32" if control else "0.24"),
+        result = subprocess.run(ssh_command(args),
+                                input=payload(output, run_id, fixture, "0.32" if control else "0.24",
+                                              goal, copy_name, args.pan_presses),
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=600)
         (output / "ssh.log").write_bytes(result.stderr)
         if result.returncode:
@@ -101,7 +124,7 @@ def run(args):
                 (output / (name + ".gcode")).write_bytes(raw)
         if "project" in reply:
             data = base64.b64decode(reply["project"], validate=True)
-            (output / "layer-024-copy.3mf").write_bytes(data)
+            (output / copy_name).write_bytes(data)
         if report.get("ok") is not True:
             stage = report.get("failure_stage") or "guest"
             raise RuntimeError(report.get("error", "Mac worker did not complete"))
@@ -116,7 +139,7 @@ def run(args):
         phases = report["phases"]
         baseline, edit, reopened = phases["baseline"], phases["edit"], phases["reopen"]
         if (len({baseline["pid"], edit["pid"], reopened["pid"]}) != 3
-                or baseline["layers"] != ["0.4", "0.4"] or edit["window"] != "layer-024-copy"
+                or baseline["layers"] != ["0.4", "0.4"] or edit["window"] != Path(copy_name).stem
                 or reopened["window"] != edit["window"] or edit["layers"] != ["0.4", "0.4"]):
             raise ValueError("Missing independent GUI reopen evidence")
         stage = "verify.baseline_slice"
@@ -130,20 +153,41 @@ def run(args):
             raise ValueError("Mac did not return the saved project")
         if hashlib.sha256(data).hexdigest() != report["saved_sha256"]:
             raise ValueError("Recovered project digest mismatch")
-        try:
-            oracle = inspect_project(data, fixture, layer_height="0.24")
-        except ValueError as error:
-            raise ValueError(f"{error}; expected regular/first layers ['0.24', '0.4'], "
-                             f"reopened GUI read {reopened['layers']}") from error
-        summary["project"] = oracle
-        stage = "verify.reopened_fields"
-        if reopened["layers"] != ["0.24", "0.4"]:
-            raise ValueError(f"Reopened layer fields mismatch: {reopened['layers']}")
+        if goal == "layer":
+            try:
+                oracle = inspect_project(data, fixture, layer_height="0.24")
+            except ValueError as error:
+                raise ValueError(f"{error}; expected regular/first layers ['0.24', '0.4'], "
+                                 f"reopened GUI read {reopened['layers']}") from error
+            summary["project"] = oracle
+            stage = "verify.reopened_fields"
+            if reopened["layers"] != ["0.24", "0.4"]:
+                raise ValueError(f"Reopened layer fields mismatch: {reopened['layers']}")
+        elif goal == "walls":
+            inspect_preserved_settings(settings_of(data), settings_of(fixture), allowed_changes={"wall_loops": "3"})
+            summary["project"] = {**inspect_project(data, fixture, layer_height="0.4"), "wall_loops": "3",
+                                  "preserved_settings": "all except wall_loops 2->3"}
+            stage = "verify.reopened_fields"
+            walls_seen = [baseline.get("wall"), edit.get("wall"), reopened.get("wall")]
+            if walls_seen != ["2", "3", "3"]:
+                raise ValueError(f"Wall readback mismatch across baseline/edit/reopen: {walls_seen}")
         stage = "verify.edited_slice"
         if receipts["edited"]["phase"] != "reopen":
             raise ValueError("Unexpected edited receipt phase")
         summary["slices"]["edited"] = verify_plate(
-            output, "edited", receipts["edited"], reopened["pid"], oracle["sha256"], "0.24", 112)
+            output, "edited", receipts["edited"], reopened["pid"], report["saved_sha256"],
+            "0.24" if goal == "layer" else "0.4", 112 if goal == "layer" else 68)
+        if goal == "walls":
+            echoes = config_value_all((output / "edited.gcode").read_bytes(), "wall_loops")
+            summary["wall_loops_gcode_echo"] = echoes if echoes else "absent"
+            if echoes and set(echoes) != {"3"}:
+                raise ValueError(f"Edited gcode wall_loops echo mismatch: {echoes}")
+            summary["walls_xy_moves"] = {"baseline": summary["slices"]["baseline"]["positive_xy_e_moves"],
+                                         "edited": summary["slices"]["edited"]["positive_xy_e_moves"]}
+        if goal == "pan":
+            stage = "verify.translation"
+            summary["project"] = verify_translation(data, fixture, (output / "edited.gcode").read_bytes(),
+                                                    axis="x", distance=10, cancelled=lambda: False)
         if control:
             stage = "control.unexpected_acceptance"
             raise ValueError("Incorrect input was not detected by the independent checks")
@@ -168,6 +212,10 @@ if __name__ == "__main__":
     parser.add_argument("--identity", type=Path, help="Optional SSH identity file")
     parser.add_argument("--known-hosts", type=Path, help="Optional pinned SSH known_hosts file")
     parser.add_argument("--candidate", help="Build request label for combining platform reports")
+    parser.add_argument("--goal", choices=COPY_NAMES, default="layer",
+                        help="Business goal to run (default: the layer-height pilot)")
+    parser.add_argument("--pan-presses", type=int, default=10,
+                        help="Right-arrow presses for the pan goal (arrow nudge step is measured, not assumed)")
     parser.add_argument("--wrong-layer-control", action="store_true",
                         help="Enter 0.32 in the GUI; the unchanged 0.24 acceptance check must reject it")
     sys.exit(run(parser.parse_args()))

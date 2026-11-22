@@ -61,6 +61,7 @@ decode_bounds = bind(cg, "CGRectMakeWithDictionaryRepresentation", boolean, ptr,
 post_allowed = bind(cg, "CGPreflightPostEventAccess", boolean)
 set_location = bind(cg, "CGEventSetLocation", None, ptr, Point)
 post_to_pid = bind(cg, "CGEventPostToPid", None, integer, ptr)
+create_key = bind(cg, "CGEventCreateKeyboardEvent", ptr, ptr, ct.c_uint32, boolean)
 appkit = framework("AppKit")  # Register NSEvent in the signed worker process.
 objc = ct.CDLL("/usr/lib/libobjc.A.dylib")
 objc_class = bind(objc, "objc_getClass", ptr, ct.c_char_p)
@@ -203,23 +204,40 @@ class Desktop(ExitStack):
             raise RuntimeError("Cannot match a unique Orca window by title, PID and bounds")
         return matches[0], position
 
-    def click_slice(self, pid, root, window, title):
-        # The wx toolbar is custom drawn. These window-local coordinates were measured
-        # on the 1200 x 800 Prepare screen with the two Quality controls visible.
+    def click_point(self, pid, root, window, title, x, depth):
+        # The wx toolbar and canvas are custom drawn. The window-local x and the
+        # depth from the top edge address the 1200 x 800 Prepare screen.
         wid, origin = self.slice_window(pid, root, window, title)
         if not post_allowed():
             raise RuntimeError("Targeted input requires event posting permission")
         make_mouse = selector(b"mouseEventWithType:location:modifierFlags:timestamp:windowNumber:context:eventNumber:clickCount:pressure:")
         for kind in (1, 2):
             self.check_owned(pid, window)
-            event = mouse_event(objc_class(b"NSEvent"), make_mouse, kind, Point(1000, 800 - 45), 0,
+            event = mouse_event(objc_class(b"NSEvent"), make_mouse, kind, Point(x, 800 - depth), 0,
                                 time.monotonic(), wid, None, 1, 1, 1.0 if kind == 1 else 0.0)
             if not event or event_window(event, selector(b"windowNumber")) != wid:
-                raise RuntimeError("Slice event has no matching target window")
+                raise RuntimeError("Pointer event has no matching target window")
             native = event_cg(event, selector(b"CGEvent"))
             if not native:
-                raise RuntimeError("Slice event is unavailable")
-            set_location(native, Point(origin.x + 1000, origin.y + 45))
+                raise RuntimeError("Pointer event is unavailable")
+            set_location(native, Point(origin.x + x, origin.y + depth))
             post_to_pid(pid, native)
             time.sleep(0.16)
         return wid
+
+    def click_slice(self, pid, root, window, title):
+        # Measured slice-button spot on the 1200 x 800 Prepare toolbar.
+        return self.click_point(pid, root, window, title, 1000, 45)
+
+    def post_key(self, pid, root, window, title, key_code, presses):
+        self.slice_window(pid, root, window, title)
+        if not post_allowed():
+            raise RuntimeError("Targeted input requires event posting permission")
+        for _ in range(presses):
+            for pressed in (True, False):
+                event = create_key(None, key_code, pressed)
+                if not event:
+                    raise RuntimeError("Keyboard event is unavailable")
+                post_to_pid(pid, event)
+                time.sleep(0.05)
+            time.sleep(0.12)
