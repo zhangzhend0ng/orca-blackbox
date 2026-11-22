@@ -30,6 +30,11 @@ def make_verify(case_id, values, *, schedule=None, ironing=None, cancelled_guard
         result = {"case_id": case_id, "other_settings_preserved": True}
         for key, want in values.items():
             got = actual.get(key)
+            # 2026-11-22 run 992adb68: the app serializes an EDITED value as a
+            # one-element list ('60' -> ['60'], ironing_speed) while untouched
+            # keys keep scalar form - accept both shapes.
+            if isinstance(got, list) and len(got) == 1 and not isinstance(want, list):
+                got = got[0]
             _require(Decimal(str(got)) == Decimal(str(want)) if _numeric(want) else got == want,
                      "param_value:" + key)
             result[key] = got
