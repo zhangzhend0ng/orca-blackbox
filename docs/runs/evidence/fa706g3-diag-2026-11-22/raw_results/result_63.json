@@ -1,0 +1,69 @@
+{
+ "id": 63,
+ "ok": true,
+ "steps": [
+  {
+   "ok": true,
+   "i": 0,
+   "action": "fg",
+   "err": null,
+   "ms": 11
+  },
+  {
+   "i": 1,
+   "action": "wheel",
+   "ok": true,
+   "err": null,
+   "ms": 482
+  },
+  {
+   "words": [],
+   "i": 2,
+   "action": "ocr",
+   "ok": true,
+   "err": null,
+   "ms": 92
+  },
+  {
+   "i": 3,
+   "action": "wheel",
+   "ok": true,
+   "err": null,
+   "ms": 481
+  },
+  {
+   "i": 4,
+   "action": "wheel",
+   "ok": true,
+   "err": null,
+   "ms": 481
+  },
+  {
+   "i": 5,
+   "action": "wheel",
+   "ok": true,
+   "err": null,
+   "ms": 481
+  },
+  {
+   "words": [],
+   "i": 6,
+   "action": "ocr",
+   "ok": true,
+   "err": null,
+   "ms": 100
+  },
+  {
+   "path": "C:\\coil\\fa706_diag\\out\\f_popup.png",
+   "w": 211,
+   "h": 527,
+   "src_w": 211,
+   "src_h": 527,
+   "i": 7,
+   "action": "shot",
+   "ok": true,
+   "err": null,
+   "ms": 2
+  }
+ ]
+}

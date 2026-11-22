@@ -1,0 +1,99 @@
+{
+ "id": 32,
+ "ok": false,
+ "steps": [
+  {
+   "i": 0,
+   "action": "click",
+   "ok": true,
+   "err": null,
+   "ms": 143
+  },
+  {
+   "i": 1,
+   "action": "sleep",
+   "ok": true,
+   "err": null,
+   "ms": 900
+  },
+  {
+   "popup": null,
+   "rect": null,
+   "i": 2,
+   "action": "findpopup",
+   "ok": true,
+   "err": null,
+   "ms": 0
+  },
+  {
+   "i": 3,
+   "action": "move",
+   "ok": true,
+   "err": null,
+   "ms": 31
+  },
+  {
+   "i": 4,
+   "action": "wheel",
+   "ok": true,
+   "err": null,
+   "ms": 481
+  },
+  {
+   "i": 5,
+   "action": "ocr",
+   "ok": false,
+   "err": "RuntimeError: no popup located (run findpopup first)",
+   "ms": 0
+  },
+  {
+   "i": 6,
+   "action": "wheel",
+   "ok": true,
+   "err": null,
+   "ms": 482
+  },
+  {
+   "i": 7,
+   "action": "ocr",
+   "ok": false,
+   "err": "RuntimeError: no popup located (run findpopup first)",
+   "ms": 0
+  },
+  {
+   "i": 8,
+   "action": "wheel",
+   "ok": true,
+   "err": null,
+   "ms": 481
+  },
+  {
+   "i": 9,
+   "action": "ocr",
+   "ok": false,
+   "err": "RuntimeError: no popup located (run findpopup first)",
+   "ms": 0
+  },
+  {
+   "i": 10,
+   "action": "wheel",
+   "ok": true,
+   "err": null,
+   "ms": 481
+  },
+  {
+   "i": 11,
+   "action": "ocr",
+   "ok": false,
+   "err": "RuntimeError: no popup located (run findpopup first)",
+   "ms": 0
+  },
+  {
+   "i": 12,
+   "action": "shot",
+   "ok": false,
+   "err": "RuntimeError: no popup located (run findpopup first)",
+   "ms": 0
+  }
+ ]
+}

@@ -1,0 +1,156 @@
+{
+ "id": 27837,
+ "ok": true,
+ "steps": [
+  {
+   "hwnd": 921128,
+   "vk": 40,
+   "times": 1,
+   "i": 0,
+   "action": "pkey",
+   "ok": true,
+   "err": null,
+   "ms": 0
+  },
+  {
+   "i": 1,
+   "action": "sleep",
+   "ok": true,
+   "err": null,
+   "ms": 300
+  },
+  {
+   "words": [],
+   "i": 2,
+   "action": "ocr",
+   "ok": true,
+   "err": null,
+   "ms": 135
+  },
+  {
+   "hwnd": 921128,
+   "vk": 40,
+   "times": 1,
+   "i": 3,
+   "action": "pkey",
+   "ok": true,
+   "err": null,
+   "ms": 0
+  },
+  {
+   "i": 4,
+   "action": "sleep",
+   "ok": true,
+   "err": null,
+   "ms": 300
+  },
+  {
+   "words": [],
+   "i": 5,
+   "action": "ocr",
+   "ok": true,
+   "err": null,
+   "ms": 105
+  },
+  {
+   "hwnd": 921128,
+   "vk": 40,
+   "times": 1,
+   "i": 6,
+   "action": "pkey",
+   "ok": true,
+   "err": null,
+   "ms": 0
+  },
+  {
+   "i": 7,
+   "action": "sleep",
+   "ok": true,
+   "err": null,
+   "ms": 300
+  },
+  {
+   "words": [],
+   "i": 8,
+   "action": "ocr",
+   "ok": true,
+   "err": null,
+   "ms": 97
+  },
+  {
+   "hwnd": 921128,
+   "vk": 40,
+   "times": 1,
+   "i": 9,
+   "action": "pkey",
+   "ok": true,
+   "err": null,
+   "ms": 0
+  },
+  {
+   "i": 10,
+   "action": "sleep",
+   "ok": true,
+   "err": null,
+   "ms": 301
+  },
+  {
+   "words": [],
+   "i": 11,
+   "action": "ocr",
+   "ok": true,
+   "err": null,
+   "ms": 99
+  },
+  {
+   "hwnd": 921128,
+   "vk": 40,
+   "times": 1,
+   "i": 12,
+   "action": "pkey",
+   "ok": true,
+   "err": null,
+   "ms": 0
+  },
+  {
+   "i": 13,
+   "action": "sleep",
+   "ok": true,
+   "err": null,
+   "ms": 301
+  },
+  {
+   "words": [],
+   "i": 14,
+   "action": "ocr",
+   "ok": true,
+   "err": null,
+   "ms": 105
+  },
+  {
+   "hwnd": 921128,
+   "vk": 40,
+   "times": 1,
+   "i": 15,
+   "action": "pkey",
+   "ok": true,
+   "err": null,
+   "ms": 0
+  },
+  {
+   "i": 16,
+   "action": "sleep",
+   "ok": true,
+   "err": null,
+   "ms": 301
+  },
+  {
+   "words": [],
+   "i": 17,
+   "action": "ocr",
+   "ok": true,
+   "err": null,
+   "ms": 101
+  }
+ ]
+}

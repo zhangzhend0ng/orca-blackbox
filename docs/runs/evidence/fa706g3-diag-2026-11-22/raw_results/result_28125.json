@@ -1,0 +1,60 @@
+{
+ "id": 28125,
+ "ok": true,
+ "steps": [
+  {
+   "path": "C:\\coil\\fa706_diag\\out\\q259_dbg_before.png",
+   "w": 120,
+   "h": 1050,
+   "src_w": 1920,
+   "src_h": 1040,
+   "i": 0,
+   "action": "shot",
+   "ok": true,
+   "err": null,
+   "ms": 21
+  },
+  {
+   "screen": [
+    200,
+    800
+   ],
+   "i": 1,
+   "action": "wheelclient",
+   "ok": true,
+   "err": null,
+   "ms": 31
+  },
+  {
+   "i": 2,
+   "action": "sleep",
+   "ok": true,
+   "err": null,
+   "ms": 600
+  },
+  {
+   "path": "C:\\coil\\fa706_diag\\out\\q259_dbg_after.png",
+   "w": 120,
+   "h": 1050,
+   "src_w": 1920,
+   "src_h": 1040,
+   "i": 3,
+   "action": "shot",
+   "ok": true,
+   "err": null,
+   "ms": 21
+  },
+  {
+   "path": "C:\\coil\\fa706_diag\\out\\q259_dbg_full.png",
+   "w": 1920,
+   "h": 1040,
+   "src_w": 1920,
+   "src_h": 1040,
+   "i": 4,
+   "action": "shot",
+   "ok": true,
+   "err": null,
+   "ms": 48
+  }
+ ]
+}

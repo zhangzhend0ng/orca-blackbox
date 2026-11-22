@@ -1,0 +1,28 @@
+{
+ "id": 27836,
+ "ok": true,
+ "steps": [
+  {
+   "popup": 921128,
+   "rect": [
+    246,
+    440,
+    457,
+    967
+   ],
+   "attempt": 1,
+   "i": 0,
+   "action": "openpopup",
+   "ok": true,
+   "err": null,
+   "ms": 650
+  },
+  {
+   "i": 1,
+   "action": "sleep",
+   "ok": true,
+   "err": null,
+   "ms": 800
+  }
+ ]
+}

@@ -1,0 +1,166 @@
+{
+ "id": 51,
+ "ok": true,
+ "steps": [
+  {
+   "i": 0,
+   "action": "wheel",
+   "ok": true,
+   "err": null,
+   "ms": 331
+  },
+  {
+   "i": 1,
+   "action": "wheel",
+   "ok": true,
+   "err": null,
+   "ms": 330
+  },
+  {
+   "i": 2,
+   "action": "wheel",
+   "ok": true,
+   "err": null,
+   "ms": 331
+  },
+  {
+   "i": 3,
+   "action": "wheel",
+   "ok": true,
+   "err": null,
+   "ms": 332
+  },
+  {
+   "i": 4,
+   "action": "wheel",
+   "ok": true,
+   "err": null,
+   "ms": 332
+  },
+  {
+   "i": 5,
+   "action": "wheel",
+   "ok": true,
+   "err": null,
+   "ms": 331
+  },
+  {
+   "i": 6,
+   "action": "wheel",
+   "ok": true,
+   "err": null,
+   "ms": 331
+  },
+  {
+   "i": 7,
+   "action": "wheel",
+   "ok": true,
+   "err": null,
+   "ms": 332
+  },
+  {
+   "i": 8,
+   "action": "sleep",
+   "ok": true,
+   "err": null,
+   "ms": 500
+  },
+  {
+   "words": [
+    [
+     "Direct",
+     374,
+     727,
+     46,
+     16,
+     95
+    ],
+    [
+     "oR",
+     390,
+     780,
+     30,
+     15,
+     84
+    ],
+    [
+     "Infill",
+     373,
+     835,
+     47,
+     16,
+     91
+    ],
+    [
+     "V",
+     413,
+     833,
+     6,
+     23,
+     76
+    ],
+    [
+     "Apply",
+     376,
+     863,
+     44,
+     16,
+     96
+    ],
+    [
+     "e",
+     359,
+     895,
+     6,
+     6,
+     53
+    ],
+    [
+     "Filter",
+     373,
+     891,
+     47,
+     16,
+     90
+    ],
+    [
+     "Anche",
+     374,
+     919,
+     45,
+     16,
+     94
+    ],
+    [
+     "e",
+     359,
+     951,
+     6,
+     6,
+     59
+    ],
+    [
+     "Intern,",
+     373,
+     948,
+     46,
+     15,
+     81
+    ],
+    [
+     "e",
+     359,
+     979,
+     6,
+     6,
+     88
+    ]
+   ],
+   "i": 9,
+   "action": "ocr",
+   "ok": true,
+   "err": null,
+   "ms": 183
+  }
+ ]
+}
