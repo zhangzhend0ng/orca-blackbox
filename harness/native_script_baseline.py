@@ -232,18 +232,24 @@ def edit_param_cases(ui, scenario):
             {"op": "float", "label": "Max bridge length", "value": "30", "group": "Bridge"},
         ],
         "uia_param_first_speeds": [
-            {"tab": "Speed", "tab_hint": "speed", "op": "float", "label": "Initial layer speed",
-             "value": "30", "group": "Initial layer"},
-            {"op": "float", "label": "Initial layer infill", "value": "40", "group": "Initial layer"},
-            {"op": "float", "label": "Initial layer travel", "value": "150", "group": "Initial layer"},
+            # Band evidence (run 5edba086): the Speed page rows read
+            # "First layer speed / First layer infill / Initial layer travel";
+            # travel is a coFloatsOrPercent stored with '%' (preset "80%").
+            {"tab": "Speed", "tab_hint": "speed", "op": "float",
+             "label": ["First layer speed", "Initial layer speed"], "value": "30",
+             "group": "Initial layer"},
+            {"op": "float", "label": ["First layer infill", "Initial layer infill"], "value": "40",
+             "group": "Initial layer"},
+            {"op": "float", "label": ["Initial layer travel", "First layer travel"], "value": "150%",
+             "group": "Initial layer"},
         ],
         "uia_param_feature_speeds": [
             {"tab": "Speed", "tab_hint": "speed", "op": "float", "label": "Outer wall", "value": "100"},
             {"op": "float", "label": "Inner wall", "value": "150"},
-            {"op": "float", "label": "Sparse infill speed", "value": "200"},
+            {"op": "float", "label": ["Sparse infill", "Infill"], "value": "200"},
             {"op": "float", "label": "Top surface", "value": "120"},
-            {"op": "float", "label": "Small perimeter threshold", "value": "10"},
-            {"op": "float", "label": "Small perimeter speed", "value": "50"},
+            {"op": "float", "label": ["Small perimeter threshold", "Small perimeter linewidth"], "value": "10"},
+            {"op": "float", "label": ["Small perimeter speed", "Small perimeter"], "value": "50"},
         ],
         "uia_param_fuzzy": [
             {"tab": "Quality", "tab_hint": "height", "op": "rowcombo", "label": "Fuzzy skin",
