@@ -97,7 +97,13 @@ def inspect_preserved_settings(actual, expected, *, allowed_changes=None, cancel
                      "pilot_dirty_manifest_out_of_scope")
             continue
         if key in changes:
-            _require(after == changes[key], "pilot_target_setting_mismatch")
+            # 2026-11-23 run bb647e54: edited values can serialize as a
+            # one-element list (ironing_speed ['60']); normalize before the
+            # target comparison (same rule as make_verify's value loop).
+            want_v = changes[key]
+            if isinstance(after, list) and len(after) == 1 and not isinstance(want_v, list):
+                after = after[0]
+            _require(after == want_v, "pilot_target_setting_mismatch")
             continue
         if after == before:
             continue
