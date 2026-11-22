@@ -209,10 +209,14 @@ def edit_param_cases(ui, scenario):
         "uia_param_ironing_top": [
             {"tab": "Quality", "tab_hint": "height", "op": "combo", "current": "No ironing",
              "target": "Topmost surface", "group": "Ironing"},
-            # Flow (10%) and Spacing (0.15) already equal the case targets;
-            # typing into the ratio-clamped Flow spin corrupted it (run
-            # 60237e59 read back '2') - only Speed needs an edit.
-            {"op": "float", "label": ["Speed", "Ironing speed", "speed"], "value": "60", "group": "Ironing"},
+            # fa706g3 diagnosis 2026-11-22: the ironing SPEED row is NOT in
+            # the Quality rebuild - ironing_speed ("Ironing speed", mm/s)
+            # lives on the Speed tab other-layers group (PrintConfig.cpp:3618
+            # + Tab.cpp:2433); tesseract reads the leading I as l, so match
+            # 'roning speed' first. Flow (10%) and Spacing (0.15) already
+            # equal the case targets (run 60237e59 readback note).
+            {"tab": "Speed", "tab_hint": "speed", "op": "float",
+             "label": ["roning speed", "Ironing speed"], "value": "60"},
         ],
         "uia_param_wall_thin": [
             {"tab": "Strength", "tab_hint": "loops", "op": "float", "label": "Wall loops", "value": "4"},

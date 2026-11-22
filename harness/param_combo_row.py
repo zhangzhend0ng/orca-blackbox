@@ -79,13 +79,15 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
                 break
         if clicked:
             break
-        # Long lists (Gyroid sits pages down, run 9866d291). Mouse wheels
-        # do not accumulate on this self-drawn popup (runs 7968a6db/
-        # 96c325d3 rebound to the top); wx popup lists page with VK_NEXT,
-        # so drive the keyboard first and keep the wheel as fallback.
-        import ctypes
+        # 2026-11-22 fa706g3 hands-on diagnosis (fa706g3-gui-diag-2026-11-22):
+        # the popup is a childless self-drawn list. WM_CHAR typeahead never
+        # renders, and ANY key (VK_NEXT / VK_DOWN, real or posted) CLOSES it.
+        # The proven deep-item recipe is a REAL wheel, ONE notch per step
+        # with >=0.4s settle (Gyroid fully visible after 2 notches, list
+        # freezes after ~4), with the touch-style painted bar as fallback
+        # (drag UP = content follows finger deeper) where the wheel does
+        # not accumulate at all (VM 2.4.0 rebound records).
         from win32gui import EnumChildWindows
-        u32 = ctypes.windll.user32
         if page == 0:
             kids = []
 
@@ -95,22 +97,28 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
 
             EnumChildWindows(ph, census, None)
             print("[popup] children: " + repr(kids)[:300], flush=True)
-        # VK_NEXT closes this popup (run 04b71bcd). wx list popups accept
-        # type-ahead: send the target's first letter, then walk with
-        # VK_DOWN so the list scrolls under the selection, capturing
-        # between steps.
-        u32.PostMessageW(ph, 0x0102, ord(target[0].lower()), 0)   # WM_CHAR
-        time.sleep(0.4)
-        for _step in range(3):
-            u32.PostMessageW(ph, 0x0100, 0x28, 0)                 # VK_DOWN
-            u32.PostMessageW(ph, 0x0101, 0x28, 0)
-            time.sleep(0.25)
+        pcx, pcy = (pr[0] + pr[2]) // 2, (pr[1] + pr[3]) // 2
+        winutil.real_wheel_screen(pcx, pcy, -1)
+        time.sleep(0.45)
+        w, hgt, bgra = winutil.capture_window(ph)
+        img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
+        words = mdu.ocr_words_img(img, scale=3)
+        for t, x, y, ww, hh in words:
+            if target.lower() in t.lower() or _soft(t).endswith(_soft(target)):
+                winutil.msg_click_screen(pr[0] + x + ww // 2, pr[1] + y + hh // 2)
+                clicked = True
+                break
+        if clicked:
+            break
+        if page == 1:
+            # Wheel not accumulating on this build: pull the touch-style
+            # bar (right edge, drag UP drags deep items into view).
+            winutil.real_drag_screen(pr[2] - 6, pcy + (pr[3] - pr[1]) // 4,
+                                     pr[2] - 6, pcy - (pr[3] - pr[1]) // 4)
+            time.sleep(0.6)
             w, hgt, bgra = winutil.capture_window(ph)
             img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
             words = mdu.ocr_words_img(img, scale=3)
-            if any(target.lower() in t.lower() or _soft(t).endswith(_soft(target))
-                   for t, *_ in words):
-                break
     if not clicked:
         raise ProtocolError("param_combo_target:" + target + ":" +
                             "|".join(t for t, *_ in words)[:80])

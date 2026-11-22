@@ -522,6 +522,26 @@ def real_wheel_screen(x: int, y: int, notches: int) -> None:
     user32.mouse_event(MOUSEEVENTF_WHEEL, 0, 0, 120 * int(notches), 0)
 
 
+def real_drag_screen(x0: int, y0: int, x1: int, y1: int, steps: int = 14,
+                     settle: float = 0.04) -> None:
+    """Real (input-queue) left-button drag between two screen points.
+
+    2026-11-22 fa706g3 diagnosis, mechanism (b): the pattern popup's painted
+    scrollbar is TOUCH-STYLE (content follows the finger) - pressing near the
+    right edge and dragging UP pulls deep items into view. Fallback for
+    builds where popup wheels do not accumulate at all (VM 2.4.0 records).
+    """
+    user32.SetCursorPos(int(x0), int(y0))
+    time.sleep(0.12)
+    user32.mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+    time.sleep(0.08)
+    for i in range(1, steps + 1):
+        user32.SetCursorPos(int(x0 + (x1 - x0) * i / steps),
+                            int(y0 + (y1 - y0) * i / steps))
+        time.sleep(settle)
+    user32.mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+
+
 def demote_window(hwnd: int) -> bool:
     """One PASSIVE demotion pass on `hwnd`: bottom of the z-order, and — the
     load-bearing bit — WS_EX_NOACTIVATE, which forbids the window from ever
