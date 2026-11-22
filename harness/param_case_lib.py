@@ -149,6 +149,8 @@ def _find_phrase_row(app, phrase, group_substr=None):
         if vp:
             pp.wheel_viewport(app, vp, 1, delta=-120)
         time.sleep(0.4)
+    print("[param-phrase] not found: " + phrase + " | last band: " +
+          " ".join(w for w, *_ in words)[:160], flush=True)
     return None
 
 

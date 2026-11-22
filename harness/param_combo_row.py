@@ -79,11 +79,21 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
                 break
         if clicked:
             break
-        # Long lists (Gyroid sits pages down, run 9866d291): wheel the
-        # deepest popup child under the point (posting to the popup root
-        # did nothing, run 7968a6db).
+        # Long lists (Gyroid sits pages down, run 9866d291). Mouse wheels
+        # do not accumulate on this self-drawn popup (runs 7968a6db/
+        # 96c325d3 rebound to the top); wx popup lists page with VK_NEXT,
+        # so drive the keyboard first and keep the wheel as fallback.
         import ctypes
         u32 = ctypes.windll.user32
+        u32.PostMessageW(ph, 0x0100, 0x22, 0)          # WM_KEYDOWN VK_NEXT
+        u32.PostMessageW(ph, 0x0101, 0x22, 0)          # WM_KEYUP
+        time.sleep(0.6)
+        w, hgt, bgra = winutil.capture_window(ph)
+        img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
+        words = mdu.ocr_words_img(img, scale=3)
+        if any(target.lower() in t.lower() or _soft(t).endswith(_soft(target))
+               for t, *_ in words):
+            continue
         pt = ((pr[0] + pr[2]) // 2, (pr[1] + pr[3]) // 2)
         u32.SetCursorPos(pt[0], pt[1])
         time.sleep(0.15)
