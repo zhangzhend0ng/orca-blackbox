@@ -252,7 +252,7 @@
 
 ### 2026-11-22 下午进度（四面前置会话）
 
-- **已闭环 SHADOW：#254/#266/#267/#268**（#268=`f307ef1f`，Gyroid 弹窗经 fa706g3 实诊配方「真滚轮 −1 格×2+≥400ms 沉降」首次选中；pilot 键名修正 top_bottom_infill_wall_overlap）。
+- **已闭环 SHADOW：#254/#259/#266/#267/#268 = 5/5 全闭环**（#268=`f307ef1f` Gyroid 弹窗配方；#259=`073f086f` 六轮收敛：combo 元组解包/词序定位/lroning 单词包含/单元素数组规范化/ironing_xy_e_moves 键名错位）。
 - **已登记待跑（fa706g3 authored，已并入主线）**：#276/277/278/279/292/293/294 七条（夹具实测 VALUES+三方注册+check_registry PASS）。
 - **在攻留证**：#259（combo 提交步 text=None）、#263（Bridge flow 行在 OCR 带上方）、#264/#270/#271（Speed 页标签/滚深）、#290/#291（两枚举 combo/auto_brim 字段禁用）——全部失败 run 留 band 证据。
 - 基建修复入主线：ps_direct 轮询 45s、bundle_sync EAP、param 族免预点击、弹窗真滚轮引擎、租约锁自愈（批前清锁+900s 看门狗）。
