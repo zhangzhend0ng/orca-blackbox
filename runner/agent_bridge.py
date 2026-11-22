@@ -167,7 +167,11 @@ class RelayMailbox:
         launched = relay_transact(command, timeout_s=min(15, max(1, self.deadline-time.monotonic())))
         if not launched or not launched.strip().isdigit():
             raise RuntimeError("relay_launch_unconfirmed")
-        cutoff = min(self.deadline, time.monotonic() + 25)
+        # 2026-11-22: 25s -> 45s. During guest app boot the control poll's
+        # PS-Direct roundtrip can exceed 25s under VM CPU saturation; runs
+        # e518328b/4bd1f91b were host-cancelled (ps_direct_*_stop) while the
+        # guest suite was still alive and healthy. Deadline still caps total.
+        cutoff = min(self.deadline, time.monotonic() + 45)
         while not output.exists():
             if time.monotonic() >= cutoff:
                 raise TimeoutError("ps_direct_ambiguous_stop")
