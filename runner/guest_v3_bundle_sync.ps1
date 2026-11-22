@@ -26,7 +26,12 @@ $sha = (Get-FileHash -LiteralPath $bundlePath -Algorithm SHA256).Hash.ToLowerInv
 $encoded = [Convert]::ToBase64String([IO.File]::ReadAllBytes($bundlePath))
 $out = Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {
   param($sb, $git, $encoded, $sha, $head)
-  $ErrorActionPreference = 'Stop'
+  # 2026-11-22: 'Stop' here turned git's harmless stderr line ("bundle is
+  # okay") into a terminating NativeCommandError under PS Direct, aborting
+  # the sync before fetch/merge (relay-invoked run left guest at old HEAD).
+  # Every failure path below checks $LASTEXITCODE explicitly, so 'Continue'
+  # is safe.
+  $ErrorActionPreference = 'Continue'
   if (@(Get-ScheduledTask | Where-Object { $_.TaskName -eq 'suite' -and $_.State -eq 'Running' }).Count) { return 'DESKTOP_BUSY' }
   if (@(Get-Process snapmaker-orca -ErrorAction SilentlyContinue).Count) { return 'GUEST_APP_RUNNING' }
   $dirty = & $git -C $sb status --porcelain
