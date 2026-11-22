@@ -782,7 +782,10 @@ def find_option_row(session, label_substr, group_substr=None,
               f"{'hit' if hit else 'NOT FOUND'}")
         if not hit:
             return None, None
-    for _ in range(6):
+    # 2026-11-22: deep groups (Ironing sits 8+ notches down the Quality
+    # page, run 9b9048c4) need more than 6 single-notch wheels; multi-notch
+    # steps reset to top (fa706g3 pathology), so extend depth instead.
+    for _ in range(12):
         words = ocr_band(session, psm=psm)
         print(f"[panel] find_option_row({label_substr!r}) band: "
               f"{' '.join(w for w, *_ in words)[:120]!r}")
@@ -1079,6 +1082,14 @@ def set_combo_by_popup(session, locate, target_substr, log="[panel]",
     import numpy as np
     from harness import export_util
     relocate_wizard(session)
+    if group_substr and not isinstance(locate, (tuple, list)):
+        # 2026-11-22: the string-locate path ignored group_substr; pre-scroll
+        # the group into view so deep rows (Ironing type row, run 9b9048c4)
+        # are on-band before the painted-value search. Best effort.
+        try:
+            scroll_group_into_view(session, group_substr)
+        except Exception as exc:
+            print(f"{log} group pre-scroll failed: {type(exc).__name__}")
     if isinstance(locate, (tuple, list)):
         r, h, cur = find_option_combo_seq(session, locate, group_substr,
                                           psm=psm)

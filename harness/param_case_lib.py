@@ -279,9 +279,13 @@ def run_ops(ui, ops):
             from .param_combo_row import pick_combo_at_label
             pick_combo_at_label(ui, op["label"], op["target"], group_substr=op.get("group"))
         elif kind == "combo":
-            ok = pp.set_combo_by_popup(app, op["current"], op["target"],
-                                       group_substr=op.get("group"),
-                                       log="[param case]")
+            # set_combo_by_popup returns (ok, target_confirmed); the bare
+            # tuple was always truthy, silently passing locate failures
+            # through (#259 run 9b9048c4: 'No ironing' never found, the op
+            # still "succeeded" and the case died later at the Speed row).
+            ok, _confirmed = pp.set_combo_by_popup(app, op["current"], op["target"],
+                                                    group_substr=op.get("group"),
+                                                    log="[param case]")
             if not ok:
                 raise ProtocolError("param_combo:" + op["target"])
         else:
