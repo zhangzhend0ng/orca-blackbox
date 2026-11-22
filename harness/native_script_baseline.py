@@ -355,9 +355,11 @@ def edit_param_cases(ui, scenario):
             # 2026-11-23: raft_expansion has NO row on the params page
             # (Tab.cpp appends only raft_layers/contact_distance/first_layer_
             # density/first_layer_expansion) - op and value dropped.
-            {"op": "float", "label": ["Raft first layer density", "first layer density"],
+            {"op": "float", "label": ["Raft initial layer density", "nitial layer density",
+                                       "Raft first layer density", "first layer density"],
              "value": "100", "group": "Raft"},
-            {"op": "float", "label": ["Raft first layer expansion", "first layer expansion"],
+            {"op": "float", "label": ["Raft initial layer expansion", "nitial layer expansion",
+                                      "Raft first layer expansion", "first layer expansion"],
              "value": "5", "group": "Raft"},
         ],
         # Feishu #279 (line 198): the row is painted 'Support/Interface
@@ -369,7 +371,9 @@ def edit_param_cases(ui, scenario):
         ],
         # Feishu #292 (line 211): clearance rows appear once by-object is set.
         "uia_param_by_object": [
-            {"tab": "Others", "op": "combo", "current": "By layer",
+            # Band 244ae35e: the row is 'Print sequence' with painted value
+            # 'Intra-layer order' (not 'By layer' as the table assumed).
+            {"tab": "Others", "op": "combo", "current": "Intra-layer",
              "target": "By object", "group": "Special mode"},
             {"op": "float", "label": ["Extruder clearance radius", "clearance radius"],
              "value": "20", "group": "Special mode"},
@@ -398,7 +402,8 @@ def edit_param_cases(ui, scenario):
         "uia_param_line_width_all": [
             {"tab": "Quality", "tab_hint": "height", "op": "float", "label": "Default",
              "value": "0.42", "group": "Line width"},
-            {"op": "float", "label": "Initial layer", "value": "0.5", "group": "Line width"},
+            # Band 513aabe1: the Quality top rows render "First layer ..."
+            {"op": "float", "label": ["First layer", "Initial layer"], "value": "0.5", "group": "Line width"},
             {"op": "float", "label": ["Outer wall line width", "Outer wall"], "value": "0.42",
              "group": "Line width"},
             {"op": "float", "label": ["Inner wall line width", "Inner wall"], "value": "0.45",
@@ -550,7 +555,7 @@ def edit_param_cases(ui, scenario):
              "value": "5", "group": "Jerk"},
             {"op": "float", "label": ["Inner wall 9", "Inner wall"],
              "value": "6", "group": "Jerk"},
-            {"op": "float", "label": ["Initial layer 9", "Initial layer"],
+            {"op": "float", "label": ["First layer 9", "First layer", "Initial layer 9", "Initial layer"],
              "value": "4", "group": "Jerk"},
             {"op": "float", "label": ["Travel 12", "Travel"], "value": "10",
              "group": "Jerk"},

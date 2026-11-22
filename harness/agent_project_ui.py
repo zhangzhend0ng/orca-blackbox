@@ -54,6 +54,16 @@ class ProjectUI(BusinessUI):
             raise ProtocolError("project_command_scope")
         toolbar = self.tb._topbar(self.app.hwnd)
         if not toolbar or not self.owned(toolbar[2]):
+            # 2026-11-23: three runs lost the topbar right after param ops
+            # (timelapse/surface_flow/infill_structure, queue12) - a leftover
+            # dropdown or transient repaint hides it. Post ESC and retry.
+            import ctypes
+            u32 = ctypes.windll.user32
+            u32.PostMessageW(self.app.hwnd, 0x100, 0x1B, 0)
+            u32.PostMessageW(self.app.hwnd, 0x101, 0x1B, 0)
+            self.pause(0.8)
+            toolbar = self.tb._topbar(self.app.hwnd)
+        if not toolbar or not self.owned(toolbar[2]):
             raise ProtocolError("file_toolbar_missing")
         rect = toolbar[1]
         x, y = rect[0] + 20, (rect[1] + rect[3]) // 2

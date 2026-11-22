@@ -285,6 +285,15 @@ def run_ops(ui, ops):
             ok = pp.set_option_checkbox(app, op["label"], op["value"], group_substr=op.get("group"))
             if ok is not True and not (isinstance(ok, tuple) and ok[0] is True):
                 raise ProtocolError("param_checkbox:" + op["label"])
+            # 2026-11-23: enabling some options (Spiral vase, run c6584b3e)
+            # pops an informational modal that trips the next guard
+            # (main_window_modal_blocked) - close any popup that appears.
+            from . import export_util as _eu
+            _modal = _eu.wait_popup(app.pid, timeout_s=1.2)
+            if _modal:
+                from . import winutil as _wl
+                _wl.user32.PostMessageW(_modal[3], 0x0010, 0, 0)  # WM_CLOSE
+                ui.pause(0.6)
         elif kind == "rowcombo":
             from .param_combo_row import pick_combo_at_label
             pick_combo_at_label(ui, op["label"], op["target"], group_substr=op.get("group"))
