@@ -64,7 +64,14 @@ SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *PAIR_CASES, 
     # Feishu #258/#262/#265/#269/#275 P1 batch + #283/#285 multimaterial batch.
     "uia_param_arc_resolution", "uia_param_surface_flow",
     "uia_param_overhang_curl", "uia_param_infill_structure", "uia_param_jerk",
-    "uia_param_prime_tower", "uia_param_ooze_prevention")
+    "uia_param_prime_tower", "uia_param_ooze_prevention",
+    # Feishu #280-282/#284/#286/#287/#296/#297 param-family finale (B4).
+    # #288/#289 mixed-color rows are skipped - mix engine required (see
+    # the attribution note in native_pilots.TRIALS).
+    "uia_param_support_ironing", "uia_param_support_interface",
+    "uia_param_tree_support", "uia_param_filament_features",
+    "uia_param_flush_options", "uia_param_material_advanced",
+    "uia_param_gcode_output", "uia_param_exclude_objects")
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
 UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
@@ -173,6 +180,17 @@ SCENARIOS = {
     "uia_param_jerk": ("Speed", None),
     "uia_param_prime_tower": ("Multimaterial", None),
     "uia_param_ooze_prevention": ("Multimaterial", None),
+    # Feishu #280-282/#284 begin on the Support page; #286/#287 on
+    # Multimaterial (verified by 'tower'); #296/#297 on Others (no
+    # tab_hint - the param_tab:Others lesson).
+    "uia_param_support_ironing": ("Support", None),
+    "uia_param_support_interface": ("Support", None),
+    "uia_param_tree_support": ("Support", None),
+    "uia_param_filament_features": ("Support", None),
+    "uia_param_flush_options": ("Multimaterial", None),
+    "uia_param_material_advanced": ("Multimaterial", None),
+    "uia_param_gcode_output": ("Others", None),
+    "uia_param_exclude_objects": ("Others", None),
     "authority_probe": ("Quality", None),
 }
 BUSINESS = ("quality_a", "quality_b", "strength_a", "strength_b", "others_a", "others_b", "save_dialog", "overwrite")

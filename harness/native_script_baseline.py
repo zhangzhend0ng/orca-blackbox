@@ -582,6 +582,112 @@ def edit_param_cases(ui, scenario):
             {"op": "float", "label": ["Preheat steps"], "value": "2",
              "group": "Ooze prevention"},
         ],
+        # Feishu #280 (line 199): flow already '10%' and pattern already
+        # 'rectilinear' - no ops. The ironing checkbox row paints 'lroning
+        # Support lnterface' (OCR leading-I quirk): 'roning' containment
+        # hits the group's FIRST row = the checkbox; the spacing Edit
+        # anchors on the OCR-safe 'line spacing' tail.
+        "uia_param_support_ironing": [
+            {"tab": "Support", "tab_hint": "support", "op": "checkbox",
+             "label": "Enable", "value": True, "group": "Support"},
+            {"op": "checkbox", "label": "roning", "value": True,
+             "group": "Support ironing"},
+            {"op": "float", "label": ["line spacing", "Ironing line spacing",
+                                      "lroning line spacing"], "value": "0.15",
+             "group": "Support ironing"},
+        ],
+        # Feishu #281 (line 200): top/bottom Z distance already 0.2 - no
+        # ops. 'Top lnterface ...' candidates lead with the OCR-quirk
+        # spelling (leading-I quirk); the pattern combo runs LAST (page
+        # rebuild) and its 'Auto' value is band-unique with the Advanced
+        # group pre-scrolled (the Support group's 'Tree (auto)' sits out
+        # of band; popup's first 'Rectilinear' word = the plain pattern).
+        "uia_param_support_interface": [
+            {"tab": "Support", "tab_hint": "support", "op": "checkbox",
+             "label": "Enable", "value": True, "group": "Support"},
+            {"op": "float", "label": ["Support/object xy distance",
+                                      "xy distance"], "value": "0.5",
+             "group": "Advanced"},
+            {"op": "float", "label": ["Top lnterface layers",
+                                      "Top interface layers"], "value": "3",
+             "group": "Advanced"},
+            {"op": "float", "label": ["Top lnterface spacing",
+                                      "Top interface spacing"], "value": "0",
+             "group": "Advanced"},
+            {"op": "combo", "current": "Auto", "target": "Rectilinear",
+             "group": "Advanced"},
+        ],
+        # Feishu #282 (line 201): support_type already 'tree(auto)',
+        # branch_diameter already 2, adaptive_layer_height already 1 - no
+        # ops. The fork defaults support_style to organic (ConfigManipulation
+        # :691-703) which HIDES branch_angle/adaptive/max_bridge, so the
+        # Style combo ('Default' -> 'Tree Slim', popup word 'Slim') must run
+        # before the floats; each later op re-anchors by its own group.
+        # wall loops + max bridge live in 'Advanced', branch angle in
+        # 'Tree supports'.
+        "uia_param_tree_support": [
+            {"tab": "Support", "tab_hint": "support", "op": "checkbox",
+             "label": "Enable", "value": True, "group": "Support"},
+            {"op": "combo", "current": "Default", "target": "Slim",
+             "group": "Support"},
+            {"op": "float", "label": ["Tree support branch angle",
+                                      "branch angle"], "value": "40",
+             "group": "Tree supports"},
+            {"op": "float", "label": ["Support wall loops", "wall loops"],
+             "value": "1", "group": "Advanced"},
+            {"op": "float", "label": ["Max bridge length", "bridge length"],
+             "value": "30", "group": "Advanced"},
+        ],
+        # Feishu #284 (line 203): wipe_tower_filament (Multimaterial
+        # 'Filament for Features') and support_interface_filament already
+        # 0 - assertion-only; the single op is the proven #279 support
+        # body rowcombo.
+        "uia_param_filament_features": [
+            {"tab": "Support", "tab_hint": "support", "op": "rowcombo",
+             "label": "filament", "target": "1", "group": "Support"},
+        ],
+        # Feishu #286 (line 205): flush_into_support already 1 - no op.
+        # 'objects' containment hits the infill row (group's first row,
+        # apostrophe-proof); 'this' is unique to the middle row; the group
+        # title's 'Flush' is never an anchor (titles carry no checkbox).
+        "uia_param_flush_options": [
+            {"tab": "Multimaterial", "tab_hint": "tower", "op": "checkbox",
+             "label": "objects", "value": True, "group": "Flush options"},
+            {"op": "checkbox", "label": "this", "value": True,
+             "group": "Flush options"},
+            {"op": "float", "label": ["Prime volume", "Prime vol"],
+             "value": "40", "group": "Prime tower"},
+        ],
+        # Feishu #287 (line 206): support_interface_filament already 0 and
+        # interface_shells is coBool - the table's '=2' writes as 1
+        # (module header records the deviation). 'shells' is band-unique
+        # and OCR-safe; then the #279 rowcombo on Support.
+        "uia_param_material_advanced": [
+            {"tab": "Multimaterial", "tab_hint": "tower", "op": "checkbox",
+             "label": "shells", "value": True, "group": "Advanced"},
+            {"tab": "Support", "tab_hint": "support", "op": "rowcombo",
+             "label": "filament", "target": "1", "group": "Support"},
+        ],
+        # Feishu #296 (line 215): gcode_label_objects already 1 - no op.
+        # Others carries NO tab_hint (param_tab:Others lesson). 'Verbose'
+        # and 'number' are band-unique checkbox words; the filename Edit
+        # is the family's one text field - VALUES is the real gate (the
+        # digit-only readback cannot verify braces).
+        "uia_param_gcode_output": [
+            {"tab": "Others", "op": "checkbox", "label": "Verbose",
+             "value": True, "group": "G-code output"},
+            {"op": "checkbox", "label": "number", "value": True,
+             "group": "G-code output"},
+            {"op": "float", "label": ["Filename format", "format"],
+             "value": "{input_filename_base}_{plate_name}.gcode",
+             "group": "G-code output"},
+        ],
+        # Feishu #297 (line 216): reduce_infill_retraction already 1 - no
+        # op. 'Exclude' is band-unique on the Others page.
+        "uia_param_exclude_objects": [
+            {"tab": "Others", "op": "checkbox", "label": "Exclude",
+             "value": True, "group": "G-code output"},
+        ],
     }.get(scenario)
     if ops is None:
         raise ProtocolError("param_case_ops:" + scenario)

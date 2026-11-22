@@ -70,6 +70,27 @@ TRIALS = {
     "uia_param_jerk": "pilot_param_275_jerk",
     "uia_param_prime_tower": "pilot_param_283_prime_tower",
     "uia_param_ooze_prevention": "pilot_param_285_ooze_prevention",
+    # Feishu #280-282 support batch + #284/#286/#287 material batch +
+    # #296/#297 gcode-output batch (fa706 B4, param-family finale).
+    "uia_param_support_ironing": "pilot_param_280_support_ironing",
+    "uia_param_support_interface": "pilot_param_281_support_interface",
+    "uia_param_tree_support": "pilot_param_282_tree_support",
+    "uia_param_filament_features": "pilot_param_284_filament_features",
+    "uia_param_flush_options": "pilot_param_286_flush_options",
+    "uia_param_material_advanced": "pilot_param_287_material_advanced",
+    "uia_param_gcode_output": "pilot_param_296_gcode_output",
+    "uia_param_exclude_objects": "pilot_param_297_exclude_objects",
+    # Feishu #288/#289 (snapshot lines 207/208, 材料-混色) are SKIPPED for
+    # the param engine: mixed_filament_definitions / _component_bias_enabled
+    # / mixed_color_layer_height_a/b / _gradient_mode / _pointillism_* /
+    # _region_collapse / _surface_indentation have NO row on any Tab.cpp
+    # options page (the process panel's Color Mixing group carries only the
+    # three dithering_local_z_* keys, Tab.cpp:2631-2634) - they are
+    # project-config scope driven from the Plater sidebar mixed-filament
+    # panel (Plater.cpp update_mixed_filament_panel, Tab.cpp:1882-1919
+    # sync). Reaching them needs the mix engine chain (uia_mix_recipes /
+    # mixing_util, the Add-Mix dialog contract), not process-panel ops -
+    # no param modules fabricated for them (2026-11-23, fa706 B4).
 }
 
 
