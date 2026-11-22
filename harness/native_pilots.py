@@ -54,6 +54,14 @@ TRIALS = {
     "uia_param_by_object": "pilot_param_292_by_object",
     "uia_param_spiral_vase": "pilot_param_293_spiral_vase",
     "uia_param_timelapse": "pilot_param_294_timelapse",
+    # Feishu #255-257/#260-261 quality batch + #272-273 speed batch.
+    "uia_param_line_width_all": "pilot_param_255_line_width_all",
+    "uia_param_seam_wipe": "pilot_param_256_seam_wipe",
+    "uia_param_precision_comp": "pilot_param_257_precision_comp",
+    "uia_param_wall_generator": "pilot_param_260_wall_generator",
+    "uia_param_single_wall_avoid": "pilot_param_261_single_wall_avoid",
+    "uia_param_overhang_bridge": "pilot_param_272_overhang_bridge",
+    "uia_param_travel_speed": "pilot_param_273_travel_speed",
 }
 
 
