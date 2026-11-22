@@ -220,8 +220,14 @@ def edit_param_cases(ui, scenario):
             # + Tab.cpp:2433); tesseract reads the leading I as l, so match
             # 'roning speed' first. Flow (10%) and Spacing (0.15) already
             # equal the case targets (run 60237e59 readback note).
+            # 2026-11-22 run 74c30ba5: multi-word variants are PREFIX
+            # matched, so neither "roning speed" nor "Ironing speed" can hit
+            # the OCR misread "lroning speed" - the single-word containment
+            # variant "roning" matches it (substring), unique on the Speed
+            # page. The combo step is PROVEN: this run rebuilt the whole
+            # Ironing group (type/Pattern/flow/spacing/inset/angle).
             {"tab": "Speed", "tab_hint": "speed", "op": "float",
-             "label": ["roning speed", "Ironing speed"], "value": "60"},
+             "label": ["roning", "Ironing speed"], "value": "60"},
         ],
         "uia_param_wall_thin": [
             {"tab": "Strength", "tab_hint": "loops", "op": "float", "label": "Wall loops", "value": "4"},
