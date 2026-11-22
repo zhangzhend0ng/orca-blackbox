@@ -207,8 +207,13 @@ def edit_param_cases(ui, scenario):
 
     ops = {
         "uia_param_ironing_top": [
-            {"tab": "Quality", "tab_hint": "height", "op": "combo", "current": "No ironing",
-             "target": "Topmost surface", "group": "Ironing"},
+            # 2026-11-22 run 1c5b910c: the row WAS on-band ('lroning type ~
+            # No ironing') but single-word containment can never match the
+            # two-word painted value - use the word-SEQUENCE locate tuple;
+            # the popup match is also word-level, so the target must be one
+            # OCR word ("Topmost" is unique in this popup).
+            {"tab": "Quality", "tab_hint": "height", "op": "combo",
+             "current": ("No", "ironing"), "target": "Topmost", "group": "Ironing"},
             # fa706g3 diagnosis 2026-11-22: the ironing SPEED row is NOT in
             # the Quality rebuild - ironing_speed ("Ironing speed", mm/s)
             # lives on the Speed tab other-layers group (PrintConfig.cpp:3618
