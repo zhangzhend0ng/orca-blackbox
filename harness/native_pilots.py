@@ -42,6 +42,14 @@ TRIALS = {
     "uia_param_first_speeds": "pilot_param_270_first_speeds",
     "uia_param_feature_speeds": "pilot_param_271_feature_speeds",
     "uia_param_fuzzy": "pilot_param_295_fuzzy",
+    # Feishu #276-279 speed/support/raft batch + #292-294 others batch.
+    "uia_param_speed_limits": "pilot_param_276_speed_limits",
+    "uia_param_support_basic": "pilot_param_277_support_basic",
+    "uia_param_raft": "pilot_param_278_raft",
+    "uia_param_support_filament": "pilot_param_279_support_filament",
+    "uia_param_by_object": "pilot_param_292_by_object",
+    "uia_param_spiral_vase": "pilot_param_293_spiral_vase",
+    "uia_param_timelapse": "pilot_param_294_timelapse",
 }
 
 

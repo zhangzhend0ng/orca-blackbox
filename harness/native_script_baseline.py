@@ -259,6 +259,68 @@ def edit_param_cases(ui, scenario):
             {"op": "float", "label": "overlap", "value": "15"},
             {"op": "rowcombo", "label": "Gap fill", "target": "Everywhere"},
         ],
+        # Feishu #276 (snapshot line 195): the table's filament/machine-scope
+        # keys (filament_max_volumetric_speed, machine_max_speed_x) are not
+        # reachable from the process panel and stay out of the ops/values.
+        "uia_param_speed_limits": [
+            {"tab": "Quality", "tab_hint": "height", "op": "float",
+             "label": ["Layer height", "layer height"], "value": "0.2"},
+            {"op": "float", "label": ["Outer wall line width", "Outer wall"], "value": "0.42",
+             "group": "Advanced"},
+            {"tab": "Speed", "tab_hint": "speed", "op": "float",
+             "label": ["Outer wall speed", "Outer wall"], "value": "700"},
+        ],
+        # Feishu #277 (line 196): enable/threshold/type; the two '0' flags are
+        # already at target in the fixture config - no ops for them.
+        "uia_param_support_basic": [
+            {"tab": "Support", "tab_hint": "support", "op": "checkbox", "label": "Enable",
+             "value": True, "group": "Support"},
+            {"op": "combo", "current": "Tree", "target": "Normal", "group": "Support"},
+            {"op": "float", "label": ["Threshold angle", "Threshold"], "value": "45", "group": "Support"},
+        ],
+        # Feishu #278 (line 197): raft fields, raft_layers first so the rest
+        # of the group settles.
+        "uia_param_raft": [
+            {"tab": "Support", "tab_hint": "support", "op": "float", "label": ["Raft layers", "Raft"],
+             "value": "3", "group": "Raft"},
+            {"op": "float", "label": ["Raft contact Z distance", "Raft contact distance",
+                                      "Raft contact"], "value": "0.2", "group": "Raft"},
+            {"op": "float", "label": ["Raft expansion"], "value": "5", "group": "Raft"},
+            {"op": "float", "label": ["Raft first layer density", "first layer density"],
+             "value": "100", "group": "Raft"},
+            {"op": "float", "label": ["Raft first layer expansion", "first layer expansion"],
+             "value": "5", "group": "Raft"},
+        ],
+        # Feishu #279 (line 198): the row is painted 'Support/Interface
+        # filament' (two combos); single-word label so phrase-join OCR can
+        # match it. Interface already 0 - no second op.
+        "uia_param_support_filament": [
+            {"tab": "Support", "tab_hint": "support", "op": "rowcombo", "label": "filament",
+             "target": "1", "group": "Support"},
+        ],
+        # Feishu #292 (line 211): clearance rows appear once by-object is set.
+        "uia_param_by_object": [
+            {"tab": "Others", "tab_hint": "special", "op": "combo", "current": "By layer",
+             "target": "By object", "group": "Special mode"},
+            {"op": "float", "label": ["Extruder clearance radius", "clearance radius"],
+             "value": "20", "group": "Special mode"},
+            {"op": "float", "label": ["Extruder clearance height to rod", "height to rod"],
+             "value": "30", "group": "Special mode"},
+        ],
+        # Feishu #293 (line 212): spiral on Others, then the seam combo on
+        # Quality (the m5h quality-enums route).
+        "uia_param_spiral_vase": [
+            {"tab": "Others", "tab_hint": "special", "op": "checkbox", "label": "Spiral",
+             "value": True, "group": "Special mode"},
+            {"tab": "Quality", "tab_hint": "height", "op": "combo", "current": "Aligned",
+             "target": "nearest", "group": "Seam"},
+        ],
+        # Feishu #294 (line 213): slicing_mode already 'regular' in the
+        # fixture config - only the timelapse selector is driven.
+        "uia_param_timelapse": [
+            {"tab": "Others", "tab_hint": "special", "op": "combo", "current": "None",
+             "target": "Smooth", "group": "Special mode"},
+        ],
     }.get(scenario)
     if ops is None:
         raise ProtocolError("param_case_ops:" + scenario)
