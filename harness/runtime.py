@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import math
+import os
 from pathlib import Path
 import re
 import time
@@ -115,8 +116,47 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
     if type(ident) is not str or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", ident):
         raise ValueError("runtime: invalid run identifier")
     # Exclusive create also prevents nested dispatch on the same desktop.
-    with lease.open("x", encoding="utf-8") as stream:
-        stream.write(ident)
+    # 2026-11-23: a hard-killed runner (host watchdog / process kill) never
+    # reaches the tail unlink and every later run dies at FileExistsError
+    # (the 2026-11-22 stale-lease wedge). Record the owner PID in the lease
+    # and take over when that PID is gone.
+    def _pid_alive(pid):
+        try:
+            import ctypes
+            k32 = ctypes.windll.kernel32
+            handle = k32.OpenProcess(0x1000, False, int(pid))  # PROCESS_QUERY_LIMITED_INFORMATION
+            if not handle:
+                return False
+            try:
+                code = ctypes.c_ulong()
+                if k32.GetExitCodeProcess(handle, ctypes.byref(code)) and code.value == 259:
+                    return True
+                return False
+            finally:
+                k32.CloseHandle(handle)
+        except Exception:
+            return True  # cannot tell: assume alive (safe side)
+
+    lease_body = ident + "\n" + str(os.getpid())
+    for _attempt in (0, 1):
+        try:
+            with lease.open("x", encoding="utf-8") as stream:
+                stream.write(lease_body)
+            break
+        except FileExistsError:
+            if _attempt:
+                raise
+            try:
+                prev_lines = lease.read_text(encoding="utf-8").splitlines()
+                prev_pid = int(prev_lines[1]) if len(prev_lines) > 1 and prev_lines[1].isdigit() else None
+            except (OSError, ValueError, IndexError):
+                prev_pid = None
+            # Legacy locks (body = bare ident, no PID) are NOT taken over
+            # automatically - the pre-launch sweep owns those.
+            if prev_pid is None or _pid_alive(prev_pid):
+                raise
+            lease.unlink()
+            print(f"runtime: took over stale desktop lease (prev pid {prev_pid} gone)", flush=True)
     writer = None
     handles = []
     primary = None
@@ -293,7 +333,7 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
     if cleanup_errors:
         raise cleanup_errors[0]
     if cleanup_confirmed:
-        if lease.read_text(encoding="utf-8") != ident:
+        if lease.read_text(encoding="utf-8").splitlines()[:1] != [ident]:
             raise RuntimeError("runtime: desktop lock ownership changed")
         lease.unlink()  # Only release after result persistence and writer.close succeed.
     return output
