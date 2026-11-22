@@ -1,0 +1,28 @@
+[profile] system presets source: C:\orca-main\OrcaSlicer\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\fa706g3_runs\datadir_m2 (resources: C:\coil\orca-blackbox\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[host_guard] host execution explicitly allowed (ORCA_BB_ALLOW_HOST) — dev-only: results from this run are NOT valid regression evidence.
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\fa706g3_runs\datadir_m2 C:\coil\orca-blackbox\fixtures\mixed_filament_test.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#2)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x111574, WM_CLOSE)
+[launcher] pid=25980 hwnd=0x150b4a rect=(360, 120, 1560, 920) dpi=96
+[env_check] --- preflight ---
+[env_check] remote-control layer : remote-control display adapter 'GameViewer Virtual Display Adapter' present -> SendInput-style injection is SUPPRESSED; the message-level (SendMessage) injection path is unaffected
+[env_check] dpi scale            : 100%
+[env_check] => using MESSAGE-level injection (immune); avoid the SendInput/OS-level path
+[m2] boot state: Prepare tab score 1.000 (rect (360, 120, 1560, 920))
+[m2] model arrival observed: True (viewport colored 2.11%)
+[m2] slicing started (button left idle, score 0.666)
+[m2] slicing started=True done=True (idle score 1.000)
+[anchors] attempt 1: clicked tab_preview_inactive.png at (611,170) -> hwnd 0x131570
+[anchors] attempt 1: state stable (1.000)
+[m2] Preview switched=True, colored-viewport fraction: 6.277% (was 2.109% before slicing)
+
+[m2] === verdict ===
+  model loaded: PASS
+  slice + completion: PASS
+  preview toolpath: PASS
+[m2] GREEN
+[m2] app closed

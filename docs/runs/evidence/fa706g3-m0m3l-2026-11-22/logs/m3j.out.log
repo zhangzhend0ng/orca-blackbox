@@ -1,0 +1,19 @@
+[profile] system presets source: C:\orca-main\OrcaSlicer\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\fa706g3_runs\datadir_m3j (resources: C:\coil\orca-blackbox\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[host_guard] host execution explicitly allowed (ORCA_BB_ALLOW_HOST) — dev-only: results from this run are NOT valid regression evidence.
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\fa706g3_runs\datadir_m3j C:\coil\orca-blackbox\fixtures\mixed_filament_test.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#2)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x120ddc, WM_CLOSE)
+[launcher] pid=28200 hwnd=0x1015c8 rect=(360, 120, 1560, 920) dpi=96
+[m3] gl canvas ready: True
+[m3j] model arrived: True (colored 0.79%)
+[m3j] mixing dialog: None
+
+[m3] === verdict ===
+  multicolor project loads: PASS
+  mixing dialog opens: FAIL
+[m3] RED
+[m3j] app closed

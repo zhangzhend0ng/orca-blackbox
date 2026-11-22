@@ -1,0 +1,1 @@
+{"app_pid": 27456, "captures": [{"filename": "grab.png", "height": 792, "width": 1186}], "case_id": "m0_boot_check", "driver_pid": 12556, "grab": true, "hwnd": 525574, "keep": false, "phases": ["launched", "preflight", "captures_complete", "close_requested", "closed"], "schema_version": 1}
