@@ -1,0 +1,217 @@
+{
+ "id": 74,
+ "ok": false,
+ "steps": [
+  {
+   "ok": true,
+   "i": 0,
+   "action": "fgmain",
+   "err": null,
+   "ms": 0
+  },
+  {
+   "i": 1,
+   "action": "click",
+   "ok": true,
+   "err": null,
+   "ms": 144
+  },
+  {
+   "i": 2,
+   "action": "sleep",
+   "ok": true,
+   "err": null,
+   "ms": 2500
+  },
+  {
+   "i": 3,
+   "action": "wheel",
+   "ok": true,
+   "err": null,
+   "ms": 30
+  },
+  {
+   "i": 4,
+   "action": "sleep",
+   "ok": true,
+   "err": null,
+   "ms": 800
+  },
+  {
+   "words": [
+    [
+     "Fill",
+     31,
+     950,
+     18,
+     11,
+     96
+    ],
+    [
+     "Multiline",
+     55,
+     950,
+     60,
+     11,
+     93
+    ],
+    [
+     "~",
+     253,
+     948,
+     6,
+     16,
+     52
+    ],
+    [
+     "4",
+     271,
+     950,
+     5,
+     11,
+     63
+    ],
+    [
+     "Sparse",
+     30,
+     980,
+     47,
+     14,
+     96
+    ],
+    [
+     "infill",
+     82,
+     979,
+     28,
+     12,
+     96
+    ],
+    [
+     "pattern",
+     116,
+     981,
+     50,
+     13,
+     96
+    ],
+    [
+     "Internal",
+     31,
+     1010,
+     52,
+     11,
+     96
+    ],
+    [
+     "solid",
+     88,
+     1010,
+     32,
+     11,
+     96
+    ],
+    [
+     "infill",
+     126,
+     1009,
+     28,
+     12,
+     96
+    ],
+    [
+     "pattern",
+     160,
+     1011,
+     50,
+     13,
+     96
+    ]
+   ],
+   "i": 5,
+   "action": "ocr",
+   "ok": true,
+   "err": null,
+   "ms": 171
+  },
+  {
+   "i": 6,
+   "action": "move",
+   "ok": true,
+   "err": null,
+   "ms": 31
+  },
+  {
+   "i": 7,
+   "action": "sleep",
+   "ok": true,
+   "err": null,
+   "ms": 400
+  },
+  {
+   "i": 8,
+   "action": "click",
+   "ok": true,
+   "err": null,
+   "ms": 149
+  },
+  {
+   "i": 9,
+   "action": "sleep",
+   "ok": true,
+   "err": null,
+   "ms": 1200
+  },
+  {
+   "popup": 792092,
+   "rect": [
+    246,
+    440,
+    457,
+    967
+   ],
+   "i": 10,
+   "action": "findpopup",
+   "ok": true,
+   "err": null,
+   "ms": 0
+  },
+  {
+   "i": 11,
+   "action": "key",
+   "ok": true,
+   "err": null,
+   "ms": 858
+  },
+  {
+   "i": 12,
+   "action": "sleep",
+   "ok": true,
+   "err": null,
+   "ms": 600
+  },
+  {
+   "popup": null,
+   "rect": null,
+   "i": 13,
+   "action": "findpopup",
+   "ok": true,
+   "err": null,
+   "ms": 0
+  },
+  {
+   "i": 14,
+   "action": "ocr",
+   "ok": false,
+   "err": "RuntimeError: no popup located (run findpopup first)",
+   "ms": 0
+  },
+  {
+   "i": 15,
+   "action": "shot",
+   "ok": false,
+   "err": "RuntimeError: no popup located (run findpopup first)",
+   "ms": 0
+  }
+ ]
+}

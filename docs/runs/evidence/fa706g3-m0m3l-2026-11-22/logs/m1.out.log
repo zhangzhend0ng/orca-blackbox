@@ -1,0 +1,28 @@
+[profile] system presets source: C:\orca-main\OrcaSlicer\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\fa706g3_runs\datadir_m1 (resources: C:\coil\orca-blackbox\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[host_guard] host execution explicitly allowed (ORCA_BB_ALLOW_HOST) — dev-only: results from this run are NOT valid regression evidence.
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\fa706g3_runs\datadir_m1
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] pid=25344 hwnd=0x101608 rect=(360, 120, 1560, 920) dpi=96
+[env_check] --- preflight ---
+[env_check] remote-control layer : remote-control display adapter 'GameViewer Virtual Display Adapter' present -> SendInput-style injection is SUPPRESSED; the message-level (SendMessage) injection path is unaffected
+[env_check] dpi scale            : 100%
+[env_check] => using MESSAGE-level injection (immune); avoid the SendInput/OS-level path
+[m1] boot settled on Prepare: score=1.000 tab center=(475,170)
+[m1] client origin screen: (367, 121)
+[anchors] attempt 1: clicked tab_preview_inactive.png at (611,170) -> hwnd 0xf0aec
+[anchors] attempt 1: state stable (1.000)
+[m1] after click: Preview tab BGR=[136 150   0] selected=True; Prepare tab BGR=[70 68 59] unselected=True
+[anchors] attempt 1: clicked tab_prepare_inactive.png at (475,170) -> hwnd 0x1604b4
+[anchors] attempt 1: state stable (1.000)
+[m1] back on Prepare: template score=1.000, tab BGR=[136 150   0] teal=True
+[m1] native Edit text: '0.2' -> '0.160.2'
+
+[m1] === verdict ===
+  (a) custom tab click: PASS
+  (a2) switch back to Prepare: PASS
+  (b) native Edit WM_CHAR: PASS
+[m1] GREEN
+[m1] app closed

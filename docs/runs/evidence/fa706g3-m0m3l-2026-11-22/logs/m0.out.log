@@ -1,0 +1,16 @@
+[profile] system presets source: C:\orca-main\OrcaSlicer\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\fa706g3_runs\datadir_m0 (resources: C:\coil\orca-blackbox\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[host_guard] host execution explicitly allowed (ORCA_BB_ALLOW_HOST) — dev-only: results from this run are NOT valid regression evidence.
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\fa706g3_runs\datadir_m0
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] pid=27456 hwnd=0x80506 rect=(360, 120, 1560, 920) dpi=96
+[m0-evidence] launched driver_pid=12556 app_pid=27456 hwnd=525574
+[env_check] --- preflight ---
+[env_check] remote-control layer : remote-control display adapter 'GameViewer Virtual Display Adapter' present -> SendInput-style injection is SUPPRESSED; the message-level (SendMessage) injection path is unaffected
+[env_check] dpi scale            : 100%
+[env_check] => using MESSAGE-level injection (immune); avoid the SendInput/OS-level path
+[m0] capture 0: 1186x792 -> grab.png
+[m0] OK (remote-control layer active: message-injection path required)
+[m0] app closed

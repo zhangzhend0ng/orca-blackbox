@@ -1,0 +1,18 @@
+﻿batch=m0run start=2026-11-22T15:05:23.6813617+08:00 user=admin
+case=m0 exit= dur=37s start=15:05:23 end=15:06:01 orphans=none prekill=0
+batch=m0run end=2026-11-22T15:06:02.1621960+08:00
+batch=m0r2 start=2026-11-22T15:07:21.2894030+08:00 user=admin
+case=m0 exit=0 dur=36s start=15:07:21 end=15:07:57 orphans=none prekill=0
+batch=m0r2 end=2026-11-22T15:07:58.7637573+08:00
+batch=b2 start=2026-11-22T15:08:12.1986284+08:00 user=admin
+case=m1 exit=0 dur=37s start=15:08:12 end=15:08:49 orphans=none prekill=0
+case=m2 exit=0 dur=53s start=15:08:50 end=15:09:43 orphans=none prekill=0
+batch=b2 end=2026-11-22T15:09:44.6603586+08:00
+batch=b3 start=2026-11-22T15:09:55.3497982+08:00 user=admin
+case=m3j exit=1 dur=47s start=15:09:55 end=15:10:42 orphans=none prekill=0
+case=m3k exit=1 dur=47s start=15:10:43 end=15:11:31 orphans=none prekill=0
+case=m3l exit=1 dur=47s start=15:11:32 end=15:12:19 orphans=none prekill=0
+batch=b3 end=2026-11-22T15:12:20.3725265+08:00
+batch=b4 start=2026-11-22T15:14:13.1388118+08:00 user=admin
+case=diagmix exit=0 dur=48s start=15:14:13 end=15:15:01 orphans=none prekill=0
+batch=b4 end=2026-11-22T15:15:02.5649403+08:00

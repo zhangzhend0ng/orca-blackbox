@@ -1,0 +1,63 @@
+{
+ "id": 28539,
+ "ok": true,
+ "steps": [
+  {
+   "popup": 857498,
+   "rect": [
+    246,
+    905,
+    427,
+    1017
+   ],
+   "attempt": 1,
+   "i": 0,
+   "action": "openpopup",
+   "ok": true,
+   "err": null,
+   "ms": 644
+  },
+  {
+   "i": 1,
+   "action": "sleep",
+   "ok": true,
+   "err": null,
+   "ms": 450
+  },
+  {
+   "i": 2,
+   "action": "click",
+   "ok": true,
+   "err": null,
+   "ms": 149
+  },
+  {
+   "i": 3,
+   "action": "sleep",
+   "ok": true,
+   "err": null,
+   "ms": 2500
+  },
+  {
+   "popup": null,
+   "rect": null,
+   "i": 4,
+   "action": "findpopup",
+   "ok": true,
+   "err": null,
+   "ms": 0
+  },
+  {
+   "path": "C:\\coil\\fa706_diag\\out\\q259_tv_266.png",
+   "w": 1116,
+   "h": 180,
+   "src_w": 1920,
+   "src_h": 1040,
+   "i": 5,
+   "action": "shot",
+   "ok": true,
+   "err": null,
+   "ms": 19
+  }
+ ]
+}

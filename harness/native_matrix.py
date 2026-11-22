@@ -52,7 +52,11 @@ SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *PAIR_CASES, 
     "uia_param_first_speeds", "uia_param_feature_speeds", "uia_param_fuzzy",
     # Feishu batch 3: overhang tiered speeds, acceleration combo, skirt, brim.
     "uia_param_overhang_speeds", "uia_param_accelerations", "uia_param_skirt",
-    "uia_param_brim")
+    "uia_param_brim",
+    # Feishu #276-279 speed/support/raft batch + #292-294 others batch.
+    "uia_param_speed_limits", "uia_param_support_basic", "uia_param_raft",
+    "uia_param_support_filament", "uia_param_by_object", "uia_param_spiral_vase",
+    "uia_param_timelapse")
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
 UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
@@ -135,6 +139,15 @@ SCENARIOS = {
     "uia_param_accelerations": ("Speed", None),
     "uia_param_skirt": ("Others", None),
     "uia_param_brim": ("Others", None),
+    # Feishu #276-279/#292-294: the starting page each case's ops first edit
+    # lives on (#276 begins on Quality, the speed row closes the sequence).
+    "uia_param_speed_limits": ("Quality", None),
+    "uia_param_support_basic": ("Support", None),
+    "uia_param_raft": ("Support", None),
+    "uia_param_support_filament": ("Support", None),
+    "uia_param_by_object": ("Others", None),
+    "uia_param_spiral_vase": ("Others", None),
+    "uia_param_timelapse": ("Others", None),
     "authority_probe": ("Quality", None),
 }
 BUSINESS = ("quality_a", "quality_b", "strength_a", "strength_b", "others_a", "others_b", "save_dialog", "overwrite")
