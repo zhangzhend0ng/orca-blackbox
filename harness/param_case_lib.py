@@ -408,8 +408,8 @@ def run_ops(ui, ops):
     ui.main_input()
 
 
-def census_param_pages(ui):
-    """Probe, not a test case: what the engine's row/group lookups really
+def _census_pages_full(ui):
+    """Full probe (only when CENSUS_FULL): what the engine's row/group lookups really
     see. Per process tab it dumps every titled panel window (text, rect);
     then a wheel/focus probe (does the page move while the OCR signature
     stays put?) and a popup-geometry probe (is the popup row on screen,
@@ -626,4 +626,145 @@ def census_param_pages(ui):
             say("BRIM probe failed: %s: %s" % (type(exc).__name__, exc))
     except Exception as exc:
         say("POPUP probe failed: %s: %s" % (type(exc).__name__, exc))
+    raise ProtocolError("param_census_done")
+
+
+# Also run the wheel / focus / Print-sequence probes of the first censuses.
+CENSUS_FULL = False
+
+
+def census_param_pages(ui):
+    """Probe, not a test case: what the engine's row/group lookups really
+    see, and what every combo op's popup REALLY offers.
+
+    The source atlas is not the build (census c101c0f4: 'Initial layer speed'
+    vs 'First layer speed'; f1c5433b: the Brim type popup says 'Outer brim
+    only' where the op looked for 'Outer only'). So for each combo op of
+    PARAM_OPS this opens the popup the way the engine does, lists its rows
+    and says whether the op's target is among them. Ends with
+    ProtocolError('param_census_done') so the run stops before the save
+    phase. Refresh with: scenario uia_param_census (about 5 minutes)."""
+    import ctypes
+    import ctypes.wintypes as wt
+    import time
+    import numpy as np
+    from win32gui import EnumChildWindows, IsWindowVisible
+    from harness import export_util, mix_dialog_util as mdu, mixing_util, winutil
+    from . import process_panel as pp
+    from .native_script_baseline import PARAM_OPS
+
+    app, wu, u32 = ui.app, ui.wu, ctypes.windll.user32
+    hints = {"Quality": "height", "Strength": "loops", "Speed": "speed",
+             "Support": "support", "Multimaterial": "tower", "Others": ""}
+
+    def say(text):
+        print("[census] " + text, flush=True)
+
+    def cls(hwnd):
+        return winutil.window_class(hwnd) if hwnd else None
+
+    def titled():
+        vp_h = (pp.options_viewport(app) or (None, None))[1]
+        out = []
+        for t, c, r, h, lx, ly in pp.kids(app):
+            if c == "wxWindowNR" and t.strip() and t.strip() != "panel" \
+                    and u32.IsWindowVisible(h) and (r[2] - r[0]) >= 300 \
+                    and lx < 60 and (r[3] - r[1]) <= 30:
+                out.append("%r@%d" % (t[:40], ly))
+        return out
+
+    ui.main_input()
+    pp.ensure_advanced(app, want=True)
+    work = wt.RECT()
+    got = u32.SystemParametersInfoW(0x0030, 0, ctypes.byref(work), 0)  # SPI_GETWORKAREA
+    say("frame=%r client_origin=%r work=%r process_row_y=%r" % (
+        pp.frect(app), pp.client_origin(app),
+        (work.left, work.top, work.right, work.bottom) if got else None, pp.process_row_y(app)))
+
+    combos, tab = [], None
+    for scenario, ops in sorted(PARAM_OPS.items()):
+        for op in ops:
+            tab = op.get("tab") or tab
+            if op["op"] in ("combo", "rowcombo"):
+                combos.append((scenario.replace("uia_param_", ""), tab, op["op"],
+                               op.get("label") or op.get("current"), op.get("target"), op.get("group")))
+    combos.sort(key=lambda c: (list(hints).index(c[1]) if c[1] in hints else 99, c[0]))
+    current_tab = None
+    for scenario, tab, kind, locate, target, group in combos:
+        try:
+            if tab != current_tab:
+                ui.main_input()
+                clicked = pp.click_tab(app, tab, hints.get(tab, ""))
+                ui.pause(1.0)
+                current_tab = tab
+                say("TAB %s clicked=%s titles=%s" % (tab, clicked, titled()))
+            if group:
+                pp.scroll_group_into_view(app, group)
+            if kind == "rowcombo":
+                label = locate[0] if isinstance(locate, (tuple, list)) else locate
+                y = _find_phrase_row(app, label, None)
+                if y is None:
+                    say("POPUP %-18s %s %r target=%r: ROW NOT FOUND" % (scenario, tab, label, target))
+                    continue
+                left = winutil.window_rect(_canvas_hwnd(ui))[0]
+                oy = pp.client_origin(app)[1]
+                combo = []
+
+                def collect(handle, _):
+                    if (wu.window_class(handle) == "ComboBox" and IsWindowVisible(handle)
+                            and wu._window_pid(handle) == app.pid):
+                        b = wu.window_rect(handle)
+                        if abs((b[1] + b[3]) // 2 - oy - y) <= 14 and (b[0] + b[2]) // 2 < left:
+                            combo.append(b)
+                    return True
+
+                EnumChildWindows(app.hwnd, collect, None)
+                if len(combo) == 1:
+                    b = combo[0]
+                    point, how = ((b[0] + b[2]) // 2, (b[1] + b[3]) // 2), "ComboBox"
+                else:
+                    point, how = (left - 90, y + oy), "value-zone"
+                shown = label
+            else:
+                seq = (tuple(locate.lower().split()) if isinstance(locate, str)
+                       else tuple(locate))
+                r, h, _cur = pp.find_option_combo_seq(app, seq, group)
+                if not r:
+                    say("POPUP %-18s %s %r target=%r: VALUE NOT FOUND" % (scenario, tab, locate, target))
+                    continue
+                point, how, shown = ((r[0] + r[2]) // 2, (r[1] + r[3]) // 2), cls(h), locate
+            popup = None
+            for click in (1, 2):   # a just-dismissed popup can swallow a click
+                winutil.msg_click_screen(point[0], point[1], app.hwnd)
+                for _ in range(12 if click == 1 else 16):
+                    popup = export_util.wait_popup(app.pid, timeout_s=0.5)
+                    if popup:
+                        break
+                if popup:
+                    break
+                time.sleep(0.6)
+            if not popup:
+                say("POPUP %-18s %s %r target=%r click=%r via=%s: NO POPUP" % (
+                    scenario, tab, shown, target, point, how))
+                continue
+            pr, ph = popup[2], popup[3]
+            time.sleep(0.8)
+            w, hgt, bgra = winutil.capture_window(ph)
+            img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
+            words = mdu.ocr_words_img(img, scale=3)
+            lines = {}
+            for t, x, yw, _ww, _hh in words:
+                key = next((k for k in lines if abs(k - yw) <= 10), yw)
+                lines.setdefault(key, []).append((x, t))
+            items = [" ".join(t for _x, t in sorted(v)) for _k, v in sorted(lines.items())]
+            hit = bool(pp.popup_line_hits(words, target)) if target else False
+            say("POPUP %-18s %s %r target=%r click=%r via=%s popup=%r hit=%s" % (
+                scenario, tab, shown, target, point, how, pr, hit))
+            say("      items=%r" % (items,))
+            say("      close_popup -> %r" % (pp.close_popup(app, ph, point),))
+            time.sleep(0.5)
+        except Exception as exc:
+            say("POPUP %-18s failed: %s: %s" % (scenario, type(exc).__name__, exc))
+    if CENSUS_FULL:
+        _census_pages_full(ui)
     raise ProtocolError("param_census_done")
