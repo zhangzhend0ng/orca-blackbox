@@ -44,11 +44,16 @@ def export():
 
 
 def _case(scenario, pilot, ops):
+    # every pilot but #254 carries VALUES; #254 lists its allowed changes
+    values = getattr(pilot, "VALUES", None)
+    if values is None:
+        from harness.pilot_common import LAYER_PAIR
+        values = LAYER_PAIR
     return {
         "scenario": scenario,
         "case_id": pilot.CASE_ID,
         "goal": pilot.GOAL,
-        "values": pilot.VALUES,
+        "values": values,
         "ops": ops,
         "kinds": sorted({op["op"] for op in ops}),
         "field_ops": sum(1 for op in ops if op.get("field") is not None or op.get("below")),

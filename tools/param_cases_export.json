@@ -1,7 +1,7 @@
 {
  "meta": {
   "source": "harness/native_script_baseline.py PARAM_OPS + the pilots' VALUES",
-  "note": "Written by tools/export_param_cases.py; regenerate after changing an op. ops use the Windows engine's vocabulary: tab / op=float|checkbox|combo|rowcombo / label (str or candidates, '^' anchors the row start) / group / value / field (index into a vertical stack of boxes) / below / target / current (the value a combo paints) / answer + dialog (a box the op must answer). 'combo' ops are located by the value they paint, 'rowcombo' ops by their row label. A port that cannot reach a row reports it; it never edits config."
+  "note": "Written by tools/export_param_cases.py; regenerate after changing an op. ops use the Windows engine's vocabulary: tab / op=float|checkbox|combo|rowcombo / label (str or candidates, '^' anchors the row start) / group / value / field (index into a vertical stack of boxes) / below / target / current (the value a combo paints) / answer + dialog (a box the op must answer). 'combo' ops are located by the value they paint, 'rowcombo' ops by their row label. A port that cannot reach a row reports it; it never edits config. app_conf is app config the case needs beyond the default (develop mode); a port that cannot seed it reports the case as not reachable, not as failed."
  },
  "cases": [
   {
@@ -704,6 +704,39 @@
      ],
      "value": "10",
      "group": "Jerk"
+    }
+   ],
+   "kinds": [
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_layer_pair",
+   "case_id": "param_layer_pair_254",
+   "goal": "Set regular layer height to 0.20 mm and initial layer print height to 0.25 mm. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "layer_height": "0.2",
+    "initial_layer_print_height": "0.25"
+   },
+   "ops": [
+    {
+     "tab": "Quality",
+     "op": "float",
+     "label": [
+      "^Layer height"
+     ],
+     "value": "0.2",
+     "group": "Layer height"
+    },
+    {
+     "op": "float",
+     "label": [
+      "^First layer height"
+     ],
+     "value": "0.25",
+     "group": "Layer height"
     }
    ],
    "kinds": [
