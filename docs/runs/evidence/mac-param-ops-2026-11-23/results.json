@@ -5669,6 +5669,566 @@
     "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-022045-entry.panel.png",
     "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-022045/scenario-022045-entry.png"
    }
+  },
+  "pick_combo:take-pointer": {
+   "op": "pick_combo",
+   "name": null,
+   "ok": true,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "entry": {
+    "dialogs": []
+   },
+   "readback": {
+    "tab": "Others",
+    "label": "Print sequence",
+    "before": "~ By layer",
+    "after": "v By object",
+    "expected": "By object",
+    "click": [
+     620,
+     866
+    ],
+    "entry_click": [
+     662,
+     923
+    ],
+    "taken_by": "pointer"
+   },
+   "evidence": {
+    "notes": [
+     {
+      "tab_click": [
+       740,
+       776
+      ]
+     },
+     {
+      "scrolled": {
+       "not_found": "RuntimeError: Group title 'Special mode' not visible; titles seen: ['~ Skirt']",
+       "buttons": {
+        "down": [
+         2,
+         0
+        ],
+        "up": 1,
+        "knob_dy": {
+         "0": [
+          3.0,
+          3.0
+         ],
+         "1": [
+          -3.0,
+          -3.0
+         ],
+         "2": [
+          12.0,
+          12.0
+         ],
+         "3": [
+          -12.0,
+          -12.0
+         ]
+        }
+       },
+       "to_top": {
+        "button": 1,
+        "presses": 1,
+        "knob_at": [
+         3.0,
+         3.0
+        ]
+       },
+       "steps": [
+        {
+         "step": 0,
+         "knob_dy": 1,
+         "titles": [
+          "~ Skirt"
+         ]
+        },
+        {
+         "step": 1,
+         "knob_dy": 12.0,
+         "titles": [
+          "90 Brim"
+         ]
+        },
+        {
+         "step": 2,
+         "knob_dy": 13.0,
+         "titles": [
+          "EK Special mode"
+         ],
+         "row_y": 859.0
+        }
+       ]
+      }
+     }
+    ],
+    "attempts": [
+     {
+      "how": "cell",
+      "click": [
+       620,
+       866
+      ],
+      "focused": {
+       "role": "AXWindow",
+       "box": [
+        360.0,
+        85.0,
+        1200.0,
+        800.0
+       ],
+       "help": ""
+      },
+      "popup_entries_seen": [
+       "By layer",
+       "By object"
+      ],
+      "entry_box": {
+       "x": 628,
+       "y": 913,
+       "w": 67,
+       "h": 20
+      },
+      "entry_click": [
+       662,
+       923
+      ],
+      "windows": [
+       [
+        "AXUnknown",
+        "",
+        [
+         606,
+         884,
+         120,
+         52
+        ]
+       ],
+       [
+        "AXStandardWindow",
+        "probe",
+        [
+         360,
+         85,
+         1200,
+         800
+        ]
+       ]
+      ],
+      "takes": [
+       {
+        "how": "pointer",
+        "painted_after": "v By object",
+        "title": "*probe",
+        "screenshot_after": "combo-0-cell-pointer-after.png"
+       }
+      ]
+     }
+    ],
+    "screenshots": {
+     "before": "combo-page.png",
+     "popup": "combo-0-cell-popup.png",
+     "after": "combo-0-cell-pointer-after.png"
+    }
+   },
+   "shots": {
+    "entry": "entry.png",
+    "combo-page-locate": "combo-page-locate.png",
+    "combo-page": "combo-page.png",
+    "combo-page-scroll-0": "combo-page-scroll-0.png",
+    "combo-page-scroll-1": "combo-page-scroll-1.png",
+    "combo-page-scroll-2": "combo-page-scroll-2.png",
+    "combo-0-cell-popup": "combo-0-cell-popup.png",
+    "combo-0-cell-pointer-after": "combo-0-cell-pointer-after.png"
+   },
+   "notes": [
+    {
+     "tab_click": [
+      740,
+      776
+     ]
+    },
+    {
+     "scrolled": {
+      "not_found": "RuntimeError: Group title 'Special mode' not visible; titles seen: ['~ Skirt']",
+      "buttons": {
+       "down": [
+        2,
+        0
+       ],
+       "up": 1,
+       "knob_dy": {
+        "0": [
+         3.0,
+         3.0
+        ],
+        "1": [
+         -3.0,
+         -3.0
+        ],
+        "2": [
+         12.0,
+         12.0
+        ],
+        "3": [
+         -12.0,
+         -12.0
+        ]
+       }
+      },
+      "to_top": {
+       "button": 1,
+       "presses": 1,
+       "knob_at": [
+        3.0,
+        3.0
+       ]
+      },
+      "steps": [
+       {
+        "step": 0,
+        "knob_dy": 1,
+        "titles": [
+         "~ Skirt"
+        ]
+       },
+       {
+        "step": 1,
+        "knob_dy": 12.0,
+        "titles": [
+         "90 Brim"
+        ]
+       },
+       {
+        "step": 2,
+        "knob_dy": 13.0,
+        "titles": [
+         "EK Special mode"
+        ],
+        "row_y": 859.0
+       }
+      ]
+     }
+    }
+   ],
+   "geometry": {
+    "origin": [
+     360.0,
+     85.0
+    ],
+    "size": [
+     1200.0,
+     800.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795458146.2485938,
+   "seconds": 90.0,
+   "screenshots": {
+    "combo-0-cell-pointer-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-022226-combo-0-cell-pointer-after.panel.png",
+    "combo-0-cell-pointer-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-022226/pick_combo-022226-combo-0-cell-pointer-after.png",
+    "combo-0-cell-popup.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-022226-combo-0-cell-popup.panel.png",
+    "combo-0-cell-popup.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-022226/pick_combo-022226-combo-0-cell-popup.png",
+    "combo-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-022226-combo-page-locate.panel.png",
+    "combo-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-022226/pick_combo-022226-combo-page-locate.png",
+    "combo-page-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-022226-combo-page-scroll-0.panel.png",
+    "combo-page-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-022226/pick_combo-022226-combo-page-scroll-0.png",
+    "combo-page-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-022226-combo-page-scroll-1.panel.png",
+    "combo-page-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-022226/pick_combo-022226-combo-page-scroll-1.png",
+    "combo-page-scroll-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-022226-combo-page-scroll-2.panel.png",
+    "combo-page-scroll-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-022226/pick_combo-022226-combo-page-scroll-2.png",
+    "combo-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-022226-combo-page.panel.png",
+    "combo-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-022226/pick_combo-022226-combo-page.png",
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-022226-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-022226/pick_combo-022226-entry.png"
+   }
+  },
+  "pick_combo:take-keys": {
+   "op": "pick_combo",
+   "name": null,
+   "ok": true,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "entry": {
+    "dialogs": []
+   },
+   "readback": {
+    "tab": "Others",
+    "label": "Print sequence",
+    "before": "~ By layer",
+    "after": "v By object",
+    "expected": "By object",
+    "click": [
+     620,
+     866
+    ],
+    "entry_click": [
+     662,
+     923
+    ],
+    "taken_by": "open-down-return-keys"
+   },
+   "evidence": {
+    "notes": [
+     {
+      "tab_click": [
+       740,
+       776
+      ]
+     },
+     {
+      "scrolled": {
+       "not_found": "RuntimeError: Group title 'Special mode' not visible; titles seen: ['~ Skirt']",
+       "buttons": {
+        "down": [
+         2,
+         0
+        ],
+        "up": 1,
+        "knob_dy": {
+         "0": [
+          3.0,
+          3.0
+         ],
+         "1": [
+          -3.0,
+          -3.0
+         ],
+         "2": [
+          12.0,
+          12.0
+         ],
+         "3": [
+          -12.0,
+          -12.0
+         ]
+        }
+       },
+       "to_top": {
+        "button": 1,
+        "presses": 1,
+        "knob_at": [
+         3.0,
+         3.0
+        ]
+       },
+       "steps": [
+        {
+         "step": 0,
+         "knob_dy": 1,
+         "titles": [
+          "~ Skirt"
+         ]
+        },
+        {
+         "step": 1,
+         "knob_dy": 12.0,
+         "titles": [
+          "90 Brim"
+         ]
+        },
+        {
+         "step": 2,
+         "knob_dy": 13.0,
+         "titles": [
+          "EK Special mode"
+         ],
+         "row_y": 859.0
+        }
+       ]
+      }
+     }
+    ],
+    "attempts": [
+     {
+      "how": "cell",
+      "click": [
+       620,
+       866
+      ],
+      "focused": {
+       "role": "AXWindow",
+       "box": [
+        360.0,
+        85.0,
+        1200.0,
+        800.0
+       ],
+       "help": ""
+      },
+      "popup_entries_seen": [
+       "By layer",
+       "By object"
+      ],
+      "entry_box": {
+       "x": 628,
+       "y": 913,
+       "w": 67,
+       "h": 20
+      },
+      "entry_click": [
+       662,
+       923
+      ],
+      "windows": [
+       [
+        "AXUnknown",
+        "",
+        [
+         606,
+         884,
+         120,
+         52
+        ]
+       ],
+       [
+        "AXStandardWindow",
+        "probe",
+        [
+         360,
+         85,
+         1200,
+         800
+        ]
+       ]
+      ],
+      "takes": [
+       {
+        "how": "open-down-return-keys",
+        "painted_after": "v By object",
+        "title": "*probe",
+        "screenshot_after": "combo-0-cell-open-down-return-keys-after.png"
+       }
+      ]
+     }
+    ],
+    "screenshots": {
+     "before": "combo-page.png",
+     "popup": "combo-0-cell-popup.png",
+     "after": "combo-0-cell-open-down-return-keys-after.png"
+    }
+   },
+   "shots": {
+    "entry": "entry.png",
+    "combo-page-locate": "combo-page-locate.png",
+    "combo-page": "combo-page.png",
+    "combo-page-scroll-0": "combo-page-scroll-0.png",
+    "combo-page-scroll-1": "combo-page-scroll-1.png",
+    "combo-page-scroll-2": "combo-page-scroll-2.png",
+    "combo-0-cell-popup": "combo-0-cell-popup.png",
+    "combo-0-cell-open-down-return-keys-after": "combo-0-cell-open-down-return-keys-after.png"
+   },
+   "notes": [
+    {
+     "tab_click": [
+      740,
+      776
+     ]
+    },
+    {
+     "scrolled": {
+      "not_found": "RuntimeError: Group title 'Special mode' not visible; titles seen: ['~ Skirt']",
+      "buttons": {
+       "down": [
+        2,
+        0
+       ],
+       "up": 1,
+       "knob_dy": {
+        "0": [
+         3.0,
+         3.0
+        ],
+        "1": [
+         -3.0,
+         -3.0
+        ],
+        "2": [
+         12.0,
+         12.0
+        ],
+        "3": [
+         -12.0,
+         -12.0
+        ]
+       }
+      },
+      "to_top": {
+       "button": 1,
+       "presses": 1,
+       "knob_at": [
+        3.0,
+        3.0
+       ]
+      },
+      "steps": [
+       {
+        "step": 0,
+        "knob_dy": 1,
+        "titles": [
+         "~ Skirt"
+        ]
+       },
+       {
+        "step": 1,
+        "knob_dy": 12.0,
+        "titles": [
+         "90 Brim"
+        ]
+       },
+       {
+        "step": 2,
+        "knob_dy": 13.0,
+        "titles": [
+         "EK Special mode"
+        ],
+        "row_y": 859.0
+       }
+      ]
+     }
+    }
+   ],
+   "geometry": {
+    "origin": [
+     360.0,
+     85.0
+    ],
+    "size": [
+     1200.0,
+     800.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795458237.024627,
+   "seconds": 74.0,
+   "screenshots": {
+    "combo-0-cell-open-down-return-keys-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-022357-combo-0-cell-open-down-return-keys-after.panel.png",
+    "combo-0-cell-open-down-return-keys-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-022357/pick_combo-022357-combo-0-cell-open-down-return-keys-after.png",
+    "combo-0-cell-popup.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-022357-combo-0-cell-popup.panel.png",
+    "combo-0-cell-popup.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-022357/pick_combo-022357-combo-0-cell-popup.png",
+    "combo-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-022357-combo-page-locate.panel.png",
+    "combo-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-022357/pick_combo-022357-combo-page-locate.png",
+    "combo-page-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-022357-combo-page-scroll-0.panel.png",
+    "combo-page-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-022357/pick_combo-022357-combo-page-scroll-0.png",
+    "combo-page-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-022357-combo-page-scroll-1.panel.png",
+    "combo-page-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-022357/pick_combo-022357-combo-page-scroll-1.png",
+    "combo-page-scroll-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-022357-combo-page-scroll-2.panel.png",
+    "combo-page-scroll-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-022357/pick_combo-022357-combo-page-scroll-2.png",
+    "combo-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-022357-combo-page.panel.png",
+    "combo-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-022357/pick_combo-022357-combo-page.png",
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-022357-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-022357/pick_combo-022357-entry.png"
+   }
   }
  },
  "attempts": [
@@ -5816,6 +6376,16 @@
    "op": "scenario:print-sequence",
    "stamp": "022045",
    "ok": true
+  },
+  {
+   "op": "pick_combo",
+   "stamp": "022226",
+   "ok": true
+  },
+  {
+   "op": "pick_combo",
+   "stamp": "022357",
+   "ok": true
   }
  ],
  "summary": {
@@ -5830,7 +6400,8 @@
    "set_float",
    "set_checkbox",
    "scroll_page",
-   "pick_combo"
+   "pick_combo",
+   "pick_combo_attribution"
   ],
   "proved_runs": {
    "switch_tab": "230246",
@@ -5856,7 +6427,8 @@
    ],
    "before": "~ By layer",
    "readback": "~ By object",
-   "taken_by": "open-down-return-keys"
+   "taken_by": "open-down-return-keys",
+   "attribution": "014004's accepted take was the keys only because norm() refused 'v By object' (the glyph glued in front): the pointer take of that run had already painted it - see pick_combo_attribution"
   },
   "scenarios": {
    "what": "one edit -> Save Project -> key read from the saved 3mf Metadata/project_settings.config",
@@ -5923,10 +6495,6 @@
    "not_proved": {}
   },
   "not_proved": {
-   "pick_combo_attribution": {
-    "status": "NOT ISOLATED - which action completed the pick",
-    "detail": "run 014004: after the pointer click on the list entry the row painted 'v By object' (OCR glued the dropdown glyph; norm() rejected it, title_key now reads it as the target), then Down + Return keys were posted and the row painted '~ By object'; the rerun meant to separate the two (014224) aborted at the cell click on a harness AX read ('Missing field position')"
-   },
    "set_checkbox_after_scroll_change": {
     "status": "OPEN - B4's proof predates the scroll change",
     "detail": "the thin-wall scenario reaches the row since run 021310 (through Advanced mode + collapse + resize); the plain set_checkbox op was not re-run after the scroll change"
@@ -5957,7 +6525,9 @@
     "ok": true,
     "record": "014004 (the proving run)",
     "last_attempt": "014224 (aborted, see pick_combo:rerun)",
-    "screenshots": 16
+    "screenshots": 16,
+    "take-pointer": "022226",
+    "take-keys": "022357"
    },
    "scroll_page": {
     "ok": true,
@@ -5980,9 +6550,63 @@
     "last_run": "022045",
     "runs": 3,
     "screenshots": 16
+   },
+   "pick_combo:take-pointer": {
+    "ok": true,
+    "last_run": "022226",
+    "screenshots": 16
+   },
+   "pick_combo:take-keys": {
+    "ok": true,
+    "last_run": "022357",
+    "screenshots": 16
    }
   },
-  "summary_written_at": "2026-11-24 02:21:15",
-  "code_after_the_proof": "scroll_to / locate_row changed three times after run 014004 (title test like find_row, look before paging, click retry on a missed AX read): pick_combo was not re-run on the final code; scenario layer-height (014352) ran on the title-test version"
+  "summary_written_at": "2026-11-24 02:24:06",
+  "code_after_the_proof": "scroll_to / locate_row changed three times after run 014004 (title test like find_row, look before paging, click retry on a missed AX read): pick_combo was not re-run on the final code; scenario layer-height (014352) ran on the title-test version",
+  "pick_combo_attribution": {
+   "status": "ISOLATED - the pointer click completes the pick; it is also the first input of the full sequence, so the keys that follow it are redundant",
+   "what": "two runs, one input each (pick_combo --take, the switch read back from each run's launch job); the row's painted value is read after that input alone",
+   "pointer_only": {
+    "run": "022226",
+    "ok": true,
+    "seconds": 90.0,
+    "before": "~ By layer",
+    "after": "v By object",
+    "taken_by": "pointer",
+    "inputs_posted": [
+     "pointer"
+    ],
+    "cell_click": [
+     620,
+     866
+    ],
+    "entry_click": [
+     662,
+     923
+    ],
+    "last_error": null
+   },
+   "keys_only": {
+    "run": "022357",
+    "ok": true,
+    "seconds": 74.0,
+    "before": "~ By layer",
+    "after": "v By object",
+    "taken_by": "open-down-return-keys",
+    "inputs_posted": [
+     "open-down-return-keys"
+    ],
+    "cell_click": [
+     620,
+     866
+    ],
+    "entry_click": [
+     662,
+     923
+    ],
+    "last_error": null
+   }
+  }
  }
 }
