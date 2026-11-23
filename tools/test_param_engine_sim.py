@@ -978,10 +978,18 @@ if hasattr(_pcl22, "settle_dialog"):
             return not (h == 4 and _modal22["open"])
 
     _saved22 = (_mu22.toplevel, pp.dialog_body, _mu22.children, _eu22.wait_popup,
-                _wu22.real_click_screen, _wu22.user32)
+                _wu22.real_click_screen, _wu22.user32, _wu22.force_set_foreground, _mdu21._send_keys)
     try:
         _wu22.user32 = _U22
         _wu22.real_click_screen = lambda x, y: _clicks22.append((x, y))
+        _keys22, _fg22 = [], {"ok": False, "enter_closes": False}
+
+        def _enter22(keys):
+            _keys22.append(keys)
+            if _fg22["enter_closes"]:
+                _modal22["open"] = False       # the default button was pressed
+        _wu22.force_set_foreground = lambda h: _fg22["ok"]
+        _mdu21._send_keys = _enter22
         ui22 = types.SimpleNamespace(app=types.SimpleNamespace(pid=3, hwnd=4), pause=lambda s: None)
         # NOT #32770: the box is found by its effect on the main window
         _mu22.toplevel = lambda pid: [("wxWindowNR", "Orca", (800, 400, 1120, 560), 99)]
@@ -1051,11 +1059,28 @@ if hasattr(_pcl22, "settle_dialog"):
         _modal22.update(open=True, command_closes=False)
         _pcl22.settle_dialog(ui22, set(), "No")
         check("settle_dialog: a command that does not close the box -> closed as before",
-              _posted22 == [(99, 0x0111, 7), (99, 0x0010, 0)] and not _clicks22,
-              "%r %r" % (_clicks22, _posted22))
+              _posted22 == [(99, 0x0111, 7), (99, 0x0010, 0)] and not _clicks22 and not _keys22,
+              "%r %r %r" % (_clicks22, _posted22, _keys22))
+        _posted22.clear()
+        _modal22.update(open=True)
+        _fg22.update(ok=True, enter_closes=True)
+        _pcl22.settle_dialog(ui22, set(), "Yes")
+        check("settle_dialog: nor the command -> a real Enter on the box presses its default button "
+              "(VM run 4d9731ec)",
+              _posted22 == [(99, 0x0111, 6)] and _keys22 == [[(0x0D, False), (0x0D, True)]]
+              and not _modal22["open"], "%r %r" % (_posted22, _keys22))
+        _posted22.clear()
+        _keys22.clear()
+        _modal22.update(open=True)
+        _fg22.update(ok=False)                 # the box is not in front: no stray Enter
+        _pcl22.settle_dialog(ui22, set(), "Yes")
+        check("settle_dialog: ... and when the box is not the foreground window nothing is typed; "
+              "it is closed",
+              _posted22 == [(99, 0x0111, 6), (99, 0x0010, 0)] and not _keys22,
+              "%r %r" % (_posted22, _keys22))
     finally:
         (_mu22.toplevel, pp.dialog_body, _mu22.children, _eu22.wait_popup,
-         _wu22.real_click_screen, _wu22.user32) = _saved22
+         _wu22.real_click_screen, _wu22.user32, _wu22.force_set_foreground, _mdu21._send_keys) = _saved22
 else:
     print("N/A  settle_dialog (absent on this tree)")
 

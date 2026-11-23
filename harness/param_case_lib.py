@@ -458,7 +458,21 @@ def settle_dialog(ui, known, answer=None):
             print("[param case] answered %r by WM_COMMAND (no Button window in this box)" % (
                 answer,), flush=True)
             return dlg, body
-        print("[param case] WM_COMMAND did not close the box", flush=True)
+        if want == "yes":
+            # VM run 4d9731ec: the command did not close it either. The box
+            # is the app's active window and Yes is its default button - a
+            # real Enter key presses it, but only once the box really is
+            # the foreground window (an Enter elsewhere is a stray key).
+            from harness import mix_dialog_util as mdu
+            if winutil.force_set_foreground(dlg):
+                ui.pause(0.5)
+                mdu._send_keys([(0x0D, False), (0x0D, True)])       # VK_RETURN
+                ui.pause(1.0)
+                if winutil.user32.IsWindowEnabled(app.hwnd):
+                    print("[param case] answered %r with a real Enter (the box's default button)" % (
+                        answer,), flush=True)
+                    return dlg, body
+        print("[param case] neither the command nor Enter closed the box", flush=True)
         winutil.user32.PostMessageW(dlg, 0x0010, 0, 0)  # WM_CLOSE
     else:
         print("[param case] closing it (WM_CLOSE)", flush=True)
