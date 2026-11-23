@@ -201,6 +201,61 @@ def main():
           len(flow) == 2 and len(left) == 8 and [t for t, _ in left].count("Wall generator") == 2)
     out["step10_titles"] = {"titles": titles, "rows": rows_found, "left_column_050208_scroll-4": left}
 
+    # scroll_to, replayed on 051203's scroll-0 .. scroll-2 and on the page one press on
+    # (050208's scroll-3: 051203 stopped at its scroll-2 and saved no scroll-3 of its own)
+    panels = [replay(f"case-051203-op0-find-page-full-scroll-{i}") for i in range(3)]
+    panels.append(replay("case-050208-op0-find-page-full-scroll-3"))
+    seen = [other.read("x") for other in panels]  # the raw readings, tab band included
+    shots = [other.last_shot for other in panels]  # taken first: `panel` below is panels[2] itself
+    panel, knob, presses, pages = panels[0], [0], [], [0]
+    hole = ["X-Y hole compensation", "hole compensation"]
+
+    def next_page(tag, full=False):
+        page = min(pages[0], 3)
+        pages[0] += 1
+        panel.reads.append(tag)
+        panel.last_shot = shots[page]  # each page's own shot
+        return seen[page]
+
+    def press(index, times=1, pause=0.45):
+        knob[0] += 1
+        presses.append(knob[0])
+
+    panel.read, panel.scroll_up_button, panel.scroll_down_buttons = next_page, 1, [0]
+    panel.knob_at = lambda: 40 * knob[0]
+    panel.find_scroll_buttons = lambda: {"down": [0], "up": 1}
+    panel.scroll_top = lambda button, limit=30: {"presses": 0}
+    panel.press_scroll = press
+    stop = None
+    try:
+        panel.scroll_to("Precision", hole, "replay", "replay")
+    except RuntimeError as error:
+        stop = po.brief(error, 400)
+    stopped = replay("case-051203-op0-find-page-full-scroll-2")
+    at_stop = [(t["text"], int(t["y"])) for t in stopped.group_titles(stopped.page_rows(seen[2]))]
+    after = replay("case-050208-op0-find-page-full-scroll-3")
+    page3 = after.page_rows(seen[3])
+    on_after = [(t["text"], int(t["y"])) for t in after.group_titles(page3)]
+    wanted = [(r["text"], int(r["y"])) for r in page3 if "hole compensation" in po.norm(r["text"])]
+    refused = None
+    try:
+        after.find_row(seen[3], "Precision", hole)
+    except RuntimeError as error:
+        refused = po.brief(error, 200)
+    out["step10_scroll"] = {"stop": stop, "presses": len(presses), "titles_at_the_stop": at_stop,
+                            "page_one_press_on": {"titles": on_after, "wanted_row": wanted,
+                                                  "find_row": refused},
+                            "stop_on_the_row_itself": "NOT VERIFIED"}
+    check("051203 replay: scroll_to stops where run 051203 stopped, after 2 presses, with the title "
+          "'E5 Precision' on the page at y 849",
+          len(presses) == 2 and at_stop == [("E5 Precision", 849)] and stop is not None)
+    check("the page one press on (050208 scroll-3) shows the wanted row 'X-Y hole compensation' at "
+          "y 725 with no 'Precision' title on it (only 'C Ironing' y 943) and find_row refuses it: "
+          "the blocker of 'stop on the row itself' (NOT VERIFIED - rows of a group whose title "
+          "left the page have no attribution)",
+          wanted == [("X-Y hole compensation", 725)] and on_after == [("C Ironing", 943)]
+          and refused is not None and "Precision" in refused)
+
     failed = [name for name, ok in checks if not ok]
     print(json.dumps({"ok": not failed, "checks": len(checks), "failed": failed, "out": out},
                      indent=1, ensure_ascii=False))
