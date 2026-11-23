@@ -595,8 +595,13 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         # Edit there -> clean raise). The value-anchored candidates pick
         # the field row itself - re-anchored per op to the values the
         # previous edit just painted (fixture paints 0 50 25 5).
-        # overhang_totally_speed does not exist in this fork; bridge
-        # speed and the enable flag already sit at the table targets.
+        # overhang_totally_speed does not exist in this fork; the enable flag
+        # already sits at the table target. Bridge speed did too - on the cube
+        # (30) - so there was no op for it; the precondition fixture's preset
+        # says 50 and its twin ended pilot_target_setting_mismatch with the four
+        # overhang values right (run 26f9fb35, 2026-11-24). The row is 'Bridge'
+        # right under the overhang stack, still in the 'Overhang speed' group
+        # (the Edit the stack search must not take for a fifth field).
         # 2026-11-23: rows anchored to the row label only. The value-bearing
         # phrases ('Overhang speed 0', ... 'Overhang speed 40 30 20') never
         # matched what OCR made of the painted field row (overhang_bridge run
@@ -612,6 +617,7 @@ PARAM_OPS = {        "uia_param_ironing_top": [
              "group": "Overhang", "field": 2},
             {"op": "float", "label": "Overhang speed",
              "value": "10", "group": "Overhang", "field": 3},
+            {"op": "float", "label": "^Bridge", "value": "30", "group": "Overhang"},
         ],
         # Feishu #273 (line 192): the row paints just 'Travel' + the
         # value while the group TITLE reads 'Travel speed' - a plain
