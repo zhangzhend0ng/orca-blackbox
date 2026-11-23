@@ -39,8 +39,8 @@ SOURCE_COMMIT = "2733ef6"  # origin codex/glm-dev-20261124, tools/param_cases_ex
 # The keys each op may carry besides `op` (tab / tab_hint: switch to that page first); any
 # other key is a form this version does not run.
 ROW_KEYS = {"tab", "tab_hint", "label", "group"}
-CASE_FUSE = 360  # seconds for the whole case from the supervisor's start: launch, ops, save
-OP_FUSE = 110  # seconds one op may take from its entry; travel_speed's longest locate took 52.8
+CASE_FUSE = 420  # seconds for the whole case from the supervisor's start: launch, ops, save
+OP_FUSE = 150  # seconds one op may take from its entry; surface_flow's op0 needs about 135 (060903)
 SAVE = 40  # kept after the last op for Save Project and the keys read from the saved project
 PROGRESS = po.WORK / "progress.json"  # the ops finished so far, put down after each one
 RUNNABLE = {"float": ROW_KEYS | {"value"}, "checkbox": ROW_KEYS | {"value"},

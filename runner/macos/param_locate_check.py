@@ -262,9 +262,26 @@ def main():
     sizes = [pc.op_limit(now + pc.CASE_FUSE, now + t) for t in at]
     out["op_limits"] = {"case": pc.CASE_FUSE, "per_op": pc.OP_FUSE, "save": pc.SAVE,
                         "seconds_at": dict(zip(at, sizes))}
-    check("op limits: 110 s for an op that starts 50 s and 160 s into the case, 50 s at 270 s, "
-          "none at 381 s (the save's 40 s kept inside the case's 360 s)",
-          sizes == [110, 110, 50, -61])
+    check("op limits: 150 s for an op that starts 50 s and 160 s into the case, 110 s at 270 s, "
+          "none at 381 s (the save's 40 s kept inside the case's 420 s)",
+          sizes == [150, 150, 110, -1])
+    # --- step 11: 150 s per op, 420 s per case (surface_flow's op0 needs about 135 s, run 060903)
+    full_until = pc.CASE_FUSE - pc.SAVE - pc.OP_FUSE  # an op started this far in still gets OP_FUSE
+    edge = [pc.op_limit(now + pc.CASE_FUSE, now + t) for t in (0, full_until, full_until + 1)]
+    needs = 135  # surface_flow op0: tab switch 41 + find chain 63 + set_float about 30
+    fits = pc.op_limit(now + pc.CASE_FUSE, now + 5) - needs
+    three = [pc.op_limit(now + pc.CASE_FUSE, now + t) for t in (0, needs, 2 * needs)]
+    out["op_limits_150_420"] = {"full_op_until": full_until, "at": [0, full_until, full_until + 1],
+                                "seconds": edge, "surface_flow_op0_margin": fits,
+                                "three_ops_of_135_s": three}
+    check("step 11 limits: 150 s per op and 420 s per case",
+          pc.OP_FUSE == 150 and pc.CASE_FUSE == 420 and pc.SAVE == 40)
+    check("an op gets the whole 150 s up to 230 s into the case, 149 s one second later",
+          full_until == 230 and edge == [150, 150, 149])
+    check("surface_flow's op0 (about 135 s by run 060903) fits its limit with 15 s to spare",
+          fits == 15)
+    check("three ops of 135 s each do not fit: the third starts at 270 s and gets 110 s",
+          three == [150, 150, 110])
     failed = [name for name, ok in checks if not ok]
     print(json.dumps({"ok": not failed, "checks": len(checks), "failed": failed, "out": out},
                      indent=1, ensure_ascii=False))
