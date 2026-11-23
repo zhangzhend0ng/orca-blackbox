@@ -914,16 +914,28 @@ class Panel:
                     break
             moved = self.knob_at() - knob
             rows = self.read(f"{tag}-{index}")
+            title, row, missing, titles = None, None, None, []
             try:
-                titles = [t["text"] for t in self.page_titles(rows)]
+                # The group title as find_row reads it (x < TITLE_X): the stricter fold-icon
+                # test of title_of missed the Strength page's 'Walls' and paged it to the end.
+                left = self.geometry()[0].x
+                heads = [r for r in self.page_rows(rows) if r["x"] - left < TITLE_X and norm(r["text"])]
+                wanted = norm(group)
+                title = next((t for t in heads if wanted in norm(t["text"]) or norm(t["text"]) in wanted), None)
+                titles = [t["text"] for t in heads]
                 row = self.find_row(rows, group, label)
-            except RuntimeError:
-                titles, row = [], None
+            except RuntimeError as error:  # no tab band, no group title, or no such row
+                missing = error
             step = {"step": index, "knob_dy": moved, "titles": titles}
             trail["steps"].append(step)
             if row and row["y"] + row["h"] <= y + h - 2:
                 step["row_y"] = round(row["y"], 1)
                 return trail
+            # The group is on screen with room for a row under its title: the row is not on
+            # this page (an Advanced-only one in standard mode), so scrolling cannot find it.
+            if title and (row or title["y"] + title["h"] <= y + h - 40) and (row is None or not moved):
+                raise missing if row is None else RuntimeError(
+                    f"Row {label!r} touches the viewport's lower edge in group {group!r}")
             if not moved:
                 step["end_of_page"] = True
                 break
