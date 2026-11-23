@@ -7195,7 +7195,7 @@
     "screenshots": 16
    }
   },
-  "summary_written_at": "2026-11-24 04:14:50",
+  "summary_written_at": "2026-11-24 06:17:24",
   "code_after_the_proof": "final code = look-first scroll + painted_is() + pick_combo --take. On the final code: pick_combo pointer / keys (022226 / 022357) and scenario print-sequence (022045). One step behind it (no painted_is, no --take; neither is on that path): scenario thin-wall (021310). Older: the five op proofs and scenario layer-height (014352)",
   "pick_combo_attribution": {
    "status": "ISOLATED - the pointer click completes the pick; it is also the first input of the full sequence, so the keys that follow it are redundant",
@@ -7303,18 +7303,19 @@
    "pass": [
     "uia_param_wall_thin",
     "uia_param_layer_pair",
-    "uia_param_travel_speed"
+    "uia_param_travel_speed",
+    "uia_param_speed_limits"
    ],
    "unsupported op": [],
    "needs develop mode": [],
    "not_passed": {
-    "uia_param_surface_flow": "NOT PROVEN, 3 GUI attempt(s), latest run 050208 (213.5 s; no result of op0's own, nothing saved): both candidates of op0 were judged on one reading, but the chain never saw its group. find_row takes a group title as a box left of TITLE_X (26 px); on this page the title is read 'Walls and surfaces' at x 28 (050208 scroll-4, no fold glyph read), the same x as its rows ('Top surface flow ratio' x 26, y 945), so it is not a title: 9 scroll steps to the page end, the fold steps, then the worker's final geometry read raised 'Missing field position' and op0's result was lost (as in 043936; cause NOT INVESTIGATED). The case's group and rows are on the Quality page (d59ba7f said otherwise: wrong, corrected in 662b41f). NOT FIXED: the title test",
-    "uia_param_speed_limits": "NOT PROVEN, 1 GUI attempt(s), run 050552 (the 200 s fuse fired; no worker result, nothing saved): op0 (Layer height) was edited; op1 (Line width / 'Outer wall line width') never got its row for the same reason - its title is read 'Line width' at x 26 (the row 'Outer wall' at x 28, y 897), not left of TITLE_X - so the chain paged to the end of the Quality page and into the fold steps; op2 (Speed / 'Outer wall speed') NOT STARTED. The fuse was sized for the box; a longer one would not find the row at any step. NOT FIXED: the title test",
-    "uia_param_arc_resolution": "NOT PROVEN, 1 GUI attempt(s), run 050914 (the 170 s fuse fired; no worker result, nothing saved): op0 (checkbox 'fitting') located 'Arc fitting' on the full-height page at +47.5 s (3 scroll presses; the title read 'E5 Precision' with its fold glyph) and clicked its cell (+63.6 s); what the click did is not recorded. op1 (checkbox 'height' -> 'Precise Z height') began at +118.4 s and the fuse fired in its first page-full capture. Whether op1's row can be located with the Precision title on the page is NOT ESTABLISHED",
-    "uia_param_precision_comp": "NOT PROVEN, 1 GUI attempt(s), run 051203 (the 160 s fuse fired; no worker result, nothing saved): op0 ('X-Y hole compensation' -> -0.1) never got its row: after 3 scroll presses the Precision title was on the page ('E5 Precision', y 849) with its first rows under it and the wanted row still below the fold; scroll_to stopped there (its 'Advanced-only row' rule) and the chain went to the fold steps; ops 1 and 2 NOT STARTED. One more press brings the row up (050208 scroll-3). NOT FIXED: the early stop"
+    "uia_param_surface_flow": "NOT PROVEN, 4 GUI attempt(s), latest run 060903 (139.5 s; op0's own 110 s fuse fired; nothing saved). The group-title test no longer stops it: on the real GUI the scroll chain read the titles ['ELayer height', 'Line width'], ['Seam'], ['E5 Precision'], ['C Ironing'], ['Wall generator', 'Walls and surfaces'] and at the 5th press found the row 'Top surface flow ratio' under 'Walls and surfaces' (exact, y 975). BLOCKER now: one op's 110 s do not cover the case's only op - tab switch 41 s, find chain 63 s (5 scroll steps), then set_float's own locate had read the page once when the fuse fired (06:08:57, 110 s after the op's entry at 06:07:07); by run 050552's 22.3 s for an edit the op needs about 135 s. No cell clicked, no value written. NOT FIXED (the 110 s per op is the decided limit)",
+    "uia_param_speed_limits": "PASS in step 10 (run 061300) - see pass_runs",
+    "uia_param_arc_resolution": "NOT PROVEN, 1 GUI attempt(s), latest run 050914 (the 170 s fuse fired; op0's cell was clicked, its effect is not recorded); not re-run in step 10. op1 ('Precise Z height', Precision group) is held by the scroll stop that step 10 did not change: the title is on the page with the wanted row still below the fold, and one press on the row is on the page without its title (050208 scroll-3: 'Precise Z height' y 881, the only title 'C Ironing' y 943). NOT FIXED",
+    "uia_param_precision_comp": "NOT PROVEN latest run 061619, 2 GUI attempt(s), 155.9 s: op0 stopped where the Precision title is on the page with its first rows under it and the wanted row below the fold (3 scroll presses, as in 051203; the scroll stop is unchanged in step 10, its change is NOT VERIFIED), then the fold step folded nothing and a second scroll chain's search for the scrollbar's buttons ran into op0's 110 s fuse, 16 s past the limit (the fuse is checked at page reads only); ops 1 and 2 not started, no cell clicked, nothing saved. NOT FIXED"
    },
    "not_run": [],
-   "not_run_why": "the 28-minute box of step 9 was used",
+   "not_run_why": "none: every asked case has been run at least once",
    "differences": [
     "uia_param_layer_pair: none for its two keys",
     "uia_param_wall_thin 034725: Wall loops painted '4' on the row after the edit (031559 could not read that number); 'Detect thin walls' is on the page in Advanced mode only, below the fold at 1200x800 and on screen at 1200x916",
@@ -7322,14 +7323,18 @@
    ],
    "blockers": [
     "param_case.tick() strip file name: FIXED (90af1ba, per_op_shots / on_disk) and proven on the GUI by run 035959 (uia_param_wall_thin PASS, the strips cut from op1-check-page.cell.png / op1-check-checked.cell.png)",
-    "group-title test (NOT FIXED; it stops uia_param_speed_limits and uia_param_surface_flow): find_row, scroll_to and the fold step take a group title as a box left of 'probe'_X = 26 px. When OCR does not read the fold glyph in front of a title, the title sits at x 26-28, the same as its rows (x 26-32): 'Line width' at x 26 (050552 op1-find-page-full; its row 'Outer wall' at x 28, y 897) and 'Walls and surfaces' at x 28, y 831 (050208 scroll-4; 'Top surface flow ratio' at x 26, y 945 under it). The group is then 'not visible' although its rows are on the page: the chain pages to the end of the Quality page (9 steps) and goes on to the fold steps. A title that keeps its glyph is read at x 2-6 and works ('Fo Travel speed' 045829, 'E5 Precision' 050914). x alone cannot tell them apart; the box height or the fold icon may",
+    "group-title test: FIXED in step 10 (9a5df16) - a title is told by the ink of its fold glyph in the strip at the column's left edge, not by the x of its text. Offline replay 24 of 24 (param_locate_check.py exit 0); on the GUI by run 061300 (uia_param_speed_limits PASS: 'Line width' with its text at x 26) and run 060903 (surface_flow: 'Walls and surfaces' at x 28, its row found). The three earlier passing cases were not re-run on it",
     "after the fold steps of runs 043936 and 050208 the worker's own final geometry read raised 'Missing field position' and op_case's result was lost with it; cause NOT INVESTIGATED",
     "the fuses of runs 050552 (200 s) and 050914 (170 s) were sized by me for what was left of the 28-minute box, under the 230-280 s a 2-3 op case needs with the 45 s launch and the Advanced switch (about 45 s of AXPress polls before the first op): both attempts ended in the fuse, not in an op's own error. A 3-op case was not completed in the box",
     "scroll_to leaves the page too early (NOT FIXED; it stops uia_param_precision_comp): a title with 40 px of room under it and no wanted row is read as 'the row is not on this page (an Advanced-only one in standard mode), so scrolling cannot find it'. Run 051203 scroll-2: 'E5 Precision' at x 2, y 849 with 'Slice gap closing radius' (y 883), 'Resolution' (y 911) and 'Arc fitting' (y 939) under it, the wanted 'X-Y hole compensation' further down the group; the chain stopped after 3 presses and went to the fold steps, although one more press brings that row up (050208 scroll-3 reads it at y 725). uia_param_arc_resolution's op1 ('Precise Z height') is in the same group; it did not get that far in 050914, so for it this is an inference",
     "a supervisor timeout still leaves the test instance running (B7 note, seen twice more): pids 21278 (050552) and 23205 (050914) killed by hand at 05:06:13 and 05:09:21 after confirming each command names its orca-bb-param-ops work dir; no Orca process and no LaunchAgent job left at the end of step 9",
     "other keys: 35 keys differ between the fixture's config and the saved one in each save so far (layer_pair 034408, wall_thin 035959, travel_speed 045829); review material, not judged on Mac, no save-only control was run",
     "step 8's blocker (b) is CLOSED: param_case.locate runs one chain per op (3114cb8) and travel_speed 045829 reaches its row 52.8 s after the op's entry; step 8's blocker (a), the 60 s target, is met by that run (52.8 s to the shot, 57.8 s to the end of the read)",
-    "not exercised on the GUI: rowcombo -> pick_combo inside a case, a checkbox that must end unchecked (no reader for its painted state)"
+    "not exercised on the GUI: rowcombo -> pick_combo inside a case, a checkbox that must end unchecked (no reader for its painted state)",
+    "scroll stop (NOT CHANGED in step 10, the change is NOT VERIFIED): scroll_to still stops where the group title is on the page with 40 px of room under it and the wanted row is not. Taking that stop out was tried and dropped: one press on, the row is on the page and its title above it, and find_row, which needs the title, refuses it (051203 scroll-2 -> 050208 scroll-3: 'X-Y hole compensation' y 725, the only title 'C Ironing' y 943; the chain then paged to the page end, 24 presses). Rows of a group whose title has left the page have no attribution - the other matter, to be proven on its own. It holds uia_param_precision_comp op0 and uia_param_arc_resolution op1",
+    "op fuse of 110 s against uia_param_surface_flow's only op (NOT FIXED; the limit is as decided): run 060903 needs about 135 s for that op (tab switch 41 s + find chain 63 s with 5 scroll steps + set_float's locate and edit about 30 s); the fuse fired in set_float's first locate",
+    "op fuse is checked at page reads only (seen in run 061619): the op ran 16 s past its limit inside a scroll chain's search for the scrollbar's buttons (AX presses, no page read); an op can overrun by whatever runs between two reads - NOT FIXED",
+    "op-level record: the fuse side is verified by run 060903 (the op's own error and its row are in the result, progress.json state 'stopped'); the pickup of progress.json on a missing result.json (a supervisor kill) is NOT verified by a run"
    ],
    "harness_notes": [
     "the supervisor needs .venv/bin/python (3.11): /usr/bin/python3 is 3.9 and stops at staging (first attempt 03:12:16, no GUI action, nothing recorded)",
@@ -7338,13 +7343,15 @@
     "changed after the run and NOT re-run on the GUI: the op prefix goes onto tags once (it was doubled); a supervisor error gets status / reason and its case name in its record (it was filed under \"case\" without one; re-keyed by hand here); a multi-element list shows as JSON text; record hands non-case results back to param_ops' record",
     "param_ops.py advanced_check is a check op that saves nothing; its 034019 record keeps ok=false from the first criterion",
     "the supervisor runs under .venv/bin/python (3.11) and the worker under the trusted Python 3.9 (seen again 03:38:20: /usr/bin/python3 stopped at staging, no GUI action)",
-    "the before/after proof of 034019 is the OCR of the panel crops, run after the run: this session's model cannot view images"
+    "the before/after proof of 034019 is the OCR of the panel crops, run after the run: this session's model cannot view images",
+    "the supervisor needs .venv/bin/python (3.11): /usr/bin/python3 is 3.9 and stops at staging (seen a third time at 06:05:02 in step 10: no LaunchAgent registered, no GUI action, nothing recorded)"
    ],
-   "summary_written_at": "2026-11-24 05:12:53",
+   "summary_written_at": "2026-11-24 06:17:24",
    "pass_runs": {
     "uia_param_wall_thin": "run 035959, 177.2 s: wall_loops 2 -> saved 4 (expected 4, decimal); detect_thin_wall 0 -> saved 1 (expected 1, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 1",
     "uia_param_layer_pair": "run 034408, 124.4 s: layer_height 0.4 -> saved 0.2 (expected 0.2, decimal); initial_layer_print_height 0.4 -> saved 0.25 (expected 0.25, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 1",
-    "uia_param_travel_speed": "run 045829, 147.6 s: travel_speed 500 -> saved 300 (expected 300, decimal); title after Save Project: 'probe'; Orca left: []; 35 other keys changed (review material, not judged); n = 1"
+    "uia_param_travel_speed": "run 045829, 147.6 s: travel_speed 500 -> saved 300 (expected 300, decimal); title after Save Project: 'probe'; Orca left: []; 35 other keys changed (review material, not judged); n = 1",
+    "uia_param_speed_limits": "run 061300, 192.8 s: layer_height 0.4 -> saved 0.2 (expected 0.2, decimal); outer_wall_line_width 0.82 -> saved 0.42 (expected 0.42, decimal); outer_wall_speed 120 -> saved 700 (expected 700, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 1"
    },
    "blockers_e81e9fc_now": {
     "1 fuse": "default is now max(360, 120 + 80 per op) s (949ce13); neither run since reached it",
@@ -7354,7 +7361,8 @@
    "other_changed_keys_per_case": {
     "uia_param_wall_thin": 35,
     "uia_param_layer_pair": 35,
-    "uia_param_travel_speed": 35
+    "uia_param_travel_speed": 35,
+    "uia_param_speed_limits": 35
    },
    "step7": {
     "what": "step 7 in a 28-minute box: the tick() shot file names fixed with an offline check (90af1ba), then the case list in the asked order, one GUI attempt per case, no --fuse passed (default max(360, 120 + 80 per op) s)",
@@ -7471,6 +7479,41 @@
     "uia_param_speed_limits": "NOT PROVEN latest run 050552, 1 GUI attempt(s), the 200 s fuse fired: op1 stopped by the group-title test (the title read at x 26), op2 not started",
     "uia_param_arc_resolution": "NOT PROVEN latest run 050914, 1 GUI attempt(s), the 170 s fuse fired in op1; op0's cell was clicked, its effect is not recorded",
     "uia_param_precision_comp": "NOT PROVEN latest run 051203, 1 GUI attempt(s), the 160 s fuse fired in the fold steps: scroll_to stops at the first step where the Precision title is on the page, with the wanted row still below the fold; ops 1 and 2 not started"
+   },
+   "step10": {
+    "what": "step 10 in a 26-minute box (05:57:26 to 06:23:26): the carry rule withdrawn; group titles by their fold glyph with an offline replay over the step-9 readings; the scroll stop replayed and left unchanged; each op limited to min(110 s, the case's time left) inside 360 s for the case, the record put down after each op; then uia_param_surface_flow, uia_param_speed_limits and uia_param_precision_comp on the GUI",
+    "commits": {
+     "title rule": "9a5df16",
+     "scroll replay (NOT VERIFIED, no code change)": "c103ff0",
+     "per-op fuse + op-level record": "439241b",
+     "surface_flow 060903": "1d1976a",
+     "speed_limits 061300": "e3b402b"
+    },
+    "offline_check": "runner/macos/param_locate_check.py, no GUI, no save: exit 0, 24 of 24. Titles: 050208 scroll-4 -> 'Wall generator' (x 30), 'Walls and surfaces' (x 28), row 'Top surface flow ratio' (x 26, y 945); 050552 page-full -> 'L Layer height' (x 4), 'Line width' (x 26), row 'Outer wall' (x 28, y 897); the plain row 'Wall generator' (x 30, y 796) is not a title. Scroll replay of 051203: stops where run 051203 stopped (2 presses, 'E5 Precision' y 849); the next page has the row at y 725 without its title. Op limits at 50 / 160 / 270 / 381 s into the case: 110 / 110 / 50 / -61 s",
+    "tried_this_step": [
+     "uia_param_surface_flow",
+     "uia_param_speed_limits",
+     "uia_param_precision_comp"
+    ],
+    "passed_this_step": [
+     "uia_param_speed_limits"
+    ],
+    "cumulative": {
+     "asked": 7,
+     "tried": 7,
+     "passed": 4,
+     "not_proven": 3,
+     "not_run": []
+    }
+   },
+   "step10_case_lines": {
+    "uia_param_wall_thin": "PASS run 035959, 177.2 s, 3 GUI attempt(s); not re-run in step 10",
+    "uia_param_layer_pair": "PASS run 034408, 124.4 s, 1 GUI attempt(s); not re-run in step 10",
+    "uia_param_travel_speed": "PASS run 045829, 147.6 s, 3 GUI attempt(s); not re-run in step 10",
+    "uia_param_surface_flow": "NOT PROVEN latest run 060903, 4 GUI attempt(s), 139.5 s, op0's 110 s fuse fired in set_float's first locate: the row was found under its title (the title rule works on the GUI); the op needs about 135 s",
+    "uia_param_speed_limits": "PASS run 061300, 192.8 s, 2 GUI attempt(s); the first pass, on the step-10 title rule (050552 was stopped by the title test)",
+    "uia_param_arc_resolution": "NOT PROVEN latest run 050914, 1 GUI attempt(s); not re-run in step 10: op0's effect not recorded; op1 is held by the scroll stop that step 10 did not change",
+    "uia_param_precision_comp": "NOT PROVEN latest run 061619, 2 GUI attempt(s), 155.9 s: op0 stopped where the Precision title is on the page with its first rows under it and the wanted row below the fold (3 scroll presses, as in 051203; the scroll stop is unchanged in step 10, its change is NOT VERIFIED), then the fold step folded nothing and a second scroll chain's search for the scrollbar's buttons ran into op0's 110 s fuse, 16 s past the limit (the fuse is checked at page reads only); ops 1 and 2 not started, no cell clicked, nothing saved. NOT FIXED"
    }
   }
  },
