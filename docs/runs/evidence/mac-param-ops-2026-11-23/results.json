@@ -6977,6 +6977,11 @@
    "op": "case:uia_param_arc_resolution",
    "stamp": "050914",
    "ok": false
+  },
+  {
+   "op": "case:uia_param_precision_comp",
+   "stamp": "051203",
+   "ok": false
   }
  ],
  "summary": {
@@ -9065,6 +9070,54 @@
     "op1-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op1-find-page.png"
    },
    "name": "uia_param_arc_resolution",
+   "status": "not passed",
+   "reason": "supervisor error (its fuse fired, or the launch failed): no worker result - see supervisor_error"
+  },
+  "case:uia_param_precision_comp": {
+   "op": "case",
+   "ok": false,
+   "supervisor_error": "Traceback (most recent call last):\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 1920, in supervise\n    wait_for(result_file.is_file, \"Mac worker timed out\", ns.fuse)\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 86, in wait_for\n    raise TimeoutError(message)\nTimeoutError: Mac worker timed out\n",
+   "screenshots": {
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-entry.png",
+    "op0-find-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-find-advanced.panel.png",
+    "op0-find-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-find-advanced.png",
+    "op0-find-fold-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-find-fold-0.panel.png",
+    "op0-find-fold-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-find-fold-0.png",
+    "op0-find-page-folded-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-find-page-folded-locate.panel.png",
+    "op0-find-page-folded-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-find-page-folded-locate.png",
+    "op0-find-page-folded.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-find-page-folded.panel.png",
+    "op0-find-page-folded.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-find-page-folded.png",
+    "op0-find-page-full-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-find-page-full-locate.panel.png",
+    "op0-find-page-full-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-find-page-full-locate.png",
+    "op0-find-page-full-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-find-page-full-scroll-0.panel.png",
+    "op0-find-page-full-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-find-page-full-scroll-0.png",
+    "op0-find-page-full-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-find-page-full-scroll-1.panel.png",
+    "op0-find-page-full-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-find-page-full-scroll-1.png",
+    "op0-find-page-full-scroll-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-find-page-full-scroll-2.panel.png",
+    "op0-find-page-full-scroll-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-find-page-full-scroll-2.png",
+    "op0-find-page-full.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-find-page-full.panel.png",
+    "op0-find-page-full.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-find-page-full.png",
+    "op0-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-find-page-locate.panel.png",
+    "op0-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-find-page-locate.png",
+    "op0-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-find-page.panel.png",
+    "op0-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-find-page.png",
+    "op0-switch-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-switch-advanced-ax-0.panel.png",
+    "op0-switch-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-switch-advanced-ax-0.png",
+    "op0-switch-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-switch-advanced-ax-1.panel.png",
+    "op0-switch-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-switch-advanced-ax-1.png",
+    "op0-switch-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-switch-advanced-ax-2.panel.png",
+    "op0-switch-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-switch-advanced-ax-2.png",
+    "op0-switch-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-switch-advanced-ax-3.panel.png",
+    "op0-switch-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-switch-advanced-ax-3.png",
+    "op0-switch-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-switch-advanced.panel.png",
+    "op0-switch-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-switch-advanced.png",
+    "op0-switch-quality-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-switch-quality-after.panel.png",
+    "op0-switch-quality-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-switch-quality-after.png",
+    "op0-switch-quality-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-051203-op0-switch-quality-before.panel.png",
+    "op0-switch-quality-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-051203/case-051203-op0-switch-quality-before.png"
+   },
+   "name": "uia_param_precision_comp",
    "status": "not passed",
    "reason": "supervisor error (its fuse fired, or the launch failed): no worker result - see supervisor_error"
   }
