@@ -39,6 +39,7 @@ SOURCE_COMMIT = "2733ef6"  # origin codex/glm-dev-20261124, tools/param_cases_ex
 # The keys each op may carry besides `op` (tab / tab_hint: switch to that page first); any
 # other key is a form this version does not run.
 ROW_KEYS = {"tab", "tab_hint", "label", "group"}
+FUSE_FLOOR = 360  # seconds; a case whose row is below the fold did not finish in 200 (run 031559)
 RUNNABLE = {"float": ROW_KEYS | {"value"}, "checkbox": ROW_KEYS | {"value"},
             "rowcombo": ROW_KEYS | {"target"}}
 
@@ -309,11 +310,12 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--case", required=True, metavar="SCENARIO", help="a scenario of param_cases.json")
     parser.add_argument("--fuse", type=int, help="seconds before the supervisor gives up "
-                        "(default 120 + 80 per op: one op may need the whole fallback chain)")
+                        "(default: 120 + 80 per op, never less than %d: one op may need the whole "
+                        "fallback chain, a checkbox op walks it twice)" % FUSE_FLOOR)
     ns = parser.parse_args(argv)
     case = load_case(ns.case)
     ns.op, ns.name = "case", ns.case
-    ns.fuse = ns.fuse or 120 + 80 * len(case["ops"])
+    ns.fuse = ns.fuse or max(FUSE_FLOOR, 120 + 80 * len(case["ops"]))
     result = {"op": "case", "name": case["scenario"], "case_id": case["case_id"], "ok": False,
               "table": case["_table"]}
     if case.get("app_conf"):
