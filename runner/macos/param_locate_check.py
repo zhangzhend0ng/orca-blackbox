@@ -1,0 +1,153 @@
+"""Offline, no GUI, no save: one reading of a page judges every label candidate of an op.
+
+  python3 runner/macos/param_locate_check.py
+
+A Panel is built without its constructor and its screen reads give canned OCR rows: the Speed
+page as run 042843 read it (group title 'Travel speed', the row 'Travel' and '500 mm/s' as its
+own value token) and the same row read as one token 'Travel 500 mm/s'. The three candidates of
+uia_param_travel_speed are located together and each one alone; the reads and the find_row
+evaluations are counted. Exit status 1 when a check fails."""
+
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import param_ops as po  # noqa: E402
+import param_case as pc  # noqa: E402
+
+SPEED_CANDIDATES = ["Travel 500", "Travel speed", "Travel"]  # uia_param_travel_speed's label
+TRAVEL_PAGE = "own value token", "one token"
+
+
+class Point:
+    x, y = 100.0, 50.0
+
+
+def token(x, y, w, h, text):
+    return {"x": x, "y": y, "w": w, "h": h, "text": text}
+
+
+def speed_page(reading):
+    """Tab band at y 80; titles left of TITLE_X (x < 126); rows right of it."""
+    rows = [token(x, 80, 60, 16, name) for x, name in ((140, "Quality"), (210, "Strength"),
+                                                        (290, "Speed"), (350, "Support"), (430, "Others"))]
+    for name, y in (("Extruder", 110), ("Other layers speed", 320), ("Acceleration", 520),
+                    ("Travel speed", 700)):  # no short title that 'Travel speed' contains
+        rows.append(token(108, y, 140, 14, name))
+    for name, y in (("Inner wall speed", 346), ("Outer wall speed", 372)):
+        rows += [token(130, y, 110, 14, name), token(330, y, 50, 14, "200 mm/s")]
+    if reading == TRAVEL_PAGE[0]:
+        rows += [token(130, 726, 50, 14, "Travel"), token(330, 726, 70, 14, "500 mm/s")]
+    else:
+        rows.append(token(130, 726, 110, 14, "Travel 500 mm/s"))
+    return rows
+
+
+def quality_page():
+    """The rows the Layer height and Precision groups of the Quality tab paint."""
+    return [token(140, 80, 60, 16, "Quality"), token(108, 110, 120, 14, "Layer height"),
+            token(130, 136, 80, 14, "Layer height"), token(330, 136, 40, 14, "0.2"),
+            token(130, 162, 110, 14, "First layer height"), token(330, 162, 40, 14, "0.35"),
+            token(108, 200, 120, 14, "Precision"), token(130, 226, 70, 14, "Arc fitting"),
+            token(130, 252, 110, 14, "Precise Z height")]
+
+
+def fake_panel(rows):
+    panel = po.Panel.__new__(po.Panel)
+    panel.desktop, panel.pid, panel.window = None, 0, None
+    panel.shots, panel.last_notes = {}, []
+    panel.trial, panel.scroll_up_button, panel.scroll_down_buttons = None, None, None
+    panel.bar_cache, panel.full = None, True
+    panel.reads = []
+    panel.read = lambda tag, full=False: (panel.reads.append(tag), rows)[1]
+    panel.click_tab = lambda name, seen: [0, 0]
+    panel.ensure_advanced = lambda tag: {"already_on": True}
+    panel.geometry = lambda: (Point(), None)
+    panel.scroll_chains = []
+
+    def no_scroll(group, label, tag, why, budget=None):  # counted, not simulated
+        panel.scroll_chains.append(tag)
+        raise RuntimeError(f"scroll chain {tag} is not simulated offline")
+    panel.scroll_to, panel.click = no_scroll, (lambda gx, gy, guard=True: None)
+    return panel
+
+
+def main():
+    evaluations, checks, out = [], [], {}
+
+    def check(name, ok):
+        checks.append((name, bool(ok)))
+
+    plain = po.Panel.find_row
+
+    def counted(self, rows, group, label):
+        evaluations.append(label)
+        return plain(self, rows, group, label)
+
+    po.Panel.find_row = counted
+    for reading in TRAVEL_PAGE:
+        rows, seen = speed_page(reading), {}
+        for name, label in [("all three", SPEED_CANDIDATES)] + [(c, c) for c in SPEED_CANDIDATES]:
+            panel = fake_panel(rows)
+            evaluations.clear()
+            try:
+                found = po.op_find_row(panel, {"tab": "Speed", "group": "Travel speed", "label": label})
+                readback = found["readback"]
+                result = {"row": readback["label"], "value": readback["value_text"],
+                          "candidate": readback["label_candidate"], "level": readback["match"]["level"]}
+            except RuntimeError as error:
+                result = {"error": po.brief(error, 90)}
+            seen[name] = {**result, "page_reads": len(panel.reads) - 1,  # less the tab's own read
+                          "find_row_evaluations": len(evaluations),
+                          "scroll_chains_started": len(panel.scroll_chains)}
+        out[reading] = seen
+        together, alone, speed = seen["all three"], seen["Travel"], seen["Travel speed"]
+        check(f"{reading}: the three together and 'Travel' alone give the same row",
+              together.get("row") is not None and together.get("row") == alone.get("row"))
+        check(f"{reading}: the three together read the page once and judge it once",
+              together.get("page_reads") == 1 and together.get("find_row_evaluations") == 1)
+        check(f"{reading}: 'Travel speed' alone finds no row", "error" in speed)
+        check(f"{reading}: the three together start no scroll chain on a page that has the row",
+              together.get("scroll_chains_started") == 0)
+        if reading == TRAVEL_PAGE[0]:
+            check("'Travel 500' alone finds no row while the value is its own token",
+                  "error" in seen["Travel 500"])
+            check("the hit is exact", together.get("level") == "exact" and together.get("candidate") == "Travel")
+        else:
+            check("one token: the hit is a prefix of the row text and 'Travel speed' matched no row",
+                  together.get("level") == "prefix" and together.get("candidate") in SPEED_CANDIDATES[:1] + SPEED_CANDIDATES[2:]
+                  and "error" in speed)
+    page = quality_page()
+    panel = fake_panel(page)
+    strict = plain(panel, page, "Layer height", ["^Layer height"])["text"]
+    try:
+        plain(panel, page[:2] + page[4:], "Layer height", ["^Layer height"])  # no 'Layer height' row
+        refused = False
+    except RuntimeError:
+        refused = True
+    substring = plain(panel, page, "Precision", ["fitting"])["text"]
+    prefix = plain(panel, speed_page(TRAVEL_PAGE[0]), "Other layers speed",
+                   ["Outer wall speed", "^Outer wall"])["text"]
+    out["other_forms"] = {"^Layer height": {"row": strict, "substring_only_refused": refused},
+                          "fitting": substring, "^Outer wall": prefix}
+    check("'^Layer height' takes the row 'Layer height', not 'First layer height'", strict == "Layer height")
+    check("'^Layer height' refuses a page where only 'First layer height' is on it", refused)
+    check("'fitting' (no '^') still takes 'Arc fitting'", substring == "Arc fitting")
+    check("'^Outer wall' takes a row that starts with it", prefix == "Outer wall speed")
+    case = {"label": SPEED_CANDIDATES, "group": "Travel speed"}
+    panel = fake_panel(speed_page(TRAVEL_PAGE[0]))
+    evaluations.clear()
+    label, found, matched = pc.locate(panel, case, "Speed")
+    po.Panel.find_row = plain
+    out["locate"] = {"label": label, "find_row_evaluations": len(evaluations), "matched": matched}
+    check("param_case.locate runs one chain for the op and names the candidate that hit",
+          len(evaluations) == 1 and label == "Travel")
+    failed = [name for name, ok in checks if not ok]
+    print(json.dumps({"ok": not failed, "checks": len(checks), "failed": failed, "out": out},
+                     indent=1, ensure_ascii=False))
+    return 1 if failed else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

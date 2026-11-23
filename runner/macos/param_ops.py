@@ -61,6 +61,7 @@ LANDMARKS = {"Quality": ("layer height",), "Strength": ("wall loops", "walls"),
 PANEL_WIDTH = 470  # left settings column, px at scale 1.0
 TITLE_X = 26       # group titles start left of this offset, row labels right of it
 VALUE_X = 253      # value column: numbers, and the faint square of a bool row
+LEVELS = ("exact", "prefix", "substring")  # how well a row's text fits a label candidate, best first
 SCROLL_STEPS = 24  # page-scrollbar presses that all of one locate_row's scroll chains share
 VIEW_TOP = 712     # options viewport starts here (window-relative px): tab band + gap
 VIEW_RIGHT = 406   # viewport right edge (window-relative); the 15 px strip beyond is not page
@@ -520,7 +521,12 @@ class Panel:
         return text
 
     def find_row(self, rows, group, label):
-        """The row `label` painted inside group `group` (None = whole page)."""
+        """The row a label of `label` paints inside group `group` (None = whole page). `label`
+        is one label or all the candidates of an op, judged against this one reading of the
+        page. A candidate hits a row whose text is the candidate, else starts with it (its
+        value and unit follow: 'Travel 500 mm/s' for 'Travel'), else - unless it carries '^' -
+        has it anywhere; exact beats prefix beats substring. self.last_match names the
+        candidate that hit and what each of them matched."""
         point = self.geometry()[0]
         page = self.page_rows(rows)
         titles = [r for r in page if r["x"] - point.x < TITLE_X]
@@ -533,12 +539,25 @@ class Panel:
             start = hit["y"]
             following = next((t for t in titles if t["y"] > hit["y"] + 5), None)
             end = following["y"] if following else 1e9
-        wanted = norm(label)
-        labels = [r for r in page if start < r["y"] < end and r["x"] - point.x >= TITLE_X
-                  and wanted in norm(r["text"])]
-        require(labels, f"Row {label!r} not visible in group {group!r}; page reads: {self.page_text(rows)}")
-        labels.sort(key=lambda r: (norm(r["text"]) != wanted, r["y"]))
-        return labels[0]
+        inside = [r for r in page if start < r["y"] < end and r["x"] - point.x >= TITLE_X]
+        best, seen = [], []
+        for index, cand in enumerate([label] if isinstance(label, str) else label):
+            wanted, hits = norm(cand), []
+            for r in inside:
+                text = norm(r["text"])
+                level = (0 if text == wanted else 1 if text.startswith(wanted + " ")
+                         else 2 if not cand.startswith("^") and wanted in text else None)
+                if level is not None:
+                    hits.append((level, r["y"], r))
+            seen.append({"label": cand, "hits": [{"level": LEVELS[h[0]], "row": h[2]["text"]}
+                                                 for h in sorted(hits, key=lambda h: h[:2])[:3]]})
+            if hits:
+                best.append((min(hits, key=lambda h: h[:2]), index))
+        require(best, f"Row {label!r} not visible in group {group!r}; page reads: {self.page_text(rows)}")
+        (level, _, row), index = min(best, key=lambda b: (b[0][0], b[1]))
+        self.last_match = {"label": ([label] if isinstance(label, str) else label)[index],
+                           "level": LEVELS[level], "row": row["text"], "candidates": seen}
+        return row
 
     def line_values(self, rows, row):
         """Tokens painted right of `row` on its line, left to right."""
@@ -1109,7 +1128,8 @@ def op_find_row(panel, ns):
                          "center": [round(center[0]), round(center[1])],
                          "window_local_center": [round(center[0] - point.x), round(center[1] - point.y)],
                          "box": {k: round(row[k]) for k in ("x", "y", "w", "h")},
-                         "value_text": " ".join(v["text"] for v in values), "screenshot": tag + ".png"},
+                         "value_text": " ".join(v["text"] for v in values), "screenshot": tag + ".png",
+                         "label_candidate": panel.last_match["label"], "match": panel.last_match},
             "evidence": {"notes": note, "page_text": panel.page_text(rows)[:20]}}
 
 

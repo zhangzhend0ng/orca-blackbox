@@ -4,8 +4,8 @@
 
 The case's ops run in order, each through its param_ops operation:
   (an op that carries `tab` switches to it first: switch_tab)
-  float      -> find_row over its label candidates (the first that locates the row, with its
-                group), then set_float on that label
+  float      -> find_row over all its label candidates at once (one reading of the page judges
+                each of them; the one that hit names the row), then set_float on that label
   checkbox   -> find_row the same way, then the cell click of set_checkbox's check turn
                 (the uncheck turn and its saves are not wanted inside a case)
   rowcombo   -> pick_combo on its row label
@@ -42,10 +42,6 @@ ROW_KEYS = {"tab", "tab_hint", "label", "group"}
 FUSE_FLOOR = 360  # seconds; a case whose row is below the fold did not finish in 200 (run 031559)
 RUNNABLE = {"float": ROW_KEYS | {"value"}, "checkbox": ROW_KEYS | {"value"},
             "rowcombo": ROW_KEYS | {"target"}}
-
-
-class AnchorMiss(Exception):
-    """An anchored label ('^...') matched a row that does not start with it."""
 
 
 def load_case(scenario):
@@ -118,36 +114,19 @@ def labels(label):
     return [label] if isinstance(label, str) else list(label)
 
 
-def anchor(panel, label):
-    """find_row matches a substring; '^' in the table anchors the label at the start of the row.
-    AnchorMiss is not a RuntimeError, so locate_row's fallback chain does not run for it."""
-    if not label.startswith("^"):
-        return
-    plain, wanted = panel.find_row, po.norm(label[1:])
-
-    def find(rows, group, wanted_label):
-        row = plain(rows, group, wanted_label[1:])
-        if not po.norm(row["text"]).startswith(wanted):
-            raise AnchorMiss(f"Row {wanted_label!r} is anchored; it matched {row['text']!r}, "
-                             "which does not start with it")
-        return row
-    panel.find_row = find
-
-
 def locate(panel, op, tab):
-    """find_row over the label candidates: (the label that located the row, its result, every
-    candidate that did not - with the page rows it saw)."""
-    tried = []
-    for label in labels(op["label"]):
-        anchor(panel, label)
-        try:
-            found = po.op_find_row(panel, {"tab": tab, "group": op.get("group"), "label": label})
-        except (RuntimeError, TimeoutError, AnchorMiss) as error:
-            tried.append({"label": label, "error": po.brief(error, 2500)})
-            continue
-        return label, found, tried
-    po.require(False, f"Row not found for any label candidate in tab {tab!r}, group "
-                      f"{op.get('group')!r}: {json.dumps(tried, ensure_ascii=False)[-3000:]}")
+    """find_row over all the label candidates of the op at once: one reading of the page judges
+    every candidate (r4 on Windows; run 043416 spent a whole locate chain on each of the two
+    candidates that cannot match). (the candidate that located the row, its result, what each
+    candidate matched on that page)"""
+    candidates = labels(op["label"])
+    try:
+        found = po.op_find_row(panel, {"tab": tab, "group": op.get("group"),
+                                       "label": op["label"] if len(candidates) > 1 else candidates[0]})
+    except (RuntimeError, TimeoutError) as error:
+        po.require(False, f"Row not found for any label candidate {candidates} in tab {tab!r}, group "
+                          f"{op.get('group')!r}: {po.brief(error, 2500)}")
+    return found["readback"]["label_candidate"], found, found["readback"]["match"]["candidates"]
 
 
 def per_op_shots(panel, index):
@@ -239,7 +218,7 @@ def op_case(panel, ns):
                 step["page_text_at_error"] = f"<not read: {po.brief(failure, 200)}>"
             stopped = step
         finally:
-            for name in ("shot", "shot_prefix", "find_row"):  # back to the Panel's own methods
+            for name in ("shot", "shot_prefix"):  # back to the Panel's own methods
                 panel.__dict__.pop(name, None)
         step["seconds"] = round(time.time() - started, 1) - step["at"]
         if stopped:
