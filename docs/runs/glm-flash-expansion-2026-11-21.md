@@ -389,3 +389,5 @@ batch2 四例与两个老卡点的全部证据就绪；引擎与注册链完好�
 - 加分段标记之后没有一例复现为启动阶段真楔。
 
 **queue17（补丁前，10 场景）**：0 SHADOW。带证据的失败 5 个（filament_features、seam_wipe、overhang_curl、accelerations、brim），skirt 执行完成但验证 target mismatch，tree_support 败在保存工具栏，其余因客机桌面被占而未跑成。
+
+**r3 补丁首版的事故（如实记录）**：ae44283 入主线并同步客机后，验证队列的第一个场景（run b4d1c596）就以 `NameError: name 'uia_set_float' is not defined` 失败——替换脚本在整体替换 `_find_phrase_row` 时把它后面的 `def uia_set_float(...)` 函数头一并吃掉了，原函数体变成上一个函数尾部永远执行不到的代码。语法合法，所以编译通过；离线测试只调搜索逻辑、不调 `uia_set_float`，所以全绿。已停队列止损（损失 2 个 run 槽），补回函数头，并加了两道护栏：替换脚本自带「补丁前后顶层定义清单比对，任何原有定义消失即中止」；离线测试加「入口函数存在且参数符合预期」。修正后的脚本产出与修复后的文件逐文件一致；原版副本上扩展后的测试 8 项变红。该测试已入库为 `tools/test_param_engine_sim.py`（23 项，改引擎后必跑）。

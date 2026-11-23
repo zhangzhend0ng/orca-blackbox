@@ -197,7 +197,7 @@ def _find_phrase_row(app, phrase, group_substr=None):
     return found
 
 
-
+def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, below=False):
     """Set a sidebar float Edit: OCR locates the painted row (OG_CustomCtrl
     draws row labels without HWNDs - only group headers are windows, the
     f5acdb1a census), then the visible Edit whose row-y matches is driven
