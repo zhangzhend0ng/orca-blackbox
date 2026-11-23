@@ -1,9 +1,9 @@
 """Finite business experiments; never a model-selected verifier or import path."""
 from importlib import import_module
-from .agent_protocol import STD_SCENARIO, base_scenario
+from .agent_protocol import SHAPES_SCENARIO, STD_SCENARIO, base_scenario, suffixed_fixture
 from .native_matrix import (CANVAS_REPLACE_SCENARIO, SCALE_SCENARIOS, UIA_CANVAS_SCENARIO,
     UIA_DISTURBANCE_SCENARIO, UIA_MIX_RECIPES, UIA_MIX_SCENARIOS, UIA_MOVE_LAYER,
-    UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS, UIA_Y_SCENARIOS, on_std_fixture, std_base)
+    UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS, UIA_Y_SCENARIOS, std_base)
 
 PILOTS = {
     "pilot_strength": "pilot_strength",
@@ -101,6 +101,7 @@ TRIALS = {
 CONTROLS = {
     "uia_param_save_only": "pilot_param_save_only",
     STD_SCENARIO: "pilot_param_save_only",
+    SHAPES_SCENARIO: "pilot_param_save_only",
 }
 
 
@@ -108,9 +109,11 @@ def native_fixture(scenario):
     if scenario in UIA_MIX_SCENARIOS:
         from .pilot_mix_recipes import FIXTURE, FIXTURE_SHA256
         return FIXTURE, FIXTURE_SHA256
-    from .agent_protocol import LAYER_FIXTURE, LAYER_FIXTURE_SHA256, STD_FIXTURE, STD_FIXTURE_SHA256
-    if on_std_fixture(scenario):
-        return STD_FIXTURE, STD_FIXTURE_SHA256
+    # a suffixed name or a save-only baseline opens its own fixture
+    other = suffixed_fixture(scenario)
+    if other:
+        return other
+    from .agent_protocol import LAYER_FIXTURE, LAYER_FIXTURE_SHA256
     return LAYER_FIXTURE, LAYER_FIXTURE_SHA256
 
 

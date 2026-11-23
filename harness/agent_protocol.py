@@ -32,13 +32,47 @@ STD_SCENARIO = "uia_param_std_save_only"
 # A preset name matches no row (the rows carry the type, not the preset), and 'PLA'
 # alone is every row: the first one the OCR reads would be clicked.
 STD_TARGETS = {"PETG": "1 PLA"}
+# The Feishu rows also name their model (圆柱体 / 小船 / 欧特克 FDM 测试 / 立方体复制成 2
+# 个 ...), and a single cube cannot show support, a bridge, an arc or a tool change: the
+# five support-family cases' G-codes hold no Support block (2026-11-24,
+# docs/runs/evidence/feishu-expect-vs-gcode-2026-11-24). This plate carries those
+# features - 立方体, 圆柱体, 搭桥, 悬垂台阶 and a second 立方体 on extruder 3 - on the
+# cube's own slicer settings (tools/build_shapes_fixture.py; not yet rebuilt on the
+# precondition settings). Pin: the builder asserts the file it writes has this hash.
+SHAPES_FIXTURE = "fixtures/feishu_shapes_plate.3mf"
+SHAPES_FIXTURE_SHA256 = "ee0a22ea21f86f1ba76838fd06fc093b026a7cf7942074c601d0ad4e648e16f9"
+SHAPES_SUFFIX = "_shapes"
+SHAPES_SCENARIO = "uia_param_shapes_save_only"
+# suffix -> the fixture a `<base><suffix>` scenario opens
+FIXTURE_SUFFIXES = {STD_SUFFIX: (STD_FIXTURE, STD_FIXTURE_SHA256),
+                    SHAPES_SUFFIX: (SHAPES_FIXTURE, SHAPES_FIXTURE_SHA256)}
+# suffix -> the rowcombo targets that name a filament row differently on that fixture
+# (the shapes plate keeps the cube's filaments, so nothing is substituted there)
+SUFFIX_TARGETS = {STD_SUFFIX: STD_TARGETS}
 
 
 def base_scenario(name):
-    """The scenario a `_std02` name runs as: the name without the suffix."""
-    if type(name) is str and name.endswith(STD_SUFFIX) and len(name) > len(STD_SUFFIX):
-        return name[:-len(STD_SUFFIX)]
+    """The scenario a suffixed name runs as: the name without its fixture suffix."""
+    if type(name) is str:
+        for suffix in sorted(FIXTURE_SUFFIXES, key=len, reverse=True):
+            if name.endswith(suffix) and len(name) > len(suffix):
+                return name[:-len(suffix)]
     return name
+
+
+def fixture_suffix(name):
+    """The fixture suffix `name` carries ("" when it opens the cube)."""
+    if type(name) is not str:
+        return ""
+    return name[len(base_scenario(name)):]
+
+
+def suffixed_fixture(scenario):
+    """(fixture, sha256) of a scenario that opens another project than the cube's -
+    a suffixed name or one of the save-only baselines - else None."""
+    if scenario in (STD_SCENARIO, SHAPES_SCENARIO):
+        return FIXTURE_SUFFIXES[STD_SUFFIX if scenario == STD_SCENARIO else SHAPES_SUFFIX]
+    return FIXTURE_SUFFIXES.get(fixture_suffix(scenario))
 
 
 def agent_profile(case_id: str) -> dict:

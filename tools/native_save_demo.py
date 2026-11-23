@@ -180,12 +180,12 @@ def main():
         recording_scenarios += ("uia_replay_layer", "uia_replay_enums")
     if args.model is not None:
         sources += ("harness/model_move_pilot.py", "fixtures/agent_layer_cube.3mf")
-    from harness.agent_protocol import STD_FIXTURE
-    from harness.native_matrix import on_std_fixture
-    if on_std_fixture(args.scenario):
-        # The run opens this fixture: its bytes belong to the sources like the
-        # cube's do (tracked and unmodified against HEAD, checked below).
-        sources += (STD_FIXTURE,)
+    from harness.agent_protocol import suffixed_fixture
+    other_fixture = suffixed_fixture(args.scenario)
+    if other_fixture:
+        # The run opens another fixture than the cube's: its bytes belong to the
+        # sources like the cube's do (tracked and unmodified against HEAD, checked below).
+        sources += (other_fixture[0],)
     for scenario in recording_scenarios:
         if scenario not in REPLAY_SOURCES:
             continue

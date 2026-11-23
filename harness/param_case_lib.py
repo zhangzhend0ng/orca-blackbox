@@ -9,7 +9,8 @@ from decimal import Decimal
 import re
 
 from .agent_layer_verify import analyze_gcode
-from .agent_protocol import LAYER_FIXTURE_SHA256, STD_FIXTURE_SHA256, ProtocolError
+from .agent_protocol import (LAYER_FIXTURE_SHA256, SHAPES_FIXTURE_SHA256, STD_FIXTURE_SHA256,
+                             ProtocolError)
 from .agent_verify import _require
 from .pilot_common import _register_param_change_scope, inspect_preserved_settings
 from .project_3mf import _archive, _json
@@ -21,9 +22,11 @@ from .project_3mf import _archive, _json
 #   None  no schedule pinned yet: record the measured layers, assert nothing
 # STD_FIXTURE_SHA256 is None pending measurement by uia_param_std_save_only. (Its
 # preset says a 0.25 first layer and 0.20 after: 135 layers / 27.05 is a prediction,
-# not a pin.) A fixture outside this table is refused: no run is judged on a schedule
-# nobody pinned.
-SCHEDULE_BY_FIXTURE = {LAYER_FIXTURE_SHA256: True, STD_FIXTURE_SHA256: None}
+# not a pin.) The shapes plate holds five objects of three heights: one layer count
+# cannot say what is right for it, so it stays None. A fixture outside this table is
+# refused: no run is judged on a schedule nobody pinned.
+SCHEDULE_BY_FIXTURE = {LAYER_FIXTURE_SHA256: True, STD_FIXTURE_SHA256: None,
+                       SHAPES_FIXTURE_SHA256: None}
 
 
 def schedule_for(fixture, schedule):

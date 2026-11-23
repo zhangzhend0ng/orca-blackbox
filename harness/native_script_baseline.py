@@ -4,7 +4,8 @@ from pathlib import Path
 import re
 import sys
 
-from .agent_protocol import STD_SCENARIO, STD_TARGETS, ProtocolError, base_scenario, read_json
+from .agent_protocol import (SHAPES_SCENARIO, SUFFIX_TARGETS, STD_SCENARIO, ProtocolError, base_scenario,
+                             fixture_suffix, read_json)
 from .native_matrix import (UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO,
     UIA_MIX_RECIPES, UIA_MOVE_LAYER, UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS)
 
@@ -878,10 +879,11 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         ],
         # Save-only controls (2026-11-24): no operation. run_ops still switches
         # Advanced on, then the worker saves, reopens, slices and exports as for
-        # every parameter case. The cube here; the precondition fixture in the
-        # second (native_pilots.native_fixture).
+        # every parameter case. The cube here; the precondition fixture and the
+        # shapes plate in the other two (native_pilots.native_fixture).
         "uia_param_save_only": [],
         STD_SCENARIO: [],
+        SHAPES_SCENARIO: [],
 }
 
 
@@ -891,14 +893,16 @@ def scenario_ops(scenario):
     filaments are all PLA: its extruder popup rows are "1 PLA" .. "5 PLA" (the rows
     paint "<n> <filament type>", census 67690ed4 / c814315c), so a rowcombo target that
     named the cube's extruder 1 by its type names row 1 there
-    (agent_protocol.STD_TARGETS). The table is not touched - it stays what the cube
-    runs; only an op whose target was substituted comes back as a copy."""
+    (agent_protocol.SUFFIX_TARGETS; the shapes plate keeps the cube's filaments, so
+    nothing is substituted for `_shapes`). The table is not touched - it stays what the
+    cube runs; only an op whose target was substituted comes back as a copy."""
     base = base_scenario(scenario)
     ops = PARAM_OPS.get(base)
-    substituted = lambda op: op.get("op") == "rowcombo" and op.get("target") in STD_TARGETS
+    targets = SUFFIX_TARGETS.get(fixture_suffix(scenario), {})
+    substituted = lambda op: op.get("op") == "rowcombo" and op.get("target") in targets
     if ops is None or base == scenario or not any(substituted(op) for op in ops):
         return ops
-    return [dict(op, target=STD_TARGETS[op["target"]]) if substituted(op) else op for op in ops]
+    return [dict(op, target=targets[op["target"]]) if substituted(op) else op for op in ops]
 
 
 def _save_failure_shot(ui, scenario):

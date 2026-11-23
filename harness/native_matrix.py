@@ -1,7 +1,7 @@
 """Finite, trusted setup registry. These routes are never sent to the model."""
 from __future__ import annotations
 
-from .agent_protocol import STD_SCENARIO, STD_SUFFIX, base_scenario
+from .agent_protocol import FIXTURE_SUFFIXES, SHAPES_SCENARIO, STD_SCENARIO, STD_SUFFIX, base_scenario
 from .native_diagnostic_recovery import COMMIT_SCENARIO, SCENARIO as DIAGNOSTIC_SCENARIO
 from .native_pairwise import PAIR_CASES, PAIR_ENUM_CASES, PAIR_MOVE_CASES
 from .model_move_pilot import SCENARIO as BOUND_MODEL_MOVE
@@ -88,8 +88,9 @@ SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *PAIR_CASES, 
     # parameter cases' path (run_ops with an empty op list). A review noted 35 other
     # keys differ between the fixture's config and the saved one in each passing case
     # and that no save-only control was run. The cube here, the precondition fixture
-    # (U1 0.4 nozzle, 0.20mm Standard, PLA) in the second.
-    "uia_param_save_only", STD_SCENARIO)
+    # (U1 0.4 nozzle, 0.20mm Standard, PLA) in the second, the five-object shapes
+    # plate in the third.
+    "uia_param_save_only", STD_SCENARIO, SHAPES_SCENARIO)
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
 UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
@@ -214,21 +215,24 @@ SCENARIOS = {
     "uia_param_exclude_objects": ("Others", None),
     "uia_param_save_only": ("Quality", None),
     STD_SCENARIO: ("Quality", None),
+    SHAPES_SCENARIO: ("Quality", None),
     "authority_probe": ("Quality", None),
 }
 BUSINESS = ("quality_a", "quality_b", "strength_a", "strength_b", "others_a", "others_b", "save_dialog", "overwrite")
 SAFETY = tuple(k for k in SCENARIOS if k.startswith("safety_"))
 # The `_std02` suffix is defined for the param family (see agent_protocol.base_scenario).
 STD_FAMILY = "uia_param_"
-# The two save-only controls name their fixture - one is the cube's control, the other
-# the precondition fixture's baseline - so they are the param scenarios without a twin.
-STD_UNTWINED = frozenset(("uia_param_save_only", STD_SCENARIO))
+# The save-only controls name their fixture - the cube's control, the precondition
+# fixture's baseline, the shapes plate's - so they are the param scenarios without a
+# twin.
+STD_UNTWINED = frozenset(("uia_param_save_only", STD_SCENARIO, SHAPES_SCENARIO))
 
 
 def std_base(scenario):
     """The registered scenario `scenario` runs as. `<uia_param_x>_std02` is
-    `uia_param_x` on the 0.2 mm fixture; a suffixed name whose base is not a registered,
-    twinned param scenario is not a scenario."""
+    `uia_param_x` on the 0.2 mm fixture, `<...>_shapes` the same on the shapes plate;
+    a suffixed name whose base is not a registered, twinned param scenario is not a
+    scenario."""
     base = base_scenario(scenario)
     if base != scenario and (type(scenario) is not str or not base.startswith(STD_FAMILY)
                              or base not in SCENARIOS or base in STD_UNTWINED):
@@ -237,24 +241,25 @@ def std_base(scenario):
 
 
 def on_std_fixture(scenario):
-    """The scenarios that run on the 0.2 mm fixture: STD_SCENARIO and the `_std02`
-    twins of the param family."""
-    return scenario == STD_SCENARIO or std_base(scenario) != scenario
+    """The scenarios that open another project than the cube's: the two suffixed
+    baselines and the twins of the param family."""
+    return scenario in (STD_SCENARIO, SHAPES_SCENARIO) or std_base(scenario) != scenario
 
 
 def std_twins(names):
-    """`<name>_std02` for every param-family scenario of `names` that has one."""
-    return tuple(name + STD_SUFFIX for name in names
+    """`<name><suffix>` for every param-family scenario of `names` that has one, for
+    every fixture suffix (the `_std02` twins first)."""
+    return tuple(name + suffix for suffix in FIXTURE_SUFFIXES for name in names
                  if name.startswith(STD_FAMILY) and name not in STD_UNTWINED)
 
 
 def scenario_names():
-    """Every name a command line may take: the registered scenarios and their `_std02` twins."""
+    """Every name a command line may take: the registered scenarios and their twins."""
     return (*SCENARIOS, *std_twins(SCENARIOS))
 
 
 def scenario_spec(actor, scenario):
-    # A `_std02` name has its base's tab spec: only the fixture differs.
+    # A suffixed name has its base's tab spec: only the fixture differs.
     base = std_base(scenario)
     if actor == "script":
         if base not in SCRIPT_SCENARIOS:

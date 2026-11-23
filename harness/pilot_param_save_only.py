@@ -105,10 +105,12 @@ def _control(case_id):
     return verify_business
 
 
-# One module, two cases: native_pilots.pilot_module hands back the one asked for.
+# One module, the controls: native_pilots.pilot_module hands back the one asked for.
 CASES = {
     "uia_param_save_only": SimpleNamespace(CASE_ID="param_save_only_control", VALUES=VALUES, GOAL=GOAL,
                                            verify_business=_control("param_save_only_control")),
     "uia_param_std_save_only": SimpleNamespace(CASE_ID="param_std_save_only", VALUES=VALUES, GOAL=GOAL,
                                                verify_business=_control("param_std_save_only")),
+    "uia_param_shapes_save_only": SimpleNamespace(CASE_ID="param_shapes_save_only", VALUES=VALUES, GOAL=GOAL,
+                                                  verify_business=_control("param_shapes_save_only")),
 }

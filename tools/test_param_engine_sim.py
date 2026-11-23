@@ -1775,15 +1775,15 @@ def _same_pilot31(name, twin):
                 and _code31(_np31.pilot_module, twin) is not None)
 
 
-def _holds31(name):
-    twin = name + _SUFFIX31
+def _holds31(name, suffix=_SUFFIX31, pair=_STD31):
+    twin = name + suffix
     try:
         route, twin_route = _route31(name), _route31(twin)
         return (_tab31("script", twin) == _tab31("script", name)
                 and _tab31("zcode", twin) == _tab31("zcode", name)
                 and _ops31(nsb.scenario_ops(twin)) == _ops31(nsb.scenario_ops(name))
                 and _same_pilot31(name, twin)
-                and _np31.native_fixture(name) == _CUBE31 and _np31.native_fixture(twin) == _STD31
+                and _np31.native_fixture(name) == _CUBE31 and _np31.native_fixture(twin) == pair
                 and nsb.SCENARIO_CONF.get(_ap31.base_scenario(twin)) == nsb.SCENARIO_CONF.get(name)
                 and [what for what, _scenario in twin_route] == [what for what, _scenario in route]
                 and all(scenario in (None, twin) for _what, scenario in twin_route)
@@ -1801,6 +1801,29 @@ _broken31 = [name for name in _twinned31 if not _holds31(name)]
 check("std02: %d param scenarios - the twin has its base's ops, pilot, goal, tab spec, app conf "
       "and dispatch on the precondition fixture, the base keeps the cube fixture, and each "
       "contract resolves to its full name" % len(_twinned31), not _broken31, "failing: %r" % (_broken31,))
+
+# The shapes plate is the second suffixed fixture (the rows' models: a cube, a
+# cylinder, a bridge, overhang steps, a second cube on extruder 3): the same rule
+# with its own fixture, and its save-only baseline.
+_SHAPES31 = (_ap31.SHAPES_FIXTURE, _ap31.SHAPES_FIXTURE_SHA256)
+check("shapes: the plate on disk is the pinned bytes", _sha31(_SHAPES31) == _SHAPES31[1])
+_twinned_shapes31 = [name for name in _twinned31 if name + _ap31.SHAPES_SUFFIX in _names31]
+_broken_shapes31 = [name for name in _twinned_shapes31
+                    if not _holds31(name, _ap31.SHAPES_SUFFIX, _SHAPES31)]
+check("shapes: every twinned param scenario (%d of %d) runs on the plate with its base's ops "
+      "(filament targets as on the cube), pilot, tab spec and dispatch, and its contract "
+      "resolves to its own full name" % (len(_twinned_shapes31), len(_twinned31)),
+      len(_twinned_shapes31) == len(_twinned31) and not _broken_shapes31,
+      "failing: %r" % (_broken_shapes31,))
+check("shapes: the plate's save-only baseline opens the plate, keeps the cube's PETG rows, "
+      "and has no twin of its own",
+      _np31.native_fixture(_ap31.SHAPES_SCENARIO) == _SHAPES31
+      and _np31.pilot_module(_ap31.SHAPES_SCENARIO).CASE_ID == "param_shapes_save_only"
+      and nsb.scenario_ops(_ap31.SHAPES_SCENARIO) == []
+      and [op.get("target") for op in nsb.scenario_ops("uia_param_support_filament" + _ap31.SHAPES_SUFFIX)
+           if op.get("op") == "rowcombo"] == ["PETG"]
+      and _ap31.SHAPES_SCENARIO + _SUFFIX31 not in _names31
+      and _ap31.SHAPES_SCENARIO + _ap31.SHAPES_SUFFIX not in _names31)
 
 _baseline31 = _BASELINE31
 _controls31 = (_np31.native_fixture("uia_param_save_only") == _CUBE31
