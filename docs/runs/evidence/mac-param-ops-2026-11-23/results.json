@@ -1,0 +1,1286 @@
+{
+ "task": "mac-param-ops-2026-11-23",
+ "ops": {
+  "find_row": {
+   "op": "find_row",
+   "ok": true,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "readback": {
+    "tab": "Strength",
+    "group": "Walls",
+    "label": "Wall loops",
+    "center": [
+     424,
+     843
+    ],
+    "window_local_center": [
+     64,
+     758
+    ],
+    "box": {
+     "x": 390,
+     "y": 835,
+     "w": 68,
+     "h": 16
+    },
+    "value_text": "^ 2",
+    "screenshot": "find-page.png"
+   },
+   "evidence": {
+    "notes": [
+     {
+      "tab_click": [
+       479,
+       777
+      ]
+     }
+    ],
+    "page_text": [
+     "walls",
+     "wall loops",
+     "2",
+     "top bottom shells"
+    ]
+   },
+   "shots": {
+    "entry": "entry.png",
+    "find-page-locate": "find-page-locate.png",
+    "find-page": "find-page.png"
+   },
+   "geometry": {
+    "origin": [
+     360.0,
+     85.0
+    ],
+    "size": [
+     1200.0,
+     800.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795445685.8344262,
+   "seconds": 31.3,
+   "screenshots": {
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-225446-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-225446/find_row-225446-entry.png",
+    "find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-225446-find-page-locate.panel.png",
+    "find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-225446/find_row-225446-find-page-locate.png",
+    "find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-225446-find-page.panel.png",
+    "find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-225446/find_row-225446-find-page.png"
+   }
+  },
+  "switch_tab": {
+   "op": "switch_tab",
+   "ok": true,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "readback": [
+    {
+     "tab": "Quality",
+     "ok": true,
+     "page_text": [
+      "layer height",
+      "first layer height",
+      "0 4"
+     ]
+    },
+    {
+     "tab": "Strength",
+     "ok": true,
+     "page_text": [
+      "walls",
+      "wall loops",
+      "alternate extra wall",
+      "2"
+     ]
+    },
+    {
+     "tab": "Speed",
+     "ok": true,
+     "page_text": [
+      "first layer speed",
+      "firstlayer",
+      "first layer infill",
+      "35",
+      "mm s"
+     ]
+    },
+    {
+     "tab": "Support",
+     "ok": true,
+     "page_text": [
+      "n support",
+      "enable support",
+      "type",
+      "tree auto"
+     ]
+    },
+    {
+     "tab": "Multimaterial",
+     "ok": true,
+     "page_text": [
+      "bl prime tower",
+      "enable",
+      "width",
+      "30"
+     ]
+    },
+    {
+     "tab": "Others",
+     "ok": true,
+     "page_text": [
+      "l skirt",
+      "skirt loops",
+      "skirt type",
+      "0",
+      "v combined"
+     ]
+    }
+   ],
+   "evidence": {
+    "steps": [
+     {
+      "tab": "Quality",
+      "ok": true,
+      "click": [
+       405,
+       777
+      ],
+      "tabs_seen": [
+       "Others"
+      ],
+      "landmark": [
+       "layer height"
+      ],
+      "page_changed": false,
+      "page_text": [
+       "layer height",
+       "first layer height",
+       "0 4"
+      ],
+      "verified_by": "landmark"
+     },
+     {
+      "tab": "Strength",
+      "ok": true,
+      "click": [
+       470,
+       777
+      ],
+      "tabs_seen": [
+       "Others"
+      ],
+      "landmark": [
+       "wall loops",
+       "walls"
+      ],
+      "page_changed": true,
+      "page_text": [
+       "walls",
+       "wall loops",
+       "alternate extra wall",
+       "2"
+      ],
+      "verified_by": "landmark"
+     },
+     {
+      "tab": "Speed",
+      "ok": true,
+      "click": [
+       528,
+       777
+      ],
+      "tabs_seen": [
+       "Others"
+      ],
+      "landmark": [
+       "speed"
+      ],
+      "page_changed": true,
+      "page_text": [
+       "first layer speed",
+       "firstlayer",
+       "first layer infill",
+       "35",
+       "mm s",
+       "55"
+      ],
+      "verified_by": "landmark"
+     },
+     {
+      "tab": "Support",
+      "ok": true,
+      "click": [
+       582,
+       777
+      ],
+      "tabs_seen": [
+       "Others"
+      ],
+      "landmark": [
+       "support"
+      ],
+      "page_changed": true,
+      "page_text": [
+       "n support",
+       "enable support",
+       "type",
+       "tree auto"
+      ],
+      "verified_by": "landmark"
+     },
+     {
+      "tab": "Multimaterial",
+      "ok": true,
+      "click": [
+       666,
+       777
+      ],
+      "tabs_seen": [
+       "Others"
+      ],
+      "landmark": [
+       "tower"
+      ],
+      "page_changed": true,
+      "page_text": [
+       "bl prime tower",
+       "enable",
+       "width",
+       "30"
+      ],
+      "verified_by": "landmark"
+     },
+     {
+      "tab": "Others",
+      "ok": true,
+      "click": [
+       752,
+       776
+      ],
+      "tabs_seen": [
+       "Others"
+      ],
+      "landmark": [
+       "skirt"
+      ],
+      "page_changed": true,
+      "page_text": [
+       "l skirt",
+       "skirt loops",
+       "skirt type",
+       "0",
+       "v combined"
+      ],
+      "verified_by": "landmark"
+     }
+    ],
+    "advanced": {
+     "already_on": false,
+     "tabs_before": [
+      "Others",
+      "Quality",
+      "Strength",
+      "Support",
+      "Multimaterial"
+     ],
+     "attempts": [
+      {
+       "how": "ax",
+       "value_before": 0,
+       "box": [
+        673.0,
+        689.0
+       ],
+       "tabs_after": [
+        [
+         "Others"
+        ],
+        [
+         "Others"
+        ],
+        [
+         "Others"
+        ],
+        [
+         "Others"
+        ]
+       ],
+       "value_after": 1
+      }
+     ],
+     "checkboxes": [
+      {
+       "x": 453.0,
+       "y": 686.0,
+       "words": "",
+       "value": 0
+      },
+      {
+       "x": 673.0,
+       "y": 689.0,
+       "words": "",
+       "value": 0
+      }
+     ],
+     "turned_on_by": "ax",
+     "speed_seen": false
+    }
+   },
+   "shots": {
+    "entry": "entry.png",
+    "switch-advanced": "switch-advanced.png",
+    "switch-advanced-ax-0": "switch-advanced-ax-0.png",
+    "switch-advanced-ax-1": "switch-advanced-ax-1.png",
+    "switch-advanced-ax-2": "switch-advanced-ax-2.png",
+    "switch-advanced-ax-3": "switch-advanced-ax-3.png",
+    "switch-quality-before": "switch-quality-before.png",
+    "switch-quality-after": "switch-quality-after.png",
+    "switch-strength-before": "switch-strength-before.png",
+    "switch-strength-after": "switch-strength-after.png",
+    "switch-speed-before": "switch-speed-before.png",
+    "switch-speed-after": "switch-speed-after.png",
+    "switch-support-before": "switch-support-before.png",
+    "switch-support-after": "switch-support-after.png",
+    "switch-multimaterial-before": "switch-multimaterial-before.png",
+    "switch-multimaterial-after": "switch-multimaterial-after.png",
+    "switch-others-before": "switch-others-before.png",
+    "switch-others-after": "switch-others-after.png"
+   },
+   "geometry": {
+    "origin": [
+     360.0,
+     85.0
+    ],
+    "size": [
+     1200.0,
+     800.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795446166.480627,
+   "seconds": 108.4,
+   "screenshots": {
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-entry.png",
+    "switch-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-advanced-ax-0.panel.png",
+    "switch-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-advanced-ax-0.png",
+    "switch-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-advanced-ax-1.panel.png",
+    "switch-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-advanced-ax-1.png",
+    "switch-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-advanced-ax-2.panel.png",
+    "switch-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-advanced-ax-2.png",
+    "switch-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-advanced-ax-3.panel.png",
+    "switch-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-advanced-ax-3.png",
+    "switch-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-advanced.panel.png",
+    "switch-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-advanced.png",
+    "switch-multimaterial-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-multimaterial-after.panel.png",
+    "switch-multimaterial-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-multimaterial-after.png",
+    "switch-multimaterial-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-multimaterial-before.panel.png",
+    "switch-multimaterial-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-multimaterial-before.png",
+    "switch-others-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-others-after.panel.png",
+    "switch-others-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-others-after.png",
+    "switch-others-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-others-before.panel.png",
+    "switch-others-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-others-before.png",
+    "switch-quality-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-quality-after.panel.png",
+    "switch-quality-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-quality-after.png",
+    "switch-quality-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-quality-before.panel.png",
+    "switch-quality-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-quality-before.png",
+    "switch-speed-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-speed-after.panel.png",
+    "switch-speed-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-speed-after.png",
+    "switch-speed-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-speed-before.panel.png",
+    "switch-speed-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-speed-before.png",
+    "switch-strength-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-strength-after.panel.png",
+    "switch-strength-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-strength-after.png",
+    "switch-strength-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-strength-before.panel.png",
+    "switch-strength-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-strength-before.png",
+    "switch-support-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-support-after.panel.png",
+    "switch-support-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-support-after.png",
+    "switch-support-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-support-before.panel.png",
+    "switch-support-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-support-before.png"
+   }
+  },
+  "set_float": {
+   "op": "set_float",
+   "ok": true,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "readback": {
+    "tab": "Quality",
+    "label": "Layer height",
+    "before": "0.4",
+    "ax_value": "0.2",
+    "painted": "0.2",
+    "title": "*probe",
+    "expected": "0.2"
+   },
+   "evidence": {
+    "parameter": "layer_height",
+    "click": [
+     615,
+     841
+    ],
+    "notes": [
+     {
+      "tab_click": [
+       402,
+       778
+      ]
+     }
+    ],
+    "screenshots": {
+     "before": "float-page.png",
+     "after": "float-after.png"
+    }
+   },
+   "shots": {
+    "entry": "entry.png",
+    "float-page-locate": "float-page-locate.png",
+    "float-page": "float-page.png",
+    "float-after": "float-after.png"
+   },
+   "geometry": {
+    "origin": [
+     360.0,
+     85.0
+    ],
+    "size": [
+     1200.0,
+     800.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795446230.7074828,
+   "seconds": 38.0,
+   "screenshots": {
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_float-230350-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_float-230350/set_float-230350-entry.png",
+    "float-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_float-230350-float-after.panel.png",
+    "float-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_float-230350/set_float-230350-float-after.png",
+    "float-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_float-230350-float-page-locate.panel.png",
+    "float-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_float-230350/set_float-230350-float-page-locate.png",
+    "float-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_float-230350-float-page.panel.png",
+    "float-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_float-230350/set_float-230350-float-page.png"
+   }
+  },
+  "set_checkbox": {
+   "op": "set_checkbox",
+   "ok": true,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "entry": {
+    "dialogs": []
+   },
+   "readback": {
+    "tab": "Strength",
+    "label": "Detect thin walls",
+    "checked": {
+     "key": "detect_thin_wall",
+     "value": "1",
+     "title_after_save": "probe"
+    },
+    "unchecked": {
+     "key": "detect_thin_wall",
+     "value": "0",
+     "title_after_save": "probe"
+    },
+    "title_when_checked": "*probe",
+    "title_when_unchecked": "*probe"
+   },
+   "evidence": {
+    "notes": [
+     {
+      "tab_click": [
+       479,
+       777
+      ]
+     },
+     {
+      "standard_mode": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', '2', 'top bottom shells']"
+     },
+     {
+      "advanced": {
+       "already_on": false,
+       "tabs_before": [
+        "Quality",
+        "Strength",
+        "Support",
+        "Multimaterial",
+        "Others"
+       ],
+       "attempts": [
+        {
+         "how": "ax",
+         "value_before": 0,
+         "box": [
+          673.0,
+          689.0
+         ],
+         "tabs_after": [
+          [
+           "Others"
+          ],
+          [
+           "Others"
+          ],
+          [
+           "Others"
+          ],
+          [
+           "Others"
+          ]
+         ],
+         "value_after": 1
+        }
+       ],
+       "checkboxes": [
+        {
+         "x": 453.0,
+         "y": 686.0,
+         "words": "",
+         "value": 0
+        },
+        {
+         "x": 673.0,
+         "y": 689.0,
+         "words": "",
+         "value": 0
+        }
+       ],
+       "turned_on_by": "ax",
+       "speed_seen": false
+      }
+     },
+     {
+      "tab_click": [
+       470,
+       777
+      ]
+     },
+     {
+      "advanced_mode": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', 'alternate extra wall', '2']"
+     },
+     {
+      "widened": {
+       "collapsed": [
+        {
+         "header": "(0 Filaments",
+         "click": [
+          424,
+          466
+         ]
+        },
+        {
+         "header": "(0 Filaments",
+         "click": [
+          424,
+          466
+         ]
+        }
+       ],
+       "process_header_y_after": 690.0
+      }
+     },
+     {
+      "tab_click": [
+       470,
+       777
+      ]
+     },
+     {
+      "wide_window": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', 'alternate extra wall', '2']"
+     },
+     {
+      "resized_to": [
+       1200.0,
+       916.0
+      ]
+     },
+     {
+      "tab_click": [
+       458,
+       777
+      ]
+     }
+    ],
+    "attempts": [
+     {
+      "turn": "check",
+      "how": "cell",
+      "click": [
+       613,
+       898
+      ],
+      "title": "*probe",
+      "dirty": true,
+      "pixels_changed_vs_before": 806,
+      "screenshot": "check-check-cell.png"
+     },
+     {
+      "turn": "uncheck",
+      "how": "cell",
+      "click": [
+       613,
+       898
+      ],
+      "title": "*probe",
+      "dirty": true,
+      "pixels_changed_vs_before": 0,
+      "screenshot": "check-uncheck-cell.png"
+     }
+    ],
+    "screenshots": {
+     "before": "check-page-tall.png",
+     "after_check": "check-check-cell.png",
+     "after_uncheck": "check-uncheck-cell.png"
+    }
+   },
+   "shots": {
+    "entry": "entry.png",
+    "check-page-locate": "check-page-locate.png",
+    "check-page": "check-page.png",
+    "check-advanced": "check-advanced.png",
+    "check-advanced-ax-0": "check-advanced-ax-0.png",
+    "check-advanced-ax-1": "check-advanced-ax-1.png",
+    "check-advanced-ax-2": "check-advanced-ax-2.png",
+    "check-advanced-ax-3": "check-advanced-ax-3.png",
+    "check-page-adv-locate": "check-page-adv-locate.png",
+    "check-page-adv": "check-page-adv.png",
+    "check-widen-0": "check-widen-0.png",
+    "check-widen-1": "check-widen-1.png",
+    "check-widen-after": "check-widen-after.png",
+    "check-page-wide-locate": "check-page-wide-locate.png",
+    "check-page-wide": "check-page-wide.png",
+    "check-page-tall-locate": "check-page-tall-locate.png",
+    "check-page-tall": "check-page-tall.png",
+    "check-check-cell": "check-check-cell.png",
+    "check-before-uncheck": "check-before-uncheck.png",
+    "check-uncheck-cell": "check-uncheck-cell.png"
+   },
+   "notes": [
+    {
+     "tab_click": [
+      479,
+      777
+     ]
+    },
+    {
+     "standard_mode": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', '2', 'top bottom shells']"
+    },
+    {
+     "advanced": {
+      "already_on": false,
+      "tabs_before": [
+       "Quality",
+       "Strength",
+       "Support",
+       "Multimaterial",
+       "Others"
+      ],
+      "attempts": [
+       {
+        "how": "ax",
+        "value_before": 0,
+        "box": [
+         673.0,
+         689.0
+        ],
+        "tabs_after": [
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ]
+        ],
+        "value_after": 1
+       }
+      ],
+      "checkboxes": [
+       {
+        "x": 453.0,
+        "y": 686.0,
+        "words": "",
+        "value": 0
+       },
+       {
+        "x": 673.0,
+        "y": 689.0,
+        "words": "",
+        "value": 0
+       }
+      ],
+      "turned_on_by": "ax",
+      "speed_seen": false
+     }
+    },
+    {
+     "tab_click": [
+      470,
+      777
+     ]
+    },
+    {
+     "advanced_mode": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', 'alternate extra wall', '2']"
+    },
+    {
+     "widened": {
+      "collapsed": [
+       {
+        "header": "(0 Filaments",
+        "click": [
+         424,
+         466
+        ]
+       },
+       {
+        "header": "(0 Filaments",
+        "click": [
+         424,
+         466
+        ]
+       }
+      ],
+      "process_header_y_after": 690.0
+     }
+    },
+    {
+     "tab_click": [
+      470,
+      777
+     ]
+    },
+    {
+     "wide_window": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', 'alternate extra wall', '2']"
+    },
+    {
+     "resized_to": [
+      1200.0,
+      916.0
+     ]
+    },
+    {
+     "tab_click": [
+      458,
+      777
+     ]
+    }
+   ],
+   "geometry": {
+    "origin": [
+     360.0,
+     85.0
+    ],
+    "size": [
+     1200.0,
+     916.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795447164.8030632,
+   "seconds": 124.1,
+   "screenshots": {
+    "check-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-advanced-ax-0.panel.png",
+    "check-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-advanced-ax-0.png",
+    "check-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-advanced-ax-1.panel.png",
+    "check-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-advanced-ax-1.png",
+    "check-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-advanced-ax-2.panel.png",
+    "check-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-advanced-ax-2.png",
+    "check-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-advanced-ax-3.panel.png",
+    "check-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-advanced-ax-3.png",
+    "check-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-advanced.panel.png",
+    "check-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-advanced.png",
+    "check-before-uncheck.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-before-uncheck.panel.png",
+    "check-before-uncheck.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-before-uncheck.png",
+    "check-check-cell.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-check-cell.cell.png",
+    "check-check-cell.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-check-cell.panel.png",
+    "check-check-cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-check-cell.png",
+    "check-page-adv-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-page-adv-locate.panel.png",
+    "check-page-adv-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page-adv-locate.png",
+    "check-page-adv.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-page-adv.panel.png",
+    "check-page-adv.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page-adv.png",
+    "check-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-page-locate.panel.png",
+    "check-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page-locate.png",
+    "check-page-tall-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-page-tall-locate.panel.png",
+    "check-page-tall-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page-tall-locate.png",
+    "check-page-tall.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page-tall.cell.png",
+    "check-page-tall.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-page-tall.panel.png",
+    "check-page-tall.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page-tall.png",
+    "check-page-wide-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-page-wide-locate.panel.png",
+    "check-page-wide-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page-wide-locate.png",
+    "check-page-wide.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-page-wide.panel.png",
+    "check-page-wide.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page-wide.png",
+    "check-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-page.panel.png",
+    "check-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page.png",
+    "check-uncheck-cell.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-uncheck-cell.cell.png",
+    "check-uncheck-cell.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-uncheck-cell.panel.png",
+    "check-uncheck-cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-uncheck-cell.png",
+    "check-widen-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-widen-0.panel.png",
+    "check-widen-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-widen-0.png",
+    "check-widen-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-widen-1.panel.png",
+    "check-widen-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-widen-1.png",
+    "check-widen-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-widen-after.panel.png",
+    "check-widen-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-widen-after.png",
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-entry.png"
+   }
+  },
+  "pick_combo": {
+   "op": "pick_combo",
+   "ok": false,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "entry": {
+    "dialogs": []
+   },
+   "evidence": {
+    "error": "Traceback (most recent call last):\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.m_mbx3u0/param_ops.py\", line 905, in run_worker\n    result.update(OPS[ns[\"op\"]](panel, ns))\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.m_mbx3u0/param_ops.py\", line 786, in op_pick_combo\n    rows, row, note, tag = panel.locate_row(ns[\"tab\"], ns.get(\"group\"), ns[\"label\"], \"combo\")\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.m_mbx3u0/param_ops.py\", line 598, in locate_row\n    rows, row, tag = attempt(\"page-folded\")\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.m_mbx3u0/param_ops.py\", line 551, in attempt\n    return rows, self.find_row(rows, group, label), f\"{prefix}-{tag}\"\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.m_mbx3u0/param_ops.py\", line 443, in find_row\n    require(hit, f\"Group title {group!r} not visible; titles seen: {[t['text'] for t in titles]}\")\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.m_mbx3u0/param_ops.py\", line 68, in require\n    raise RuntimeError(message)\nRuntimeError: Group title 'Special mode' not visible; titles seen: ['→ Skirt']\n"
+   },
+   "shots": {
+    "entry": "entry.png",
+    "combo-page-locate": "combo-page-locate.png",
+    "combo-page": "combo-page.png",
+    "combo-advanced": "combo-advanced.png",
+    "combo-advanced-ax-0": "combo-advanced-ax-0.png",
+    "combo-advanced-ax-1": "combo-advanced-ax-1.png",
+    "combo-advanced-ax-2": "combo-advanced-ax-2.png",
+    "combo-advanced-ax-3": "combo-advanced-ax-3.png",
+    "combo-page-adv-locate": "combo-page-adv-locate.png",
+    "combo-page-adv": "combo-page-adv.png",
+    "combo-widen-0": "combo-widen-0.png",
+    "combo-widen-1": "combo-widen-1.png",
+    "combo-widen-after": "combo-widen-after.png",
+    "combo-page-wide-locate": "combo-page-wide-locate.png",
+    "combo-page-wide": "combo-page-wide.png",
+    "combo-page-tall-locate": "combo-page-tall-locate.png",
+    "combo-page-tall": "combo-page-tall.png",
+    "combo-fold-0": "combo-fold-0.png",
+    "combo-fold-0-after": "combo-fold-0-after.png",
+    "combo-fold-1": "combo-fold-1.png",
+    "combo-fold-1-after": "combo-fold-1-after.png",
+    "combo-fold-2": "combo-fold-2.png",
+    "combo-fold-2-after": "combo-fold-2-after.png",
+    "combo-fold-3": "combo-fold-3.png",
+    "combo-fold-3-after": "combo-fold-3-after.png",
+    "combo-page-folded-locate": "combo-page-folded-locate.png",
+    "combo-page-folded": "combo-page-folded.png"
+   },
+   "notes": [
+    {
+     "tab_click": [
+      740,
+      776
+     ]
+    },
+    {
+     "standard_mode": "RuntimeError: Group title 'Special mode' not visible; titles seen: ['~ Skirt']"
+    },
+    {
+     "advanced": {
+      "already_on": false,
+      "tabs_before": [
+       "Quality",
+       "Strength",
+       "Support",
+       "Multimaterial",
+       "Others"
+      ],
+      "attempts": [
+       {
+        "how": "ax",
+        "value_before": 0,
+        "box": [
+         673.0,
+         689.0
+        ],
+        "tabs_after": [
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ]
+        ],
+        "value_after": 1
+       }
+      ],
+      "checkboxes": [
+       {
+        "x": 453.0,
+        "y": 686.0,
+        "words": "",
+        "value": 0
+       },
+       {
+        "x": 673.0,
+        "y": 689.0,
+        "words": "",
+        "value": 0
+       }
+      ],
+      "turned_on_by": "ax",
+      "speed_seen": false
+     }
+    },
+    {
+     "tab_click": [
+      749,
+      776
+     ]
+    },
+    {
+     "advanced_mode": "RuntimeError: Group title 'Special mode' not visible; titles seen: ['L Skirt']"
+    },
+    {
+     "widened": {
+      "collapsed": [
+       {
+        "header": "(0 Filaments",
+        "click": [
+         424,
+         466
+        ]
+       },
+       {
+        "header": "(0 Filaments",
+        "click": [
+         424,
+         466
+        ]
+       }
+      ],
+      "process_header_y_after": 690.0
+     }
+    },
+    {
+     "tab_click": [
+      749,
+      776
+     ]
+    },
+    {
+     "wide_window": "RuntimeError: Group title 'Special mode' not visible; titles seen: ['L Skirt']"
+    },
+    {
+     "resized_to": [
+      1200.0,
+      916.0
+     ]
+    },
+    {
+     "tab_click": [
+      749,
+      777
+     ]
+    },
+    {
+     "tall_window": "RuntimeError: Group title 'Special mode' not visible; titles seen: ['→ Skirt']"
+    },
+    {
+     "folded": [
+      {
+       "title": "° Printer",
+       "click": [
+        370,
+        183
+       ],
+       "titles_after": [
+        "° Printer",
+        "Bed type",
+        "Nozzle 1",
+        "Diameter",
+        "(0 Filaments",
+        "3 ~ Snapmaker PLA... © 4 ~ Snapmaker PLA Silk @",
+        "5",
+        "• Color Mixing",
+        "6",
+        "Quality Strength Speed Support Multimaterial",
+        "→ Skirt"
+       ]
+      },
+      {
+       "title": "Bed type",
+       "click": [
+        370,
+        300
+       ],
+       "titles_after": [
+        "° Printer",
+        "Bed type",
+        "Nozzle 1",
+        "Diameter",
+        "(0 Filaments",
+        "3 ~ Snapmaker PLA... © 4 ~ Snapmaker PLA Silk @",
+        "5",
+        "• Color Mixing",
+        "6",
+        "Quality Strength Speed Support Multimaterial",
+        "→ Skirt"
+       ]
+      },
+      {
+       "title": "Nozzle 1",
+       "click": [
+        370,
+        341
+       ],
+       "titles_after": [
+        "° Printer",
+        "Bed type",
+        "Nozzle 1",
+        "Diameter",
+        "(0 Filaments",
+        "3 ~ Snapmaker PLA... © 4 ~ Snapmaker PLA Silk @",
+        "5",
+        "• Color Mixing",
+        "6",
+        "Quality Strength Speed Support Multimaterial",
+        "→ Skirt"
+       ]
+      },
+      {
+       "title": "Diameter",
+       "click": [
+        370,
+        380
+       ],
+       "titles_after": [
+        "° Printer",
+        "Bed type",
+        "Nozzle 1",
+        "Diameter",
+        "(0 Filaments",
+        "3 ~ Snapmaker PLA... © 4 ~ Snapmaker PLA Silk @",
+        "5",
+        "• Color Mixing",
+        "6",
+        "Quality Strength Speed Support Multimaterial",
+        "→ Skirt"
+       ]
+      }
+     ]
+    },
+    {
+     "tab_click": [
+      749,
+      777
+     ]
+    }
+   ],
+   "geometry": {
+    "origin": [
+     360.0,
+     85.0
+    ],
+    "size": [
+     1200.0,
+     916.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795447543.409794,
+   "seconds": 154.5,
+   "screenshots": {
+    "combo-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-advanced-ax-0.panel.png",
+    "combo-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-advanced-ax-0.png",
+    "combo-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-advanced-ax-1.panel.png",
+    "combo-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-advanced-ax-1.png",
+    "combo-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-advanced-ax-2.panel.png",
+    "combo-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-advanced-ax-2.png",
+    "combo-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-advanced-ax-3.panel.png",
+    "combo-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-advanced-ax-3.png",
+    "combo-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-advanced.panel.png",
+    "combo-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-advanced.png",
+    "combo-fold-0-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-fold-0-after.panel.png",
+    "combo-fold-0-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-fold-0-after.png",
+    "combo-fold-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-fold-0.panel.png",
+    "combo-fold-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-fold-0.png",
+    "combo-fold-1-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-fold-1-after.panel.png",
+    "combo-fold-1-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-fold-1-after.png",
+    "combo-fold-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-fold-1.panel.png",
+    "combo-fold-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-fold-1.png",
+    "combo-fold-2-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-fold-2-after.panel.png",
+    "combo-fold-2-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-fold-2-after.png",
+    "combo-fold-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-fold-2.panel.png",
+    "combo-fold-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-fold-2.png",
+    "combo-fold-3-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-fold-3-after.panel.png",
+    "combo-fold-3-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-fold-3-after.png",
+    "combo-fold-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-fold-3.panel.png",
+    "combo-fold-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-fold-3.png",
+    "combo-page-adv-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-adv-locate.panel.png",
+    "combo-page-adv-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-adv-locate.png",
+    "combo-page-adv.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-adv.panel.png",
+    "combo-page-adv.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-adv.png",
+    "combo-page-folded-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-folded-locate.panel.png",
+    "combo-page-folded-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-folded-locate.png",
+    "combo-page-folded.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-folded.panel.png",
+    "combo-page-folded.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-folded.png",
+    "combo-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-locate.panel.png",
+    "combo-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-locate.png",
+    "combo-page-tall-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-tall-locate.panel.png",
+    "combo-page-tall-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-tall-locate.png",
+    "combo-page-tall.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-tall.panel.png",
+    "combo-page-tall.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-tall.png",
+    "combo-page-wide-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-wide-locate.panel.png",
+    "combo-page-wide-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-wide-locate.png",
+    "combo-page-wide.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-wide.panel.png",
+    "combo-page-wide.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-wide.png",
+    "combo-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page.panel.png",
+    "combo-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page.png",
+    "combo-widen-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-widen-0.panel.png",
+    "combo-widen-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-widen-0.png",
+    "combo-widen-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-widen-1.panel.png",
+    "combo-widen-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-widen-1.png",
+    "combo-widen-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-widen-after.panel.png",
+    "combo-widen-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-widen-after.png",
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-entry.png"
+   }
+  }
+ },
+ "attempts": [
+  {
+   "op": "find_row",
+   "stamp": "225446",
+   "ok": true
+  },
+  {
+   "op": "switch_tab",
+   "stamp": "225635",
+   "ok": false
+  },
+  {
+   "op": "switch_tab",
+   "stamp": "230011",
+   "ok": false
+  },
+  {
+   "op": "switch_tab",
+   "stamp": "230246",
+   "ok": true
+  },
+  {
+   "op": "set_float",
+   "stamp": "230350",
+   "ok": true
+  },
+  {
+   "op": "set_checkbox",
+   "stamp": "230606",
+   "ok": false
+  },
+  {
+   "op": "set_checkbox",
+   "stamp": "230815",
+   "ok": false
+  },
+  {
+   "op": "set_checkbox",
+   "stamp": "231233",
+   "ok": false
+  },
+  {
+   "op": "pick_combo",
+   "stamp": "231341",
+   "ok": false
+  },
+  {
+   "op": "set_checkbox",
+   "stamp": "231924",
+   "ok": true
+  },
+  {
+   "op": "pick_combo",
+   "stamp": "232145",
+   "ok": false
+  },
+  {
+   "op": "pick_combo",
+   "stamp": "232543",
+   "ok": false
+  }
+ ],
+ "summary": {
+  "task": "mac-author param_ops: prove five parameter-page operations once each on macOS Orca 2.4.1",
+  "sut": {
+   "version": "2.4.1"
+  },
+  "channel": "LaunchAgent worker in the Aqua test session (gui/502), same channel as the A5 walls probes; no GUI action in the console session",
+  "proved": [
+   "switch_tab",
+   "find_row",
+   "set_float",
+   "set_checkbox"
+  ],
+  "not_proved": {
+   "pick_combo": {
+    "target": "Others / Special mode / Print sequence -> By object",
+    "last_run": "232543",
+    "stuck_at": [
+     "Others page shows only the group title 'Skirt'; the 'Special mode' group title and its 'Print sequence' row are below the page viewport",
+     "page does not scroll from injected wheel/key input (A2); collapsing the Printer/Filaments sidebar sections did not move the Process header (y 689 -> 690)",
+     "AX window resize to 1200x916 still shows only 'Skirt'",
+     "last fallback (fold the Skirt group header) mis-targeted sidebar rows: the left-column filter also matched 'Printer'/'Bed type'/'Nozzle 1', so the Skirt header click itself is untested"
+    ],
+    "also_seen": "one start (run 231341) painted an Orca 'Exception' dialog (Error Code 0002 1330 0000 0001 / Foreign Object Detected) over the home page and no tab band; the worker now presses 'Got It' on Exception dialogs at entry and raises the project window (later starts were clean)",
+    "never_reached": "combo popup was never opened, so clicking a native popup entry with posted CGEvents is unverified",
+    "next_step": "restrict the fold step to Process-page titles (y below the tab band) and click the Skirt fold icon; else drag/click the page scrollbar; then run the existing popup plans (cell / cell-again / cell-double / right-edge)"
+   }
+  },
+  "ops": {
+   "switch_tab": {
+    "ok": true,
+    "last_run": "230246",
+    "screenshots": 18
+   },
+   "find_row": {
+    "ok": true,
+    "last_run": "225446",
+    "screenshots": 3
+   },
+   "set_float": {
+    "ok": true,
+    "last_run": "230350",
+    "screenshots": 4
+   },
+   "set_checkbox": {
+    "ok": true,
+    "last_run": "231924",
+    "screenshots": 20
+   },
+   "pick_combo": {
+    "ok": false,
+    "last_run": "232543",
+    "screenshots": 27
+   }
+  },
+  "summary_written_at": "2026-11-23 23:26:25"
+ }
+}
