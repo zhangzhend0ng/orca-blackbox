@@ -6386,6 +6386,11 @@
    "op": "pick_combo",
    "stamp": "022357",
    "ok": true
+  },
+  {
+   "op": "case:uia_param_wall_thin",
+   "stamp": "031559",
+   "ok": false
   }
  ],
  "summary": {
@@ -6669,6 +6674,57 @@
     }
    ],
    "session_note": "02:08, before the first run: the test instance left behind by run 015828 (pid 39221, scratch datadir, no supervisor alive) was killed - screencapture is full-screen, so a leftover window would sit in the evidence frames. The kill command matched by command-line text and also hit pid 44384, which was the shell running that very command: its argv holds the grep patterns (verified 02:26 with a marker pattern - the shell and its subshell both match). No other Orca instance was involved. This note first read 44384 as a second test instance of unknown origin; that was wrong and is corrected. No harness Orca instance is left running (pgrep -x Snapmaker_Orca: none, 02:26)"
+  },
+  "param_cases": {
+   "what": "one case of param_cases.json through the param_ops primitives: runner/macos/param_case.py --case <scenario>",
+   "case_table": "runner/macos/param_cases.json = tools/param_cases_export.json at 2733ef6 (origin codex/glm-dev-20261124), byte-identical, sha256 fb2f1d23...",
+   "scan_before_any_gui_action": {
+    "of": 42,
+    "runnable": 24,
+    "unsupported op": 17,
+    "needs develop mode": 1,
+    "unsupported_op_or_needs_develop_mode_among_the_seven": []
+   },
+   "order_asked": [
+    "uia_param_wall_thin",
+    "uia_param_layer_pair",
+    "uia_param_travel_speed",
+    "uia_param_surface_flow",
+    "uia_param_speed_limits",
+    "uia_param_arc_resolution",
+    "uia_param_precision_comp"
+   ],
+   "pass": [],
+   "unsupported op": [],
+   "needs develop mode": [],
+   "not_passed": {
+    "uia_param_wall_thin": "NOT PROVEN, 1 GUI attempt (run 031559): supervisor timeout at 200 s, no worker result, nothing saved - see cases[\"case:uia_param_wall_thin\"]"
+   },
+   "not_run": [
+    "uia_param_layer_pair",
+    "uia_param_travel_speed",
+    "uia_param_surface_flow",
+    "uia_param_speed_limits",
+    "uia_param_arc_resolution",
+    "uia_param_precision_comp"
+   ],
+   "not_run_why": "the 28-minute box was used by writing the harness and this one attempt",
+   "differences": [
+    "none established: no case reached its saved-values comparison, and the Windows rows are not in this repo run; what macOS Orca 2.4.1 painted is recorded under cases[\"case:uia_param_wall_thin\"].frames_read_afterwards"
+   ],
+   "blockers": [
+    "time: one case with a row below the fold needs more than 200 s - a checkbox op walks locate_row's fallback chain twice (find_row over the label, then the primitive); the harness default fuse is 120 + 80 s per op",
+    "ensure_advanced misreads the tab band when OCR glues tab names (\"Speed Support Multimaterial\" as one token): tabs_seen matches whole tokens, \"Speed\" is not seen, Advanced is judged off and the box is toggled off and on again (find-advanced-ax-0..3, ax-later, box-0..3), about 30 s per call, on every fallback chain - NOT FIXED, it is inside the proven primitive (B7's switch_tab run 230246 saw the tabs separately)",
+    "\"Detect thin walls\" is below the fold in the 1200x800 window and the Printer / Filaments headers were still listed after widen's captures; B7's thin-wall run 021310 got the row only after the resize step",
+    "not exercised at all in a case: the checkbox tick, rowcombo -> pick_combo, Save Project after several ops, the saved-values judge - their code is offline-checked only"
+   ],
+   "harness_notes": [
+    "the supervisor needs .venv/bin/python (3.11): /usr/bin/python3 is 3.9 and stops at staging (first attempt 03:12:16, no GUI action, nothing recorded)",
+    "the supervisor's stdout has log lines before its JSON line: read the last line",
+    "a supervisor timeout leaves the test instance running (B7 note, seen again): check pgrep -x Snapmaker_Orca and kill that pid by hand after confirming its command names the orca-bb-param-ops work dir",
+    "changed after the run and NOT re-run on the GUI: the op prefix goes onto tags once (it was doubled); a supervisor error gets status / reason and its case name in its record (it was filed under \"case\" without one; re-keyed by hand here); a multi-element list shows as JSON text; record hands non-case results back to param_ops' record"
+   ],
+   "summary_written_at": "2026-11-24 03:22:59"
   }
  },
  "case_table": {
@@ -6678,5 +6734,107 @@
   "source_path": "tools/param_cases_export.json",
   "sha256": "fb2f1d2313e8608cf37031656b2f71fe79531909dcd944fc8fda3f27f0aef05b",
   "note": "byte-identical copy of the file at that commit (git show, no merge of the branch); the platform-independent export of the 42 Feishu param cases"
+ },
+ "cases": {
+  "case:uia_param_wall_thin": {
+   "op": "case",
+   "ok": false,
+   "supervisor_error": "Traceback (most recent call last):\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 1827, in supervise\n    wait_for(result_file.is_file, \"Mac worker timed out\", ns.fuse)\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 84, in wait_for\n    raise TimeoutError(message)\nTimeoutError: Mac worker timed out\n",
+   "screenshots": {
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-entry.png",
+    "op0-op0-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op0-op0-find-page-locate.panel.png",
+    "op0-op0-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op0-op0-find-page-locate.png",
+    "op0-op0-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op0-op0-find-page.panel.png",
+    "op0-op0-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op0-op0-find-page.png",
+    "op0-op0-float-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op0-op0-float-after.panel.png",
+    "op0-op0-float-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op0-op0-float-after.png",
+    "op0-op0-float-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op0-op0-float-page-locate.panel.png",
+    "op0-op0-float-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op0-op0-float-page-locate.png",
+    "op0-op0-float-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op0-op0-float-page.panel.png",
+    "op0-op0-float-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op0-op0-float-page.png",
+    "op0-op0-switch-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op0-op0-switch-advanced-ax-0.panel.png",
+    "op0-op0-switch-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op0-op0-switch-advanced-ax-0.png",
+    "op0-op0-switch-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op0-op0-switch-advanced-ax-1.panel.png",
+    "op0-op0-switch-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op0-op0-switch-advanced-ax-1.png",
+    "op0-op0-switch-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op0-op0-switch-advanced-ax-2.panel.png",
+    "op0-op0-switch-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op0-op0-switch-advanced-ax-2.png",
+    "op0-op0-switch-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op0-op0-switch-advanced-ax-3.panel.png",
+    "op0-op0-switch-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op0-op0-switch-advanced-ax-3.png",
+    "op0-op0-switch-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op0-op0-switch-advanced.panel.png",
+    "op0-op0-switch-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op0-op0-switch-advanced.png",
+    "op0-op0-switch-strength-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op0-op0-switch-strength-after.panel.png",
+    "op0-op0-switch-strength-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op0-op0-switch-strength-after.png",
+    "op0-op0-switch-strength-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op0-op0-switch-strength-before.panel.png",
+    "op0-op0-switch-strength-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op0-op0-switch-strength-before.png",
+    "op1-op1-find-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-advanced-ax-0.panel.png",
+    "op1-op1-find-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-advanced-ax-0.png",
+    "op1-op1-find-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-advanced-ax-1.panel.png",
+    "op1-op1-find-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-advanced-ax-1.png",
+    "op1-op1-find-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-advanced-ax-2.panel.png",
+    "op1-op1-find-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-advanced-ax-2.png",
+    "op1-op1-find-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-advanced-ax-3.panel.png",
+    "op1-op1-find-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-advanced-ax-3.png",
+    "op1-op1-find-advanced-ax-later.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-advanced-ax-later.panel.png",
+    "op1-op1-find-advanced-ax-later.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-advanced-ax-later.png",
+    "op1-op1-find-advanced-box-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-advanced-box-0.panel.png",
+    "op1-op1-find-advanced-box-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-advanced-box-0.png",
+    "op1-op1-find-advanced-box-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-advanced-box-1.panel.png",
+    "op1-op1-find-advanced-box-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-advanced-box-1.png",
+    "op1-op1-find-advanced-box-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-advanced-box-2.panel.png",
+    "op1-op1-find-advanced-box-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-advanced-box-2.png",
+    "op1-op1-find-advanced-box-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-advanced-box-3.panel.png",
+    "op1-op1-find-advanced-box-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-advanced-box-3.png",
+    "op1-op1-find-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-advanced.panel.png",
+    "op1-op1-find-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-advanced.png",
+    "op1-op1-find-page-adv-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-page-adv-locate.panel.png",
+    "op1-op1-find-page-adv-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-page-adv-locate.png",
+    "op1-op1-find-page-adv.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-page-adv.panel.png",
+    "op1-op1-find-page-adv.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-page-adv.png",
+    "op1-op1-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-page-locate.panel.png",
+    "op1-op1-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-page-locate.png",
+    "op1-op1-find-page-wide-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-page-wide-locate.panel.png",
+    "op1-op1-find-page-wide-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-page-wide-locate.png",
+    "op1-op1-find-page-wide.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-page-wide.panel.png",
+    "op1-op1-find-page-wide.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-page-wide.png",
+    "op1-op1-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-page.panel.png",
+    "op1-op1-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-page.png",
+    "op1-op1-find-widen-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-widen-0.panel.png",
+    "op1-op1-find-widen-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-widen-0.png",
+    "op1-op1-find-widen-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-widen-1.panel.png",
+    "op1-op1-find-widen-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-widen-1.png",
+    "op1-op1-find-widen-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-031559-op1-op1-find-widen-after.panel.png",
+    "op1-op1-find-widen-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-031559/case-031559-op1-op1-find-widen-after.png"
+   },
+   "status": "not passed",
+   "proven": "NOT PROVEN",
+   "reason": "supervisor timeout at a hand-set 200 s fuse (harness default for this case: 360 s); no worker result - the LaunchAgent job was booted out before result.json; nothing was saved",
+   "fuse": 200,
+   "gui_attempts": 1,
+   "leftover_instance": "pid 71696 (uid 502, command names this run's work dir orca-bb-param-ops.v14_csb2) was still running after the supervisor returned; killed by hand with kill -9, none left (the close_owned path note of B7)",
+   "worker_log": "worker.log is 0 bytes: the worker prints only at its end",
+   "frames_read_afterwards": {
+    "how": "the harvested panel crops OCR-ed offline after the run with the harness' own ocr binary; the worker's own reads were lost with its result",
+    "op0_tab_strength_float_wall_loops_4": {
+     "switch-strength-after": "Strength page painted: tab band \"Quality Strength Speed Support Multimaterial\" + \"Others\" (y 684); \"Walls\" (y 718); \"Wall loops\" (y 749) with value \"2\" (x 264); \"Alternate extra wall\" (y 778)",
+     "float-after": "project title carries the dirty mark (\"* 0.40mm Standard ...\"); \"Wall loops\" (y 749) and \"Alternate extra wall\" still on screen; the number painted on the Wall loops row is NOT KNOWN: OCR read no number on that row, and the image itself was not read",
+     "row_text": "\"Wall loops\" on macOS Orca 2.4.1 = the case label"
+    },
+    "op1_checkbox_detect": {
+     "captured": [
+      "find-page",
+      "find-advanced",
+      "find-advanced-box-3",
+      "find-page-adv",
+      "find-page-wide"
+     ],
+     "rows": "only \"Walls\" (y 718), \"Wall loops\" (y 749), \"Alternate extra wall\" (y 778) in every one of them; \"Detect thin walls\" was never on screen; the Printer and Filaments headers were still listed after widen's captures (rows at the same y before and after)",
+     "where_the_fuse_fired": "in locate_row's fallback chain after the page-wide attempt (the resize step had no capture yet)"
+    },
+    "tab_band_gluing": "the tab band's tokens differ between captures: \"Quality Strength Speed Support Multimaterial\" as one token, or \"Quality\" / \"Strength\" / \"Speed Support Multimaterial\" - \"Speed\" was never a token of its own in these frames",
+    "tag_names": "this run's files carry the op prefix twice (\"op0-op0-...\"): the read wrapper and the shot wrapper both added it; fixed afterwards"
+   },
+   "name": "uia_param_wall_thin"
+  }
  }
 }

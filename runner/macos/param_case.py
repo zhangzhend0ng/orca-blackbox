@@ -86,6 +86,8 @@ def scalar(value):
         value = value[0]
     if isinstance(value, bool):
         return "1" if value else "0"
+    if isinstance(value, list):  # more than one extruder: shown as JSON, compared as that text
+        return json.dumps(value)
     return None if value is None else str(value)
 
 
@@ -185,8 +187,8 @@ def op_case(panel, ns):
         step = {"index": index, "op": op["op"], "label": op.get("label"), "group": op.get("group"),
                 "value": op.get("value"), "at": round(time.time() - started, 1)}
         steps.append(step)
-        # The operations name their shots fixed ('float-after'); keep one set per op.
-        panel.read = lambda tag, _index=index, **kw: po.Panel.read(panel, f"op{_index}-{tag}", **kw)
+        # The operations name their shots fixed ('float-after'); keep one set per op. Every
+        # capture goes through shot (read calls it), so the prefix goes there once.
         panel.shot = lambda tag, _index=index: po.Panel.shot(panel, f"op{_index}-{tag}")
         try:
             tab_evidence = None
@@ -216,12 +218,12 @@ def op_case(panel, ns):
         except Exception as error:
             step["error"] = po.brief(error, 2500)
             try:  # what the page showed where the op stopped
-                step["page_text_at_error"] = panel.page_text(po.Panel.read(panel, f"op{index}-error"))[:60]
+                step["page_text_at_error"] = panel.page_text(panel.read(f"op{index}-error"))[:60]
             except RuntimeError as failure:
                 step["page_text_at_error"] = f"<not read: {po.brief(failure, 200)}>"
             stopped = step
         finally:
-            for name in ("read", "shot", "find_row"):  # back to the Panel's own methods
+            for name in ("shot", "find_row"):  # back to the Panel's own methods
                 panel.__dict__.pop(name, None)
         step["seconds"] = round(time.time() - started, 1) - step["at"]
         if stopped:
@@ -258,7 +260,7 @@ def op_case(panel, ns):
 # WORKER_SCRIPT and files the result through record(): this module adds its own of each.
 po.WORKER_SCRIPT, po.OPS["case"] = "param_case.py", op_case
 
-_staged = po.stage
+_staged, _recorded = po.stage, po.record
 
 
 def stage(work):
@@ -269,19 +271,28 @@ def stage(work):
 
 
 def record(result, stamp):
-    """File the run under results.json `cases`; the record it replaces is kept in `cases_history`."""
+    """File a case under results.json `cases` (the record it replaces is kept in `cases_history`);
+    any other result goes through param_ops' own record."""
+    if result.get("op") != "case":
+        return _recorded(result, stamp)
     path = po.EVIDENCE / "results.json"
     data = json.loads(path.read_text())
+    if result.get("op") == "case" and not result.get("name"):
+        result["name"] = SCENARIO
     key = ":".join(filter(None, (result["op"], result.get("name"))))
     cases = data.setdefault("cases", {})
     if key in cases:
         data.setdefault("cases_history", []).append(cases[key])
+    if result.get("supervisor_error") and "status" not in result:
+        result.update(status="not passed", reason="supervisor error (its fuse fired, or the launch failed): "
+                      "no worker result - see supervisor_error")
     cases[key] = result
     data.setdefault("attempts", []).append({"op": key, "stamp": stamp, "ok": result["ok"]})
     path.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n")
 
 
 po.stage, po.record = stage, record
+SCENARIO = None  # the supervisor's own result (a timeout, a launch failure) carries no case name
 
 
 def finish(result):
@@ -311,6 +322,8 @@ def main(argv=None):
     if blocked:
         return finish({**result, "status": "unsupported op", "blocked": blocked})
     ns._case = {k: v for k, v in case.items()}
+    global SCENARIO
+    SCENARIO = ns.case
     return po.supervise(ns)
 
 
