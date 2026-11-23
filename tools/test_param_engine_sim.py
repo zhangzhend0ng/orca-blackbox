@@ -839,6 +839,64 @@ try:
     # 1032 is 67px below the label: the NEXT row's Edit (bridge speed), not a fifth field
     check("uia_set_float: field index beyond the stack is refused",
           isinstance(msg, str) and msg.startswith("param_uia_field"), "got %r" % (msg,))
+
+    # r10 (fa706g3 run 4491e40, 2026-11-24): a stacked field whose bottom is
+    # within EDIT_ROOM of the work-area bottom is not driven where it sits -
+    # the page is wheeled down and the row located again.
+    _saved19b = (pp.work_area, pp.options_viewport, pp.wheel_viewport)
+    wheels = []
+    pp.work_area = lambda: (0, 0, 1920, 1032)
+    pp.options_viewport = lambda session: (10, 700, 400, 330)
+    pp.wheel_viewport = lambda session, vp, notches, delta=-120: wheels.append((notches, delta))
+    try:
+        ui = _FakeUI(stack)
+        n = pcl._park_field(ui, [246, 1019, 366, 1045])
+        check("r10 _park_field: an Edit 13px under the work-area bottom gets one notch",
+              n == 1 and wheels == [(1, -120)], "got %r %r" % (n, wheels))
+        wheels.clear()
+        n = pcl._park_field(ui, [246, 996, 366, 1020])
+        check("r10 _park_field: an Edit with 12px of room is left alone",
+              n == 0 and wheels == [], "got %r %r" % (n, wheels))
+        n = pcl._park_field(ui, [246, 1080, 366, 1106])
+        check("r10 _park_field: 86px short is two notches",
+              n == 2 and wheels == [(2, -120)], "got %r %r" % (n, wheels))
+        wheels.clear()
+        pp.work_area = lambda: None
+        check("r10 _park_field: no work area measured -> nothing wheeled",
+              pcl._park_field(ui, [246, 1080, 366, 1106]) == 0 and wheels == [],
+              "got %r" % (wheels,))
+        bottom = [1024]                              # the 4th box keeps 9px: too little
+        pp.work_area = lambda: (0, 0, 1920, bottom[0])
+
+        def _wheel_moves_page(session, vp, notches, delta=-120):
+            wheels.append((notches, delta))
+            bottom[0] = 1200                         # the fake page moved the box up
+        pp.wheel_viewport = _wheel_moves_page
+        ui = _FakeUI(stack)
+        pcl.uia_set_float(ui, "Overhang speed", "10", "Overhang", field_index=3)
+        check("r10 uia_set_float: a stack box 9px above the bottom is wheeled into view once, then driven",
+              wheels == [(1, -120)] and [t[0] for t in ui.typed] == [103],
+              "got %r %r" % (wheels, ui.typed))
+        wheels.clear()
+        ui = _FakeUI(stack)
+        pcl.uia_set_float(ui, "Overhang speed", "10", "Overhang", field_index=3)
+        check("r10 uia_set_float: the same box is driven without a wheel once the page has room",
+              wheels == [] and [t[0] for t in ui.typed] == [103], "got %r %r" % (wheels, ui.typed))
+        bottom[0] = 1024
+        pp.wheel_viewport = lambda session, vp, notches, delta=-120: wheels.append((notches, delta))
+        ui = _FakeUI(stack)
+        pcl.uia_set_float(ui, "Overhang speed", "10", "Overhang", field_index=3)
+        check("r10 uia_set_float: a page that does not move is given up after three wheels, then driven",
+              wheels == [(1, -120)] * 3 and [t[0] for t in ui.typed] == [103],
+              "got %r %r" % (wheels, ui.typed))
+        wheels.clear()
+        bottom[0] = 1200
+        ui = _FakeUI(stack)
+        pcl.uia_set_float(ui, "Overhang speed", "10", "Overhang", field_index=2)
+        check("r10 uia_set_float: a stack box with room above the bottom is driven without a wheel",
+              wheels == [] and [t[0] for t in ui.typed] == [102], "got %r %r" % (wheels, ui.typed))
+    finally:
+        pp.work_area, pp.options_viewport, pp.wheel_viewport = _saved19b
 finally:
     # restore EVERYTHING _with_float_env stubbed: until 2026-11-24 the
     # canvas anchor and the phrase scan stayed stubbed after this block,

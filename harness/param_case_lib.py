@@ -266,7 +266,37 @@ def _is_multiline(wu, handle, value=None):
     return found is None
 
 
-def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, below=False):
+EDIT_ROOM = 12   # px of work area an Edit needs below it before it is driven
+
+
+def _park_field(ui, bounds):
+    """Notches the options page was wheeled DOWN so the Edit at screen
+    `bounds` has EDIT_ROOM px of work area below it (0 = it already had, or
+    nothing could be measured). The caller locates its row again whenever
+    this returns > 0: the page moved."""
+    from . import process_panel as pp
+    try:
+        work = pp.work_area()
+        viewport = pp.options_viewport(ui.app)
+    except Exception:  # noqa: BLE001 - a fake without the calls keeps the old rule
+        return 0
+    if not work or not viewport:
+        return 0
+    if not (isinstance(work[3], int) and work[3] > 0
+            and isinstance(bounds[3], int) and bounds[3] > 0):
+        return 0          # nothing measured (a fake): keep the old rule
+    short = EDIT_ROOM - (work[3] - bounds[3])
+    if short <= 0:
+        return 0
+    notches = min(8, -(-short // pp.WHEEL_STEP_PX))
+    pp.wheel_viewport(ui.app, viewport, notches, delta=-120)
+    print(f"[param-uia] edit bottom {bounds[3]} had {work[3] - bounds[3]}px "
+          f"above the work-area bottom {work[3]} -> {notches} notches", flush=True)
+    getattr(ui, "pause", lambda _seconds: None)(1.0)
+    return notches
+
+
+def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, below=False, _parked=0):
     """Set a sidebar float Edit: OCR locates the painted row (OG_CustomCtrl
     draws row labels without HWNDs - only group headers are windows, the
     f5acdb1a census), then the visible Edit whose row-y matches is driven
@@ -377,6 +407,14 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
         handle, bounds = matches[0]
     else:
         survey_and_raise("param_uia_field:" + label_substr + ":" + str(len(matches)))
+    # A stacked field can sit under the bottom edge of the page although
+    # Win32 still calls it visible: fa706g3 run 4491e40 ('Overhang speed',
+    # field 3 of 4, the label at client y 1005) died on edit_outside_client,
+    # while the guest's taller window never showed it. Give it room, then
+    # locate the row again on the moved page (at most three times).
+    if _parked < 3 and _park_field(ui, bounds):
+        return uia_set_float(ui, label_substr, value, group_substr, field_index, below,
+                             _parked=_parked + 1)
     x = (bounds[0] + bounds[2]) // 2 - origin_x
     y = (bounds[1] + bounds[3]) // 2 - origin_y
     from decimal import Decimal as _D, InvalidOperation as _Inv
