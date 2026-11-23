@@ -211,9 +211,14 @@ def edit_param_layer_pair(ui):
 # "develop" -> comDevelop; the page's Advanced switch only reaches
 # comAdvanced). It cannot be on for every scenario: develop mode adds rows
 # to every page and the labels are calibrated on the default pages.
+# The key lives in the conf's "app" section (the app's own dump:
+# "app": {..., "user_mode": "advanced", ...}). At the top level the app never
+# read it and started in SIMPLE mode - fa run 2adcf5cd: five tabs, summary
+# rows, pages that do not scroll, conf 'simple' afterwards.
+DEVELOP = {"app": {"user_mode": "develop"}}
 SCENARIO_CONF = {
-    "uia_param_gcode_output": {"user_mode": "develop"},
-    "uia_param_census_develop": {"user_mode": "develop"},
+    "uia_param_gcode_output": DEVELOP,
+    "uia_param_census_develop": DEVELOP,
 }
 
 # The full per-scenario op table (moved to module level so

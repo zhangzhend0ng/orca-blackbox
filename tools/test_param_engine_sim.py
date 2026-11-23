@@ -1301,6 +1301,10 @@ if hasattr(nsb, "SCENARIO_CONF"):
     check("SCENARIO_CONF: lists exactly the cases whose rows need develop mode",
           set(nsb.SCENARIO_CONF) == {"uia_param_gcode_output", "uia_param_census_develop"},
           "%r" % (sorted(nsb.SCENARIO_CONF),))
+    check("SCENARIO_CONF: user_mode sits in the conf's app section, where the app reads it "
+          "(at the top level the app started in simple mode - fa run 2adcf5cd)",
+          all(v.get("app", {}).get("user_mode") == "develop" and set(v) == {"app"}
+              for v in nsb.SCENARIO_CONF.values()), "%r" % (nsb.SCENARIO_CONF,))
     check("SCENARIO_CONF: the conf reaches profile.seed_profile (the guest UI and BusinessUI take conf_extra)",
           "conf_extra" in _insp25.signature(_ag25._WindowsUI.__init__).parameters
           and "conf_extra" in _insp25.signature(_abu25.BusinessUI.__init__).parameters)
@@ -1335,7 +1339,7 @@ if hasattr(pp, "ADVANCED_SWITCH"):
     src26 = (_Path(nsb.__file__).resolve().parent.parent / "tools" / "native_save_guest.py").read_text(encoding="utf-8")
     check("the worker turns the switch off for a scenario seeded with user_mode=develop",
           'process_panel.ADVANCED_SWITCH = False' in src26
-          and '(conf_extra or {}).get("user_mode") == "develop"' in src26)
+          and '(conf_extra or {}).get("app", {}).get("user_mode") == "develop"' in src26)
 else:
     print("N/A  ADVANCED_SWITCH (absent on this tree)")
 
