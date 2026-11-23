@@ -334,7 +334,19 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
     # 2026-11-22 #264: the five overhang degree-band speeds render as ONE
     # labelled row with five inline Edits (Tab.cpp: Line{L("Overhang speed")}
     # ...append_option x5); select left-to-right by field_index.
-    matches.sort(key=lambda m: m[1][0])
+    if field_index is not None:
+        # A `field` row is ONE label with its Edits stacked VERTICALLY
+        # around it: VM run 210446b4 shows 'Overhang speed' with five
+        # boxes at a 27px pitch, the label centred on the block, so field
+        # 0 is the second box ABOVE the label line. Every earlier version
+        # looked only below the label and typed all four values into the
+        # third box. Field i is the i-th Edit from the top of the block.
+        matches = []
+        y_lo, y_hi = y_row - 60, y_row + 60
+        EnumChildWindows(app.hwnd, collect, None)
+        matches.sort(key=lambda m: m[1][1])          # top to bottom
+    else:
+        matches.sort(key=lambda m: m[1][0])
     if field_index is not None:
         # The declared index must exist. With fewer Edits than the index
         # needs the old code fell through to "exactly one match" and drove
@@ -367,6 +379,75 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
     if (receipt["target_hwnd"] != handle
             or _num(receipt["after_text"]) != _num(value)):
         raise ProtocolError("param_uia_readback:" + label_substr + ":" + repr(receipt.get("after_text"))[:40])
+
+
+def settle_dialog(ui, known, answer=None):
+    """(hwnd, text) of the dialog the app opened right after an op, or
+    (None, ''). With `answer` (a button text such as 'Yes') that button is
+    pressed; without it the dialog is closed, as before.
+
+    Spiral vase (VM run 49723134): ticking the box makes the app ask
+    whether to switch wall loops / top layers / sparse infill to vase
+    values (ConfigManipulation.cpp:321-351, a wxYES|wxNO MessageDialog).
+    The old code waited for the combo popup - export_util.wait_popup is a
+    top-level wxWindowNR 'panel', which a message box never is - so the
+    box stayed open and the next guard raised main_window_modal_blocked.
+    Closing it means No: the app then switches spiral mode back off, which
+    is why the op names the answer instead.
+
+    The box is found by its EFFECT - a modal disables the main window, the
+    same fact the next guard would trip on - and not by class or by a size
+    guess: find_conflict_dialog only knows small #32770s."""
+    from . import export_util, mixing_util, process_panel as pp, winutil
+    import time
+
+    app = ui.app
+    dlg = None
+    deadline = time.monotonic() + 2.0
+    while time.monotonic() < deadline:
+        if not winutil.user32.IsWindowEnabled(app.hwnd):
+            new = [w for w in mixing_util.toplevel(app.pid)
+                   if w[3] not in known and w[3] != app.hwnd
+                   and (w[2][3] - w[2][1]) < 400]
+            if new:
+                dlg = new[0][3]
+                break
+        time.sleep(0.25)
+    if dlg is None:
+        popup = export_util.wait_popup(app.pid, timeout_s=0.8)
+        if popup:
+            winutil.user32.PostMessageW(popup[3], 0x0010, 0, 0)  # WM_CLOSE
+            ui.pause(0.6)
+        return None, ""
+    body = pp.dialog_body(app.pid, dlg)
+    buttons = [b for b in mixing_util.children(dlg) if b[1] == "Button"]
+    print("[param case] dialog after the checkbox: %r; buttons %r" % (
+        body[:160], [b[0] for b in buttons]), flush=True)
+    hit = how = None
+    if answer:
+        want = answer.replace("&", "").strip().lower()
+        for _t, _c, r, h in buttons:
+            if _t.replace("&", "").strip().lower().startswith(want):
+                hit, how = (r, h), "text"
+        if hit is None and len(buttons) == 2 and want in ("yes", "no"):
+            # a native box labels its buttons in the Windows language
+            # ('是/否'), so the text rule misses: in a two-button Yes/No
+            # box Yes is the first one. Only for an op that named the
+            # answer - never a guess on an unnamed box.
+            first = buttons[0][0].replace("&", "").strip().lower()
+            first_is_no = first.startswith("no") or first.startswith("否")
+            index = (want == "no") != first_is_no
+            hit, how = (buttons[int(index)][2], buttons[int(index)][3]), "position"
+    if hit is not None:
+        (x0, y0, x1, y1), how = hit
+        print("[param case] answering %r by %s: click (%d,%d)" % (
+            answer, how, (x0 + x1) // 2, (y0 + y1) // 2), flush=True)
+        winutil.real_click_screen((x0 + x1) // 2, (y0 + y1) // 2)
+    else:
+        print("[param case] closing it (WM_CLOSE)", flush=True)
+        winutil.user32.PostMessageW(dlg, 0x0010, 0, 0)  # WM_CLOSE
+    ui.pause(1.0)
+    return dlg, body
 
 
 def run_ops(ui, ops):
@@ -411,6 +492,10 @@ def run_ops(ui, ops):
                           field_index=op.get("field"), below=bool(op.get("below")))
             pp.neutralize_focus(app)
         elif kind == "checkbox":
+            # 2026-11-23: enabling some options (Spiral vase, run c6584b3e)
+            # pops a modal that trips the next guard
+            # (main_window_modal_blocked) - see settle_dialog.
+            known_dialogs = pp.top_dialog_set(app)
             ok = pp.set_option_checkbox(app, op["label"], op["value"], group_substr=op.get("group"))
             # set_option_checkbox returns (now_on, rect); for want=False a
             # SUCCESSFUL uncheck returns ok[0]=False - the old `is True` check
@@ -418,15 +503,7 @@ def run_ops(ui, ops):
             # 0.21->0.06 then raised, run 7cb0e911).
             if not (isinstance(ok, tuple) and ok[0] == op["value"]):
                 raise ProtocolError("param_checkbox:" + op["label"])
-            # 2026-11-23: enabling some options (Spiral vase, run c6584b3e)
-            # pops an informational modal that trips the next guard
-            # (main_window_modal_blocked) - close any popup that appears.
-            from . import export_util as _eu
-            _modal = _eu.wait_popup(app.pid, timeout_s=1.2)
-            if _modal:
-                from . import winutil as _wl
-                _wl.user32.PostMessageW(_modal[3], 0x0010, 0, 0)  # WM_CLOSE
-                ui.pause(0.6)
+            settle_dialog(ui, known_dialogs, op.get("answer"))
         elif kind == "rowcombo":
             from .param_combo_row import pick_combo_at_label
             # A list label gets the same candidate treatment as float ops

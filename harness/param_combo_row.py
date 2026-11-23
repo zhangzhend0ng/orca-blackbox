@@ -207,35 +207,96 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
     ui.main_input()
     # Readback (r4.2). This function used to return after its click with no
     # postcondition at all: fa run f4b87b67 logged nothing, reported success
-    # and left the row painting 'Fuzzy skin ~ None'. The row's painted line
-    # must carry the target now.
-    line = _row_line(ui, label)
-    print("[popup] row %r now paints %r (wanted %r)" % (label, line, target), flush=True)
-    if target.lower() not in line.lower():
-        raise ProtocolError("param_combo_readback:" + target + ":" + line[:60])
+    # and left the row painting 'Fuzzy skin ~ None'. The row's CONTROL must
+    # show the target now, read on the line that was clicked.
+    value, line = _row_value(ui, label, anchor=(cx, cy))
+    print("[popup] row %r now paints value %r, line %r (wanted %r)" % (
+        label, value, line, target), flush=True)
+    if target.lower() not in value.lower():
+        raise ProtocolError("param_combo_readback:" + target + ":" +
+                            (value or line)[:60])
 
 
-def _row_line(ui, label):
-    """The painted text of the row labeled `label` where it is now ('' when
-    the row cannot be found or read)."""
-    wu, app = ui.wu, ui.app
-    from harness import mix_dialog_util as mdu
-    import numpy as np
+def _row_value(ui, label, anchor=None):
+    """(value, line) the row labeled `label` shows where it is now.
+
+    `anchor` is the screen point the combo was clicked at. The page
+    rebuilds around the row but the row stays under that point, and the
+    phrase scan cannot be trusted right after a commit: a just-changed row
+    paints its label orange inside a teal focus border and tesseract
+    dropped the whole line (fa run e9071eba: 'Fuzzy skin' resolved to the
+    next row, 'Fuzzy skin generator mode ~ Displacement'). So the anchor
+    line is read first and the phrase scan is the fallback.
+
+    `value` is what the row's CONTROL shows, read three ways and joined with
+    ' | ': the text of its value window, the OCR of the value zone and the
+    OCR of that zone cut past a colour swatch. `line` is the OCR of the whole
+    label line - it goes into the log, not into the verdict: a target like
+    'on' is inside 'ironing'. ('', '') when the row is gone.
+
+    One reading does not cover this page (fa run 4ec54abd, measured on its
+    failure screenshot): the extruder combo paints a colour swatch and the
+    OCR of its zone returns nothing, while the zone cut at the swatch reads
+    'PETG' - and that cut garbles a plain value ('Yefault')."""
+    from . import process_panel as pp
+    app = ui.app
     try:
+        ox, oy = pp.client_origin(app)
+        value = line = ""
+        if anchor is not None:
+            value, line = _read_row(ui, anchor[1] - oy, ox, oy)
+            if value:
+                return value, line
         y = _find_phrase_row(app, label, group_substr=None)
-        if y is None:
-            return ""
-        img = pp.capture_bgr(app)
-        vp = pp.options_viewport(app)
-        ox, oy = wu.client_to_screen(app.hwnd, 0, 0)
-        y0 = max(0, vp[0][1] - oy)
-        y1 = min(img.shape[0], vp[0][3] - oy)
-        words = mdu.ocr_words_img(img[y0:y1, :424], scale=3, psm=6)
-        line = [w for w, x, yy, ww, hh in words if abs((yy + hh // 2) + y0 - y) <= 16]
-        return " ".join(line)
+        if y is None or (anchor is not None and y == anchor[1] - oy):
+            return value, line
+        return _read_row(ui, y, ox, oy)
     except Exception as exc:  # diagnostic path: never mask the real failure
-        print("[popup] row line not read: %s: %s" % (type(exc).__name__, exc), flush=True)
-        return ""
+        print("[popup] row value not read: %s: %s" % (type(exc).__name__, exc), flush=True)
+        return "", ""
+
+
+def _read_row(ui, y, ox, oy):
+    """(value, line) painted on the client line y: see _row_value."""
+    from . import process_panel as pp
+    from harness import mix_dialog_util as mdu
+    app = ui.app
+    boxes, texts = [], []
+    for t, c, r, h, lx, ly in pp.kids(app):
+        if not t.strip() or c == "panel" or not pp.user32.IsWindowVisible(h):
+            continue
+        if not (pp.VALUE_X0 - 10 <= lx < pp.SB_W and r[2] - r[0] <= 320):
+            continue
+        if abs((r[1] + r[3]) // 2 - (y + oy)) <= 14:
+            boxes.append(r)
+            texts.append(t.strip())
+    img = pp.capture_bgr(app)
+    height = img.shape[0]
+    if boxes:                   # client rect of the value control(s)
+        x0 = min(b[0] for b in boxes) - ox
+        x1 = max(b[2] for b in boxes) - ox
+        top = min(b[1] for b in boxes) - oy
+        bot = max(b[3] for b in boxes) - oy
+    else:                       # no value window: the standard value zone
+        x0, x1, top, bot = 246, 366, y - 12, y + 12
+
+    def read(x_a, y_a, x_b, y_b):
+        """OCR of the client rect (x_a, y_a)-(x_b, y_b) as one line."""
+        crop = img[max(0, y_a):min(height, y_b), max(0, x_a):min(x_b, img.shape[1])]
+        if crop.size == 0:
+            return ""
+        return " ".join(t for t, *_ in mdu.ocr_words_img(crop, scale=3, psm=6))
+
+    readings = [" ".join(texts),
+                read(x0 - 10, top - 5, x1 + 10, bot + 5),
+                read(x0 + 26, top + 3, x1 - 4, bot - 3)]
+    vp = pp.options_viewport(app)
+    band_top = max(0, vp[0][1] - oy) if vp else 0
+    band_bot = min(height, vp[0][3] - oy) if vp else height
+    words = mdu.ocr_words_img(img[band_top:band_bot, :pp.SB_W], scale=3, psm=6)
+    line = " ".join(t for t, _x, yy, _w, hgt in words
+                    if abs(yy + hgt // 2 + band_top - y) <= 14)
+    return " | ".join(r for r in readings if r), line
 
 
 def _canvas(ui):

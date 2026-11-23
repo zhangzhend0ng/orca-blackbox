@@ -1205,21 +1205,7 @@ def find_option_combo(session, current_value, psm=3):
     # 67690ed4: Support Type/Style and Skirt 'Disabled' opened no popup).
     ox, oy = client_origin(session)
     sx, sy = ox + (word[0] + word[2]) // 2, oy + y_row
-    hwnd = winutil.window_from_screen_point(sx, sy)
-    if not hwnd or hwnd == session.hwnd:
-        return (None, None, None)
-    rc = winutil.window_rect(hwnd)
-    if (rc[2] - rc[0]) > 250 or (rc[3] - rc[1]) > 60:
-        # WindowFromPoint skips DISABLED windows and hands back the row
-        # container instead: the value is greyed (Support Type/Style until
-        # support is on, Draft shield until skirt loops > 0; census c814315c:
-        # a 393x270 container under 'Tree'). Clicking it opens nothing.
-        print(f"[panel] value {current_value!r} is painted on a disabled control "
-              f"(container {rc} under it) - not a clickable combo", flush=True)
-        return (None, None, None)
-    buf = ctypes.create_unicode_buffer(256)
-    user32.GetWindowTextW(hwnd, buf, 256)
-    return (rc, hwnd, buf.value)
+    return value_control_at(session, sx, sy, current_value)
 
 
 def set_combo_native(session, word_text, target_prefix, log="[panel]"):
@@ -1447,17 +1433,42 @@ def find_option_combo_seq(session, seq, group_substr=None, psm=3):
         return (None, None, None)
     ox, oy = client_origin(session)   # client coordinates, see find_option_combo
     sx, sy = ox + (word[0] + word[2]) // 2, oy + y_row
-    hwnd = winutil.window_from_screen_point(sx, sy)
-    if not hwnd or hwnd == session.hwnd:
+    return value_control_at(session, sx, sy, seq)
+
+
+def value_control_at(session, x, y, value):
+    """(rect, hwnd, text) of the control that paints a combo VALUE at screen
+    (x, y), or (None, None, None) when there is none or it is disabled.
+
+    Found by enumeration - the smallest visible child window that contains
+    the point, carries text and is at most 320x64 - and the disabled verdict
+    comes from IsWindowEnabled on that control. WindowFromPoint was used
+    instead: it skips disabled windows and returns whatever lies behind
+    (the 393x270 row container under 'Tree' while support is off, census
+    c814315c), so "disabled" had to be guessed from the size of the answer -
+    and on fa706g3 the point over an ENABLED 'Tree (auto)' resolved to a
+    254x39 window and the combo was refused (fa run 744a5451)."""
+    best = None
+    for t, c, r, h, lx, ly in kids(session):
+        if not t.strip() or not user32.IsWindowVisible(h):
+            continue
+        if not (r[0] <= x < r[2] and r[1] <= y < r[3]):
+            continue
+        w, hh = r[2] - r[0], r[3] - r[1]
+        if w > 320 or hh > 64:
+            continue
+        if best is None or w * hh < (best[0][2] - best[0][0]) * (best[0][3] - best[0][1]):
+            best = (r, h, t.strip())
+    if best is None:
+        print(f"[panel] value {value!r}: no control with text under ({x}, {y}) "
+              f"- not a clickable combo", flush=True)
         return (None, None, None)
-    rc = winutil.window_rect(hwnd)
-    if (rc[2] - rc[0]) > 250 or (rc[3] - rc[1]) > 60:
-        print(f"[panel] value {seq!r} is painted on a disabled control "
-              f"(container {rc} under it) - not a clickable combo", flush=True)
+    rc, hwnd, text = best
+    if not user32.IsWindowEnabled(hwnd):
+        print(f"[panel] value {value!r}: control {rc} text {text!r} is DISABLED "
+              f"(depends on another setting) - not a clickable combo", flush=True)
         return (None, None, None)
-    buf = ctypes.create_unicode_buffer(256)
-    user32.GetWindowTextW(hwnd, buf, 256)
-    return (rc, hwnd, buf.value)
+    return (rc, hwnd, text)
 
 
 def work_area():

@@ -151,8 +151,22 @@ class BusinessUI:
         self.guard()
         self.wu._send_msg(target, 0x00B1, 0, -1)  # native Edit EM_SETSEL, not config mutation
         self.guard()
-        self.wu.msg_text(target, text)
-        self.guard()
+        digits = str(text)
+        if digits.startswith("-"):
+            # A numeric edit drops a LONE '-': it validates after every
+            # character and '-' alone is not a number, so '-100' typed over
+            # '-150' arrived as '100' (fa run d134da1b, Temperature
+            # variation - caught by the sign-aware readback). Digits first,
+            # then the caret to the front, then the minus.
+            self.wu.msg_text(target, digits[1:])
+            self.guard()
+            self.wu._send_msg(target, 0x00B1, 0, 0)  # EM_SETSEL: caret to the front
+            self.guard()
+            self.wu.msg_text(target, "-")
+            self.guard()
+        else:
+            self.wu.msg_text(target, text)
+            self.guard()
         self.wu.msg_text(target, "\r")  # real wx text-enter path, not WM_SETTEXT
         self.guard()
         # Leaving focus commits the GUI field. Never patch slicer configuration.

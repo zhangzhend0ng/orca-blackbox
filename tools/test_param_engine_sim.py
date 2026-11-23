@@ -813,6 +813,325 @@ check("checker: an unanchored multi-word label matches its row",
       and _mod.label_matches("^Wipe speed", "Role based wipe speed") is False,
       "got %r" % (_mod.label_matches("Wall loops", "Wall loops"),))
 
+# ------------------------------------------------------------------ r5
+# From the first two-line run (2026-11-23 23:44, fa706g3 + guest in parallel).
+
+# 19. A `field` row is ONE label with its Edits stacked vertically around it
+#     (VM run 210446b4: 'Overhang speed', five boxes at a 27px pitch, the
+#     label centred on the block). Field i is the i-th Edit from the top.
+REAL_FIELD_UI = pcl.uia_set_float
+_fake_before19 = sys.modules.get("win32gui")
+try:
+    stack = {}
+    for i, cy in enumerate((924, 950, 976, 1002, 1032)):
+        stack.update({_edit_at(cy, hwnd=100 + i)})
+    _with_float_env(stack, 965)
+    got = []
+    for idx in (0, 1, 3):
+        ui = _FakeUI(stack)
+        _raises(pcl.uia_set_float, ui, "Overhang speed", "10", "Overhang", field_index=idx)
+        got.append(ui.typed[0][0] if ui.typed else None)
+    check("uia_set_float: field 0/1/3 of a vertical stack drive the 1st/2nd/4th Edit from the top",
+          got == [100, 101, 103], "got %r" % (got,))
+    ui = _FakeUI(stack)
+    msg = _raises(pcl.uia_set_float, ui, "Overhang speed", "10", "Overhang", field_index=7)
+    # 1032 is 67px below the label: the NEXT row's Edit (bridge speed), not a fifth field
+    check("uia_set_float: field index beyond the stack is refused",
+          isinstance(msg, str) and msg.startswith("param_uia_field"), "got %r" % (msg,))
+finally:
+    if _fake_before is None:
+        sys.modules.pop("win32gui", None)
+    else:
+        sys.modules["win32gui"] = _fake_before
+
+# 20. The control under a painted combo VALUE is found by enumeration and
+#     judged by IsWindowEnabled - not by the size of WindowFromPoint's answer,
+#     which refused an enabled 254x39 combo on fa706g3 (run 744a5451) and
+#     needs a size guess for the disabled case.
+if hasattr(pp, "value_control_at"):
+    def _win(text, rect, enabled=True, cls="wxWindowNR", hwnd=1):
+        lx, ly = rect[0] + 7, rect[1] + 7
+        return (text, cls, rect, hwnd, lx, ly)
+    _k20 = pp.kids
+    _u20 = pp.user32
+    pp.user32 = types.SimpleNamespace(IsWindowVisible=lambda h: True, IsWindowEnabled=lambda h: h != 7)
+    row = _win("", (6, 749, 399, 1019), hwnd=5)
+    off = _win("", (254, 781, 508, 820), hwnd=6)                 # fa's 254x39 window
+    try:
+        pp.kids = lambda session: [row, _win("Tree (auto)", (246, 781, 366, 807), enabled=False, hwnd=7)]
+        r = pp.value_control_at(None, 289, 794, "Tree")
+        check("value_control_at: a disabled value window is reported as not clickable (no size guess)",
+              r == (None, None, None), "got %r" % (r,))
+        pp.kids = lambda session: [row, _win("Tree (auto)", (246, 781, 366, 807), hwnd=8)]
+        r = pp.value_control_at(None, 289, 794, "Tree")
+        check("value_control_at: the enabled value window under the painted word is returned",
+              r[1] == 8 and r[2] == "Tree (auto)", "got %r" % (r,))
+        pp.kids = lambda session: [row, off, _win("Tree (auto)", (246, 781, 366, 807), hwnd=9)]
+        r = pp.value_control_at(None, 289, 794, "Tree")
+        check("value_control_at: the smallest window with text wins over the 254x39 one around it (fa)",
+              r[1] == 9, "got %r" % (r,))
+        pp.kids = lambda session: [row, _win("Tree (auto)", (254, 781, 508, 820), hwnd=10)]
+        r = pp.value_control_at(None, 289, 794, "Tree")
+        check("value_control_at: a 254x39 enabled combo is accepted (fa run 744a5451 was refused)",
+              r[1] == 10, "got %r" % (r,))
+        pp.kids = lambda session: [row]
+        r = pp.value_control_at(None, 289, 794, "Tree")
+        check("value_control_at: only the row container under the value -> not a combo",
+              r == (None, None, None), "got %r" % (r,))
+    finally:
+        pp.kids, pp.user32 = _k20, _u20
+else:
+    print("N/A  value_control_at (absent on this tree)")
+
+# 21. The rowcombo readback reads the VALUE. fa run 4ec54abd: the click had
+#     worked and the row painted '[1] PETG', but the band OCR returned the
+#     label alone and the readback raised. Measured on that screenshot: the
+#     swatch empties the OCR of the whole value zone, the zone cut past the
+#     swatch reads 'PETG' - and garbles a plain value ('Yefault').
+from harness import mix_dialog_util as _mdu21  # noqa: E402
+
+import numpy as _np21  # noqa: E402
+
+
+def _fake_ocr21(crop, scale=3, psm=6):
+    hgt, wid = crop.shape[:2]
+    if wid == pp.SB_W:                       # the whole band: label only
+        return [("Support/raft", 13, 776 - 718 - 7, 96, 14), ("base", 115, 776 - 718 - 7, 40, 14)]
+    if wid == 140:                           # value zone, with the swatch
+        return _case21["zone"]
+    if wid == 90:                            # zone cut past the swatch
+        return _case21["past"]
+    return []
+
+
+def _run21():
+    ui21 = types.SimpleNamespace(
+        app=types.SimpleNamespace(hwnd=4, pid=3), wu=types.SimpleNamespace(client_to_screen=lambda *a: (0, 0)))
+    read = getattr(pcr, "_row_value", None)
+    if read is not None:
+        return read(ui21, "^Support/raft base")
+    line = pcr._row_line(ui21, "^Support/raft base")
+    return line, line                       # the r4.2 rule: target in the label line
+
+
+_case21 = {"zone": [], "past": [("PETG", 4, 3, 42, 12)]}
+_saved21 = (pcr._find_phrase_row, pp.client_origin, pp.kids, pp.user32, pp.capture_bgr,
+            pp.options_viewport, _mdu21.ocr_words_img)
+_row21 = ("", "panel", (6, 749, 399, 1019), 5, 13, 756)
+try:
+    pcr._find_phrase_row = lambda app, label, group_substr=None: 776
+    pp.client_origin = lambda app: (0, 0)
+    pp.user32 = types.SimpleNamespace(IsWindowVisible=lambda h: True)
+    pp.capture_bgr = lambda app: _np21.zeros((1032, 1920, 3), _np21.uint8)
+    pp.options_viewport = lambda app: ((1, 718, 421, 1031),)
+    _mdu21.ocr_words_img = _fake_ocr21
+    pp.kids = lambda app: [_row21, ("1", "wxWindowNR", (246, 764, 366, 788), 8, 253, 771)]
+    value, line = _run21()
+    check("rowcombo readback: the value of a swatch combo is read (fa run 4ec54abd: 'Support/raft base' alone)",
+          "petg" in value.lower() and line.lower() == "support/raft base",
+          "value %r line %r" % (value, line))
+    pp.kids = lambda app: [_row21]       # no value window, nothing to read from
+    value, line = _run21()
+    check("rowcombo readback: with no value window and an empty zone the cut still reads the value",
+          "petg" in value.lower(), "value %r line %r" % (value, line))
+    _case21 = {"zone": [("~", 14, 10, 12, 14), ("Default", 30, 10, 62, 14)],
+               "past": [("Yefault", 4, 3, 52, 12)]}
+    pp.kids = lambda app: [_row21, ("Default", "wxWindowNR", (246, 825, 366, 849), 9, 253, 832)]
+    pcr._find_phrase_row = lambda app, label, group_substr=None: 837
+    value, line = _run21()
+    check("rowcombo readback: a plain value is read from the window text and the whole zone",
+          "default" in value.lower(), "value %r line %r" % (value, line))
+    _case21 = {"zone": [], "past": []}
+    pp.kids = lambda app: [_row21]
+    pcr._find_phrase_row = lambda app, label, group_substr=None: 776
+    value, line = _run21()
+    check("rowcombo readback: an unreadable value is '' with the label line kept for the log",
+          value == "" and line.lower() == "support/raft base", "value %r line %r" % (value, line))
+    check("rowcombo readback: the target is not looked for in the label line",
+          "base" in line.lower() and "base" not in value.lower(), "value %r" % (value,))
+finally:
+    (pcr._find_phrase_row, pp.client_origin, pp.kids, pp.user32, pp.capture_bgr,
+     pp.options_viewport, _mdu21.ocr_words_img) = _saved21
+
+# 22. A modal the app opens after a checkbox is found and answered. Spiral
+#     vase (VM run 49723134): the Yes/No box stayed open - wait_popup only
+#     knows the combo popup - and the next guard raised
+#     main_window_modal_blocked.
+from harness import export_util as _eu22, mixing_util as _mu22, winutil as _wu22  # noqa: E402
+import harness.param_case_lib as _pcl22  # noqa: E402
+
+if hasattr(_pcl22, "settle_dialog"):
+    _clicks22, _posted22 = [], []
+    _modal22 = {"open": False}       # main window 4 disabled = a modal owns it
+
+    class _U22:
+        """stands in for user32: PostMessageW is recorded, not called"""
+
+        @staticmethod
+        def PostMessageW(h, msg, _w, _l):
+            _posted22.append((h, msg))
+
+        @staticmethod
+        def IsWindowEnabled(h):
+            return not (h == 4 and _modal22["open"])
+
+    _saved22 = (_mu22.toplevel, pp.dialog_body, _mu22.children, _eu22.wait_popup,
+                _wu22.real_click_screen, _wu22.user32)
+    try:
+        _wu22.user32 = _U22
+        _wu22.real_click_screen = lambda x, y: _clicks22.append((x, y))
+        ui22 = types.SimpleNamespace(app=types.SimpleNamespace(pid=3, hwnd=4), pause=lambda s: None)
+        # NOT #32770: the box is found by its effect on the main window
+        _mu22.toplevel = lambda pid: [("wxWindowNR", "Orca", (800, 400, 1120, 560), 99)]
+        _eu22.wait_popup = lambda pid, timeout_s=0: (None, "panel", (1, 2, 3, 4), 77)
+        r = _pcl22.settle_dialog(ui22, set())
+        check("settle_dialog: no dialog but a combo popup -> WM_CLOSE to the popup, nothing clicked",
+              r == (None, "") and _posted22 == [(77, 0x0010)] and not _clicks22,
+              "%r %r" % (r, _posted22))
+        _posted22.clear()
+        _eu22.wait_popup = lambda pid, timeout_s=0: None
+        r = _pcl22.settle_dialog(ui22, set())
+        check("settle_dialog: nothing opened -> (None, ''), nothing clicked",
+              r == (None, "") and not _clicks22 and not _posted22, "%r %r" % (_clicks22, _posted22))
+        SPIRAL = ("Spiral mode only works when wall loops is 1, support is disabled, top shell "
+                  "layers is 0 ... Change these settings automatically? Yes - Change ... No - Give up")
+        _modal22["open"] = True
+        pp.dialog_body = lambda pid, dlg: SPIRAL
+        _mu22.children = lambda dlg: [("...", "Static", (1, 1, 2, 2), 5),
+                                      ("&Yes", "Button", (100, 200, 160, 222), 11),
+                                      ("&No", "Button", (180, 200, 240, 222), 12)]
+        r = _pcl22.settle_dialog(ui22, set(), "Yes")
+        check("settle_dialog: the spiral box is answered Yes - the Yes button is clicked, not closed",
+              r[0] == 99 and _clicks22 == [(130, 211)] and not _posted22,
+              "%r %r" % (_clicks22, _posted22))
+        _clicks22.clear()
+        _mu22.children = lambda dlg: [("...", "Static", (1, 1, 2, 2), 5),
+                                      ("\u662f(&Y)", "Button", (100, 200, 160, 222), 11),
+                                      ("\u5426(&N)", "Button", (180, 200, 240, 222), 12)]
+        _pcl22.settle_dialog(ui22, set(), "Yes")
+        check("settle_dialog: a box labelled in the Windows language - Yes is the first of two",
+              _clicks22 == [(130, 211)], "%r" % (_clicks22,))
+        _clicks22.clear()
+        _mu22.children = lambda dlg: [("&No", "Button", (100, 200, 160, 222), 11),
+                                      ("&Yes", "Button", (180, 200, 240, 222), 12)]
+        _pcl22.settle_dialog(ui22, set(), "Yes")
+        check("settle_dialog: ... unless the first button says No",
+              _clicks22 == [(210, 211)], "%r" % (_clicks22,))
+        _clicks22.clear()
+        _mu22.children = lambda dlg: [("&Yes", "Button", (100, 200, 160, 222), 11),
+                                      ("&No", "Button", (180, 200, 240, 222), 12)]
+        _pcl22.settle_dialog(ui22, set())          # no answer named
+        check("settle_dialog: an unnamed dialog is closed, never answered",
+              _posted22 == [(99, 0x0010)] and not _clicks22, "%r %r" % (_clicks22, _posted22))
+        _posted22.clear()
+        _mu22.children = lambda dlg: [("OK", "Button", (100, 200, 160, 222), 11)]
+        _pcl22.settle_dialog(ui22, set(), "Yes")
+        check("settle_dialog: a one-button box is closed even when an answer is named",
+              _posted22 == [(99, 0x0010)] and not _clicks22, "%r %r" % (_clicks22, _posted22))
+    finally:
+        (_mu22.toplevel, pp.dialog_body, _mu22.children, _eu22.wait_popup,
+         _wu22.real_click_screen, _wu22.user32) = _saved22
+else:
+    print("N/A  settle_dialog (absent on this tree)")
+
+# 23. The readback anchors on the line that was CLICKED. fa run e9071eba:
+#     'Fuzzy skin ~ Contour' was set, but the just-changed row (orange label
+#     in a teal focus border) dropped out of the band OCR and the phrase
+#     scan resolved 'Fuzzy skin' to the next row ('... generator mode ~
+#     Displacement') - reported as a failed readback.
+if hasattr(pcr, "_read_row"):
+    _scan23 = []
+    _saved23 = (pcr._find_phrase_row, pp.client_origin, pp.kids, pp.user32, pp.capture_bgr,
+                pp.options_viewport, _mdu21.ocr_words_img)
+    try:
+        pcr._find_phrase_row = lambda app, label, group_substr=None: (_scan23.append(label), 835)[1]
+        pp.client_origin = lambda app: (0, 0)
+        pp.user32 = types.SimpleNamespace(IsWindowVisible=lambda h: True)
+        pp.capture_bgr = lambda app: _np21.zeros((1032, 1920, 3), _np21.uint8)
+        pp.options_viewport = lambda app: ((1, 718, 421, 1031),)
+        _mdu21.ocr_words_img = lambda crop, scale=3, psm=6: []      # nothing OCR-able
+        pp.kids = lambda app: [("Contour", "wxWindowNR", (246, 788, 366, 812), 8, 253, 795),
+                               ("Displacement", "wxWindowNR", (246, 818, 366, 842), 9, 253, 825)]
+        ui23 = types.SimpleNamespace(app=types.SimpleNamespace(hwnd=4, pid=3))
+        value, line = pcr._row_value(ui23, "Fuzzy skin", anchor=(306, 800))
+        check("rowcombo readback: the value is read on the clicked line, no phrase scan",
+              value == "Contour" and not _scan23, "value %r scans %r" % (value, _scan23))
+        _scan23.clear()
+        value, line = pcr._row_value(ui23, "Fuzzy skin", anchor=(306, 900))
+        check("rowcombo readback: nothing on the clicked line -> the phrase scan places the row",
+              value == "Displacement" and _scan23 == ["Fuzzy skin"], "value %r scans %r" % (value, _scan23))
+        _scan23.clear()
+        value, line = pcr._row_value(ui23, "Fuzzy skin")
+        check("rowcombo readback: without an anchor the phrase scan is used once",
+              value == "Displacement" and _scan23 == ["Fuzzy skin"], "value %r scans %r" % (value, _scan23))
+    finally:
+        (pcr._find_phrase_row, pp.client_origin, pp.kids, pp.user32, pp.capture_bgr,
+         pp.options_viewport, _mdu21.ocr_words_img) = _saved23
+else:
+    print("N/A  readback anchor (absent on this tree)")
+
+# 24. A negative value reaches the field WITH its sign. fa run d134da1b:
+#   '-100' typed over '-150' read back '100' (the sign-aware readback of r4
+#   caught it; before r4 the same edit "passed"). The numeric edit drops a
+#   lone '-', so the digits go in first and the minus at the front last.
+import harness.agent_business_ui as _abu24  # noqa: E402
+
+
+class _NumEdit24:
+    """The control as run d134da1b showed it: a lone '-' is dropped."""
+
+    def __init__(self):
+        self.text, self.caret, self.all = "-150", 0, False
+        self.msgs = []
+
+    def setsel(self, start, end):
+        self.msgs.append(("setsel", start, end))
+        self.all = end == -1
+        if not self.all:
+            self.caret = start
+
+    def chars(self, piece):
+        self.msgs.append(("chars", piece))
+        if piece == "\r":
+            return
+        if self.all:
+            self.text, self.all = "", False
+            self.caret = 0
+        for ch in piece:
+            candidate = self.text[:self.caret] + ch + self.text[self.caret:]
+            if candidate == "-":
+                continue
+            self.text, self.caret = candidate, self.caret + 1
+
+
+def _ui24(ctl):
+    wu = types.SimpleNamespace(
+        client_to_screen=lambda h, x, y: (x, y), deepest_child_at=lambda h, x, y: 55,
+        window_class=lambda h: "Edit",
+        user32=types.SimpleNamespace(IsChild=lambda a, b: True, IsWindowEnabled=lambda h: True),
+        edit_text=lambda h: ctl.text, msg_click_screen=lambda *a: None,
+        _send_msg=lambda t, msg, w, l: ctl.setsel(w, l) if msg == 0x00B1 else None,
+        msg_text=lambda t, s: ctl.chars(s))
+    ui = _abu24.BusinessUI.__new__(_abu24.BusinessUI)
+    ui.wu, ui.app = wu, types.SimpleNamespace(hwnd=4)
+    ui.guard, ui.owned, ui.pause = (lambda: None), (lambda h: True), (lambda s: None)
+    ui.main_input = lambda: ({"width": 1920, "height": 1040}, None)
+    return ui
+
+
+ctl = _NumEdit24()
+receipt = _ui24(ctl).edit(10, 20, "-100")
+check("edit: a negative value keeps its sign (fa run d134da1b read back '100')",
+      receipt["after_text"] == "-100", "after %r msgs %r" % (receipt["after_text"], ctl.msgs))
+check("edit: the minus is typed after the digits, at the front",
+      ctl.msgs == [("setsel", 0, -1), ("chars", "100"), ("setsel", 0, 0), ("chars", "-"),
+                   ("chars", "\r")], "msgs %r" % (ctl.msgs,))
+ctl = _NumEdit24()
+receipt = _ui24(ctl).edit(10, 20, "150%")
+check("edit: a non-negative value is typed in one piece, as before",
+      receipt["after_text"] == "150%" and ctl.msgs[1] == ("chars", "150%"),
+      "after %r msgs %r" % (receipt["after_text"], ctl.msgs))
+
 failed = [n for n, ok in results if not ok]
 print("\n%d checks, %d failed" % (len(results), len(failed)))
 sys.exit(1 if failed else 0)
