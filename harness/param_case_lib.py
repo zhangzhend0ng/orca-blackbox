@@ -364,7 +364,6 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
         survey_and_raise("param_uia_field:" + label_substr + ":" + str(len(matches)))
     x = (bounds[0] + bounds[2]) // 2 - origin_x
     y = (bounds[1] + bounds[3]) // 2 - origin_y
-    receipt = ui.edit(x, y, str(value))
     from decimal import Decimal as _D, InvalidOperation as _Inv
 
     def _num(text):
@@ -376,6 +375,21 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
         except _Inv:
             return None
 
+    if _num(value) is None:
+        # A TEXT field (the filename format of #296) is multi-line: Enter is
+        # a newline in it, not a commit - fa run a9cce05e saved
+        # '{input_filename_base}_{plate_name}.gcode\n'. The value commits
+        # when the field loses focus; the readback is the whole text.
+        receipt = ui.edit(x, y, str(value), enter=False)
+        from . import process_panel as pp
+        pp.focus_off_edit(app, "text field commit")
+        ui.pause(2.0)
+        after = ui.wu.edit_text(handle)
+        if (receipt["target_hwnd"] != handle
+                or after.replace("\r\n", "\n") != str(value)):
+            raise ProtocolError("param_uia_readback:" + label_substr + ":" + repr(after)[:60])
+        return
+    receipt = ui.edit(x, y, str(value))
     if (receipt["target_hwnd"] != handle
             or _num(receipt["after_text"]) != _num(value)):
         raise ProtocolError("param_uia_readback:" + label_substr + ":" + repr(receipt.get("after_text"))[:40])

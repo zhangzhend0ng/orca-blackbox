@@ -144,7 +144,13 @@ class BusinessUI:
         self.wu.msg_click_screen((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2,
                                  target_root)
 
-    def edit(self, x, y, text):
+    def edit(self, x, y, text, *, enter=True):
+        """Type `text` into the Edit at client (x, y) and commit it with
+        Enter. `enter=False` leaves the text UNCOMMITTED and the focus in
+        the field: a caller driving a multi-line field commits it another
+        way (uia_set_float moves the focus off it) - Enter is a newline
+        there, not a commit (fa run a9cce05e: the filename format was saved
+        with a trailing '\\n')."""
         window, _ = self.main_input()
         if not 0 <= x < window["width"] or not 0 <= y < window["height"]:
             raise ProtocolError("edit_outside_client")
@@ -184,6 +190,11 @@ class BusinessUI:
         else:
             self.wu.msg_text(target, text)
             self.guard()
+        if not enter:
+            if not self.owned(target):
+                raise ProtocolError("edit_target_disappeared")
+            return {"target_hwnd": target, "control_class": "Edit", "before_text": before,
+                    "after_text": self.wu.edit_text(target), "committed": False}
         self.wu.msg_text(target, "\r")  # real wx text-enter path, not WM_SETTEXT
         self.guard()
         # Leaving focus commits the GUI field. Never patch slicer configuration.
@@ -192,7 +203,7 @@ class BusinessUI:
         if not self.owned(target):
             raise ProtocolError("edit_target_disappeared")
         return {"target_hwnd": target, "control_class": "Edit", "before_text": before,
-                "after_text": self.wu.edit_text(target)}
+                "after_text": self.wu.edit_text(target), "committed": True}
 
     def _spin_down_to(self, target, text):
         """Walk the spin edit down to the negative `text` with its own Down

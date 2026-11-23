@@ -1,0 +1,2226 @@
+{
+ "meta": {
+  "source": "census run dc96eb663b1d4fefbc04e6da1531fc7f (2.4.0 guest build)",
+  "note": "Every painted line of every process tab in page order, as OCR read it (spellings are OCR's: 'lroning', 'linespacing'). page_y grows downward and is only meaningful for ordering. A group's rows are the lines after its title's page_y and before the next title's. Re-run scenario uia_param_census to refresh."
+ },
+ "tabs": {
+  "Quality": {
+   "groups": [
+    {
+     "title": "Layer height",
+     "page_y": 723
+    },
+    {
+     "title": "Line width",
+     "page_y": 819
+    },
+    {
+     "title": "Seam",
+     "page_y": 1095
+    },
+    {
+     "title": "Precision",
+     "page_y": 1371
+    },
+    {
+     "title": "Ironing",
+     "page_y": 1725
+    },
+    {
+     "title": "Wall generator",
+     "page_y": 1791
+    },
+    {
+     "title": "Walls and surfaces",
+     "page_y": 1857
+    },
+    {
+     "title": "Bridging",
+     "page_y": 2229
+    },
+    {
+     "title": "Overhangs",
+     "page_y": 2553
+    }
+   ],
+   "lines": [
+    {
+     "page_y": 722,
+     "text": "|= Layer height",
+     "reads": 1
+    },
+    {
+     "page_y": 758,
+     "text": "Layer height 04 mm",
+     "reads": 1
+    },
+    {
+     "page_y": 787,
+     "text": "First layer height 04 mm",
+     "reads": 1
+    },
+    {
+     "page_y": 818,
+     "text": "= Line width",
+     "reads": 1
+    },
+    {
+     "page_y": 853,
+     "text": "Default 0.82 mm or%",
+     "reads": 2
+    },
+    {
+     "page_y": 883,
+     "text": "First layer 0.82 mm or%",
+     "reads": 2
+    },
+    {
+     "page_y": 913,
+     "text": "Outer wall 0.82 mm or%",
+     "reads": 2
+    },
+    {
+     "page_y": 944,
+     "text": "Inner wall 0.82 mm or%",
+     "reads": 2
+    },
+    {
+     "page_y": 973,
+     "text": "Top surface 0.82 mm or%",
+     "reads": 3
+    },
+    {
+     "page_y": 1003,
+     "text": "Sparse infill 0.82 mm or%",
+     "reads": 3
+    },
+    {
+     "page_y": 1033,
+     "text": "Internal solid infill 0.82 mm or%",
+     "reads": 2
+    },
+    {
+     "page_y": 1063,
+     "text": "Support 0.82 mm or%",
+     "reads": 2
+    },
+    {
+     "page_y": 1095,
+     "text": "[2 | Seam",
+     "reads": 3
+    },
+    {
+     "page_y": 1129,
+     "text": "Seam position ~ Aligned",
+     "reads": 3
+    },
+    {
+     "page_y": 1159,
+     "text": "Staggered inner seams",
+     "reads": 2
+    },
+    {
+     "page_y": 1189,
+     "text": "Seam gap 15% mm or %",
+     "reads": 2
+    },
+    {
+     "page_y": 1198,
+     "text": "Deed #0",
+     "reads": 1
+    },
+    {
+     "page_y": 1217,
+     "text": "Scarf joint seam (beta) ~ None",
+     "reads": 3
+    },
+    {
+     "page_y": 1249,
+     "text": "Role base wipe speed",
+     "reads": 3
+    },
+    {
+     "page_y": 1280,
+     "text": "Wipe speed 80% mm/sor%",
+     "reads": 2
+    },
+    {
+     "page_y": 1310,
+     "text": "Wipe on loops",
+     "reads": 2
+    },
+    {
+     "page_y": 1318,
+     "text": "eee",
+     "reads": 1
+    },
+    {
+     "page_y": 1340,
+     "text": "Wipe before external loop",
+     "reads": 3
+    },
+    {
+     "page_y": 1373,
+     "text": "Precision",
+     "reads": 3
+    },
+    {
+     "page_y": 1405,
+     "text": "Slice gap closing radius 0.049 mm",
+     "reads": 2
+    },
+    {
+     "page_y": 1434,
+     "text": "Resolution 0.012 mm",
+     "reads": 2
+    },
+    {
+     "page_y": 1438,
+     "text": "Resolution UNTIL mm",
+     "reads": 1
+    },
+    {
+     "page_y": 1466,
+     "text": "Arc fitting",
+     "reads": 3
+    },
+    {
+     "page_y": 1495,
+     "text": "X-Y hole compensation 0 mm",
+     "reads": 3
+    },
+    {
+     "page_y": 1525,
+     "text": "X-Y contour compensation",
+     "reads": 2
+    },
+    {
+     "page_y": 1555,
+     "text": "Elephant foot compensation",
+     "reads": 3
+    },
+    {
+     "page_y": 1585,
+     "text": "Elephant foot compensation",
+     "reads": 3
+    },
+    {
+     "page_y": 1603,
+     "text": "layers",
+     "reads": 3
+    },
+    {
+     "page_y": 1632,
+     "text": "| | |",
+     "reads": 1
+    },
+    {
+     "page_y": 1633,
+     "text": "Precise wall",
+     "reads": 2
+    },
+    {
+     "page_y": 1663,
+     "text": "Precise Z height",
+     "reads": 2
+    },
+    {
+     "page_y": 1693,
+     "text": "Convert holes to polyholes",
+     "reads": 3
+    },
+    {
+     "page_y": 1764,
+     "text": "~ No ironing",
+     "reads": 2
+    },
+    {
+     "page_y": 1798,
+     "text": "= —= Wall",
+     "reads": 1
+    },
+    {
+     "page_y": 1825,
+     "text": "Wall generator ~ Classic",
+     "reads": 3
+    },
+    {
+     "page_y": 1859,
+     "text": "WNalls and surfaces",
+     "reads": 3
+    },
+    {
+     "page_y": 1891,
+     "text": "Walls printing order ~ Inner/Outer",
+     "reads": 2
+    },
+    {
+     "page_y": 1921,
+     "text": "Print infill first",
+     "reads": 3
+    },
+    {
+     "page_y": 1951,
+     "text": "Wall loop direction ~ Auto",
+     "reads": 3
+    },
+    {
+     "page_y": 1981,
+     "text": "Top surface flow ratio 1",
+     "reads": 3
+    },
+    {
+     "page_y": 2011,
+     "text": "Bottom surface flow ratio 1",
+     "reads": 2
+    },
+    {
+     "page_y": 2041,
+     "text": "Only one wall on top",
+     "reads": 3
+    },
+    {
+     "page_y": 2059,
+     "text": "surfaces",
+     "reads": 3
+    },
+    {
+     "page_y": 2089,
+     "text": "One wall threshold 200% mmor%",
+     "reads": 3
+    },
+    {
+     "page_y": 2119,
+     "text": "Only one wall on first layer",
+     "reads": 2
+    },
+    {
+     "page_y": 2149,
+     "text": "Avoid crossing walls",
+     "reads": 2
+    },
+    {
+     "page_y": 2179,
+     "text": "Small area flow",
+     "reads": 3
+    },
+    {
+     "page_y": 2198,
+     "text": "compensation (beta)",
+     "reads": 3
+    },
+    {
+     "page_y": 2229,
+     "text": "fom)",
+     "reads": 1
+    },
+    {
+     "page_y": 2231,
+     "text": "Bridging",
+     "reads": 2
+    },
+    {
+     "page_y": 2263,
+     "text": "Bridge flow ratio 0.8",
+     "reads": 2
+    },
+    {
+     "page_y": 2293,
+     "text": "Internal bridge flow ratio 1",
+     "reads": 3
+    },
+    {
+     "page_y": 2323,
+     "text": "External bridge density 60 %",
+     "reads": 3
+    },
+    {
+     "page_y": 2353,
+     "text": "ann",
+     "reads": 1
+    },
+    {
+     "page_y": 2353,
+     "text": "Internal bridge density 100 %",
+     "reads": 2
+    },
+    {
+     "page_y": 2383,
+     "text": "Thick external bridges",
+     "reads": 2
+    },
+    {
+     "page_y": 2413,
+     "text": "Thick internal bridges",
+     "reads": 3
+    },
+    {
+     "page_y": 2443,
+     "text": "Extra bridge layers (beta) ~ Disabled",
+     "reads": 3
+    },
+    {
+     "page_y": 2473,
+     "text": "Filter out small internal Filter",
+     "reads": 2
+    },
+    {
+     "page_y": 2491,
+     "text": "bridges ~",
+     "reads": 2
+    },
+    {
+     "page_y": 2521,
+     "text": "Bridge counterbore holes ~ None",
+     "reads": 2
+    },
+    {
+     "page_y": 2543,
+     "text": "Extra bridge layers (beta) ~ Disabled",
+     "reads": 1
+    },
+    {
+     "page_y": 2555,
+     "text": "Overhangs",
+     "reads": 2
+    },
+    {
+     "page_y": 2573,
+     "text": "Filter out small internal Filter",
+     "reads": 1
+    },
+    {
+     "page_y": 2587,
+     "text": "Detect walls",
+     "reads": 1
+    },
+    {
+     "page_y": 2587,
+     "text": "Detect overhang walls",
+     "reads": 1
+    },
+    {
+     "page_y": 2587,
+     "text": "bridges ~",
+     "reads": 1
+    },
+    {
+     "page_y": 2617,
+     "text": "Make overhangs printable",
+     "reads": 1
+    },
+    {
+     "page_y": 2621,
+     "text": "Bridge counterbore holes ~ None",
+     "reads": 1
+    },
+    {
+     "page_y": 2647,
+     "text": "Extra perimeters on",
+     "reads": 1
+    },
+    {
+     "page_y": 2655,
+     "text": "Overhangs",
+     "reads": 1
+    },
+    {
+     "page_y": 2663,
+     "text": "Extra bridge layers (beta) ~ Disabled",
+     "reads": 1
+    },
+    {
+     "page_y": 2665,
+     "text": "overhangs",
+     "reads": 1
+    },
+    {
+     "page_y": 2687,
+     "text": "Detect overhang walls",
+     "reads": 1
+    },
+    {
+     "page_y": 2693,
+     "text": "Filter out small internal Filter",
+     "reads": 1
+    },
+    {
+     "page_y": 2695,
+     "text": "Reverse on even",
+     "reads": 1
+    },
+    {
+     "page_y": 2707,
+     "text": "bridges ~",
+     "reads": 1
+    },
+    {
+     "page_y": 2717,
+     "text": "Make overhangs printable",
+     "reads": 1
+    },
+    {
+     "page_y": 2741,
+     "text": "Bridge counterbore holes ~ None",
+     "reads": 1
+    },
+    {
+     "page_y": 2747,
+     "text": "Extra perimeters on",
+     "reads": 1
+    },
+    {
+     "page_y": 2765,
+     "text": "overhangs",
+     "reads": 1
+    },
+    {
+     "page_y": 2775,
+     "text": "Overhangs",
+     "reads": 1
+    },
+    {
+     "page_y": 2795,
+     "text": "Reverse on even",
+     "reads": 1
+    },
+    {
+     "page_y": 2807,
+     "text": "Detect overhang walls",
+     "reads": 1
+    },
+    {
+     "page_y": 2837,
+     "text": "Make overhangs printable",
+     "reads": 1
+    },
+    {
+     "page_y": 2867,
+     "text": "Extra perimeters on",
+     "reads": 1
+    },
+    {
+     "page_y": 2885,
+     "text": "overhangs",
+     "reads": 1
+    },
+    {
+     "page_y": 2915,
+     "text": "Reverse on even",
+     "reads": 1
+    }
+   ]
+  },
+  "Strength": {
+   "groups": [
+    {
+     "title": "Walls",
+     "page_y": 723
+    },
+    {
+     "title": "Top/bottom shells",
+     "page_y": 849
+    },
+    {
+     "title": "Infill",
+     "page_y": 1113
+    },
+    {
+     "title": "Advanced",
+     "page_y": 1575
+    }
+   ],
+   "lines": [
+    {
+     "page_y": 721,
+     "text": "= = Walls",
+     "reads": 1
+    },
+    {
+     "page_y": 757,
+     "text": "Wall loops - 2",
+     "reads": 1
+    },
+    {
+     "page_y": 787,
+     "text": "Alternate extra wall",
+     "reads": 1
+    },
+    {
+     "page_y": 817,
+     "text": "Detect thin walls",
+     "reads": 1
+    },
+    {
+     "page_y": 853,
+     "text": "= Top/bottom shells",
+     "reads": 2
+    },
+    {
+     "page_y": 862,
+     "text": "=",
+     "reads": 1
+    },
+    {
+     "page_y": 883,
+     "text": "Top surface pattern SN Monotonic",
+     "reads": 2
+    },
+    {
+     "page_y": 913,
+     "text": "Top shell layers — 3 layers",
+     "reads": 2
+    },
+    {
+     "page_y": 943,
+     "text": "Top shell thickness 08 mm",
+     "reads": 2
+    },
+    {
+     "page_y": 973,
+     "text": "Bottom surface pattern Monotonic",
+     "reads": 3
+    },
+    {
+     "page_y": 1003,
+     "text": "Bottom shell layers — 3 layers",
+     "reads": 3
+    },
+    {
+     "page_y": 1032,
+     "text": "TT low mee ry",
+     "reads": 1
+    },
+    {
+     "page_y": 1033,
+     "text": "Bottom shell thickness 0 mm",
+     "reads": 2
+    },
+    {
+     "page_y": 1063,
+     "text": "Top/Bottom solid infill/wall 25",
+     "reads": 2
+    },
+    {
+     "page_y": 1081,
+     "text": "overlap %",
+     "reads": 3
+    },
+    {
+     "page_y": 1115,
+     "text": "Infill",
+     "reads": 3
+    },
+    {
+     "page_y": 1147,
+     "text": "Sparse infill density 15 %",
+     "reads": 3
+    },
+    {
+     "page_y": 1177,
+     "text": "Fill Multiline 1",
+     "reads": 2
+    },
+    {
+     "page_y": 1207,
+     "text": "Sparse infill pattern",
+     "reads": 3
+    },
+    {
+     "page_y": 1237,
+     "text": "Sparse infill direction 45 .",
+     "reads": 3
+    },
+    {
+     "page_y": 1267,
+     "text": "Snarse infill rotation",
+     "reads": 3
+    },
+    {
+     "page_y": 1285,
+     "text": "template",
+     "reads": 2
+    },
+    {
+     "page_y": 1316,
+     "text": "Maximum length of the infill = 20",
+     "reads": 3
+    },
+    {
+     "page_y": 1328,
+     "text": "anchor ~ mm or%",
+     "reads": 3
+    },
+    {
+     "page_y": 1363,
+     "text": "Sparse infill anchor length ~ or %",
+     "reads": 3
+    },
+    {
+     "page_y": 1391,
+     "text": "|",
+     "reads": 1
+    },
+    {
+     "page_y": 1393,
+     "text": "Internal solid infill pattern",
+     "reads": 2
+    },
+    {
+     "page_y": 1423,
+     "text": "Solid infill direction 45 °",
+     "reads": 2
+    },
+    {
+     "page_y": 1453,
+     "text": "Solid infill rotation template",
+     "reads": 3
+    },
+    {
+     "page_y": 1483,
+     "text": "Apply gap fill ~ Top and bot...",
+     "reads": 3
+    },
+    {
+     "page_y": 1513,
+     "text": "fei... ota a4",
+     "reads": 1
+    },
+    {
+     "page_y": 1513,
+     "text": "Filter out tiny gaps 1 mm",
+     "reads": 2
+    },
+    {
+     "page_y": 1543,
+     "text": "Infill/wall overlap 15 %",
+     "reads": 2
+    },
+    {
+     "page_y": 1575,
+     "text": "3% Advanced",
+     "reads": 3
+    },
+    {
+     "page_y": 1609,
+     "text": "Align infill direction to",
+     "reads": 3
+    },
+    {
+     "page_y": 1627,
+     "text": "model",
+     "reads": 3
+    },
+    {
+     "page_y": 1658,
+     "text": "Insert solid layers",
+     "reads": 2
+    },
+    {
+     "page_y": 1687,
+     "text": "External bridge infill 0",
+     "reads": 2
+    },
+    {
+     "page_y": 1698,
+     "text": "Insert solid layers",
+     "reads": 1
+    },
+    {
+     "page_y": 1705,
+     "text": "direction °",
+     "reads": 2
+    },
+    {
+     "page_y": 1735,
+     "text": "l nternal bridge infill 0",
+     "reads": 3
+    },
+    {
+     "page_y": 1747,
+     "text": "°",
+     "reads": 1
+    },
+    {
+     "page_y": 1753,
+     "text": "direction",
+     "reads": 2
+    },
+    {
+     "page_y": 1775,
+     "text": "Internal bridge infill",
+     "reads": 1
+    },
+    {
+     "page_y": 1784,
+     "text": "Minimum sparse infill 15",
+     "reads": 1
+    },
+    {
+     "page_y": 1793,
+     "text": "direction",
+     "reads": 1
+    },
+    {
+     "page_y": 1801,
+     "text": "threshold",
+     "reads": 1
+    },
+    {
+     "page_y": 1818,
+     "text": "Insert solid layers",
+     "reads": 1
+    },
+    {
+     "page_y": 1824,
+     "text": "Minimum sparse infill 15",
+     "reads": 1
+    },
+    {
+     "page_y": 1831,
+     "text": "Infill combination",
+     "reads": 1
+    },
+    {
+     "page_y": 1841,
+     "text": "threshold",
+     "reads": 1
+    },
+    {
+     "page_y": 1847,
+     "text": "External bridge infill",
+     "reads": 1
+    },
+    {
+     "page_y": 1861,
+     "text": "Detect narrow internal solid",
+     "reads": 1
+    },
+    {
+     "page_y": 1865,
+     "text": "direction",
+     "reads": 1
+    },
+    {
+     "page_y": 1871,
+     "text": "Infill combination",
+     "reads": 1
+    },
+    {
+     "page_y": 1895,
+     "text": "Internal bridge infill",
+     "reads": 1
+    },
+    {
+     "page_y": 1901,
+     "text": "Detect narrow internal solid",
+     "reads": 1
+    },
+    {
+     "page_y": 1913,
+     "text": "direction",
+     "reads": 1
+    },
+    {
+     "page_y": 1919,
+     "text": "infill",
+     "reads": 1
+    },
+    {
+     "page_y": 1944,
+     "text": "Minimum sparse infill 15",
+     "reads": 1
+    },
+    {
+     "page_y": 1949,
+     "text": "Ensure vertical shell All",
+     "reads": 1
+    },
+    {
+     "page_y": 1961,
+     "text": "threshold",
+     "reads": 1
+    },
+    {
+     "page_y": 1967,
+     "text": "thickness ~",
+     "reads": 1
+    },
+    {
+     "page_y": 1991,
+     "text": "Infill combination",
+     "reads": 1
+    },
+    {
+     "page_y": 2021,
+     "text": "Detect narrow internal solid",
+     "reads": 1
+    },
+    {
+     "page_y": 2039,
+     "text": "infill",
+     "reads": 1
+    },
+    {
+     "page_y": 2069,
+     "text": "Ensure vertical shell All",
+     "reads": 1
+    },
+    {
+     "page_y": 2087,
+     "text": "thickness ~",
+     "reads": 1
+    }
+   ]
+  },
+  "Speed": {
+   "groups": [
+    {
+     "title": "First layer speed",
+     "page_y": 723
+    },
+    {
+     "title": "Other layers speed",
+     "page_y": 915
+    },
+    {
+     "title": "Overhang speed",
+     "page_y": 1209
+    },
+    {
+     "title": "Travel speed",
+     "page_y": 1505
+    },
+    {
+     "title": "Acceleration",
+     "page_y": 1571
+    },
+    {
+     "title": "Jerk(XY)",
+     "page_y": 1937
+    },
+    {
+     "title": "Advanced",
+     "page_y": 2183
+    }
+   ],
+   "lines": [
+    {
+     "page_y": 723,
+     "text": "©) First layer speed",
+     "reads": 1
+    },
+    {
+     "page_y": 757,
+     "text": "First layer 35 mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 787,
+     "text": "First layer infill 55 mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 817,
+     "text": "Initial layer travel 100%",
+     "reads": 1
+    },
+    {
+     "page_y": 835,
+     "text": "speed mm/sor%",
+     "reads": 1
+    },
+    {
+     "page_y": 865,
+     "text": "Number of slow 0",
+     "reads": 2
+    },
+    {
+     "page_y": 883,
+     "text": "layers layers",
+     "reads": 2
+    },
+    {
+     "page_y": 917,
+     "text": "Other layers speed",
+     "reads": 2
+    },
+    {
+     "page_y": 949,
+     "text": "Outer wall 120 mm/s",
+     "reads": 2
+    },
+    {
+     "page_y": 958,
+     "text": "OV eee",
+     "reads": 1
+    },
+    {
+     "page_y": 980,
+     "text": "Inner wall 150 mm/s",
+     "reads": 3
+    },
+    {
+     "page_y": 1009,
+     "text": "Small perimeters 50% mm/s or %",
+     "reads": 3
+    },
+    {
+     "page_y": 1039,
+     "text": "Small perimeters 0",
+     "reads": 2
+    },
+    {
+     "page_y": 1057,
+     "text": "threshold mm",
+     "reads": 2
+    },
+    {
+     "page_y": 1087,
+     "text": "Sparse infill 100 mm/s",
+     "reads": 3
+    },
+    {
+     "page_y": 1117,
+     "text": "Internal solid infill 150 mm/s",
+     "reads": 3
+    },
+    {
+     "page_y": 1147,
+     "text": "Ton surface",
+     "reads": 1
+    },
+    {
+     "page_y": 1147,
+     "text": "Top surface 150 mm/s",
+     "reads": 2
+    },
+    {
+     "page_y": 1177,
+     "text": "Gap infill 50 mm/s",
+     "reads": 2
+    },
+    {
+     "page_y": 1211,
+     "text": "Overhang speed",
+     "reads": 3
+    },
+    {
+     "page_y": 1243,
+     "text": "Slow down for",
+     "reads": 3
+    },
+    {
+     "page_y": 1261,
+     "text": "overhangs",
+     "reads": 3
+    },
+    {
+     "page_y": 1291,
+     "text": "Slow down for curled",
+     "reads": 2
+    },
+    {
+     "page_y": 1310,
+     "text": "perimeters",
+     "reads": 2
+    },
+    {
+     "page_y": 1318,
+     "text": "we 5 ee",
+     "reads": 1
+    },
+    {
+     "page_y": 1341,
+     "text": "0 mm/s or % (10%, 25%)",
+     "reads": 3
+    },
+    {
+     "page_y": 1363,
+     "text": "50 mm/s % (25%, 50%)",
+     "reads": 3
+    },
+    {
+     "page_y": 1378,
+     "text": "Overhang speed or Teny ¥",
+     "reads": 2
+    },
+    {
+     "page_y": 1378,
+     "text": "Overh erhang 9 speed",
+     "reads": 1
+    },
+    {
+     "page_y": 1389,
+     "text": "96 mmomile ar Of",
+     "reads": 1
+    },
+    {
+     "page_y": 1389,
+     "text": "25 mm/s or % 75%)",
+     "reads": 2
+    },
+    {
+     "page_y": 1415,
+     "text": "5 mm/s or % [75%, 100%",
+     "reads": 2
+    },
+    {
+     "page_y": 1445,
+     "text": "30 mm/s | External",
+     "reads": 3
+    },
+    {
+     "page_y": 1460,
+     "text": "Bridge |",
+     "reads": 2
+    },
+    {
+     "page_y": 1471,
+     "text": "100% mm/sor% = Internal",
+     "reads": 3
+    },
+    {
+     "page_y": 1504,
+     "text": "= Travel speed",
+     "reads": 3
+    },
+    {
+     "page_y": 1539,
+     "text": "Travel 500 mm/s",
+     "reads": 2
+    },
+    {
+     "page_y": 1570,
+     "text": "=} Acceleration",
+     "reads": 3
+    },
+    {
+     "page_y": 1605,
+     "text": "Normal printing 10000) = mms’",
+     "reads": 3
+    },
+    {
+     "page_y": 1632,
+     "text": "mM 6: ee",
+     "reads": 1
+    },
+    {
+     "page_y": 1635,
+     "text": "Outer wall 5000 mm/s?",
+     "reads": 2
+    },
+    {
+     "page_y": 1666,
+     "text": "Inner wall 10000) = mms’",
+     "reads": 2
+    },
+    {
+     "page_y": 1695,
+     "text": "Bridge 50% mm/s’ or %",
+     "reads": 3
+    },
+    {
+     "page_y": 1725,
+     "text": "Sparse infill 100% mm/s’ or %",
+     "reads": 3
+    },
+    {
+     "page_y": 1755,
+     "text": "ge 8",
+     "reads": 1
+    },
+    {
+     "page_y": 1755,
+     "text": "Internal solid infill 100% mm/s’ or %",
+     "reads": 2
+    },
+    {
+     "page_y": 1785,
+     "text": "First layer 500 mm/s?",
+     "reads": 2
+    },
+    {
+     "page_y": 1798,
+     "text": "oe",
+     "reads": 1
+    },
+    {
+     "page_y": 1815,
+     "text": "Top surface 2000 mm/s?",
+     "reads": 3
+    },
+    {
+     "page_y": 1845,
+     "text": "Travel 10000) = mms’",
+     "reads": 3
+    },
+    {
+     "page_y": 1875,
+     "text": "Enable accel_to_decel",
+     "reads": 2
+    },
+    {
+     "page_y": 1904,
+     "text": "accel_to_decel 50 %",
+     "reads": 2
+    },
+    {
+     "page_y": 1938,
+     "text": "ec}, Jerk(XY)",
+     "reads": 3
+    },
+    {
+     "page_y": 1969,
+     "text": "Default 0 mm/s",
+     "reads": 3
+    },
+    {
+     "page_y": 2001,
+     "text": "Outer wall 9 mm/s",
+     "reads": 2
+    },
+    {
+     "page_y": 2032,
+     "text": "Inner wall 9 mm/s",
+     "reads": 2
+    },
+    {
+     "page_y": 2051,
+     "text": "Default © mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 2059,
+     "text": "Infill 9 mm/s",
+     "reads": 2
+    },
+    {
+     "page_y": 2081,
+     "text": "Outer wall mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 2091,
+     "text": "Top surface 9 mm/s",
+     "reads": 2
+    },
+    {
+     "page_y": 2112,
+     "text": "Inner wall mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 2121,
+     "text": "First layer mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 2141,
+     "text": "Infill mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 2151,
+     "text": "Travel mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 2171,
+     "text": "Top surface mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 2171,
+     "text": "Default © mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 2183,
+     "text": "2% Advanced",
+     "reads": 1
+    },
+    {
+     "page_y": 2201,
+     "text": "First layer mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 2201,
+     "text": "Outer wall mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 2217,
+     "text": "Extrusion rate",
+     "reads": 1
+    },
+    {
+     "page_y": 2231,
+     "text": "Travel 12 mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 2232,
+     "text": "Inner wall mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 2261,
+     "text": "Infill mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 2263,
+     "text": "2% Advanced",
+     "reads": 1
+    },
+    {
+     "page_y": 2291,
+     "text": "Top surface mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 2297,
+     "text": "Extrusion rate 0",
+     "reads": 1
+    },
+    {
+     "page_y": 2315,
+     "text": "smoothing",
+     "reads": 1
+    },
+    {
+     "page_y": 2321,
+     "text": "First layer mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 2351,
+     "text": "Travel 12 mm/s",
+     "reads": 1
+    },
+    {
+     "page_y": 2383,
+     "text": "2% Advanced",
+     "reads": 1
+    },
+    {
+     "page_y": 2417,
+     "text": "Extrusion rate 0",
+     "reads": 1
+    },
+    {
+     "page_y": 2435,
+     "text": "smoothing",
+     "reads": 1
+    }
+   ]
+  },
+  "Support": {
+   "groups": [
+    {
+     "title": "Support",
+     "page_y": 723
+    },
+    {
+     "title": "Raft",
+     "page_y": 1029
+    },
+    {
+     "title": "Filament for Supports",
+     "page_y": 1095
+    },
+    {
+     "title": "Support ironing",
+     "page_y": 1191
+    },
+    {
+     "title": "Advanced",
+     "page_y": 1257
+    }
+   ],
+   "lines": [
+    {
+     "page_y": 723,
+     "text": "i) Support",
+     "reads": 1
+    },
+    {
+     "page_y": 757,
+     "text": "Enable support",
+     "reads": 1
+    },
+    {
+     "page_y": 785,
+     "text": "Type ~ Tree (auto)",
+     "reads": 1
+    },
+    {
+     "page_y": 817,
+     "text": "Style ~ Default (Grid...",
+     "reads": 1
+    },
+    {
+     "page_y": 847,
+     "text": "Threshold angle = 40",
+     "reads": 2
+    },
+    {
+     "page_y": 877,
+     "text": "Threshold overlap 50% mm or %",
+     "reads": 2
+    },
+    {
+     "page_y": 907,
+     "text": "First layer density 90 %",
+     "reads": 2
+    },
+    {
+     "page_y": 937,
+     "text": "First layer expansion 2 mm",
+     "reads": 2
+    },
+    {
+     "page_y": 967,
+     "text": "On build plate only",
+     "reads": 3
+    },
+    {
+     "page_y": 997,
+     "text": "Remove small overhangs",
+     "reads": 3
+    },
+    {
+     "page_y": 1027,
+     "text": "pate",
+     "reads": 1
+    },
+    {
+     "page_y": 1029,
+     "text": "om Raft",
+     "reads": 1
+    },
+    {
+     "page_y": 1031,
+     "text": "Raft",
+     "reads": 1
+    },
+    {
+     "page_y": 1063,
+     "text": "Raft layers 0 layers",
+     "reads": 2
+    },
+    {
+     "page_y": 1097,
+     "text": "Filament for Supports",
+     "reads": 3
+    },
+    {
+     "page_y": 1129,
+     "text": "Support/raft base ~ Default",
+     "reads": 3
+    },
+    {
+     "page_y": 1159,
+     "text": "Support/raft interface ~ Default",
+     "reads": 2
+    },
+    {
+     "page_y": 1226,
+     "text": "Ironing Support Interface",
+     "reads": 3
+    },
+    {
+     "page_y": 1258,
+     "text": "3% Advanced",
+     "reads": 3
+    },
+    {
+     "page_y": 1291,
+     "text": "Top Z distance 0.2 mm",
+     "reads": 2
+    },
+    {
+     "page_y": 1321,
+     "text": "Bottom Z distance 0.2 mm",
+     "reads": 3
+    },
+    {
+     "page_y": 1351,
+     "text": "Support wall loops 0",
+     "reads": 3
+    },
+    {
+     "page_y": 1381,
+     "text": "Base pattern ~ Default",
+     "reads": 3
+    },
+    {
+     "page_y": 1411,
+     "text": "Base pattern spacing 2.5 mm",
+     "reads": 2
+    },
+    {
+     "page_y": 1441,
+     "text": "Pattern angle 0 -",
+     "reads": 3
+    },
+    {
+     "page_y": 1471,
+     "text": "Top interface layers ~2 layers",
+     "reads": 3
+    },
+    {
+     "page_y": 1501,
+     "text": "Bottom interface layers ~2 layers",
+     "reads": 3
+    },
+    {
+     "page_y": 1531,
+     "text": "Interface pattern ~ Default",
+     "reads": 2
+    },
+    {
+     "page_y": 1561,
+     "text": "Top interface spacing 0.5 mm",
+     "reads": 2
+    },
+    {
+     "page_y": 1561,
+     "text": "Bottom interface layers ~ 2 layers",
+     "reads": 1
+    },
+    {
+     "page_y": 1591,
+     "text": "Bottom interface spacing 0.5 mm",
+     "reads": 2
+    },
+    {
+     "page_y": 1591,
+     "text": "Interface pattern ~ Default",
+     "reads": 1
+    },
+    {
+     "page_y": 1621,
+     "text": "Normal support expansion 0 mm",
+     "reads": 2
+    },
+    {
+     "page_y": 1621,
+     "text": "Top interface spacing 0.5 mm",
+     "reads": 1
+    },
+    {
+     "page_y": 1651,
+     "text": "Support/object xy distance 0.35 mm",
+     "reads": 1
+    },
+    {
+     "page_y": 1651,
+     "text": "Bottom interface spacing 0.5 mm",
+     "reads": 1
+    },
+    {
+     "page_y": 1681,
+     "text": "Support/object first layer 0.2",
+     "reads": 1
+    },
+    {
+     "page_y": 1681,
+     "text": "Normal support expansion 0 mm",
+     "reads": 1
+    },
+    {
+     "page_y": 1681,
+     "text": "Bottom interface layers ~ 2 layers",
+     "reads": 1
+    },
+    {
+     "page_y": 1702,
+     "text": "gap mm",
+     "reads": 1
+    },
+    {
+     "page_y": 1711,
+     "text": "Support/object xy distance 0.35 mm",
+     "reads": 1
+    },
+    {
+     "page_y": 1711,
+     "text": "Interface pattern ~ Default",
+     "reads": 1
+    },
+    {
+     "page_y": 1729,
+     "text": "Don't support bridges",
+     "reads": 1
+    },
+    {
+     "page_y": 1741,
+     "text": "first layer 02",
+     "reads": 1
+    },
+    {
+     "page_y": 1741,
+     "text": "Top interface spacing 0.5 mm",
+     "reads": 1
+    },
+    {
+     "page_y": 1756,
+     "text": "om",
+     "reads": 1
+    },
+    {
+     "page_y": 1771,
+     "text": "Bottom interface spacing 0.5 mm",
+     "reads": 1
+    },
+    {
+     "page_y": 1789,
+     "text": "Don't support bridges",
+     "reads": 1
+    },
+    {
+     "page_y": 1801,
+     "text": "Normal support expansion 0 mm",
+     "reads": 1
+    },
+    {
+     "page_y": 1819,
+     "text": "Independent support layer",
+     "reads": 1
+    },
+    {
+     "page_y": 1831,
+     "text": "Support/object xy distance 0.35 mm",
+     "reads": 1
+    },
+    {
+     "page_y": 1837,
+     "text": "height",
+     "reads": 1
+    },
+    {
+     "page_y": 1861,
+     "text": "first layer 02",
+     "reads": 1
+    },
+    {
+     "page_y": 1876,
+     "text": "om",
+     "reads": 1
+    },
+    {
+     "page_y": 1909,
+     "text": "Don't support bridges",
+     "reads": 1
+    },
+    {
+     "page_y": 1939,
+     "text": "Independent support layer",
+     "reads": 1
+    },
+    {
+     "page_y": 1957,
+     "text": "height",
+     "reads": 1
+    }
+   ]
+  },
+  "Multimaterial": {
+   "groups": [
+    {
+     "title": "Prime tower",
+     "page_y": 723
+    },
+    {
+     "title": "Filament for Features",
+     "page_y": 1245
+    },
+    {
+     "title": "Ooze prevention",
+     "page_y": 1401
+    },
+    {
+     "title": "Flush options",
+     "page_y": 1557
+    },
+    {
+     "title": "Advanced",
+     "page_y": 1653
+    },
+    {
+     "title": "Color Mixing (Experimental)",
+     "page_y": 1845
+    }
+   ],
+   "lines": [
+    {
+     "page_y": 723,
+     "text": "Bi Prime tower",
+     "reads": 1
+    },
+    {
+     "page_y": 757,
+     "text": "Enable",
+     "reads": 1
+    },
+    {
+     "page_y": 787,
+     "text": "Width 30",
+     "reads": 1
+    },
+    {
+     "page_y": 817,
+     "text": "Prime volume 90",
+     "reads": 1
+    },
+    {
+     "page_y": 847,
+     "text": "Brim width on",
+     "reads": 2
+    },
+    {
+     "page_y": 877,
+     "text": "Brim chamfer",
+     "reads": 2
+    },
+    {
+     "page_y": 908,
+     "text": "Max chamfer width >",
+     "reads": 2
+    },
+    {
+     "page_y": 937,
+     "text": "Maximal bridging distance 10",
+     "reads": 2
+    },
+    {
+     "page_y": 968,
+     "text": "Wipe tower purge lines 120",
+     "reads": 3
+    },
+    {
+     "page_y": 986,
+     "text": "spacing",
+     "reads": 3
+    },
+    {
+     "page_y": 1015,
+     "text": "Extra flow for purging 100",
+     "reads": 3
+    },
+    {
+     "page_y": 1046,
+     "text": "Maximum wipe tower print 90",
+     "reads": 2
+    },
+    {
+     "page_y": 1063,
+     "text": "speed of out wall mm/s",
+     "reads": 2
+    },
+    {
+     "page_y": 1093,
+     "text": "Wall type ~ Rib",
+     "reads": 3
+    },
+    {
+     "page_y": 1123,
+     "text": "Extra rib length 8 mm",
+     "reads": 3
+    },
+    {
+     "page_y": 1153,
+     "text": "Rib width 8 mm",
+     "reads": 2
+    },
+    {
+     "page_y": 1157,
+     "text": "...",
+     "reads": 1
+    },
+    {
+     "page_y": 1183,
+     "text": "Fillet wall",
+     "reads": 2
+    },
+    {
+     "page_y": 1214,
+     "text": "No sparse layers (beta)",
+     "reads": 3
+    },
+    {
+     "page_y": 1243,
+     "text": "Wall gap",
+     "reads": 3
+    },
+    {
+     "page_y": 1272,
+     "text": "|, ree | eee",
+     "reads": 1
+    },
+    {
+     "page_y": 1273,
+     "text": "Prime all printing extruders",
+     "reads": 2
+    },
+    {
+     "page_y": 1307,
+     "text": "Filament for Features",
+     "reads": 2
+    },
+    {
+     "page_y": 1334,
+     "text": "Walls",
+     "reads": 3
+    },
+    {
+     "page_y": 1369,
+     "text": "Infill",
+     "reads": 3
+    },
+    {
+     "page_y": 1399,
+     "text": "Solid infill",
+     "reads": 2
+    },
+    {
+     "page_y": 1430,
+     "text": "Wipe tower ~ Default",
+     "reads": 2
+    },
+    {
+     "page_y": 1438,
+     "text": "we",
+     "reads": 1
+    },
+    {
+     "page_y": 1463,
+     "text": "Ooze prevention",
+     "reads": 3
+    },
+    {
+     "page_y": 1495,
+     "text": "Enable",
+     "reads": 3
+    },
+    {
+     "page_y": 1525,
+     "text": "Temperature variation",
+     "reads": 2
+    },
+    {
+     "page_y": 1555,
+     "text": "Preheat time",
+     "reads": 3
+    },
+    {
+     "page_y": 1585,
+     "text": "Preheat steps",
+     "reads": 3
+    },
+    {
+     "page_y": 1615,
+     "text": "Preheat delta temperature 0",
+     "reads": 3
+    },
+    {
+     "page_y": 1649,
+     "text": "Flush options",
+     "reads": 2
+    },
+    {
+     "page_y": 1681,
+     "text": "Flush into objects’ infill",
+     "reads": 3
+    },
+    {
+     "page_y": 1711,
+     "text": "Flush into objects’ support",
+     "reads": 3
+    },
+    {
+     "page_y": 1743,
+     "text": "& Advanced",
+     "reads": 3
+    },
+    {
+     "page_y": 1778,
+     "text": "Use beam interlocking",
+     "reads": 2
+    },
+    {
+     "page_y": 1801,
+     "text": "Flush into objects’ infill",
+     "reads": 1
+    },
+    {
+     "page_y": 1807,
+     "text": "Interface shells",
+     "reads": 2
+    },
+    {
+     "page_y": 1831,
+     "text": "Flush into objects’ support",
+     "reads": 1
+    },
+    {
+     "page_y": 1838,
+     "text": "Maximum width of a 0",
+     "reads": 2
+    },
+    {
+     "page_y": 1855,
+     "text": "segmented region mm",
+     "reads": 2
+    },
+    {
+     "page_y": 1863,
+     "text": "& Advanced",
+     "reads": 1
+    },
+    {
+     "page_y": 1885,
+     "text": "Interlocking depth of a 0",
+     "reads": 1
+    },
+    {
+     "page_y": 1898,
+     "text": "Use beam interlocking",
+     "reads": 1
+    },
+    {
+     "page_y": 1903,
+     "text": "segmented region",
+     "reads": 1
+    },
+    {
+     "page_y": 1927,
+     "text": "Interface shells",
+     "reads": 1
+    },
+    {
+     "page_y": 1936,
+     "text": "2% Color Mixing (Experimental)",
+     "reads": 1
+    },
+    {
+     "page_y": 1958,
+     "text": "Maximum width of a 0",
+     "reads": 1
+    },
+    {
+     "page_y": 1969,
+     "text": "Subdivide Mix Layer",
+     "reads": 1
+    },
+    {
+     "page_y": 1975,
+     "text": "segmented region",
+     "reads": 1
+    },
+    {
+     "page_y": 2005,
+     "text": "Interlocking depth of a 0",
+     "reads": 1
+    },
+    {
+     "page_y": 2023,
+     "text": "segmented region",
+     "reads": 1
+    },
+    {
+     "page_y": 2056,
+     "text": "2% Color Mixing (Experimental)",
+     "reads": 1
+    },
+    {
+     "page_y": 2089,
+     "text": "Subdivide Mix Layer",
+     "reads": 1
+    }
+   ]
+  },
+  "Others": {
+   "groups": [
+    {
+     "title": "Skirt",
+     "page_y": 723
+    },
+    {
+     "title": "Brim",
+     "page_y": 1017
+    },
+    {
+     "title": "Special mode",
+     "page_y": 1143
+    },
+    {
+     "title": "Fuzzy skin",
+     "page_y": 1299
+    },
+    {
+     "title": "G-code output",
+     "page_y": 1533
+    },
+    {
+     "title": "Post-processing Scripts",
+     "page_y": 1839
+    },
+    {
+     "title": "Notes",
+     "page_y": 2063
+    }
+   ],
+   "lines": [
+    {
+     "page_y": 725,
+     "text": "Skirt",
+     "reads": 1
+    },
+    {
+     "page_y": 757,
+     "text": "Skirt loops 0",
+     "reads": 1
+    },
+    {
+     "page_y": 787,
+     "text": "Skirt type ~ Combined",
+     "reads": 1
+    },
+    {
+     "page_y": 817,
+     "text": "Skirt minimum extrusion 0",
+     "reads": 1
+    },
+    {
+     "page_y": 835,
+     "text": "length mm",
+     "reads": 1
+    },
+    {
+     "page_y": 838,
+     "text": "fengtn",
+     "reads": 1
+    },
+    {
+     "page_y": 865,
+     "text": "Skirt distance 2 mm",
+     "reads": 2
+    },
+    {
+     "page_y": 895,
+     "text": "Skirt start point -135",
+     "reads": 2
+    },
+    {
+     "page_y": 925,
+     "text": "Skirt speed 50 mm/s",
+     "reads": 2
+    },
+    {
+     "page_y": 955,
+     "text": "Skirt height — 1 layers",
+     "reads": 2
+    },
+    {
+     "page_y": 958,
+     "text": "OKIFT ! layers",
+     "reads": 1
+    },
+    {
+     "page_y": 985,
+     "text": "Draft shield ~ Disabled",
+     "reads": 3
+    },
+    {
+     "page_y": 1016,
+     "text": "YO Brim",
+     "reads": 1
+    },
+    {
+     "page_y": 1016,
+     "text": "20) Brim",
+     "reads": 1
+    },
+    {
+     "page_y": 1051,
+     "text": "Brim type ~ Auto",
+     "reads": 2
+    },
+    {
+     "page_y": 1081,
+     "text": "Brim width 5 mm",
+     "reads": 3
+    },
+    {
+     "page_y": 1111,
+     "text": "Brim-object gap 0.1 mm",
+     "reads": 3
+    },
+    {
+     "page_y": 1145,
+     "text": "3k! Special mode",
+     "reads": 3
+    },
+    {
+     "page_y": 1177,
+     "text": "Slicing Mode ~ Regular",
+     "reads": 2
+    },
+    {
+     "page_y": 1207,
+     "text": "Print sequence ~ By layer",
+     "reads": 3
+    },
+    {
+     "page_y": 1237,
+     "text": "Intra-layer order ~ Default",
+     "reads": 3
+    },
+    {
+     "page_y": 1267,
+     "text": "Spiral vase",
+     "reads": 3
+    },
+    {
+     "page_y": 1300,
+     "text": "*| Fuzzy skin",
+     "reads": 2
+    },
+    {
+     "page_y": 1333,
+     "text": "Fuzzy skin ~ None",
+     "reads": 3
+    },
+    {
+     "page_y": 1363,
+     "text": "Fuzzy skin generator mode ~ Displacement",
+     "reads": 3
+    },
+    {
+     "page_y": 1392,
+     "text": ",",
+     "reads": 1
+    },
+    {
+     "page_y": 1393,
+     "text": "Fuzzy skin noise type ~ Classic",
+     "reads": 2
+    },
+    {
+     "page_y": 1423,
+     "text": "Fuzzy skin point distance 0.3 mm",
+     "reads": 2
+    },
+    {
+     "page_y": 1453,
+     "text": "Fuzzy skin thickness 0.2 mm",
+     "reads": 3
+    },
+    {
+     "page_y": 1483,
+     "text": "Apply fuzzy skin to first",
+     "reads": 3
+    },
+    {
+     "page_y": 1501,
+     "text": "layer",
+     "reads": 3
+    },
+    {
+     "page_y": 1533,
+     "text": "</> G-code output",
+     "reads": 2
+    },
+    {
+     "page_y": 1567,
+     "text": "Reduce infill retraction",
+     "reads": 3
+    },
+    {
+     "page_y": 1597,
+     "text": "Add line number",
+     "reads": 3
+    },
+    {
+     "page_y": 1627,
+     "text": "G-code",
+     "reads": 1
+    },
+    {
+     "page_y": 1627,
+     "text": "Verbose G-code",
+     "reads": 2
+    },
+    {
+     "page_y": 1657,
+     "text": "Label objects",
+     "reads": 2
+    },
+    {
+     "page_y": 1687,
+     "text": "Exclude objects",
+     "reads": 3
+    },
+    {
+     "page_y": 1713,
+     "text": "{input_filename",
+     "reads": 3
+    },
+    {
+     "page_y": 1731,
+     "text": "_base}_",
+     "reads": 3
+    },
+    {
+     "page_y": 1749,
+     "text": "Sfilamant tuna",
+     "reads": 1
+    },
+    {
+     "page_y": 1749,
+     "text": "{filament_type",
+     "reads": 2
+    },
+    {
+     "page_y": 1767,
+     "text": "Filename format (O}}_",
+     "reads": 1
+    },
+    {
+     "page_y": 1777,
+     "text": "Filename format {print_time}.gc",
+     "reads": 1
+    },
+    {
+     "page_y": 1784,
+     "text": "{print_time}.gc",
+     "reads": 1
+    },
+    {
+     "page_y": 1804,
+     "text": "ode",
+     "reads": 2
+    },
+    {
+     "page_y": 1871,
+     "text": "</> Post-processing Scripts",
+     "reads": 2
+    },
+    {
+     "page_y": 1872,
+     "text": "ZIN Carnte",
+     "reads": 1
+    },
+    {
+     "page_y": 2193,
+     "text": "[=| Notes",
+     "reads": 2
+    }
+   ]
+  }
+ }
+}

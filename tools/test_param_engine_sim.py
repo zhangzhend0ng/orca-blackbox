@@ -840,10 +840,17 @@ try:
     check("uia_set_float: field index beyond the stack is refused",
           isinstance(msg, str) and msg.startswith("param_uia_field"), "got %r" % (msg,))
 finally:
-    if _fake_before is None:
+    # restore EVERYTHING _with_float_env stubbed: until 2026-11-24 the
+    # canvas anchor and the phrase scan stayed stubbed after this block,
+    # and the text-field test (28) read the canvas from the stub.
+    pcl._find_phrase_row = REAL_FIND_PHRASE
+    if REAL_FIND_ANY is not None:
+        pcl._find_phrase_row_any = REAL_FIND_ANY
+    pcl._canvas_hwnd = REAL_CANVAS
+    if _fake_before19 is None:
         sys.modules.pop("win32gui", None)
     else:
-        sys.modules["win32gui"] = _fake_before
+        sys.modules["win32gui"] = _fake_before19
 
 # 20. The control under a painted combo VALUE is found by enumeration and
 #     judged by IsWindowEnabled - not by the size of WindowFromPoint's answer,
@@ -1455,6 +1462,84 @@ if hasattr(pcr, "_shows"):
           "field %r keys %d" % (ctl.text, len([m for m in ctl.msgs if m == ("key", 40)])))
 else:
     print("N/A  readback/negative hardening (absent on this tree)")
+
+# 28. A TEXT field is not committed with Enter. fa run a9cce05e (#296, the
+#     filename format): Enter is a newline in a multi-line field - the saved
+#     project read '{input_filename_base}_{plate_name}.gcode\n'. The value
+#     commits when the field loses focus; the readback is the whole text.
+if "enter" in inspect.signature(_abu24.BusinessUI.edit).parameters:
+    ctl = _NumEdit24()
+    ui = _ui24(ctl)
+    receipt = ui.edit(10, 20, "{input_filename_base}_{plate_name}.gcode", enter=False)
+    check("edit(enter=False): the text is typed, no Enter is sent, nothing is committed",
+          ctl.text == "{input_filename_base}_{plate_name}.gcode" and ("chars", "\r") not in ctl.msgs
+          and receipt["committed"] is False, "%r %r" % (ctl.text, ctl.msgs))
+    VALUE28 = "{input_filename_base}_{plate_name}.gcode"
+    _focus28 = []
+
+    class _UI28:
+        def __init__(self, field, newline=False):
+            self.app = types.SimpleNamespace(pid=7, hwnd=99)
+            self.field, self.typed = field, []
+            self.newline = newline            # a field that keeps a stray newline
+            ui = self
+
+            class _WU:
+                @staticmethod
+                def window_class(h):
+                    return "wxGLCanvas" if h == 7 else "Edit"       # 7 = the 3D canvas
+
+                @staticmethod
+                def window_rect(h):
+                    return (246, 787, 366, 813) if h == 55 else (426, 0, 1900, 1031)   # edit : canvas
+
+                @staticmethod
+                def _window_pid(_h):
+                    return 7
+
+                @staticmethod
+                def client_to_screen(_h, _x, _y):
+                    return (0, 0)
+
+                @staticmethod
+                def edit_text(_h):
+                    return ui.field.text
+            self.wu = _WU()
+
+        def edit(self, x, y, text, *, enter=True):
+            self.typed.append((text, enter))
+            # typed; committed only by the caller. `newline`: what Enter used to leave behind
+            self.field.text = text + ("\n" if self.newline else "")
+            return {"target_hwnd": 55, "after_text": self.field.text, "committed": enter}
+
+        def pause(self, seconds):
+            pass
+
+    _fake28 = types.SimpleNamespace(EnumChildWindows=lambda parent, cb, l: (cb(7, l), cb(55, l)),
+                                    IsWindowVisible=lambda h: True, IsWindowEnabled=lambda h: True)
+    _saved28 = (sys.modules.get("win32gui"), "_win32gui" in sys.modules, pcl._find_phrase_row_any, pp.focus_off_edit)
+    try:
+        sys.modules["win32gui"] = _fake28
+        pcl._find_phrase_row_any = lambda app, phrase, group_substr=None: (800, "Filename format")
+        pp.focus_off_edit = lambda session, why="": _focus28.append(why)
+        ctl = _NumEdit24()
+        ui = _UI28(ctl)
+        pcl.uia_set_float(ui, "Filename format", VALUE28, "G-code output")
+        check("uia_set_float: a text value is typed without Enter and committed by moving the focus off",
+              ui.typed == [(VALUE28, False)] and _focus28 == ["text field commit"], "%r %r" % (ui.typed, _focus28))
+        msg = _raises(pcl.uia_set_float, _UI28(_NumEdit24(), newline=True), "Filename format",
+                      VALUE28, "G-code output")
+        check("uia_set_float: a trailing newline in the field is a readback error, not a pass "
+              "(the old numeric readback compared None with None)",
+              isinstance(msg, str) and msg.startswith("param_uia_readback:Filename format"), "got %r" % (msg,))
+    finally:
+        (pcl._find_phrase_row_any, pp.focus_off_edit) = _saved28[2], _saved28[3]
+        if _saved28[1]:
+            sys.modules["win32gui"] = _saved28[0]
+        else:
+            sys.modules.pop("win32gui", None)
+else:
+    print("N/A  text field commit (absent on this tree)")
 
 failed = [n for n, ok in results if not ok]
 print("\n%d checks, %d failed" % (len(results), len(failed)))
