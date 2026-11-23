@@ -6759,7 +6759,7 @@
     "screenshots": 16
    }
   },
-  "summary_written_at": "2026-11-24 02:26:35",
+  "summary_written_at": "2026-11-24 03:49:40",
   "code_after_the_proof": "final code = look-first scroll + painted_is() + pick_combo --take. On the final code: pick_combo pointer / keys (022226 / 022357) and scenario print-sequence (022045). One step behind it (no painted_is, no --take; neither is on that path): scenario thin-wall (021310). Older: the five op proofs and scenario layer-height (014352)",
   "pick_combo_attribution": {
    "status": "ISOLATED - the pointer click completes the pick; it is also the first input of the full sequence, so the keys that follow it are redundant",
@@ -6864,37 +6864,51 @@
     "uia_param_arc_resolution",
     "uia_param_precision_comp"
    ],
-   "pass": [],
+   "pass": [
+    "uia_param_layer_pair"
+   ],
    "unsupported op": [],
    "needs develop mode": [],
    "not_passed": {
-    "uia_param_wall_thin": "NOT PROVEN, 1 GUI attempt (run 031559): supervisor timeout at 200 s, no worker result, nothing saved - see cases[\"case:uia_param_wall_thin\"]"
+    "uia_param_wall_thin": "NOT PROVEN, 2 GUI attempts: 031559 (fuse 200 s fired, no worker result, nothing saved) and 034725 (179.7 s, fuse not reached: op0 Wall loops=4 read back ok; op1 found 'Detect thin walls' at the resize step, then stopped after the cell click on a harness defect - param_case.tick() strip file name; nothing saved) - see cases[\"case:uia_param_wall_thin\"]"
    },
    "not_run": [
-    "uia_param_layer_pair",
     "uia_param_travel_speed",
     "uia_param_surface_flow",
     "uia_param_speed_limits",
     "uia_param_arc_resolution",
     "uia_param_precision_comp"
    ],
-   "not_run_why": "the 28-minute box was used by writing the harness and this one attempt",
+   "not_run_why": "step 6 was boxed to 28 minutes; the fuse default, the ensure_advanced fix with its check and the two cases asked for used it",
    "differences": [
-    "none established: no case reached its saved-values comparison, and the Windows rows are not in this repo run; what macOS Orca 2.4.1 painted is recorded under cases[\"case:uia_param_wall_thin\"].frames_read_afterwards"
+    "uia_param_layer_pair: none for its two keys",
+    "uia_param_wall_thin 034725: Wall loops painted '4' on the row after the edit (031559 could not read that number); 'Detect thin walls' is on the page in Advanced mode only, below the fold at 1200x800 and on screen at 1200x916",
+    "the Windows rows are not in this repo run; nothing else established"
    ],
    "blockers": [
-    "time: one case with a row below the fold needs more than 200 s - a checkbox op walks locate_row's fallback chain twice (find_row over the label, then the primitive); the harness default fuse is 120 + 80 s per op",
-    "ensure_advanced misreads the tab band when OCR glues tab names (\"Speed Support Multimaterial\" as one token): tabs_seen matches whole tokens, \"Speed\" is not seen, Advanced is judged off and the box is toggled off and on again (find-advanced-ax-0..3, ax-later, box-0..3), about 30 s per call, on every fallback chain - NOT FIXED, it is inside the proven primitive (B7's switch_tab run 230246 saw the tabs separately)",
-    "\"Detect thin walls\" is below the fold in the 1200x800 window and the Printer / Filaments headers were still listed after widen's captures; B7's thin-wall run 021310 got the row only after the resize step",
-    "not exercised at all in a case: the checkbox tick, rowcombo -> pick_combo, Save Project after several ops, the saved-values judge - their code is offline-checked only"
+    "param_case.tick(): checkbox_strip gets the tag without the op prefix and looks for out/check-checked.cell.png, while the case saves every shot under its op prefix (op1-check-checked.png) -> FileNotFoundError after the cell click, the case stops before Save Project. NOT FIXED; no third attempt (as instructed). The click was posted once in 034725 and its effect was not read",
+    "not exercised on the GUI: a checkbox tick up to a saved value, rowcombo -> pick_combo inside a case, Save Project after a float and a checkbox, detect_thin_wall in the saved-values judge",
+    "a case with a row below the fold takes about 3 minutes (034725: 70.6 s for op0, 84.7 s for op1 up to the error); the 360 s default fuse has room for little more than the second locate chain that tick() walks",
+    "uia_param_layer_pair's other_changed_keys: 35 keys differ between the fixture's config and the saved one (print_settings_id, version, machine gcode, filament_* ...) - review material, not judged, no save-only control was run"
    ],
    "harness_notes": [
     "the supervisor needs .venv/bin/python (3.11): /usr/bin/python3 is 3.9 and stops at staging (first attempt 03:12:16, no GUI action, nothing recorded)",
     "the supervisor's stdout has log lines before its JSON line: read the last line",
     "a supervisor timeout leaves the test instance running (B7 note, seen again): check pgrep -x Snapmaker_Orca and kill that pid by hand after confirming its command names the orca-bb-param-ops work dir",
-    "changed after the run and NOT re-run on the GUI: the op prefix goes onto tags once (it was doubled); a supervisor error gets status / reason and its case name in its record (it was filed under \"case\" without one; re-keyed by hand here); a multi-element list shows as JSON text; record hands non-case results back to param_ops' record"
+    "changed after the run and NOT re-run on the GUI: the op prefix goes onto tags once (it was doubled); a supervisor error gets status / reason and its case name in its record (it was filed under \"case\" without one; re-keyed by hand here); a multi-element list shows as JSON text; record hands non-case results back to param_ops' record",
+    "param_ops.py advanced_check is a check op that saves nothing; its 034019 record keeps ok=false from the first criterion",
+    "the supervisor runs under .venv/bin/python (3.11) and the worker under the trusted Python 3.9 (seen again 03:38:20: /usr/bin/python3 stopped at staging, no GUI action)",
+    "the before/after proof of 034019 is the OCR of the panel crops, run after the run: this session's model cannot view images"
    ],
-   "summary_written_at": "2026-11-24 03:22:59"
+   "summary_written_at": "2026-11-24 03:49:40",
+   "pass_runs": {
+    "uia_param_layer_pair": "run 034408, 124.4 s, param_case.py --case, no --fuse passed (default 360 s): layer_height 0.4 -> saved 0.2, initial_layer_print_height 0.4 -> saved 0.25 (expected 0.2 / 0.25), both read from the saved 3mf; title 'probe' after Save Project; no Orca instance left; n = 1"
+   },
+   "blockers_e81e9fc_now": {
+    "1 fuse": "default is now max(360, 120 + 80 per op) s (949ce13); neither run since reached it",
+    "2 ensure_advanced misread": "FIXED (84d6421): the box's own AX value decides. Check run 034019 (op advanced_check, saves nothing): call 1 switched it on (0 -> 1); calls 2 and 3 returned already_on with no attempt while the band's OCR read only 'Others' (Speed glued into 'Quality Strength Speed Support Multimaterial'). Case run 034725: the one call inside op1's chain returned already_on, no toggle. The check's own record has ok=false (first criterion asked for Speed as a whole token); corrected criterion NOT re-run on the GUI",
+    "3 below the fold": "reached without new code: 034725 found the row at the resize step (1200x916) after standard / Advanced / wide; no scrollbar method and no maximize was added or used"
+   }
   }
  },
  "case_table": {
