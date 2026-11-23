@@ -49,6 +49,14 @@ python runner\push_verify.py local.py guest\target.py
 python runner\fetch_mp4.py C:\guest\x.mp4 host_x.mp4
 ```
 
+## 虚拟 U1（联机监控夹具，快照）
+
+`virtual_u1/` 是虚拟 Snapmaker U1（MQTT broker + moonraker 状态模拟 + 配对协议）及其
+设备面板断言工具的**快照**，源仓 `C:\coil\Projects\orca-virtual-u1` 没有 remote，
+2026-11-23 起经用户同意保存在这里（源仓提交号见 `docs/V3_CONNECTED_MONITORING_PLAN.md` 的收据）。
+接手先读 `virtual_u1/NEXT_SESSION_PROMPT.md`；两边不自动同步，源仓有改动要重新导出快照。
+真机授权抓包 `spec/pairing_capture.pcapng` 刻意不入库。
+
 ## 已知边界
 
 - `relay_cmd.txt`/`relay_out.txt` 的宿主 FIFO 与客机 relay 守护不在本仓（属

@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+certs/
+*.log
+*.etl
+*.pcapng
+edge_test/
+# runtime files of the simulator / test runs
+device_state.json
+authorized_clients.json
+artifacts/

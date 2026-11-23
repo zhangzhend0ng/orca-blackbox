@@ -72,7 +72,7 @@
 - **根因不是 UI 缺陷而是虚拟固件保真缺口**（6 项已修，均有消费证据）：`machine_state_manager` 应报 `{main_state, action_code}`；`info.total_layer`（单数）；`file_position` + `server.files.metadata`；异常通道（`server.exception.query` + `notify_exception_*`）；已绑定客户端注册表；状态文件撕裂读不再重置。清单与 ground truth 见 orca-virtual-u1 `NEXT_SESSION_PROMPT.md`。
 - **边界**：宿主直跑（Mac 夹具 + 宿主 headless Chrome），**非信管 VM 运行，不计 GREEN，不写飞书**。未进门禁的假设：`complete`/`error` 的机器状态稳态（真机未抓）、异常弹窗未走本地化标题、缩略图与文件列表接口为空、控制 RPC 未实现。被测物是 CLI 自带面板，**不是 Orca 桌面端**。
 - **首里程碑对照**：L2 状态呈现 3 条 → 已 5 条（温度/进度/文件名/层号/暂停）+ 报警负例 1 条（故障弹窗），均 SHADOW；**L3 上传回执仍 0/1**，是下一步。L3 前置：客机到 Mac `172.18.6.213:7125` 的可达性未验；客机桌面被 glm 批队列占用期间不得启动。
-- **落点**：orca-virtual-u1 仓无 remote，仅本地提交（至 `7972d34`）。本工作流在 orca-blackbox 的改动走独立分支 `connected-monitoring/l2-ui-20261123`，**不进批队列分支** `codex/glm-flash-expansion-20261121-0217`（该分支上每条 run 的 `launch.ps1` 硬编码宿主 HEAD，批中提交会让后续 run 快败）。
+- **落点**：源仓 orca-virtual-u1 无 remote（本地至 `6105779`）；其受跟踪文件（不含真机抓包 `spec/pairing_capture.pcapng`）以快照保存在**本仓 `runner/virtual_u1/`**，两边不自动同步。入库时行尾归一为 LF：收据里固件 sha256 `a23b58a1…` 是 Windows 工作树 CRLF 字节口径（即部署到 Mac 的那份），LF 归一化后为 `b5dad467…`。本工作流在本仓的改动走独立分支 `connected-monitoring/l2-ui-20261123`（快照也先在这里），并入批分支要等队列空闲；**不在批队列运行期间**往 `codex/glm-flash-expansion-20261121-0217` 提交（该分支上每条 run 的 `launch.ps1` 硬编码宿主 HEAD，批中提交会让后续 run 快败）。
 
 
 
