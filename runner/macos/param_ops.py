@@ -51,6 +51,7 @@ EVIDENCE = ROOT / "docs/runs/evidence/mac-param-ops-2026-11-23"
 LOCAL_SHOTS = ROOT / "artifacts/mac_param_ops/2026-11-23"
 TRUSTED_PYTHON = Path("/Applications/Xcode.app/Contents/Developer/Library/Frameworks/"
                       "Python3.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python")
+WORKER_SCRIPT = "param_ops.py"  # param_case.py runs the same worker under its own name
 TABS = ("Quality", "Strength", "Speed", "Support", "Multimaterial", "Others")
 # Words the first lines of each page paint on Orca 2.4.1 (A3/A5 OCR evidence).
 LANDMARKS = {"Quality": ("layer height",), "Strength": ("wall loops", "walls"),
@@ -1811,7 +1812,7 @@ def supervise(ns):
     label = "local.orcabb.param-ops." + uuid.uuid4().hex[:12]
     logfile = work / "worker.log"
     job = {"Label": label, "LimitLoadToSessionType": "Aqua", "RunAtLoad": True,
-           "ProgramArguments": [str(TRUSTED_PYTHON), "-B", "-u", str(work / "param_ops.py"),
+           "ProgramArguments": [str(TRUSTED_PYTHON), "-B", "-u", str(work / WORKER_SCRIPT),
                                 "--worker", json.dumps(vars(ns))],
            "WorkingDirectory": str(work), "StandardOutPath": str(logfile), "StandardErrorPath": str(logfile)}
     plist = work / "job.plist"
