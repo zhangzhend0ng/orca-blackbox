@@ -64,8 +64,10 @@ WHEEL_STEP_PX = 60          # one wheel notch moves the options page 60px
 # label that is not on the page at all (the 12/26 notches of r3 covered
 # 24 rows from the start and never reached 'Detect overhang walls' 55 rows
 # down: overhang_speeds, run f775cd31).
-SCAN_NOTCHES = 110
-SCAN_SECONDS = 90.0
+SCAN_NOTCHES = 160
+SCAN_SECONDS = 240.0   # a step costs >= 2.5s with OCR: 90s never
+                        # reached 110 notches (review V1); the page end,
+                        # not this cap, ends a search for a missing label
 # A combo's popup list opens straight below the control and is NOT kept off
 # the taskbar: with the 'Print sequence' combo at the viewport bottom
 # (y 961-987) its popup was y 993-1049 while the work area ends at 1032, and
@@ -73,6 +75,9 @@ SCAN_SECONDS = 90.0
 # 6640e4a9, census c101c0f4). Park the row this far above the work-area
 # bottom before opening anything (7 rows at the popup's 28px pitch).
 POPUP_ROOM = 220
+# OCR x from which a word can be a combo's painted VALUE (client px): the
+# value windows start at x 246 on the 2.4.0 page, labels end well left of it.
+VALUE_X0 = 235
 
 
 def client(session, x, y):
@@ -84,8 +89,12 @@ def frect(session):
 
 
 def to_local(session, r):
-    f = frect(session)
-    return (r[0] - f[0], r[1] - f[1], r[2] - f[0], r[3] - f[1])
+    """Screen rect -> CLIENT rect. The capture the OCR runs on is the client
+    area, so these are the coordinates OCR words come back in. Subtracting
+    the WINDOW rect instead (7px above the client origin on the maximized
+    guest frame) cropped the OCR band 7px low (fa706g3 review D6)."""
+    ox, oy = client_origin(session)
+    return (r[0] - ox, r[1] - oy, r[2] - ox, r[3] - oy)
 
 
 def kids(session):
@@ -397,8 +406,9 @@ def real_wheel(session, x_client, y_client, notches, delta=-120):
 
 def wheel_viewport(session, viewport, notches, delta=-120):
     r, h = viewport
-    cx = (r[0] + r[2]) // 2 - frect(session)[0]
-    cy = (r[1] + r[3]) // 2 - frect(session)[1]
+    ox, oy = client_origin(session)   # real_wheel takes a client point
+    cx = (r[0] + r[2]) // 2 - ox
+    cy = (r[1] + r[3]) // 2 - oy
     real_wheel(session, cx, cy, notches, delta=delta)
 
 
@@ -422,10 +432,11 @@ def scroll_group_into_view(session, substr, timeout_s=420.0):
     Self-heals a wheel stuck on the Edit focus via neutralize_focus().
     Returns (rect, hwnd) or None."""
     deadline = time.monotonic() + timeout_s
-    f = frect(session)
+    oy = client_origin(session)[1]   # client coordinates, like view_band()
     last_y = None
     stuck = 0
     missing = 0
+    no_vp = 0
     while time.monotonic() < deadline:
         # group_title() now sees a title wherever it is scrolled to, so the
         # wheel below goes UP when the title sits above the band. Before,
@@ -434,11 +445,19 @@ def scroll_group_into_view(session, substr, timeout_s=420.0):
         hit = group_title(session, substr)
         vp = options_viewport(session)
         if not vp:
+            # The only way out used to be the deadline: timeout_s of
+            # nothing (fa706g3 review D7).
+            no_vp += 1
+            if no_vp >= 5:
+                print(f"[panel] scroll_group({substr!r}): no options viewport "
+                      f"-> giving up", flush=True)
+                return None
             time.sleep(0.5)
             continue
+        no_vp = 0
         if hit:
             missing = 0
-            ty1 = hit[0][3] - f[1]
+            ty1 = hit[0][3] - oy
             y0, y1 = view_band(session)
             if y0 + 2 <= ty1 <= y1 - 24:
                 return hit
@@ -693,8 +712,17 @@ class _StallGuard:
         if self.stalls % 3:
             return False
         if self.revives >= 2:
+            # What sits under the real cursor: a child control that eats the
+            # wheel looks exactly like the page end (review V4).
+            try:
+                pt = winutil.wt.POINT()
+                user32.GetCursorPos(ctypes.byref(pt))
+                under = winutil.window_class(winutil.window_from_screen_point(pt.x, pt.y))
+            except Exception:  # diagnostic only
+                under = "?"
             print(f"[panel] {self.what}: band unchanged after {self.stalls} "
-                  f"wheels and {self.revives} focus resets -> end of page", flush=True)
+                  f"wheels and {self.revives} focus resets -> end of page "
+                  f"(cursor over {under})", flush=True)
             return True
         self.revives += 1
         focus_off_edit(self.session, why=self.what)
@@ -1054,6 +1082,14 @@ def find_option_row(session, label_substr, group_substr=None,
               f"{'hit' if hit else 'NOT FOUND'}")
         if not hit:
             return None, None
+    if " " in label_substr.strip():
+        # A multi-word label is never inside ONE OCR word (review D8). The
+        # checkbox path already routed such labels to the phrase matcher;
+        # through any other caller they scanned the whole page twice for
+        # nothing ('Detect overhang', 'Slow down' - queue18 / queue19).
+        from .param_case_lib import _find_phrase_row
+        y = _find_phrase_row(session, label_substr, group_substr)
+        return (((0, y, 0, y), y) if y is not None else (None, None))
     # 2026-11-22: deep groups need more than 6 single-notch wheels;
     # multi-notch steps reset to top (fa706g3 pathology).
     # 2026-11-23: an edit commit rebuilds the panel and the scroll lands
@@ -1102,7 +1138,7 @@ def find_option_row(session, label_substr, group_substr=None,
 def option_edit_at(session, y_row, y_tol=14, x_lo=220, x_hi=340):
     """The Edit control on the option row at client y `y_row` (the value
     column sits at x 220..340; m4g's float_edits_in_view calibration)."""
-    f = frect(session)
+    oy = client_origin(session)[1]   # y_row is a client coordinate (review D5)
     out = []
     for t, c, r, h, lx, ly in kids(session):
         if c != "Edit" or not user32.IsWindowVisible(h):
@@ -1110,7 +1146,7 @@ def option_edit_at(session, y_row, y_tol=14, x_lo=220, x_hi=340):
         w, hh = r[2] - r[0], r[3] - r[1]
         if not (40 <= w <= 140 and 12 <= hh <= 26):
             continue
-        if abs((r[1] + r[3]) // 2 - f[1] - y_row) <= y_tol                 and x_lo <= lx <= x_hi:
+        if abs((r[1] + r[3]) // 2 - oy - y_row) <= y_tol                 and x_lo <= lx <= x_hi:
             out.append((r, h))
     out.sort(key=lambda rh: rh[0][0])
     return out[0] if out else None
@@ -1118,7 +1154,7 @@ def option_edit_at(session, y_row, y_tol=14, x_lo=220, x_hi=340):
 
 def option_combo_at(session, y_row, y_tol=14):
     """The ComboBox control on the option row at client y `y_row`."""
-    f = frect(session)
+    oy = client_origin(session)[1]   # y_row is a client coordinate (review D5)
     out = []
     for t, c, r, h, lx, ly in kids(session):
         if c != "ComboBox" or not user32.IsWindowVisible(h) or not t.strip():
@@ -1126,7 +1162,7 @@ def option_combo_at(session, y_row, y_tol=14):
         w, hh = r[2] - r[0], r[3] - r[1]
         if not (80 <= w <= 180 and 16 <= hh <= 30):
             continue
-        if abs((r[1] + r[3]) // 2 - f[1] - y_row) <= y_tol                 and 180 <= lx <= 380:
+        if abs((r[1] + r[3]) // 2 - oy - y_row) <= y_tol                 and 180 <= lx <= 380:
             out.append((r, h, t.strip()))
     out.sort(key=lambda rh: rh[0][0])
     return out[0] if out else None
@@ -1347,8 +1383,14 @@ def find_option_row_seq(session, seq, group_substr=None,
                         timeout_s=420.0, psm=3):
     """find_option_row for a consecutive OCR word SEQUENCE: single-word
     matching is ambiguous when the value starts with a common token
-    ('No ironing' and 'Nozzle' both match 'no' — measured 09-02). Scrolls
-    `group_substr` into view first, then hunts +-1 notch around it.
+    ('No ironing' and 'Nozzle' both match 'no' — measured 09-02).
+
+    Scans like find_option_row - down to the page end, then back up - inside
+    `group_substr`'s band, and the word run must start in the VALUE column.
+    Until 2026-11-23 it looked at the start view and 5 notches down, then
+    walked back: a value more than ~10 rows below its group title was
+    unreachable (fa706g3 review D1), and the first word run anywhere in the
+    band counted, label column included (D3).
     Returns (rect_of_word_run_client, run_center_y) or (None, None)."""
     if group_substr:
         hit = scroll_group_into_view(session, group_substr, timeout_s)
@@ -1358,25 +1400,41 @@ def find_option_row_seq(session, seq, group_substr=None,
             return None, None
     seq_l = [s.lower() for s in seq]
     n = len(seq_l)
-    last_join = ""
-    for _round in range(10):  # 5 notches down, then 5 back up
-        words = ocr_band(session, psm=psm)
-        for i in range(len(words) - n + 1):
-            got = [w.lower() for w, *_ in words[i:i + n]]
-            if got == seq_l:
+    stall = _StallGuard(session, "find_option_row_seq%r" % (seq,))
+    for direction in (-120, 120):
+        stall.reset()
+        started = time.monotonic()
+        last_band = None
+        for _ in range(SCAN_NOTCHES):
+            if time.monotonic() - started > SCAN_SECONDS:
+                print(f"[panel] row_seq{seq!r}: {SCAN_SECONDS:.0f}s cap reached", flush=True)
+                break
+            span = group_span(session, group_substr) if group_substr else None
+            words = ocr_band(session, psm=psm)
+            band = " ".join(w for w, *_ in words)[:110]
+            if band != last_band:
+                print(f"[panel] row_seq{seq!r} band: {band!r}")
+                last_band = band
+            for i in range(len(words) - n + 1):
+                got = [w.lower() for w, *_ in words[i:i + n]]
+                if got != seq_l:
+                    continue
                 x0, y0 = words[i][1], words[i][2]
                 x1 = words[i + n - 1][1] + words[i + n - 1][3]
                 y1 = words[i + n - 1][2] + words[i + n - 1][4]
-                return (x0, y0, x1, y1), (y0 + y1) // 2
-        join = " ".join(w for w, *_ in words)
-        if join != last_join:
-            print(f"[panel] row_seq{seq!r} band: {join[:110]!r}")
-            last_join = join
-        vp = options_viewport(session)
-        if not vp:
-            return None, None
-        wheel_viewport(session, vp, 1, delta=-120 if _round < 5 else 120)
-        time.sleep(0.3)
+                yc = (y0 + y1) // 2
+                if x0 < VALUE_X0 or on_title_line(session, yc):
+                    continue  # the label column, or a group title
+                if span and not (span[0] <= y0 < span[1]):
+                    continue  # the same value in a neighbouring group
+                print(f"[panel] row_seq{seq!r} found at y={yc} x={x0}", flush=True)
+                return (x0, y0, x1, y1), yc
+            vp = options_viewport(session)
+            if vp:
+                if stall.step(words):
+                    break
+                wheel_viewport(session, vp, 1, delta=direction)
+            time.sleep(0.4)
     return None, None
 
 

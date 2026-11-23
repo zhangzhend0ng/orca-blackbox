@@ -49,6 +49,22 @@ def allow_host() -> bool:
     return os.environ.get("ORCA_BB_ALLOW_HOST", "").strip().lower() in {"1", "true", "yes"}
 
 
+def allow_testbox() -> bool:
+    """Explicit opt-out for a dedicated test machine that is not the guest:
+    ORCA_BB_ALLOW_TESTBOX=1/true/yes (2026-11-23, fa706g3 as a second 2.4.0
+    line, on the owner's instruction). Unlike ORCA_BB_ALLOW_HOST this is for
+    batch runs, so the run must say where it ran: runtime writes
+    execution_host.json beside result.json, and such a run is never guest
+    evidence. It does not make in_guest() true - nothing pretends to be the
+    guest."""
+    return os.environ.get("ORCA_BB_ALLOW_TESTBOX", "").strip().lower() in {"1", "true", "yes"}
+
+
+def real_execution_allowed() -> bool:
+    """The guest, or a test machine that opted in explicitly."""
+    return in_guest() or allow_testbox()
+
+
 def assert_guest_or_allow() -> None:
     """Block a host-side app launch unless explicitly allowed; exit 2.
 
@@ -57,6 +73,9 @@ def assert_guest_or_allow() -> None:
     regression evidence) or are refused with the pointing message.
     """
     if in_guest():
+        return
+    if allow_testbox():
+        print("[host_guard] app launch on a NON-GUEST test machine (ORCA_BB_ALLOW_TESTBOX).")
         return
     if allow_host():
         print("[host_guard] host execution explicitly allowed (ORCA_BB_ALLOW_HOST) — "

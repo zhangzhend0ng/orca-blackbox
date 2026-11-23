@@ -7,6 +7,7 @@ contract. Failed cleanup quarantines the desktop lock for operator inspection.
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 import os
 from pathlib import Path
@@ -54,10 +55,15 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
     if execution_mode not in {"synthetic", "guest_script", "guest_agent", "guest_native"}:
         raise ValueError("runtime: unsupported execution mode")
     synthetic = execution_mode == "synthetic"
+    non_guest = False
     if not synthetic:
         from . import host_guard
-        if not host_guard.in_guest():
+        if not host_guard.real_execution_allowed():
             raise PermissionError("runtime: real execution requires a Hyper-V guest")
+        # A dedicated test machine that opted in (ORCA_BB_ALLOW_TESTBOX) is
+        # allowed to run, and says so: the run carries execution_host.json.
+        # Nothing here makes in_guest() true for it.
+        non_guest = not host_guard.in_guest()
         if execution_mode == "guest_script":
             from .script_executor import ScriptExecutor
             expected_type, expected_case = ScriptExecutor, "m0_boot_check"
@@ -193,6 +199,15 @@ def run_once(contract: CaseContract | dict, executor: ExecutorPort,
         writer = RunEvidence.create(root, frozen, run_id=ident)
         artifacts = writer.run_dir / "artifacts"
         artifacts.mkdir()
+        if non_guest:
+            (writer.run_dir / "execution_host.json").write_text(json.dumps({
+                "schema_version": 1, "hyper_v_guest": False,
+                "flag": "ORCA_BB_ALLOW_TESTBOX",
+                "machine": os.environ.get("COMPUTERNAME", ""),
+                "note": "ran on a non-guest test machine that opted in; not guest evidence",
+            }, indent=1), encoding="utf-8")
+            print("[host_guard] real execution on a NON-GUEST test machine "
+                  "(ORCA_BB_ALLOW_TESTBOX) - execution_host.json written", flush=True)
         writer.append_event("runtime_started", status=execution_mode)
         runtime_status = "executing"
         case_deadline = clock() + frozen.limits.timeout_s

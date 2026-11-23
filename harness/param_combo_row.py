@@ -20,8 +20,10 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
 
     wu, app = ui.wu, ui.app
     ui.main_input()
-    if group_substr:
-        pp.scroll_group_into_view(app, group_substr)
+    if group_substr and not pp.scroll_group_into_view(app, group_substr):
+        # a wrong group name must not degrade into a whole-page search for
+        # the label (fa706g3 review D2, 2026-11-23)
+        raise ProtocolError("param_combo_group:" + group_substr)
 
     def locate_combo():
         """((cx, cy), bounds) of the combo on the row labeled `label`, or None."""

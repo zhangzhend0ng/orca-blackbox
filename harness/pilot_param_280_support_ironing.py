@@ -22,7 +22,9 @@ GOAL = ("Enable supports, then enable support ironing and set its line "
         "spacing to 0.15 mm while flow stays 10% and pattern rectilinear. "
         "Preserve the cube geometry, its placement, material assignment and "
         "every other setting.")
-VALUES = {"enable_support": "1", "support_ironing": "1",
+# support_type: Tree (auto) support is not sliceable on this fixture - the
+# ops switch to Normal (queue20, 2026-11-23); recorded deviation.
+VALUES = {"enable_support": "1", "support_type": "normal(auto)", "support_ironing": "1",
           "support_ironing_flow": "10%", "support_ironing_spacing": "0.15",
           "support_ironing_pattern": "rectilinear"}
 verify_business = make_verify(CASE_ID, VALUES, schedule={"layer_count": 68, "last_z": "27.2"})

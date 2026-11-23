@@ -159,7 +159,8 @@ def worker(run_id, actor="codex", scenario="base"):
         from harness.native_fixture_suite import run_fixture_worker
         return run_fixture_worker(run_id, scenario)
     valid_run_id(run_id)
-    if not host_guard.in_guest():
+    # the guest, or a test machine that opted in (host_guard.allow_testbox)
+    if not host_guard.real_execution_allowed():
         raise PermissionError("native worker requires guest")
     root = REPO / "artifacts/v3" / run_id / "artifacts"
     deadline = time.monotonic()+840

@@ -23,7 +23,10 @@ GOAL = ("Enable supports with top and bottom Z distance 0.2 mm, object xy "
         "distance 0.5 mm, 3 top interface layers, interface spacing 0 and "
         "interface pattern rectilinear. Preserve the cube geometry, its "
         "placement, material assignment and every other setting.")
-VALUES = {"enable_support": "1", "support_top_z_distance": "0.2",
+# support_type: Tree (auto) support is not sliceable on this fixture
+# (queue20 run 30a605d1) - the ops switch to Normal; recorded deviation.
+VALUES = {"enable_support": "1", "support_type": "normal(auto)",
+          "support_top_z_distance": "0.2",
           "support_bottom_z_distance": "0.2", "support_object_xy_distance": "0.5",
           "support_interface_top_layers": "3", "support_interface_spacing": "0",
           "support_interface_pattern": "rectilinear"}

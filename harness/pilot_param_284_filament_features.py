@@ -20,6 +20,9 @@ CASE_ID = "param_284_filament_features"
 GOAL = ("Set the support body filament to 1 while the wipe tower and "
         "support interface filaments stay 0. Preserve the cube geometry, "
         "its placement, material assignment and every other setting.")
+# enable_support, support_type: as in #279 (row disabled while support is
+# off; Tree (auto) support is not sliceable on this fixture).
 VALUES = {"wipe_tower_filament": "0", "support_filament": "1",
-          "support_interface_filament": "0", "enable_support": "1"}
+          "support_interface_filament": "0", "enable_support": "1",
+          "support_type": "normal(auto)"}
 verify_business = make_verify(CASE_ID, VALUES, schedule={"layer_count": 68, "last_z": "27.2"})

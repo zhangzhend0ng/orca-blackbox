@@ -1,0 +1,22 @@
+{
+ "meta": {
+  "source": "census runs 67690ed4 / f1c5433b / c814315c on the 2.4.0 guest build (2026-11-23)",
+  "note": "OCR'd rows of the option popups, top to bottom. 'tab' + 'row' identify the combo the way the op does: a rowcombo by its label (without '^'), a combo by the value it currently paints. Refresh with scenario uia_param_census. The source atlas is NOT the build: its enum labels ('Outer only', 'All external walls') are not what these popups paint."
+ },
+ "popups": [
+  {"tab": "Quality", "row": "No ironing", "items": ["No ironing", "All top surfaces", "Topmost surface only", "All solid layers"]},
+  {"tab": "Quality", "row": "Aligned", "items": ["Nearest", "Aligned back", "Back", "Random"]},
+  {"tab": "Quality", "row": "Classic", "items": ["Classic", "Arachne"]},
+  {"tab": "Strength", "row": "Gap fill", "items": ["Everywhere", "Top and bottom surfaces", "Nowhere"]},
+  {"tab": "Strength", "row": "All", "items": ["None", "Critical Only", "Moderate", "All"]},
+  {"tab": "Strength", "row": "Top surface pattern", "items": ["Monotonic line", "Rectilinear", "Aligned Rectilinear", "Concentric", "Hilbert Curve", "Archimedean Chords", "Octagram Spiral"]},
+  {"tab": "Strength", "row": "Bottom surface pattern", "items": ["Monotonic line", "Rectilinear", "Aligned Rectilinear", "Concentric", "Hilbert Curve", "Archimedean Chords", "Octagram Spiral"]},
+  {"tab": "Support", "row": "Interface pattern", "items": ["Rectilinear", "Concentric", "Rectilinear Interlaced", "Grid"]},
+  {"tab": "Support", "row": "Support/raft base", "items": ["Default", "1 PETG", "2 PLA", "3 PLA", "4 PLA", "5 PLA"]},
+  {"tab": "Support", "row": "Support/raft interface", "items": ["Default", "1 PETG", "2 PLA", "3 PLA", "4 PLA", "5 PLA"]},
+  {"tab": "Multimaterial", "row": "Wipe tower", "items": ["Default", "1 PETG", "2 PLA", "3 PLA", "4 PLA", "5 PLA"]},
+  {"tab": "Others", "row": "Brim type", "items": ["Mouse ear", "Painted", "Outer brim only", "Inner brim only", "Outer and inner brim", "No-brim"]},
+  {"tab": "Others", "row": "By layer", "items": ["By layer", "By object"]},
+  {"tab": "Others", "row": "Fuzzy skin", "items": ["None", "Contour", "Contour and hole", "All walls"]}
+ ]
+}

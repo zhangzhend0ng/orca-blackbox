@@ -17,6 +17,9 @@ GOAL = ("Set the support body filament to 1 while the interface filament stays "
         "0. Preserve the cube geometry, its placement, material assignment and "
         "every other setting.")
 # enable_support: the row is disabled while support is off (see above).
+# enable_support, support_type: the row is disabled while support is off,
+# and Tree (auto) support is not sliceable on this fixture (queue20 run
+# a2d4a0f0) - both recorded deviations (see above).
 VALUES = {"support_filament": "1", "support_interface_filament": "0",
-          "enable_support": "1"}
+          "enable_support": "1", "support_type": "normal(auto)"}
 verify_business = make_verify(CASE_ID, VALUES, schedule={"layer_count": 68, "last_z": "27.2"})

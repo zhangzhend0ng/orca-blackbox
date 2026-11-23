@@ -5,6 +5,7 @@ values) plus G-code expectations the existing analyzers can prove. This
 library builds verify_business implementations from such specs and keeps
 the change-scope registry the settings-preservation check admits."""
 from decimal import Decimal
+import re
 
 from .agent_layer_verify import analyze_gcode
 from .agent_protocol import ProtocolError
@@ -153,8 +154,14 @@ def _find_phrase_row(app, phrase, group_substr=None):
     from . import process_panel as pp
     import time
 
-    if group_substr:
-        pp.scroll_group_into_view(app, group_substr)
+    if group_substr and not pp.scroll_group_into_view(app, group_substr):
+        # A group name that matches no title used to be ignored: span None
+        # turned the search into an unconstrained page scan that edited the
+        # first same-named row it met (fa706g3 review D2, 2026-11-23). A
+        # missing group is a wrong op, not a reason to look everywhere.
+        print("[param-phrase] group %r has no title on this page -> not "
+              "looking for %r" % (group_substr, phrase), flush=True)
+        return None
     anchored = phrase.startswith("^")
     phrase = phrase[1:] if anchored else phrase
     want = phrase.lower().split()
@@ -256,36 +263,33 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
 
     y_lo, y_hi = y_row - 14, y_row + 14
     EnumChildWindows(app.hwnd, collect, None)
-    if greyed and not (field_index is not None or below):
+    declared = field_index is not None or below
+    if greyed and not declared:
         # A greyed field means the row is disabled by another setting
         # (Brim width under Brim type = Auto). Say so instead of reporting
         # a bare "0 edits" that reads like a lookup miss.
         print(f"[param-uia] row '{label_substr}' y={y_row}: field is disabled "
               f"(depends on another setting)", flush=True)
         raise ProtocolError("param_uia_field_disabled:" + label_substr)
-    if not matches and (field_index is not None or below):
-        # A two-line row paints its label on one line and its Edit(s) on the
-        # next, ~34px lower: 'Overhang speed' with five band Edits (run
-        # e4a08beb: row_y=978, nothing within 14px) and the first row of the
-        # Speed page (run 0b7886bc: row_y=730, Edit at 764). Only rows that
-        # declare it (a field index, or "below": true) get this second pass:
-        # for an ordinary row a disabled Edit must NOT fall through to the
-        # next row's field. The window stops at +50 so the row after next
-        # line (at +64) is out of reach.
-        y_lo, y_hi = y_row + 15, y_row + 50
-        EnumChildWindows(app.hwnd, collect, None)
-    # 2026-11-22 #264: the five overhang degree-band speeds render as ONE
-    # labelled row with five inline Edits (Tab.cpp: Line{L("Overhang speed")}
-    # ...append_option x5); select left-to-right by field_index instead of
-    # failing on the multi-match.
-    matches.sort(key=lambda m: m[1][0])
-    if len(matches) > 1 and field_index is not None and 0 <= field_index < len(matches):
-        print(f"[param-uia] row '{label_substr}' has {len(matches)} edits; "
-              f"driving field[{field_index}]", flush=True)
-        handle, bounds = matches[field_index]
-    elif len(matches) == 1:
-        handle, bounds = matches[0]
-    else:
+    if not matches:
+        # A two-line row paints its label on one line and its Edit(s) on
+        # the other, the control centred on the ROW: the Edit sits half a
+        # row-pitch (about 15px on 2.4.0) off the matched line; a multi-field
+        # row's Edits sit ~34px below the label line (run e4a08beb).
+        # - declared rows (a field index, or "below"): the whole line below
+        #   [y+15, y+50], or the line above when nothing is below;
+        # - ordinary rows: exactly ONE Edit 7..23px off the line (fa706g3
+        #   review D4; find_option_checkbox does the same for boxes). The next
+        #   single-line row's Edit is 30px away and cannot qualify, so an
+        #   ordinary row whose Edit is simply missing still fails below.
+        windows = ([(y_row + 15, y_row + 50), (y_row - 50, y_row - 15)] if declared
+                   else [(y_row - 23, y_row - 7), (y_row + 7, y_row + 23)])
+        for y_lo, y_hi in windows:
+            EnumChildWindows(app.hwnd, collect, None)
+            if matches:
+                break
+
+    def survey_and_raise(what):
         from win32gui import EnumChildWindows as _ecw2
         seen = []
 
@@ -299,16 +303,38 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
 
         _ecw2(app.hwnd, survey, None)
         print(f"[param-uia] row_y={y_row} canvas_left={left} edits=" + "".join(seen)[:600], flush=True)
-        raise ProtocolError("param_uia_field:" + label_substr + ":" + str(len(matches)))
+        raise ProtocolError(what)
+
+    # 2026-11-22 #264: the five overhang degree-band speeds render as ONE
+    # labelled row with five inline Edits (Tab.cpp: Line{L("Overhang speed")}
+    # ...append_option x5); select left-to-right by field_index.
+    matches.sort(key=lambda m: m[1][0])
+    if field_index is not None:
+        # The declared index must exist. With fewer Edits than the index
+        # needs the old code fell through to "exactly one match" and drove
+        # that Edit: every op of runs 7f9beea4 / 50798c59 typed into the
+        # SAME overhang Edit (Mac audit, 2026-11-23).
+        if not (0 <= field_index < len(matches)):
+            survey_and_raise("param_uia_field:" + label_substr + ":"
+                             + str(len(matches)) + "<=field" + str(field_index))
+        print(f"[param-uia] row '{label_substr}' has {len(matches)} edits; "
+              f"driving field[{field_index}]", flush=True)
+        handle, bounds = matches[field_index]
+    elif len(matches) == 1:
+        handle, bounds = matches[0]
+    else:
+        survey_and_raise("param_uia_field:" + label_substr + ":" + str(len(matches)))
     x = (bounds[0] + bounds[2]) // 2 - origin_x
     y = (bounds[1] + bounds[3]) // 2 - origin_y
     receipt = ui.edit(x, y, str(value))
     from decimal import Decimal as _D, InvalidOperation as _Inv
 
     def _num(text):
-        digits = "".join(ch for ch in str(text) if ch.isdigit() or ch == ".")
+        # The sign is part of the value: the old digit filter dropped it,
+        # so "-0.1" read back as "0.1" passed (Mac audit, 2026-11-23).
+        found = re.search(r"-?\d+(?:\.\d+)?", str(text).replace(",", ""))
         try:
-            return _D(digits)
+            return _D(found.group(0)) if found else None
         except _Inv:
             return None
 
@@ -818,6 +844,34 @@ def census_param_pages(ui):
                 pp.wheel_viewport(app, pp.options_viewport(app), 2, delta=-120)
         except Exception as exc:
             say("ROWS %s %r failed: %s: %s" % (tab, group, type(exc).__name__, exc))
+    # The 'Overhang speed' row paints ONE label over five inline fields
+    # (#264 / #272). In runs 7f9beea4 and 50798c59 every op typed into the
+    # SAME Edit (only overhang_3_4_speed changed, holding the last value):
+    # the engine found one enabled Edit there, not five. Dump the row.
+    try:
+        ui.main_input()
+        pp.click_tab(app, "Speed", "speed")
+        ui.pause(1.0)
+        pp.scroll_group_into_view(app, "Overhang")
+        y = _find_phrase_row(app, "^Overhang speed", None)
+        say("OVERHANG '^Overhang speed' label y=%r" % (y,))
+        for view in range(3):
+            words = pp.ocr_band(app, psm=3)
+            lines = {}
+            for t, x, yw, _ww, _hh in words:
+                key = next((k for k in lines if abs(k - yw) <= 10), yw)
+                lines.setdefault(key, []).append((x, t))
+            say("OVERHANG view%d lines: %r" % (view, [
+                "%d:%s" % (k, " ".join(t for _x, t in sorted(v))) for k, v in sorted(lines.items())]))
+            for t, c, r, h, lx, ly in pp.kids(app):
+                cy = (r[1] + r[3]) // 2
+                if c in ("Edit", "Button", "ComboBox", "Static", "msctls_updown32") \
+                        and u32.IsWindowVisible(h) and y - 24 <= cy <= y + 90 and lx < 424:
+                    say("   %s %r rect=%r enabled=%s" % (
+                        c, t[:16], r, bool(u32.IsWindowEnabled(h))))
+            pp.wheel_viewport(app, pp.options_viewport(app), 2, delta=-120)
+    except Exception as exc:
+        say("OVERHANG probe failed: %s: %s" % (type(exc).__name__, exc))
     if shots:
         # One image with every popup that was opened (the harvest carries
         # exactly one probe picture: param_failure.png).

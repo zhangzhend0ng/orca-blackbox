@@ -296,9 +296,11 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             # tab since authoring.
             # 2026-11-23 census 67690ed4 opened the popup: its rows are
             # None / Contour / Contour and hole / All walls - 'All external
-            # walls' is the source label, not what this build paints.
+            # walls' is the source label, not what this build paints. The
+            # case wants external walls only = 'Contour' (fuzzy_skin
+            # 'external'); 'All walls' stores 'allwalls' (run 1193a356).
             {"tab": "Others", "op": "rowcombo", "label": "Fuzzy skin",
-             "target": "All walls", "group": "Fuzzy"},
+             "target": "Contour", "group": "Fuzzy"},
             {"op": "float", "label": "point distance", "value": "0.6", "group": "Fuzzy"},
             {"op": "float", "label": "thickness", "value": "0.3", "group": "Fuzzy"},
         ],
@@ -325,7 +327,9 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             {"op": "float", "label": "Overhang speed", "value": "30", "group": "Overhang", "field": 1},
             {"op": "float", "label": "Overhang speed", "value": "20", "group": "Overhang", "field": 2},
             {"op": "float", "label": "Overhang speed", "value": "10", "group": "Overhang", "field": 3},
-            {"op": "float", "label": "Overhang speed", "value": "5", "group": "Overhang", "field": 4},
+            # 2026-11-23 run 50798c59: the 2.4.0 project config has no
+            # overhang_totally_speed key, so the fifth field is left alone
+            # (the pilot records the deviation).
         ],
         "uia_param_accelerations": [
             {"tab": "Speed", "tab_hint": "speed", "op": "float",
@@ -416,6 +420,11 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         "uia_param_support_filament": [
             {"tab": "Support", "tab_hint": "support", "op": "checkbox",
              "label": "Enable", "value": True, "group": "Support"},
+            # 2026-11-23 queue20: with support on and the default Tree (auto)
+            # type the app refuses to slice on this fixture ('Organic support
+            # tree tip diameter must not be smaller than support material
+            # extrusion width') - switch to Normal first, as #277 does.
+            {"op": "combo", "current": "Tree", "target": "Normal", "group": "Support"},
             {"op": "rowcombo", "label": "^Support/raft base", "target": "PETG",
              "group": "Filament for Supports"},
         ],
@@ -643,8 +652,10 @@ PARAM_OPS = {        "uia_param_ironing_top": [
              "group": "Ooze prevention"},
             {"op": "float", "label": ["Preheat time", "Preheat"], "value": "15",
              "group": "Ooze prevention"},
-            {"op": "float", "label": ["Preheat steps"], "value": "2",
-             "group": "Ooze prevention"},
+            # 2026-11-23 run fb7cb075: the 2.4.0 Ooze prevention group is
+            # Enable / Temperature variation / Preheat time / Preheat delta
+            # temperature - there is no 'Preheat steps' row. The pilot
+            # records the deviation.
         ],
         # Feishu #280 (line 199): flow already '10%' and pattern already
         # 'rectilinear' - no ops. The ironing checkbox row paints 'lroning
@@ -654,9 +665,17 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         "uia_param_support_ironing": [
             {"tab": "Support", "tab_hint": "support", "op": "checkbox",
              "label": "Enable", "value": True, "group": "Support"},
+            # 2026-11-23 queue20: with support on and the default Tree (auto)
+            # type the app refuses to slice on this fixture ('Organic support
+            # tree tip diameter must not be smaller than support material
+            # extrusion width') - switch to Normal first, as #277 does.
+            {"op": "combo", "current": "Tree", "target": "Normal", "group": "Support"},
             {"op": "checkbox", "label": "roning", "value": True,
              "group": "Support ironing"},
-            {"op": "float", "label": ["line spacing", "Ironing line spacing",
+            # 2026-11-23 run 001573f1: the row paints 'Support Ironing
+            # linespacing' (one word).
+            {"op": "float", "label": ["Support Ironing linespacing", "linespacing",
+                                      "line spacing", "Ironing line spacing",
                                       "lroning line spacing"], "value": "0.15",
              "group": "Support ironing"},
         ],
@@ -669,6 +688,11 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         "uia_param_support_interface": [
             {"tab": "Support", "tab_hint": "support", "op": "checkbox",
              "label": "Enable", "value": True, "group": "Support"},
+            # 2026-11-23 queue20: with support on and the default Tree (auto)
+            # type the app refuses to slice on this fixture ('Organic support
+            # tree tip diameter must not be smaller than support material
+            # extrusion width') - switch to Normal first, as #277 does.
+            {"op": "combo", "current": "Tree", "target": "Normal", "group": "Support"},
             {"op": "float", "label": ["Support/object xy distance",
                                       "xy distance"], "value": "0.5",
              "group": "Advanced"},
@@ -722,6 +746,11 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         "uia_param_filament_features": [
             {"tab": "Support", "tab_hint": "support", "op": "checkbox",
              "label": "Enable", "value": True, "group": "Support"},
+            # 2026-11-23 queue20: with support on and the default Tree (auto)
+            # type the app refuses to slice on this fixture ('Organic support
+            # tree tip diameter must not be smaller than support material
+            # extrusion width') - switch to Normal first, as #277 does.
+            {"op": "combo", "current": "Tree", "target": "Normal", "group": "Support"},
             {"op": "rowcombo", "label": "^Support/raft base", "target": "PETG",
              "group": "Filament for Supports"},
         ],
@@ -746,6 +775,11 @@ PARAM_OPS = {        "uia_param_ironing_top": [
              "label": "shells", "value": True, "group": "Advanced"},
             {"tab": "Support", "tab_hint": "support", "op": "checkbox",
              "label": "Enable", "value": True, "group": "Support"},
+            # 2026-11-23 queue20: with support on and the default Tree (auto)
+            # type the app refuses to slice on this fixture ('Organic support
+            # tree tip diameter must not be smaller than support material
+            # extrusion width') - switch to Normal first, as #277 does.
+            {"op": "combo", "current": "Tree", "target": "Normal", "group": "Support"},
             {"op": "rowcombo", "label": "^Support/raft base", "target": "PETG",
              "group": "Filament for Supports"},
         ],

@@ -39,7 +39,8 @@ def main():
     p.add_argument("--run-id", required=True)
     args = p.parse_args()
     valid_run_id(args.run_id)
-    if not host_guard.in_guest():
+    # the guest, or a test machine that opted in (host_guard.allow_testbox)
+    if not host_guard.real_execution_allowed():
         raise PermissionError("native server requires guest")
     root = REPO / "artifacts/v3" / args.run_id / "artifacts"
     from harness.native_save_policy import InputGuard, native_tools

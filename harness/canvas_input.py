@@ -335,7 +335,8 @@ def collect_window_evidence(run_id, app_pid, main_hwnd, loc=None):
     from ctypes import wintypes as W
     import time
     from . import host_guard
-    _need(host_guard.in_guest(), "canvas_diagnostic_guest_only")
+    # the guest, or a test machine that opted in explicitly (host_guard.allow_testbox)
+    _need(host_guard.real_execution_allowed(), "canvas_diagnostic_guest_only")
     _need(type(run_id) is str and re.fullmatch(r"[0-9a-f]{32}", run_id), "canvas_run_id")
     _need(_positive_int(app_pid) and _positive_int(main_hwnd), "canvas_identity")
     _need(loc is None or (type(loc) is list and len(loc) == 2 and all(type(v) is int for v in loc)

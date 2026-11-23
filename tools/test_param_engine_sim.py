@@ -211,13 +211,15 @@ check("dead wheel + absent label -> None, and far fewer than 38 wheels",
 # testing anything.
 page = Page([("x", 700)], {})
 install(page)
-_real = (pp.group_title, pp.time.sleep, pp.frect, pp.neutralize_focus)
+_real = (pp.group_title, pp.time.sleep, pp.frect, pp.neutralize_focus,
+         getattr(pp, "client_origin", None))   # r4 reads the client origin here
 # The unpatched engine calls neutralize_focus straight from
 # scroll_group_into_view; with a fake session it would raise before the
 # later sections ever run - stub it so the RED proof reaches them too.
 pp.neutralize_focus = lambda session: True
 pp.time.sleep = lambda s: None
 pp.frect = lambda session: (0, 0, 0, 0)
+pp.client_origin = lambda session: (0, 0)
 pp.group_title = lambda session, sub: None
 try:
     # A short deadline keeps an unpatched tree (which wheels until the
@@ -232,7 +234,7 @@ try:
     hit2 = REAL_SGIV(None, "Seam", timeout_s=3.0)
     wheels_present = page.wheels - wheels_missing
 finally:
-    pp.group_title, pp.time.sleep, pp.frect, pp.neutralize_focus = _real
+    (pp.group_title, pp.time.sleep, pp.frect, pp.neutralize_focus, pp.client_origin) = _real
 check("scroll_group_into_view: missing title -> None after exactly 16 bursts",
       hit is None and wheels_missing == 16, "hit=%r wheels=%d" % (hit, wheels_missing))
 check("scroll_group_into_view: existing title in band -> returned, no wheel",
@@ -249,6 +251,7 @@ install(page)
 wheels_before = page.wheels
 pp.time.sleep = lambda s: None
 pp.frect = lambda session: (0, 0, 0, 0)
+pp.client_origin = lambda session: (0, 0)
 pp.neutralize_focus = lambda session: True  # again: the base engine reaches it from here
 pp.group_title = lambda session, sub: ((0, 0, 400, 690), 99) if sub == "Initial layer" else None
 pp.view_band = lambda session: BAND
@@ -256,7 +259,7 @@ try:
     hit3 = REAL_SGIV(None, "Initial layer", timeout_s=60.0)
     wheels_top = page.wheels - wheels_before
 finally:
-    pp.group_title, pp.time.sleep, pp.frect, pp.neutralize_focus = _real
+    (pp.group_title, pp.time.sleep, pp.frect, pp.neutralize_focus, pp.client_origin) = _real
 check("scroll_group_into_view: first group's title stuck above the band -> accepted quickly",
       hit3 == ((0, 0, 400, 690), 99) and 0 < wheels_top <= 8, "hit3=%r wheels=%d" % (hit3, wheels_top))
 
@@ -533,6 +536,206 @@ if hasattr(pp, "park_for_popup"):
           inside is True and other is False, "inside=%r other=%r" % (inside, other))
 else:
     print("N/A  popup parking (absent on this tree)")
+
+# ------------------------------------------------------------------ r4
+# From two static reviews of 2026-11-23 (fa706g3: the row-locating half of
+# the engine; Mac: whether these very checks can go red) and from queue20.
+
+# 15. uia_set_float REALLY runs: a fake win32gui enumerates the Edits, a fake
+#     ui.edit answers with the readback. Before this the whole function was
+#     never executed by any test.
+REAL_FIND_PHRASE = pcl._find_phrase_row
+REAL_CANVAS = pcl._canvas_hwnd
+REAL_ROW_SEQ = getattr(pp, "find_option_row_seq", None)
+
+
+class _FakeWin32gui(types.ModuleType):
+    def __init__(self, edits):
+        super().__init__("win32gui")
+        self.edits = dict(edits)      # hwnd -> (rect, enabled); accepts a set of pairs too
+
+    def EnumChildWindows(self, _parent, cb, _lparam):
+        for h in self.edits:
+            cb(h, _lparam)
+
+    def IsWindowVisible(self, _h):
+        return True
+
+    def IsWindowEnabled(self, h):
+        return self.edits[h][1]
+
+
+class _FakeUI:
+    def __init__(self, edits, readback=None):
+        self.app = types.SimpleNamespace(pid=7, hwnd=99)
+        self.edits = dict(edits)      # a set of (hwnd, (rect, enabled)) pairs is fine
+        self.readback = readback or (lambda text: text)
+        self.typed = []
+        ui = self
+
+        class _WU:
+            @staticmethod
+            def window_class(_h):
+                return "Edit"
+
+            @staticmethod
+            def window_rect(h):
+                return ui.edits[h][0] if h in ui.edits else (426, 0, 1900, 1031)
+
+            @staticmethod
+            def _window_pid(_h):
+                return 7
+
+            @staticmethod
+            def client_to_screen(_h, _x, _y):
+                return (0, 0)
+        self.wu = _WU()
+
+    def edit(self, x, y, text):
+        handle = next(h for h, (rect, _e) in self.edits.items()
+                      if rect[0] <= x < rect[2] and rect[1] <= y < rect[3])
+        self.typed.append((handle, text))
+        return {"target_hwnd": handle, "after_text": self.readback(text)}
+
+
+def _edit_at(cy, enabled=True, hwnd=None):
+    return (hwnd or cy, ((246, cy - 13, 366, cy + 13), enabled))
+
+
+def _raises(fn, *args, **kwargs):
+    """ProtocolError message the call raised with, or None if it did not raise."""
+    try:
+        fn(*args, **kwargs)
+    except ProtocolError as exc:
+        return str(exc)
+    except Exception as exc:  # a crash is not the protocol error we assert
+        return "CRASH %s: %s" % (type(exc).__name__, exc)
+    return None
+
+
+def _with_float_env(edits, y_row):
+    pcl._find_phrase_row = lambda app, label, group=None: y_row
+    pcl._canvas_hwnd = lambda ui: 55
+    sys.modules["win32gui"] = _FakeWin32gui(dict(edits))
+
+
+_fake_before = sys.modules.get("win32gui")
+try:
+    # a) the sign is part of the value
+    _with_float_env({_edit_at(800)}, 800)
+    ui = _FakeUI({_edit_at(800)}, readback=lambda text: text.lstrip("-"))
+    msg = _raises(pcl.uia_set_float, ui, "X-Y hole compensation", "-0.1", "Precision")
+    check("uia_set_float: a readback that lost the minus sign is rejected",
+          isinstance(msg, str) and msg.startswith("param_uia_readback"), "got %r" % (msg,))
+    # b) a declared field index must exist
+    e = {_edit_at(834, hwnd=11)}
+    _with_float_env(e, 800)
+    msg = _raises(pcl.uia_set_float, _FakeUI(e), "Overhang speed", "10", "Overhang", field_index=3)
+    check("uia_set_float: field_index=3 with ONE Edit on the row is refused "
+          "(runs 7f9beea4/50798c59 typed into that Edit)",
+          isinstance(msg, str) and msg.startswith("param_uia_field"), "got %r" % (msg,))
+    ui = _FakeUI(e)
+    _raises(pcl.uia_set_float, ui, "Overhang speed", "10", "Overhang", field_index=0)
+    check("uia_set_float: field_index=0 with one Edit drives it",
+          ui.typed == [(11, "10")], "typed %r" % (ui.typed,))
+    # c) a two-line label: the control is half a row-pitch off the matched line
+    e = {_edit_at(815, hwnd=12)}
+    _with_float_env(e, 800)
+    ui = _FakeUI(e)
+    _raises(pcl.uia_set_float, ui, "Initial layer travel speed", "150%", None)
+    check("uia_set_float: an undeclared Edit 15px below the matched line (two-line label) is driven",
+          ui.typed == [(12, "150%")], "typed %r" % (ui.typed,))
+    e = {_edit_at(830, hwnd=13)}
+    _with_float_env(e, 800)
+    msg = _raises(pcl.uia_set_float, _FakeUI(e), "some label", "1", None)
+    check("uia_set_float: the NEXT single-line row's Edit (30px) is never taken for a missing one",
+          isinstance(msg, str) and msg.startswith("param_uia_field"), "got %r" % (msg,))
+    # d) a greyed field says so
+    e = {_edit_at(800, enabled=False, hwnd=14)}
+    _with_float_env(e, 800)
+    msg = _raises(pcl.uia_set_float, _FakeUI(e), "Brim width", "5", "Brim")
+    check("uia_set_float: a disabled Edit on the row reports param_uia_field_disabled",
+          isinstance(msg, str) and msg.startswith("param_uia_field_disabled"), "got %r" % (msg,))
+finally:
+    pcl._find_phrase_row, pcl._canvas_hwnd = REAL_FIND_PHRASE, REAL_CANVAS
+    if _fake_before is None:
+        sys.modules.pop("win32gui", None)
+    else:
+        sys.modules["win32gui"] = _fake_before
+
+# 16. A group name that matches no title is a wrong op, not a licence to
+#     search the whole page (fa review D2): with a wrong group the engine
+#     scanned unconstrained and edited the first same-named row it met.
+def _no_ocr(*_a, **_k):
+    raise AssertionError("the engine scanned the page although the group does not exist")
+
+
+_pp_ocr = pp.ocr_band
+pp.scroll_group_into_view = lambda session, sub, timeout_s=420.0: None
+pp.ocr_band = _no_ocr
+pp.wheel_viewport = _no_ocr
+try:
+    try:
+        y = REAL_FIND_PHRASE(None, "^Outer wall", "No Such Group")
+    except AssertionError:
+        y = "scanned"
+finally:
+    pp.ocr_band, pp.wheel_viewport = _pp_ocr, page.wheel
+check("_find_phrase_row: a group without a title returns None without scanning",
+      y is None, "got %r" % (y,))
+
+# 17. find_option_row_seq scans like find_option_row, in the value column.
+#     Until r4 it looked at the start view and 5 notches down: a value deeper
+#     than ~10 rows below its group title was unreachable (fa review D1), and
+#     the first word run anywhere in the band counted, label column included
+#     (D3).
+if REAL_ROW_SEQ is not None:
+    state = {"offset": 0}
+
+    def _words():
+        out = [("Label", 30, 800 - state["offset"], 40, 12),        # a label line
+               ("By", 60, 800 - state["offset"], 20, 12), ("layer", 84, 800 - state["offset"], 40, 12)]
+        deep = 1400 - state["offset"]                               # needs 7 notches
+        if 700 <= deep <= 1000:
+            out += [("By", 266, deep, 20, 12), ("layer", 290, deep, 40, 12)]
+        return out
+
+    _saved17 = (pp.ocr_band, pp.wheel_viewport, pp.options_viewport, pp.group_span,
+                pp.on_title_line, pp.focus_off_edit, pp.scroll_group_into_view, pp.scroll_signature)
+    pp.ocr_band = lambda session, y0=None, y1=None, psm=3: _words()
+    pp.wheel_viewport = lambda session, vp, notches, delta=-120: state.__setitem__(
+        "offset", max(0, state["offset"] + 60 * notches * (1 if delta < 0 else -1)))
+    pp.options_viewport = lambda session: ((0, 700, 420, 1000), 1)
+    pp.group_span = lambda session, sub: None
+    pp.on_title_line = lambda session, y, tol=3: False
+    pp.focus_off_edit = lambda session, why="": None
+    pp.scroll_group_into_view = lambda session, sub, timeout_s=420.0: (0, 0, 0)
+    pp.scroll_signature = lambda session: (("T", 900 - state["offset"]),)
+    try:
+        hit = REAL_ROW_SEQ(None, ("by", "layer"), None)
+    finally:
+        (pp.ocr_band, pp.wheel_viewport, pp.options_viewport, pp.group_span, pp.on_title_line,
+         pp.focus_off_edit, pp.scroll_group_into_view, pp.scroll_signature) = _saved17
+    check("find_option_row_seq: a value 7 notches down is found (the old scan stopped at 5), "
+          "the label-column copy ignored",
+          hit[0] is not None and hit[0][0] == 266, "got %r" % (hit,))
+else:
+    print("N/A  find_option_row_seq (absent on this tree)")
+
+# 18. The ops checker must be able to match an unanchored multi-word label at
+#     all (range(len(words), len(words)) was an empty loop: 60 of its 62
+#     "UNCERTAIN" lines were that bug).
+from pathlib import Path as _Path  # noqa: E402
+import importlib.util as _ilu  # noqa: E402
+_spec = _ilu.spec_from_file_location(
+    "check_ops", str(_Path(__file__).resolve().parent / "check_ops_against_atlas.py"))
+_mod = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(_mod)
+check("checker: an unanchored multi-word label matches its row",
+      _mod.label_matches("Wall loops", "Wall loops") is True
+      and _mod.label_matches("Detect overhang", "Detect overhang walls") is True
+      and _mod.label_matches("^Wipe speed", "Role based wipe speed") is False,
+      "got %r" % (_mod.label_matches("Wall loops", "Wall loops"),))
 
 failed = [n for n, ok in results if not ok]
 print("\n%d checks, %d failed" % (len(results), len(failed)))

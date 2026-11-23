@@ -20,6 +20,8 @@ CASE_ID = "param_287_material_advanced"
 GOAL = ("Enable interface shells, set the support body filament to 1 while "
         "the support interface filament stays 0. Preserve the cube geometry, "
         "its placement, material assignment and every other setting.")
+# enable_support, support_type: as in #279.
 VALUES = {"interface_shells": "1", "support_filament": "1",
-          "support_interface_filament": "0", "enable_support": "1"}
+          "support_interface_filament": "0", "enable_support": "1",
+          "support_type": "normal(auto)"}
 verify_business = make_verify(CASE_ID, VALUES, schedule={"layer_count": 68, "last_z": "27.2"})

@@ -202,7 +202,8 @@ class NativeSaveExecutor:
     def start(self, context):
         from . import host_guard, perf_monitor
         from .win32_job import OwnedJobProcess
-        if not host_guard.in_guest() or contract_digest(context.contract) != self.contract_sha256:
+        # the guest, or a test machine that opted in (host_guard.allow_testbox)
+        if not host_guard.real_execution_allowed() or contract_digest(context.contract) != self.contract_sha256:
             raise PermissionError("native_registered_guest_only")
         artifacts = context.artifact_dir.resolve(strict=True)
         if any(artifacts.iterdir()):

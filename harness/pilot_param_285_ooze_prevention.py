@@ -17,6 +17,10 @@ GOAL = ("Keep ooze prevention enabled, set standby temperature delta to "
         "-100 degC, preheat steps to 2 and preheat time to 15 s. Preserve "
         "the cube geometry, its placement, material assignment and every "
         "other setting.")
+# Recorded deviation (2026-11-23, run fb7cb075): the 2.4.0 build has no
+# 'Preheat steps' row - its Ooze prevention group is Enable / Temperature
+# variation / Preheat time / Preheat delta temperature - so preheat_steps
+# stays at its fixture value and is not asserted.
 VALUES = {"ooze_prevention": "1", "standby_temperature_delta": "-100",
-          "preheat_steps": "2", "preheat_time": "15"}
+          "preheat_time": "15"}
 verify_business = make_verify(CASE_ID, VALUES, schedule={"layer_count": 68, "last_z": "27.2"})

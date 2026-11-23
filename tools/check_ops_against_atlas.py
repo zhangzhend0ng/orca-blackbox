@@ -29,6 +29,43 @@ ROWS = ATLAS["rows"]
 # atlas check and both failed in the GUI (queue18, 2026-11-23).
 CENSUS = json.loads((Path(__file__).resolve().parent.parent
                      / "harness/param_ui_titles_2.4.0.json").read_text(encoding="utf-8"))
+# What the build's option popups really list (census 67690ed4 / c814315c).
+POPUPS = json.loads((Path(__file__).resolve().parent
+                     / "param_ui_popups_2.4.0.json").read_text(encoding="utf-8"))["popups"]
+
+
+def popup_for(tab, op):
+    """The censused popup a combo op opens, or None: a rowcombo by its first
+    label (without '^'), a combo by the value it currently paints."""
+    if not tab:
+        return None
+    if op["op"] == "rowcombo":
+        lab = op.get("label")
+        row = (lab[0] if isinstance(lab, (tuple, list)) else str(lab)).lstrip("^")
+    else:
+        cur = op.get("current")
+        row = " ".join(cur) if isinstance(cur, (tuple, list)) else str(cur)
+    for pop in POPUPS:
+        if pop["tab"] == tab and row.lower() in pop["row"].lower():
+            return pop
+    return None
+
+
+def scenario_values():
+    """scenario name -> its pilot's VALUES (the keys and values the case
+    expects in the saved project)."""
+    import importlib
+    from harness import native_pilots
+    out = {}
+    for scenario, module in native_pilots.TRIALS.items():
+        try:
+            out[scenario] = importlib.import_module("harness." + module).VALUES
+        except Exception:
+            out[scenario] = {}
+    return out
+
+
+SCENARIO_VALUES = scenario_values()
 
 
 def label_matches(variant, label):
@@ -42,7 +79,11 @@ def label_matches(variant, label):
     words = label.lower().split()
     if len(want) == 1:
         return (want[0] in words[0]) if anchored else any(want[0] in w for w in words)
-    for i in range(0 if anchored else len(words), len(words)):
+    for i in ((0,) if anchored else range(len(words))):
+        # An unanchored variant may start at any word of the row. Until
+        # 2026-11-23 this read range(len(words), len(words)) - empty - so an
+        # unanchored MULTI-word variant never matched anything: 60 of the 62
+        # "UNCERTAIN" lines the checker printed were that bug (Mac audit).
         if words[i].startswith(want[0]):
             if " ".join(words[i:i + len(want)]).startswith(" ".join(want)):
                 return True
@@ -86,53 +127,80 @@ def import_pilot_values():
 
 def main():
     problems = []
+    notes = []
+    cur_tab = None   # ops inherit the tab of the last op that named one
     for scenario, ops in sorted(PARAM_OPS.items()):
+        cur_tab = None
         for i, op in enumerate(ops):
-            tab = op.get("tab")
+            # Ops inherit the tab of the last op that named one. Until
+            # 2026-11-23 an op without 'tab' was checked against every page
+            # (83 labels), which cannot fail (Mac audit).
+            tab = op.get("tab") or cur_tab
+            cur_tab = tab
             labels = op.get("label")
             labels = [labels] if isinstance(labels, str) else labels
             if op.get("op") in ("float", "checkbox", "rowcombo", "combo") and labels:
-                if tab:
-                    rows = tab_rows(tab)
-                else:
-                    rows = []
-                    for r in ROWS.values():
-                        r2 = dict(r)
-                        if r2.get("line_label"):
-                            r2["label"] = r2["line_label"]
-                        if r2.get("label"):
-                            rows.append(r2)
-                for variant in labels:
-                    hits = [r for r in rows if label_matches(variant, r["label"])]
-                    if hits:
-                        break
-                else:
-                    best = []
-                    for r in ROWS.values():
-                        lab = r.get("line_label") or r.get("label")
-                        if lab and label_matches(variant, lab):
-                            best.append(f"{lab}@{r.get('tab')}")
-                    # path-override rows render through the webui i18n and
-                    # can legitimately differ from the def label - downgrade
-                    # to 'verify-with-census' instead of a hard fail.
-                    path_uncertain = any(r.get("label_path") for r in rows) or (
-                        best and any(
-                            ROWS.get(b.split("@")[0], {}).get("label_path")
-                            for b in best))
-                    tag = "UNCERTAIN(path-row, needs census)" if path_uncertain else "NO match"
-                    problems.append(
-                        f"{scenario} op[{i}] label {variant!r}: {tag} on tab "
-                        f"{tab!r}" + (f" (atlas elsewhere: {best[:3]})" if best else
-                                      " (nowhere in atlas)"))
-            if op.get("op") == "combo" and op.get("target"):
-                # popup target should exist as an enum label of SOME def
+                rows = tab_rows(tab) if tab else []
+                # The engine needs ONE of the label candidates to match, not
+                # all of them: a scenario typically carries an OCR-spelled
+                # first candidate ('Top lnterface layers') and a plain one.
+                variant = next((v for v in labels
+                                if any(label_matches(v, r["label"]) for r in rows)), None)
+                if variant is None:
+                    variant = labels[0]
+                    # Where does the atlas know this label at all? Downgrade
+                    # to a note only when every such row is a path-override
+                    # row (rendered through the webui i18n, allowed to
+                    # differ). Until 2026-11-23 ANY path row on the page (37
+                    # to 84 per page) downgraded every miss: the hard branch
+                    # was dead code and the checker was permanently red.
+                    best = [(k, r) for k, r in ROWS.items()
+                            if (r.get("line_label") or r.get("label"))
+                            and label_matches(variant, r.get("line_label") or r.get("label"))]
+                    where = [f"{r.get('line_label') or r.get('label')}@{r.get('tab')}"
+                             for _k, r in best]
+                    if best and all(r.get("label_path") for _k, r in best):
+                        notes.append(f"{scenario} op[{i}] label {variant!r}: UNCERTAIN (path row) "
+                                     f"on tab {tab!r} (atlas: {where[:3]})")
+                    else:
+                        problems.append(
+                            f"{scenario} op[{i}] label {labels!r}: NO match on tab "
+                            f"{tab!r}" + (f" (atlas elsewhere: {where[:3]})" if where else
+                                          " (nowhere in atlas)"))
+            if op.get("op") == "float" and "value" in op:
+                # The typed value must be one the case expects. Run b1103170
+                # typed 50 into a 'mm/s or %' field where the case wants 50%
+                # and died at verification; the checker never compared the two.
+                # Compared as numbers: a '%' field stores 100 for a typed 100
+                # (bridge density), so the unit alone is not a mismatch.
+                def _num(text):
+                    digits = "".join(ch for ch in str(text) if ch.isdigit() or ch in ".-")
+                    return float(digits) if digits not in ("", "-", ".", "-.") else None
+                try:
+                    want = {_num(v) for v in SCENARIO_VALUES.get(scenario, {}).values()}
+                except ValueError:
+                    want = set()
+                if want and _num(op["value"]) not in want:
+                    problems.append(f"{scenario} op[{i}] value {op['value']!r} is not among the "
+                                    f"pilot's expected values "
+                                    f"{sorted(SCENARIO_VALUES.get(scenario, {}).values())}")
+            if op.get("op") in ("combo", "rowcombo") and op.get("target"):
                 tgt = op["target"].lower()
-                found = any(tgt in (lbl or "").lower()
-                            for r in ROWS.values()
-                            for lbl in (r.get("enum_labels") or []))
-                if not found:
-                    problems.append(f"{scenario} op[{i}] combo TARGET {op['target']!r}: "
-                                    f"not found in any enum_labels")
+                pop = popup_for(cur_tab, op)
+                if pop:
+                    # What the build's popup really offers (census) decides.
+                    if not any(tgt in it.lower() for it in pop["items"]):
+                        problems.append(
+                            f"{scenario} op[{i}] TARGET {op['target']!r}: not among the rows the "
+                            f"{cur_tab} {pop['row']!r} popup really offers (census): {pop['items']}")
+                else:
+                    # no census of that popup: the source atlas is all there is
+                    found = any(tgt in (lbl or "").lower()
+                                for r in ROWS.values()
+                                for lbl in (r.get("enum_labels") or []))
+                    if not found:
+                        problems.append(f"{scenario} op[{i}] combo TARGET {op['target']!r}: "
+                                        f"not found in any enum_labels (and not in the popup census)")
     # pilot VALUES keys must exist as config defs at all
     for cid, values in sorted(import_pilot_values().items()):
         for key in values:
@@ -162,12 +230,14 @@ def main():
                 problems.append(f"{scenario} op[{i}] combo current {current!r}: a multi-word string "
                                 f"never matches one OCR word - use a tuple")
     print(f"checked {len(PARAM_OPS)} scenarios")
+    for p in notes:
+        print("  ? " + p)
     if problems:
-        print(f"{len(problems)} label problems:")
+        print(f"{len(problems)} problems ({len(notes)} notes):")
         for p in problems:
             print("  -", p)
     else:
-        print("all labels validate against the atlas")
+        print(f"all ops validate ({len(notes)} notes)")
     return 1 if problems else 0
 
 
