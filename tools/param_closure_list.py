@@ -6,8 +6,9 @@
     python tools/param_closure_list.py --harvest DIR # another worktree's harvest
 
 Reads every harvested run under artifacts/windows_mcp_harvest/<run>/ and
-counts a case closed when at least one run of its scenario says
-release_verdict SHADOW (result.json). The execution line comes from the
+counts a case closed when the LATEST run of its scenario says
+release_verdict SHADOW (result.json); earlier SHADOW runs are listed as a
+count, because an oracle that got stronger later can reopen a case. The execution line comes from the
 worker log: a run that printed the ORCA_BB_ALLOW_TESTBOX line or worked
 under orca-blackbox-glm ran on the fa706g3 test box, anything else on the
 Hyper-V guest. Read-only; this is the number the run record and the ledger
@@ -82,12 +83,18 @@ def closure():
         })
     rows = []
     for scenario, case in cases.items():
-        shadow = [r for r in case["runs"] if r["verdict"] == "SHADOW"]
-        best = max(shadow, key=lambda r: r["ended"]) if shadow else None
+        # A case is closed when its LATEST run is SHADOW - not when some
+        # earlier run was: an oracle can get stronger after the fact (#296:
+        # five SHADOW runs, then the pilot began to assert the G-code).
+        runs = sorted(case["runs"], key=lambda r: r["ended"])
+        latest = runs[-1] if runs else None
+        shadow = [r for r in runs if r["verdict"] == "SHADOW"]
         rows.append({
-            "scenario": scenario, "case_id": case["case_id"], "closed": bool(shadow),
-            "run": best["run"][:8] if best else None, "line": best["line"] if best else None,
-            "shadow_runs": len(shadow), "runs": len(case["runs"]),
+            "scenario": scenario, "case_id": case["case_id"],
+            "closed": bool(latest and latest["verdict"] == "SHADOW"),
+            "run": latest["run"][:8] if latest else None,
+            "line": latest["line"] if latest else None,
+            "shadow_runs": len(shadow), "runs": len(runs),
         })
     rows.sort(key=lambda r: case_number(r["case_id"]))
     return rows
