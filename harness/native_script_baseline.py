@@ -294,8 +294,11 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             # atlas + band 244ae35e: the fuzzy rows are on the Others page
             # (Special mode area), NOT Quality - the case ran on the wrong
             # tab since authoring.
+            # 2026-11-23 census 67690ed4 opened the popup: its rows are
+            # None / Contour / Contour and hole / All walls - 'All external
+            # walls' is the source label, not what this build paints.
             {"tab": "Others", "op": "rowcombo", "label": "Fuzzy skin",
-             "target": "All external walls", "group": "Fuzzy"},
+             "target": "All walls", "group": "Fuzzy"},
             {"op": "float", "label": "point distance", "value": "0.6", "group": "Fuzzy"},
             {"op": "float", "label": "thickness", "value": "0.3", "group": "Fuzzy"},
         ],
@@ -355,7 +358,10 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             # Brim-width Edit renders DISABLED under auto_brim (runs
             # c84c9bd9/a97ed9b7: param_uia_field 0 matches); pick the type
             # first so the row edits enable.
-            {"tab": "Others", "op": "rowcombo", "label": "^Brim type", "target": "Outer only",
+            # 2026-11-23 census f1c5433b / 67690ed4: the popup's rows are
+            # Mouse ear / Painted / Outer brim only / Inner brim only /
+            # Outer and inner brim / No-brim - 'Outer only' never matched.
+            {"tab": "Others", "op": "rowcombo", "label": "^Brim type", "target": "Outer brim only",
              "group": "Brim"},
             {"op": "float", "label": "^Brim width", "value": "5", "group": "Brim"},
             # The row paints 'Brim-object gap' (hyphen; screenshot f0e683fb).

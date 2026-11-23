@@ -1162,8 +1162,13 @@ def find_option_combo(session, current_value, psm=3):
     word, y_row = find_option_row(session, current_value, psm=psm)
     if not word:
         return (None, None, None)
-    f = frect(session)
-    sx, sy = f[0] + (word[0] + word[2]) // 2, f[1] + y_row
+    # OCR coordinates are client coordinates: add the CLIENT origin, not the
+    # window rect (7px apart on the maximized frame; adding the window rect
+    # put the point 7px left of a value that starts at its window's edge,
+    # and WindowFromPoint returned the row container instead - census
+    # 67690ed4: Support Type/Style and Skirt 'Disabled' opened no popup).
+    ox, oy = client_origin(session)
+    sx, sy = ox + (word[0] + word[2]) // 2, oy + y_row
     hwnd = winutil.window_from_screen_point(sx, sy)
     if not hwnd or hwnd == session.hwnd:
         return (None, None, None)
@@ -1363,8 +1368,8 @@ def find_option_combo_seq(session, seq, group_substr=None, psm=3):
     word, y_row = find_option_row_seq(session, seq, group_substr, psm=psm)
     if not word:
         return (None, None, None)
-    f = frect(session)
-    sx, sy = f[0] + (word[0] + word[2]) // 2, f[1] + y_row
+    ox, oy = client_origin(session)   # client coordinates, see find_option_combo
+    sx, sy = ox + (word[0] + word[2]) // 2, oy + y_row
     hwnd = winutil.window_from_screen_point(sx, sy)
     if not hwnd or hwnd == session.hwnd:
         return (None, None, None)
@@ -1519,16 +1524,26 @@ def set_combo_by_popup(session, locate, target_substr, log="[panel]",
             vp = options_viewport(session)
             if vp:
                 wheel_viewport(session, vp, 3, delta=-120)
-            r, h, cur = _locate()
+            # Everything derived from the old combo is stale from here on
+            # (fa706g3 static review, 2026-11-23): cx/cy would sit 180px
+            # below the row again - the blind fallback reopens "the combo"
+            # at that point, i.e. whatever control sits there now - and a
+            # failed re-locate or reopen left the CLOSED popup's rect/hwnd
+            # in pr/ph for the click loop to work on.
+            opened = None
             if h:
+                cx, cy = (r[0] + r[2]) // 2, (r[1] + r[3]) // 2
                 opened = _open()
-                print(f"{log} popup after parking: {opened}")
-                if opened:
-                    pr, ph = opened
-                    words = _words(ph)
-                    print(f"{log} popup rows: "
-                          f"{' | '.join(t for t, *_ in words)[:140]!r}")
-                    hits = popup_line_hits(words, target_substr)
+            print(f"{log} popup after parking: {opened} (combo located: {bool(h)})")
+            if opened:
+                pr, ph = opened
+                words = _words(ph)
+                print(f"{log} popup rows: "
+                      f"{' | '.join(t for t, *_ in words)[:140]!r}")
+                hits = popup_line_hits(words, target_substr)
+            else:
+                hits = []
+        popup_open = bool(opened)
         clicked = False
         for cx_, cy_, _line in hits:
             x, y = pr[0] + cx_, pr[1] + cy_
@@ -1539,7 +1554,7 @@ def set_combo_by_popup(session, locate, target_substr, log="[panel]",
                 print(f"{log} popup row at ({x}, {y}) is still not "
                       f"clickable - leaving it unclicked", flush=True)
             break
-        if not clicked and not popup_line_hits(words, target_substr):
+        if not clicked and not hits and popup_open:
             # blind fallback: 28px row pitch; verify by re-locating the
             # combo by its new value after each click, reopen when missed
             for row in range(5):
@@ -1563,27 +1578,29 @@ def set_combo_by_popup(session, locate, target_substr, log="[panel]",
                     time.sleep(0.2)
                 if not popup2:
                     break
-                pr = popup2[2]
+                pr, ph = popup2[2], popup2[3]   # a reopened popup can be a new window
         time.sleep(1.5)
     # Verification, cheapest and most exact first. The combo is a real
     # ComboBox and its window text is the committed value: reading it is
     # free and settles the question both ways (run 6640e4a9 scanned whole
     # pages for the painted value - 38 notches - to learn that nothing had
-    # changed). A rebuild may have replaced the control; then the painted
-    # value on the current band is checked against whole lines (a
-    # multi-word target is never inside ONE OCR word), and only after that
-    # does find_option_combo scan the page (single-word targets, combos
-    # that expose no window text).
+    # changed). Without window text (the control was rebuilt, or never had
+    # any) a combo is located by the TARGET value with the word-sequence
+    # logic that found the combo in the first place. An earlier version
+    # accepted any line on the band that merely contained the words - a
+    # label would have done (fa706g3 review).
     buf = ctypes.create_unicode_buffer(256)
     if h and user32.IsWindow(h):
         user32.GetWindowTextW(h, buf, 256)
     ok = bool(buf.value) and target_substr.lower() in buf.value.lower()
     if buf.value:
         print(f"{log} combo window text now {buf.value!r} -> {ok}")
-    if not ok and not buf.value and " " in target_substr.strip():
-        ok = bool(popup_line_hits(ocr_band(session, psm=psm), target_substr))
     if not ok and not buf.value:
-        ok = find_option_combo(session, target_substr, psm=psm)[1] is not None
+        if " " in target_substr.strip():
+            ok = find_option_combo_seq(session, tuple(target_substr.lower().split()),
+                                       group_substr, psm=psm)[1] is not None
+        else:
+            ok = find_option_combo(session, target_substr, psm=psm)[1] is not None
     if not ok and verify_seq:
         if group_substr:
             scroll_group_into_view(session, group_substr)

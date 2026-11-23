@@ -631,6 +631,10 @@ def _census_pages_full(ui):
 
 # Also run the wheel / focus / Print-sequence probes of the first censuses.
 CENSUS_FULL = False
+# Short names of the combo ops to probe; empty = every one (about 28s per
+# popup). The x_ rows are probe-only rows listed in census_param_pages.
+CENSUS_PICK = ("x_support_base", "x_support_iface", "x_support_pattern", "x_draft_shield",
+               "filament_features", "support_basic", "tree_support", "skirt")
 
 
 def census_param_pages(ui):
@@ -688,7 +692,19 @@ def census_param_pages(ui):
             if op["op"] in ("combo", "rowcombo"):
                 combos.append((scenario.replace("uia_param_", ""), tab, op["op"],
                                op.get("label") or op.get("current"), op.get("target"), op.get("group")))
+    # Rows no op names yet (census 67690ed4): the extruder selection of the
+    # support body / interface, the interface pattern, the draft shield.
+    combos += [
+        ("x_support_base", "Support", "rowcombo", "^Support/raft base", "?", "Filament for Supports"),
+        ("x_support_iface", "Support", "rowcombo", "^Support/raft interface", "?", "Filament for Supports"),
+        ("x_support_pattern", "Support", "rowcombo", "Interface pattern", "?", "Advanced"),
+        ("x_draft_shield", "Others", "rowcombo", "Draft shield", "?", "Skirt"),
+    ]
     combos.sort(key=lambda c: (list(hints).index(c[1]) if c[1] in hints else 99, c[0]))
+    if CENSUS_PICK:
+        # A full sweep is ~28s per popup; pick what the question needs.
+        combos = [c for c in combos if c[0] in CENSUS_PICK]
+    shots = []
     current_tab = None
     for scenario, tab, kind, locate, target, group in combos:
         try:
@@ -758,13 +774,58 @@ def census_param_pages(ui):
                 lines.setdefault(key, []).append((x, t))
             items = [" ".join(t for _x, t in sorted(v)) for _k, v in sorted(lines.items())]
             hit = bool(pp.popup_line_hits(words, target)) if target else False
+            shots.append(("%s %s %r -> %r" % (scenario, tab, shown, target),
+                          img[:, :, ::-1].copy()))
             say("POPUP %-18s %s %r target=%r click=%r via=%s popup=%r hit=%s" % (
                 scenario, tab, shown, target, point, how, pr, hit))
             say("      items=%r" % (items,))
+            say("      words=%r" % ([(t, x, yw) for t, x, yw, *_ in words][:40],))
             say("      close_popup -> %r" % (pp.close_popup(app, ph, point),))
             time.sleep(0.5)
         except Exception as exc:
             say("POPUP %-18s failed: %s: %s" % (scenario, type(exc).__name__, exc))
+    # Row labels of the groups whose ops were authored from the source
+    # atlas: three OCR'd views per group, two notches apart.
+    for tab, group in (("Multimaterial", "Filament for Features"),
+                       ("Support", "Filament for Supports"), ("Support", "Advanced"),
+                       ("Others", "Skirt")):
+        try:
+            if tab != current_tab:
+                ui.main_input()
+                pp.click_tab(app, tab, hints.get(tab, ""))
+                ui.pause(1.0)
+                current_tab = tab
+            pp.scroll_group_into_view(app, group)
+            for view in range(3):
+                words = pp.ocr_band(app, psm=3)
+                lines = {}
+                for t, x, yw, _ww, _hh in words:
+                    key = next((k for k in lines if abs(k - yw) <= 10), yw)
+                    lines.setdefault(key, []).append((x, t))
+                say("ROWS %s %r view%d: %r" % (tab, group, view, [
+                    " ".join(t for _x, t in sorted(v)) for _k, v in sorted(lines.items())]))
+                pp.wheel_viewport(app, pp.options_viewport(app), 2, delta=-120)
+        except Exception as exc:
+            say("ROWS %s %r failed: %s: %s" % (tab, group, type(exc).__name__, exc))
+    if shots:
+        # One image with every popup that was opened (the harvest carries
+        # exactly one probe picture: param_failure.png).
+        try:
+            from PIL import Image, ImageDraw
+            width = max(im.shape[1] for _t, im in shots) + 20
+            height = sum(im.shape[0] + 24 for _t, im in shots) + 10
+            sheet = Image.new("RGB", (width, height), (40, 40, 40))
+            draw = ImageDraw.Draw(sheet)
+            top = 5
+            for text, rgb in shots:
+                draw.text((10, top), text[:70], fill=(255, 255, 0))
+                top += 22
+                sheet.paste(Image.fromarray(rgb), (10, top))
+                top += rgb.shape[0] + 2
+            sheet.save(ui.artifacts / "param_failure.png")
+            say("popups sheet saved: %d popups, %dx%d" % (len(shots), width, height))
+        except Exception as exc:
+            say("popups sheet failed: %s: %s" % (type(exc).__name__, exc))
     if CENSUS_FULL:
         _census_pages_full(ui)
     raise ProtocolError("param_census_done")
