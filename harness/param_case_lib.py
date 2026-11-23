@@ -158,11 +158,14 @@ def _find_phrase_row(app, phrase, group_substr=None):
     anchored = phrase.startswith("^")
     phrase = phrase[1:] if anchored else phrase
     want = phrase.lower().split()
-    span = pp.group_span(app, group_substr) if group_substr else None
 
     def hit(i, words):
         w, x, y, ww, hh = words[i]
         if anchored and not pp.leftmost_on_line(words, i):
+            return False
+        # A group title is spelled like some of its rows ('Layer height',
+        # 'First layer speed'): it is not a row (speed_limits run fc5b643c).
+        if pp.on_title_line(app, y):
             return False
         if len(want) == 1:
             return want[0] in w.lower()
@@ -173,9 +176,20 @@ def _find_phrase_row(app, phrase, group_substr=None):
 
     stall = pp._StallGuard(app, "phrase %r%s" % (phrase, " in %r" % group_substr if group_substr else ""))
     found = None
+    words = []
     for direction in (-120, 120):
         stall.reset()
-        for _ in range(12 if direction == -120 else 26):
+        started = time.monotonic()
+        for _ in range(pp.SCAN_NOTCHES):
+            if time.monotonic() - started > pp.SCAN_SECONDS:
+                print("[param-phrase] %ss cap reached scanning %s for %r" % (
+                    pp.SCAN_SECONDS, "down" if direction < 0 else "up", phrase), flush=True)
+                break
+            # Re-read every step: the span is in client coordinates and the
+            # page moves under it. Frozen at the start it rejected the
+            # group's own rows once they had scrolled above the title's
+            # starting position (queue18).
+            span = pp.group_span(app, group_substr) if group_substr else None
             words = pp.ocr_band(app, psm=3)
             for i in range(len(words)):
                 if hit(i, words) and (span is None or span[0] <= words[i][2] < span[1]):
@@ -212,21 +226,32 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
     left, top, right, bottom = wu.window_rect(_canvas_hwnd(ui))
     origin_x, origin_y = wu.client_to_screen(app.hwnd, 0, 0)
     matches = []
+    greyed = []   # Edits on the label's own line that are disabled
 
     def collect(handle, _):
         if (wu.window_class(handle) != "Edit" or not IsWindowVisible(handle)
-                or not IsWindowEnabled(handle) or wu._window_pid(handle) != app.pid):
+                or wu._window_pid(handle) != app.pid):
             return True
         b = wu.window_rect(handle)
         cy = (b[1] + b[3]) // 2 - origin_y
         # the parameter sidebar sits LEFT of the canvas (calibration run
         # 6bc47e55: row_y 762 vs Edit cy 764 at x 267, canvas_left 426).
         if y_lo <= cy <= y_hi and 0 <= (b[0] + b[2]) // 2 < left:
-            matches.append((handle, list(b)))
+            if IsWindowEnabled(handle):
+                matches.append((handle, list(b)))
+            else:
+                greyed.append(handle)
         return True
 
     y_lo, y_hi = y_row - 14, y_row + 14
     EnumChildWindows(app.hwnd, collect, None)
+    if greyed and not (field_index is not None or below):
+        # A greyed field means the row is disabled by another setting
+        # (Brim width under Brim type = Auto). Say so instead of reporting
+        # a bare "0 edits" that reads like a lookup miss.
+        print(f"[param-uia] row '{label_substr}' y={y_row}: field is disabled "
+              f"(depends on another setting)", flush=True)
+        raise ProtocolError("param_uia_field_disabled:" + label_substr)
     if not matches and (field_index is not None or below):
         # A two-line row paints its label on one line and its Edit(s) on the
         # next, ~34px lower: 'Overhang speed' with five band Edits (run
@@ -341,7 +366,20 @@ def run_ops(ui, ops):
                 ui.pause(0.6)
         elif kind == "rowcombo":
             from .param_combo_row import pick_combo_at_label
-            pick_combo_at_label(ui, op["label"], op["target"], group_substr=op.get("group"))
+            # A list label gets the same candidate treatment as float ops
+            # (filament_features passed ['^Wipe tower', 'tower'] straight
+            # through and died on list.startswith, run 6b399e48).
+            labels = op["label"] if isinstance(op["label"], (tuple, list)) else (op["label"],)
+            last = None
+            for candidate in labels:
+                try:
+                    pick_combo_at_label(ui, candidate, op["target"], group_substr=op.get("group"))
+                    last = None
+                    break
+                except ProtocolError as exc:
+                    last = exc
+            if last is not None:
+                raise last
         elif kind == "combo":
             # set_combo_by_popup returns (ok, target_confirmed); the bare
             # tuple was always truthy, silently passing locate failures
@@ -384,6 +422,8 @@ def census_param_pages(ui):
     def cls(hwnd):
         return winutil.window_class(hwnd) if hwnd else None
 
+    vp_h = (pp.options_viewport(app) or (None, None))[1]
+
     def titled(sub=None):
         rows = []
         for t, c, r, h, lx, ly in pp.kids(app):
@@ -391,7 +431,12 @@ def census_param_pages(ui):
                 continue
             if sub is not None and sub not in t.lower():
                 continue
-            rows.append("%r@%d,%d %dx%d" % (t[:44], lx, ly, r[2] - r[0], r[3] - r[1]))
+            # child: is the window a descendant of the options viewport?
+            # group_titles() relies on that to keep titles that scrolled
+            # above the Process row (r3c).
+            rows.append("%r@%d,%d %dx%d child=%s" % (
+                t[:44], lx, ly, r[2] - r[0], r[3] - r[1],
+                bool(vp_h and u32.IsChild(vp_h, h))))
         return rows
 
     def sig():
@@ -504,8 +549,17 @@ def census_param_pages(ui):
             say("   screen shot failed: %s: %s" % (type(exc).__name__, exc))
         mdu._send_keys([(0x1B, False), (0x1B, True)])
         time.sleep(0.8)
-        pp.wheel_viewport(app, pp.options_viewport(app), 3, delta=-120)
-        open_and_report("moved-3-notches", click=True)
+        # r3c: the engine's own path - it parks the row before opening
+        # anything, refuses to click off-screen and verifies by the combo's
+        # window text.
+        try:
+            res = pp.set_combo_by_popup(app, ("By", "Layer"), "By object",
+                                        group_substr="Special mode", log="[census]")
+            say("   engine set_combo_by_popup -> %r" % (res,))
+            _r3, _h3, cur3 = pp.find_option_combo_seq(app, ("By", "Object"), None)
+            say("   combo located by 'By Object' afterwards: rect=%r text=%r" % (_r3, cur3))
+        except Exception as exc:
+            say("   engine set_combo_by_popup failed: %s: %s" % (type(exc).__name__, exc))
     except Exception as exc:
         say("POPUP probe failed: %s: %s" % (type(exc).__name__, exc))
     raise ProtocolError("param_census_done")

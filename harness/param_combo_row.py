@@ -22,66 +22,114 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
     ui.main_input()
     if group_substr:
         pp.scroll_group_into_view(app, group_substr)
-    y_row = _find_phrase_row(app, label, group_substr=None)  # already scrolled
-    if y_row is None:
-        raise ProtocolError("param_combo_row:" + label)
-    canvas_left = wu.window_rect(_canvas(ui))[0]
-    origin_x, origin_y = wu.client_to_screen(app.hwnd, 0, 0)
-    combo = []
 
-    def collect(handle, _):
-        if (wu.window_class(handle) != "ComboBox" or not IsWindowVisible(handle)
-                or wu._window_pid(handle) != app.pid):
+    def locate_combo():
+        """((cx, cy), bounds) of the combo on the row labeled `label`, or None."""
+        y_row = _find_phrase_row(app, label, group_substr=None)  # already scrolled
+        if y_row is None:
+            return None
+        canvas_left = wu.window_rect(_canvas(ui))[0]
+        origin_y = wu.client_to_screen(app.hwnd, 0, 0)[1]
+        combo = []
+
+        def collect(handle, _):
+            if (wu.window_class(handle) != "ComboBox" or not IsWindowVisible(handle)
+                    or wu._window_pid(handle) != app.pid):
+                return True
+            b = wu.window_rect(handle)
+            cy = (b[1] + b[3]) // 2 - origin_y
+            if abs(cy - y_row) <= 14 and 0 <= (b[0] + b[2]) // 2 < canvas_left:
+                combo.append((handle, list(b)))
             return True
-        b = wu.window_rect(handle)
-        cy = (b[1] + b[3]) // 2 - origin_y
-        if abs(cy - y_row) <= 14 and 0 <= (b[0] + b[2]) // 2 < canvas_left:
-            combo.append((handle, list(b)))
-        return True
 
-    EnumChildWindows(app.hwnd, collect, None)
-    if len(combo) == 1:
-        _handle, bounds = combo[0]
-        cx, cy = (bounds[0] + bounds[2]) // 2, (bounds[1] + bounds[3]) // 2
-    elif len(combo) == 0:
-        # Painted-value combos carry no ComboBox HWND (runs 5e095f2c/
-        # 79ca1e8c): the value zone at the row's right opens the popup.
-        cx, cy = canvas_left - 90, y_row + origin_y
-    else:
-        raise ProtocolError("param_combo_field:" + label + ":" + str(len(combo)))
-    winutil.msg_click_screen(cx, cy, app.hwnd)
-    popup = None
-    for _ in range(20):
-        popup = export_util.wait_popup(app.pid, timeout_s=0.5)
-        if popup:
-            break
-    if not popup:
-        raise ProtocolError("param_combo_popup:" + label)
-    pr, ph = popup[2], popup[3]
-    time.sleep(0.8)
-    words = []
-    for _attempt in range(3):
-        w, hgt, bgra = winutil.capture_window(ph)
-        img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
-        words = mdu.ocr_words_img(img, scale=3)
-        if words:
-            break
-        time.sleep(0.6)
-    def _soft(word):
-        return "".join(ch for ch in word.lower() if ch.isalpha())
+        EnumChildWindows(app.hwnd, collect, None)
+        if len(combo) == 1:
+            bounds = combo[0][1]
+        elif len(combo) == 0:
+            # Painted-value combos carry no ComboBox HWND (runs 5e095f2c/
+            # 79ca1e8c): the value zone at the row's right opens the popup.
+            bounds = (canvas_left - 150, y_row + origin_y - 13,
+                      canvas_left - 30, y_row + origin_y + 13)
+        else:
+            raise ProtocolError("param_combo_field:" + label + ":" + str(len(combo)))
+        return ((bounds[0] + bounds[2]) // 2, (bounds[1] + bounds[3]) // 2), bounds
 
-    clicked = False
+    found = locate_combo()
+    if not found:
+        raise ProtocolError("param_combo_row:" + label)
+    (cx, cy), _bounds = found
+    # Park the row before the popup is opened: its list opens straight down
+    # and a row that lands under the taskbar cannot be clicked (brim run
+    # f323be97 OCR'd an empty popup, by_object clicked Shell_TrayWnd).
+    if pp.park_for_popup(app, _bounds):
+        found = locate_combo()  # the row moved up with the page
+        if not found:
+            raise ProtocolError("param_combo_row_after_park:" + label)
+        (cx, cy), _bounds = found
 
-    def _click_target(words_):
-        # Line-level match: a two-word target is never inside one OCR word.
+    def _click_target(words_, pr, ph):
+        """True = clicked, 'offscreen' = the row is under the taskbar,
+        False = no such row in these words. Line-level match: a two-word
+        target is never inside one OCR word."""
         for cx_, cy_, _line in pp.popup_line_hits(words_, target):
-            winutil.msg_click_screen(pr[0] + cx_, pr[1] + cy_)
+            x, y = pr[0] + cx_, pr[1] + cy_
+            if not pp.popup_hit_clickable(ph, x, y):
+                print("[popup] row %r at (%d,%d) is off-screen (popup %r, "
+                      "work area %r)" % (target, x, y, pr, pp.work_area()), flush=True)
+                return "offscreen"
+            winutil.msg_click_screen(x, y)
             return True
         return False
 
-    for page in range(8):
-        if _click_target(words):
+    def _popup_words(ph):
+        time.sleep(0.8)
+        words_ = []
+        for _attempt in range(3):
+            w, hgt, bgra = winutil.capture_window(ph)
+            img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
+            words_ = mdu.ocr_words_img(img, scale=3)
+            if words_:
+                break
+            time.sleep(0.6)
+        return words_
+
+    clicked = False
+    offscreen = False
+    words = []
+    for attempt in (1, 2):
+        winutil.msg_click_screen(cx, cy, app.hwnd)
+        popup = None
+        for _ in range(20):
+            popup = export_util.wait_popup(app.pid, timeout_s=0.5)
+            if popup:
+                break
+        if not popup:
+            raise ProtocolError("param_combo_popup:" + label)
+        pr, ph = popup[2], popup[3]
+        words = _popup_words(ph)
+        first = _click_target(words, pr, ph)
+        if first is True:
             clicked = True
+            break
+        if first == "offscreen":
+            offscreen = True
+            if attempt == 2:
+                break
+            # close it, move the page further up, open it again - once
+            pp.close_popup(app, ph, (cx, cy))
+            vp = pp.options_viewport(app)
+            if vp:
+                pp.wheel_viewport(app, vp, 3, delta=-120)
+            found = locate_combo()
+            if not found:
+                raise ProtocolError("param_combo_row_after_park:" + label)
+            (cx, cy), _bounds = found
+            continue
+        break
+    if offscreen and not clicked:
+        # wheeling a popup whose rows are under the taskbar cannot help
+        raise ProtocolError("param_combo_popup_offscreen:" + target + ":" + repr(pr))
+    for page in range(8):
         if clicked:
             break
         # 2026-11-22 fa706g3 hands-on diagnosis (fa706g3-gui-diag-2026-11-22):
@@ -108,7 +156,7 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
         w, hgt, bgra = winutil.capture_window(ph)
         img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
         words = mdu.ocr_words_img(img, scale=3)
-        if _click_target(words):
+        if _click_target(words, pr, ph) is True:
             clicked = True
         if clicked:
             break

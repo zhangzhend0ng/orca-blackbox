@@ -1,0 +1,185 @@
+{
+ "meta": {
+  "source": "census run c101c0f4 (2.4.0 guest build, page at top, 1920x1032 work area)",
+  "note": "frame-relative y of every options-group title per process tab, page scrolled to top. Width 393, height 18, x 13. Re-run scenario uia_param_census to refresh.",
+  "wheel_step_px": 60,
+  "work_area": [
+   0,
+   0,
+   1920,
+   1032
+  ],
+  "viewport": [
+   1,
+   718,
+   421,
+   1031
+  ]
+ },
+ "tabs": {
+  "Quality": [
+   {
+    "y": 730,
+    "title": "Layer height"
+   },
+   {
+    "y": 826,
+    "title": "Line width"
+   },
+   {
+    "y": 1102,
+    "title": "Seam"
+   },
+   {
+    "y": 1378,
+    "title": "Precision"
+   },
+   {
+    "y": 1732,
+    "title": "Ironing"
+   },
+   {
+    "y": 1798,
+    "title": "Wall generator"
+   },
+   {
+    "y": 1864,
+    "title": "Walls and surfaces"
+   },
+   {
+    "y": 2236,
+    "title": "Bridging"
+   },
+   {
+    "y": 2560,
+    "title": "Overhangs"
+   }
+  ],
+  "Strength": [
+   {
+    "y": 730,
+    "title": "Walls"
+   },
+   {
+    "y": 856,
+    "title": "Top/bottom shells"
+   },
+   {
+    "y": 1120,
+    "title": "Infill"
+   },
+   {
+    "y": 1582,
+    "title": "Advanced"
+   }
+  ],
+  "Speed": [
+   {
+    "y": 730,
+    "title": "First layer speed"
+   },
+   {
+    "y": 922,
+    "title": "Other layers speed"
+   },
+   {
+    "y": 1216,
+    "title": "Overhang speed"
+   },
+   {
+    "y": 1512,
+    "title": "Travel speed"
+   },
+   {
+    "y": 1578,
+    "title": "Acceleration"
+   },
+   {
+    "y": 1944,
+    "title": "Jerk(XY)"
+   },
+   {
+    "y": 2190,
+    "title": "Advanced"
+   }
+  ],
+  "Support": [
+   {
+    "y": 730,
+    "title": "Support"
+   },
+   {
+    "y": 1036,
+    "title": "Raft"
+   },
+   {
+    "y": 1102,
+    "title": "Filament for Supports"
+   },
+   {
+    "y": 1198,
+    "title": "Support ironing"
+   },
+   {
+    "y": 1264,
+    "title": "Advanced"
+   }
+  ],
+  "Multimaterial": [
+   {
+    "y": 730,
+    "title": "Prime tower"
+   },
+   {
+    "y": 1252,
+    "title": "Filament for Features"
+   },
+   {
+    "y": 1408,
+    "title": "Ooze prevention"
+   },
+   {
+    "y": 1564,
+    "title": "Flush options"
+   },
+   {
+    "y": 1660,
+    "title": "Advanced"
+   },
+   {
+    "y": 1852,
+    "title": "Color Mixing (Experimental)"
+   }
+  ],
+  "Others": [
+   {
+    "y": 730,
+    "title": "Skirt"
+   },
+   {
+    "y": 1024,
+    "title": "Brim"
+   },
+   {
+    "y": 1150,
+    "title": "Special mode"
+   },
+   {
+    "y": 1306,
+    "title": "Fuzzy skin"
+   },
+   {
+    "y": 1540,
+    "title": "G-code output"
+   },
+   {
+    "y": 1846,
+    "title": "Post-processing Scripts"
+   },
+   {
+    "y": 2070,
+    "title": "Notes"
+   }
+  ]
+ }
+}

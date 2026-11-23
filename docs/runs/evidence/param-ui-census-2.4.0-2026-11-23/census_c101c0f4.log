@@ -1,0 +1,562 @@
+[census] frame=(-7, -7, 1927, 1039) work=(0, 0, 1920, 1032) process_row_y=614 viewport=(1, 718, 421, 1031) band=(725, 1038)
+[census] TAB Quality clicked=True classes={'wxWindowNR': 116, 'Edit': 25, 'Button': 51, 'Static': 11}
+[census]    T 'control'@7,7 1920x31
+[census]    T 'panel'@7,74 1920x965
+[census]    T 'panel'@8,93 420x945
+[census]    T 'panel'@8,93 420x945
+[census]    T 'panel'@8,725 420x313
+[census]    T 'Layer height'@13,730 393x18
+[census]    T 'mm'@253,758 120x26
+[census]    T 'mm'@253,788 120x26
+[census]    T 'Line width'@13,826 393x18
+[census]    T 'mm or %'@253,854 120x26
+[census]    T 'mm or %'@253,884 120x26
+[census]    T 'mm or %'@253,914 120x26
+[census]    T 'mm or %'@253,944 120x26
+[census]    T 'mm or %'@253,974 120x26
+[census]    T 'mm or %'@253,1004 120x26
+[census]    T 'mm or %'@253,1034 120x26
+[census]    T 'mm or %'@253,1064 120x26
+[census]    T 'Seam'@13,1102 393x18
+[census]    T 'Aligned'@253,1130 120x26
+[census]    T 'mm or %'@253,1190 120x26
+[census]    T 'None'@253,1220 120x26
+[census]    T 'mm/s or %'@253,1280 120x26
+[census]    T 'Precision'@13,1378 393x18
+[census]    T 'mm'@253,1406 120x26
+[census]    T 'mm'@253,1436 120x26
+[census]    T 'mm'@253,1496 120x26
+[census]    T 'mm'@253,1526 120x26
+[census]    T 'mm'@253,1556 120x26
+[census]    T 'layers'@253,1595 120x26
+[census]    T 'Ironing'@13,1732 393x18
+[census]    T 'No ironing'@253,1760 120x26
+[census]    T 'Wall generator'@13,1798 393x18
+[census]    T 'Classic'@253,1826 120x26
+[census]    T 'Walls and surfaces'@13,1864 393x18
+[census]    T 'Inner/Outer'@253,1892 120x26
+[census]    T 'Auto'@253,1952 120x26
+[census]    T 'mm or %'@253,2090 120x26
+[census]    T 'Bridging'@13,2236 393x18
+[census]    T '%'@253,2324 120x26
+[census]    T '%'@253,2354 120x26
+[census]    T 'Disabled'@253,2444 120x26
+[census]    T 'Filter'@253,2483 120x26
+[census]    T 'None'@253,2522 120x26
+[census]    T 'Overhangs'@13,2560 393x18
+[census]    T 'panel'@8,639 420x80
+[census]    T 'panel'@8,649 420x30
+[census]    T '0.40 Standard @Snapmaker U1 (0.8 nozzle)(fix'@41,651 297x26
+[census]    T 'panel'@8,689 420x30
+[census]    T 'Quality'@22,693 56x22
+[census]    T 'Strength'@86,693 66x22
+[census]    T 'Speed'@160,693 47x22
+[census]    T 'Support'@215,693 61x22
+[census]    T 'Multimaterial'@284,693 97x22
+[census]    T 'Others'@389,693 35x22
+[census]    T 'panel'@8,609 420x30
+[census]    T 'panel'@8,93 420x30
+[census]    T 'panel'@8,123 420x216
+[census]    T 'panel'@12,131 412x68
+[census]    T 'Snapmaker U1 (0.8 nozzle)(fixture.3mf)'@70,152 338x26
+[census]    T 'panel'@12,213 412x26
+[census]    T 'Textured PEI Plate'@94,213 330x26
+[census]    T 'panel'@12,255 412x80
+[census]    T 'control'@12,255 412x80
+[census]    T 'panel'@14,280 408x52
+[census]    T '0.8mm'@108,290 113x32
+[census]    T 'Standard'@294,290 113x32
+[census]    T 'panel'@8,339 420x30
+[census]    T 'Flushing volumes'@210,344 103x19
+[census]    T 'Color Mixing Match'@318,344 110x19
+[census]    T 'panel'@8,369 420x240
+[census]    T 'panel'@8,415 420x102
+[census]    T 'panel'@8,415 420x102
+[census]    T 'Generic PETG @U1 0.8 nozzle(fixture.3mf)'@45,417 140x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@243,417 152x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@45,451 140x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@243,451 152x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@45,485 140x30
+[census]    T 'panel'@8,377 420x30
+[census]    T 'panel'@8,377 12x30
+[census]    T 'panel'@416,377 12x30
+[census]    T 'panel'@8,525 420x30
+[census]    T 'panel'@8,525 12x30
+[census]    T 'panel'@416,525 12x30
+[census]    T 'panel'@8,555 420x54
+[census]    T 'panel'@8,555 420x54
+[census]    T 'panel'@20,570 20x20
+[census]    T 'panel'@45,565 140x30
+[census]    T 'panel'@433,74 1494x965
+[census]    T 'panel'@433,74 1494x965
+[census]    T 'control'@7,38 1920x36
+[census]    T 'Print'@1817,44 72x24
+[census]    T 'Slice plate'@1667,44 109x24
+[census]    T ' Project'@455,38 136x36
+[census]    T ' Prepare'@47,38 136x36
+[census]    T ' Preview'@183,38 136x36
+[census]    T ' Device'@319,38 136x36
+[census] TAB Strength clicked=True classes={'wxWindowNR': 104, 'Button': 37, 'Edit': 20, 'Static': 11}
+[census]    T 'control'@7,7 1920x31
+[census]    T 'panel'@7,74 1920x965
+[census]    T 'panel'@8,93 420x945
+[census]    T 'panel'@8,93 420x945
+[census]    T 'panel'@8,725 420x313
+[census]    T 'Walls'@13,730 393x18
+[census]    T 'Top/bottom shells'@13,856 393x18
+[census]    T '%'@253,1073 120x26
+[census]    T 'mm'@253,1034 120x26
+[census]    T 'layers'@253,1004 120x26
+[census]    T 'Monotonic'@253,974 120x26
+[census]    T 'mm'@253,944 120x26
+[census]    T 'layers'@253,914 120x26
+[census]    T 'Monotonic'@253,884 120x26
+[census]    T 'Infill'@13,1120 393x18
+[census]    T '%'@253,1544 120x26
+[census]    T 'mm'@253,1514 120x26
+[census]    T 'Top and bottom surfaces'@253,1484 120x26
+[census]    T '°'@253,1454 120x26
+[census]    T '°'@253,1424 120x26
+[census]    T 'Monotonic'@253,1394 120x26
+[census]    T '°'@253,1277 120x26
+[census]    T '°'@253,1238 120x26
+[census]    T 'Grid'@253,1208 120x26
+[census]    T '%'@253,1148 120x26
+[census]    T 'mm or %'@253,1325 120x26
+[census]    T 'mm or %'@253,1364 120x26
+[census]    T 'Advanced'@13,1582 393x18
+[census]    T 'All'@253,1919 120x26
+[census]    T 'mm²'@253,1793 120x26
+[census]    T '°'@253,1745 120x26
+[census]    T '°'@253,1697 120x26
+[census]    T 'panel'@8,639 420x80
+[census]    T 'panel'@8,649 420x30
+[census]    T '0.40 Standard @Snapmaker U1 (0.8 nozzle)(fix'@41,651 297x26
+[census]    T 'panel'@8,689 420x30
+[census]    T 'Quality'@22,693 54x22
+[census]    T 'Strength'@84,693 66x22
+[census]    T 'Speed'@158,693 47x22
+[census]    T 'Support'@213,693 61x22
+[census]    T 'Multimaterial'@282,693 97x22
+[census]    T 'Others'@387,693 37x22
+[census]    T 'panel'@8,609 420x30
+[census]    T 'panel'@8,93 420x30
+[census]    T 'panel'@8,123 420x216
+[census]    T 'panel'@12,131 412x68
+[census]    T 'Snapmaker U1 (0.8 nozzle)(fixture.3mf)'@70,152 338x26
+[census]    T 'panel'@12,213 412x26
+[census]    T 'Textured PEI Plate'@94,213 330x26
+[census]    T 'panel'@12,255 412x80
+[census]    T 'control'@12,255 412x80
+[census]    T 'panel'@14,280 408x52
+[census]    T '0.8mm'@108,290 113x32
+[census]    T 'Standard'@294,290 113x32
+[census]    T 'panel'@8,339 420x30
+[census]    T 'Flushing volumes'@210,344 103x19
+[census]    T 'Color Mixing Match'@318,344 110x19
+[census]    T 'panel'@8,369 420x240
+[census]    T 'panel'@8,415 420x102
+[census]    T 'panel'@8,415 420x102
+[census]    T 'Generic PETG @U1 0.8 nozzle(fixture.3mf)'@45,417 140x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@243,417 152x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@45,451 140x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@243,451 152x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@45,485 140x30
+[census]    T 'panel'@8,377 420x30
+[census]    T 'panel'@8,377 12x30
+[census]    T 'panel'@416,377 12x30
+[census]    T 'panel'@8,525 420x30
+[census]    T 'panel'@8,525 12x30
+[census]    T 'panel'@416,525 12x30
+[census]    T 'panel'@8,555 420x54
+[census]    T 'panel'@8,555 420x54
+[census]    T 'panel'@20,570 20x20
+[census]    T 'panel'@45,565 140x30
+[census]    T 'panel'@433,74 1494x965
+[census]    T 'panel'@433,74 1494x965
+[census]    T 'control'@7,38 1920x36
+[census]    T 'Print'@1817,44 72x24
+[census]    T 'Slice plate'@1667,44 109x24
+[census]    T ' Project'@455,38 136x36
+[census]    T ' Prepare'@47,38 136x36
+[census]    T ' Preview'@183,38 136x36
+[census]    T ' Device'@319,38 136x36
+[census] TAB Speed clicked=True classes={'wxWindowNR': 115, 'Edit': 37, 'Button': 35, 'Static': 11}
+[census]    T 'control'@7,7 1920x31
+[census]    T 'panel'@7,74 1920x965
+[census]    T 'panel'@8,93 420x945
+[census]    T 'panel'@8,93 420x945
+[census]    T 'panel'@8,725 420x313
+[census]    T 'First layer speed'@13,730 393x18
+[census]    T 'layers'@203,875 120x26
+[census]    T 'mm/s or %'@203,827 120x26
+[census]    T 'mm/s'@203,788 120x26
+[census]    T 'mm/s'@203,758 120x26
+[census]    T 'Other layers speed'@13,922 393x18
+[census]    T 'mm/s'@203,1178 120x26
+[census]    T 'mm/s'@203,1148 120x26
+[census]    T 'mm/s'@203,1118 120x26
+[census]    T 'mm/s'@203,1088 120x26
+[census]    T 'mm'@203,1049 120x26
+[census]    T 'mm/s or %'@203,1010 120x26
+[census]    T 'mm/s'@203,980 120x26
+[census]    T 'mm/s'@203,950 120x26
+[census]    T 'Overhang speed'@13,1216 393x18
+[census]    T 'mm/s or %'@203,1472 120x26
+[census]    T 'mm/s'@203,1446 120x26
+[census]    T 'mm/s or %'@203,1416 120x26
+[census]    T 'mm/s or %'@203,1390 120x26
+[census]    T 'mm/s or %'@203,1364 120x26
+[census]    T 'mm/s or %'@203,1338 120x26
+[census]    T 'Travel speed'@13,1512 393x18
+[census]    T 'mm/s'@203,1540 120x26
+[census]    T 'Acceleration'@13,1578 393x18
+[census]    T '%'@203,1906 120x26
+[census]    T 'mm/s²'@203,1846 120x26
+[census]    T 'mm/s²'@203,1816 120x26
+[census]    T 'mm/s²'@203,1786 120x26
+[census]    T 'mm/s² or %'@203,1756 120x26
+[census]    T 'mm/s² or %'@203,1726 120x26
+[census]    T 'mm/s² or %'@203,1696 120x26
+[census]    T 'mm/s²'@203,1666 120x26
+[census]    T 'mm/s²'@203,1636 120x26
+[census]    T 'mm/s²'@203,1606 120x26
+[census]    T 'Jerk(XY)'@13,1944 393x18
+[census]    T 'mm/s'@203,2152 120x26
+[census]    T 'mm/s'@203,2122 120x26
+[census]    T 'mm/s'@203,2092 120x26
+[census]    T 'mm/s'@203,2062 120x26
+[census]    T 'mm/s'@203,2032 120x26
+[census]    T 'mm/s'@203,2002 120x26
+[census]    T 'mm/s'@203,1972 120x26
+[census]    T 'Advanced'@13,2190 393x18
+[census]    T 'mm³/s²'@203,2227 120x26
+[census]    T 'panel'@8,639 420x80
+[census]    T 'panel'@8,649 420x30
+[census]    T '0.40 Standard @Snapmaker U1 (0.8 nozzle)(fix'@41,651 297x26
+[census]    T 'panel'@8,689 420x30
+[census]    T 'Quality'@22,693 54x22
+[census]    T 'Strength'@84,693 66x22
+[census]    T 'Speed'@158,693 47x22
+[census]    T 'Support'@213,693 61x22
+[census]    T 'Multimaterial'@282,693 97x22
+[census]    T 'Others'@387,693 37x22
+[census]    T 'panel'@8,609 420x30
+[census]    T 'panel'@8,93 420x30
+[census]    T 'panel'@8,123 420x216
+[census]    T 'panel'@12,131 412x68
+[census]    T 'Snapmaker U1 (0.8 nozzle)(fixture.3mf)'@70,152 338x26
+[census]    T 'panel'@12,213 412x26
+[census]    T 'Textured PEI Plate'@94,213 330x26
+[census]    T 'panel'@12,255 412x80
+[census]    T 'control'@12,255 412x80
+[census]    T 'panel'@14,280 408x52
+[census]    T '0.8mm'@108,290 113x32
+[census]    T 'Standard'@294,290 113x32
+[census]    T 'panel'@8,339 420x30
+[census]    T 'Flushing volumes'@210,344 103x19
+[census]    T 'Color Mixing Match'@318,344 110x19
+[census]    T 'panel'@8,369 420x240
+[census]    T 'panel'@8,415 420x102
+[census]    T 'panel'@8,415 420x102
+[census]    T 'Generic PETG @U1 0.8 nozzle(fixture.3mf)'@45,417 140x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@243,417 152x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@45,451 140x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@243,451 152x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@45,485 140x30
+[census]    T 'panel'@8,377 420x30
+[census]    T 'panel'@8,377 12x30
+[census]    T 'panel'@416,377 12x30
+[census]    T 'panel'@8,525 420x30
+[census]    T 'panel'@8,525 12x30
+[census]    T 'panel'@416,525 12x30
+[census]    T 'panel'@8,555 420x54
+[census]    T 'panel'@8,555 420x54
+[census]    T 'panel'@20,570 20x20
+[census]    T 'panel'@45,565 140x30
+[census]    T 'panel'@433,74 1494x965
+[census]    T 'panel'@433,74 1494x965
+[census]    T 'control'@7,38 1920x36
+[census]    T 'Print'@1817,44 72x24
+[census]    T 'Slice plate'@1667,44 109x24
+[census]    T ' Project'@455,38 136x36
+[census]    T ' Prepare'@47,38 136x36
+[census]    T ' Preview'@183,38 136x36
+[census]    T ' Device'@319,38 136x36
+[census] TAB Support clicked=True classes={'wxWindowNR': 101, 'Button': 38, 'Edit': 17, 'Static': 11}
+[census]    T 'control'@7,7 1920x31
+[census]    T 'panel'@7,74 1920x965
+[census]    T 'panel'@8,93 420x945
+[census]    T 'panel'@8,93 420x945
+[census]    T 'panel'@8,725 420x313
+[census]    T 'Support'@13,730 393x18
+[census]    T 'mm'@253,938 120x26
+[census]    T '%'@253,908 120x26
+[census]    T 'mm or %'@253,878 120x26
+[census]    T '°'@253,848 120x26
+[census]    T 'Default (Grid/Organic)'@253,818 120x26
+[census]    T 'Tree (auto)'@253,788 120x26
+[census]    T 'Raft'@13,1036 393x18
+[census]    T 'layers'@253,1064 120x26
+[census]    T 'Filament for Supports'@13,1102 393x18
+[census]    T 'Default'@253,1160 120x26
+[census]    T 'Default'@253,1130 120x26
+[census]    T 'Support ironing'@13,1198 393x18
+[census]    T 'Advanced'@13,1264 393x18
+[census]    T 'mm'@253,1691 120x26
+[census]    T 'mm'@253,1652 120x26
+[census]    T 'mm'@253,1622 120x26
+[census]    T 'mm'@253,1592 120x26
+[census]    T 'mm'@253,1562 120x26
+[census]    T 'Default'@253,1532 120x26
+[census]    T 'layers'@253,1502 120x26
+[census]    T 'layers'@253,1472 120x26
+[census]    T '°'@253,1442 120x26
+[census]    T 'mm'@253,1412 120x26
+[census]    T 'Default'@253,1382 120x26
+[census]    T 'mm'@253,1322 120x26
+[census]    T 'mm'@253,1292 120x26
+[census]    T 'panel'@8,639 420x80
+[census]    T 'panel'@8,649 420x30
+[census]    T '0.40 Standard @Snapmaker U1 (0.8 nozzle)(fix'@41,651 297x26
+[census]    T 'panel'@8,689 420x30
+[census]    T 'Quality'@22,693 54x22
+[census]    T 'Strength'@84,693 66x22
+[census]    T 'Speed'@158,693 47x22
+[census]    T 'Support'@213,693 61x22
+[census]    T 'Multimaterial'@282,693 97x22
+[census]    T 'Others'@387,693 37x22
+[census]    T 'panel'@8,609 420x30
+[census]    T 'panel'@8,93 420x30
+[census]    T 'panel'@8,123 420x216
+[census]    T 'panel'@12,131 412x68
+[census]    T 'Snapmaker U1 (0.8 nozzle)(fixture.3mf)'@70,152 338x26
+[census]    T 'panel'@12,213 412x26
+[census]    T 'Textured PEI Plate'@94,213 330x26
+[census]    T 'panel'@12,255 412x80
+[census]    T 'control'@12,255 412x80
+[census]    T 'panel'@14,280 408x52
+[census]    T '0.8mm'@108,290 113x32
+[census]    T 'Standard'@294,290 113x32
+[census]    T 'panel'@8,339 420x30
+[census]    T 'Flushing volumes'@210,344 103x19
+[census]    T 'Color Mixing Match'@318,344 110x19
+[census]    T 'panel'@8,369 420x240
+[census]    T 'panel'@8,415 420x102
+[census]    T 'panel'@8,415 420x102
+[census]    T 'Generic PETG @U1 0.8 nozzle(fixture.3mf)'@45,417 140x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@243,417 152x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@45,451 140x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@243,451 152x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@45,485 140x30
+[census]    T 'panel'@8,377 420x30
+[census]    T 'panel'@8,377 12x30
+[census]    T 'panel'@416,377 12x30
+[census]    T 'panel'@8,525 420x30
+[census]    T 'panel'@8,525 12x30
+[census]    T 'panel'@416,525 12x30
+[census]    T 'panel'@8,555 420x54
+[census]    T 'panel'@8,555 420x54
+[census]    T 'panel'@20,570 20x20
+[census]    T 'panel'@45,565 140x30
+[census]    T 'panel'@433,74 1494x965
+[census]    T 'panel'@433,74 1494x965
+[census]    T 'control'@7,38 1920x36
+[census]    T 'Print'@1817,44 72x24
+[census]    T 'Slice plate'@1667,44 109x24
+[census]    T ' Project'@455,38 136x36
+[census]    T ' Prepare'@47,38 136x36
+[census]    T ' Preview'@183,38 136x36
+[census]    T ' Device'@319,38 136x36
+[census] TAB Multimaterial clicked=True classes={'wxWindowNR': 97, 'Button': 43, 'Edit': 14, 'Static': 11}
+[census]    T 'control'@7,7 1920x31
+[census]    T 'panel'@7,74 1920x965
+[census]    T 'panel'@8,93 420x945
+[census]    T 'panel'@8,93 420x945
+[census]    T 'panel'@8,725 420x313
+[census]    T 'Prime tower'@13,730 393x18
+[census]    T 'mm'@253,1094 120x26
+[census]    T 'mm'@253,1064 120x26
+[census]    T 'Rib'@253,1034 120x26
+[census]    T 'mm/s'@253,995 120x26
+[census]    T '%'@253,956 120x26
+[census]    T '%'@253,917 120x26
+[census]    T 'mm'@253,878 120x26
+[census]    T 'mm'@253,848 120x26
+[census]    T 'mm³'@253,818 120x26
+[census]    T 'mm'@253,788 120x26
+[census]    T 'Filament for Features'@13,1252 393x18
+[census]    T 'Default'@253,1370 120x26
+[census]    T 'PETG'@253,1340 120x26
+[census]    T 'PETG'@253,1310 120x26
+[census]    T 'PETG'@253,1280 120x26
+[census]    T 'Ooze prevention'@13,1408 393x18
+[census]    T '∆°C'@253,1526 120x26
+[census]    T 's'@253,1496 120x26
+[census]    T '∆℃'@253,1466 120x26
+[census]    T 'Flush options'@13,1564 393x18
+[census]    T 'Advanced'@13,1660 393x18
+[census]    T 'mm'@253,1805 120x26
+[census]    T 'mm'@253,1757 120x26
+[census]    T 'Color Mixing (Experimental)'@13,1852 393x18
+[census]    T 'panel'@8,639 420x80
+[census]    T 'panel'@8,649 420x30
+[census]    T '0.40 Standard @Snapmaker U1 (0.8 nozzle)(fix'@41,651 297x26
+[census]    T 'panel'@8,689 420x30
+[census]    T 'Quality'@22,693 54x22
+[census]    T 'Strength'@84,693 66x22
+[census]    T 'Speed'@158,693 47x22
+[census]    T 'Support'@213,693 61x22
+[census]    T 'Multimaterial'@282,693 97x22
+[census]    T 'Others'@387,693 37x22
+[census]    T 'panel'@8,609 420x30
+[census]    T 'panel'@8,93 420x30
+[census]    T 'panel'@8,123 420x216
+[census]    T 'panel'@12,131 412x68
+[census]    T 'Snapmaker U1 (0.8 nozzle)(fixture.3mf)'@70,152 338x26
+[census]    T 'panel'@12,213 412x26
+[census]    T 'Textured PEI Plate'@94,213 330x26
+[census]    T 'panel'@12,255 412x80
+[census]    T 'control'@12,255 412x80
+[census]    T 'panel'@14,280 408x52
+[census]    T '0.8mm'@108,290 113x32
+[census]    T 'Standard'@294,290 113x32
+[census]    T 'panel'@8,339 420x30
+[census]    T 'Flushing volumes'@210,344 103x19
+[census]    T 'Color Mixing Match'@318,344 110x19
+[census]    T 'panel'@8,369 420x240
+[census]    T 'panel'@8,415 420x102
+[census]    T 'panel'@8,415 420x102
+[census]    T 'Generic PETG @U1 0.8 nozzle(fixture.3mf)'@45,417 140x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@243,417 152x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@45,451 140x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@243,451 152x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@45,485 140x30
+[census]    T 'panel'@8,377 420x30
+[census]    T 'panel'@8,377 12x30
+[census]    T 'panel'@416,377 12x30
+[census]    T 'panel'@8,525 420x30
+[census]    T 'panel'@8,525 12x30
+[census]    T 'panel'@416,525 12x30
+[census]    T 'panel'@8,555 420x54
+[census]    T 'panel'@8,555 420x54
+[census]    T 'panel'@20,570 20x20
+[census]    T 'panel'@45,565 140x30
+[census]    T 'panel'@433,74 1494x965
+[census]    T 'panel'@433,74 1494x965
+[census]    T 'control'@7,38 1920x36
+[census]    T 'Print'@1817,44 72x24
+[census]    T 'Slice plate'@1667,44 109x24
+[census]    T ' Project'@455,38 136x36
+[census]    T ' Prepare'@47,38 136x36
+[census]    T ' Preview'@183,38 136x36
+[census]    T ' Device'@319,38 136x36
+[census] TAB Others clicked=True classes={'wxWindowNR': 99, 'Edit': 13, 'Button': 38, 'Static': 11}
+[census]    T 'control'@7,7 1920x31
+[census]    T 'panel'@7,74 1920x965
+[census]    T 'panel'@8,93 420x945
+[census]    T 'panel'@8,93 420x945
+[census]    T 'panel'@8,725 420x313
+[census]    T 'Skirt'@13,730 393x18
+[census]    T 'Disabled'@253,986 120x26
+[census]    T 'layers'@253,956 120x26
+[census]    T 'mm/s'@253,926 120x26
+[census]    T '°'@253,896 120x26
+[census]    T 'mm'@253,866 120x26
+[census]    T 'mm'@253,827 120x26
+[census]    T 'Combined'@253,788 120x26
+[census]    T 'Brim'@13,1024 393x18
+[census]    T 'mm'@253,1112 120x26
+[census]    T 'mm'@253,1082 120x26
+[census]    T 'Auto'@253,1052 120x26
+[census]    T 'Special mode'@13,1150 393x18
+[census]    T 'Default'@253,1238 120x26
+[census]    T 'By layer'@253,1208 120x26
+[census]    T 'Regular'@253,1178 120x26
+[census]    T 'Fuzzy skin'@13,1306 393x18
+[census]    T 'mm'@253,1454 120x26
+[census]    T 'mm'@253,1424 120x26
+[census]    T 'Classic'@253,1394 120x26
+[census]    T 'Displacement'@253,1364 120x26
+[census]    T 'None'@253,1334 120x26
+[census]    T 'G-code output'@13,1540 393x18
+[census]    T 'Post-processing Scripts'@13,1846 393x18
+[census]    T 'Notes'@13,2070 393x18
+[census]    T 'panel'@8,639 420x80
+[census]    T 'panel'@8,649 420x30
+[census]    T '0.40 Standard @Snapmaker U1 (0.8 nozzle)(fix'@41,651 297x26
+[census]    T 'panel'@8,689 420x30
+[census]    T 'Quality'@22,693 54x22
+[census]    T 'Strength'@84,693 66x22
+[census]    T 'Speed'@158,693 47x22
+[census]    T 'Support'@213,693 61x22
+[census]    T 'Multimaterial'@282,693 97x22
+[census]    T 'Others'@387,693 37x22
+[census]    T 'panel'@8,609 420x30
+[census]    T 'panel'@8,93 420x30
+[census]    T 'panel'@8,123 420x216
+[census]    T 'panel'@12,131 412x68
+[census]    T 'Snapmaker U1 (0.8 nozzle)(fixture.3mf)'@70,152 338x26
+[census]    T 'panel'@12,213 412x26
+[census]    T 'Textured PEI Plate'@94,213 330x26
+[census]    T 'panel'@12,255 412x80
+[census]    T 'control'@12,255 412x80
+[census]    T 'panel'@14,280 408x52
+[census]    T '0.8mm'@108,290 113x32
+[census]    T 'Standard'@294,290 113x32
+[census]    T 'panel'@8,339 420x30
+[census]    T 'Flushing volumes'@210,344 103x19
+[census]    T 'Color Mixing Match'@318,344 110x19
+[census]    T 'panel'@8,369 420x240
+[census]    T 'panel'@8,415 420x102
+[census]    T 'panel'@8,415 420x102
+[census]    T 'Generic PETG @U1 0.8 nozzle(fixture.3mf)'@45,417 140x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@243,417 152x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@45,451 140x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@243,451 152x30
+[census]    T 'Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3m'@45,485 140x30
+[census]    T 'panel'@8,377 420x30
+[census]    T 'panel'@8,377 12x30
+[census]    T 'panel'@416,377 12x30
+[census]    T 'panel'@8,525 420x30
+[census]    T 'panel'@8,525 12x30
+[census]    T 'panel'@416,525 12x30
+[census]    T 'panel'@8,555 420x54
+[census]    T 'panel'@8,555 420x54
+[census]    T 'panel'@20,570 20x20
+[census]    T 'panel'@45,565 140x30
+[census]    T 'panel'@433,74 1494x965
+[census]    T 'panel'@433,74 1494x965
+[census]    T 'control'@7,38 1920x36
+[census]    T 'Print'@1817,44 72x24
+[census]    T 'Slice plate'@1667,44 109x24
+[census]    T ' Project'@455,38 136x36
+[census]    T ' Prepare'@47,38 136x36
+[census]    T ' Preview'@183,38 136x36
+[census]    T ' Device'@319,38 136x36
+[census] WHEEL start: focus=wxWindowNR titles=["'Other layers speed'@13,922 393x18"]
+[census] A down1: sig=(121, 126, 127, 128, 129, 134, 135, 142, 148, 153, 158) head='First layer infill Initial layer travel speed 55 mm/s 100% mm/so' titles=["'Other layers speed'@13,862 393x18"] focus=wxWindowNR cursor=(218, 881)
+[census] A down2: sig=(124, 126, 127, 132, 138, 143, 148, 149, 153, 156, 161, 166, 171) head='Number of slow layers Other layers speed Outer wall Inner wall S' titles=["'Other layers speed'@13,802 393x18"] focus=wxWindowNR cursor=(218, 881)
+[census] A down3: sig=(122, 128, 133, 138, 143, 146, 151, 156, 161, 166) head='Other layers speed Outer wall 120 mm/s Inner wall 150 mm/s Small' titles=["'Other layers speed'@13,742 393x18"] focus=wxWindowNR cursor=(218, 881)
+[census] A down4: sig=(123, 128, 133, 134, 135, 136, 141, 146, 151, 156, 161, 167, 170) head='Inner wall Small perimeters Small perimeters threshold Sparse in' titles=["'Other layers speed'@13,682 393x18"] focus=wxWindowNR cursor=(218, 881)
+[census] A down5: sig=(123, 124, 125, 131, 136, 141, 146, 151, 157, 160, 165, 168) head='Small perimeters threshold 0 = Sparse infill 100 mm/s Internal s' titles=["'Other layers speed'@13,622 393x18"] focus=wxWindowNR cursor=(218, 881)
+[census] A up1: sig=(123, 128, 133, 134, 135, 136, 141, 146, 151, 156, 161, 167, 170) head='Inner wall Small perimeters Small perimeters threshold Sparse in' titles=["'Other layers speed'@13,682 393x18"] focus=wxWindowNR cursor=(218, 881)
+[census] A up2: sig=(122, 128, 133, 138, 143, 146, 151, 156, 161, 166) head='Other layers speed Outer wall 120 mm/s Inner wall 150 mm/s Small' titles=["'Other layers speed'@13,742 393x18"] focus=wxWindowNR cursor=(218, 881)
+[census] A up3: sig=(124, 126, 127, 132, 138, 143, 148, 149, 153, 156, 161, 166, 171) head='Number of slow layers Other layers speed Outer wall Inner wall S' titles=["'Other layers speed'@13,802 393x18"] focus=wxWindowNR cursor=(218, 881)
+[census] A up4: sig=(121, 126, 127, 128, 129, 134, 135, 142, 148, 153, 158) head='First layer infill Initial layer travel speed 55 mm/s 100% mm/so' titles=["'Other layers speed'@13,862 393x18"] focus=wxWindowNR cursor=(218, 881)
+[census] A up5: sig=(120, 126, 131, 136, 137, 138, 139, 144, 145, 146, 147, 152, 158, 163, 168) head='First layer speed First layer First layer infill Initial layer t' titles=["'Other layers speed'@13,922 393x18"] focus=wxWindowNR cursor=(218, 881)
+[census] CHECKBOX cands=[(246, 977, 264, 995)]
+[census]    after click: focus=Button
+[census] B down1: sig=(122, 127, 132, 137, 142, 148, 149, 153, 158, 162, 163, 164, 168) head='Top surface 082 mmor% Sparse infill 082 mmor% Internal solid inf' titles=[] focus=Button cursor=(218, 881)
+[census] B down2: sig=(122, 127, 132, 138, 139, 143, 148, 152, 153, 154, 158, 163, 168) head='Internal solid infill 0.82 mmor% Support 082 mmor% [2 | Seam Sea' titles=[] focus=Button cursor=(218, 881)
+[census] B down3: sig=(122, 128, 129, 133, 138, 142, 143, 144, 148, 153, 158, 163, 168) head='[2 | Seam Seam position ~ Aligned Staggered inner seams Of Seam ' titles=[] focus=Button cursor=(218, 881)
+[census] B down4: sig=(123, 128, 132, 133, 134, 138, 143, 148, 153, 158, 164, 165, 169, 170) head='Staggered inner seams Of Seam gap 15% Scarf joint seam (beta) ~ ' titles=[] focus=Button cursor=(218, 881)
+[census] B down5: sig=(122, 123, 124, 128, 133, 138, 143, 148, 154, 155, 159, 160, 164, 169, 170) head='Scarf joint seam (beta) ~ None Role base wipe speed Wipe speed 8' titles=[] focus=Button cursor=(218, 881)
+[census]    after focus_off_edit: focus=Button
+[census] B down1: sig=(123, 128, 133, 138, 144, 149, 154, 159, 164, 169) head='tty Wipe speed Wipe on loops Wipe before external loop Precision' titles=[] focus=Button cursor=(218, 881)
+[census] B down2: sig=(123, 128, 134, 135, 139, 140, 144, 149, 150, 154, 155, 159, 160, 164, 165, 166, 167) head='Wipe before external loop Precision Slice gap closing radius 0.0' titles=[] focus=Button cursor=(218, 881)
+[census] B down3: sig=(124, 125, 129, 130, 134, 139, 144, 149, 154, 156, 157, 162, 167) head='Slice gap closing radius Resolution Arc fitting X-Y hole compens' titles=[] focus=Button cursor=(218, 881)
+[census]    at-edge: combo rect=(246, 961, 366, 987) popup rect=(246, 993, 366, 1049) capture=120x56 words=[('~', 9, 11), ('By', 26, 7), ('layer', 48, 7), ('By', 27, 36), ('object', 48, 35)] hits=[(58, 42, 'By object')]
+[census]       click point (304,1035) -> class=Shell_TrayWnd rect=(0, 1032, 1920, 1080) (popup class=wxWindowNR)
+[census]    screen shot with the popup open saved
+[census]    moved-3-notches: combo rect=(246, 781, 366, 807) text='By layer' -> no popup

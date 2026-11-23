@@ -224,7 +224,8 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             # page. The combo step is PROVEN: this run rebuilt the whole
             # Ironing group (type/Pattern/flow/spacing/inset/angle).
             {"tab": "Speed", "tab_hint": "speed", "op": "float",
-             "label": ["roning", "Ironing speed"], "value": "60"},
+             "label": ["roning", "Ironing speed"], "value": "60",
+             "group": "Other layers speed"},
         ],
         "uia_param_wall_thin": [
             {"tab": "Strength", "tab_hint": "loops", "op": "float", "label": "Wall loops", "value": "4"},
@@ -260,12 +261,18 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             # reason every #270 run looked wedged.
             {"tab": "Speed", "tab_hint": "speed", "op": "float",
              "label": ["^First layer speed"], "value": "30",
-             "group": "Initial layer", "below": True},
+             "group": "First layer speed", "below": True},
             {"op": "float", "label": "^First layer infill", "value": "40",
-             "group": "Initial layer"},
+             "group": "First layer speed"},
             {"op": "float", "label": "^Initial layer travel", "value": "150%",
-             "group": "Initial layer"},
+             "group": "First layer speed"},
         ],
+        # 2026-11-23: the group is spelled 'First layer speed' on the 2.4.0
+        # page (census c101c0f4), not 'Initial layer' as in the source atlas;
+        # with the wrong name scroll_group_into_view wheeled 68 notches away
+        # and only the ungrouped fallback scan found the rows. The title
+        # reads exactly like its first row's label; the engine no longer
+        # takes a title line for a row (on_title_line).
         # 2026-11-23: rows anchored to the line start and confined to the
         # 'Other layers speed' group - the same labels exist in the
         # Acceleration and Jerk groups (census + screenshot f0e683fb); the
@@ -299,9 +306,13 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         ],
         # Feishu #264: detect checkbox lives on Quality; the five band speeds
         # are one "Overhang speed" row with five inline Edits (field 0..4).
+        # 2026-11-23 (census c101c0f4): 'Detect overhang walls' is the first
+        # row of the Quality page's LAST group, 'Overhangs' (y 2560 of a page
+        # that starts at 730) - 55 rows below the top. Without its group the
+        # scan never got there (run f775cd31).
         "uia_param_overhang_speeds": [
             {"tab": "Quality", "tab_hint": "height", "op": "checkbox", "label": "Detect overhang",
-             "value": True},
+             "value": True, "group": "Overhangs"},
             {"tab": "Speed", "tab_hint": "speed", "op": "checkbox", "label": "Slow down",
              "value": True, "group": "Overhang"},
             {"op": "float", "label": "Overhang speed", "value": "40", "group": "Overhang", "field": 0},
@@ -501,15 +512,20 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         # previous edit just painted (fixture paints 0 50 25 5).
         # overhang_totally_speed does not exist in this fork; bridge
         # speed and the enable flag already sit at the table targets.
+        # 2026-11-23: rows anchored to the row label only. The value-bearing
+        # phrases ('Overhang speed 0', ... 'Overhang speed 40 30 20') never
+        # matched what OCR made of the painted field row (overhang_bridge run
+        # ec02cd86: two 'not found' per op before the plain fallback); the
+        # field index already selects the Edit.
         "uia_param_overhang_bridge": [
             {"tab": "Speed", "tab_hint": "speed", "op": "float",
-             "label": ["Overhang speed 0", "Overhang speed"], "value": "40",
+             "label": "Overhang speed", "value": "40",
              "group": "Overhang", "field": 0},
-            {"op": "float", "label": ["Overhang speed 40", "Overhang speed"], "value": "30",
+            {"op": "float", "label": "Overhang speed", "value": "30",
              "group": "Overhang", "field": 1},
-            {"op": "float", "label": ["Overhang speed 40 30", "Overhang speed"], "value": "20",
+            {"op": "float", "label": "Overhang speed", "value": "20",
              "group": "Overhang", "field": 2},
-            {"op": "float", "label": ["Overhang speed 40 30 20", "Overhang speed"],
+            {"op": "float", "label": "Overhang speed",
              "value": "10", "group": "Overhang", "field": 3},
         ],
         # Feishu #273 (line 192): the row paints just 'Travel' + the
@@ -657,8 +673,10 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         # :691-703) which HIDES branch_angle/adaptive/max_bridge, so the
         # Style combo ('Default' -> 'Tree Slim', popup word 'Slim') must run
         # before the floats; each later op re-anchors by its own group.
-        # wall loops + max bridge live in 'Advanced', branch angle in
-        # 'Tree supports'.
+        # wall loops + max bridge live in 'Advanced'; so does the branch
+        # angle - the Support page has no 'Tree supports' title (census
+        # c101c0f4: Support / Raft / Filament for Supports / Support
+        # ironing / Advanced).
         "uia_param_tree_support": [
             {"tab": "Support", "tab_hint": "support", "op": "checkbox",
              "label": "Enable", "value": True, "group": "Support"},
@@ -666,7 +684,7 @@ PARAM_OPS = {        "uia_param_ironing_top": [
              "group": "Support"},
             {"op": "float", "label": ["Tree support branch angle",
                                       "branch angle"], "value": "40",
-             "group": "Tree supports"},
+             "group": "Advanced"},
             {"op": "float", "label": ["Support wall loops", "wall loops"],
              "value": "1", "group": "Advanced"},
             {"op": "float", "label": ["Max bridge length", "bridge length"],

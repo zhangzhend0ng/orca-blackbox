@@ -22,6 +22,13 @@ from harness.native_script_baseline import PARAM_OPS  # noqa: E402
 ATLAS = json.loads((Path(__file__).resolve().parent.parent
                     / "harness/param_label_atlas.json").read_text(encoding="utf-8"))
 ROWS = ATLAS["rows"]
+# What the 2.4.0 build really paints as group titles (census run c101c0f4).
+# The atlas comes from the host's source tree and is NOT the build: it lists
+# 'Initial layer speed' where the page says 'First layer speed', and a
+# 'Tree supports' group the Support page does not have - both passed the
+# atlas check and both failed in the GUI (queue18, 2026-11-23).
+CENSUS = json.loads((Path(__file__).resolve().parent.parent
+                     / "harness/param_ui_titles_2.4.0.json").read_text(encoding="utf-8"))
 
 
 def label_matches(variant, label):
@@ -143,8 +150,11 @@ def main():
             tab = op.get("tab") or tab
             group = op.get("group")
             if group and tab:
-                titles = [g.get("title") for g in ATLAS["pages"].get(tab, [])]
-                if not any(group.lower() in (t or "").lower() for t in titles):
+                # The painted titles of the build decide; the source atlas
+                # is only the fallback for a tab the census did not cover.
+                titles = [r["title"] for r in CENSUS["tabs"].get(tab, [])] or \
+                    [g.get("title") for g in ATLAS["pages"].get(tab, [])]
+                if titles and not any(group.lower() in (t or "").lower() for t in titles):
                     problems.append(f"{scenario} op[{i}] group {group!r}: no such group title on "
                                     f"tab {tab!r} (titles: {titles})")
             current = op.get("current")

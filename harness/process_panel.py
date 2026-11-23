@@ -49,6 +49,31 @@ RESET_WHEEL_NOTCHES = 40  # tab switch: force the options viewport back to
                           # not recover the top (measured: Layer height
                           # unreachable on the 0.4-restore visit).
 
+# Group-title geometry, measured on the 2.4.0 guest build (census run
+# c101c0f4): every options-group title is a 393x18 window at x 13; the unit
+# labels ('mm/s', 'mm/s or %', 'mm'...) are titled windows too, 120x26 at
+# x 203, and must stay out of the title set (see group_titles).
+GROUP_TITLE_MIN_W = 300
+GROUP_TITLE_MAX_X = 60
+GROUP_TITLE_MAX_H = 30
+WHEEL_STEP_PX = 60          # one wheel notch moves the options page 60px
+                            # (two rows), measured down and up in c101c0f4
+# An ungrouped label scan has no title to position by, so it must be able
+# to cross a whole page (Quality: 102 rows = ~51 notches). It ends at the
+# page end through the stall guard; the notch and time caps only bound a
+# label that is not on the page at all (the 12/26 notches of r3 covered
+# 24 rows from the start and never reached 'Detect overhang walls' 55 rows
+# down: overhang_speeds, run f775cd31).
+SCAN_NOTCHES = 110
+SCAN_SECONDS = 90.0
+# A combo's popup list opens straight below the control and is NOT kept off
+# the taskbar: with the 'Print sequence' combo at the viewport bottom
+# (y 961-987) its popup was y 993-1049 while the work area ends at 1032, and
+# the click on 'By object' resolved to Shell_TrayWnd (by_object run
+# 6640e4a9, census c101c0f4). Park the row this far above the work-area
+# bottom before opening anything (7 rows at the popup's 28px pitch).
+POPUP_ROOM = 220
+
 
 def client(session, x, y):
     return winutil.client_to_screen(session.hwnd, x, y)
@@ -378,18 +403,12 @@ def wheel_viewport(session, viewport, notches, delta=-120):
 
 
 def group_title(session, substr):
-    """An options-group title (':StaticLine' = wxWindowNR with the group
-    name, full width). Its rect tracks the scroll offset exactly, so it is
-    usable for positioning even when scrolled out of view (the 20x20
-    same-text icon overlays are filtered by width)."""
-    py = process_row_y(session)
-    if py is None:
-        return None
-    f = frect(session)
-    for t, c, r, h, lx, ly in kids(session):
-        if c == "wxWindowNR" and substr.lower() in t.lower() \
-                and user32.IsWindowVisible(h) \
-                and (r[2] - r[0]) > 100 and lx < 424 and ly > py:
+    """The options-group title whose text contains `substr`: (rect, hwnd).
+    Its rect tracks the scroll offset exactly, so it is usable for
+    positioning even when scrolled out of view. See group_titles() for
+    what counts as a group title."""
+    for t, r, h in group_titles(session):
+        if substr.lower() in t.lower():
             return r, h
     return None
 
@@ -408,6 +427,10 @@ def scroll_group_into_view(session, substr, timeout_s=420.0):
     stuck = 0
     missing = 0
     while time.monotonic() < deadline:
+        # group_title() now sees a title wherever it is scrolled to, so the
+        # wheel below goes UP when the title sits above the band. Before,
+        # a title above the Process row was invisible here and the loop
+        # only wheeled down (feature_speeds, run af5292e5).
         hit = group_title(session, substr)
         vp = options_viewport(session)
         if not vp:
@@ -459,18 +482,63 @@ def scroll_group_into_view(session, substr, timeout_s=420.0):
 
 def group_titles(session):
     """Every options-group title on the current page as (text, rect, hwnd),
-    top to bottom - the group_title() filter minus the substring. The rects
-    track the scroll offset even when a title is scrolled out of view."""
+    top to bottom, at ANY scroll position - the rects track the scroll
+    offset even when a title is scrolled out of view.
+
+    What counts (census run c101c0f4, 2.4.0): a titled wxWindowNR at
+    x ~13, 393 wide, 18 high. Three things made the old filter wrong:
+    - the unit labels ('mm/s', 'mm/s or %', 'mm'...) are titled wxWindowNR
+      windows as well, 120 wide at x 203. With a 100px width floor they
+      counted as 'the next title', so group_span() shrank to the ~10px
+      between a group's title and its first unit label and every row but
+      the first was rejected as 'a neighbouring group' (queue18:
+      accelerations op 2+, seam_wipe 'Wipe speed', overhang_bridge).
+    - 'ly > py' dropped every title scrolled above the Process row. After
+      an edit commit the page is rebuilt and lands anywhere; with the title
+      above that line scroll_group_into_view saw 'no such title' and its
+      missing-branch only wheels DOWN, away from it (feature_speeds op 3:
+      68 notches, 'no such group title').
+    - descendants of the options viewport are the page's own windows
+      wherever they sit; the preset panel's titled windows (above the
+      Process row) are not its descendants.
+    The containers are all named 'panel' (the viewport included) and must
+    not be treated as titles: on_title_line() would then match every row."""
     py = process_row_y(session)
     if py is None:
         return []
+    vp = options_viewport(session)
+    vph = vp[1] if vp else 0
     out = []
     for t, c, r, h, lx, ly in kids(session):
-        if c == "wxWindowNR" and t.strip() and user32.IsWindowVisible(h) \
-                and (r[2] - r[0]) > 100 and lx < 424 and ly > py:
+        if c == "wxWindowNR" and t.strip() and t.strip() != "panel" \
+                and user32.IsWindowVisible(h) \
+                and (r[2] - r[0]) >= GROUP_TITLE_MIN_W and lx < GROUP_TITLE_MAX_X \
+                and (r[3] - r[1]) <= GROUP_TITLE_MAX_H \
+                and (ly > py or (vph and user32.IsChild(vph, h))):
             out.append((t.strip(), r, h))
     out.sort(key=lambda item: item[1][1])
     return out
+
+
+def on_title_line(session, y, tol=3):
+    """True when client y lies on a visible GROUP TITLE line. A title can be
+    spelled exactly like the first row under it: 'Layer height' heads the
+    Quality page and is also its first row's label. The OCR scan took the
+    title for the row and found no Edit on it (speed_limits, run fc5b643c;
+    before r3 the row's Edit 32px lower was still picked up by a wide
+    tolerance)."""
+    f = frect(session)
+    for _t, r, _h in group_titles(session):
+        if r[1] - f[1] - tol <= y <= r[3] - f[1] + tol:
+            return True
+    return False
+
+
+def scroll_signature(session):
+    """Ground truth for 'did the page move': the y of every group title.
+    Window rects, no OCR - immune to the OCR jitter that made a y-only
+    OCR signature report 'unchanged' for a moving page (see _StallGuard)."""
+    return tuple((t, r[1]) for t, r, _h in group_titles(session))
 
 
 def group_span(session, substr):
@@ -594,7 +662,19 @@ class _StallGuard:
         self.last, self.stalls, self.revives = None, 0, 0
 
     def step(self, words):
-        sig = tuple(sorted({int(y) // 6 for _w, _x, y, *_r in words}))
+        # Two signals: the group titles' window y (no OCR involved) and the
+        # OCR words WITH their text. The signature used to be the set of OCR
+        # word y values alone. One notch moves the page 60px = two rows, so
+        # over uniform rows the band shows the same y layout step after step
+        # while the page is moving - which read as 'unchanged', cost two
+        # focus resets and then ended the scan as 'end of page' in the
+        # middle of a group (queue18: seam_wipe, overhang_bridge and
+        # feature_speeds each logged 9 unchanged wheels; census c101c0f4
+        # then wheeled those rows with the focus on a checkbox Button and
+        # the page moved on every notch).
+        titles = scroll_signature(self.session)
+        ocr = tuple(sorted((int(y) // 6, str(w).lower()) for w, _x, y, *_r in words))
+        sig = (titles, ocr) if titles else (None, ocr)
         if sig != self.last:
             self.last, self.stalls = sig, 0
             return False
@@ -966,25 +1046,42 @@ def find_option_row(session, label_substr, group_substr=None,
     # anywhere (run 983bab81) - scan down first, then back up.
     # 2026-11-23: stall guard + focus reset while scanning (_StallGuard), and
     # with a group requested the hit must lie inside that group's band.
-    span = group_span(session, group_substr) if group_substr else None
+    # 2026-11-23 r3c (census c101c0f4 + queue18): the span is re-read on every
+    # step - it is in client coordinates and the page moves under it; frozen
+    # at the start it rejected the group's own rows once they had scrolled
+    # above the title's starting position. A label spelled like a group title
+    # does not match the title line itself. A scan runs to the page end (the
+    # stall guard) within SCAN_NOTCHES / SCAN_SECONDS per direction.
     stall = _StallGuard(session, "find_option_row(%r)" % label_substr)
     for direction in (-120, 120):
-      stall.reset()
-      for _ in range(12 if direction == -120 else 26):
-        words = ocr_band(session, psm=psm)
-        print(f"[panel] find_option_row({label_substr!r}) band: "
-              f"{' '.join(w for w, *_ in words)[:120]!r}")
-        for w, x, y, ww, hh in words:
-            if label_substr.lower() in w.lower():
-                if span and not (span[0] <= y < span[1]):
-                    continue  # the same word in a neighbouring group
-                return (x, y, x + ww, y + hh), y + hh // 2
-        vp = options_viewport(session)
-        if vp:
-            if stall.step(words):
+        stall.reset()
+        started = time.monotonic()
+        last_band = None
+        for _ in range(SCAN_NOTCHES):
+            if time.monotonic() - started > SCAN_SECONDS:
+                print(f"[panel] find_option_row({label_substr!r}): "
+                      f"{SCAN_SECONDS:.0f}s cap reached scanning "
+                      f"{'down' if direction < 0 else 'up'}", flush=True)
                 break
-            wheel_viewport(session, vp, 1, delta=direction)
-        time.sleep(0.4)
+            span = group_span(session, group_substr) if group_substr else None
+            words = ocr_band(session, psm=psm)
+            band = " ".join(w for w, *_ in words)[:120]
+            if band != last_band:
+                print(f"[panel] find_option_row({label_substr!r}) band: {band!r}")
+                last_band = band
+            for w, x, y, ww, hh in words:
+                if label_substr.lower() in w.lower():
+                    if on_title_line(session, y):
+                        continue  # the group title, not a row
+                    if span and not (span[0] <= y < span[1]):
+                        continue  # the same word in a neighbouring group
+                    return (x, y, x + ww, y + hh), y + hh // 2
+            vp = options_viewport(session)
+            if vp:
+                if stall.step(words):
+                    break
+                wheel_viewport(session, vp, 1, delta=direction)
+            time.sleep(0.4)
     return None, None
 
 
@@ -1253,6 +1350,58 @@ def find_option_combo_seq(session, seq, group_substr=None, psm=3):
     return (rc, hwnd, buf.value)
 
 
+def work_area():
+    """(left, top, right, bottom) of the primary monitor's work area - the
+    screen minus the taskbar: 1920x1032 on the guest, while the maximized
+    frame reports y up to 1039 and the options viewport reaches 1038
+    (census c101c0f4). None when the query fails."""
+    import ctypes.wintypes as wt
+    rc = wt.RECT()
+    if not user32.SystemParametersInfoW(0x0030, 0, ctypes.byref(rc), 0):  # SPI_GETWORKAREA
+        return None
+    return (rc.left, rc.top, rc.right, rc.bottom)
+
+
+def park_for_popup(session, rect):
+    """Wheel the options page DOWN until the control at screen `rect` has
+    POPUP_ROOM px of work area below it. Returns the notch count (0 = the
+    page did not move). The page moves WHEEL_STEP_PX per notch, so the
+    caller has to locate its row again whenever this returns > 0."""
+    work = work_area()
+    vp = options_viewport(session)
+    if not work or not vp:
+        return 0
+    short = POPUP_ROOM - (work[3] - rect[3])
+    if short <= 0:
+        return 0
+    notches = min(8, -(-short // WHEEL_STEP_PX) + 1)
+    wheel_viewport(session, vp, notches, delta=-120)
+    print(f"[panel] popup parking: row bottom {rect[3]} had "
+          f"{work[3] - rect[3]}px of {POPUP_ROOM}px above the work-area "
+          f"bottom {work[3]} -> {notches} notches", flush=True)
+    return notches
+
+
+def popup_hit_clickable(popup_hwnd, x, y):
+    """True when a click at screen (x, y) would land INSIDE the popup. A
+    popup row can sit under the taskbar: WindowFromPoint then names another
+    window - Shell_TrayWnd for 'By object' (census c101c0f4)."""
+    hwnd = winutil.window_from_screen_point(x, y)
+    return bool(hwnd) and (hwnd == popup_hwnd
+                           or bool(user32.IsChild(popup_hwnd, hwnd)))
+
+
+def close_popup(session, popup_hwnd, combo_point):
+    """Dismiss an open options popup: ESC, and should it still be there a
+    click on its own combo (a click anywhere else closes it too, but might
+    toggle something on the way)."""
+    mdu._send_keys([(0x1B, False), (0x1B, True)])
+    time.sleep(0.6)
+    if user32.IsWindowVisible(popup_hwnd):
+        winutil.msg_click_screen(combo_point[0], combo_point[1], session.hwnd)
+        time.sleep(0.6)
+
+
 def set_combo_by_popup(session, locate, target_substr, log="[panel]",
                        verify_seq=None, group_substr=None, psm=3):
     """m5d's Support-Type mechanic, generalized: open the options-panel
@@ -1279,25 +1428,23 @@ def set_combo_by_popup(session, locate, target_substr, log="[panel]",
             scroll_group_into_view(session, group_substr)
         except Exception as exc:
             print(f"{log} group pre-scroll failed: {type(exc).__name__}")
-    if isinstance(locate, (tuple, list)):
-        r, h, cur = find_option_combo_seq(session, locate, group_substr,
-                                          psm=psm)
-    else:
-        r, h, cur = find_option_combo(session, locate, psm=psm)
-    print(f"{log} set_combo_by_popup({locate!r} -> {target_substr!r}): "
-          f"combo text={cur!r}")
-    if not h:
-        return False, False
-    cx, cy = (r[0] + r[2]) // 2, (r[1] + r[3]) // 2
-    winutil.msg_click_screen(cx, cy, session.hwnd)
-    popup = None
-    for _ in range(20):
-        popup = export_util.wait_popup(session.pid, timeout_s=0.5)
-        if popup:
-            break
-    print(f"{log} popup: {popup}")
-    if popup:
-        pr, ph = popup[2], popup[3]
+    def _locate():
+        if isinstance(locate, (tuple, list)):
+            return find_option_combo_seq(session, locate, group_substr,
+                                         psm=psm)
+        return find_option_combo(session, locate, psm=psm)
+
+    def _open():
+        """Click the combo; its popup's (rect, hwnd) or None."""
+        winutil.msg_click_screen((r[0] + r[2]) // 2, (r[1] + r[3]) // 2,
+                                 session.hwnd)
+        for _ in range(20):
+            popup = export_util.wait_popup(session.pid, timeout_s=0.5)
+            if popup:
+                return popup[2], popup[3]
+        return None
+
+    def _words(ph):
         time.sleep(0.8)  # self-drawn rows lag the popup creation
         words = []
         for _attempt in range(3):
@@ -1307,19 +1454,63 @@ def set_combo_by_popup(session, locate, target_substr, log="[panel]",
             if words:
                 break
             time.sleep(0.6)
+        return words
+
+    r, h, cur = _locate()
+    if h and park_for_popup(session, r):
+        r, h, cur = _locate()  # the row moved up with the page
+    print(f"{log} set_combo_by_popup({locate!r} -> {target_substr!r}): "
+          f"combo text={cur!r}")
+    if not h:
+        return False, False
+    cx, cy = (r[0] + r[2]) // 2, (r[1] + r[3]) // 2
+    opened = _open()
+    print(f"{log} popup: {opened}")
+    if opened:
+        pr, ph = opened
+        words = _words(ph)
         print(f"{log} popup rows: "
               f"{' | '.join(t for t, *_ in words)[:140]!r}")
+        hits = popup_line_hits(words, target_substr)
+        if hits and not popup_hit_clickable(
+                ph, pr[0] + hits[0][0], pr[1] + hits[0][1]):
+            # The row is there but not on screen (under the taskbar). Close
+            # the popup, move the page, open it again - once.
+            print(f"{log} popup row {target_substr!r} is off-screen "
+                  f"(popup {pr}, work area {work_area()}) -> parking the "
+                  f"row and reopening", flush=True)
+            close_popup(session, ph, (cx, cy))
+            vp = options_viewport(session)
+            if vp:
+                wheel_viewport(session, vp, 3, delta=-120)
+            r, h, cur = _locate()
+            if h:
+                opened = _open()
+                print(f"{log} popup after parking: {opened}")
+                if opened:
+                    pr, ph = opened
+                    words = _words(ph)
+                    print(f"{log} popup rows: "
+                          f"{' | '.join(t for t, *_ in words)[:140]!r}")
+                    hits = popup_line_hits(words, target_substr)
         clicked = False
-        for cx_, cy_, _line in popup_line_hits(words, target_substr):
-            winutil.msg_click_screen(pr[0] + cx_, pr[1] + cy_)
-            clicked = True
+        for cx_, cy_, _line in hits:
+            x, y = pr[0] + cx_, pr[1] + cy_
+            if popup_hit_clickable(ph, x, y):
+                winutil.msg_click_screen(x, y)
+                clicked = True
+            else:
+                print(f"{log} popup row at ({x}, {y}) is still not "
+                      f"clickable - leaving it unclicked", flush=True)
             break
-        if not clicked:
+        if not clicked and not popup_line_hits(words, target_substr):
             # blind fallback: 28px row pitch; verify by re-locating the
             # combo by its new value after each click, reopen when missed
             for row in range(5):
-                winutil.msg_click_screen((pr[0] + pr[2]) // 2,
-                                         pr[1] + 14 + row * 28)
+                x, y = (pr[0] + pr[2]) // 2, pr[1] + 14 + row * 28
+                if not popup_hit_clickable(ph, x, y):
+                    continue
+                winutil.msg_click_screen(x, y)
                 time.sleep(1.0)
                 if find_option_combo(session, target_substr)[1]:
                     clicked = True
@@ -1338,7 +1529,18 @@ def set_combo_by_popup(session, locate, target_substr, log="[panel]",
                     break
                 pr = popup2[2]
         time.sleep(1.5)
-    ok = find_option_combo(session, target_substr, psm=psm)[1] is not None
+    # The combo is a real ComboBox and its window text is the committed
+    # value: reading it is exact and free, while the OCR verify below scans
+    # whole pages for the painted value (38 notches in run 6640e4a9). A
+    # rebuild may have replaced the control, so fall through when it is gone.
+    buf = ctypes.create_unicode_buffer(256)
+    if h and user32.IsWindow(h):
+        user32.GetWindowTextW(h, buf, 256)
+    ok = bool(buf.value) and target_substr.lower() in buf.value.lower()
+    if ok:
+        print(f"{log} combo window text now {buf.value!r}")
+    if not ok:
+        ok = find_option_combo(session, target_substr, psm=psm)[1] is not None
     if not ok and " " in target_substr.strip():
         # find_option_row matches inside ONE OCR word; re-check a multi-word
         # target against whole painted lines (popup_line_hits).
