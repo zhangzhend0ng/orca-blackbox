@@ -286,3 +286,17 @@
 - **未清 5 条**：#255（0.8 喷嘴预设拒绝顶面线宽 0.40，用例与夹具冲突）、#294（仅 BBL 机型有 Timelapse 行）、#296（需按场景播种 develop 模式——入口未接）、#288/#289（混色面板）。详见运行记录「续四」。
 - **Mac 轨道**：参数页原语 5/5 已证并合并（`aedc4bf`、`6cc9cdb`…`3a9ced7`）——`scroll_page`（滚动条 / 最大化）、`pick_combo`（Print sequence → By object，归因未分离）；最小场景「Layer height 0.4→0.2」从保存的 3mf 读回。未证：「Detect thin walls」场景（两次超时）、「Print sequence」场景（未跑）。Mac 口径，不计入 44 条。
 - **fa 线 10 条的独立复核**：fa 上的 agent 用自己写的脚本读保存件比对 pilot（ast 静态解析，不导入仓库代码），53 个键 0 不一致；脚本与一次输出的收据在 `docs/runs/evidence/fa-verify-shadows-2026-11-24/`。
+
+### 2026-11-24 通宵并行段（02:05–08:00（中途版：`_std02` / `_shapes` 两轮还在跑，终版见本节末尾的更新）：全量回归 → #255 / #296 收口 → 两个新夹具）
+
+<!-- xu5-ledger:start -->
+- **参数族闭环 41（41/44，93.2%；截至 08:00（中途版：`_std02` / `_shapes` 两轮还在跑，终版见本节末尾的更新），主线 `8716285`）。** 口径：按每个场景**最新一次**收割 run 的 `release_verdict`（`python tools/param_closure_list.py --ids`，`b45125c` 起不再按「曾有过 SHADOW」计），再用当前 pilot 离线重判每条的最新 SHADOW 保存件（`python tools/rejudge_shadows.py .`：41 OK、0 fail、1 跳过（#294 没有 SHADOW run；#270 / #271 的值更正后待重跑））。GREEN 仍为 0（`harness/native_fixture_suite.py:421` 写死 `release_eligible=False`）。
+- **闭环 ≠ 飞书三条预期（本段查清，未解决）。** 「闭环」只等于四件事：值逐键写进重开的 3MF、其它设置保持、切片并导出 G-code、层网格不变。夹具的两条前置条件都不符——(a) 飞书写的是「U1 0.4mm 喷嘴、PLA、0.20mm 标准工艺预设」，夹具是 0.8 喷嘴 ×4、「0.40 Standard」，各特征挤出速度被体积流量上限压在约 30 mm/s（#271 实测 F1864 / 1870 / 1864 / 2543，不是飞书的 6000 / 9000 / 12000 / 7200）；(b) 飞书每条指定了模型（圆柱体 / 小船 / 欧特克 FDM 测试 / 兔子 / 立方体复制成 2 个…），夹具是单个立方体：支撑族 5 条（#277 #279 #281 #280 #282）的 G-code 里没有支撑路径，#258 没有挤出圆弧，#263 没有桥，所有 run 只用 T0。对照表 `docs/runs/evidence/feishu-expect-vs-gcode-2026-11-24/cube-fixture.txt`（`tools/feishu_expect_facts.py`）。
+- **合并后的引擎上全族重跑：`8dfae16` 上 41 个场景各有 SHADOW——客机 queue25（12）+ queue27（14）+ queue28（2）+ queue26（1），fa queue（12）；fa 上 overhang_speeds / overhang_bridge 首跑失败（窗口更矮），r10 后在 fa 复证通过（`188053e` / `c2368e86`），对照 speed_limits / surface_flow 仍 SHADOW。VM 全量回归 queue24（`36cbb8c`，02:05–04:31）39/39 SHADOW。**
+- **引擎 r6–r10**（`d1d244b` … ``3ca4f32``）：对话框按属主选、只答 op 声明的问题、自绘按钮按子窗点；下拉整词回读；复选框遇模态的两种判法与答 No 后的重读；多行文本框失焦提交；r10——堆叠字段被页面底边裁掉时先下滚再重定位（fa706g3 窗口更矮才暴露）。离线测试 59 → 158 项。
+- **记入 pilot 的偏差 / 产品限制**：#278、#285、#286、#293、#258、#255（先设层高 0.2）、#296（注释生效；行号只给 BBL 机型加、对象标签归 `exclude_object` 管——U1 上不生效，两条都实测）。
+- **未清 3 条（定性）**：#294（Timelapse 行仅 BBL 机型有）、#288 / #289（8 个键没有界面控件，2.3.5 与 2.4.1 源码 + 2.4.0 构建探针 `uia_param_mix_census` 实证）。
+- **fa706g3 第二条线**：探索与复证都在 dev 提交上跑；合并后的 16 个 run 见上。r10 的来由与复证都在这条线。fa 线上一次队列被我中途停掉时，宿主侧的循环进程没被一起停掉，我在它还在跑的时候切了 HEAD——那一条 run（ironing_top_std02）作废、不计入任何数。
+- **Mac 轨道**（Mac 口径，不计入 44 条）：7 条里 6 条 PASS（layer_pair、wall_thin、travel_speed、speed_limits、surface_flow、arc_resolution），precision_comp 未证明；Mac 口径，不计入 44 条。详见运行记录「续五」。
+- **新夹具（离线已建，客机验证见运行记录「续五」末尾）**：`fixtures/feishu_std_cube.3mf`（0.4 喷嘴 / 0.20mm Standard / PLA，sha `36389ec3`）与 `fixtures/feishu_shapes_plate.3mf`（五对象，sha `ee0a22ea`）；后缀 `_std02` / `_shapes` 让每个参数场景在另一个夹具上跑。应用已加载并原样保存过两者；进行中（07:55 时 13 条里 11 条 SHADOW；layer_pair_std02 死在按立方体写死的 #254 驱动 `script_layer_fields_not_as_expected`，support_filament_std02 死在 fa 上弹窗第一行 OCR 没读出「1 PLA」）。已经能说的：#273 其它层空驶 F18000、#270 首层墙 F1800 / 填充 F2400 与飞书一致；#271 的 F6000 / F9000 出现了，但 27 mm 立方体的层时间太短，冷却缓冲把大部分移动压到 F3747——飞书用的模型是小船。；`_shapes` 孪生尚未跑。
+<!-- xu5-ledger:end -->
