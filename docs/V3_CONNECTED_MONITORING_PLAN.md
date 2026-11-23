@@ -42,7 +42,17 @@
 
 **✅ 配对连接全通**（2026-11-23 10:40）：CLI 返回 `connected=true`，U1-MOCK 出现在设备列表（online, Snapmaker U1, v1.4.1）。根因=大通知（4KB 含 PEM 证书）不被 dart_mqtt 处理；迷你通知（仅 state/clientid/sn）通过后 CLI 直接 connected。
 
-**⚠️ 心跳待修**：连接 60s 后 CLI 报 `heartbeat lost`——需调整 `<sn>/status` 推送频率/格式。
+**✅ 心跳已修**（2026-11-23 12:05）：状态推送改为 moonraker 真实格式（JSON-RPC `notify_status_update`，pretty 分隔符，QoS1 retained）+ `printer.*` RPC 应答。2 分钟无心跳丢失，`device_connected=true` 稳定。
+
+**✅ 监控状态回放全通**（2026-11-23 12:10）：
+
+| 状态变化 | CLI 读回（/api/cache/all） | 延迟 |
+|---|---|---|
+| idle → printing(15%, 210°C) | print_state=printing, filename=test_cube.gcode, progress=15.0, extruder=210.5 | <4s |
+| printing → error(42%, "Foreign Object Detected") | print_state=error, message=Possible Foreign Object Detected..., progress=42.0 | <4s |
+| error → complete(100%) | print_state=complete, progress=100.0 | <4s |
+
+改 `device_state.json` 一个文件 → 2s 内 CLI 全链感知。温度/进度/文件名/层号/故障消息 全部可编程注入。
 
 **⚠️ mDNS 组播风暴事故**（2026-11-23）：旧版广播器因无退避+宽泛匹配在生产网发送 23k pps（77Mbps），致同事 PC CPU0 DPC 77%。已完全重写（`mdns_safe.py`）：30s 间隔、10/min 硬上限、精确匹配、预检、21 项离线单测全过后才部署。修复后 2 包/分钟。
 
