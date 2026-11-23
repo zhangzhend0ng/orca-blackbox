@@ -14,6 +14,17 @@ E2 rewrite of census.py cmd_census with the anti-interruption rules:
     the whole per-walk roll cap on Strength
 Everything else (launch/advanced/close protocol, worker) is reused from
 census.py in this directory.
+
+E3 hardening (Others page, 2026-11-23):
+  * the panel rebuild does NOT reset the scroll to the page top - the
+    position is shared across tabs - and notches are swallowed in whole
+    regions, so "2 static up-rolls at the first two points" is no top.
+    Top/bottom now need one full cycle of all wheel points standing still
+  * an empty multi-line text ctrl (Post-processing Scripts) fills the
+    page bottom and eats the wheel at every body point -> gutter points
+    added, clear of any text ctrl
+  * frames without text cannot be judged by row displacement -> the long
+    dark rules (box borders) of the sidebar crop are the fallback
 """
 import argparse
 import json
@@ -25,10 +36,32 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import census as C  # noqa: E402
 
-WHEEL_PTS = [(300, 880), (300, 1000), (300, 800), (350, 940), (150, 900)]
+WHEEL_PTS = [(300, 880), (300, 1000), (300, 800), (350, 940), (150, 900),
+             (16, 900), (20, 760), (412, 900)]   # E3: last three = gutters
 SIDEBAR_RECT = [8, 712, 434, 1040]   # refined after orient 2026-11-23
 STATIC_DY = 8          # |displacement| below this = same position (OCR jitter)
 BOTTOM_AGREE_PX = 60
+TOP_STATIC = len(WHEEL_PTS)   # a full cycle of all points (E3)
+RULE_MIN_PX = 300             # dark run (client px) that makes a rule
+
+
+def hrules(png):
+    """y (crop px / 2) of the long dark horizontal rules in a sidebar crop
+    (scale 2) - box borders, the only signature of a text-less frame."""
+    try:
+        import numpy as np
+        from PIL import Image
+        a = np.asarray(Image.open(png).convert("L"))
+    except Exception:
+        return []
+    dark = a < 128
+    ys = []
+    for y in np.where(dark.sum(axis=1) >= RULE_MIN_PX * 2)[0]:
+        idx = np.where(dark[y])[0]
+        segs = np.split(idx, np.where(np.diff(idx) != 1)[0] + 1)
+        if max(len(sg) for sg in segs) >= RULE_MIN_PX * 2:
+            ys.append(int(y) // 2)
+    return ys
 
 
 def cmd_census(tab, psm=6, max_steps=1200, budget_s=1500.0):
@@ -92,8 +125,11 @@ def cmd_census(tab, psm=6, max_steps=1200, budget_s=1500.0):
         return {"action": "shot", "name": f"census_{low}_f{n_fshots[0]:03d}",
                 "hwnd": hwnd, "rect": list(sb), "scale": 2}
 
+    hls = []             # rule y of the last two grabs (prev, cur) - E3
+
     def grab(extra=None):
         res = run(list(extra or []) + [fshot_step(), ocr_step()], "frame")
+        hls[:] = (hls[-1:] + [hrules(res["steps"][-2]["path"])])[-2:]
         return C.lines_from_words(res["steps"][-1]["words"])
 
     def snap(tag):
@@ -108,9 +144,19 @@ def cmd_census(tab, psm=6, max_steps=1200, budget_s=1500.0):
             shutil.copy(src, C.EV / (name + ".png"))
 
     def displacement(prev, cur):
-        """Viewport dy of text-identical rows; 0 = same position."""
+        """Viewport dy of text-identical rows; 0 = same position. Without
+        shared text (empty text ctrl in view) the rule rows decide (E3)."""
+        from collections import Counter
         dy = C.estimate_shift(prev, cur)
-        return dy if abs(dy) >= STATIC_DY else 0
+        if abs(dy) >= STATIC_DY:
+            return dy
+        # one rule per frame votes for anything (a +189px ghost seen on
+        # Others): two rules on both sides must agree on one notch
+        if len(hls) == 2 and len(hls[0]) >= 2 and len(hls[1]) >= 2:
+            d, n = Counter(b - a for a in hls[0] for b in hls[1]).most_common(1)[0]
+            if n >= 2 and 60 - STATIC_DY <= abs(d) <= 60 + STATIC_DY:
+                return d
+        return 0
 
     def flush(final=False):
         rows = C.merge_frames_abs([(o, ln) for o, ln, _w in frames])
@@ -123,7 +169,9 @@ def cmd_census(tab, psm=6, max_steps=1200, budget_s=1500.0):
                         "(1 notch/step, >=550ms settle), PrintWindow capture, "
                         f"pytesseract eng psm={psm} scale=3; E2 driver: "
                         "per-frame partial flush, movement judged by row "
-                        "displacement, page reset by tab rebuild"),
+                        "displacement, page reset by tab rebuild; E3 "
+                        "hardening: full-cycle static test, gutter wheel "
+                        "points, box-rule fallback for text-less frames"),
             "psm": psm,
             "complete": bool(complete[0]),
             "stop_reason": reason[0],
@@ -172,16 +220,22 @@ def cmd_census(tab, psm=6, max_steps=1200, budget_s=1500.0):
         raise RuntimeError(f"click tab {t} failing")
 
     def at_top(walk):
-        """Tab away+back rebuilds the panel at page top; confirm by
-        up-rolls staying put (2 consecutive static)."""
+        """Tab away+back rebuilds the panel, but the scroll position is
+        shared across tabs: roll up until a full cycle of wheel points
+        stays put (E3; E2 took 2 statics and mis-called the Others top)."""
         tab_click(other)
         tab_click(tab)
         fgmain()
         cur = grab()
+        blanks = 0
+        while not cur and blanks < 4 and left() > 60:   # still painting?
+            time.sleep(1.0)
+            cur = grab()
+            blanks += 1
         static = 0
         rolls = 0
-        while static < 2 and rolls < 40 and left() > 60:
-            nxt = grab([wheel_step(+1, WHEEL_PTS[rolls % 2])])
+        while static < TOP_STATIC and rolls < 120 and left() > 60:
+            nxt = grab([wheel_step(+1, WHEEL_PTS[rolls % len(WHEEL_PTS)])])
             rolls += 1
             if displacement(cur, nxt):
                 static = 0
@@ -190,7 +244,7 @@ def cmd_census(tab, psm=6, max_steps=1200, budget_s=1500.0):
             cur = nxt
         top3 = [t for _, t, _ in cur[:3]]
         notes.append(f"walk{walk}: top after {rolls} up-rolls "
-                     f"({static} static): {top3}")
+                     f"({static} static, {blanks} blank regrabs): {top3}")
         return cur
 
     def step_down(cur):
