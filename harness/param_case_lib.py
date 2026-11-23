@@ -448,31 +448,42 @@ def settle_dialog(ui, known, answer=None):
             answer, how, (x0 + x1) // 2, (y0 + y1) // 2), flush=True)
         winutil.real_click_screen((x0 + x1) // 2, (y0 + y1) // 2)
     elif want in ("yes", "no"):
-        # No Button window to click: a Windows 11 message box draws its
-        # buttons in a DirectUI child (VM run eab35b9a: buttons [], the box
-        # was closed = No, and the app switched spiral mode back off). The
-        # box's own command answers it - WM_COMMAND IDYES (6) / IDNO (7).
-        winutil.user32.PostMessageW(dlg, 0x0111, 6 if want == "yes" else 7, 0)  # WM_COMMAND
-        ui.pause(1.0)
-        if winutil.user32.IsWindowEnabled(app.hwnd):
-            print("[param case] answered %r by WM_COMMAND (no Button window in this box)" % (
-                answer,), flush=True)
+        # No Button window to click. The box the app shows is a TASK DIALOG
+        # (class #32770 with a DirectUI child): its buttons are not windows
+        # and it ignores WM_COMMAND - VM runs eab35b9a (closed = No),
+        # 4d9731ec and 9ef272d0 (the command and a real Enter did not close
+        # it; the guest keeps the app out of the foreground, so no key
+        # ever reaches it). Each way below is checked by the main window
+        # being enabled again; WM_CLOSE (= No) is the last resort.
+        command = 6 if want == "yes" else 7                 # IDYES / IDNO
+        print("[param case] box children: %r" % [c for _t, c, _r, _h in mixing_util.children(dlg)][:12],
+              flush=True)
+
+        def answered(how):
+            ui.pause(1.0)
+            if winutil.user32.IsWindowEnabled(app.hwnd):
+                print("[param case] answered %r by %s" % (answer, how), flush=True)
+                return True
+            return False
+
+        winutil.user32.PostMessageW(dlg, 0x046A, command, 0)    # TDM_CLICK_BUTTON = WM_USER + 102
+        if answered("TDM_CLICK_BUTTON (task dialog)"):
+            return dlg, body
+        winutil.user32.PostMessageW(dlg, 0x0111, command, 0)   # WM_COMMAND
+        if answered("WM_COMMAND"):
             return dlg, body
         if want == "yes":
-            # VM run 4d9731ec: the command did not close it either. The box
-            # is the app's active window and Yes is its default button - a
-            # real Enter key presses it, but only once the box really is
-            # the foreground window (an Enter elsewhere is a stray key).
+            for message in (0x0100, 0x0101):                   # WM_KEYDOWN / WM_KEYUP
+                winutil.user32.PostMessageW(dlg, message, 0x0D, 0)   # VK_RETURN: default button
+            if answered("a posted Enter"):
+                return dlg, body
             from harness import mix_dialog_util as mdu
             if winutil.force_set_foreground(dlg):
                 ui.pause(0.5)
-                mdu._send_keys([(0x0D, False), (0x0D, True)])       # VK_RETURN
-                ui.pause(1.0)
-                if winutil.user32.IsWindowEnabled(app.hwnd):
-                    print("[param case] answered %r with a real Enter (the box's default button)" % (
-                        answer,), flush=True)
+                mdu._send_keys([(0x0D, False), (0x0D, True)])   # a real Enter, only in front
+                if answered("a real Enter"):
                     return dlg, body
-        print("[param case] neither the command nor Enter closed the box", flush=True)
+        print("[param case] no way to answer the box - closing it (WM_CLOSE = No)", flush=True)
         winutil.user32.PostMessageW(dlg, 0x0010, 0, 0)  # WM_CLOSE
     else:
         print("[param case] closing it (WM_CLOSE)", flush=True)

@@ -956,13 +956,19 @@ finally:
 # 22. A modal the app opens after a checkbox is found and answered. Spiral
 #     vase (VM run 49723134): the Yes/No box stayed open - wait_popup only
 #     knows the combo popup - and the next guard raised
-#     main_window_modal_blocked.
-from harness import export_util as _eu22, mixing_util as _mu22, winutil as _wu22  # noqa: E402
+#     main_window_modal_blocked. On the guest the box is a TASK DIALOG: no
+#     Button window, WM_COMMAND ignored, the app never in the foreground
+#     (runs eab35b9a / 4d9731ec / 9ef272d0) - the ladder is tried in order
+#     and each way is checked by the main window being enabled again.
+from harness import export_util as _eu22  # noqa: E402
+from harness import mix_dialog_util as _mdu22, mixing_util as _mu22, winutil as _wu22  # noqa: E402
 import harness.param_case_lib as _pcl22  # noqa: E402
 
 if hasattr(_pcl22, "settle_dialog"):
-    _clicks22, _posted22 = [], []
-    _modal22 = {"open": False, "command_closes": False}   # main window 4 disabled = a modal
+    _clicks22, _posted22, _keys22 = [], [], []
+    # main window 4 is disabled while 'open'; 'closes_with' = the message
+    # that answers the box in the fake; 'enter_closes' = a real Enter does
+    _modal22 = {"open": False, "closes_with": None, "enter_closes": False, "fg": False}
 
     class _U22:
         """stands in for user32: PostMessageW is recorded, not called"""
@@ -970,28 +976,27 @@ if hasattr(_pcl22, "settle_dialog"):
         @staticmethod
         def PostMessageW(h, msg, w, _l):
             _posted22.append((h, msg, w))
-            if msg == 0x0111 and _modal22["command_closes"]:
+            if msg == _modal22["closes_with"]:
                 _modal22["open"] = False       # the box answered: the modal is gone
 
         @staticmethod
         def IsWindowEnabled(h):
             return not (h == 4 and _modal22["open"])
 
+    def _enter22(keys):
+        _keys22.append(keys)
+        if _modal22["enter_closes"]:
+            _modal22["open"] = False
+
     _saved22 = (_mu22.toplevel, pp.dialog_body, _mu22.children, _eu22.wait_popup,
-                _wu22.real_click_screen, _wu22.user32, _wu22.force_set_foreground, _mdu21._send_keys)
+                _wu22.real_click_screen, _wu22.user32, _wu22.force_set_foreground, _mdu22._send_keys)
     try:
         _wu22.user32 = _U22
         _wu22.real_click_screen = lambda x, y: _clicks22.append((x, y))
-        _keys22, _fg22 = [], {"ok": False, "enter_closes": False}
-
-        def _enter22(keys):
-            _keys22.append(keys)
-            if _fg22["enter_closes"]:
-                _modal22["open"] = False       # the default button was pressed
-        _wu22.force_set_foreground = lambda h: _fg22["ok"]
-        _mdu21._send_keys = _enter22
+        _wu22.force_set_foreground = lambda h: _modal22["fg"]
+        _mdu22._send_keys = _enter22
         ui22 = types.SimpleNamespace(app=types.SimpleNamespace(pid=3, hwnd=4), pause=lambda s: None)
-        # NOT #32770: the box is found by its effect on the main window
+        # NOT #32770-only: the box is found by its effect on the main window
         _mu22.toplevel = lambda pid: [("wxWindowNR", "Orca", (800, 400, 1120, 560), 99)]
         _eu22.wait_popup = lambda pid, timeout_s=0: (None, "panel", (1, 2, 3, 4), 77)
         r = _pcl22.settle_dialog(ui22, set())
@@ -1005,82 +1010,76 @@ if hasattr(_pcl22, "settle_dialog"):
               r == (None, "") and not _clicks22 and not _posted22, "%r %r" % (_clicks22, _posted22))
         SPIRAL = ("Spiral mode only works when wall loops is 1, support is disabled, top shell "
                   "layers is 0 ... Change these settings automatically? Yes - Change ... No - Give up")
-        _modal22["open"] = True
         pp.dialog_body = lambda pid, dlg: SPIRAL
-        _mu22.children = lambda dlg: [("...", "Static", (1, 1, 2, 2), 5),
-                                      ("&Yes", "Button", (100, 200, 160, 222), 11),
-                                      ("&No", "Button", (180, 200, 240, 222), 12)]
+        STATIC22 = ("...", "Static", (1, 1, 2, 2), 5)
+        YES_NO22 = [("&Yes", "Button", (100, 200, 160, 222), 11),
+                    ("&No", "Button", (180, 200, 240, 222), 12)]
+        _mu22.children = lambda dlg: [STATIC22] + YES_NO22
+        _modal22["open"] = True
         r = _pcl22.settle_dialog(ui22, set(), "Yes")
         check("settle_dialog: the spiral box is answered Yes - the Yes button is clicked, not closed",
               r[0] == 99 and _clicks22 == [(130, 211)] and not _posted22,
               "%r %r" % (_clicks22, _posted22))
         _clicks22.clear()
-        _mu22.children = lambda dlg: [("...", "Static", (1, 1, 2, 2), 5),
-                                      ("\u662f(&Y)", "Button", (100, 200, 160, 222), 11),
+        _modal22["open"] = True
+        _mu22.children = lambda dlg: [STATIC22, ("\u662f(&Y)", "Button", (100, 200, 160, 222), 11),
                                       ("\u5426(&N)", "Button", (180, 200, 240, 222), 12)]
         _pcl22.settle_dialog(ui22, set(), "Yes")
         check("settle_dialog: a box labelled in the Windows language - Yes is the first of two",
               _clicks22 == [(130, 211)], "%r" % (_clicks22,))
         _clicks22.clear()
+        _modal22["open"] = True
         _mu22.children = lambda dlg: [("&No", "Button", (100, 200, 160, 222), 11),
                                       ("&Yes", "Button", (180, 200, 240, 222), 12)]
         _pcl22.settle_dialog(ui22, set(), "Yes")
         check("settle_dialog: ... unless the first button says No",
               _clicks22 == [(210, 211)], "%r" % (_clicks22,))
         _clicks22.clear()
-        _mu22.children = lambda dlg: [("&Yes", "Button", (100, 200, 160, 222), 11),
-                                      ("&No", "Button", (180, 200, 240, 222), 12)]
+        _modal22["open"] = True
+        _mu22.children = lambda dlg: list(YES_NO22)
         _pcl22.settle_dialog(ui22, set())          # no answer named
         check("settle_dialog: an unnamed dialog is closed, never answered",
               _posted22 == [(99, 0x0010, 0)] and not _clicks22, "%r %r" % (_clicks22, _posted22))
+        LADDER22 = [(99, 0x046A, 6), (99, 0x0111, 6), (99, 0x0100, 0x0D), (99, 0x0101, 0x0D)]
         _posted22.clear()
+        _modal22["open"] = True
         _mu22.children = lambda dlg: [("OK", "Button", (100, 200, 160, 222), 11)]
         _pcl22.settle_dialog(ui22, set(), "Yes")
-        check("settle_dialog: a one-button box is closed even when an answer is named "
-              "(the command is tried first and does not close it)",
-              _posted22 == [(99, 0x0111, 6), (99, 0x0010, 0)] and not _clicks22,
-              "%r %r" % (_clicks22, _posted22))
-        _posted22.clear()
-        # VM run eab35b9a: Windows 11 message boxes draw their buttons in a
-        # DirectUI child - no Button window; the box was closed = No.
-        _mu22.children = lambda dlg: [("...", "Static", (1, 1, 2, 2), 5)]
-        _modal22["command_closes"] = True
-        _wc22 = _wu22.window_class
-        _wu22.window_class = lambda h: "#32770"
-        try:
+        check("settle_dialog: a one-button box with a Yes named - nothing answers it, closed "
+              "(the whole ladder is tried first)",
+              _posted22 == LADDER22 + [(99, 0x0010, 0)] and not _clicks22, "%r" % (_posted22,))
+        _mu22.children = lambda dlg: [STATIC22]           # the task dialog: no Button window
+        for closes, want, name in (
+                (0x046A, [(99, 0x046A, 6)], "TDM_CLICK_BUTTON answers the task dialog (first in the ladder)"),
+                (0x0111, [(99, 0x046A, 6), (99, 0x0111, 6)], "a classic box answers WM_COMMAND"),
+                (0x0100, LADDER22, "a posted Enter answers it (down and up are posted, then checked)")):
+            _posted22.clear()
+            _modal22.update(open=True, closes_with=closes)
             _pcl22.settle_dialog(ui22, set(), "Yes")
-        finally:
-            _wu22.window_class = _wc22
-        check("settle_dialog: a box without Button windows is answered by WM_COMMAND IDYES "
-              "(VM run eab35b9a)",
-              _posted22 == [(99, 0x0111, 6)] and not _clicks22 and not _modal22["open"],
-              "%r %r" % (_clicks22, _posted22))
-        _posted22.clear()
-        _modal22.update(open=True, command_closes=False)
-        _pcl22.settle_dialog(ui22, set(), "No")
-        check("settle_dialog: a command that does not close the box -> closed as before",
-              _posted22 == [(99, 0x0111, 7), (99, 0x0010, 0)] and not _clicks22 and not _keys22,
-              "%r %r %r" % (_clicks22, _posted22, _keys22))
-        _posted22.clear()
-        _modal22.update(open=True)
-        _fg22.update(ok=True, enter_closes=True)
-        _pcl22.settle_dialog(ui22, set(), "Yes")
-        check("settle_dialog: nor the command -> a real Enter on the box presses its default button "
-              "(VM run 4d9731ec)",
-              _posted22 == [(99, 0x0111, 6)] and _keys22 == [[(0x0D, False), (0x0D, True)]]
-              and not _modal22["open"], "%r %r" % (_posted22, _keys22))
+            check("settle_dialog: " + name,
+                  _posted22 == want and not _modal22["open"] and not _keys22, "%r" % (_posted22,))
         _posted22.clear()
         _keys22.clear()
-        _modal22.update(open=True)
-        _fg22.update(ok=False)                 # the box is not in front: no stray Enter
+        _modal22.update(open=True, closes_with=None, fg=True, enter_closes=True)
         _pcl22.settle_dialog(ui22, set(), "Yes")
-        check("settle_dialog: ... and when the box is not the foreground window nothing is typed; "
-              "it is closed",
-              _posted22 == [(99, 0x0111, 6), (99, 0x0010, 0)] and not _keys22,
+        check("settle_dialog: ... then a real Enter, but only once the box is the foreground window",
+              _keys22 == [[(0x0D, False), (0x0D, True)]] and not _modal22["open"]
+              and _posted22 == LADDER22, "%r %r" % (_posted22, _keys22))
+        _posted22.clear()
+        _keys22.clear()
+        _modal22.update(open=True, fg=False)
+        _pcl22.settle_dialog(ui22, set(), "Yes")
+        check("settle_dialog: ... and when the box is not in front nothing is typed; it is closed",
+              _posted22 == LADDER22 + [(99, 0x0010, 0)] and not _keys22, "%r %r" % (_posted22, _keys22))
+        _posted22.clear()
+        _modal22.update(open=True, closes_with=None)
+        _pcl22.settle_dialog(ui22, set(), "No")
+        check("settle_dialog: 'No' never types an Enter; unanswered -> closed",
+              _posted22 == [(99, 0x046A, 7), (99, 0x0111, 7), (99, 0x0010, 0)] and not _keys22,
               "%r %r" % (_posted22, _keys22))
     finally:
         (_mu22.toplevel, pp.dialog_body, _mu22.children, _eu22.wait_popup,
-         _wu22.real_click_screen, _wu22.user32, _wu22.force_set_foreground, _mdu21._send_keys) = _saved22
+         _wu22.real_click_screen, _wu22.user32, _wu22.force_set_foreground, _mdu22._send_keys) = _saved22
 else:
     print("N/A  settle_dialog (absent on this tree)")
 
