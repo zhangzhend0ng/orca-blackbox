@@ -1,4 +1,4 @@
-"""Five parameter-page operations on macOS Orca 2.4.1 (Feishu param-case port, step 1).
+"""Parameter-page operations on macOS Orca 2.4.1 (Feishu param-case port).
 
 Subcommands, each printing ONE JSON line (ok, readback, screenshot paths):
   switch_tab    [--tabs a,b,...]        click each page tab once and read the page back
@@ -7,6 +7,8 @@ Subcommands, each printing ONE JSON line (ok, readback, screenshot paths):
   set_float     --tab T [--group G] --label L --value V
   set_checkbox  --tab T [--group G] --label L
   pick_combo    --tab T [--group G] --label L --target X
+  scroll_page   --tab T --group G        how the page reaches a group below the fold (step 2)
+  scenario      --name N                 one edit + Save Project + 3mf key check (step 2)
 
 From an ordinary shell a subcommand only supervises: the GUI work runs in the
 test login's Aqua session (gui/<uid>, the session every Mac probe so far used)
@@ -57,6 +59,8 @@ LANDMARKS = {"Quality": ("layer height",), "Strength": ("wall loops", "walls"),
 PANEL_WIDTH = 470  # left settings column, px at scale 1.0
 TITLE_X = 26       # group titles start left of this offset, row labels right of it
 VALUE_X = 253      # value column: numbers, and the faint square of a bool row
+VIEW_TOP = 712     # options viewport starts here (window-relative px): tab band + gap
+VIEW_RIGHT = 406   # viewport right edge (window-relative); the 15 px strip beyond is not page
 IEND = b"IEND\xaeB\x60\x82"
 MAKE_MOUSE = ax.selector(b"mouseEventWithType:location:modifierFlags:timestamp:"
                          b"windowNumber:context:eventNumber:clickCount:pressure:")
@@ -90,6 +94,14 @@ def norm(text):
 
 def digits_of(text):
     return "".join(ch for ch in text if ch.isdigit() or ch == ".").strip(".")
+
+
+def title_key(text):
+    """A page title without the fold glyph OCR reads in front of it."""
+    words = norm(text).split(" ")
+    while words and len(words[0]) <= 2:
+        words = words[1:]
+    return " ".join(words)
 
 
 def log(message):
@@ -272,6 +284,50 @@ def pixel_diff(first, second):
     return changed
 
 
+def row_profiles(path):
+    """Left-half and right-half mean luminance of each pixel row of a viewport crop."""
+    width, height, channels, lines = png_pixels(path)
+    half = width // 2
+    profiles = []
+    for line in lines:
+        left = sum(line[i] for i in range(0, half * channels, channels)) // half
+        right = sum(line[i] for i in range(half * channels, width * channels, channels)) // (width - half)
+        profiles.append((left, right))
+    return profiles
+
+
+def pixel_shift(first, second):
+    """Row offset d (px) for which after[y] matches before[y + d] best: d > 0 means the page
+    scrolled down. Row profiles pick the candidates, the pixels decide. `ratio` is the share
+    of the overlap pixels that still differ at d, `ratio_still` the same at d = 0."""
+    before, after = row_profiles(first), row_profiles(second)
+    require(len(before) == len(after), "Pixel crops differ in shape")
+    height = len(before)
+
+    def mismatch(d):
+        total, count = 0, 0
+        for y in range(max(0, -d), min(height, height - d)):
+            total += abs(before[y + d][0] - after[y][0]) + abs(before[y + d][1] - after[y][1])
+            count += 2
+        return total / count if count >= 24 else None  # at least 12 overlapping rows
+    ranked = [(mismatch(d), d) for d in range(-height + 12, height - 11) if abs(d) >= 3]
+    candidates = [0] + [d for _, d in sorted(pair for pair in ranked if pair[0] is not None)[:4]]
+    width, _, channels, a = png_pixels(first)
+    _, _, _, b = png_pixels(second)
+    scores = []
+    for d in candidates:
+        overlap, differing = height - abs(d), 0
+        for y in range(max(0, -d), min(height, height - d)):
+            ra, rb = a[y + d], b[y]
+            for i in range(0, width * channels, channels):
+                if max(abs(ra[i] - rb[i]), abs(ra[i + 1] - rb[i + 1]), abs(ra[i + 2] - rb[i + 2])) > 40:
+                    differing += 1
+        scores.append((differing / (overlap * width), d))
+    still, best = scores[0][0], min(scores)
+    return {"d": best[1], "ratio": round(best[0], 3), "ratio_still": round(still, 3),
+            "pure_shift": best[0] < 0.3 and best[0] < 0.35 * still}
+
+
 # --- the addressed panel ---
 
 def cf_scalar(desktop, value):
@@ -290,6 +346,7 @@ class Panel:
     def __init__(self, desktop, pid, root, window):
         self.desktop, self.pid, self.root, self.window = desktop, pid, root, window
         self.shots, self.last_notes = {}, []
+        self.trial, self.scroll_up_button = None, None  # the scroll probe's working state
 
     def geometry(self):
         point = self.desktop.position(self.window)
@@ -344,6 +401,21 @@ class Panel:
         require(len(matches) == 1 and matches[0], f"Cannot match a unique Orca window (matches={len(matches)})")
         return matches[0]
 
+    def _mouse(self, kind, gx, gy, wid):
+        """Post one pointer event of NSEvent type `kind` at the global point."""
+        point, size = self.geometry()
+        self.desktop.check_owned(self.pid, self.window)
+        event = ax.mouse_event(ax.objc_class(b"NSEvent"), MAKE_MOUSE, kind,
+                               ax.Point(gx - point.x, size.y - (gy - point.y)), 0,
+                               time.monotonic(), wid, None, 1, 1, 1.0 if kind == 1 else 0.0)
+        require(event and ax.event_window(event, ax.selector(b"windowNumber")) == wid,
+                "Pointer event has no matching target window")
+        native = ax.event_cg(event, ax.selector(b"CGEvent"))
+        require(native, "Pointer event is unavailable")
+        ax.set_location(native, ax.Point(gx, gy))
+        ax.post_to_pid(self.pid, native)
+        time.sleep(0.12)
+
     def click(self, gx, gy, guard=True):
         """Targeted pointer click at a global point (screen px)."""
         point, size = self.geometry()
@@ -353,17 +425,19 @@ class Panel:
         wid = self.window_id(point, size)
         require(ax.post_allowed(), "Targeted input requires event posting permission")
         for kind in (1, 2):
-            self.desktop.check_owned(self.pid, self.window)
-            event = ax.mouse_event(ax.objc_class(b"NSEvent"), MAKE_MOUSE, kind,
-                                   ax.Point(gx - point.x, size.y - (gy - point.y)), 0,
-                                   time.monotonic(), wid, None, 1, 1, 1.0 if kind == 1 else 0.0)
-            require(event and ax.event_window(event, ax.selector(b"windowNumber")) == wid,
-                    "Pointer event has no matching target window")
-            native = ax.event_cg(event, ax.selector(b"CGEvent"))
-            require(native, "Pointer event is unavailable")
-            ax.set_location(native, ax.Point(gx, gy))
-            ax.post_to_pid(self.pid, native)
-            time.sleep(0.12)
+            self._mouse(kind, gx, gy, wid)
+
+    def drag(self, gx, gy, tx, ty, steps=8):
+        """Press at (gx, gy), drag in a straight line to (tx, ty), release."""
+        point, size = self.geometry()
+        modal = self.modal_open()
+        require(modal is None, f"A modal dialog is covering the project: {modal}")
+        wid = self.window_id(point, size)
+        require(ax.post_allowed(), "Targeted input requires event posting permission")
+        self._mouse(1, gx, gy, wid)
+        for step in range(1, steps + 1):
+            self._mouse(6, gx + (tx - gx) * step / steps, gy + (ty - gy) * step / steps, wid)
+        self._mouse(2, tx, ty, wid)
 
     def shot(self, tag):
         png = capture(tag)
@@ -621,6 +695,230 @@ class Panel:
         note["process_header_y_after"] = process["y"] if process else None
         return note
 
+    # -- page viewport: where it is, how far it moved, folding a group --
+
+    def viewport(self):
+        """Screen rect (x, y, w, h) of the options viewport."""
+        point, size = self.geometry()
+        return (point.x + 2, point.y + VIEW_TOP, VIEW_RIGHT - 3, size.y - VIEW_TOP - 3)
+
+    def page_titles(self, rows):
+        """Group-title tokens of the Process page: fold icon at the column's left edge
+        (x within 12 px of the window), below the tab band - never the sidebar above it."""
+        point = self.geometry()[0]
+        return sorted((r for r in self.page_rows(rows) if -2 <= r["x"] - point.x <= 12 and norm(r["text"])),
+                      key=lambda r: r["y"])
+
+    def title_of(self, rows, group):
+        wanted = norm(group)
+        return next((t for t in self.page_titles(rows) if wanted in norm(t["text"])), None)
+
+    def page_lines(self, rows):
+        """[text, y, x] of the page tokens inside the viewport, top to bottom."""
+        try:
+            page = self.page_rows(rows)
+        except RuntimeError:  # no tab band in this capture
+            return []
+        x, y, w, h = self.viewport()
+        return [[r["text"], round(r["y"]), round(r["x"])] for r in sorted(page, key=lambda r: r["y"])
+                if y - 6 <= r["y"] <= y + h][:40]
+
+    def ink_box(self, png, rect, dark=150):
+        """[x0, y0, x1, y1] of the pixels darker than `dark` inside a screen rect, or None."""
+        temp = OUT / f".ink-{time.time_ns()}.png"
+        crop_png(png, temp, rect)
+        width, height, channels, lines = png_pixels(temp)
+        temp.unlink()
+        x0, y0, x1, y1 = width, height, -1, -1
+        for row in range(height):
+            line = lines[row]
+            for column in range(width):
+                if line[column * channels] < dark:
+                    x0, y0, x1, y1 = min(x0, column), min(y0, row), max(x1, column), max(y1, row)
+        if x1 < 0:
+            return None
+        return [round(rect[0]) + x0, round(rect[1]) + y0, round(rect[0]) + x1, round(rect[1]) + y1]
+
+    def ink_runs(self, png, rect, dark=225):
+        """Screen row ranges [y0, y1] of a column strip holding a pixel darker than `dark`."""
+        temp = OUT / f".ink-{time.time_ns()}.png"
+        crop_png(png, temp, rect)
+        width, height, channels, lines = png_pixels(temp)
+        temp.unlink()
+        marked = [any(line[column * channels] < dark for column in range(width)) for line in lines]
+        runs, start = [], None
+        for row, hit in enumerate(marked + [False]):
+            if hit and start is None:
+                start = row
+            elif not hit and start is not None:
+                runs.append([round(rect[1]) + start, round(rect[1]) + row - 1])
+                start = None
+        return runs
+
+    def view_crop(self, png, tag):
+        """The viewport part of shot `png`, saved as `tag`.view.png (metrics + review)."""
+        target = OUT / f"{tag}.view.png"
+        crop_png(png, target, self.viewport())
+        return target
+
+    def measure(self, tag, before_rows, before_view):
+        """Capture `tag` and say how far the viewport content moved against the `before` shot."""
+        after = self.read(tag)
+        view = self.view_crop(OUT / f"{tag}.png", tag)
+        x, y, w, h = self.viewport()
+
+        def landmarks(rows):
+            seen, count = {}, {}
+            try:
+                page = self.page_rows(rows)
+            except RuntimeError:  # no tab band in this capture
+                return {}
+            for r in page:
+                if y - 6 <= r["y"] <= y + h:
+                    key = norm(r["text"])
+                    count[key] = count.get(key, 0) + 1
+                    seen[key] = r
+            return {key: r for key, r in seen.items() if count[key] == 1 and key}
+
+        old, new = landmarks(before_rows), landmarks(after)
+        shifts = sorted(old[key]["y"] - new[key]["y"] for key in new if key in old)
+        note = {"lines": self.page_lines(after), "ocr_matches": len(shifts),
+                "scroll_px": round(shifts[len(shifts) // 2], 1) if shifts else None}  # + = page down
+        before_tag = Path(before_view).name[:-len(".view.png")]
+        try:
+            note["pixels_changed"] = pixel_diff(before_view, view)
+            note["column_changed"] = pixel_diff(OUT / f"{before_tag}.panel.png", OUT / f"{tag}.panel.png")
+            note["pixel_shift"] = pixel_shift(before_view, view)
+        except RuntimeError as error:  # the viewport itself was resized between the shots
+            note["pixel_metrics"] = brief(error, 120)
+        return after, view, note
+
+    def click_title(self, rows, tag, title, how):
+        """Click a page group title: its fold glyph (`icon`), the right end of its label (`text`),
+        the label's centre, the row well right of the label, a 4 px drag or a double click on the
+        glyph, or the glyph after a mouse-moved event onto it."""
+        icon = self.ink_box(OUT / f"{tag}.png", (title["x"] - 5, title["y"] - 3, 22, title["h"] + 6))
+        cy = title["y"] + title["h"] / 2
+        glyph = ((icon[0] + icon[2]) / 2, (icon[1] + icon[3]) / 2) if icon else (title["x"] + 4, cy)
+        spots = {"icon": glyph, "move-icon": glyph, "drag-icon": glyph, "double-icon": glyph,
+                 "text": (title["x"] + title["w"] - 6, cy), "label": (title["x"] + title["w"] / 2, cy),
+                 "row-right": (self.geometry()[0].x + 300, cy)}
+        spot = spots[how]
+        if how == "move-icon":
+            post_move(self.pid, *spot)
+            time.sleep(0.6)
+        if how == "drag-icon":
+            self.drag(spot[0], spot[1], spot[0] + 4, spot[1] + 1)
+        elif how == "double-icon":
+            self.click(*spot)
+            self.click(*spot)
+        else:
+            self.click(*spot)
+        time.sleep(1.0)
+        return {"title": title["text"], "how": how, "click": [round(spot[0]), round(spot[1])],
+                "icon_box": icon, "title_box": [round(title[k]) for k in ("x", "y", "w", "h")]}
+
+    def scrollbar(self):
+        """The options page's own scrollbar (the AXScrollBar inside the settings column):
+        {element, box, value, knob, buttons} - buttons are the pressable children in AX order."""
+        point = self.geometry()[0]
+        for bar in self.scrollbars():
+            x, y = bar["box"][:2]
+            if point.x <= x <= point.x + PANEL_WIDTH and y >= point.y + VIEW_TOP - 30:
+                knob = next((kid["box"] for kid in bar["kids"] if kid["role"] == "AXValueIndicator"), None)
+                return {"element": bar["element"], "box": [round(v, 1) for v in bar["box"]],
+                        "value": cf_scalar(self.desktop, self.desktop.attr(bar["element"], "AXValue")),
+                        "knob": [round(v, 1) for v in knob] if knob else None,
+                        "buttons": [kid for kid in bar["kids"]
+                                    if "AXPress" in self.desktop.actions(kid["element"])]}
+        return None
+
+    def knob_at(self):
+        """Knob top below the scrollbar top (px): the track inset while the page is at its top."""
+        bar = self.scrollbar()
+        require(bar and bar["knob"], "The options page exposes no scrollbar knob")
+        return bar["knob"][1] - bar["box"][1]
+
+    def press_scroll(self, index, times=1, pause=0.45):
+        """AXPress scrollbar button `index` (AX order of the pressable children) `times` times."""
+        bar = self.scrollbar()
+        require(bar and len(bar["buttons"]) > index, f"The page scrollbar has no pressable button {index}")
+        for _ in range(times):
+            self.desktop.act(self.pid, bar["buttons"][index]["element"], "AXPress")
+            time.sleep(pause)
+
+    def scroll_top(self, button, limit=30):
+        """AXPress scrollbar button `button` until the knob stops moving; returns the trail."""
+        seen = [self.knob_at()]
+        for _ in range(limit):
+            self.press_scroll(button, 1)
+            seen.append(self.knob_at())
+            if seen[-1] == seen[-2]:
+                break
+        return {"button": button, "presses": len(seen) - 1, "knob_at": seen}
+
+    def controls_in(self, rect):
+        """AX elements positioned inside a screen rect: role, box, texts, actions."""
+        x, y, w, h = rect
+        found = []
+        for element in self.desktop.descendants(self.window):
+            box = self.desktop.box(element)
+            if not box or not (x <= box[0] <= x + w and y <= box[1] <= y + h):
+                continue
+            found.append({"role": self.desktop.text(element, "AXRole"), "box": [round(v) for v in box],
+                          "title": self.desktop.text(element, "AXTitle")[:40],
+                          "help": (self.desktop.text(element, "AXHelp") or "")[:70],
+                          "actions": self.desktop.actions(element)})
+        return found
+
+    def scrollbars(self):
+        """AXScrollBar elements of the window: {element, box, kids: [{element, role, box}]}."""
+        found = []
+        for element in self.desktop.descendants(self.window):
+            if self.desktop.text(element, "AXRole") != "AXScrollBar":
+                continue
+            box = self.desktop.box(element)
+            if box is None:
+                continue
+            kids = [{"element": child, "role": self.desktop.text(child, "AXRole"), "box": self.desktop.box(child)}
+                    for child in self.desktop.children(element)]
+            found.append({"element": element, "box": box, "kids": kids})
+        return found
+
+    def focused(self):
+        """The app's focused AX control, if any."""
+        element = self.desktop.attr(self.root, "AXFocusedUIElement")
+        if not element:
+            return None
+        return {"role": self.desktop.text(element, "AXRole"), "box": self.desktop.box(element),
+                "help": (self.desktop.text(element, "AXHelp") or "")[:70]}
+
+    def blank_spot(self, rows):
+        """A point on a page row between the end of its label and its value cell."""
+        x, y, w, h = self.viewport()
+        for row in self.page_rows(rows):
+            if row["x"] - self.geometry()[0].x < TITLE_X + 20 or not y + 10 < row["y"] < y + h - 20:
+                continue
+            values = self.line_values(rows, row)
+            if values and values[0]["x"] - (row["x"] + row["w"]) > 60:
+                return row["x"] + row["w"] + (values[0]["x"] - row["x"] - row["w"]) / 2, row["y"] + row["h"] / 2
+        return x + w / 2, y + h / 2
+
+    def set_frame(self, x, y, width, height):
+        position = create_value(1, ct.byref(ax.Point(x, y)))
+        error = ax.set_attr(self.window, self.desktop.string("AXPosition"), position)
+        ax.release(position)
+        require(error == 0, f"AXPosition set failed with AX error {error}")
+        time.sleep(0.8)
+        return self.resize(width, height)
+
+    def maximize(self):
+        """Move the window to the top of the usable screen area and give it the full height."""
+        areas = ax.screen_areas()
+        require(areas, "No screen in the worker session")
+        point, size = self.geometry()
+        return areas, self.set_frame(point.x, areas["visible"][1], size.x, areas["visible"][3])
+
 
 # --- operations (each returns the fields of its JSON line) ---
 
@@ -828,12 +1126,327 @@ def op_pick_combo(panel, ns):
             "readback": {"tab": ns["tab"], "label": row["text"], "before": painted_before,
                          "after": chosen["painted_after"] if chosen else None, "expected": target},
             "evidence": {"notes": note, "attempts": attempts,
-                         "screenshots": {"before": tag + ".png", "popup": f"combo-0-cell-popup.png",
+                         "screenshots": {"before": tag + ".png", "popup": "combo-0-cell-popup.png",
                                          "after": chosen["screenshot_after"] if chosen else None}}}
 
 
+# --- step 2: how the page reaches a group below the fold ---
+
+def post_move(pid, x, y):
+    """Mouse-moved event from the HID source, posted to the app with its location inside the page."""
+    source = ax.create_source(1)  # kCGEventSourceStateHIDSystemState
+    try:
+        event = ax.create_move(source, 5, ax.Point(x, y), 0)  # kCGEventMouseMoved, left button
+        require(event, "Mouse-moved event is unavailable")
+        ax.post_to_pid(pid, event)
+        ax.release(event)
+    finally:
+        ax.release(source)
+
+
+def post_wheel(pid, x, y, notches, unit, step, interval=0.45):
+    """One scroll-wheel notch per event, each located at (x, y), `interval` seconds apart."""
+    source = ax.create_source(1)
+    try:
+        for _ in range(notches):
+            event = ax.create_scroll(source, unit, 1, step)
+            require(event, "Scroll event is unavailable")
+            ax.set_location(event, ax.Point(x, y))
+            ax.post_to_pid(pid, event)
+            ax.release(event)
+            time.sleep(interval)
+    finally:
+        ax.release(source)
+
+
+def post_keys(pid, code, presses, interval=0.45):
+    """`presses` key presses (down + up) posted to the app."""
+    for _ in range(presses):
+        for pressed in (True, False):
+            event = ax.create_key(None, code, pressed)
+            require(event, "Keyboard event is unavailable")
+            ax.post_to_pid(pid, event)
+            ax.release(event)
+            time.sleep(0.08)
+        time.sleep(interval)
+
+
+def cursor():
+    point = ax.cursor_position()
+    return [round(point.x, 1), round(point.y, 1)]
+
+
+class Trial:
+    """One scroll method: labelled actions, each measured against the shot taken before it."""
+
+    def __init__(self, panel, out, prefix, group, label):
+        self.panel, self.out, self.prefix, self.group, self.label = panel, out, prefix, group, label
+        panel.trial = self
+        self.tag = f"{prefix}-before"
+        self.rows = panel.read(self.tag)
+        self.view = panel.view_crop(OUT / f"{self.tag}.png", self.tag)
+        self.knob = panel.knob_at() if panel.scrollbar() else None
+        out["lines_before"] = panel.page_lines(self.rows)
+
+    def run(self, label, action, keep=False):
+        step = {"how": label, "lines_before": self.panel.page_lines(self.rows), "shot": None}
+        if keep:
+            self.out.setdefault("keep", set()).update((self.tag, f"{self.prefix}-{len(self.out['attempts'])}"))
+        try:
+            step.update(action() or {})
+        except Exception as error:
+            step["error"] = brief(error, 300)
+        tag = f"{self.prefix}-{len(self.out['attempts'])}"
+        self.rows, self.view, moved = self.panel.measure(tag, self.rows, self.view)
+        step.update(moved)
+        knob = self.panel.knob_at() if self.panel.scrollbar() else None
+        if knob is not None and self.knob is not None:
+            step["knob_dy"] = round(knob - self.knob, 1)
+        self.knob, self.tag = knob, tag
+        lines = self.panel.page_lines(self.rows)
+        step["shot"] = f"{tag}.panel.png"
+        step["reached"] = self.panel.title_of(self.rows, self.group) is not None
+        step["row_seen"] = any(norm(self.label) in norm(line[0]) for line in lines)
+        if step["row_seen"]:  # what the AX tree offers at the row once it is on screen
+            x, y, w, h = self.panel.viewport()
+            step["controls"] = self.panel.controls_in((x, y, w, h))
+        self.out["attempts"].append(step)
+        return step
+
+    def seen(self, step):
+        """Signed page scroll (px, down positive) of a finished step."""
+        return step["scroll_px"] if step.get("scroll_px") is not None else step.get("knob_dy") or 0
+
+
+FOLD_WAYS = ("icon", "text", "move-icon", "label", "row-right", "drag-icon", "double-icon")
+
+
+def step_fold(panel, ns):
+    """(a) click the title row of the page groups above the target group, then click again."""
+    out = {"method": "a-fold-icon", "attempts": [], "folds": []}
+    trial = Trial(panel, out, "a", ns["group"], ns["label"])
+    done = []
+    for index in range(4):
+        if panel.title_of(trial.rows, ns["group"]):
+            break
+        todo = [t for t in panel.page_titles(trial.rows) if title_key(t["text"]) not in done]
+        if not todo:
+            out["blocker"] = f"No page group title left to fold; titles seen: {[t['text'] for t in panel.page_titles(trial.rows)]}"
+            break
+        title = todo[0]
+        for how in FOLD_WAYS:
+            found = {}
+
+            def click(title=title, how=how, found=found):
+                found.update(panel.click_title(trial.rows, trial.tag, title, how))
+            step = trial.run(f"fold-0-{how}", click, keep=how in ("icon", "text"))
+            step.update(found)
+            if step.get("pixels_changed", 0) > 150 and step.get("lines") != step["lines_before"]:
+                out["folds"].append(step)
+                done.append(title_key(title["text"]))
+                break
+        else:
+            out["blocker"] = (f"Clicking the title row of {title['text']!r} changed nothing "
+                              f"(ways tried: {', '.join(FOLD_WAYS)})")
+            break
+    for index, step in enumerate(reversed(out["folds"])):
+        found = {}
+
+        def click(step=step, found=found):
+            title = panel.title_of(trial.rows, title_key(step["title"]))
+            require(title, f"Title {step['title']!r} is not on screen any more")
+            found.update(panel.click_title(trial.rows, trial.tag, title, step["how"]))
+        trial.run(f"unfold-{index}-{step['how']}", click)
+    out["lines_restored"] = panel.page_lines(trial.rows)
+    out["restored"] = out["lines_restored"] == out["lines_before"]
+    out["reached"] = any(step["reached"] for step in out["attempts"])
+    return out
+
+
+def step_scrollbar(panel, ns):
+    """(b) the page scrollbar: AXPress on each pressable button of the AXScrollBar, clicks on
+    its track below the thumb, a drag of the thumb."""
+    out = {"method": "b-scrollbar", "attempts": []}
+    trial = Trial(panel, out, "b", ns["group"], ns["label"])
+    bar = panel.scrollbar()
+    require(bar, "No AXScrollBar inside the settings column")
+    out["ax_scrollbar"] = {"box": bar["box"], "value": bar["value"], "knob": bar["knob"],
+                           "buttons": [{"role": b["role"], "box": b["box"]} for b in bar["buttons"]]}
+    point, size = panel.geometry()
+    out["viewport_controls"] = panel.controls_in((point.x, point.y + VIEW_TOP, VIEW_RIGHT, size.y - VIEW_TOP))
+    count = len(bar["buttons"])
+
+    def press(index, times=1):
+        panel.press_scroll(index, times)
+        return {"presses": times, "box": panel.scrollbar()["buttons"][index]["box"]}
+
+    def click_at(spot):
+        panel.click(*spot)
+        time.sleep(0.8)
+        return {"click": [round(spot[0]), round(spot[1])]}
+
+    def drag_thumb(px):
+        knob = panel.scrollbar()["knob"]
+        start = (knob[0] + knob[2] / 2, knob[1] + knob[3] / 2)
+        panel.drag(start[0], start[1], start[0], start[1] + px)
+        time.sleep(0.6)
+        return {"knob": knob, "press": [round(start[0]), round(start[1])],
+                "release": [round(start[0]), round(start[1] + px)]}
+
+    def to_top():
+        if panel.scroll_up_button is None:
+            return None
+        note = panel.scroll_top(panel.scroll_up_button)
+        trial.run("back-to-top", lambda: {"presses": note["presses"]})
+        return note
+
+    for index in range(count):
+        trial.run(f"ax-press-{index}", lambda index=index: press(index), keep=True)
+    marks = [trial.seen(step) for step in out["attempts"]]
+    downs, ups = [i for i, mark in enumerate(marks) if mark > 0], [i for i, mark in enumerate(marks) if mark < 0]
+    out["button_direction"] = {"down": downs, "up": ups, "marks": marks}
+    if ups:
+        panel.scroll_up_button = ups[-1]
+    out["resets"] = []
+    if ups:
+        out["resets"].append(to_top())
+    for index in downs or range(count):
+        for extra in (1, 2):
+            trial.run(f"ax-press-{index}-x{extra}", lambda index=index, extra=extra: press(index, extra), keep=True)
+        if ups:
+            out["resets"].append(to_top())
+    point, size = panel.geometry()
+    bx, by, bw, bh = panel.scrollbar()["box"]
+    bottom = point.y + size.y - 8  # clear of the window's resize border
+    for label, depth in (("track-click-mid", 0.6), ("track-click-low", 0.95)):
+        trial.run(label, lambda spot=(bx + bw / 2, min(by + bh * depth, bottom)): click_at(spot), keep=True)
+    if ups:
+        out["resets"].append(to_top())
+    trial.run("drag-thumb-20px", lambda: drag_thumb(20), keep=True)
+    if ups:
+        out["resets"].append(to_top())
+    out["reached"] = any(step["reached"] for step in out["attempts"])
+    return out
+
+
+def step_wheel(panel, ns):
+    """(c) wheel notches located inside the viewport after a HID-source cursor move, then
+    Page Down / Down with the page focused."""
+    out = {"method": "c-wheel-cursor", "attempts": []}
+    trial = Trial(panel, out, "c", ns["group"], ns["label"])
+    vx, vy, vw, vh = panel.viewport()
+    inside = (vx + vw * 0.45, vy + vh * 0.6)
+    on_strip = (panel.geometry()[0].x + VIEW_RIGHT + 7, vy + vh * 0.6)
+    out["cursor_before"] = cursor()
+    for label, where, unit, notch in (("line-notches", inside, 1, -1), ("pixel-60", inside, 0, -60),
+                                      ("line-notches-on-strip", on_strip, 1, -1)):
+        def roll(where=where, unit=unit, notch=notch):
+            post_move(panel.pid, *where)
+            time.sleep(0.4)
+            post_wheel(panel.pid, where[0], where[1], 6, unit, notch)
+            return {"point": [round(where[0]), round(where[1])], "unit": unit, "notch": notch, "notches": 6,
+                    "cursor_after": cursor()}
+        trial.run(label, roll, keep=label == "line-notches")
+
+    def warped():
+        code = ax.warp_cursor(ax.Point(*inside))  # this session's cursor; the worker never runs on console
+        time.sleep(0.4)
+        post_wheel(panel.pid, inside[0], inside[1], 6, 1, -1)
+        return {"warp_result": code, "cursor_after": cursor()}
+    trial.run("warp-cursor-then-line-notches", warped)
+    spot = panel.blank_spot(trial.rows)
+    out["focus_click"] = [round(spot[0]), round(spot[1])]
+    panel.click(*spot)
+    time.sleep(0.6)
+    out["focused_after_click"] = panel.focused()
+    trial.run("blank-click", lambda: None, keep=True)
+    for code, label, presses in ((121, "page-down", 2), (125, "down-arrow", 4)):
+        trial.run(label, lambda code=code, presses=presses: post_keys(panel.pid, code, presses) or {"keycode": code},
+                  keep=True)
+    if panel.scroll_up_button is not None:  # leave the page where the next method expects it
+        panel.scroll_top(panel.scroll_up_button)
+        trial.run("back-to-top", lambda: None)
+    out["reached"] = any(step["reached"] for step in out["attempts"])
+    return out
+
+
+def step_maximize(panel, ns):
+    """(d) move the window to the top of the usable screen area and give it the full height,
+    read the page, then put the window back."""
+    out = {"method": "d-maximize", "attempts": []}
+    trial = Trial(panel, out, "d", ns["group"], ns["label"])
+    point, size = panel.geometry()
+
+    def grow():
+        areas, grown = panel.maximize()
+        return {"screen": {key: [round(v) for v in areas[key]] for key in areas},
+                "geometry_after": {"origin": [grown[0].x, grown[0].y], "size": [grown[1].x, grown[1].y]}}
+    try:
+        trial.run("maximized", grow, keep=True)
+    finally:
+        back = panel.set_frame(point.x, point.y, size.x, size.y)
+    trial.run("restored", lambda: {"geometry": [back[0].x, back[0].y, back[1].x, back[1].y]})
+    out["reached"] = any(step["reached"] for step in out["attempts"] if step["how"] == "maximized")
+    return out
+
+
+def op_scroll_page(panel, ns):
+    """Try the four ways of reaching a page group below the fold, cheapest first; every method
+    starts from the top of the page in the standard window and reports what it did to the viewport."""
+    ns.setdefault("label", "Print sequence")
+    report = {"tab": ns["tab"], "group": ns["group"], "label": ns["label"]}
+    rows = panel.read("scroll-entry")
+    report["click_tab"] = panel.click_tab(ns["tab"], rows)
+    point, size = panel.geometry()
+    report["geometry"] = {"origin": [point.x, point.y], "size": [size.x, size.y]}
+    report["viewport"] = [round(v) for v in panel.viewport()]
+    try:
+        report["screen"] = {key: [round(v) for v in areas] for key, areas in (ax.screen_areas() or {}).items()}
+    except Exception as error:  # the screen read is context for method (d), not a precondition
+        report["screen"] = {"error": brief(error, 300)}
+    report["methods"], report["between"] = [], []
+    for index, step in enumerate((step_fold, step_scrollbar, step_wheel, step_maximize)):
+        try:
+            report["methods"].append(step(panel, ns))
+        except Exception as error:
+            trial = getattr(panel, "trial", None)
+            report["methods"].append({"method": step.__name__.replace("step_", "", 1), "error": brief(error, 700),
+                                      "attempts": getattr(trial, "out", {}).get("attempts"),
+                                      "keep": sorted(getattr(trial, "out", {}).get("keep", ()))})
+        # between methods: top of the page (read back), standard window frame
+        between = {}
+        if panel.scroll_up_button is not None:
+            between["top"] = panel.scroll_top(panel.scroll_up_button)
+            between["lines"] = panel.page_lines(panel.read(f"scroll-top-{index}"))
+        at = panel.geometry()
+        if (at[0].x, at[0].y, at[1].x, at[1].y) != (point.x, point.y, size.x, size.y):
+            back = panel.set_frame(point.x, point.y, size.x, size.y)
+            between["frame_restored"] = [back[0].x, back[0].y, back[1].x, back[1].y]
+        report["between"].append(between)
+    reached = [method["method"] for method in report["methods"] if method.get("reached")]
+    # The same page in Advanced mode (the set_float / set_checkbox path switches it on).
+    try:
+        # On the active Others page OCR glues the other tab names into one token, which hides
+        # the Speed tab: read the band from the Quality page before judging Advanced mode.
+        panel.click_tab("Quality", panel.read("scroll-advanced-quality-locate"))
+        advanced = panel.ensure_advanced("scroll-advanced")
+        panel.click_tab(ns["tab"], panel.read("scroll-advanced-others-locate"))
+        report["advanced"] = {"switch": advanced, "lines": panel.page_lines(panel.read("scroll-advanced-others"))}
+    except Exception as error:
+        report["advanced"] = {"error": brief(error, 500)}
+    kept = {"entry", "scroll-entry", "scroll-advanced-others"}
+    for method in report["methods"]:
+        kept.update(method.get("keep", ()))
+        method["keep"] = sorted(method.get("keep", ()))  # JSON carries lists, not sets
+    return {"ok": bool(reached), "keep_shots": sorted(kept),
+            "readback": {"tab": ns["tab"], "group": ns["group"], "label": ns["label"], "reached_by": reached,
+                         "methods": [{"method": method["method"], "reached": method.get("reached", False)}
+                                     for method in report["methods"]]},
+            "evidence": report}
+
+
 OPS = {"switch_tab": op_switch_tab, "find_row": op_find_row, "set_float": op_set_float,
-       "set_checkbox": op_set_checkbox, "pick_combo": op_pick_combo}
+       "set_checkbox": op_set_checkbox, "pick_combo": op_pick_combo, "scroll_page": op_scroll_page}
 
 
 # --- Aqua-session worker ---
@@ -856,7 +1469,7 @@ def dismiss_dialogs(panel):
             break
         for element in found:
             item = {"button": panel.desktop.text(element, "AXTitle"),
-                    "at": list(panel.desktop.position(element))[:2]}
+                    "at": [round(panel.desktop.position(element).x), round(panel.desktop.position(element).y)]}
             try:
                 panel.desktop.act(panel.pid, element, "AXPress")
             except Exception as error:
@@ -969,9 +1582,12 @@ def harvest(result, work, op):
     """Full frames stay local (artifacts/, not committed); panel crops go to the evidence dir."""
     stamp = time.strftime("%H%M%S")
     full_dir, crop_dir = LOCAL_SHOTS / f"{op}-{stamp}", EVIDENCE / "shots"
-    shots = {}
+    shots, keep = {}, result.get("keep_shots")
     for name in sorted((work / "out").glob("*.png")):
-        dest = crop_dir if name.name.endswith(".panel.png") else full_dir
+        crop = name.name.endswith(".panel.png")
+        if crop and keep is not None and name.name[:-len(".panel.png")] not in keep:
+            continue  # a probe's working shots stay out of the evidence directory
+        dest = crop_dir if crop else full_dir
         dest.mkdir(parents=True, exist_ok=True)
         target = dest / f"{op}-{stamp}-{name.name}"
         shutil.copy2(name, target)
@@ -1045,6 +1661,10 @@ def parser():
         case.add_argument("--label", default=label)
         for flag, default in extra:
             case.add_argument(flag, default=default)
+    scroll = sub.add_parser("scroll_page")
+    scroll.add_argument("--tab", default="Others")
+    scroll.add_argument("--group", default="Special mode")
+    scroll.add_argument("--label", default="Print sequence")
     for case in sub.choices.values():
         case.add_argument("--fuse", type=int, default=240)
     root.add_argument("--worker", metavar="JSON", help=argparse.SUPPRESS)

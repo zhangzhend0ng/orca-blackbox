@@ -1163,6 +1163,3614 @@
     "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-entry.panel.png",
     "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-entry.png"
    }
+  },
+  "scroll_page": {
+   "op": "scroll_page",
+   "ok": true,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "entry": {
+    "dialogs": []
+   },
+   "keep_shots": [
+    "a-0",
+    "a-1",
+    "a-before",
+    "b-0",
+    "b-1",
+    "b-10",
+    "b-11",
+    "b-12",
+    "b-13",
+    "b-14",
+    "b-2",
+    "b-3",
+    "b-4",
+    "b-5",
+    "b-6",
+    "b-7",
+    "b-8",
+    "b-9",
+    "b-before",
+    "c-0",
+    "c-3",
+    "c-4",
+    "c-5",
+    "c-6",
+    "c-before",
+    "d-0",
+    "d-before",
+    "entry",
+    "scroll-advanced-others",
+    "scroll-entry"
+   ],
+   "readback": {
+    "tab": "Others",
+    "group": "Special mode",
+    "label": "Print sequence",
+    "reached_by": [
+     "b-scrollbar",
+     "d-maximize"
+    ],
+    "methods": [
+     {
+      "method": "a-fold-icon",
+      "reached": false
+     },
+     {
+      "method": "b-scrollbar",
+      "reached": true
+     },
+     {
+      "method": "c-wheel-cursor",
+      "reached": false
+     },
+     {
+      "method": "d-maximize",
+      "reached": true
+     }
+    ]
+   },
+   "evidence": {
+    "tab": "Others",
+    "group": "Special mode",
+    "label": "Print sequence",
+    "click_tab": [
+     740,
+     776
+    ],
+    "geometry": {
+     "origin": [
+      360.0,
+      85.0
+     ],
+     "size": [
+      1200.0,
+      800.0
+     ]
+    },
+    "viewport": [
+     362,
+     797,
+     403,
+     85
+    ],
+    "screen": {
+     "screen": [
+      0,
+      0,
+      1920,
+      1080
+     ],
+     "visible": [
+      0,
+      30,
+      1920,
+      972
+     ]
+    },
+    "methods": [
+     {
+      "method": "a-fold-icon",
+      "attempts": [
+       {
+        "how": "icon",
+        "lines_before": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "a-0.panel.png",
+        "lines": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 5,
+        "scroll_px": 0.0,
+        "pixels_changed": 0,
+        "column_changed": 0,
+        "pixel_shift": {
+         "d": 0,
+         "ratio": 0.0,
+         "ratio_still": 0.0,
+         "pure_shift": false
+        },
+        "knob_dy": 0.0,
+        "reached": false,
+        "row_seen": false,
+        "title": "~ Skirt",
+        "click": [
+         374,
+         810
+        ],
+        "icon_box": [
+         366,
+         802,
+         382,
+         818
+        ],
+        "title_box": [
+         366,
+         805,
+         56,
+         16
+        ]
+       },
+       {
+        "how": "text",
+        "lines_before": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "a-1.panel.png",
+        "lines": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 5,
+        "scroll_px": 0.0,
+        "pixels_changed": 0,
+        "column_changed": 0,
+        "pixel_shift": {
+         "d": 0,
+         "ratio": 0.0,
+         "ratio_still": 0.0,
+         "pure_shift": false
+        },
+        "knob_dy": 0.0,
+        "reached": false,
+        "row_seen": false,
+        "title": "~ Skirt",
+        "click": [
+         416,
+         813
+        ],
+        "icon_box": [
+         366,
+         802,
+         382,
+         818
+        ],
+        "title_box": [
+         366,
+         805,
+         56,
+         16
+        ]
+       },
+       {
+        "how": "move-icon",
+        "lines_before": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "a-2.panel.png",
+        "lines": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 5,
+        "scroll_px": 0.0,
+        "pixels_changed": 0,
+        "column_changed": 0,
+        "pixel_shift": {
+         "d": 0,
+         "ratio": 0.0,
+         "ratio_still": 0.0,
+         "pure_shift": false
+        },
+        "knob_dy": 0.0,
+        "reached": false,
+        "row_seen": false,
+        "title": "~ Skirt",
+        "click": [
+         374,
+         810
+        ],
+        "icon_box": [
+         366,
+         802,
+         382,
+         818
+        ],
+        "title_box": [
+         366,
+         805,
+         56,
+         16
+        ]
+       },
+       {
+        "how": "label",
+        "lines_before": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "a-3.panel.png",
+        "lines": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 5,
+        "scroll_px": 0.0,
+        "pixels_changed": 0,
+        "column_changed": 0,
+        "pixel_shift": {
+         "d": 0,
+         "ratio": 0.0,
+         "ratio_still": 0.0,
+         "pure_shift": false
+        },
+        "knob_dy": 0.0,
+        "reached": false,
+        "row_seen": false,
+        "title": "~ Skirt",
+        "click": [
+         394,
+         813
+        ],
+        "icon_box": [
+         366,
+         802,
+         382,
+         818
+        ],
+        "title_box": [
+         366,
+         805,
+         56,
+         16
+        ]
+       },
+       {
+        "how": "row-right",
+        "lines_before": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "a-4.panel.png",
+        "lines": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 5,
+        "scroll_px": 0.0,
+        "pixels_changed": 0,
+        "column_changed": 0,
+        "pixel_shift": {
+         "d": 0,
+         "ratio": 0.0,
+         "ratio_still": 0.0,
+         "pure_shift": false
+        },
+        "knob_dy": 0.0,
+        "reached": false,
+        "row_seen": false,
+        "title": "~ Skirt",
+        "click": [
+         660,
+         813
+        ],
+        "icon_box": [
+         366,
+         802,
+         382,
+         818
+        ],
+        "title_box": [
+         366,
+         805,
+         56,
+         16
+        ]
+       },
+       {
+        "how": "drag-icon",
+        "lines_before": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "a-5.panel.png",
+        "lines": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 5,
+        "scroll_px": 0.0,
+        "pixels_changed": 0,
+        "column_changed": 0,
+        "pixel_shift": {
+         "d": 0,
+         "ratio": 0.0,
+         "ratio_still": 0.0,
+         "pure_shift": false
+        },
+        "knob_dy": 0.0,
+        "reached": false,
+        "row_seen": false,
+        "title": "~ Skirt",
+        "click": [
+         374,
+         810
+        ],
+        "icon_box": [
+         366,
+         802,
+         382,
+         818
+        ],
+        "title_box": [
+         366,
+         805,
+         56,
+         16
+        ]
+       },
+       {
+        "how": "double-icon",
+        "lines_before": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "a-6.panel.png",
+        "lines": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 5,
+        "scroll_px": 0.0,
+        "pixels_changed": 0,
+        "column_changed": 0,
+        "pixel_shift": {
+         "d": 0,
+         "ratio": 0.0,
+         "ratio_still": 0.0,
+         "pure_shift": false
+        },
+        "knob_dy": 0.0,
+        "reached": false,
+        "row_seen": false,
+        "title": "~ Skirt",
+        "click": [
+         374,
+         810
+        ],
+        "icon_box": [
+         366,
+         802,
+         382,
+         818
+        ],
+        "title_box": [
+         366,
+         805,
+         56,
+         16
+        ]
+       }
+      ],
+      "folds": [],
+      "lines_before": [
+       [
+        "~ Skirt",
+        805,
+        366
+       ],
+       [
+        "= 0",
+        833,
+        610
+       ],
+       [
+        "Skirt loops",
+        835,
+        390
+       ],
+       [
+        "Skirt height",
+        863,
+        388
+       ],
+       [
+        "layers",
+        865,
+        688
+       ]
+      ],
+      "keep": [
+       "a-0",
+       "a-1",
+       "a-before"
+      ],
+      "blocker": "Clicking the title row of '~ Skirt' changed nothing (ways tried: icon, text, move-icon, label, row-right, drag-icon, double-icon)",
+      "lines_restored": [
+       [
+        "~ Skirt",
+        805,
+        366
+       ],
+       [
+        "= 0",
+        833,
+        610
+       ],
+       [
+        "Skirt loops",
+        835,
+        390
+       ],
+       [
+        "Skirt height",
+        863,
+        388
+       ],
+       [
+        "layers",
+        865,
+        688
+       ]
+      ],
+      "restored": true,
+      "reached": false
+     },
+     {
+      "method": "b-scrollbar",
+      "attempts": [
+       {
+        "how": "ax-press-0",
+        "lines_before": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "b-0.panel.png",
+        "presses": 1,
+        "box": [
+         766.0,
+         797.0,
+         0.0,
+         0.0
+        ],
+        "lines": [
+         [
+          "= 0",
+          813,
+          610
+         ],
+         [
+          "Skirt loops",
+          814,
+          390
+         ],
+         [
+          "- 1",
+          841,
+          612
+         ],
+         [
+          "Skirt height",
+          842,
+          390
+         ],
+         [
+          "layers",
+          845,
+          690
+         ],
+         [
+          "00 Dim",
+          873,
+          364
+         ]
+        ],
+        "ocr_matches": 4,
+        "scroll_px": 21.0,
+        "pixels_changed": 2434,
+        "column_changed": 2539,
+        "pixel_shift": {
+         "d": 20,
+         "ratio": 0.0,
+         "ratio_still": 0.071,
+         "pure_shift": true
+        },
+        "knob_dy": 3.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "ax-press-1",
+        "lines_before": [
+         [
+          "= 0",
+          813,
+          610
+         ],
+         [
+          "Skirt loops",
+          814,
+          390
+         ],
+         [
+          "- 1",
+          841,
+          612
+         ],
+         [
+          "Skirt height",
+          842,
+          390
+         ],
+         [
+          "layers",
+          845,
+          690
+         ],
+         [
+          "00 Dim",
+          873,
+          364
+         ]
+        ],
+        "shot": "b-1.panel.png",
+        "presses": 1,
+        "box": [
+         766.0,
+         797.0,
+         0.0,
+         0.0
+        ],
+        "lines": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 4,
+        "scroll_px": -20.0,
+        "pixels_changed": 2434,
+        "column_changed": 2539,
+        "pixel_shift": {
+         "d": -20,
+         "ratio": 0.0,
+         "ratio_still": 0.071,
+         "pure_shift": true
+        },
+        "knob_dy": -3.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "ax-press-2",
+        "lines_before": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "b-2.panel.png",
+        "presses": 1,
+        "box": [
+         766.0,
+         832.0,
+         15.0,
+         52.0
+        ],
+        "lines": [
+         [
+          "90 Brim",
+          813,
+          364
+         ],
+         [
+          "Brim type",
+          847,
+          390
+         ],
+         [
+          "~ Auto",
+          847,
+          612
+         ],
+         [
+          "Drim width",
+          875,
+          390
+         ]
+        ],
+        "ocr_matches": 0,
+        "scroll_px": null,
+        "pixels_changed": 2296,
+        "column_changed": 2594,
+        "pixel_shift": {
+         "d": -12,
+         "ratio": 0.042,
+         "ratio_still": 0.067,
+         "pure_shift": false
+        },
+        "knob_dy": 12.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "ax-press-3",
+        "lines_before": [
+         [
+          "90 Brim",
+          813,
+          364
+         ],
+         [
+          "Brim type",
+          847,
+          390
+         ],
+         [
+          "~ Auto",
+          847,
+          612
+         ],
+         [
+          "Drim width",
+          875,
+          390
+         ]
+        ],
+        "shot": "b-3.panel.png",
+        "presses": 1,
+        "box": [
+         766.0,
+         797.0,
+         15.0,
+         2.0
+        ],
+        "lines": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 0,
+        "scroll_px": null,
+        "pixels_changed": 2296,
+        "column_changed": 2594,
+        "pixel_shift": {
+         "d": 12,
+         "ratio": 0.042,
+         "ratio_still": 0.067,
+         "pure_shift": false
+        },
+        "knob_dy": -12.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "back-to-top",
+        "lines_before": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "b-4.panel.png",
+        "presses": 1,
+        "lines": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 5,
+        "scroll_px": 0.0,
+        "pixels_changed": 0,
+        "column_changed": 0,
+        "pixel_shift": {
+         "d": 0,
+         "ratio": 0.0,
+         "ratio_still": 0.0,
+         "pure_shift": false
+        },
+        "knob_dy": 0.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "ax-press-0-x1",
+        "lines_before": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "b-5.panel.png",
+        "presses": 1,
+        "box": [
+         766.0,
+         797.0,
+         0.0,
+         0.0
+        ],
+        "lines": [
+         [
+          "= 0",
+          813,
+          610
+         ],
+         [
+          "Skirt loops",
+          814,
+          390
+         ],
+         [
+          "- 1",
+          841,
+          612
+         ],
+         [
+          "Skirt height",
+          842,
+          390
+         ],
+         [
+          "layers",
+          845,
+          690
+         ],
+         [
+          "00 Dim",
+          873,
+          364
+         ]
+        ],
+        "ocr_matches": 4,
+        "scroll_px": 21.0,
+        "pixels_changed": 2434,
+        "column_changed": 2539,
+        "pixel_shift": {
+         "d": 20,
+         "ratio": 0.0,
+         "ratio_still": 0.071,
+         "pure_shift": true
+        },
+        "knob_dy": 3.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "ax-press-0-x2",
+        "lines_before": [
+         [
+          "= 0",
+          813,
+          610
+         ],
+         [
+          "Skirt loops",
+          814,
+          390
+         ],
+         [
+          "- 1",
+          841,
+          612
+         ],
+         [
+          "Skirt height",
+          842,
+          390
+         ],
+         [
+          "layers",
+          845,
+          690
+         ],
+         [
+          "00 Dim",
+          873,
+          364
+         ]
+        ],
+        "shot": "b-6.panel.png",
+        "presses": 2,
+        "box": [
+         766.0,
+         797.0,
+         0.0,
+         0.0
+        ],
+        "lines": [
+         [
+          "Skirt height",
+          803,
+          388
+         ],
+         [
+          "layers",
+          805,
+          688
+         ],
+         [
+          "VU Brim",
+          835,
+          366
+         ],
+         [
+          "Brim type",
+          866,
+          390
+         ],
+         [
+          "~ Auto",
+          867,
+          612
+         ]
+        ],
+        "ocr_matches": 2,
+        "scroll_px": 40.0,
+        "pixels_changed": 2487,
+        "column_changed": 2642,
+        "pixel_shift": {
+         "d": 40,
+         "ratio": 0.0,
+         "ratio_still": 0.073,
+         "pure_shift": true
+        },
+        "knob_dy": 6.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "back-to-top",
+        "lines_before": [
+         [
+          "Skirt height",
+          803,
+          388
+         ],
+         [
+          "layers",
+          805,
+          688
+         ],
+         [
+          "VU Brim",
+          835,
+          366
+         ],
+         [
+          "Brim type",
+          866,
+          390
+         ],
+         [
+          "~ Auto",
+          867,
+          612
+         ]
+        ],
+        "shot": "b-7.panel.png",
+        "presses": 2,
+        "lines": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 2,
+        "scroll_px": -60.0,
+        "pixels_changed": 2230,
+        "column_changed": 2376,
+        "pixel_shift": {
+         "d": -60,
+         "ratio": 0.0,
+         "ratio_still": 0.065,
+         "pure_shift": true
+        },
+        "knob_dy": -9.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "ax-press-2-x1",
+        "lines_before": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "b-8.panel.png",
+        "presses": 1,
+        "box": [
+         766.0,
+         832.0,
+         15.0,
+         52.0
+        ],
+        "lines": [
+         [
+          "90 Brim",
+          813,
+          364
+         ],
+         [
+          "Brim type",
+          847,
+          390
+         ],
+         [
+          "~ Auto",
+          847,
+          612
+         ],
+         [
+          "Drim width",
+          875,
+          390
+         ]
+        ],
+        "ocr_matches": 0,
+        "scroll_px": null,
+        "pixels_changed": 2296,
+        "column_changed": 2594,
+        "pixel_shift": {
+         "d": -12,
+         "ratio": 0.042,
+         "ratio_still": 0.067,
+         "pure_shift": false
+        },
+        "knob_dy": 12.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "ax-press-2-x2",
+        "lines_before": [
+         [
+          "90 Brim",
+          813,
+          364
+         ],
+         [
+          "Brim type",
+          847,
+          390
+         ],
+         [
+          "~ Auto",
+          847,
+          612
+         ],
+         [
+          "Drim width",
+          875,
+          390
+         ]
+        ],
+        "shot": "b-9.panel.png",
+        "presses": 2,
+        "box": [
+         766.0,
+         857.0,
+         15.0,
+         27.0
+        ],
+        "lines": [
+         [
+          "Spiral vase",
+          807,
+          390
+         ],
+         [
+          "12 Fuzzy skin",
+          839,
+          366
+         ],
+         [
+          "Fuzzy skin",
+          871,
+          388
+         ],
+         [
+          "~ None",
+          871,
+          612
+         ]
+        ],
+        "ocr_matches": 0,
+        "scroll_px": null,
+        "pixels_changed": 2131,
+        "column_changed": 2514,
+        "pixel_shift": {
+         "d": -24,
+         "ratio": 0.042,
+         "ratio_still": 0.062,
+         "pure_shift": false
+        },
+        "knob_dy": 25.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "back-to-top",
+        "lines_before": [
+         [
+          "Spiral vase",
+          807,
+          390
+         ],
+         [
+          "12 Fuzzy skin",
+          839,
+          366
+         ],
+         [
+          "Fuzzy skin",
+          871,
+          388
+         ],
+         [
+          "~ None",
+          871,
+          612
+         ]
+        ],
+        "shot": "b-10.panel.png",
+        "presses": 4,
+        "lines": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 0,
+        "scroll_px": null,
+        "pixels_changed": 2337,
+        "column_changed": 2642,
+        "pixel_shift": {
+         "d": 36,
+         "ratio": 0.056,
+         "ratio_still": 0.068,
+         "pure_shift": false
+        },
+        "knob_dy": -37.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "track-click-mid",
+        "lines_before": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "b-11.panel.png",
+        "click": [
+         774,
+         849
+        ],
+        "lines": [
+         [
+          "90 Brim",
+          813,
+          364
+         ],
+         [
+          "Brim type",
+          847,
+          390
+         ],
+         [
+          "~ Auto",
+          847,
+          612
+         ],
+         [
+          "Drim width",
+          875,
+          390
+         ]
+        ],
+        "ocr_matches": 0,
+        "scroll_px": null,
+        "pixels_changed": 2296,
+        "column_changed": 2594,
+        "pixel_shift": {
+         "d": -12,
+         "ratio": 0.042,
+         "ratio_still": 0.067,
+         "pure_shift": false
+        },
+        "knob_dy": 12.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "track-click-low",
+        "lines_before": [
+         [
+          "90 Brim",
+          813,
+          364
+         ],
+         [
+          "Brim type",
+          847,
+          390
+         ],
+         [
+          "~ Auto",
+          847,
+          612
+         ],
+         [
+          "Drim width",
+          875,
+          390
+         ]
+        ],
+        "shot": "b-12.panel.png",
+        "click": [
+         774,
+         877
+        ],
+        "lines": [
+         [
+          "Brim width",
+          797,
+          390
+         ],
+         [
+          "EK Special mode",
+          827,
+          366
+         ],
+         [
+          "~ By layer",
+          858,
+          612
+         ],
+         [
+          "Print sequence",
+          859,
+          390
+         ]
+        ],
+        "ocr_matches": 0,
+        "scroll_px": null,
+        "pixels_changed": 2843,
+        "column_changed": 3157,
+        "pixel_shift": {
+         "d": -73,
+         "ratio": 0.016,
+         "ratio_still": 0.083,
+         "pure_shift": true
+        },
+        "knob_dy": 13.0,
+        "reached": true,
+        "row_seen": true,
+        "controls": []
+       },
+       {
+        "how": "back-to-top",
+        "lines_before": [
+         [
+          "Brim width",
+          797,
+          390
+         ],
+         [
+          "EK Special mode",
+          827,
+          366
+         ],
+         [
+          "~ By layer",
+          858,
+          612
+         ],
+         [
+          "Print sequence",
+          859,
+          390
+         ]
+        ],
+        "shot": "b-13.panel.png",
+        "presses": 3,
+        "lines": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 0,
+        "scroll_px": null,
+        "pixels_changed": 2865,
+        "column_changed": 3129,
+        "pixel_shift": {
+         "d": 24,
+         "ratio": 0.059,
+         "ratio_still": 0.084,
+         "pure_shift": false
+        },
+        "knob_dy": -25.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "drag-thumb-20px",
+        "lines_before": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "b-14.panel.png",
+        "knob": [
+         766.0,
+         799.0,
+         15.0,
+         20.0
+        ],
+        "press": [
+         774,
+         809
+        ],
+        "release": [
+         774,
+         829
+        ],
+        "lines": [
+         [
+          "Brim type",
+          807,
+          390
+         ],
+         [
+          "~ Auto",
+          807,
+          612
+         ],
+         [
+          "Brim width",
+          835,
+          390
+         ],
+         [
+          "5",
+          835,
+          612
+         ],
+         [
+          "Special mode",
+          869,
+          386
+         ]
+        ],
+        "ocr_matches": 0,
+        "scroll_px": null,
+        "pixels_changed": 2398,
+        "column_changed": 2678,
+        "pixel_shift": {
+         "d": 28,
+         "ratio": 0.057,
+         "ratio_still": 0.07,
+         "pure_shift": false
+        },
+        "knob_dy": 20.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "back-to-top",
+        "lines_before": [
+         [
+          "Brim type",
+          807,
+          390
+         ],
+         [
+          "~ Auto",
+          807,
+          612
+         ],
+         [
+          "Brim width",
+          835,
+          390
+         ],
+         [
+          "5",
+          835,
+          612
+         ],
+         [
+          "Special mode",
+          869,
+          386
+         ]
+        ],
+        "shot": "b-15.panel.png",
+        "presses": 3,
+        "lines": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 0,
+        "scroll_px": null,
+        "pixels_changed": 2398,
+        "column_changed": 2678,
+        "pixel_shift": {
+         "d": -28,
+         "ratio": 0.057,
+         "ratio_still": 0.07,
+         "pure_shift": false
+        },
+        "knob_dy": -20.0,
+        "reached": false,
+        "row_seen": false
+       }
+      ],
+      "lines_before": [
+       [
+        "~ Skirt",
+        805,
+        366
+       ],
+       [
+        "= 0",
+        833,
+        610
+       ],
+       [
+        "Skirt loops",
+        835,
+        390
+       ],
+       [
+        "Skirt height",
+        863,
+        388
+       ],
+       [
+        "layers",
+        865,
+        688
+       ]
+      ],
+      "ax_scrollbar": {
+       "box": [
+        765.0,
+        796.0,
+        17.0,
+        89.0
+       ],
+       "value": 0,
+       "knob": [
+        766.0,
+        799.0,
+        15.0,
+        20.0
+       ],
+       "buttons": [
+        {
+         "role": "AXButton",
+         "box": [
+          766.0,
+          797.0,
+          0.0,
+          0.0
+         ]
+        },
+        {
+         "role": "AXButton",
+         "box": [
+          766.0,
+          797.0,
+          0.0,
+          0.0
+         ]
+        },
+        {
+         "role": "AXButton",
+         "box": [
+          766.0,
+          819.0,
+          15.0,
+          65.0
+         ]
+        },
+        {
+         "role": "AXButton",
+         "box": [
+          766.0,
+          797.0,
+          15.0,
+          2.0
+         ]
+        }
+       ]
+      },
+      "viewport_controls": [
+       {
+        "role": "AXTextField",
+        "box": [
+         627,
+         832,
+         88,
+         19
+        ],
+        "title": "",
+        "help": "This is the number of loops for the skirt. 0 means the skirt is disabl",
+        "actions": [
+         "AXShowMenu",
+         "AXConfirm"
+        ]
+       },
+       {
+        "role": "AXTextField",
+        "box": [
+         627,
+         860,
+         56,
+         19
+        ],
+        "title": "",
+        "help": "Number of skirt layers: usually only one\nparameter name\t: skirt_height",
+        "actions": [
+         "AXConfirm"
+        ]
+       },
+       {
+        "role": "AXValueIndicator",
+        "box": [
+         766,
+         799,
+         15,
+         20
+        ],
+        "title": "",
+        "help": "",
+        "actions": []
+       },
+       {
+        "role": "AXButton",
+        "box": [
+         766,
+         797,
+         0,
+         0
+        ],
+        "title": "",
+        "help": "",
+        "actions": [
+         "AXPress"
+        ]
+       },
+       {
+        "role": "AXButton",
+        "box": [
+         766,
+         797,
+         0,
+         0
+        ],
+        "title": "",
+        "help": "",
+        "actions": [
+         "AXPress"
+        ]
+       },
+       {
+        "role": "AXButton",
+        "box": [
+         766,
+         819,
+         15,
+         65
+        ],
+        "title": "",
+        "help": "",
+        "actions": [
+         "AXPress"
+        ]
+       },
+       {
+        "role": "AXButton",
+        "box": [
+         766,
+         797,
+         15,
+         2
+        ],
+        "title": "",
+        "help": "",
+        "actions": [
+         "AXPress"
+        ]
+       }
+      ],
+      "keep": [
+       "b-0",
+       "b-1",
+       "b-10",
+       "b-11",
+       "b-12",
+       "b-13",
+       "b-14",
+       "b-2",
+       "b-3",
+       "b-4",
+       "b-5",
+       "b-6",
+       "b-7",
+       "b-8",
+       "b-9",
+       "b-before"
+      ],
+      "button_direction": {
+       "down": [
+        0,
+        2
+       ],
+       "up": [
+        1,
+        3
+       ],
+       "marks": [
+        21.0,
+        -20.0,
+        12.0,
+        -12.0
+       ]
+      },
+      "resets": [
+       {
+        "button": 3,
+        "presses": 1,
+        "knob_at": [
+         3.0,
+         3.0
+        ]
+       },
+       {
+        "button": 3,
+        "presses": 2,
+        "knob_at": [
+         12.0,
+         3.0,
+         3.0
+        ]
+       },
+       {
+        "button": 3,
+        "presses": 4,
+        "knob_at": [
+         40.0,
+         28.0,
+         15.0,
+         3.0,
+         3.0
+        ]
+       },
+       {
+        "button": 3,
+        "presses": 3,
+        "knob_at": [
+         28.0,
+         15.0,
+         3.0,
+         3.0
+        ]
+       },
+       {
+        "button": 3,
+        "presses": 3,
+        "knob_at": [
+         23.0,
+         9.0,
+         3.0,
+         3.0
+        ]
+       }
+      ],
+      "reached": true
+     },
+     {
+      "method": "c-wheel-cursor",
+      "attempts": [
+       {
+        "how": "line-notches",
+        "lines_before": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "c-0.panel.png",
+        "point": [
+         543,
+         848
+        ],
+        "unit": 1,
+        "notch": -1,
+        "notches": 6,
+        "cursor_after": [
+         543.0,
+         848.0
+        ],
+        "lines": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 5,
+        "scroll_px": 0.0,
+        "pixels_changed": 0,
+        "column_changed": 0,
+        "pixel_shift": {
+         "d": 0,
+         "ratio": 0.0,
+         "ratio_still": 0.0,
+         "pure_shift": false
+        },
+        "knob_dy": 0.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "pixel-60",
+        "lines_before": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "c-1.panel.png",
+        "point": [
+         543,
+         848
+        ],
+        "unit": 0,
+        "notch": -60,
+        "notches": 6,
+        "cursor_after": [
+         543.0,
+         848.0
+        ],
+        "lines": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 5,
+        "scroll_px": 0.0,
+        "pixels_changed": 0,
+        "column_changed": 0,
+        "pixel_shift": {
+         "d": 0,
+         "ratio": 0.0,
+         "ratio_still": 0.0,
+         "pure_shift": false
+        },
+        "knob_dy": 0.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "line-notches-on-strip",
+        "lines_before": [
+         [
+          "~ Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "c-2.panel.png",
+        "point": [
+         773,
+         848
+        ],
+        "unit": 1,
+        "notch": -1,
+        "notches": 6,
+        "cursor_after": [
+         543.0,
+         848.0
+        ],
+        "lines": [
+         [
+          "L Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 4,
+        "scroll_px": 0.0,
+        "pixels_changed": 0,
+        "column_changed": 132,
+        "pixel_shift": {
+         "d": 0,
+         "ratio": 0.0,
+         "ratio_still": 0.0,
+         "pure_shift": false
+        },
+        "knob_dy": 0.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "warp-cursor-then-line-notches",
+        "lines_before": [
+         [
+          "L Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "c-3.panel.png",
+        "warp_result": 0,
+        "cursor_after": [
+         543.0,
+         848.0
+        ],
+        "lines": [
+         [
+          "L Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 5,
+        "scroll_px": 0.0,
+        "pixels_changed": 0,
+        "column_changed": 0,
+        "pixel_shift": {
+         "d": 0,
+         "ratio": 0.0,
+         "ratio_still": 0.0,
+         "pure_shift": false
+        },
+        "knob_dy": 0.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "blank-click",
+        "lines_before": [
+         [
+          "L Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "c-4.panel.png",
+        "lines": [
+         [
+          "L Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 5,
+        "scroll_px": 0.0,
+        "pixels_changed": 0,
+        "column_changed": 0,
+        "pixel_shift": {
+         "d": 0,
+         "ratio": 0.0,
+         "ratio_still": 0.0,
+         "pure_shift": false
+        },
+        "knob_dy": 0.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "page-down",
+        "lines_before": [
+         [
+          "L Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "c-5.panel.png",
+        "keycode": 121,
+        "lines": [
+         [
+          "L Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 5,
+        "scroll_px": 0.0,
+        "pixels_changed": 0,
+        "column_changed": 0,
+        "pixel_shift": {
+         "d": 0,
+         "ratio": 0.0,
+         "ratio_still": 0.0,
+         "pure_shift": false
+        },
+        "knob_dy": 0.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "down-arrow",
+        "lines_before": [
+         [
+          "L Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "c-6.panel.png",
+        "keycode": 125,
+        "lines": [
+         [
+          "L Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 5,
+        "scroll_px": 0.0,
+        "pixels_changed": 0,
+        "column_changed": 0,
+        "pixel_shift": {
+         "d": 0,
+         "ratio": 0.0,
+         "ratio_still": 0.0,
+         "pure_shift": false
+        },
+        "knob_dy": 0.0,
+        "reached": false,
+        "row_seen": false
+       },
+       {
+        "how": "back-to-top",
+        "lines_before": [
+         [
+          "L Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "c-7.panel.png",
+        "lines": [
+         [
+          "L Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 5,
+        "scroll_px": 0.0,
+        "pixels_changed": 0,
+        "column_changed": 0,
+        "pixel_shift": {
+         "d": 0,
+         "ratio": 0.0,
+         "ratio_still": 0.0,
+         "pure_shift": false
+        },
+        "knob_dy": 0.0,
+        "reached": false,
+        "row_seen": false
+       }
+      ],
+      "lines_before": [
+       [
+        "~ Skirt",
+        805,
+        366
+       ],
+       [
+        "= 0",
+        833,
+        610
+       ],
+       [
+        "Skirt loops",
+        835,
+        390
+       ],
+       [
+        "Skirt height",
+        863,
+        388
+       ],
+       [
+        "layers",
+        865,
+        688
+       ]
+      ],
+      "cursor_before": [
+       543.0,
+       848.0
+      ],
+      "keep": [
+       "c-0",
+       "c-3",
+       "c-4",
+       "c-5",
+       "c-6",
+       "c-before"
+      ],
+      "focus_click": [
+       564,
+       840
+      ],
+      "focused_after_click": {
+       "role": "AXWindow",
+       "box": [
+        360.0,
+        85.0,
+        1200.0,
+        800.0
+       ],
+       "help": ""
+      },
+      "reached": false
+     },
+     {
+      "method": "d-maximize",
+      "attempts": [
+       {
+        "how": "maximized",
+        "lines_before": [
+         [
+          "L Skirt",
+          805,
+          366
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "shot": "d-0.panel.png",
+        "screen": {
+         "screen": [
+          0,
+          0,
+          1920,
+          1080
+         ],
+         "visible": [
+          0,
+          30,
+          1920,
+          972
+         ]
+        },
+        "geometry_after": {
+         "origin": [
+          360.0,
+          30.0
+         ],
+         "size": [
+          1200.0,
+          972.0
+         ]
+        },
+        "lines": [
+         [
+          "4 Skirt",
+          750,
+          368
+         ],
+         [
+          "=0",
+          778,
+          608
+         ],
+         [
+          "Skirt loops",
+          780,
+          388
+         ],
+         [
+          "Skirt height",
+          807,
+          388
+         ],
+         [
+          "layers",
+          810,
+          688
+         ],
+         [
+          "Brim",
+          840,
+          364
+         ],
+         [
+          "Brim type",
+          872,
+          388
+         ],
+         [
+          "vAuto",
+          872,
+          610
+         ],
+         [
+          "Brim width",
+          900,
+          388
+         ],
+         [
+          "5",
+          900,
+          612
+         ],
+         [
+          "mm",
+          904,
+          696
+         ],
+         [
+          "Z",
+          924,
+          816
+         ],
+         [
+          "EN Special mode",
+          932,
+          364
+         ],
+         [
+          "Print sequence",
+          964,
+          388
+         ],
+         [
+          "~ By layer",
+          964,
+          610
+         ],
+         [
+          "Cnirol yacol",
+          992,
+          390
+         ]
+        ],
+        "ocr_matches": 4,
+        "scroll_px": 55.0,
+        "pixel_metrics": "RuntimeError: Pixel crops differ in shape",
+        "knob_dy": 0.0,
+        "reached": true,
+        "row_seen": true,
+        "controls": [
+         {
+          "role": "AXTextField",
+          "box": [
+           627,
+           777,
+           88,
+           19
+          ],
+          "title": "",
+          "help": "This is the number of loops for the skirt. 0 means the skirt is disabl",
+          "actions": [
+           "AXShowMenu",
+           "AXConfirm"
+          ]
+         },
+         {
+          "role": "AXTextField",
+          "box": [
+           627,
+           805,
+           56,
+           19
+          ],
+          "title": "",
+          "help": "Number of skirt layers: usually only one\nparameter name\t: skirt_height",
+          "actions": [
+           "AXConfirm"
+          ]
+         },
+         {
+          "role": "AXStaticText",
+          "box": [
+           612,
+           897,
+           83,
+           19
+          ],
+          "title": "",
+          "help": "This is the distance from the model to the outermost brim line.\nparame",
+          "actions": []
+         },
+         {
+          "role": "AXCheckBox",
+          "box": [
+           605,
+           989,
+           20,
+           20
+          ],
+          "title": "",
+          "help": "This enables spiraling, which smooths out the Z moves of the outer con",
+          "actions": [
+           "AXPress"
+          ]
+         }
+        ]
+       },
+       {
+        "how": "restored",
+        "lines_before": [
+         [
+          "Skirt height",
+          807,
+          388
+         ],
+         [
+          "layers",
+          810,
+          688
+         ],
+         [
+          "Brim",
+          840,
+          364
+         ],
+         [
+          "Brim type",
+          872,
+          388
+         ],
+         [
+          "vAuto",
+          872,
+          610
+         ]
+        ],
+        "shot": "d-1.panel.png",
+        "geometry": [
+         360.0,
+         85.0,
+         1200.0,
+         800.0
+        ],
+        "lines": [
+         [
+          "→ Skirt",
+          805,
+          368
+         ],
+         [
+          "= 0",
+          833,
+          610
+         ],
+         [
+          "Skirt loops",
+          835,
+          390
+         ],
+         [
+          "Skirt height",
+          863,
+          388
+         ],
+         [
+          "layers",
+          865,
+          688
+         ]
+        ],
+        "ocr_matches": 2,
+        "scroll_px": -55.0,
+        "pixel_metrics": "RuntimeError: Pixel crops differ in shape",
+        "knob_dy": 0.0,
+        "reached": false,
+        "row_seen": false
+       }
+      ],
+      "lines_before": [
+       [
+        "L Skirt",
+        805,
+        366
+       ],
+       [
+        "= 0",
+        833,
+        610
+       ],
+       [
+        "Skirt loops",
+        835,
+        390
+       ],
+       [
+        "Skirt height",
+        863,
+        388
+       ],
+       [
+        "layers",
+        865,
+        688
+       ]
+      ],
+      "keep": [
+       "d-0",
+       "d-before"
+      ],
+      "reached": true
+     }
+    ],
+    "between": [
+     {},
+     {
+      "top": {
+       "button": 3,
+       "presses": 1,
+       "knob_at": [
+        3.0,
+        3.0
+       ]
+      },
+      "lines": [
+       [
+        "~ Skirt",
+        805,
+        366
+       ],
+       [
+        "= 0",
+        833,
+        610
+       ],
+       [
+        "Skirt loops",
+        835,
+        390
+       ],
+       [
+        "Skirt height",
+        863,
+        388
+       ],
+       [
+        "layers",
+        865,
+        688
+       ]
+      ]
+     },
+     {
+      "top": {
+       "button": 3,
+       "presses": 1,
+       "knob_at": [
+        3.0,
+        3.0
+       ]
+      },
+      "lines": [
+       [
+        "L Skirt",
+        805,
+        366
+       ],
+       [
+        "= 0",
+        833,
+        610
+       ],
+       [
+        "Skirt loops",
+        835,
+        390
+       ],
+       [
+        "Skirt height",
+        863,
+        388
+       ],
+       [
+        "layers",
+        865,
+        688
+       ]
+      ]
+     },
+     {
+      "top": {
+       "button": 3,
+       "presses": 1,
+       "knob_at": [
+        3.0,
+        3.0
+       ]
+      },
+      "lines": [
+       [
+        "→ Skirt",
+        805,
+        368
+       ],
+       [
+        "= 0",
+        833,
+        610
+       ],
+       [
+        "Skirt loops",
+        835,
+        390
+       ],
+       [
+        "Skirt height",
+        863,
+        388
+       ],
+       [
+        "layers",
+        865,
+        688
+       ]
+      ]
+     }
+    ],
+    "advanced": {
+     "switch": {
+      "already_on": false,
+      "tabs_before": [
+       "Others",
+       "Quality",
+       "Strength",
+       "Support",
+       "Multimaterial"
+      ],
+      "attempts": [
+       {
+        "how": "ax",
+        "value_before": 0,
+        "box": [
+         673.0,
+         689.0
+        ],
+        "tabs_after": [
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ]
+        ],
+        "value_after": 1
+       }
+      ],
+      "checkboxes": [
+       {
+        "x": 453.0,
+        "y": 686.0,
+        "words": "",
+        "value": 0
+       },
+       {
+        "x": 673.0,
+        "y": 689.0,
+        "words": "",
+        "value": 0
+       }
+      ],
+      "turned_on_by": "ax",
+      "speed_seen": false
+     },
+     "lines": [
+      [
+       "L Skirt",
+       805,
+       366
+      ],
+      [
+       "= 0",
+       833,
+       610
+      ],
+      [
+       "Skirt loops",
+       835,
+       390
+      ],
+      [
+       "Skirt type",
+       863,
+       388
+      ],
+      [
+       "v Combined",
+       863,
+       612
+      ]
+     ]
+    }
+   },
+   "shots": {
+    "entry": "entry.png",
+    "scroll-entry": "scroll-entry.png",
+    "a-before": "a-before.png",
+    "a-0": "a-0.png",
+    "a-1": "a-1.png",
+    "a-2": "a-2.png",
+    "a-3": "a-3.png",
+    "a-4": "a-4.png",
+    "a-5": "a-5.png",
+    "a-6": "a-6.png",
+    "b-before": "b-before.png",
+    "b-0": "b-0.png",
+    "b-1": "b-1.png",
+    "b-2": "b-2.png",
+    "b-3": "b-3.png",
+    "b-4": "b-4.png",
+    "b-5": "b-5.png",
+    "b-6": "b-6.png",
+    "b-7": "b-7.png",
+    "b-8": "b-8.png",
+    "b-9": "b-9.png",
+    "b-10": "b-10.png",
+    "b-11": "b-11.png",
+    "b-12": "b-12.png",
+    "b-13": "b-13.png",
+    "b-14": "b-14.png",
+    "b-15": "b-15.png",
+    "scroll-top-1": "scroll-top-1.png",
+    "c-before": "c-before.png",
+    "c-0": "c-0.png",
+    "c-1": "c-1.png",
+    "c-2": "c-2.png",
+    "c-3": "c-3.png",
+    "c-4": "c-4.png",
+    "c-5": "c-5.png",
+    "c-6": "c-6.png",
+    "c-7": "c-7.png",
+    "scroll-top-2": "scroll-top-2.png",
+    "d-before": "d-before.png",
+    "d-0": "d-0.png",
+    "d-1": "d-1.png",
+    "scroll-top-3": "scroll-top-3.png",
+    "scroll-advanced-quality-locate": "scroll-advanced-quality-locate.png",
+    "scroll-advanced": "scroll-advanced.png",
+    "scroll-advanced-ax-0": "scroll-advanced-ax-0.png",
+    "scroll-advanced-ax-1": "scroll-advanced-ax-1.png",
+    "scroll-advanced-ax-2": "scroll-advanced-ax-2.png",
+    "scroll-advanced-ax-3": "scroll-advanced-ax-3.png",
+    "scroll-advanced-others-locate": "scroll-advanced-others-locate.png",
+    "scroll-advanced-others": "scroll-advanced-others.png"
+   },
+   "notes": [],
+   "geometry": {
+    "origin": [
+     360.0,
+     85.0
+    ],
+    "size": [
+     1200.0,
+     800.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795454479.314862,
+   "seconds": 341.2,
+   "screenshots": {
+    "a-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-a-0.panel.png",
+    "a-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-a-0.png",
+    "a-0.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-a-0.view.png",
+    "a-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-a-1.panel.png",
+    "a-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-a-1.png",
+    "a-1.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-a-1.view.png",
+    "a-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-a-2.png",
+    "a-2.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-a-2.view.png",
+    "a-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-a-3.png",
+    "a-3.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-a-3.view.png",
+    "a-4.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-a-4.png",
+    "a-4.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-a-4.view.png",
+    "a-5.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-a-5.png",
+    "a-5.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-a-5.view.png",
+    "a-6.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-a-6.png",
+    "a-6.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-a-6.view.png",
+    "a-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-a-before.panel.png",
+    "a-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-a-before.png",
+    "a-before.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-a-before.view.png",
+    "b-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-b-0.panel.png",
+    "b-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-0.png",
+    "b-0.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-0.view.png",
+    "b-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-b-1.panel.png",
+    "b-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-1.png",
+    "b-1.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-1.view.png",
+    "b-10.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-b-10.panel.png",
+    "b-10.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-10.png",
+    "b-10.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-10.view.png",
+    "b-11.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-b-11.panel.png",
+    "b-11.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-11.png",
+    "b-11.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-11.view.png",
+    "b-12.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-b-12.panel.png",
+    "b-12.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-12.png",
+    "b-12.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-12.view.png",
+    "b-13.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-b-13.panel.png",
+    "b-13.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-13.png",
+    "b-13.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-13.view.png",
+    "b-14.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-b-14.panel.png",
+    "b-14.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-14.png",
+    "b-14.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-14.view.png",
+    "b-15.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-15.png",
+    "b-15.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-15.view.png",
+    "b-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-b-2.panel.png",
+    "b-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-2.png",
+    "b-2.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-2.view.png",
+    "b-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-b-3.panel.png",
+    "b-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-3.png",
+    "b-3.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-3.view.png",
+    "b-4.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-b-4.panel.png",
+    "b-4.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-4.png",
+    "b-4.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-4.view.png",
+    "b-5.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-b-5.panel.png",
+    "b-5.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-5.png",
+    "b-5.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-5.view.png",
+    "b-6.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-b-6.panel.png",
+    "b-6.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-6.png",
+    "b-6.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-6.view.png",
+    "b-7.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-b-7.panel.png",
+    "b-7.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-7.png",
+    "b-7.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-7.view.png",
+    "b-8.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-b-8.panel.png",
+    "b-8.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-8.png",
+    "b-8.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-8.view.png",
+    "b-9.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-b-9.panel.png",
+    "b-9.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-9.png",
+    "b-9.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-9.view.png",
+    "b-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-b-before.panel.png",
+    "b-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-before.png",
+    "b-before.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-b-before.view.png",
+    "c-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-c-0.panel.png",
+    "c-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-0.png",
+    "c-0.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-0.view.png",
+    "c-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-1.png",
+    "c-1.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-1.view.png",
+    "c-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-2.png",
+    "c-2.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-2.view.png",
+    "c-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-c-3.panel.png",
+    "c-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-3.png",
+    "c-3.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-3.view.png",
+    "c-4.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-c-4.panel.png",
+    "c-4.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-4.png",
+    "c-4.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-4.view.png",
+    "c-5.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-c-5.panel.png",
+    "c-5.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-5.png",
+    "c-5.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-5.view.png",
+    "c-6.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-c-6.panel.png",
+    "c-6.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-6.png",
+    "c-6.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-6.view.png",
+    "c-7.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-7.png",
+    "c-7.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-7.view.png",
+    "c-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-c-before.panel.png",
+    "c-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-before.png",
+    "c-before.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-c-before.view.png",
+    "d-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-d-0.panel.png",
+    "d-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-d-0.png",
+    "d-0.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-d-0.view.png",
+    "d-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-d-1.png",
+    "d-1.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-d-1.view.png",
+    "d-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-d-before.panel.png",
+    "d-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-d-before.png",
+    "d-before.view.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-d-before.view.png",
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-entry.png",
+    "scroll-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-scroll-advanced-ax-0.png",
+    "scroll-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-scroll-advanced-ax-1.png",
+    "scroll-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-scroll-advanced-ax-2.png",
+    "scroll-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-scroll-advanced-ax-3.png",
+    "scroll-advanced-others-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-scroll-advanced-others-locate.png",
+    "scroll-advanced-others.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-scroll-advanced-others.panel.png",
+    "scroll-advanced-others.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-scroll-advanced-others.png",
+    "scroll-advanced-quality-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-scroll-advanced-quality-locate.png",
+    "scroll-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-scroll-advanced.png",
+    "scroll-entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scroll_page-012119-scroll-entry.panel.png",
+    "scroll-entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-scroll-entry.png",
+    "scroll-top-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-scroll-top-1.png",
+    "scroll-top-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-scroll-top-2.png",
+    "scroll-top-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-scroll-top-3.png"
+   }
   }
  },
  "attempts": [
@@ -1225,6 +4833,31 @@
    "op": "pick_combo",
    "stamp": "232543",
    "ok": false
+  },
+  {
+   "op": "scroll_page",
+   "stamp": "004431",
+   "ok": false
+  },
+  {
+   "op": "scroll_page",
+   "stamp": "004918",
+   "ok": true
+  },
+  {
+   "op": "scroll_page",
+   "stamp": "010511",
+   "ok": false
+  },
+  {
+   "op": "scroll_page",
+   "stamp": "011215",
+   "ok": true
+  },
+  {
+   "op": "scroll_page",
+   "stamp": "012119",
+   "ok": true
   }
  ],
  "summary": {

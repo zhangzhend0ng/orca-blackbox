@@ -71,6 +71,39 @@ mouse_event = ct.CFUNCTYPE(ptr, ptr, ptr, ct.c_ulong, Point, ct.c_ulong, ct.c_do
                            ct.c_long, ptr, ct.c_long, ct.c_long, ct.c_float)(send_address)
 event_window = ct.CFUNCTYPE(ct.c_long, ptr, ptr)(send_address)
 event_cg = ct.CFUNCTYPE(ptr, ptr, ptr)(send_address)
+# Pointer / wheel input with a real HID source, and the usable screen area.
+create_source = bind(cg, "CGEventSourceCreate", ptr, ct.c_int32)
+create_move = bind(cg, "CGEventCreateMouseEvent", ptr, ptr, ct.c_uint32, Point, ct.c_uint32)
+create_scroll = bind(cg, "CGEventCreateScrollWheelEvent", ptr, ptr, ct.c_uint32, ct.c_uint32,
+                     ct.c_int32)
+create_event = bind(cg, "CGEventCreate", ptr, ptr)
+event_location = bind(cg, "CGEventGetLocation", Point, ptr)
+warp_cursor = bind(cg, "CGWarpMouseCursorPosition", ct.c_int32, Point)
+copy_action_names = bind(ax, "AXUIElementCopyActionNames", integer, ptr, out)
+send_object = ct.CFUNCTYPE(ptr, ptr, ptr)(send_address)
+send_rect = ct.CFUNCTYPE(Rect, ptr, ptr)(send_address)
+
+
+def screen_areas():
+    """Main display as {'screen': [x, y, w, h], 'visible': [x, y, w, h]} with a top-left
+    origin (the AX / screenshot space; AppKit's is bottom-left), or None without a screen."""
+    screens = send_object(objc_class(b"NSScreen"), selector(b"screens"))
+    if not screens:
+        return None
+    screen = send_object(screens, selector(b"firstObject"))
+    frame = send_rect(screen, selector(b"frame"))
+    usable = send_rect(screen, selector(b"visibleFrame"))
+    return {"screen": [frame.origin.x, 0.0, frame.size.x, frame.size.y],
+            "visible": [usable.origin.x, frame.size.y - usable.origin.y - usable.size.y,
+                        usable.size.x, usable.size.y]}
+
+
+def cursor_position():
+    """Mouse position the event system reports for this session."""
+    event = create_event(None)
+    point = event_location(event)
+    release(event)
+    return point
 
 
 class Desktop(ExitStack):
@@ -130,6 +163,25 @@ class Desktop(ExitStack):
     def enabled(self, element):
         value = self.attr(element, "AXEnabled")
         return bool(value and type_id(value) == boolean_type and bool_value(value))
+
+    def actions(self, element):
+        names = ptr()
+        if copy_action_names(element, ct.byref(names)) == 0 and names.value:
+            array = self.own(names.value)
+            return [self.cf_text(array_item(array, i)) for i in range(array_size(array))]
+        return []
+
+    def box(self, element):
+        """[x, y, w, h] of an AX element, or None when it exposes no geometry."""
+        try:
+            at = self.position(element)
+            value = self.attr(element, "AXSize")
+            size = Point()
+            if not value or not read_point(value, 2, ct.byref(size)):
+                return None
+            return [at.x, at.y, size.x, size.y]
+        except RuntimeError:
+            return None
 
     def children(self, element, key="AXChildren"):
         array = self.attr(element, key)
