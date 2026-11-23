@@ -1,0 +1,2330 @@
+{
+ "tab": "Multimaterial",
+ "version": "2.3.5-nightly",
+ "build": "01.10.01.50",
+ "captured": "2026-11-23 16:34",
+ "channel": "zcode_gui_task session-1 worker: real SendInput wheel (1 notch/step, >=550ms settle), PrintWindow capture, pytesseract eng psm=6 scale=3; E2 driver: per-frame partial flush, movement judged by row displacement, page reset by tab rebuild",
+ "psm": 6,
+ "complete": true,
+ "stop_reason": "bottom confirmed: stops [880, 880] agree within 60px",
+ "stopped_at": {
+  "walk": 2,
+  "offset": 880,
+  "kind": "static",
+  "viewport_rows": [
+   [
+    "A",
+    724
+   ],
+   [
+    "Flush into",
+    742
+   ],
+   [
+    "Advanced",
+    776
+   ],
+   [
+    "Use beam interlocking",
+    808
+   ],
+   [
+    "Interface shells",
+    837
+   ],
+   [
+    "Maximum width of",
+    868
+   ],
+   [
+    "a",
+    871
+   ],
+   [
+    "segmented region",
+    886
+   ],
+   [
+    "Interlocking depth ofa",
+    916
+   ],
+   [
+    "0",
+    925
+   ],
+   [
+    "segmented region om",
+    934
+   ],
+   [
+    "Color Mixing (Experimental)",
+    968
+   ],
+   [
+    "subdivide Mix Layer",
+    1000
+   ],
+   [
+    "v",
+    1028
+   ]
+  ],
+  "walk_stops": [
+   880,
+   880
+  ]
+ },
+ "walks": 2,
+ "wheel_steps": 70,
+ "scroll_px_per_notch": 60,
+ "row_y_space": "page-absolute px reconstructed from frame displacement; viewport y = row y - offset of the frame it was read in",
+ "rows": [
+  {
+   "text": "Prime “",
+   "y": 726
+  },
+  {
+   "text": "Enable |",
+   "y": 758
+  },
+  {
+   "text": "Width 30 mm",
+   "y": 786
+  },
+  {
+   "text": "Prime volume 90 mm?",
+   "y": 818
+  },
+  {
+   "text": "rie ‘",
+   "y": 842
+  },
+  {
+   "text": "Brim width 5 mm",
+   "y": 848
+  },
+  {
+   "text": "Maximal bridging distance 10",
+   "y": 878
+  },
+  {
+   "text": "Wipe",
+   "y": 906
+  },
+  {
+   "text": "tower purge lines 120",
+   "y": 909
+  },
+  {
+   "text": "»",
+   "y": 920
+  },
+  {
+   "text": "spacing »",
+   "y": 929
+  },
+  {
+   "text": "Extra Tlow Tor purging 1UU % A",
+   "y": 958
+  },
+  {
+   "text": "Maximum wipe tower print",
+   "y": 986
+  },
+  {
+   "text": "90",
+   "y": 995
+  },
+  {
+   "text": "speed of out wall",
+   "y": 1004
+  },
+  {
+   "text": "¥",
+   "y": 1028
+  },
+  {
+   "text": "Wall type Rib",
+   "y": 1034
+  },
+  {
+   "text": "~",
+   "y": 1039
+  },
+  {
+   "text": "Extra rib length 8 mm",
+   "y": 1064
+  },
+  {
+   "text": "v",
+   "y": 1088
+  },
+  {
+   "text": "Rib width 8",
+   "y": 1094
+  },
+  {
+   "text": "mm",
+   "y": 1100
+  },
+  {
+   "text": "Fillet wall @",
+   "y": 1124
+  },
+  {
+   "text": "°",
+   "y": 1144
+  },
+  {
+   "text": "No sparse layers (beta)",
+   "y": 1154
+  },
+  {
+   "text": "Wall gap |",
+   "y": 1184
+  },
+  {
+   "text": "°",
+   "y": 1204
+  },
+  {
+   "text": "Prime all printing extruders",
+   "y": 1214
+  },
+  {
+   "text": "Filament for Features",
+   "y": 1248
+  },
+  {
+   "text": "¥",
+   "y": 1268
+  },
+  {
+   "text": "Walls",
+   "y": 1274
+  },
+  {
+   "text": "Infill",
+   "y": 1304
+  },
+  {
+   "text": "Solid infill",
+   "y": 1340
+  },
+  {
+   "text": "Wipe tower Default",
+   "y": 1370
+  },
+  {
+   "text": "~",
+   "y": 1375
+  },
+  {
+   "text": "A",
+   "y": 1384
+  },
+  {
+   "text": "Ooze prevention",
+   "y": 1404
+  },
+  {
+   "text": "|",
+   "y": 1434
+  },
+  {
+   "text": "Enable |",
+   "y": 1436
+  },
+  {
+   "text": "Temperature variation ~ -150 Ac",
+   "y": 1466
+  },
+  {
+   "text": "Preheat time 30 8",
+   "y": 1496
+  },
+  {
+   "text": "7",
+   "y": 1508
+  },
+  {
+   "text": "Preheat delta temperature ~ 0",
+   "y": 1526
+  },
+  {
+   "text": "Flush options A",
+   "y": 1560
+  },
+  {
+   "text": "Flush into objects’ infill",
+   "y": 1592
+  },
+  {
+   "text": "A",
+   "y": 1604
+  },
+  {
+   "text": "Flush into",
+   "y": 1622
+  },
+  {
+   "text": "v",
+   "y": 1628
+  },
+  {
+   "text": "Advanced",
+   "y": 1656
+  },
+  {
+   "text": "Use beam interlocking",
+   "y": 1688
+  },
+  {
+   "text": "Interface shells",
+   "y": 1717
+  },
+  {
+   "text": "Maximum width of",
+   "y": 1748
+  },
+  {
+   "text": "a",
+   "y": 1751
+  },
+  {
+   "text": "segmented region om",
+   "y": 1766
+  },
+  {
+   "text": "Interlocking depth ofa 0",
+   "y": 1796
+  },
+  {
+   "text": "om",
+   "y": 1811
+  },
+  {
+   "text": "segmented region om",
+   "y": 1814
+  },
+  {
+   "text": "Color Mixing (Experimental)",
+   "y": 1848
+  },
+  {
+   "text": "v",
+   "y": 1868
+  },
+  {
+   "text": "subdivide Mix Layer",
+   "y": 1880
+  },
+  {
+   "text": "v",
+   "y": 1908
+  }
+ ],
+ "row_count": 61,
+ "frames": [
+  {
+   "step": 0,
+   "walk": 1,
+   "offset": 0,
+   "lines": [
+    [
+     "Prime “",
+     726
+    ],
+    [
+     "tower",
+     727
+    ],
+    [
+     "Enable |",
+     758
+    ],
+    [
+     "Width 30 mm",
+     786
+    ],
+    [
+     "Prime volume 90 mm?",
+     818
+    ],
+    [
+     "Brim width 5 mm",
+     848
+    ],
+    [
+     "Maximal bridging distance 10",
+     878
+    ],
+    [
+     "mm",
+     884
+    ],
+    [
+     "purge lines 120",
+     911
+    ],
+    [
+     "»",
+     920
+    ],
+    [
+     "Extra flow for purging 100 %",
+     956
+    ],
+    [
+     "Maximum wipe tower print",
+     986
+    ],
+    [
+     "speed of out wall",
+     1004
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 1,
+   "walk": 1,
+   "offset": 60,
+   "lines": [
+    [
+     "Width rie ‘",
+     722
+    ],
+    [
+     "30",
+     728
+    ],
+    [
+     "Prime volume 90",
+     758
+    ],
+    [
+     "Brim width 5 mm",
+     788
+    ],
+    [
+     "Maximal bridging distance 10",
+     818
+    ],
+    [
+     "mm",
+     824
+    ],
+    [
+     "purge lines 120",
+     851
+    ],
+    [
+     "»",
+     860
+    ],
+    [
+     "Extra flow for purging 100 %",
+     896
+    ],
+    [
+     "Maximum wipe tower print",
+     926
+    ],
+    [
+     "90",
+     935
+    ],
+    [
+     "speed of out wall",
+     944
+    ],
+    [
+     "Wall type Rib",
+     974
+    ],
+    [
+     "~",
+     979
+    ],
+    [
+     "Extra rib length 8 mm",
+     1004
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 2,
+   "walk": 1,
+   "offset": 120,
+   "lines": [
+    [
+     "rie ‘",
+     722
+    ],
+    [
+     "Brim width 5",
+     728
+    ],
+    [
+     "Maximal bridging distance 10",
+     758
+    ],
+    [
+     "mm",
+     764
+    ],
+    [
+     "purge lines 120",
+     791
+    ],
+    [
+     "»",
+     800
+    ],
+    [
+     "Extra flow for purging 100 %",
+     836
+    ],
+    [
+     "Maximum wipe tower print",
+     866
+    ],
+    [
+     "speed of out wall",
+     884
+    ],
+    [
+     "Wall type Rib",
+     914
+    ],
+    [
+     "~",
+     919
+    ],
+    [
+     "Extra rib length 8 mm",
+     944
+    ],
+    [
+     "Rib width 8",
+     974
+    ],
+    [
+     "mm",
+     980
+    ],
+    [
+     "Fillet wall @",
+     1004
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 3,
+   "walk": 1,
+   "offset": 180,
+   "lines": [
+    [
+     "Wipe",
+     726
+    ],
+    [
+     "tower purge lines 120",
+     729
+    ],
+    [
+     "spacing »",
+     749
+    ],
+    [
+     "Extra flow for purging 100 %",
+     776
+    ],
+    [
+     "Maximum wipe tower print",
+     806
+    ],
+    [
+     "90",
+     815
+    ],
+    [
+     "speed of out wall",
+     824
+    ],
+    [
+     "Wall type Rib",
+     854
+    ],
+    [
+     "~",
+     859
+    ],
+    [
+     "Extra rib length",
+     884
+    ],
+    [
+     "Rib width 8",
+     914
+    ],
+    [
+     "mm",
+     920
+    ],
+    [
+     "@",
+     942
+    ],
+    [
+     "Fillet wall",
+     944
+    ],
+    [
+     "No sparse layers (beta)",
+     974
+    ],
+    [
+     "Wall gap |",
+     1004
+    ]
+   ]
+  },
+  {
+   "step": 4,
+   "walk": 1,
+   "offset": 240,
+   "lines": [
+    [
+     "Extra Tlow Tor purging 1UU % A",
+     718
+    ],
+    [
+     "Maximum wipe tower print",
+     746
+    ],
+    [
+     "90",
+     755
+    ],
+    [
+     "speed of out wall",
+     764
+    ],
+    [
+     "Wall type Rib",
+     794
+    ],
+    [
+     "~",
+     799
+    ],
+    [
+     "Extra rib length 8 mm",
+     824
+    ],
+    [
+     "Rib width 8",
+     854
+    ],
+    [
+     "mm",
+     860
+    ],
+    [
+     "Fillet wall @",
+     884
+    ],
+    [
+     "No sparse layers (beta)",
+     914
+    ],
+    [
+     "|",
+     942
+    ],
+    [
+     "Wall gap",
+     944
+    ],
+    [
+     "Prime all printing extruders",
+     974
+    ],
+    [
+     "Filament for Features",
+     1008
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 5,
+   "walk": 1,
+   "offset": 300,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Wall type Rib",
+     734
+    ],
+    [
+     "~",
+     739
+    ],
+    [
+     "Extra rib length 8 mm",
+     764
+    ],
+    [
+     "Rib width 8",
+     794
+    ],
+    [
+     "mm",
+     800
+    ],
+    [
+     "@",
+     822
+    ],
+    [
+     "Fillet wall",
+     824
+    ],
+    [
+     "No sparse layers (beta)",
+     854
+    ],
+    [
+     "Wall gap |",
+     884
+    ],
+    [
+     "Prime all printing extruders",
+     914
+    ],
+    [
+     "Filament for Features",
+     948
+    ],
+    [
+     "Walls",
+     974
+    ],
+    [
+     "Infill",
+     1004
+    ]
+   ]
+  },
+  {
+   "step": 6,
+   "walk": 1,
+   "offset": 360,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Rib width 8",
+     734
+    ],
+    [
+     "mm",
+     740
+    ],
+    [
+     "Fillet wall @",
+     764
+    ],
+    [
+     "No sparse layers (beta)",
+     794
+    ],
+    [
+     "|",
+     822
+    ],
+    [
+     "Wall gap",
+     824
+    ],
+    [
+     "Prime all printing extruders",
+     854
+    ],
+    [
+     "Filament for Features",
+     888
+    ],
+    [
+     "Walls",
+     914
+    ],
+    [
+     "Infill",
+     944
+    ],
+    [
+     "Solid infill",
+     980
+    ],
+    [
+     "Wipe tower Default",
+     1010
+    ],
+    [
+     "~",
+     1015
+    ]
+   ]
+  },
+  {
+   "step": 7,
+   "walk": 1,
+   "offset": 420,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "No sparse layers (beta)",
+     734
+    ],
+    [
+     "Wall gap |",
+     764
+    ],
+    [
+     "Prime all printing extruders",
+     794
+    ],
+    [
+     "Filament for Features",
+     828
+    ],
+    [
+     "Walls",
+     854
+    ],
+    [
+     "Infill",
+     884
+    ],
+    [
+     "Solid infill",
+     920
+    ],
+    [
+     "Wipe tower Default",
+     950
+    ],
+    [
+     "~",
+     955
+    ],
+    [
+     "Ooze prevention",
+     984
+    ],
+    [
+     "|",
+     1014
+    ],
+    [
+     "Enable",
+     1016
+    ]
+   ]
+  },
+  {
+   "step": 8,
+   "walk": 1,
+   "offset": 480,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Prime all printing extruders",
+     734
+    ],
+    [
+     "Filament for Features",
+     768
+    ],
+    [
+     "Walls",
+     794
+    ],
+    [
+     "Infill",
+     824
+    ],
+    [
+     "Solid infill",
+     860
+    ],
+    [
+     "Wipe tower Default",
+     890
+    ],
+    [
+     "~",
+     895
+    ],
+    [
+     "Ooze prevention",
+     924
+    ],
+    [
+     "Enable |",
+     956
+    ],
+    [
+     "Temperature variation ~ -150 Ac",
+     986
+    ],
+    [
+     "Preheat time 30 8",
+     1016
+    ],
+    [
+     "7",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 9,
+   "walk": 1,
+   "offset": 540,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Walls",
+     734
+    ],
+    [
+     "Infill",
+     764
+    ],
+    [
+     "Solid infill",
+     800
+    ],
+    [
+     "Wipe tower Default",
+     830
+    ],
+    [
+     "~",
+     835
+    ],
+    [
+     "Ooze prevention",
+     864
+    ],
+    [
+     "|",
+     894
+    ],
+    [
+     "Enable",
+     896
+    ],
+    [
+     "Temperature variation ~ -150 Ac",
+     926
+    ],
+    [
+     "Preheat time 30 5",
+     956
+    ],
+    [
+     "Preheat delta temperature 0",
+     986
+    ],
+    [
+     "Flush options",
+     1020
+    ]
+   ]
+  },
+  {
+   "step": 10,
+   "walk": 1,
+   "offset": 600,
+   "lines": [
+    [
+     "Solid infill",
+     740
+    ],
+    [
+     "Wipe tower Default",
+     770
+    ],
+    [
+     "~",
+     775
+    ],
+    [
+     "Ooze prevention",
+     804
+    ],
+    [
+     "Enable |",
+     836
+    ],
+    [
+     "Temperature variation",
+     866
+    ],
+    [
+     "Preheat time 30 5",
+     896
+    ],
+    [
+     "Preheat delta temperature ~ 0",
+     926
+    ],
+    [
+     "Flush options",
+     960
+    ],
+    [
+     "Flush into objects’ infill",
+     992
+    ],
+    [
+     "Flush into",
+     1022
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 11,
+   "walk": 1,
+   "offset": 660,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Ooze prevention",
+     744
+    ],
+    [
+     "|",
+     774
+    ],
+    [
+     "Enable",
+     776
+    ],
+    [
+     "Temperature variation ~ -150 Ac",
+     806
+    ],
+    [
+     "Preheat time 30 5",
+     836
+    ],
+    [
+     "Preheat delta temperature",
+     866
+    ],
+    [
+     "Flush options",
+     900
+    ],
+    [
+     "Flush into objects’ infill",
+     932
+    ],
+    [
+     "Flush into",
+     962
+    ],
+    [
+     "Advanced",
+     996
+    ],
+    [
+     ".",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 12,
+   "walk": 1,
+   "offset": 720,
+   "lines": [
+    [
+     "Enable A",
+     718
+    ],
+    [
+     "Temperature variation ~ -150 Ac",
+     746
+    ],
+    [
+     "Preheat time 30 5",
+     776
+    ],
+    [
+     "Preheat delta temperature ~ 0",
+     806
+    ],
+    [
+     "Flush options",
+     840
+    ],
+    [
+     "Flush into objects’ infill",
+     872
+    ],
+    [
+     "Flush into",
+     902
+    ],
+    [
+     "Advanced",
+     936
+    ],
+    [
+     "Use beam interlocking",
+     968
+    ],
+    [
+     "Interface shells",
+     997
+    ]
+   ]
+  },
+  {
+   "step": 13,
+   "walk": 1,
+   "offset": 780,
+   "lines": [
+    [
+     "Preheat time 3U A",
+     718
+    ],
+    [
+     "Preheat delta temperature ~ 0",
+     746
+    ],
+    [
+     "Flush options",
+     780
+    ],
+    [
+     "Flush into objects’ infill",
+     812
+    ],
+    [
+     "Flush into",
+     842
+    ],
+    [
+     "Advanced",
+     876
+    ],
+    [
+     "Use beam interlocking",
+     908
+    ],
+    [
+     "Interface shells",
+     937
+    ],
+    [
+     "Maximum",
+     965
+    ],
+    [
+     "width ofa 0",
+     968
+    ],
+    [
+     "segmented region om",
+     986
+    ],
+    [
+     "Interlocking depth ofa 0",
+     1016
+    ],
+    [
+     "om",
+     1031
+    ]
+   ]
+  },
+  {
+   "step": 14,
+   "walk": 1,
+   "offset": 840,
+   "lines": [
+    [
+     "Flush options A",
+     720
+    ],
+    [
+     "Flush into objects’ infill",
+     752
+    ],
+    [
+     "Flush into",
+     782
+    ],
+    [
+     "Advanced",
+     816
+    ],
+    [
+     "Use beam interlocking",
+     848
+    ],
+    [
+     "Interface shells",
+     877
+    ],
+    [
+     "Maximum",
+     905
+    ],
+    [
+     "width ofa 0",
+     908
+    ],
+    [
+     "segmented region om",
+     926
+    ],
+    [
+     "Interlocking",
+     953
+    ],
+    [
+     "depth ofa 0",
+     956
+    ],
+    [
+     "segmented region om",
+     974
+    ],
+    [
+     "Color Mixing (Experimental)",
+     1008
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 15,
+   "walk": 1,
+   "offset": 880,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Flush into",
+     742
+    ],
+    [
+     "Advanced",
+     776
+    ],
+    [
+     "Use beam interlocking",
+     808
+    ],
+    [
+     "Interface shells",
+     837
+    ],
+    [
+     "Maximum width of",
+     868
+    ],
+    [
+     "a",
+     871
+    ],
+    [
+     "segmented region",
+     886
+    ],
+    [
+     "Interlocking depth ofa",
+     916
+    ],
+    [
+     "0",
+     925
+    ],
+    [
+     "segmented region om",
+     934
+    ],
+    [
+     "Color Mixing (Experimental)",
+     968
+    ],
+    [
+     "subdivide Mix Layer",
+     1000
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 16,
+   "walk": 2,
+   "offset": 0,
+   "lines": [
+    [
+     "Prime “",
+     726
+    ],
+    [
+     "tower",
+     727
+    ],
+    [
+     "Enable |",
+     758
+    ],
+    [
+     "Width 30 mm",
+     786
+    ],
+    [
+     "Prime volume 90 mm?",
+     818
+    ],
+    [
+     "Brim width 5 mm",
+     848
+    ],
+    [
+     "Maximal bridging distance 10",
+     878
+    ],
+    [
+     "mm",
+     884
+    ],
+    [
+     "purge lines 120",
+     911
+    ],
+    [
+     "»",
+     920
+    ],
+    [
+     "Extra flow for purging 100 %",
+     956
+    ],
+    [
+     "Maximum wipe tower print",
+     986
+    ],
+    [
+     "speed of out wall",
+     1004
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 17,
+   "walk": 2,
+   "offset": 60,
+   "lines": [
+    [
+     "Width rie ‘",
+     722
+    ],
+    [
+     "30",
+     728
+    ],
+    [
+     "Prime volume 90",
+     758
+    ],
+    [
+     "Brim width 5 mm",
+     788
+    ],
+    [
+     "Maximal bridging distance 10",
+     818
+    ],
+    [
+     "mm",
+     824
+    ],
+    [
+     "purge lines 120",
+     851
+    ],
+    [
+     "»",
+     860
+    ],
+    [
+     "Extra flow for purging 100 %",
+     896
+    ],
+    [
+     "Maximum wipe tower print",
+     926
+    ],
+    [
+     "90",
+     935
+    ],
+    [
+     "speed of out wall",
+     944
+    ],
+    [
+     "Wall type Rib",
+     974
+    ],
+    [
+     "~",
+     979
+    ],
+    [
+     "Extra rib length 8 mm",
+     1004
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 18,
+   "walk": 2,
+   "offset": 120,
+   "lines": [
+    [
+     "rie ‘",
+     722
+    ],
+    [
+     "Brim width 5",
+     728
+    ],
+    [
+     "Maximal bridging distance 10",
+     758
+    ],
+    [
+     "mm",
+     764
+    ],
+    [
+     "purge lines 120",
+     791
+    ],
+    [
+     "»",
+     800
+    ],
+    [
+     "Extra flow for purging 100 %",
+     836
+    ],
+    [
+     "Maximum wipe tower print",
+     866
+    ],
+    [
+     "speed of out wall",
+     884
+    ],
+    [
+     "Wall type Rib",
+     914
+    ],
+    [
+     "~",
+     919
+    ],
+    [
+     "Extra rib length 8 mm",
+     944
+    ],
+    [
+     "Rib width 8",
+     974
+    ],
+    [
+     "mm",
+     980
+    ],
+    [
+     "Fillet wall @",
+     1004
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 19,
+   "walk": 2,
+   "offset": 180,
+   "lines": [
+    [
+     "Wipe",
+     726
+    ],
+    [
+     "tower purge lines 120",
+     729
+    ],
+    [
+     "spacing »",
+     749
+    ],
+    [
+     "Extra flow for purging 100 %",
+     776
+    ],
+    [
+     "Maximum wipe tower print",
+     806
+    ],
+    [
+     "90",
+     815
+    ],
+    [
+     "speed of out wall",
+     824
+    ],
+    [
+     "Wall type Rib",
+     854
+    ],
+    [
+     "~",
+     859
+    ],
+    [
+     "Extra rib length",
+     884
+    ],
+    [
+     "Rib width 8",
+     914
+    ],
+    [
+     "mm",
+     920
+    ],
+    [
+     "@",
+     942
+    ],
+    [
+     "Fillet wall",
+     944
+    ],
+    [
+     "No sparse layers (beta)",
+     974
+    ],
+    [
+     "Wall gap |",
+     1004
+    ]
+   ]
+  },
+  {
+   "step": 20,
+   "walk": 2,
+   "offset": 240,
+   "lines": [
+    [
+     "Extra Tlow Tor purging 1UU % A",
+     718
+    ],
+    [
+     "Maximum wipe tower print",
+     746
+    ],
+    [
+     "90",
+     755
+    ],
+    [
+     "speed of out wall",
+     764
+    ],
+    [
+     "Wall type Rib",
+     794
+    ],
+    [
+     "~",
+     799
+    ],
+    [
+     "Extra rib length 8 mm",
+     824
+    ],
+    [
+     "Rib width 8",
+     854
+    ],
+    [
+     "mm",
+     860
+    ],
+    [
+     "Fillet wall @",
+     884
+    ],
+    [
+     "No sparse layers (beta)",
+     914
+    ],
+    [
+     "|",
+     942
+    ],
+    [
+     "Wall gap",
+     944
+    ],
+    [
+     "Prime all printing extruders",
+     974
+    ],
+    [
+     "Filament for Features",
+     1008
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 21,
+   "walk": 2,
+   "offset": 300,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Wall type Rib",
+     734
+    ],
+    [
+     "~",
+     739
+    ],
+    [
+     "Extra rib length 8 mm",
+     764
+    ],
+    [
+     "Rib width 8",
+     794
+    ],
+    [
+     "mm",
+     800
+    ],
+    [
+     "@",
+     822
+    ],
+    [
+     "Fillet wall",
+     824
+    ],
+    [
+     "No sparse layers (beta)",
+     854
+    ],
+    [
+     "Wall gap |",
+     884
+    ],
+    [
+     "Prime all printing extruders",
+     914
+    ],
+    [
+     "Filament for Features",
+     948
+    ],
+    [
+     "Walls",
+     974
+    ],
+    [
+     "Infill",
+     1004
+    ]
+   ]
+  },
+  {
+   "step": 22,
+   "walk": 2,
+   "offset": 360,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Rib width 8",
+     734
+    ],
+    [
+     "mm",
+     740
+    ],
+    [
+     "Fillet wall @",
+     764
+    ],
+    [
+     "No sparse layers (beta)",
+     794
+    ],
+    [
+     "|",
+     822
+    ],
+    [
+     "Wall gap",
+     824
+    ],
+    [
+     "Prime all printing extruders",
+     854
+    ],
+    [
+     "Filament for Features",
+     888
+    ],
+    [
+     "Walls",
+     914
+    ],
+    [
+     "Infill",
+     944
+    ],
+    [
+     "Solid infill",
+     980
+    ],
+    [
+     "Wipe tower Default",
+     1010
+    ],
+    [
+     "~",
+     1015
+    ]
+   ]
+  },
+  {
+   "step": 23,
+   "walk": 2,
+   "offset": 420,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "No sparse layers (beta)",
+     734
+    ],
+    [
+     "Wall gap |",
+     764
+    ],
+    [
+     "Prime all printing extruders",
+     794
+    ],
+    [
+     "Filament for Features",
+     828
+    ],
+    [
+     "Walls",
+     854
+    ],
+    [
+     "Infill",
+     884
+    ],
+    [
+     "Solid infill",
+     920
+    ],
+    [
+     "Wipe tower Default",
+     950
+    ],
+    [
+     "~",
+     955
+    ],
+    [
+     "Ooze prevention",
+     984
+    ],
+    [
+     "|",
+     1014
+    ],
+    [
+     "Enable",
+     1016
+    ]
+   ]
+  },
+  {
+   "step": 24,
+   "walk": 2,
+   "offset": 480,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Prime all printing extruders",
+     734
+    ],
+    [
+     "Filament for Features",
+     768
+    ],
+    [
+     "Walls",
+     794
+    ],
+    [
+     "Infill",
+     824
+    ],
+    [
+     "Solid infill",
+     860
+    ],
+    [
+     "Wipe tower Default",
+     890
+    ],
+    [
+     "~",
+     895
+    ],
+    [
+     "Ooze prevention",
+     924
+    ],
+    [
+     "Enable |",
+     956
+    ],
+    [
+     "Temperature variation ~ -150 Ac",
+     986
+    ],
+    [
+     "Preheat time 30 8",
+     1016
+    ],
+    [
+     "7",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 25,
+   "walk": 2,
+   "offset": 540,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Walls",
+     734
+    ],
+    [
+     "Infill",
+     764
+    ],
+    [
+     "Solid infill",
+     800
+    ],
+    [
+     "Wipe tower Default",
+     830
+    ],
+    [
+     "~",
+     835
+    ],
+    [
+     "Ooze prevention",
+     864
+    ],
+    [
+     "|",
+     894
+    ],
+    [
+     "Enable",
+     896
+    ],
+    [
+     "Temperature variation ~ -150 Ac",
+     926
+    ],
+    [
+     "Preheat time 30 5",
+     956
+    ],
+    [
+     "Preheat delta temperature 0",
+     986
+    ],
+    [
+     "Flush options",
+     1020
+    ]
+   ]
+  },
+  {
+   "step": 26,
+   "walk": 2,
+   "offset": 600,
+   "lines": [
+    [
+     "Solid infill",
+     740
+    ],
+    [
+     "Wipe tower Default",
+     770
+    ],
+    [
+     "~",
+     775
+    ],
+    [
+     "Ooze prevention",
+     804
+    ],
+    [
+     "Enable |",
+     836
+    ],
+    [
+     "Temperature variation",
+     866
+    ],
+    [
+     "Preheat time 30 5",
+     896
+    ],
+    [
+     "Preheat delta temperature ~ 0",
+     926
+    ],
+    [
+     "Flush options",
+     960
+    ],
+    [
+     "Flush into objects’ infill",
+     992
+    ],
+    [
+     "Flush into",
+     1022
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 27,
+   "walk": 2,
+   "offset": 660,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Ooze prevention",
+     744
+    ],
+    [
+     "|",
+     774
+    ],
+    [
+     "Enable",
+     776
+    ],
+    [
+     "Temperature variation ~ -150 Ac",
+     806
+    ],
+    [
+     "Preheat time 30 5",
+     836
+    ],
+    [
+     "Preheat delta temperature",
+     866
+    ],
+    [
+     "Flush options",
+     900
+    ],
+    [
+     "Flush into objects’ infill",
+     932
+    ],
+    [
+     "Flush into",
+     962
+    ],
+    [
+     "Advanced",
+     996
+    ],
+    [
+     ".",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 28,
+   "walk": 2,
+   "offset": 720,
+   "lines": [
+    [
+     "Enable A",
+     718
+    ],
+    [
+     "Temperature variation ~ -150 Ac",
+     746
+    ],
+    [
+     "Preheat time 30 5",
+     776
+    ],
+    [
+     "Preheat delta temperature ~ 0",
+     806
+    ],
+    [
+     "Flush options",
+     840
+    ],
+    [
+     "Flush into objects’ infill",
+     872
+    ],
+    [
+     "Flush into",
+     902
+    ],
+    [
+     "Advanced",
+     936
+    ],
+    [
+     "Use beam interlocking",
+     968
+    ],
+    [
+     "Interface shells",
+     997
+    ]
+   ]
+  },
+  {
+   "step": 29,
+   "walk": 2,
+   "offset": 780,
+   "lines": [
+    [
+     "Preheat time 3U A",
+     718
+    ],
+    [
+     "Preheat delta temperature ~ 0",
+     746
+    ],
+    [
+     "Flush options",
+     780
+    ],
+    [
+     "Flush into objects’ infill",
+     812
+    ],
+    [
+     "Flush into",
+     842
+    ],
+    [
+     "Advanced",
+     876
+    ],
+    [
+     "Use beam interlocking",
+     908
+    ],
+    [
+     "Interface shells",
+     937
+    ],
+    [
+     "Maximum",
+     965
+    ],
+    [
+     "width ofa 0",
+     968
+    ],
+    [
+     "segmented region om",
+     986
+    ],
+    [
+     "Interlocking depth ofa 0",
+     1016
+    ],
+    [
+     "om",
+     1031
+    ]
+   ]
+  },
+  {
+   "step": 30,
+   "walk": 2,
+   "offset": 840,
+   "lines": [
+    [
+     "Flush options A",
+     720
+    ],
+    [
+     "Flush into objects’ infill",
+     752
+    ],
+    [
+     "Flush into",
+     782
+    ],
+    [
+     "Advanced",
+     816
+    ],
+    [
+     "Use beam interlocking",
+     848
+    ],
+    [
+     "Interface shells",
+     877
+    ],
+    [
+     "Maximum",
+     905
+    ],
+    [
+     "width ofa 0",
+     908
+    ],
+    [
+     "segmented region om",
+     926
+    ],
+    [
+     "Interlocking",
+     953
+    ],
+    [
+     "depth ofa 0",
+     956
+    ],
+    [
+     "segmented region om",
+     974
+    ],
+    [
+     "Color Mixing (Experimental)",
+     1008
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 31,
+   "walk": 2,
+   "offset": 880,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Flush into",
+     742
+    ],
+    [
+     "Advanced",
+     776
+    ],
+    [
+     "Use beam interlocking",
+     808
+    ],
+    [
+     "Interface shells",
+     837
+    ],
+    [
+     "Maximum width of",
+     868
+    ],
+    [
+     "a",
+     871
+    ],
+    [
+     "segmented region",
+     886
+    ],
+    [
+     "Interlocking depth ofa",
+     916
+    ],
+    [
+     "0",
+     925
+    ],
+    [
+     "segmented region om",
+     934
+    ],
+    [
+     "Color Mixing (Experimental)",
+     968
+    ],
+    [
+     "subdivide Mix Layer",
+     1000
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  }
+ ],
+ "shots": [
+  "census_multimaterial_top.png",
+  "census_multimaterial_mid.png",
+  "census_multimaterial_bottom.png"
+ ],
+ "frame_shots": "C:\\coil\\fa706_diag\\out\\census_multimaterial_f*.png (sidebar crop scale 2, one per OCR'd frame)",
+ "frame_shots_count": 72,
+ "frame_jitters": 20,
+ "notes": [
+  "walk1: top after 2 up-rolls (2 static): ['Prime “', 'tower', 'Enable |']",
+  "walk1: stop at offset=880px (primary pt (300, 880))",
+  "walk2: top after 18 up-rolls (2 static): ['Prime “', 'tower', 'Enable |']",
+  "walk2: stop at offset=880px (primary pt (300, 880))",
+  "bottom confirmed: stops [880, 880] agree within 60px"
+ ],
+ "raw": "OCR text preserved verbatim (misreads included) per task E spec"
+}

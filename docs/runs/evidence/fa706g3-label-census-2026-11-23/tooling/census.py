@@ -242,7 +242,10 @@ def click_tab(tab):
                 or pat in w[0].lower()]
         if cand:
             t, x, y, w, h, c = cand[0]
-            cx, cy = x + w // 2, y + h // 2 + 3
+            cx = x + w // 2
+            # a box merged with the scrollbar line ('oth..|', h=36, E3)
+            # centres on the strip's bottom border -> pin to the tab row
+            cy = TAB_XY[tab][1] if h > 20 else y + h // 2 + 3
             got = True
             break
     if not got:
