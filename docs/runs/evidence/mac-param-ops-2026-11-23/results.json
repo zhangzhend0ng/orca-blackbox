@@ -6584,7 +6584,7 @@
     "screenshots": 16
    }
   },
-  "summary_written_at": "2026-11-24 02:25:24",
+  "summary_written_at": "2026-11-24 02:26:35",
   "code_after_the_proof": "final code = look-first scroll + painted_is() + pick_combo --take. On the final code: pick_combo pointer / keys (022226 / 022357) and scenario print-sequence (022045). One step behind it (no painted_is, no --take; neither is on that path): scenario thin-wall (021310). Older: the five op proofs and scenario layer-height (014352)",
   "pick_combo_attribution": {
    "status": "ISOLATED - the pointer click completes the pick; it is also the first input of the full sequence, so the keys that follow it are redundant",
@@ -6668,7 +6668,7 @@
      "ok": true
     }
    ],
-   "session_note": "02:08, before the first run: two leftover test instances were killed by matching the harness datadir prefix - pid 39221 (run 015828's, inspected first) and pid 44384 (matched by the same pattern, NOT inspected first; no work dir, launchd job, worker or second boot log accounts for it - origin unknown)"
+   "session_note": "02:08, before the first run: the test instance left behind by run 015828 (pid 39221, scratch datadir, no supervisor alive) was killed - screencapture is full-screen, so a leftover window would sit in the evidence frames. The kill command matched by command-line text and also hit pid 44384, which was the shell running that very command: its argv holds the grep patterns (verified 02:26 with a marker pattern - the shell and its subshell both match). No other Orca instance was involved. This note first read 44384 as a second test instance of unknown origin; that was wrong and is corrected. No harness Orca instance is left running (pgrep -x Snapmaker_Orca: none, 02:26)"
   }
  }
 }
