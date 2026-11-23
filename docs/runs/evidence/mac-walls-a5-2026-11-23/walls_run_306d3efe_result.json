@@ -1,0 +1,132 @@
+{
+  "run_id": "306d3efe6882427e806afaaf9e2ad7f1",
+  "verdict": "SHADOW",
+  "candidate": "mac-author-20261123-01",
+  "goal": "walls",
+  "test_kind": "walls_comparison",
+  "started_at": "2026-11-23T05:33:19.233332+00:00",
+  "slices": {
+    "baseline": {
+      "layer_height": "0.4",
+      "first_layer_height": "0.4",
+      "layer_count": 68,
+      "first_z": "0.4",
+      "last_z": "27.2",
+      "positive_xy_e_moves": 1907,
+      "object_tools": [
+        0
+      ],
+      "sha256": "2ccfab6609d75694cee6ad77cd5adc8ae81374eb87ab43285487ae0e92641460",
+      "artifact": "baseline.gcode",
+      "origin": "gui_plate_temporary"
+    },
+    "edited": {
+      "layer_height": "0.4",
+      "first_layer_height": "0.4",
+      "layer_count": 68,
+      "first_z": "0.4",
+      "last_z": "27.2",
+      "positive_xy_e_moves": 2154,
+      "object_tools": [
+        0
+      ],
+      "sha256": "cd78d1a82820c8226e4b8ac5455ca0e57e44b127c7dd94b966a3324d0b14585f",
+      "artifact": "edited.gcode",
+      "origin": "gui_plate_temporary"
+    }
+  },
+  "native_save_as": "NOT_TESTED",
+  "gui_gcode_export": "NOT_TESTED",
+  "guest": {
+    "ok": true,
+    "run_id": "306d3efe6882427e806afaaf9e2ad7f1",
+    "console_uid": 501,
+    "test_uid": 502,
+    "source_before": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+    "phases": {
+      "baseline": {
+        "pid": 25404,
+        "window": "baseline",
+        "layers": [
+          "0.4",
+          "0.4"
+        ],
+        "wall": "2"
+      },
+      "edit": {
+        "pid": 25754,
+        "window": "wall-3-copy",
+        "layers": [
+          "0.4",
+          "0.4"
+        ],
+        "wall": "3"
+      },
+      "reopen": {
+        "pid": 26039,
+        "window": "wall-3-copy",
+        "layers": [
+          "0.4",
+          "0.4"
+        ],
+        "wall": "3"
+      }
+    },
+    "slice_receipts": {
+      "baseline": {
+        "phase": "baseline",
+        "pid": 25404,
+        "window_id": 54543,
+        "source": "open_process_plate",
+        "plate_file": ".25404.0.gcode",
+        "inode": 37752221,
+        "size": 167992,
+        "sha256": "2ccfab6609d75694cee6ad77cd5adc8ae81374eb87ab43285487ae0e92641460",
+        "project_sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+        "export_enabled_before": false,
+        "export_enabled_after": true
+      },
+      "edited": {
+        "phase": "reopen",
+        "pid": 26039,
+        "window_id": 54746,
+        "source": "open_process_plate",
+        "plate_file": ".26039.0.gcode",
+        "inode": 37756847,
+        "size": 185781,
+        "sha256": "cd78d1a82820c8226e4b8ac5455ca0e57e44b127c7dd94b966a3324d0b14585f",
+        "project_sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+        "export_enabled_before": false,
+        "export_enabled_after": true
+      }
+    },
+    "sut": {
+      "version": "2.4.1",
+      "build": "sha256:a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd",
+      "bundle_build": "",
+      "build_source": "executable_sha256",
+      "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+    },
+    "saved_sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+    "source_after": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+    "cleanup_verified": true
+  },
+  "project": {
+    "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+    "layer_height": "0.4",
+    "initial_layer_print_height": "0.4",
+    "vertices": 8,
+    "triangles": 12,
+    "geometry_unchanged": true,
+    "wall_loops": "3",
+    "preserved_settings": "differential vs committed control: only wall_loops 2->3"
+  },
+  "wall_loops_gcode_echo": [
+    "3"
+  ],
+  "walls_xy_moves": {
+    "baseline": 1907,
+    "edited": 2154
+  },
+  "finished_at": "2026-11-23T05:35:16.149544+00:00"
+}

@@ -1,0 +1,103 @@
+{
+  "run_id": "ffe0c6e45c2c456b94e904ded891c1ac",
+  "verdict": "NON_GREEN",
+  "candidate": "mac-author-20261123-01",
+  "goal": "walls",
+  "test_kind": "walls_comparison",
+  "started_at": "2026-11-23T05:24:08.415711+00:00",
+  "slices": {
+    "baseline": {
+      "layer_height": "0.4",
+      "first_layer_height": "0.4",
+      "layer_count": 68,
+      "first_z": "0.4",
+      "last_z": "27.2",
+      "positive_xy_e_moves": 1907,
+      "object_tools": [
+        0
+      ],
+      "sha256": "98168cea64dca875ec9f9e2def0028d2fc70cd2a0250287ba664e1b5dfc67a81",
+      "artifact": "baseline.gcode",
+      "origin": "gui_plate_temporary"
+    }
+  },
+  "native_save_as": "NOT_TESTED",
+  "gui_gcode_export": "NOT_TESTED",
+  "guest": {
+    "ok": true,
+    "run_id": "ffe0c6e45c2c456b94e904ded891c1ac",
+    "console_uid": 501,
+    "test_uid": 502,
+    "source_before": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+    "phases": {
+      "baseline": {
+        "pid": 21385,
+        "window": "baseline",
+        "layers": [
+          "0.4",
+          "0.4"
+        ],
+        "wall": "2"
+      },
+      "edit": {
+        "pid": 21645,
+        "window": "wall-3-copy",
+        "layers": [
+          "0.4",
+          "0.4"
+        ],
+        "wall": "3"
+      },
+      "reopen": {
+        "pid": 22022,
+        "window": "wall-3-copy",
+        "layers": [
+          "0.4",
+          "0.4"
+        ],
+        "wall": "3"
+      }
+    },
+    "slice_receipts": {
+      "baseline": {
+        "phase": "baseline",
+        "pid": 21385,
+        "window_id": 53842,
+        "source": "open_process_plate",
+        "plate_file": ".21385.0.gcode",
+        "inode": 37729106,
+        "size": 167992,
+        "sha256": "98168cea64dca875ec9f9e2def0028d2fc70cd2a0250287ba664e1b5dfc67a81",
+        "project_sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+        "export_enabled_before": false,
+        "export_enabled_after": true
+      },
+      "edited": {
+        "phase": "reopen",
+        "pid": 22022,
+        "window_id": 54045,
+        "source": "open_process_plate",
+        "plate_file": ".22022.0.gcode",
+        "inode": 37735026,
+        "size": 185781,
+        "sha256": "9e1fdb967d2ddcfa8510ce7aa669d2bd5c680ce190d260d0da197474e352eb08",
+        "project_sha256": "8d6ca231589a22f04dabb602dfde74b0dd34feaaaf9bd69712d2552c86073fa9",
+        "export_enabled_before": false,
+        "export_enabled_after": true
+      }
+    },
+    "sut": {
+      "version": "2.4.1",
+      "build": "sha256:a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd",
+      "bundle_build": "",
+      "build_source": "executable_sha256",
+      "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+    },
+    "saved_sha256": "8d6ca231589a22f04dabb602dfde74b0dd34feaaaf9bd69712d2552c86073fa9",
+    "source_after": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+    "cleanup_verified": true
+  },
+  "failure_stage": "verify.saved_project",
+  "error": "pilot_config_unknown_addition",
+  "finished_at": "2026-11-23T05:26:03.920180+00:00"
+}

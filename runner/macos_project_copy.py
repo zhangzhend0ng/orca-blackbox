@@ -23,7 +23,7 @@ sys.path.insert(0, str(ROOT))
 from harness.agent_protocol import LAYER_FIXTURE, LAYER_FIXTURE_SHA256
 from harness.agent_layer_verify import analyze_gcode
 from harness.gcode_check import config_value_all
-from harness.pilot_common import inspect_preserved_settings
+from harness.pilot_common import inspect_preserved_settings  # noqa: F401 - Windows-track oracle, kept for reference
 from harness.pilot_transform import verify_translation
 from harness.profile import MINIMAL_CONF, write_conf
 from harness.project_3mf import inspect_project
@@ -45,7 +45,7 @@ def payload(output, run_id, fixture, edit_height, goal, copy_name, pan_presses):
     files = {"reference.3mf": fixture, "run-id": run_id.encode(), "seed.conf": seed.read_bytes(),
              "edit-height": edit_height.encode(), "goal": goal.encode(), "copy-name": copy_name.encode(),
              "pan-presses": str(pan_presses).encode()}
-    for filename in ("project_copy.py", "accessibility.py"):
+    for filename in ("project_copy.py", "accessibility.py", "ocr.swift"):
         files[filename] = (ROOT / "runner" / "macos" / filename).read_bytes()
     buffer = io.BytesIO()
     with tarfile.open(fileobj=buffer, mode="w:gz") as archive:
@@ -69,6 +69,50 @@ def ssh_command(args):
     stage = ('umask 077 && work=$(/usr/bin/mktemp -d "${TMPDIR:-/tmp}/orca-bb-copy.XXXXXXXX") '
              '&& cd "$work" && /usr/bin/tar -xzf - && /usr/bin/python3 -B project_copy.py --supervise')
     return [*ssh, "--", args.target, stage]
+
+
+def verify_walls_differential(saved_raw, fixture_raw, sut):
+    """Walls oracle for this SUT build: differential against a committed control.
+
+    The 2.4.1 bundle rewrites the 2.3.6 fixture's config schema on every Save
+    Project (version bump, new keys, vector migrations, preset rename, refreshed
+    template gcode) - noise that is edit-independent, proven by control run
+    control_save4_a5 (probe17: one unrelated edit, identical noise key-for-key
+    to run ffe0c6e4). Every difference the judged save makes must therefore be
+    either wall_loops 2->3 (plus its dirty-manifest entry) or a difference the
+    control made with the exact same value.
+    """
+    meta = json.loads((ROOT / "runner" / "macos" / "walls_control.json").read_text())
+    control_raw = (ROOT / "runner" / "macos" / "walls_control.3mf").read_bytes()
+    if hashlib.sha256(control_raw).hexdigest() != meta["control_saved_sha256"]:
+        raise ValueError("Committed walls control baseline digest mismatch")
+    if (meta["sut"]["version"], meta["sut"]["executable_sha256"]) \
+            != (sut["version"], sut["executable_sha256"]):
+        raise ValueError("Walls control baseline was recorded on a different Orca build")
+    control_edit_key = meta["control_edit"]["key"]
+    saved = settings_of(saved_raw)
+    control = settings_of(control_raw)
+    expected = settings_of(fixture_raw)
+    if expected.get("wall_loops") != "2" or saved.get("wall_loops") != "3":
+        raise ValueError("pilot_wall_loops_target")
+    for key in set(saved) - set(expected):
+        if key not in control or saved[key] != control[key]:
+            raise ValueError(f"mac_walls_unknown_addition:{key}")
+    for key, before in expected.items():
+        after = saved[key]
+        if key == "wall_loops":
+            continue  # checked above
+        if key == "different_settings_to_system":
+            before_keys = set(str(before[0]).split(";")) if before else set()
+            after_keys = set(str(after[0]).split(";")) if after else set()
+            if not before_keys <= after_keys <= before_keys | {"wall_loops"}:
+                raise ValueError("pilot_dirty_manifest_out_of_scope")
+            continue
+        if after == before:
+            continue
+        if key != control_edit_key and key in control and after == control[key]:
+            continue  # edit-independent migration, proven by the control
+        raise ValueError(f"mac_walls_unrelated_setting_changed:{key}")
 
 
 def verify_plate(output, name, receipt, expected_pid, project_sha256, height, count):
@@ -164,9 +208,9 @@ def run(args):
             if reopened["layers"] != ["0.24", "0.4"]:
                 raise ValueError(f"Reopened layer fields mismatch: {reopened['layers']}")
         elif goal == "walls":
-            inspect_preserved_settings(settings_of(data), settings_of(fixture), allowed_changes={"wall_loops": "3"})
+            verify_walls_differential(data, fixture, sut)
             summary["project"] = {**inspect_project(data, fixture, layer_height="0.4"), "wall_loops": "3",
-                                  "preserved_settings": "all except wall_loops 2->3"}
+                                  "preserved_settings": "differential vs committed control: only wall_loops 2->3"}
             stage = "verify.reopened_fields"
             walls_seen = [baseline.get("wall"), edit.get("wall"), reopened.get("wall")]
             if walls_seen != ["2", "3", "3"]:

@@ -1,0 +1,815 @@
+{
+ "fixture_vs_control": {
+  "added": [
+   "bottom_color_penetration_layers",
+   "enable_tower_interface_cooldown_during_tower",
+   "enable_tower_interface_features",
+   "filament_adhesiveness_category",
+   "filament_flow_step_size",
+   "filament_flow_support",
+   "filament_grouping_mode",
+   "filament_tower_interface_pre_extrusion_dist",
+   "filament_tower_interface_pre_extrusion_length",
+   "filament_tower_interface_print_temp",
+   "filament_volume_type",
+   "first_layer_travel_acceleration",
+   "first_layer_travel_jerk",
+   "nozzle_volume_type",
+   "prime_tower_enable_framework",
+   "printer_flow_support",
+   "process_flow_support",
+   "project_schema_version",
+   "support_interface_min_area",
+   "support_transition_flow_ratio",
+   "support_transition_perimeter",
+   "support_transition_speed",
+   "top_color_penetration_layers",
+   "tree_support_transition_layers"
+  ],
+  "removed": [],
+  "changed": {
+   "accel_to_decel_enable": {
+    "fixture": "1",
+    "saved": [
+     "1"
+    ]
+   },
+   "accel_to_decel_factor": {
+    "fixture": "50%",
+    "saved": [
+     "50%"
+    ]
+   },
+   "bridge_acceleration": {
+    "fixture": "50%",
+    "saved": [
+     "50%"
+    ]
+   },
+   "bridge_speed": {
+    "fixture": "30",
+    "saved": [
+     "30"
+    ]
+   },
+   "change_filament_gcode": {
+    "fixture": ";===== date: 20251213 =====================\n\n; Change Tool[previous_extruder] -> Tool[next_extruder] (layer [layer_num])\n{\nlocal max_speed_toolchange = 350.0;\nlocal wait_for_extruder_temp = true;\nposition[2] = position[2] + 2.0;\nlocal speed_toolchange = max_speed_toolchange;\nif travel_speed < max_speed_toolchange then\n      speed_toolchange = travel_speed;\nendif\n\"G91\nG1 Z1.5 F1800\nG90\n\";\n\"G1 F\" + (speed_toolchange * 60) + \"\n\";\nif wait_for_extruder_temp and not((layer_num < 0) and (next_extruder == initial_tool)) then\n      \"\n\";\n      \"; \" + layer_num + \"\n\";\n      if layer_num == 0 then\n            \"M109 S\" + first_layer_temperature[next_extruder] + \" T\" + next_extruder + \"\n\";\n      else\n            \"M109 S\" + temperature[next_extruder] + \" T\" + next_extruder + \"\n\";\n      endif\nendif\n\"M400\" + \"\n\";\n\"T\" + next_extruder + \"\n\";\nif filament_type[next_extruder] == \"PVA\" then\n\"SET_VELOCITY_LIMIT ACCEL=3000\n\";\nelse\nendif\nif previous_extruder != next_extruder and initial_extruder != next_extruder then\n\"SM_PRINT_PREEXTRUDE_FILAMENT INDEX=\" + next_extruder + \"\n\";\nendif\n\"G90\n\";\n}\n",
+    "saved": ";===== date: 20261003 =====================\n; Change Tool[previous_extruder] -> Tool[next_extruder] (layer [layer_num])\n; max_layer_z [max_layer_z]\n; max_print_height [max_print_height]\n; print_sequence [print_sequence]\n\n{\nlocal move_z = 1.5;\nlocal max_speed_toolchange = 350.0;\nlocal wait_for_extruder_temp = true;\nposition[2] = position[2] + 2.0;\nlocal speed_toolchange = max_speed_toolchange;\n\nif travel_speed < max_speed_toolchange then\n      speed_toolchange = travel_speed;\nendif\n\nif print_sequence == \"by object\" then\n\n    move_z = max_print_height;\n    if max_layer_z < ((max_print_height - z_offset) - 2) then\n        move_z = z_offset + min(((max_layer_z - z_offset) + 2), max_print_height);\n    endif\n\n\"G90\nG1 Z\" + move_z + \" F600\n\";\n\nelse\n\n\"G91\nG1 Z\" + move_z + \" F600\nG90\n\";\n\nendif\n\"G1 F\" + (speed_toolchange * 60) + \"\n\";\nif wait_for_extruder_temp and not((layer_num < 0) and (next_extruder == initial_tool)) then\n      \"\n\";\n      \"; \" + layer_num + \"\n\";\n      if layer_num == 0 then\n            \"M104 S\" + first_layer_temperature[next_extruder] + \" T\" + next_extruder + \"\n\";\n      else\n            \"M104 S\" + temperature[next_extruder] + \" T\" + next_extruder + \"\n\";\n      endif\nendif\n\"M400\" + \"\n\";\n\"T\" + next_extruder + \"\n\";\nif filament_type[next_extruder] == \"PVA\" then\n\"SET_VELOCITY_LIMIT ACCEL=3000\n\";\nelse\nendif\nif previous_extruder != next_extruder and initial_extruder != next_extruder then\n\"SM_PRINT_PREEXTRUDE_FILAMENT INDEX=\" + next_extruder + \"\n\";\nendif\n\"G90\n\";\n}"
+   },
+   "default_acceleration": {
+    "fixture": "10000",
+    "saved": [
+     "10000"
+    ]
+   },
+   "default_jerk": {
+    "fixture": "0",
+    "saved": [
+     "0"
+    ]
+   },
+   "default_junction_deviation": {
+    "fixture": "0",
+    "saved": [
+     "0"
+    ]
+   },
+   "different_settings_to_system": {
+    "fixture": [
+     "mixed_filament_definitions",
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    "saved": [
+     "initial_layer_print_height;mixed_filament_definitions",
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ]
+   },
+   "enable_overhang_speed": {
+    "fixture": "1",
+    "saved": [
+     "1"
+    ]
+   },
+   "exclude_object": {
+    "fixture": "0",
+    "saved": "1"
+   },
+   "extrusion_rate_smoothing_external_perimeter_only": {
+    "fixture": "0",
+    "saved": [
+     "0"
+    ]
+   },
+   "filename_format": {
+    "fixture": "{input_filename_base}_{filament_type[0]}_{print_time}.gcode",
+    "saved": "{input_filename_base}_{filament_type[initial_tool]}_{print_time}.gcode"
+   },
+   "gap_infill_speed": {
+    "fixture": "50",
+    "saved": [
+     "50"
+    ]
+   },
+   "infill_jerk": {
+    "fixture": "9",
+    "saved": [
+     "9"
+    ]
+   },
+   "initial_layer_acceleration": {
+    "fixture": "500",
+    "saved": [
+     "500"
+    ]
+   },
+   "initial_layer_infill_speed": {
+    "fixture": "55",
+    "saved": [
+     "55"
+    ]
+   },
+   "initial_layer_jerk": {
+    "fixture": "9",
+    "saved": [
+     "9"
+    ]
+   },
+   "initial_layer_print_height": {
+    "fixture": "0.4",
+    "saved": "0.44"
+   },
+   "initial_layer_speed": {
+    "fixture": "35",
+    "saved": [
+     "35"
+    ]
+   },
+   "initial_layer_travel_speed": {
+    "fixture": "100%",
+    "saved": [
+     "100%"
+    ]
+   },
+   "inner_wall_acceleration": {
+    "fixture": "10000",
+    "saved": [
+     "10000"
+    ]
+   },
+   "inner_wall_jerk": {
+    "fixture": "9",
+    "saved": [
+     "9"
+    ]
+   },
+   "inner_wall_speed": {
+    "fixture": "150",
+    "saved": [
+     "150"
+    ]
+   },
+   "internal_bridge_speed": {
+    "fixture": "100%",
+    "saved": [
+     "100%"
+    ]
+   },
+   "internal_solid_infill_acceleration": {
+    "fixture": "100%",
+    "saved": [
+     "100%"
+    ]
+   },
+   "internal_solid_infill_speed": {
+    "fixture": "150",
+    "saved": [
+     "150"
+    ]
+   },
+   "ironing_speed": {
+    "fixture": "30",
+    "saved": [
+     "30"
+    ]
+   },
+   "machine_end_gcode": {
+    "fixture": "{if print_sequence == \"by object\"}\nG91\nG1 X2 Y2 Z1 F24000\nG90\nG1 Z{max_layer_z+2} F600\n{endif}\nPRINT_END\nTIMELAPSE_STOP",
+    "saved": ";===== date: 20261003 =====================\n; layer [layer_num]\n; max_layer_z [max_layer_z]\n; print_sequence [print_sequence]\n\n{if print_sequence == \"by object\"}\n{\nlocal move_z = 0.0;\nmove_z = max_print_height;\n\nif max_layer_z < ((max_print_height - z_offset) - 2) then\n    move_z = z_offset + min(((max_layer_z - z_offset) + 2), max_print_height);\nendif\n}\n\nG91\nG1 X2 Y2 Z1 F24000\nG90\nG1 Z{move_z} F600\n{endif}\n\nPRINT_END\nTIMELAPSE_STOP"
+   },
+   "machine_start_gcode": {
+    "fixture": ";===== date: 20260128 =====================\n\nPRINT_START\nDEFECT_DETECTION_START\nSET_PRINT_STATS_INFO TOTAL_LAYER={total_layer_count} CURRENT_LAYER=0\nTIMELAPSE_START\nM140 S{bed_temperature_initial_layer_single}\nM104 T{initial_extruder} S140\nM204 S10000\n {if filament_is_high_temperature[0]}                                                                                                                                                                                                               \n      ; 保温 \n\t  SET_PURIFIER_MODE MODE=3 DESIRE_TEMP=45 FAN_SPEED=0.6 DELAY_OFF=180\n {else}                                                                                                                                                                                                                                  \n    {if temperature_vitrification[0]<=50}                                                                                                                                                                                                          \n        ; 强冷      \n        SET_PURIFIER_MODE MODE=1 DESIRE_TEMP=42 ALARM_TEMP=45 FAN_SPEED=0.6\n        DELAY_OFF=0\t\t\n    {else}                                                                                                                                                                                                        \n        ; 弱冷   \n        SET_PURIFIER_MODE MODE=3 DESIRE_TEMP=0 FAN_SPEED=0.6 DELAY_OFF=180\t\t\n    {endif}                                                                                                                                                                                                                    \n {endif}\nG28 X Y\nDEFECT_DETECT_NOODLE_FIRST\n;===== 床面异物检测 ========\nT{initial_extruder}\nG90\nDEFECT_DETECTION_DETECT_BED\n;===== 取放头检测 =================\nSM_PRINT_CHECK_SWITCH_EXTRUDER\n\n;===== 自动进料 & 挤出流量 & 预挤出 ======================\nSM_PRINT_EXTRUDER_PREHEAT EXTRUDER=1 TEMP=140\nSM_PRINT_AUTO_FEED EXTRUDER=0\nSM_PRINT_FLOW_CALIBRATE EXTRUDER=0\nSM_PRINT_EXTRUDER_PREHEAT EXTRUDER=2 TEMP=140\nSM_PRINT_AUTO_FEED EXTRUDER=1\nSM_PRINT_FLOW_CALIBRATE EXTRUDER=1\nSM_PRINT_EXTRUDER_PREHEAT EXTRUDER=3 TEMP=140\nSM_PRINT_AUTO_FEED EXTRUDER=2\nSM_PRINT_FLOW_CALIBRATE EXTRUDER=2\nSM_PRINT_AUTO_FEED EXTRUDER=3\nSM_PRINT_FLOW_CALIBRATE EXTRUDER=3\nM104 S0 T0 A0\nM104 S0 T1 A0\nM104 S0 T2 A0\nM104 S0 T3 A0\nM104 T{initial_extruder} S{nozzle_temperature[initial_extruder] - 90}\n\n;===== 粗回零 =================\nT{initial_extruder}\nM106 S255\nM106 P2 S0\nMOVE_TO_DISCARD_FILAMENT_POSITION\nM109 T{initial_extruder} S{nozzle_temperature[initial_extruder] - 90}\nROUGHLY_CLEAN_NOZZLE_WITH_DISCARD\nMOVE_TO_XY_IDLE_POSITION_EXTRUDER\nG28 Z I140 J140\n\n;===== 检测钢板 =================\nDETECT_BED_PLATE\n\n;===== 深度清洁喷嘴 =================\nG90\nG0 Z5 F10000\nMOVE_TO_DISCARD_FILAMENT_POSITION\nM109 S{nozzle_temperature[initial_extruder] - 50}\nROUGHLY_CLEAN_NOZZLE\nMOVE_TO_XY_IDLE_POSITION_EXTRUDER\nFINELY_CLEAN_NOZZLE_STAGE_1\nM104 S{nozzle_temperature[initial_extruder] - 90}\nG0 Z5 F10000\nMOVE_TO_DISCARD_FILAMENT_POSITION\nROUGHLY_CLEAN_NOZZLE\nMOVE_TO_XY_IDLE_POSITION_EXTRUDER\nFINELY_CLEAN_NOZZLE_STAGE_2\n\n;===== 精回零 =================\nM106 S255\nM109 S{nozzle_temperature[initial_extruder] - 90}\nM190 S{bed_temperature_initial_layer_single}\nM107 P2\nG90\nG0 Z5 F10000\nWAIT_CHAMBER_TEMP TIMEOUT=180\n{if curr_bed_type==\"High Temp Plate\"}                                                                                                                                                                                                               \nG28 Z Z_OFFSET -0.07                                                                                                                                                                                                                                    \n{elsif curr_bed_type==\"Graphic Effect Plate\"}                                                                                                                                                                                                          \nG28 Z Z_OFFSET -0.07                                                                                                                                                                                                                                     \n{else}                                                                                                                                                                                                               \nG28 Z                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \n{endif} \n\n\n;===== 热床调平 =================\n{if curr_bed_type==\"High Temp Plate\"}                                                                                                                                                                                                               \nBED_MESH_CALIBRATE PROBE_COUNT=11,11 Z_OFFSET=-0.07                                                                                                                                                                                                                                  \n{elsif curr_bed_type==\"Graphic Effect Plate\"}                                                                                                                                                                                                          \nBED_MESH_CALIBRATE PROBE_COUNT=11,11 Z_OFFSET=-0.07                                                                                                                                                                                                                                    \n{else}                                                                                                                                                                                                               \nBED_MESH_CALIBRATE PROBE_COUNT=11,11                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \n{endif} \n\n\n;===== 画起始线 =================\nG90\nG1 Z1.5\nG0 X85 Y1 Z2 F18000\nM109 S{nozzle_temperature_initial_layer[initial_extruder]}\nG1 Z0.2\nM83\nG1 X185 E15 F360\nG1 Z1.5\n\nG90\nM106 S0",
+    "saved": ";===== date: 20260128 =====================\n\nPRINT_START\nDEFECT_DETECTION_START\nSET_PRINT_STATS_INFO TOTAL_LAYER={total_layer_count} CURRENT_LAYER=0\nTIMELAPSE_START\nM140 S{bed_temperature_initial_layer_single}\nM104 T{initial_extruder} S140\nM204 S10000\n{if chamber_cooling_mode==0}\n; 保温\nSET_PURIFIER_MODE MODE=3 DESIRE_TEMP=45 FAN_SPEED=0.6 DELAY_OFF=600\n{elsif chamber_cooling_mode==2}\n; 强冷\nSET_PURIFIER_MODE MODE=1 DESIRE_TEMP=42 ALARM_TEMP=48 FAN_SPEED=0.6 DELAY_OFF=0\n{else}\n; 弱冷\nSET_PURIFIER_MODE MODE=1 DESIRE_TEMP=45 ALARM_TEMP=51 FAN_SPEED=0.6 DELAY_OFF=0\n\n{endif}                                                                                                                                                       \nG28 X Y\nDEFECT_DETECT_NOODLE_FIRST\n;===== 床面异物检测 ========\nT{initial_extruder}\nG90\nDEFECT_DETECTION_DETECT_BED\n;===== 取放头检测 =================\nSM_PRINT_CHECK_SWITCH_EXTRUDER\n\n;===== 自动进料 & 挤出流量 & 预挤出 ======================\nSM_PRINT_EXTRUDER_PREHEAT EXTRUDER=1 TEMP=140\nSM_PRINT_AUTO_FEED EXTRUDER=0\nSM_PRINT_FLOW_CALIBRATE EXTRUDER=0\nSM_PRINT_EXTRUDER_PREHEAT EXTRUDER=2 TEMP=140\nSM_PRINT_AUTO_FEED EXTRUDER=1\nSM_PRINT_FLOW_CALIBRATE EXTRUDER=1\nSM_PRINT_EXTRUDER_PREHEAT EXTRUDER=3 TEMP=140\nSM_PRINT_AUTO_FEED EXTRUDER=2\nSM_PRINT_FLOW_CALIBRATE EXTRUDER=2\nSM_PRINT_AUTO_FEED EXTRUDER=3\nSM_PRINT_FLOW_CALIBRATE EXTRUDER=3\nM104 S0 T0 A0\nM104 S0 T1 A0\nM104 S0 T2 A0\nM104 S0 T3 A0\n\n;==== 预挤出耗材 =====\nM104 T{initial_extruder} S{nozzle_temperature[initial_extruder]}\nT{initial_extruder}\nM109 T{initial_extruder} S{nozzle_temperature[initial_extruder]}\nSM_PRINT_PREEXTRUDE_FILAMENT INDEX={initial_extruder}\nM104 T{initial_extruder} S{nozzle_temperature[initial_extruder] - 90}\n\n;===== 粗回零 =================\nT{initial_extruder}\nM106 S255\nM106 P2 S0\nMOVE_TO_DISCARD_FILAMENT_POSITION\nM109 T{initial_extruder} S{nozzle_temperature[initial_extruder] - 90}\nROUGHLY_CLEAN_NOZZLE_WITH_DISCARD\nMOVE_TO_XY_IDLE_POSITION_EXTRUDER\nM107\nG28 Z I140 J140\n\n;===== 检测钢板 =================\nM107\nDETECT_BED_PLATE\n\n;===== 深度清洁喷嘴 =================\nM106 S255\nG90\nG0 Z5 F10000\nMOVE_TO_DISCARD_FILAMENT_POSITION\nM109 S{nozzle_temperature[initial_extruder] - 50}\nROUGHLY_CLEAN_NOZZLE\nMOVE_TO_XY_IDLE_POSITION_EXTRUDER\nFINELY_CLEAN_NOZZLE_STAGE_1\nM104 S{nozzle_temperature[initial_extruder] - 90}\nG0 Z5 F10000\nMOVE_TO_DISCARD_FILAMENT_POSITION\nROUGHLY_CLEAN_NOZZLE\nMOVE_TO_XY_IDLE_POSITION_EXTRUDER\nFINELY_CLEAN_NOZZLE_STAGE_2\n\n;===== 精回零 =================\nM106 S255\nM109 S{nozzle_temperature[initial_extruder] - 90}\nM190 S{bed_temperature_initial_layer_single}\nM107 P2\nG90\nG0 Z5 F10000\nWAIT_CHAMBER_TEMP TIMEOUT=180\nM107\n{if curr_bed_type==\"High Temp Plate\"}                                                                                                                                                                                                               \nG28 Z Z_OFFSET -0.07                                                                                                                                                                                                                                    \n{elsif curr_bed_type==\"Graphic Effect Plate\"}                                                                                                                                                                                                          \nG28 Z Z_OFFSET -0.07                                                                                                                                                                                                                                     \n{else}                                                                                                                                                                                                               \nG28 Z                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \n{endif} \n\n\n;===== 热床调平 =================\nM107\n{if curr_bed_type==\"Smooth PEI Plate\"}                                                                                                                                                                                                               \nBED_MESH_CALIBRATE PROBE_COUNT=11,11 Z_OFFSET=-0.07                                                                                                                                                                                                                                  \n{elsif curr_bed_type==\"Graphic Effect Plate\"}                                                                                                                                                                                                          \nBED_MESH_CALIBRATE PROBE_COUNT=11,11 Z_OFFSET=-0.07                                                                                                                                                                                                                                    \n{else}                                                                                                                                                                                                               \nBED_MESH_CALIBRATE PROBE_COUNT=11,11                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \n{endif} \n\n\n;===== 画起始线 =================\nG90\nG1 Z1.5\nG0 X85 Y1 Z2 F18000\nM109 S{nozzle_temperature_initial_layer[initial_extruder]}\nG1 Z0.2\nM83\nG1 X185 E15 F360\nG1 Z1.5\n\nG90\nM106 S0"
+   },
+   "max_bridge_length": {
+    "fixture": "10",
+    "saved": "0"
+   },
+   "max_volumetric_extrusion_rate_slope": {
+    "fixture": "0",
+    "saved": [
+     "0"
+    ]
+   },
+   "max_volumetric_extrusion_rate_slope_segment_length": {
+    "fixture": "3",
+    "saved": [
+     "3"
+    ]
+   },
+   "outer_wall_acceleration": {
+    "fixture": "5000",
+    "saved": [
+     "5000"
+    ]
+   },
+   "outer_wall_jerk": {
+    "fixture": "9",
+    "saved": [
+     "9"
+    ]
+   },
+   "outer_wall_speed": {
+    "fixture": "120",
+    "saved": [
+     "120"
+    ]
+   },
+   "overhang_1_4_speed": {
+    "fixture": "0",
+    "saved": [
+     "0"
+    ]
+   },
+   "overhang_2_4_speed": {
+    "fixture": "50",
+    "saved": [
+     "50"
+    ]
+   },
+   "overhang_3_4_speed": {
+    "fixture": "25",
+    "saved": [
+     "25"
+    ]
+   },
+   "overhang_4_4_speed": {
+    "fixture": "5",
+    "saved": [
+     "5"
+    ]
+   },
+   "print_settings_id": {
+    "fixture": "0.40 Standard @Snapmaker U1 (0.8 nozzle)",
+    "saved": "0.40mm Standard @Snapmaker U1 (0.8 nozzle)"
+   },
+   "raft_first_layer_expansion": {
+    "fixture": "2",
+    "saved": "-1"
+   },
+   "slow_down_layers": {
+    "fixture": "0",
+    "saved": [
+     "0"
+    ]
+   },
+   "slowdown_for_curled_perimeters": {
+    "fixture": "0",
+    "saved": [
+     "0"
+    ]
+   },
+   "small_perimeter_speed": {
+    "fixture": "50%",
+    "saved": [
+     "50%"
+    ]
+   },
+   "small_perimeter_threshold": {
+    "fixture": "0",
+    "saved": [
+     "0"
+    ]
+   },
+   "sparse_infill_acceleration": {
+    "fixture": "100%",
+    "saved": [
+     "100%"
+    ]
+   },
+   "sparse_infill_speed": {
+    "fixture": "100",
+    "saved": [
+     "100"
+    ]
+   },
+   "support_interface_speed": {
+    "fixture": "80",
+    "saved": [
+     "80"
+    ]
+   },
+   "support_speed": {
+    "fixture": "150",
+    "saved": [
+     "150"
+    ]
+   },
+   "top_surface_acceleration": {
+    "fixture": "2000",
+    "saved": [
+     "2000"
+    ]
+   },
+   "top_surface_jerk": {
+    "fixture": "9",
+    "saved": [
+     "9"
+    ]
+   },
+   "top_surface_speed": {
+    "fixture": "150",
+    "saved": [
+     "150"
+    ]
+   },
+   "travel_acceleration": {
+    "fixture": "10000",
+    "saved": [
+     "10000"
+    ]
+   },
+   "travel_jerk": {
+    "fixture": "12",
+    "saved": [
+     "12"
+    ]
+   },
+   "travel_speed": {
+    "fixture": "500",
+    "saved": [
+     "500"
+    ]
+   },
+   "tree_support_branch_angle_organic": {
+    "fixture": "40",
+    "saved": "45"
+   },
+   "version": {
+    "fixture": "2.3.6",
+    "saved": "2.4.1"
+   }
+  }
+ },
+ "fixture_vs_walls_run1": {
+  "added": [
+   "bottom_color_penetration_layers",
+   "enable_tower_interface_cooldown_during_tower",
+   "enable_tower_interface_features",
+   "filament_adhesiveness_category",
+   "filament_flow_step_size",
+   "filament_flow_support",
+   "filament_grouping_mode",
+   "filament_tower_interface_pre_extrusion_dist",
+   "filament_tower_interface_pre_extrusion_length",
+   "filament_tower_interface_print_temp",
+   "filament_volume_type",
+   "first_layer_travel_acceleration",
+   "first_layer_travel_jerk",
+   "nozzle_volume_type",
+   "prime_tower_enable_framework",
+   "printer_flow_support",
+   "process_flow_support",
+   "project_schema_version",
+   "support_interface_min_area",
+   "support_transition_flow_ratio",
+   "support_transition_perimeter",
+   "support_transition_speed",
+   "top_color_penetration_layers",
+   "tree_support_transition_layers"
+  ],
+  "removed": [],
+  "changed": {
+   "accel_to_decel_enable": {
+    "fixture": "1",
+    "saved": [
+     "1"
+    ]
+   },
+   "accel_to_decel_factor": {
+    "fixture": "50%",
+    "saved": [
+     "50%"
+    ]
+   },
+   "bridge_acceleration": {
+    "fixture": "50%",
+    "saved": [
+     "50%"
+    ]
+   },
+   "bridge_speed": {
+    "fixture": "30",
+    "saved": [
+     "30"
+    ]
+   },
+   "change_filament_gcode": {
+    "fixture": ";===== date: 20251213 =====================\n\n; Change Tool[previous_extruder] -> Tool[next_extruder] (layer [layer_num])\n{\nlocal max_speed_toolchange = 350.0;\nlocal wait_for_extruder_temp = true;\nposition[2] = position[2] + 2.0;\nlocal speed_toolchange = max_speed_toolchange;\nif travel_speed < max_speed_toolchange then\n      speed_toolchange = travel_speed;\nendif\n\"G91\nG1 Z1.5 F1800\nG90\n\";\n\"G1 F\" + (speed_toolchange * 60) + \"\n\";\nif wait_for_extruder_temp and not((layer_num < 0) and (next_extruder == initial_tool)) then\n      \"\n\";\n      \"; \" + layer_num + \"\n\";\n      if layer_num == 0 then\n            \"M109 S\" + first_layer_temperature[next_extruder] + \" T\" + next_extruder + \"\n\";\n      else\n            \"M109 S\" + temperature[next_extruder] + \" T\" + next_extruder + \"\n\";\n      endif\nendif\n\"M400\" + \"\n\";\n\"T\" + next_extruder + \"\n\";\nif filament_type[next_extruder] == \"PVA\" then\n\"SET_VELOCITY_LIMIT ACCEL=3000\n\";\nelse\nendif\nif previous_extruder != next_extruder and initial_extruder != next_extruder then\n\"SM_PRINT_PREEXTRUDE_FILAMENT INDEX=\" + next_extruder + \"\n\";\nendif\n\"G90\n\";\n}\n",
+    "saved": ";===== date: 20261003 =====================\n; Change Tool[previous_extruder] -> Tool[next_extruder] (layer [layer_num])\n; max_layer_z [max_layer_z]\n; max_print_height [max_print_height]\n; print_sequence [print_sequence]\n\n{\nlocal move_z = 1.5;\nlocal max_speed_toolchange = 350.0;\nlocal wait_for_extruder_temp = true;\nposition[2] = position[2] + 2.0;\nlocal speed_toolchange = max_speed_toolchange;\n\nif travel_speed < max_speed_toolchange then\n      speed_toolchange = travel_speed;\nendif\n\nif print_sequence == \"by object\" then\n\n    move_z = max_print_height;\n    if max_layer_z < ((max_print_height - z_offset) - 2) then\n        move_z = z_offset + min(((max_layer_z - z_offset) + 2), max_print_height);\n    endif\n\n\"G90\nG1 Z\" + move_z + \" F600\n\";\n\nelse\n\n\"G91\nG1 Z\" + move_z + \" F600\nG90\n\";\n\nendif\n\"G1 F\" + (speed_toolchange * 60) + \"\n\";\nif wait_for_extruder_temp and not((layer_num < 0) and (next_extruder == initial_tool)) then\n      \"\n\";\n      \"; \" + layer_num + \"\n\";\n      if layer_num == 0 then\n            \"M104 S\" + first_layer_temperature[next_extruder] + \" T\" + next_extruder + \"\n\";\n      else\n            \"M104 S\" + temperature[next_extruder] + \" T\" + next_extruder + \"\n\";\n      endif\nendif\n\"M400\" + \"\n\";\n\"T\" + next_extruder + \"\n\";\nif filament_type[next_extruder] == \"PVA\" then\n\"SET_VELOCITY_LIMIT ACCEL=3000\n\";\nelse\nendif\nif previous_extruder != next_extruder and initial_extruder != next_extruder then\n\"SM_PRINT_PREEXTRUDE_FILAMENT INDEX=\" + next_extruder + \"\n\";\nendif\n\"G90\n\";\n}"
+   },
+   "default_acceleration": {
+    "fixture": "10000",
+    "saved": [
+     "10000"
+    ]
+   },
+   "default_jerk": {
+    "fixture": "0",
+    "saved": [
+     "0"
+    ]
+   },
+   "default_junction_deviation": {
+    "fixture": "0",
+    "saved": [
+     "0"
+    ]
+   },
+   "different_settings_to_system": {
+    "fixture": [
+     "mixed_filament_definitions",
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    "saved": [
+     "mixed_filament_definitions;wall_loops",
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ]
+   },
+   "enable_overhang_speed": {
+    "fixture": "1",
+    "saved": [
+     "1"
+    ]
+   },
+   "exclude_object": {
+    "fixture": "0",
+    "saved": "1"
+   },
+   "extrusion_rate_smoothing_external_perimeter_only": {
+    "fixture": "0",
+    "saved": [
+     "0"
+    ]
+   },
+   "filename_format": {
+    "fixture": "{input_filename_base}_{filament_type[0]}_{print_time}.gcode",
+    "saved": "{input_filename_base}_{filament_type[initial_tool]}_{print_time}.gcode"
+   },
+   "gap_infill_speed": {
+    "fixture": "50",
+    "saved": [
+     "50"
+    ]
+   },
+   "infill_jerk": {
+    "fixture": "9",
+    "saved": [
+     "9"
+    ]
+   },
+   "initial_layer_acceleration": {
+    "fixture": "500",
+    "saved": [
+     "500"
+    ]
+   },
+   "initial_layer_infill_speed": {
+    "fixture": "55",
+    "saved": [
+     "55"
+    ]
+   },
+   "initial_layer_jerk": {
+    "fixture": "9",
+    "saved": [
+     "9"
+    ]
+   },
+   "initial_layer_speed": {
+    "fixture": "35",
+    "saved": [
+     "35"
+    ]
+   },
+   "initial_layer_travel_speed": {
+    "fixture": "100%",
+    "saved": [
+     "100%"
+    ]
+   },
+   "inner_wall_acceleration": {
+    "fixture": "10000",
+    "saved": [
+     "10000"
+    ]
+   },
+   "inner_wall_jerk": {
+    "fixture": "9",
+    "saved": [
+     "9"
+    ]
+   },
+   "inner_wall_speed": {
+    "fixture": "150",
+    "saved": [
+     "150"
+    ]
+   },
+   "internal_bridge_speed": {
+    "fixture": "100%",
+    "saved": [
+     "100%"
+    ]
+   },
+   "internal_solid_infill_acceleration": {
+    "fixture": "100%",
+    "saved": [
+     "100%"
+    ]
+   },
+   "internal_solid_infill_speed": {
+    "fixture": "150",
+    "saved": [
+     "150"
+    ]
+   },
+   "ironing_speed": {
+    "fixture": "30",
+    "saved": [
+     "30"
+    ]
+   },
+   "machine_end_gcode": {
+    "fixture": "{if print_sequence == \"by object\"}\nG91\nG1 X2 Y2 Z1 F24000\nG90\nG1 Z{max_layer_z+2} F600\n{endif}\nPRINT_END\nTIMELAPSE_STOP",
+    "saved": ";===== date: 20261003 =====================\n; layer [layer_num]\n; max_layer_z [max_layer_z]\n; print_sequence [print_sequence]\n\n{if print_sequence == \"by object\"}\n{\nlocal move_z = 0.0;\nmove_z = max_print_height;\n\nif max_layer_z < ((max_print_height - z_offset) - 2) then\n    move_z = z_offset + min(((max_layer_z - z_offset) + 2), max_print_height);\nendif\n}\n\nG91\nG1 X2 Y2 Z1 F24000\nG90\nG1 Z{move_z} F600\n{endif}\n\nPRINT_END\nTIMELAPSE_STOP"
+   },
+   "machine_start_gcode": {
+    "fixture": ";===== date: 20260128 =====================\n\nPRINT_START\nDEFECT_DETECTION_START\nSET_PRINT_STATS_INFO TOTAL_LAYER={total_layer_count} CURRENT_LAYER=0\nTIMELAPSE_START\nM140 S{bed_temperature_initial_layer_single}\nM104 T{initial_extruder} S140\nM204 S10000\n {if filament_is_high_temperature[0]}                                                                                                                                                                                                               \n      ; 保温 \n\t  SET_PURIFIER_MODE MODE=3 DESIRE_TEMP=45 FAN_SPEED=0.6 DELAY_OFF=180\n {else}                                                                                                                                                                                                                                  \n    {if temperature_vitrification[0]<=50}                                                                                                                                                                                                          \n        ; 强冷      \n        SET_PURIFIER_MODE MODE=1 DESIRE_TEMP=42 ALARM_TEMP=45 FAN_SPEED=0.6\n        DELAY_OFF=0\t\t\n    {else}                                                                                                                                                                                                        \n        ; 弱冷   \n        SET_PURIFIER_MODE MODE=3 DESIRE_TEMP=0 FAN_SPEED=0.6 DELAY_OFF=180\t\t\n    {endif}                                                                                                                                                                                                                    \n {endif}\nG28 X Y\nDEFECT_DETECT_NOODLE_FIRST\n;===== 床面异物检测 ========\nT{initial_extruder}\nG90\nDEFECT_DETECTION_DETECT_BED\n;===== 取放头检测 =================\nSM_PRINT_CHECK_SWITCH_EXTRUDER\n\n;===== 自动进料 & 挤出流量 & 预挤出 ======================\nSM_PRINT_EXTRUDER_PREHEAT EXTRUDER=1 TEMP=140\nSM_PRINT_AUTO_FEED EXTRUDER=0\nSM_PRINT_FLOW_CALIBRATE EXTRUDER=0\nSM_PRINT_EXTRUDER_PREHEAT EXTRUDER=2 TEMP=140\nSM_PRINT_AUTO_FEED EXTRUDER=1\nSM_PRINT_FLOW_CALIBRATE EXTRUDER=1\nSM_PRINT_EXTRUDER_PREHEAT EXTRUDER=3 TEMP=140\nSM_PRINT_AUTO_FEED EXTRUDER=2\nSM_PRINT_FLOW_CALIBRATE EXTRUDER=2\nSM_PRINT_AUTO_FEED EXTRUDER=3\nSM_PRINT_FLOW_CALIBRATE EXTRUDER=3\nM104 S0 T0 A0\nM104 S0 T1 A0\nM104 S0 T2 A0\nM104 S0 T3 A0\nM104 T{initial_extruder} S{nozzle_temperature[initial_extruder] - 90}\n\n;===== 粗回零 =================\nT{initial_extruder}\nM106 S255\nM106 P2 S0\nMOVE_TO_DISCARD_FILAMENT_POSITION\nM109 T{initial_extruder} S{nozzle_temperature[initial_extruder] - 90}\nROUGHLY_CLEAN_NOZZLE_WITH_DISCARD\nMOVE_TO_XY_IDLE_POSITION_EXTRUDER\nG28 Z I140 J140\n\n;===== 检测钢板 =================\nDETECT_BED_PLATE\n\n;===== 深度清洁喷嘴 =================\nG90\nG0 Z5 F10000\nMOVE_TO_DISCARD_FILAMENT_POSITION\nM109 S{nozzle_temperature[initial_extruder] - 50}\nROUGHLY_CLEAN_NOZZLE\nMOVE_TO_XY_IDLE_POSITION_EXTRUDER\nFINELY_CLEAN_NOZZLE_STAGE_1\nM104 S{nozzle_temperature[initial_extruder] - 90}\nG0 Z5 F10000\nMOVE_TO_DISCARD_FILAMENT_POSITION\nROUGHLY_CLEAN_NOZZLE\nMOVE_TO_XY_IDLE_POSITION_EXTRUDER\nFINELY_CLEAN_NOZZLE_STAGE_2\n\n;===== 精回零 =================\nM106 S255\nM109 S{nozzle_temperature[initial_extruder] - 90}\nM190 S{bed_temperature_initial_layer_single}\nM107 P2\nG90\nG0 Z5 F10000\nWAIT_CHAMBER_TEMP TIMEOUT=180\n{if curr_bed_type==\"High Temp Plate\"}                                                                                                                                                                                                               \nG28 Z Z_OFFSET -0.07                                                                                                                                                                                                                                    \n{elsif curr_bed_type==\"Graphic Effect Plate\"}                                                                                                                                                                                                          \nG28 Z Z_OFFSET -0.07                                                                                                                                                                                                                                     \n{else}                                                                                                                                                                                                               \nG28 Z                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \n{endif} \n\n\n;===== 热床调平 =================\n{if curr_bed_type==\"High Temp Plate\"}                                                                                                                                                                                                               \nBED_MESH_CALIBRATE PROBE_COUNT=11,11 Z_OFFSET=-0.07                                                                                                                                                                                                                                  \n{elsif curr_bed_type==\"Graphic Effect Plate\"}                                                                                                                                                                                                          \nBED_MESH_CALIBRATE PROBE_COUNT=11,11 Z_OFFSET=-0.07                                                                                                                                                                                                                                    \n{else}                                                                                                                                                                                                               \nBED_MESH_CALIBRATE PROBE_COUNT=11,11                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \n{endif} \n\n\n;===== 画起始线 =================\nG90\nG1 Z1.5\nG0 X85 Y1 Z2 F18000\nM109 S{nozzle_temperature_initial_layer[initial_extruder]}\nG1 Z0.2\nM83\nG1 X185 E15 F360\nG1 Z1.5\n\nG90\nM106 S0",
+    "saved": ";===== date: 20260128 =====================\n\nPRINT_START\nDEFECT_DETECTION_START\nSET_PRINT_STATS_INFO TOTAL_LAYER={total_layer_count} CURRENT_LAYER=0\nTIMELAPSE_START\nM140 S{bed_temperature_initial_layer_single}\nM104 T{initial_extruder} S140\nM204 S10000\n{if chamber_cooling_mode==0}\n; 保温\nSET_PURIFIER_MODE MODE=3 DESIRE_TEMP=45 FAN_SPEED=0.6 DELAY_OFF=600\n{elsif chamber_cooling_mode==2}\n; 强冷\nSET_PURIFIER_MODE MODE=1 DESIRE_TEMP=42 ALARM_TEMP=48 FAN_SPEED=0.6 DELAY_OFF=0\n{else}\n; 弱冷\nSET_PURIFIER_MODE MODE=1 DESIRE_TEMP=45 ALARM_TEMP=51 FAN_SPEED=0.6 DELAY_OFF=0\n\n{endif}                                                                                                                                                       \nG28 X Y\nDEFECT_DETECT_NOODLE_FIRST\n;===== 床面异物检测 ========\nT{initial_extruder}\nG90\nDEFECT_DETECTION_DETECT_BED\n;===== 取放头检测 =================\nSM_PRINT_CHECK_SWITCH_EXTRUDER\n\n;===== 自动进料 & 挤出流量 & 预挤出 ======================\nSM_PRINT_EXTRUDER_PREHEAT EXTRUDER=1 TEMP=140\nSM_PRINT_AUTO_FEED EXTRUDER=0\nSM_PRINT_FLOW_CALIBRATE EXTRUDER=0\nSM_PRINT_EXTRUDER_PREHEAT EXTRUDER=2 TEMP=140\nSM_PRINT_AUTO_FEED EXTRUDER=1\nSM_PRINT_FLOW_CALIBRATE EXTRUDER=1\nSM_PRINT_EXTRUDER_PREHEAT EXTRUDER=3 TEMP=140\nSM_PRINT_AUTO_FEED EXTRUDER=2\nSM_PRINT_FLOW_CALIBRATE EXTRUDER=2\nSM_PRINT_AUTO_FEED EXTRUDER=3\nSM_PRINT_FLOW_CALIBRATE EXTRUDER=3\nM104 S0 T0 A0\nM104 S0 T1 A0\nM104 S0 T2 A0\nM104 S0 T3 A0\n\n;==== 预挤出耗材 =====\nM104 T{initial_extruder} S{nozzle_temperature[initial_extruder]}\nT{initial_extruder}\nM109 T{initial_extruder} S{nozzle_temperature[initial_extruder]}\nSM_PRINT_PREEXTRUDE_FILAMENT INDEX={initial_extruder}\nM104 T{initial_extruder} S{nozzle_temperature[initial_extruder] - 90}\n\n;===== 粗回零 =================\nT{initial_extruder}\nM106 S255\nM106 P2 S0\nMOVE_TO_DISCARD_FILAMENT_POSITION\nM109 T{initial_extruder} S{nozzle_temperature[initial_extruder] - 90}\nROUGHLY_CLEAN_NOZZLE_WITH_DISCARD\nMOVE_TO_XY_IDLE_POSITION_EXTRUDER\nM107\nG28 Z I140 J140\n\n;===== 检测钢板 =================\nM107\nDETECT_BED_PLATE\n\n;===== 深度清洁喷嘴 =================\nM106 S255\nG90\nG0 Z5 F10000\nMOVE_TO_DISCARD_FILAMENT_POSITION\nM109 S{nozzle_temperature[initial_extruder] - 50}\nROUGHLY_CLEAN_NOZZLE\nMOVE_TO_XY_IDLE_POSITION_EXTRUDER\nFINELY_CLEAN_NOZZLE_STAGE_1\nM104 S{nozzle_temperature[initial_extruder] - 90}\nG0 Z5 F10000\nMOVE_TO_DISCARD_FILAMENT_POSITION\nROUGHLY_CLEAN_NOZZLE\nMOVE_TO_XY_IDLE_POSITION_EXTRUDER\nFINELY_CLEAN_NOZZLE_STAGE_2\n\n;===== 精回零 =================\nM106 S255\nM109 S{nozzle_temperature[initial_extruder] - 90}\nM190 S{bed_temperature_initial_layer_single}\nM107 P2\nG90\nG0 Z5 F10000\nWAIT_CHAMBER_TEMP TIMEOUT=180\nM107\n{if curr_bed_type==\"High Temp Plate\"}                                                                                                                                                                                                               \nG28 Z Z_OFFSET -0.07                                                                                                                                                                                                                                    \n{elsif curr_bed_type==\"Graphic Effect Plate\"}                                                                                                                                                                                                          \nG28 Z Z_OFFSET -0.07                                                                                                                                                                                                                                     \n{else}                                                                                                                                                                                                               \nG28 Z                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \n{endif} \n\n\n;===== 热床调平 =================\nM107\n{if curr_bed_type==\"Smooth PEI Plate\"}                                                                                                                                                                                                               \nBED_MESH_CALIBRATE PROBE_COUNT=11,11 Z_OFFSET=-0.07                                                                                                                                                                                                                                  \n{elsif curr_bed_type==\"Graphic Effect Plate\"}                                                                                                                                                                                                          \nBED_MESH_CALIBRATE PROBE_COUNT=11,11 Z_OFFSET=-0.07                                                                                                                                                                                                                                    \n{else}                                                                                                                                                                                                               \nBED_MESH_CALIBRATE PROBE_COUNT=11,11                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \n{endif} \n\n\n;===== 画起始线 =================\nG90\nG1 Z1.5\nG0 X85 Y1 Z2 F18000\nM109 S{nozzle_temperature_initial_layer[initial_extruder]}\nG1 Z0.2\nM83\nG1 X185 E15 F360\nG1 Z1.5\n\nG90\nM106 S0"
+   },
+   "max_bridge_length": {
+    "fixture": "10",
+    "saved": "0"
+   },
+   "max_volumetric_extrusion_rate_slope": {
+    "fixture": "0",
+    "saved": [
+     "0"
+    ]
+   },
+   "max_volumetric_extrusion_rate_slope_segment_length": {
+    "fixture": "3",
+    "saved": [
+     "3"
+    ]
+   },
+   "outer_wall_acceleration": {
+    "fixture": "5000",
+    "saved": [
+     "5000"
+    ]
+   },
+   "outer_wall_jerk": {
+    "fixture": "9",
+    "saved": [
+     "9"
+    ]
+   },
+   "outer_wall_speed": {
+    "fixture": "120",
+    "saved": [
+     "120"
+    ]
+   },
+   "overhang_1_4_speed": {
+    "fixture": "0",
+    "saved": [
+     "0"
+    ]
+   },
+   "overhang_2_4_speed": {
+    "fixture": "50",
+    "saved": [
+     "50"
+    ]
+   },
+   "overhang_3_4_speed": {
+    "fixture": "25",
+    "saved": [
+     "25"
+    ]
+   },
+   "overhang_4_4_speed": {
+    "fixture": "5",
+    "saved": [
+     "5"
+    ]
+   },
+   "print_settings_id": {
+    "fixture": "0.40 Standard @Snapmaker U1 (0.8 nozzle)",
+    "saved": "0.40mm Standard @Snapmaker U1 (0.8 nozzle)"
+   },
+   "raft_first_layer_expansion": {
+    "fixture": "2",
+    "saved": "-1"
+   },
+   "slow_down_layers": {
+    "fixture": "0",
+    "saved": [
+     "0"
+    ]
+   },
+   "slowdown_for_curled_perimeters": {
+    "fixture": "0",
+    "saved": [
+     "0"
+    ]
+   },
+   "small_perimeter_speed": {
+    "fixture": "50%",
+    "saved": [
+     "50%"
+    ]
+   },
+   "small_perimeter_threshold": {
+    "fixture": "0",
+    "saved": [
+     "0"
+    ]
+   },
+   "sparse_infill_acceleration": {
+    "fixture": "100%",
+    "saved": [
+     "100%"
+    ]
+   },
+   "sparse_infill_speed": {
+    "fixture": "100",
+    "saved": [
+     "100"
+    ]
+   },
+   "support_interface_speed": {
+    "fixture": "80",
+    "saved": [
+     "80"
+    ]
+   },
+   "support_speed": {
+    "fixture": "150",
+    "saved": [
+     "150"
+    ]
+   },
+   "top_surface_acceleration": {
+    "fixture": "2000",
+    "saved": [
+     "2000"
+    ]
+   },
+   "top_surface_jerk": {
+    "fixture": "9",
+    "saved": [
+     "9"
+    ]
+   },
+   "top_surface_speed": {
+    "fixture": "150",
+    "saved": [
+     "150"
+    ]
+   },
+   "travel_acceleration": {
+    "fixture": "10000",
+    "saved": [
+     "10000"
+    ]
+   },
+   "travel_jerk": {
+    "fixture": "12",
+    "saved": [
+     "12"
+    ]
+   },
+   "travel_speed": {
+    "fixture": "500",
+    "saved": [
+     "500"
+    ]
+   },
+   "tree_support_branch_angle_organic": {
+    "fixture": "40",
+    "saved": "45"
+   },
+   "version": {
+    "fixture": "2.3.6",
+    "saved": "2.4.1"
+   },
+   "wall_loops": {
+    "fixture": "2",
+    "saved": "3"
+   }
+  }
+ },
+ "differential_proof": {
+  "control_edit_key": "initial_layer_print_height",
+  "walls_edit_key": "wall_loops",
+  "added_sets_identical": true,
+  "added_keys": 24,
+  "changed_only_in_control": [
+   "initial_layer_print_height"
+  ],
+  "changed_only_in_walls": [
+   "wall_loops"
+  ],
+  "shared_changed_same_value": {
+   "default_jerk": true,
+   "infill_jerk": true,
+   "initial_layer_travel_speed": true,
+   "extrusion_rate_smoothing_external_perimeter_only": true,
+   "initial_layer_infill_speed": true,
+   "filename_format": true,
+   "inner_wall_speed": true,
+   "machine_start_gcode": true,
+   "gap_infill_speed": true,
+   "travel_acceleration": true,
+   "print_settings_id": true,
+   "initial_layer_jerk": true,
+   "ironing_speed": true,
+   "top_surface_jerk": true,
+   "max_volumetric_extrusion_rate_slope": true,
+   "max_bridge_length": true,
+   "outer_wall_speed": true,
+   "overhang_1_4_speed": true,
+   "version": true,
+   "support_speed": true,
+   "change_filament_gcode": true,
+   "internal_solid_infill_speed": true,
+   "machine_end_gcode": true,
+   "travel_speed": true,
+   "bridge_acceleration": true,
+   "inner_wall_jerk": true,
+   "sparse_infill_speed": true,
+   "outer_wall_acceleration": true,
+   "inner_wall_acceleration": true,
+   "overhang_2_4_speed": true,
+   "top_surface_acceleration": true,
+   "initial_layer_speed": true,
+   "travel_jerk": true,
+   "accel_to_decel_factor": true,
+   "slowdown_for_curled_perimeters": true,
+   "accel_to_decel_enable": true,
+   "outer_wall_jerk": true,
+   "slow_down_layers": true,
+   "raft_first_layer_expansion": true,
+   "top_surface_speed": true,
+   "tree_support_branch_angle_organic": true,
+   "enable_overhang_speed": true,
+   "default_junction_deviation": true,
+   "small_perimeter_threshold": true,
+   "overhang_4_4_speed": true,
+   "default_acceleration": true,
+   "internal_bridge_speed": true,
+   "overhang_3_4_speed": true,
+   "max_volumetric_extrusion_rate_slope_segment_length": true,
+   "small_perimeter_speed": true,
+   "support_interface_speed": true,
+   "bridge_speed": true,
+   "initial_layer_acceleration": true,
+   "exclude_object": true,
+   "internal_solid_infill_acceleration": true,
+   "sparse_infill_acceleration": true
+  },
+  "note": "manifest differs only by each run recording its own edit key"
+ }
+}

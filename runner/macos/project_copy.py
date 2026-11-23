@@ -194,32 +194,118 @@ def edit_and_save(desktop, pid, root, window, fields, edit_height):
     save_project(desktop, pid, root, window)
 
 
-def open_tab(desktop, pid, window, name):
-    hits = [e for e in desktop.descendants(window)
-            if name in (desktop.text(e, "AXTitle"), desktop.text(e, "AXDescription"))]
-    require(hits, f"No {name} tab candidate in the process panel")
-    clickable = [e for e in hits if desktop.text(e, "AXRole") in ("AXButton", "AXRadioButton", "AXTabButton")]
-    desktop.act(pid, exactly_one(clickable or hits), "AXPress")
+# --- OCR channel (A5): screencapture works in this session but hangs after
+# writing `.name.png`, so kill it and read the hidden file; Vision (via the
+# shipped ocr.swift, no TCC) reads the self-drawn widgets AX cannot address. ---
 
 
-def wall_field(desktop, window, value):
-    # The Strength page lists Wall loops as its topmost text field (uia_param_wall_thin layout).
-    fields = [e for e in desktop.descendants(window) if desktop.text(e, "AXRole") == "AXTextField"]
-    if not fields:
+def screen_capture(tag):
+    final = WORK / f"shot-{tag}.png"
+    hidden = WORK / f".shot-{tag}.png"
+    for stale in (final, hidden):
+        if stale.exists():
+            stale.unlink()
+    try:
+        subprocess.run(["/usr/sbin/screencapture", "-x", str(final)],
+                       capture_output=True, timeout=8)
+    except subprocess.TimeoutExpired:
+        pass  # the PNG is already complete under the hidden name
+    for candidate in (final, hidden):
+        if candidate.exists() and candidate.stat().st_size > 1000:
+            return candidate
+    return None
+
+
+def screen_ocr(tag, crop=None):
+    png = screen_capture(tag)
+    require(png is not None, f"Screen capture failed for {tag}")
+    args = ["/usr/bin/swift", str(WORK / "ocr.swift"), str(png)]
+    if crop:
+        args += [str(int(v)) for v in crop]
+    done = subprocess.run(args, capture_output=True, text=True, timeout=120)
+    rows = []
+    for line in done.stdout.splitlines():
+        parts = line.split("\t")
+        if len(parts) != 2 or "," not in parts[0]:
+            continue
+        try:
+            x, y, w, h = (float(v) for v in parts[0].split(","))
+        except ValueError:
+            continue
+        rows.append({"x": x, "y": y, "w": w, "h": h, "text": parts[1].strip()})
+    return rows
+
+
+def go_strength(desktop, pid, root, window, origin, title):
+    # The y~767 page band (Quality/Strength/Support/...) is self-drawn: no AX
+    # candidates (the 03f21d11 "No Strength tab candidate" blocker). OCR names it.
+    rows = screen_ocr("strength-tab", (360, 700, 460, 190))
+    band = [r for r in rows if r["text"].lower() == "strength" and 750 <= r["y"] <= 790]
+    require(band, "Strength tab label not found by OCR")
+    tab = band[0]
+    desktop.click_point(pid, root, window, title, tab["x"] + tab["w"] / 2 - origin.x,
+                        tab["y"] + tab["h"] / 2 - origin.y)
+    time.sleep(1.2)
+
+
+def ocr_wall_rows():
+    return screen_ocr("strength-tree", (360, 700, 460, 190))
+
+
+def ocr_wall_loops():
+    """Return (label_row, number_token) for the Wall loops row, else (None, [])."""
+    rows = ocr_wall_rows()
+    label = next((r for r in rows if "wall loops" in r["text"].lower()), None)
+    if label is None:
+        return None, []
+    same_line = [r for r in rows if abs(r["y"] - label["y"]) <= 9
+                 and r["x"] > label["x"] + label["w"] - 5]
+    return label, [r for r in same_line if any(ch.isdigit() for ch in r["text"])]
+
+
+def digits_of(text):
+    return "".join(ch for ch in text if ch.isdigit())
+
+
+def ocr_wall_read():
+    """OCR digits of the Wall-loops value cell, or None when not visible."""
+    label, numbered = ocr_wall_loops()
+    if label is None or not numbered:
         return None
-    fields.sort(key=lambda e: desktop.position(e).y)
-    return fields[0] if desktop.text(fields[0], "AXValue") == value else None
+    return digits_of(numbered[0]["text"])
 
 
-def edit_walls_and_save(desktop, pid, root, window):
+def materialized_wall_field(desktop, window):
+    # Clicking the value cell mounts the row's editor as a real AXTextField
+    # carrying the parameter key in its tooltip (probe16 evidence).
+    for element in desktop.descendants(window):
+        if desktop.text(element, "AXRole") != "AXTextField":
+            continue
+        if "wall_loops" in (desktop.text(element, "AXHelp") or ""):
+            return element
+    return None
+
+
+def edit_walls_and_save(desktop, pid, root, window, origin, title):
     import accessibility as ax
 
-    field = wait_for(lambda: wall_field(desktop, window, "2"), "Strength wall-loops field did not read 2")
+    def read_two():
+        label, numbered = ocr_wall_loops()
+        return numbered if (label is not None and numbered
+                            and digits_of(numbered[0]["text"]) == "2") else None
+
+    numbered = wait_for(read_two, "Wall loops row did not OCR-read 2 before the edit", 30)
+    token = numbered[0]
+    desktop.click_point(pid, root, window, title,
+                        token["x"] + min(12, token["w"] / 2) - origin.x,
+                        token["y"] + token["h"] / 2 - origin.y)
+    field = wait_for(lambda: materialized_wall_field(desktop, window),
+                     "Wall loops editor did not materialize after the cell click")
     desktop.act(pid, field, "AXFocused", ax.true_value)
     desktop.act(pid, field, "AXValue", desktop.string("3"))
     desktop.act(pid, field, "AXConfirm")
-    wait_for(lambda: desktop.text(window, "AXTitle") == "*" + COPY.stem, "Missing unsaved marker")
     require(desktop.text(field, "AXValue") == "3", "Wall-loops readback mismatch")
+    wait_for(lambda: desktop.text(window, "AXTitle") == "*" + COPY.stem, "Missing unsaved marker")
     save_project(desktop, pid, root, window)
     return desktop.text(field, "AXValue")
 
@@ -327,15 +413,21 @@ def worker(report):
             require(values == expected, f"{phase}: expected layers {expected}, got {values}")
             if GOAL == "walls":
                 report["failure_stage"] = phase + ".wall"
-                open_tab(desktop, pid, window, "Strength")
+                origin = desktop.position(window)
+                title = desktop.text(window, "AXTitle")
+                go_strength(desktop, pid, root, window, origin, title)
                 if phase == "edit":
                     report["failure_stage"] = "edit.wall_save"
-                    entry["wall"] = edit_walls_and_save(desktop, pid, root, window)
+                    entry["wall"] = edit_walls_and_save(desktop, pid, root, window, origin, title)
                 else:
                     wanted = "2" if phase == "baseline" else "3"
-                    field = wait_for(lambda: wall_field(desktop, window, wanted),
-                                     f"Strength wall-loops field mismatch in {phase}")
-                    entry["wall"] = desktop.text(field, "AXValue")
+
+                    def wanted_read():
+                        digits = ocr_wall_read()
+                        return digits if digits == wanted else None
+
+                    entry["wall"] = wait_for(wanted_read,
+                                             f"Strength wall-loops OCR value mismatch in {phase}", 30)
             elif phase == "edit":
                 if GOAL == "layer":
                     report["failure_stage"] = "edit.save"
