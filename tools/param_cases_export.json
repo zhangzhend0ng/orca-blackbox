@@ -1,0 +1,1894 @@
+{
+ "meta": {
+  "source": "harness/native_script_baseline.py PARAM_OPS + the pilots' VALUES",
+  "note": "Written by tools/export_param_cases.py; regenerate after changing an op. ops use the Windows engine's vocabulary: tab / op=float|checkbox|combo|rowcombo / label (str or candidates, '^' anchors the row start) / group / value / field (index into a vertical stack of boxes) / below / target / current (the value a combo paints) / answer + dialog (a box the op must answer). 'combo' ops are located by the value they paint, 'rowcombo' ops by their row label. A port that cannot reach a row reports it; it never edits config."
+ },
+ "cases": [
+  {
+   "scenario": "uia_param_accelerations",
+   "case_id": "param_274_accelerations",
+   "goal": "Set default acceleration to 3000, initial layer acceleration to 500, outer wall to 2000, inner wall to 4000, sparse infill to 5000 and travel acceleration to 8000. Preserve the cube geometry, its placement, material and every other setting.",
+   "values": {
+    "default_acceleration": "3000",
+    "initial_layer_acceleration": "500",
+    "outer_wall_acceleration": "2000",
+    "inner_wall_acceleration": "4000",
+    "sparse_infill_acceleration": "5000",
+    "travel_acceleration": "8000"
+   },
+   "ops": [
+    {
+     "tab": "Speed",
+     "tab_hint": "speed",
+     "op": "float",
+     "label": [
+      "Normal printing",
+      "Default acceleration"
+     ],
+     "value": "3000",
+     "group": "Acceleration"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Outer wall",
+      "Outer wall acceleration"
+     ],
+     "value": "2000",
+     "group": "Acceleration"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Inner wall",
+      "Inner wall acceleration"
+     ],
+     "value": "4000",
+     "group": "Acceleration"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Sparse infill",
+      "Sparse infill acceleration"
+     ],
+     "value": "5000",
+     "group": "Acceleration"
+    },
+    {
+     "op": "float",
+     "label": [
+      "^First layer",
+      "^Initial layer"
+     ],
+     "value": "500",
+     "group": "Acceleration"
+    },
+    {
+     "op": "float",
+     "label": "^Travel",
+     "value": "8000",
+     "group": "Acceleration"
+    }
+   ],
+   "kinds": [
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_arc_resolution",
+   "case_id": "param_258_arc_resolution",
+   "goal": "Enable arc fitting and precise Z height, keep resolution at 0.012 mm and slice gap closing radius at 0.049 mm. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "enable_arc_fitting": "1",
+    "precise_z_height": "1",
+    "resolution": "0.012",
+    "slice_closing_radius": "0.049"
+   },
+   "ops": [
+    {
+     "tab": "Quality",
+     "tab_hint": "height",
+     "op": "checkbox",
+     "label": "fitting",
+     "value": true,
+     "group": "Precision"
+    },
+    {
+     "op": "checkbox",
+     "label": "height",
+     "value": true,
+     "group": "Precision"
+    }
+   ],
+   "kinds": [
+    "checkbox"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_bridge",
+   "case_id": "param_263_bridge",
+   "goal": "Set bridge flow to 1.0, bridge density to 100%, enable thick bridges and max bridge length to 30 mm. Preserve the cube geometry, its placement, material and every other setting.",
+   "values": {
+    "bridge_flow": "1",
+    "bridge_density": "100%",
+    "thick_bridges": "1",
+    "bridge_angle": "0"
+   },
+   "ops": [
+    {
+     "tab": "Quality",
+     "tab_hint": "height",
+     "op": "float",
+     "label": [
+      "^Bridge flow",
+      "flow"
+     ],
+     "value": "1",
+     "group": "Bridging"
+    },
+    {
+     "op": "float",
+     "label": [
+      "External bridge density",
+      "density"
+     ],
+     "value": "100",
+     "group": "Bridging"
+    },
+    {
+     "op": "checkbox",
+     "label": "Thick",
+     "value": true,
+     "group": "Bridging"
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_brim",
+   "case_id": "param_291_brim",
+   "goal": "Set brim width to 5 mm, brim object gap to 0.2 mm and brim type to outer walls only. Preserve the cube geometry, its placement, material and every other setting.",
+   "values": {
+    "brim_width": "5",
+    "brim_object_gap": "0.2",
+    "brim_type": "outer_only"
+   },
+   "ops": [
+    {
+     "tab": "Others",
+     "op": "rowcombo",
+     "label": "^Brim type",
+     "target": "Outer brim only",
+     "group": "Brim"
+    },
+    {
+     "op": "float",
+     "label": "^Brim width",
+     "value": "5",
+     "group": "Brim"
+    },
+    {
+     "op": "float",
+     "label": "gap",
+     "value": "0.2",
+     "group": "Brim"
+    }
+   ],
+   "kinds": [
+    "float",
+    "rowcombo"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_by_object",
+   "case_id": "param_292_by_object",
+   "goal": "Set print sequence to by object with extruder clearance radius 20 mm and height to rod 30 mm. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "print_sequence": "by object"
+   },
+   "ops": [
+    {
+     "tab": "Others",
+     "op": "combo",
+     "current": [
+      "By",
+      "Layer"
+     ],
+     "target": "By object",
+     "group": "Special mode"
+    }
+   ],
+   "kinds": [
+    "combo"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_exclude_objects",
+   "case_id": "param_297_exclude_objects",
+   "goal": "Enable the exclude-object G-code feature while reduce infill retraction stays on. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "exclude_object": "1",
+    "reduce_infill_retraction": "1"
+   },
+   "ops": [
+    {
+     "tab": "Others",
+     "op": "checkbox",
+     "label": "Exclude",
+     "value": true,
+     "group": "G-code output"
+    }
+   ],
+   "kinds": [
+    "checkbox"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_feature_speeds",
+   "case_id": "param_271_feature_speeds",
+   "goal": "Set outer wall speed 100, inner wall speed 150, sparse infill speed 200, top surface speed 120, small perimeter threshold 10 and small perimeter speed 50. Preserve the cube geometry, its placement, material and every other setting.",
+   "values": {
+    "outer_wall_speed": "100",
+    "inner_wall_speed": "150",
+    "sparse_infill_speed": "200",
+    "top_surface_speed": "120",
+    "small_perimeter_threshold": "10",
+    "small_perimeter_speed": "50%"
+   },
+   "ops": [
+    {
+     "tab": "Speed",
+     "tab_hint": "speed",
+     "op": "float",
+     "label": "^Outer wall",
+     "value": "100",
+     "group": "Other layers speed"
+    },
+    {
+     "op": "float",
+     "label": "^Inner wall",
+     "value": "150",
+     "group": "Other layers speed"
+    },
+    {
+     "op": "float",
+     "label": "^Sparse infill",
+     "value": "200",
+     "group": "Other layers speed"
+    },
+    {
+     "op": "float",
+     "label": "^Top surface",
+     "value": "120",
+     "group": "Other layers speed"
+    },
+    {
+     "op": "float",
+     "label": [
+      "^Small perimeters threshold",
+      "threshold"
+     ],
+     "value": "10",
+     "group": "Other layers speed"
+    },
+    {
+     "op": "float",
+     "label": "^Small perimeters",
+     "value": "50%",
+     "group": "Other layers speed"
+    }
+   ],
+   "kinds": [
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_filament_features",
+   "case_id": "param_284_filament_features",
+   "goal": "Set the support body filament to 1 while the wipe tower and support interface filaments stay 0. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "wipe_tower_filament": "0",
+    "support_filament": "1",
+    "support_interface_filament": "0",
+    "enable_support": "1",
+    "support_type": "normal(auto)"
+   },
+   "ops": [
+    {
+     "tab": "Support",
+     "tab_hint": "support",
+     "op": "checkbox",
+     "label": "Enable",
+     "value": true,
+     "group": "Support"
+    },
+    {
+     "op": "combo",
+     "current": "Tree",
+     "target": "Normal",
+     "group": "Support"
+    },
+    {
+     "op": "rowcombo",
+     "label": "^Support/raft base",
+     "target": "PETG",
+     "group": "Filament for Supports"
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "combo",
+    "rowcombo"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_first_speeds",
+   "case_id": "param_270_first_speeds",
+   "goal": "Set initial layer speed to 30, initial layer infill speed to 40 and initial layer travel speed to 150. Preserve the cube geometry, its placement, material and every other setting.",
+   "values": {
+    "initial_layer_speed": "30",
+    "initial_layer_infill_speed": "40",
+    "initial_layer_travel_speed": "150%"
+   },
+   "ops": [
+    {
+     "tab": "Speed",
+     "tab_hint": "speed",
+     "op": "float",
+     "label": [
+      "^First layer 35",
+      "^First layer"
+     ],
+     "value": "30",
+     "group": "First layer speed"
+    },
+    {
+     "op": "float",
+     "label": "^First layer infill",
+     "value": "40",
+     "group": "First layer speed"
+    },
+    {
+     "op": "float",
+     "label": "^Initial layer travel",
+     "value": "150%",
+     "group": "First layer speed"
+    }
+   ],
+   "kinds": [
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_flush_options",
+   "case_id": "param_286_flush_options",
+   "goal": "Enable flushing into the object's infill, into the object and into its support, and set the prime volume to 40 mm3. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "flush_into_infill": "1",
+    "flush_into_support": "1",
+    "prime_volume": "40"
+   },
+   "ops": [
+    {
+     "tab": "Multimaterial",
+     "tab_hint": "tower",
+     "op": "checkbox",
+     "label": "objects",
+     "value": true,
+     "group": "Flush options"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Prime volume",
+      "Prime vol"
+     ],
+     "value": "40",
+     "group": "Prime tower"
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_fuzzy",
+   "case_id": "param_295_fuzzy",
+   "goal": "Set fuzzy skin to external walls only with point distance 0.6 mm and thickness 0.3 mm. Preserve the cube geometry, its placement, material and every other setting.",
+   "values": {
+    "fuzzy_skin": "external",
+    "fuzzy_skin_point_distance": "0.6",
+    "fuzzy_skin_thickness": "0.3"
+   },
+   "ops": [
+    {
+     "tab": "Others",
+     "op": "rowcombo",
+     "label": "Fuzzy skin",
+     "target": "Contour",
+     "group": "Fuzzy"
+    },
+    {
+     "op": "float",
+     "label": "point distance",
+     "value": "0.6",
+     "group": "Fuzzy"
+    },
+    {
+     "op": "float",
+     "label": "thickness",
+     "value": "0.3",
+     "group": "Fuzzy"
+    }
+   ],
+   "kinds": [
+    "float",
+    "rowcombo"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_gcode_output",
+   "case_id": "param_296_gcode_output",
+   "goal": "Enable verbose G-code comments, line numbers and object labels, and set the filename format to {input_filename_base}_{plate_name}.gcode. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "gcode_comments": "1",
+    "gcode_add_line_number": "1",
+    "gcode_label_objects": "1",
+    "filename_format": "{input_filename_base}_{plate_name}.gcode"
+   },
+   "ops": [
+    {
+     "tab": "Others",
+     "op": "checkbox",
+     "label": "Verbose",
+     "value": true,
+     "group": "G-code output"
+    },
+    {
+     "op": "checkbox",
+     "label": "number",
+     "value": true,
+     "group": "G-code output"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Filename format",
+      "format"
+     ],
+     "value": "{input_filename_base}_{plate_name}.gcode",
+     "group": "G-code output"
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": {
+    "app": {
+     "user_mode": "develop"
+    }
+   }
+  },
+  {
+   "scenario": "uia_param_infill_combo",
+   "case_id": "param_268_infill_combo",
+   "goal": "Set sparse infill density to 20%, pattern to gyroid, direction 45, infill wall overlap 15% and gap fill target to everywhere. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "sparse_infill_density": "20%",
+    "sparse_infill_pattern": "gyroid",
+    "infill_direction": "45",
+    "top_bottom_infill_wall_overlap": "15%",
+    "gap_fill_target": "everywhere"
+   },
+   "ops": [
+    {
+     "tab": "Strength",
+     "tab_hint": "loops",
+     "op": "float",
+     "label": "Density",
+     "value": "20",
+     "group": "Infill"
+    },
+    {
+     "op": "rowcombo",
+     "label": "Sparse infill pattern",
+     "target": "Gyroid",
+     "group": "Infill"
+    },
+    {
+     "op": "float",
+     "label": "Infill direction",
+     "value": "45",
+     "group": "Infill"
+    },
+    {
+     "op": "float",
+     "label": "overlap",
+     "value": "15"
+    },
+    {
+     "op": "rowcombo",
+     "label": "Gap fill",
+     "target": "Everywhere"
+    }
+   ],
+   "kinds": [
+    "float",
+    "rowcombo"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_infill_structure",
+   "case_id": "param_269_infill_structure",
+   "goal": "Enable infill combination, set minimum sparse infill threshold to 10 mm2, external bridge infill direction to 45 deg and vertical shell thickness to critical-only, keeping narrow internal solid infill detection on. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "infill_combination": "1",
+    "minimum_sparse_infill_area": "10",
+    "bridge_angle": "45",
+    "detect_narrow_internal_solid_infill": "1",
+    "ensure_vertical_shell_thickness": "ensure_critical_only"
+   },
+   "ops": [
+    {
+     "tab": "Strength",
+     "tab_hint": "loops",
+     "op": "checkbox",
+     "label": "combination",
+     "value": true,
+     "group": "Advanced"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Minimum sparse infill threshold",
+      "Minimum sparse infill"
+     ],
+     "value": "10",
+     "group": "Advanced"
+    },
+    {
+     "op": "float",
+     "label": [
+      "External bridge infill direction",
+      "External bridge infill",
+      "External bridge"
+     ],
+     "value": "45",
+     "group": "Advanced"
+    },
+    {
+     "op": "combo",
+     "current": "All",
+     "target": "Critical",
+     "group": "Advanced"
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "combo",
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_ironing_top",
+   "case_id": "param_259_ironing_top",
+   "goal": "Enable topmost-surface ironing with flow 10%, spacing 0.15 mm and speed 60 mm/s. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "ironing_type": "topmost",
+    "ironing_flow": "10%",
+    "ironing_spacing": "0.15",
+    "ironing_speed": "60"
+   },
+   "ops": [
+    {
+     "tab": "Quality",
+     "tab_hint": "height",
+     "op": "combo",
+     "current": [
+      "No",
+      "ironing"
+     ],
+     "target": "Topmost",
+     "group": "Ironing"
+    },
+    {
+     "tab": "Speed",
+     "tab_hint": "speed",
+     "op": "float",
+     "label": [
+      "roning",
+      "Ironing speed"
+     ],
+     "value": "60",
+     "group": "Other layers speed"
+    }
+   ],
+   "kinds": [
+    "combo",
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_jerk",
+   "case_id": "param_275_jerk",
+   "goal": "Set default jerk to 8, initial layer jerk to 4, outer wall jerk to 5, inner wall jerk to 6 and travel jerk to 10, keeping infill jerk at 9. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "default_jerk": "8",
+    "initial_layer_jerk": "4",
+    "outer_wall_jerk": "5",
+    "inner_wall_jerk": "6",
+    "infill_jerk": "9",
+    "travel_jerk": "10"
+   },
+   "ops": [
+    {
+     "tab": "Speed",
+     "tab_hint": "speed",
+     "op": "float",
+     "label": [
+      "Default 0",
+      "Default"
+     ],
+     "value": "8",
+     "group": "Jerk"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Outer wall 9",
+      "Outer wall"
+     ],
+     "value": "5",
+     "group": "Jerk"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Inner wall 9",
+      "Inner wall"
+     ],
+     "value": "6",
+     "group": "Jerk"
+    },
+    {
+     "op": "float",
+     "label": [
+      "First layer 9",
+      "First layer",
+      "Initial layer 9",
+      "Initial layer"
+     ],
+     "value": "4",
+     "group": "Jerk"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Travel 12",
+      "Travel"
+     ],
+     "value": "10",
+     "group": "Jerk"
+    }
+   ],
+   "kinds": [
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_line_width_all",
+   "case_id": "param_255_line_width_all",
+   "goal": "Set default line width to 0.42 mm, initial layer line width to 0.50 mm, outer wall to 0.42 mm, inner wall to 0.45 mm, top surface to 0.40 mm, sparse infill to 0.45 mm and support to 0.42 mm. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "line_width": "0.42",
+    "initial_layer_line_width": "0.5",
+    "outer_wall_line_width": "0.42",
+    "inner_wall_line_width": "0.45",
+    "top_surface_line_width": "0.4",
+    "sparse_infill_line_width": "0.45",
+    "support_line_width": "0.42",
+    "layer_height": "0.2"
+   },
+   "ops": [
+    {
+     "tab": "Quality",
+     "tab_hint": "height",
+     "op": "float",
+     "label": [
+      "^Layer height"
+     ],
+     "value": "0.2",
+     "group": "Layer height"
+    },
+    {
+     "op": "float",
+     "label": "Default",
+     "value": "0.42",
+     "group": "Line width"
+    },
+    {
+     "op": "float",
+     "label": [
+      "First layer",
+      "Initial layer"
+     ],
+     "value": "0.5",
+     "group": "Line width"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Outer wall line width",
+      "Outer wall"
+     ],
+     "value": "0.42",
+     "group": "Line width"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Inner wall line width",
+      "Inner wall"
+     ],
+     "value": "0.45",
+     "group": "Line width"
+    },
+    {
+     "op": "float",
+     "label": "Top surface",
+     "value": "0.4",
+     "group": "Line width"
+    },
+    {
+     "op": "float",
+     "label": "Sparse infill",
+     "value": "0.45",
+     "group": "Line width"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Support line width",
+      "Support"
+     ],
+     "value": "0.42",
+     "group": "Line width"
+    }
+   ],
+   "kinds": [
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_material_advanced",
+   "case_id": "param_287_material_advanced",
+   "goal": "Enable interface shells, set the support body filament to 1 while the support interface filament stays 0. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "interface_shells": "1",
+    "support_filament": "1",
+    "support_interface_filament": "0",
+    "enable_support": "1",
+    "support_type": "normal(auto)"
+   },
+   "ops": [
+    {
+     "tab": "Multimaterial",
+     "tab_hint": "tower",
+     "op": "checkbox",
+     "label": "shells",
+     "value": true,
+     "group": "Advanced"
+    },
+    {
+     "tab": "Support",
+     "tab_hint": "support",
+     "op": "checkbox",
+     "label": "Enable",
+     "value": true,
+     "group": "Support"
+    },
+    {
+     "op": "combo",
+     "current": "Tree",
+     "target": "Normal",
+     "group": "Support"
+    },
+    {
+     "op": "rowcombo",
+     "label": "^Support/raft base",
+     "target": "PETG",
+     "group": "Filament for Supports"
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "combo",
+    "rowcombo"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_ooze_prevention",
+   "case_id": "param_285_ooze_prevention",
+   "goal": "Keep ooze prevention enabled, set standby temperature delta to -100 degC, preheat steps to 2 and preheat time to 15 s. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "ooze_prevention": "1",
+    "standby_temperature_delta": "-100",
+    "preheat_time": "15"
+   },
+   "ops": [
+    {
+     "tab": "Multimaterial",
+     "tab_hint": "tower",
+     "op": "float",
+     "label": [
+      "Temperature variation",
+      "variation"
+     ],
+     "value": "-100",
+     "group": "Ooze prevention"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Preheat time",
+      "Preheat"
+     ],
+     "value": "15",
+     "group": "Ooze prevention"
+    }
+   ],
+   "kinds": [
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_overhang_bridge",
+   "case_id": "param_272_overhang_bridge",
+   "goal": "Keep slow-down-for-overhang enabled and bridge speed at 30 mm/s, and set the four overhang degree bands to 40/30/20/10 mm/s. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "enable_overhang_speed": "1",
+    "overhang_1_4_speed": "40",
+    "overhang_2_4_speed": "30",
+    "overhang_3_4_speed": "20",
+    "overhang_4_4_speed": "10",
+    "bridge_speed": "30"
+   },
+   "ops": [
+    {
+     "tab": "Speed",
+     "tab_hint": "speed",
+     "op": "float",
+     "label": "Overhang speed",
+     "value": "40",
+     "group": "Overhang",
+     "field": 0
+    },
+    {
+     "op": "float",
+     "label": "Overhang speed",
+     "value": "30",
+     "group": "Overhang",
+     "field": 1
+    },
+    {
+     "op": "float",
+     "label": "Overhang speed",
+     "value": "20",
+     "group": "Overhang",
+     "field": 2
+    },
+    {
+     "op": "float",
+     "label": "Overhang speed",
+     "value": "10",
+     "group": "Overhang",
+     "field": 3
+    }
+   ],
+   "kinds": [
+    "float"
+   ],
+   "field_ops": 4,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_overhang_curl",
+   "case_id": "param_265_overhang_curl",
+   "goal": "Enable slow down for curled perimeters. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "slowdown_for_curled_perimeters": "1"
+   },
+   "ops": [
+    {
+     "tab": "Speed",
+     "tab_hint": "speed",
+     "op": "checkbox",
+     "label": "curled",
+     "value": true,
+     "group": "Overhang"
+    }
+   ],
+   "kinds": [
+    "checkbox"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_overhang_speeds",
+   "case_id": "param_264_overhang_speeds",
+   "goal": "Enable detect overhang wall and slow down for overhang, then set the five overhang degree-band speeds to 40/30/20/10/5. Preserve the cube geometry, its placement, material and every other setting.",
+   "values": {
+    "detect_overhang_wall": "1",
+    "enable_overhang_speed": "1",
+    "overhang_1_4_speed": "40",
+    "overhang_2_4_speed": "30",
+    "overhang_3_4_speed": "20",
+    "overhang_4_4_speed": "10"
+   },
+   "ops": [
+    {
+     "tab": "Quality",
+     "tab_hint": "height",
+     "op": "checkbox",
+     "label": "Detect overhang",
+     "value": true,
+     "group": "Overhangs"
+    },
+    {
+     "tab": "Speed",
+     "tab_hint": "speed",
+     "op": "checkbox",
+     "label": "Slow down",
+     "value": true,
+     "group": "Overhang"
+    },
+    {
+     "op": "float",
+     "label": "Overhang speed",
+     "value": "40",
+     "group": "Overhang",
+     "field": 0
+    },
+    {
+     "op": "float",
+     "label": "Overhang speed",
+     "value": "30",
+     "group": "Overhang",
+     "field": 1
+    },
+    {
+     "op": "float",
+     "label": "Overhang speed",
+     "value": "20",
+     "group": "Overhang",
+     "field": 2
+    },
+    {
+     "op": "float",
+     "label": "Overhang speed",
+     "value": "10",
+     "group": "Overhang",
+     "field": 3
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "float"
+   ],
+   "field_ops": 4,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_precision_comp",
+   "case_id": "param_257_precision_comp",
+   "goal": "Keep elephant foot compensation 0.15 mm, set X-Y hole compensation to -0.10 mm, X-Y contour compensation to 0.10 mm and enable precise wall. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "elefant_foot_compensation": "0.15",
+    "xy_contour_compensation": "0.1",
+    "xy_hole_compensation": "-0.1",
+    "precise_outer_wall": "1"
+   },
+   "ops": [
+    {
+     "tab": "Quality",
+     "tab_hint": "height",
+     "op": "float",
+     "label": [
+      "X-Y hole compensation",
+      "hole compensation"
+     ],
+     "value": "-0.1",
+     "group": "Precision"
+    },
+    {
+     "op": "float",
+     "label": [
+      "X-Y contour compensation",
+      "contour compensation"
+     ],
+     "value": "0.1",
+     "group": "Precision"
+    },
+    {
+     "op": "checkbox",
+     "label": "wall",
+     "value": true,
+     "group": "Precision"
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_prime_tower",
+   "case_id": "param_283_prime_tower",
+   "goal": "Keep the prime tower enabled at width 30 mm with rib walls, 5 mm brim and filament 0, set prime volume to 40 mm3, stabilization cone apex angle to 15 deg and enable no sparse layers. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "enable_prime_tower": "1",
+    "prime_tower_width": "30",
+    "prime_volume": "40",
+    "prime_tower_brim_width": "5",
+    "wipe_tower_wall_type": "rib",
+    "wipe_tower_no_sparse_layers": "1",
+    "wipe_tower_cone_angle": "15",
+    "wipe_tower_filament": "0"
+   },
+   "ops": [
+    {
+     "tab": "Multimaterial",
+     "tab_hint": "tower",
+     "op": "float",
+     "label": [
+      "Prime volume",
+      "Prime vol"
+     ],
+     "value": "40",
+     "group": "Prime tower"
+    },
+    {
+     "op": "checkbox",
+     "label": "sparse",
+     "value": true,
+     "group": "Prime tower"
+    },
+    {
+     "op": "rowcombo",
+     "label": "^Wall type",
+     "target": "Cone",
+     "group": "Prime tower"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Stabilization cone apex angle",
+      "Stabilization cone"
+     ],
+     "value": "15",
+     "group": "Prime tower"
+    },
+    {
+     "op": "rowcombo",
+     "label": "^Wall type",
+     "target": "Rib",
+     "group": "Prime tower"
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "float",
+    "rowcombo"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_raft",
+   "case_id": "param_278_raft",
+   "goal": "Set raft layers to 3, contact distance 0.2 mm, expansion 5 mm, first layer density 100% and first layer expansion 5 mm. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "raft_layers": "3",
+    "raft_contact_distance": "0.2",
+    "raft_first_layer_density": "100%",
+    "raft_first_layer_expansion": "5",
+    "enable_support": "1",
+    "support_type": "normal(auto)"
+   },
+   "ops": [
+    {
+     "tab": "Support",
+     "tab_hint": "support",
+     "op": "checkbox",
+     "label": "Enable",
+     "value": true,
+     "group": "Support"
+    },
+    {
+     "op": "combo",
+     "current": "Tree",
+     "target": "Normal",
+     "group": "Support"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Raft layers",
+      "Raft"
+     ],
+     "value": "3",
+     "group": "Raft"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Raft contact Z distance",
+      "Raft contact distance",
+      "Raft contact"
+     ],
+     "value": "0.2",
+     "group": "Raft"
+    },
+    {
+     "op": "float",
+     "label": [
+      "^First layer density",
+      "First layer density"
+     ],
+     "value": "100",
+     "group": "Support"
+    },
+    {
+     "op": "float",
+     "label": [
+      "^First layer expansion",
+      "First layer expansion"
+     ],
+     "value": "5",
+     "group": "Support"
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "combo",
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_seam_wipe",
+   "case_id": "param_256_seam_wipe",
+   "goal": "Keep seam position aligned and seam gap 15%, enable wipe on loops with wipe speed 50 mm/s and role based wipe speed on. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "seam_position": "aligned",
+    "seam_gap": "15%",
+    "wipe_on_loops": "1",
+    "wipe_speed": "50",
+    "role_based_wipe_speed": "1"
+   },
+   "ops": [
+    {
+     "tab": "Quality",
+     "tab_hint": "height",
+     "op": "checkbox",
+     "label": "Role",
+     "value": false,
+     "group": "Seam"
+    },
+    {
+     "op": "float",
+     "label": "^Wipe speed",
+     "value": "50",
+     "group": "Seam"
+    },
+    {
+     "op": "checkbox",
+     "label": "Role",
+     "value": true,
+     "group": "Seam"
+    },
+    {
+     "op": "checkbox",
+     "label": "loops",
+     "value": true,
+     "group": "Seam"
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_shells_pattern",
+   "case_id": "param_267_shells_pattern",
+   "goal": "Set top shell layers to 5, bottom shell layers to 3, top surface pattern to concentric and bottom surface pattern to rectilinear. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "top_shell_layers": "5",
+    "bottom_shell_layers": "3",
+    "top_surface_pattern": "concentric",
+    "bottom_surface_pattern": "rectilinear"
+   },
+   "ops": [
+    {
+     "tab": "Strength",
+     "tab_hint": "loops",
+     "op": "float",
+     "label": "Top shell layers",
+     "value": "5"
+    },
+    {
+     "op": "float",
+     "label": "Bottom shell layers",
+     "value": "3"
+    },
+    {
+     "op": "rowcombo",
+     "label": "Top surface pattern",
+     "target": "Concentric"
+    },
+    {
+     "op": "rowcombo",
+     "label": "Bottom surface pattern",
+     "target": "Rectilinear"
+    }
+   ],
+   "kinds": [
+    "float",
+    "rowcombo"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_single_wall_avoid",
+   "case_id": "param_261_single_wall_avoid",
+   "goal": "Keep single wall on top surfaces and the 200% one-wall threshold, enable single wall on the first layer, avoid crossing walls with a 2 mm maximum detour length. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "only_one_wall_top": "1",
+    "min_width_top_surface": "200%",
+    "only_one_wall_first_layer": "1",
+    "reduce_crossing_wall": "1",
+    "max_travel_detour_distance": "2"
+   },
+   "ops": [
+    {
+     "tab": "Quality",
+     "tab_hint": "height",
+     "op": "checkbox",
+     "label": "layer",
+     "value": true,
+     "group": "Walls and surfaces"
+    },
+    {
+     "op": "checkbox",
+     "label": "crossing",
+     "value": true,
+     "group": "Walls and surfaces"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Max detour length",
+      "detour length"
+     ],
+     "value": "2",
+     "group": "Walls and surfaces"
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_skirt",
+   "case_id": "param_290_skirt",
+   "goal": "Set skirt loops to 3, skirt height to 2, skirt distance to 5 mm and enable the draft shield. Preserve the cube geometry, its placement, material and every other setting.",
+   "values": {
+    "skirt_loops": "3",
+    "skirt_height": "2",
+    "skirt_distance": "5",
+    "draft_shield": "enabled"
+   },
+   "ops": [
+    {
+     "tab": "Others",
+     "op": "float",
+     "label": "Skirt loops",
+     "value": "3",
+     "group": "Skirt"
+    },
+    {
+     "op": "float",
+     "label": "Skirt distance",
+     "value": "5",
+     "group": "Skirt"
+    },
+    {
+     "op": "float",
+     "label": "Skirt height",
+     "value": "2",
+     "group": "Skirt"
+    },
+    {
+     "op": "combo",
+     "current": "Disabled",
+     "target": "Enabled",
+     "group": "Skirt"
+    }
+   ],
+   "kinds": [
+    "combo",
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_speed_limits",
+   "case_id": "param_276_speed_limits",
+   "goal": "Set outer wall speed to 700 mm/s, layer height to 0.20 mm and outer wall line width to 0.42 mm. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "outer_wall_speed": "700",
+    "layer_height": "0.2",
+    "outer_wall_line_width": "0.42"
+   },
+   "ops": [
+    {
+     "tab": "Quality",
+     "tab_hint": "height",
+     "op": "float",
+     "label": [
+      "Layer height",
+      "layer height"
+     ],
+     "value": "0.2"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Outer wall line width",
+      "^Outer wall"
+     ],
+     "value": "0.42",
+     "group": "Line width"
+    },
+    {
+     "tab": "Speed",
+     "tab_hint": "speed",
+     "op": "float",
+     "label": [
+      "Outer wall speed",
+      "^Outer wall"
+     ],
+     "value": "700",
+     "group": "Other layers speed"
+    }
+   ],
+   "kinds": [
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_spiral_vase",
+   "case_id": "param_293_spiral_vase",
+   "goal": "Enable spiral vase mode and set seam position to nearest. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "spiral_mode": "1",
+    "seam_position": "nearest",
+    "wall_loops": "1",
+    "top_shell_layers": "0",
+    "sparse_infill_density": "0%"
+   },
+   "ops": [
+    {
+     "tab": "Others",
+     "op": "checkbox",
+     "label": "Spiral",
+     "value": true,
+     "group": "Special mode",
+     "answer": "Yes",
+     "dialog": "Spiral mode"
+    },
+    {
+     "tab": "Quality",
+     "tab_hint": "height",
+     "op": "combo",
+     "current": "Aligned",
+     "target": "nearest",
+     "group": "Seam"
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "combo"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_support_basic",
+   "case_id": "param_277_support_basic",
+   "goal": "Enable support with threshold angle 45 deg and support type normal (auto). Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "enable_support": "1",
+    "support_threshold_angle": "45",
+    "support_type": "normal(auto)",
+    "support_on_build_plate_only": "0",
+    "support_critical_regions_only": "0"
+   },
+   "ops": [
+    {
+     "tab": "Support",
+     "tab_hint": "support",
+     "op": "checkbox",
+     "label": "Enable",
+     "value": true,
+     "group": "Support"
+    },
+    {
+     "op": "combo",
+     "current": "Tree",
+     "target": "Normal",
+     "group": "Support"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Threshold angle",
+      "Threshold"
+     ],
+     "value": "45",
+     "group": "Support"
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "combo",
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_support_filament",
+   "case_id": "param_279_support_filament",
+   "goal": "Set the support body filament to 1 while the interface filament stays 0. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "support_filament": "1",
+    "support_interface_filament": "0",
+    "enable_support": "1",
+    "support_type": "normal(auto)"
+   },
+   "ops": [
+    {
+     "tab": "Support",
+     "tab_hint": "support",
+     "op": "checkbox",
+     "label": "Enable",
+     "value": true,
+     "group": "Support"
+    },
+    {
+     "op": "combo",
+     "current": "Tree",
+     "target": "Normal",
+     "group": "Support"
+    },
+    {
+     "op": "rowcombo",
+     "label": "^Support/raft base",
+     "target": "PETG",
+     "group": "Filament for Supports"
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "combo",
+    "rowcombo"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_support_interface",
+   "case_id": "param_281_support_interface",
+   "goal": "Enable supports with top and bottom Z distance 0.2 mm, object xy distance 0.5 mm, 3 top interface layers, interface spacing 0 and interface pattern rectilinear. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "enable_support": "1",
+    "support_type": "normal(auto)",
+    "support_top_z_distance": "0.2",
+    "support_bottom_z_distance": "0.2",
+    "support_object_xy_distance": "0.5",
+    "support_interface_top_layers": "3",
+    "support_interface_spacing": "0",
+    "support_interface_pattern": "rectilinear"
+   },
+   "ops": [
+    {
+     "tab": "Support",
+     "tab_hint": "support",
+     "op": "checkbox",
+     "label": "Enable",
+     "value": true,
+     "group": "Support"
+    },
+    {
+     "op": "combo",
+     "current": "Tree",
+     "target": "Normal",
+     "group": "Support"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Support/object xy distance",
+      "xy distance"
+     ],
+     "value": "0.5",
+     "group": "Advanced"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Top lnterface layers",
+      "Top interface layers"
+     ],
+     "value": "3",
+     "group": "Advanced"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Top lnterface spacing",
+      "Top interface spacing"
+     ],
+     "value": "0",
+     "group": "Advanced"
+    },
+    {
+     "op": "rowcombo",
+     "label": "Interface pattern",
+     "target": "Rectilinear",
+     "group": "Advanced"
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "combo",
+    "float",
+    "rowcombo"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_support_ironing",
+   "case_id": "param_280_support_ironing",
+   "goal": "Enable supports, then enable support ironing and set its line spacing to 0.15 mm while flow stays 10% and pattern rectilinear. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "enable_support": "1",
+    "support_type": "normal(auto)",
+    "support_ironing": "1",
+    "support_ironing_flow": "10%",
+    "support_ironing_spacing": "0.15",
+    "support_ironing_pattern": "rectilinear"
+   },
+   "ops": [
+    {
+     "tab": "Support",
+     "tab_hint": "support",
+     "op": "checkbox",
+     "label": "Enable",
+     "value": true,
+     "group": "Support"
+    },
+    {
+     "op": "combo",
+     "current": "Tree",
+     "target": "Normal",
+     "group": "Support"
+    },
+    {
+     "op": "checkbox",
+     "label": "roning",
+     "value": true,
+     "group": "Support ironing"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Support Ironing linespacing",
+      "linespacing",
+      "line spacing",
+      "Ironing line spacing",
+      "lroning line spacing"
+     ],
+     "value": "0.15",
+     "group": "Support ironing"
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "combo",
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_surface_flow",
+   "case_id": "param_262_surface_flow",
+   "goal": "Set top surface flow ratio to 1.1 and bottom surface flow ratio to 0.9, keeping the flow ratio at 1. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "top_solid_infill_flow_ratio": "1.1",
+    "bottom_solid_infill_flow_ratio": "0.9",
+    "print_flow_ratio": "1"
+   },
+   "ops": [
+    {
+     "tab": "Quality",
+     "tab_hint": "height",
+     "op": "float",
+     "label": [
+      "Top surface flow ratio",
+      "Top surface flow"
+     ],
+     "value": "1.1",
+     "group": "Walls and surfaces"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Bottom surface flow ratio",
+      "Bottom surface flow"
+     ],
+     "value": "0.9",
+     "group": "Walls and surfaces"
+    }
+   ],
+   "kinds": [
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_timelapse",
+   "case_id": "param_294_timelapse",
+   "goal": "Set timelapse type to smooth while slicing mode stays regular. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "timelapse_type": "2",
+    "slicing_mode": "regular"
+   },
+   "ops": [
+    {
+     "tab": "Others",
+     "op": "combo",
+     "current": "None",
+     "target": "Smooth",
+     "group": "Special mode"
+    }
+   ],
+   "kinds": [
+    "combo"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_travel_speed",
+   "case_id": "param_273_travel_speed",
+   "goal": "Set travel speed to 300 mm/s. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "travel_speed": "300"
+   },
+   "ops": [
+    {
+     "tab": "Speed",
+     "tab_hint": "speed",
+     "op": "float",
+     "label": [
+      "Travel 500",
+      "Travel speed",
+      "Travel"
+     ],
+     "value": "300",
+     "group": "Travel speed"
+    }
+   ],
+   "kinds": [
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_tree_support",
+   "case_id": "param_282_tree_support",
+   "goal": "Enable supports with type tree (auto) and style Tree Slim, set branch angle to 40 deg, support wall loops to 1 and max bridge length to 30 mm, keeping branch diameter 2 mm and adaptive layer height on. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "enable_support": "1",
+    "support_type": "tree(auto)",
+    "support_style": "tree_slim",
+    "tree_support_branch_angle": "40",
+    "tree_support_branch_diameter": "2",
+    "tree_support_adaptive_layer_height": "1",
+    "tree_support_wall_count": "1",
+    "max_bridge_length": "30"
+   },
+   "ops": [
+    {
+     "tab": "Support",
+     "tab_hint": "support",
+     "op": "checkbox",
+     "label": "Enable",
+     "value": true,
+     "group": "Support"
+    },
+    {
+     "op": "combo",
+     "current": "Default",
+     "target": "Slim",
+     "group": "Support"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Tree support branch angle",
+      "branch angle"
+     ],
+     "value": "40",
+     "group": "Tree supports"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Support wall loops",
+      "wall loops"
+     ],
+     "value": "1",
+     "group": "Advanced"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Max bridge length",
+      "bridge length"
+     ],
+     "value": "30",
+     "group": "Advanced"
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "combo",
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_wall_generator",
+   "case_id": "param_260_wall_generator",
+   "goal": "Switch the wall generator to Arachne and set wall distribution count to 3, keeping minimum wall width 85%, minimum feature size 25%, wall transitioning threshold angle 10 deg, transition length 100% and transitioning filter margin 25%. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "wall_generator": "arachne",
+    "min_bead_width": "85%",
+    "min_feature_size": "25%",
+    "wall_distribution_count": "3",
+    "wall_transition_angle": "10",
+    "wall_transition_length": "100%",
+    "wall_transition_filter_deviation": "25%"
+   },
+   "ops": [
+    {
+     "tab": "Quality",
+     "tab_hint": "height",
+     "op": "combo",
+     "current": "Classic",
+     "target": "Arachne",
+     "group": "Wall generator"
+    },
+    {
+     "op": "float",
+     "label": [
+      "Wall distribution count",
+      "distribution count"
+     ],
+     "value": "3",
+     "group": "Wall generator"
+    }
+   ],
+   "kinds": [
+    "combo",
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  },
+  {
+   "scenario": "uia_param_wall_thin",
+   "case_id": "param_266_wall_thin",
+   "goal": "Set wall loops to 4 and enable detect thin wall. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "values": {
+    "wall_loops": "4",
+    "detect_thin_wall": "1"
+   },
+   "ops": [
+    {
+     "tab": "Strength",
+     "tab_hint": "loops",
+     "op": "float",
+     "label": "Wall loops",
+     "value": "4"
+    },
+    {
+     "op": "checkbox",
+     "label": "Detect",
+     "value": true
+    }
+   ],
+   "kinds": [
+    "checkbox",
+    "float"
+   ],
+   "field_ops": 0,
+   "app_conf": null
+  }
+ ]
+}
