@@ -6408,7 +6408,9 @@
    "find_row": "225446",
    "set_float": "230350",
    "set_checkbox": "231924",
-   "scroll_page": "012119"
+   "scroll_page": "012119",
+   "pick_combo": "014004 (older code) + 022226 / 022357 (final code)",
+   "pick_combo_attribution": "022226 + 022357"
   },
   "scroll_before_locate": {
    "what": "locate_row pages the options viewport down through the page scrollbar (b-scrollbar) before it gives up on a group title that is not on screen: AXPress, the down / up buttons found by measuring the knob after one press each; it stops at the end of the page",
@@ -6428,7 +6430,12 @@
    "before": "~ By layer",
    "readback": "~ By object",
    "taken_by": "open-down-return-keys",
-   "attribution": "014004's accepted take was the keys only because norm() refused 'v By object' (the glyph glued in front): the pointer take of that run had already painted it - see pick_combo_attribution"
+   "attribution": "014004's accepted take was the keys only because norm() refused 'v By object' (the glyph glued in front): the pointer take of that run had already painted it - see pick_combo_attribution",
+   "latest_runs": {
+    "pointer only": "022226",
+    "keys only": "022357"
+   },
+   "readback_latest": "v By object"
   },
   "scenarios": {
    "what": "one edit -> Save Project -> key read from the saved 3mf Metadata/project_settings.config",
@@ -6437,7 +6444,8 @@
      "run": "014352",
      "key": "layer_height",
      "value": "0.2",
-     "expected": "0.2"
+     "expected": "0.2",
+     "code": "ran on the title-test version, before the look-first scroll"
     },
     "thin-wall": {
      "run": "021310",
@@ -6495,9 +6503,22 @@
    "not_proved": {}
   },
   "not_proved": {
+   "scroll_to_inside_group": {
+    "status": "NOT PROVEN - scroll_to never paged inside a group",
+    "detail": "it stops at step 0 as soon as the group title is on screen and the row is not ('title on screen, row missing' reads as 'not on this page'): the Strength / Walls / 'Detect thin walls' row is the group's third row, below the viewport's lower edge - all three attempts of run 021310 (standard, Advanced, wide) stopped there; the thin-wall scenario passes only through the fallback chain (Advanced mode -> collapse Filaments -> resize), 136.0 s of the 240 s fuse",
+    "next_step": "let scroll_to keep paging when the title is on screen but the row is not (the row may sit lower in the same group), then re-run scenario thin-wall"
+   },
+   "pick_combo_ax_read_abort": {
+    "status": "OPEN - a harness AX read aborted 2 pick_combo runs at the cell click (014224, 021505); the older failed runs were not re-read",
+    "detail": "RuntimeError: Missing field position (Panel.geometry -> _mouse -> click), runs 014224 and 021505 (60.1 s); click() retries three times around _mouse but never repeats a half-sent click; scroll_to had reached the row in both. Not fixed; the other runs of the final code went through (022045, 022226, 022357)"
+   },
    "set_checkbox_after_scroll_change": {
-    "status": "OPEN - B4's proof predates the scroll change",
-    "detail": "the thin-wall scenario reaches the row since run 021310 (through Advanced mode + collapse + resize); the plain set_checkbox op was not re-run after the scroll change"
+    "status": "OPEN - the plain set_checkbox op (B4's proof 231924) was not re-run after the scroll change",
+    "detail": "the thin-wall scenario (021310) did tick the same row and read detect_thin_wall='1' from the saved 3mf on the current locate_row; the op's own check + uncheck + two-save round trip was not repeated"
+   },
+   "older_proofs_on_older_code": {
+    "status": "OPEN - five op proofs predate the final code",
+    "detail": "switch_tab, find_row, set_float, set_checkbox and scroll_page were proven before scroll_to / locate_row changed; they were not re-run on the final code"
    }
   },
   "ops": {
@@ -6523,11 +6544,9 @@
    },
    "pick_combo": {
     "ok": true,
-    "record": "014004 (the proving run)",
-    "last_attempt": "014224 (aborted, see pick_combo:rerun)",
-    "screenshots": 16,
-    "take-pointer": "022226",
-    "take-keys": "022357"
+    "record": "014004 (the proving run, older code)",
+    "last_run": "022226",
+    "reruns": "014224 aborted (pick_combo:rerun); 022226 pointer only, 022357 keys only"
    },
    "scroll_page": {
     "ok": true,
@@ -6548,8 +6567,11 @@
    "scenario:print-sequence": {
     "ok": true,
     "last_run": "022045",
-    "runs": 3,
-    "screenshots": 16
+    "screenshots": 16,
+    "failed_runs": [
+     "021505",
+     "021750"
+    ]
    },
    "pick_combo:take-pointer": {
     "ok": true,
@@ -6562,8 +6584,8 @@
     "screenshots": 16
    }
   },
-  "summary_written_at": "2026-11-24 02:24:06",
-  "code_after_the_proof": "scroll_to / locate_row changed three times after run 014004 (title test like find_row, look before paging, click retry on a missed AX read): pick_combo was not re-run on the final code; scenario layer-height (014352) ran on the title-test version",
+  "summary_written_at": "2026-11-24 02:25:24",
+  "code_after_the_proof": "final code = look-first scroll + painted_is() + pick_combo --take. On the final code: pick_combo pointer / keys (022226 / 022357) and scenario print-sequence (022045). One step behind it (no painted_is, no --take; neither is on that path): scenario thin-wall (021310). Older: the five op proofs and scenario layer-height (014352)",
   "pick_combo_attribution": {
    "status": "ISOLATED - the pointer click completes the pick; it is also the first input of the full sequence, so the keys that follow it are redundant",
    "what": "two runs, one input each (pick_combo --take, the switch read back from each run's launch job); the row's painted value is read after that input alone",
@@ -6607,6 +6629,46 @@
     ],
     "last_error": null
    }
+  },
+  "harness_notes": [
+   "the supervisor needs Python >= 3.10 (.venv/bin/python 3.11): /usr/bin/python3 3.9 stops in harness/profile.py ('Path | None') at staging, before any record or GUI launch",
+   "a supervisor timeout leaves the test instance running: supervise() calls close_owned with the unresolved temp path (/var/folders/...) while the instance was launched with the resolved one (/private/var/...), so the match fails - by code reading, not re-tested; the instance of run 015828 (pid 39221) was still alive at 02:07",
+   "record() files every run of an op under one key: each pick_combo run overwrote the previous record (014004 was overwritten by 022226, that by 022357); the four records were re-keyed by hand (pick_combo, pick_combo:rerun, pick_combo:take-pointer, pick_combo:take-keys)"
+  ],
+  "loop_2026_11_24": {
+   "runs": [
+    {
+     "op": "scenario:thin-wall",
+     "stamp": "021310",
+     "ok": true
+    },
+    {
+     "op": "scenario:print-sequence",
+     "stamp": "021505",
+     "ok": false
+    },
+    {
+     "op": "scenario:print-sequence",
+     "stamp": "021750",
+     "ok": false
+    },
+    {
+     "op": "scenario:print-sequence",
+     "stamp": "022045",
+     "ok": true
+    },
+    {
+     "op": "pick_combo",
+     "stamp": "022226",
+     "ok": true
+    },
+    {
+     "op": "pick_combo",
+     "stamp": "022357",
+     "ok": true
+    }
+   ],
+   "session_note": "02:08, before the first run: two leftover test instances were killed by matching the harness datadir prefix - pid 39221 (run 015828's, inspected first) and pid 44384 (matched by the same pattern, NOT inspected first; no work dir, launchd job, worker or second boot log accounts for it - origin unknown)"
   }
  }
 }
