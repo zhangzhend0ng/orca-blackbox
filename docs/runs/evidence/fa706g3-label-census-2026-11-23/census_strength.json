@@ -1,0 +1,5967 @@
+{
+ "tab": "Strength",
+ "version": "2.3.5-nightly",
+ "build": "01.10.01.50",
+ "captured": "2026-11-23 12:47",
+ "channel": "zcode_gui_task session-1 worker: real SendInput wheel (1 notch/step, >=550ms settle), PrintWindow capture, pytesseract eng psm=6 scale=3",
+ "psm": 6,
+ "walks": 2,
+ "wheel_steps": 240,
+ "scroll_px_per_notch": 60,
+ "row_y_space": "page-absolute px reconstructed from frame displacement; viewport y = row y - offset of the frame it was read in",
+ "rows": [
+  {
+   "text": "= Walls “",
+   "y": 723
+  },
+  {
+   "text": "Wall loops 2",
+   "y": 758
+  },
+  {
+   "text": "Alternate extra wall",
+   "y": 788
+  },
+  {
+   "text": "Detect thin walls",
+   "y": 818
+  },
+  {
+   "text": "= Top/bottom shells",
+   "y": 849
+  },
+  {
+   "text": "Top surface pattern",
+   "y": 884
+  },
+  {
+   "text": "°",
+   "y": 904
+  },
+  {
+   "text": "Top shell layers 3 layers",
+   "y": 914
+  },
+  {
+   "text": "Top shell thickness 0.8 mm",
+   "y": 944
+  },
+  {
+   "text": "°",
+   "y": 964
+  },
+  {
+   "text": "Bottom surface pattern",
+   "y": 974
+  },
+  {
+   "text": "Bottom shell layers 3 layers",
+   "y": 1004
+  },
+  {
+   "text": "¥",
+   "y": 1028
+  },
+  {
+   "text": "Bottom shell thickness 0",
+   "y": 1034
+  },
+  {
+   "text": "mm",
+   "y": 1040
+  },
+  {
+   "text": "Top/Bottom solid infill/wall 25",
+   "y": 1064
+  },
+  {
+   "text": "overlap * “",
+   "y": 1082
+  },
+  {
+   "text": "‘",
+   "y": 1144
+  },
+  {
+   "text": "Sparse infill density 15 %",
+   "y": 1148
+  },
+  {
+   "text": "Fill Multiline ~ 4",
+   "y": 1178
+  },
+  {
+   "text": "*",
+   "y": 1204
+  },
+  {
+   "text": "Sparse infill pattern",
+   "y": 1208
+  },
+  {
+   "text": "Sparse infill direction 45",
+   "y": 1238
+  },
+  {
+   "text": "Sparse infill rotation",
+   "y": 1268
+  },
+  {
+   "text": "template",
+   "y": 1286
+  },
+  {
+   "text": "Maximum length of theinfill 20",
+   "y": 1316
+  },
+  {
+   "text": "Maximum A",
+   "y": 1318
+  },
+  {
+   "text": "_ mmor%",
+   "y": 1330
+  },
+  {
+   "text": "Sparse infill anchor length ~ or %",
+   "y": 1364
+  },
+  {
+   "text": "°",
+   "y": 1384
+  },
+  {
+   "text": "Internal solid infill pattern",
+   "y": 1394
+  },
+  {
+   "text": "Solid infill direction 45 °",
+   "y": 1424
+  },
+  {
+   "text": "°",
+   "y": 1444
+  },
+  {
+   "text": "Solid infill rotation template",
+   "y": 1454
+  },
+  {
+   "text": "Apply gap fill ~ Top and bot...",
+   "y": 1484
+  },
+  {
+   "text": "Filter out tiny gaps 1",
+   "y": 1514
+  },
+  {
+   "text": "mm",
+   "y": 1520
+  },
+  {
+   "text": "Infill/wall overlap 15 %",
+   "y": 1543
+  },
+  {
+   "text": "v",
+   "y": 1568
+  },
+  {
+   "text": "2 Advanced",
+   "y": 1576
+  },
+  {
+   "text": "Align infill direction to",
+   "y": 1610
+  },
+  {
+   "text": "model “",
+   "y": 1626
+  },
+  {
+   "text": "model",
+   "y": 1628
+  },
+  {
+   "text": "*",
+   "y": 1644
+  },
+  {
+   "text": "Insert solid layers",
+   "y": 1658
+  },
+  {
+   "text": "External bridge infill 0",
+   "y": 1688
+  },
+  {
+   "text": "0",
+   "y": 1697
+  },
+  {
+   "text": "direction",
+   "y": 1706
+  },
+  {
+   "text": "Internal bridge infill 0",
+   "y": 1736
+  },
+  {
+   "text": "0",
+   "y": 1745
+  },
+  {
+   "text": "direction",
+   "y": 1754
+  },
+  {
+   "text": "Minimum sparse infill 15",
+   "y": 1784
+  },
+  {
+   "text": "threshold 15 mm",
+   "y": 1797
+  },
+  {
+   "text": "v",
+   "y": 1808
+  },
+  {
+   "text": "Infill combination",
+   "y": 1831
+  },
+  {
+   "text": "Detect narrow internal solid",
+   "y": 1862
+  },
+  {
+   "text": "“",
+   "y": 1868
+  },
+  {
+   "text": "infill",
+   "y": 1879
+  },
+  {
+   "text": "Ensure vertical shell",
+   "y": 1910
+  },
+  {
+   "text": "All",
+   "y": 1919
+  },
+  {
+   "text": "thickness",
+   "y": 1928
+  }
+ ],
+ "row_count": 61,
+ "frames": [
+  {
+   "step": 0,
+   "offset": 0,
+   "lines": [
+    [
+     "= Walls “",
+     723
+    ],
+    [
+     "Wall loops 2",
+     758
+    ],
+    [
+     "Alternate extra wall",
+     788
+    ],
+    [
+     "Detect thin walls",
+     818
+    ],
+    [
+     "= Top/bottom shells",
+     849
+    ],
+    [
+     "Top surface pattern",
+     884
+    ],
+    [
+     "Top shell layers 3 layers",
+     914
+    ],
+    [
+     "Top shell thickness 0.8 mm",
+     944
+    ],
+    [
+     "Bottom surface pattern",
+     974
+    ],
+    [
+     "Bottom shell layers 3 layers",
+     1004
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 1,
+   "offset": 60,
+   "lines": [
+    [
+     "Alternate extra wall",
+     728
+    ],
+    [
+     "Detect thin walls",
+     758
+    ],
+    [
+     "= Top/bottom shells",
+     789
+    ],
+    [
+     "Top surface pattern",
+     824
+    ],
+    [
+     "Top shell layers 3 layers",
+     854
+    ],
+    [
+     "Top shell thickness",
+     884
+    ],
+    [
+     "Bottom surface pattern",
+     914
+    ],
+    [
+     "Bottom shell layers 3 layers",
+     944
+    ],
+    [
+     "Bottom shell thickness 0",
+     974
+    ],
+    [
+     "mm",
+     980
+    ],
+    [
+     "Top/Bottom solid infill/wall 25",
+     1004
+    ],
+    [
+     "overlap",
+     1022
+    ]
+   ]
+  },
+  {
+   "step": 2,
+   "offset": 120,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "= Top/bottom shells",
+     729
+    ],
+    [
+     "Top surface pattern",
+     764
+    ],
+    [
+     "Top shell layers 3 layers",
+     794
+    ],
+    [
+     "Top shell thickness 0.8 mm",
+     824
+    ],
+    [
+     "Bottom surface pattern",
+     854
+    ],
+    [
+     "Bottom shell layers",
+     884
+    ],
+    [
+     "Bottom shell thickness 0",
+     914
+    ],
+    [
+     "mm",
+     920
+    ],
+    [
+     "Top/Bottom solid infill/wall 25",
+     944
+    ],
+    [
+     "overlap",
+     962
+    ]
+   ]
+  },
+  {
+   "step": 3,
+   "offset": 180,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Top shell layers 3 layers",
+     734
+    ],
+    [
+     "Top shell thickness 0.8 mm",
+     764
+    ],
+    [
+     "Bottom surface pattern",
+     794
+    ],
+    [
+     "Bottom shell layers 3 layers",
+     824
+    ],
+    [
+     "Bottom shell thickness 0",
+     854
+    ],
+    [
+     "mm",
+     860
+    ],
+    [
+     "Top/Bottom solid infill/wall 25",
+     884
+    ],
+    [
+     "overlap %",
+     902
+    ],
+    [
+     "Sparse infill density 15 %",
+     968
+    ],
+    [
+     "Fill Multiline 41",
+     998
+    ]
+   ]
+  },
+  {
+   "step": 4,
+   "offset": 240,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Bottom surface pattern",
+     734
+    ],
+    [
+     "Bottom shell layers 3 layers",
+     764
+    ],
+    [
+     "Bottom shell thickness 0",
+     794
+    ],
+    [
+     "mm",
+     800
+    ],
+    [
+     "Top/Bottom solid infill/wall 25",
+     824
+    ],
+    [
+     "overlap %",
+     842
+    ],
+    [
+     "Sparse infill density 15 %",
+     908
+    ],
+    [
+     "Fill Multiline 41",
+     938
+    ],
+    [
+     "Sparse infill pattern",
+     968
+    ],
+    [
+     "Sparse infill direction 45",
+     998
+    ]
+   ]
+  },
+  {
+   "step": 5,
+   "offset": 300,
+   "lines": [
+    [
+     "Bottom shell thickness 0",
+     734
+    ],
+    [
+     "mm",
+     740
+    ],
+    [
+     "Top/Bottom solid infill/wall 25",
+     764
+    ],
+    [
+     "overlap %",
+     782
+    ],
+    [
+     "Sparse infill density 15 %",
+     848
+    ],
+    [
+     "Fill Multiline",
+     878
+    ],
+    [
+     "Sparse infill pattern",
+     908
+    ],
+    [
+     "Sparse infill direction 45",
+     938
+    ],
+    [
+     "Sparse infill rotation",
+     968
+    ],
+    [
+     "template",
+     986
+    ],
+    [
+     "Maximum length of 20",
+     1016
+    ],
+    [
+     "_ mmor%",
+     1030
+    ]
+   ]
+  },
+  {
+   "step": 6,
+   "offset": 360,
+   "lines": [
+    [
+     "overlap * “",
+     722
+    ],
+    [
+     "Sparse infill density 15 %",
+     788
+    ],
+    [
+     "Fill Multiline ~ 4",
+     818
+    ],
+    [
+     "Sparse infill pattern",
+     848
+    ],
+    [
+     "Sparse infill direction",
+     878
+    ],
+    [
+     "Sparse infill rotation",
+     908
+    ],
+    [
+     "template",
+     926
+    ],
+    [
+     "Maximum length of theinfill 20",
+     956
+    ],
+    [
+     "mmor%",
+     968
+    ],
+    [
+     "Sparse infill anchor length ~ or %",
+     1004
+    ]
+   ]
+  },
+  {
+   "step": 7,
+   "offset": 420,
+   "lines": [
+    [
+     "‘",
+     724
+    ],
+    [
+     "Sparse infill density 15 %",
+     728
+    ],
+    [
+     "Fill Multiline ~ 4",
+     758
+    ],
+    [
+     "Sparse infill pattern",
+     788
+    ],
+    [
+     "Sparse infill direction 45",
+     818
+    ],
+    [
+     "Sparse infill rotation",
+     848
+    ],
+    [
+     "template",
+     866
+    ],
+    [
+     "Maximum length of theinfill 20",
+     896
+    ],
+    [
+     "mmor%",
+     908
+    ],
+    [
+     "%",
+     942
+    ],
+    [
+     "Sparse infill anchor length ~ or",
+     944
+    ],
+    [
+     "Internal solid infill pattern",
+     974
+    ],
+    [
+     "Solid infill direction 45 °",
+     1004
+    ]
+   ]
+  },
+  {
+   "step": 8,
+   "offset": 480,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Sparse infill pattern",
+     728
+    ],
+    [
+     "Sparse infill direction 45",
+     758
+    ],
+    [
+     "Sparse infill rotation",
+     788
+    ],
+    [
+     "template",
+     806
+    ],
+    [
+     "Maximum length of theinfill 20",
+     836
+    ],
+    [
+     "mmor%",
+     848
+    ],
+    [
+     "Sparse infill anchor length",
+     884
+    ],
+    [
+     "Internal solid infill pattern",
+     914
+    ],
+    [
+     "Solid infill direction 45 °",
+     944
+    ],
+    [
+     "Solid infill rotation template",
+     974
+    ],
+    [
+     "Apply gap fill ~ Top and bot...",
+     1004
+    ],
+    [
+     ". v",
+     1034
+    ]
+   ]
+  },
+  {
+   "step": 9,
+   "offset": 540,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Sparse infill rotation",
+     728
+    ],
+    [
+     "template",
+     746
+    ],
+    [
+     "Maximum length of theinfill 20",
+     776
+    ],
+    [
+     "mmor%",
+     788
+    ],
+    [
+     "%",
+     822
+    ],
+    [
+     "Sparse infill anchor length ~ or",
+     824
+    ],
+    [
+     "Internal solid infill pattern",
+     854
+    ],
+    [
+     "Solid infill direction",
+     884
+    ],
+    [
+     "Solid infill rotation template",
+     914
+    ],
+    [
+     "Apply gap fill ~ Top and bot...",
+     944
+    ],
+    [
+     "Filter out tiny gaps 1",
+     974
+    ],
+    [
+     "mm",
+     980
+    ],
+    [
+     "Infill/wall overlap 15 %",
+     1003
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 10,
+   "offset": 600,
+   "lines": [
+    [
+     "Maximum A",
+     718
+    ],
+    [
+     "Sparse infill anchor length ~ or %",
+     764
+    ],
+    [
+     "Internal solid infill pattern",
+     794
+    ],
+    [
+     "Solid infill direction 45 °",
+     824
+    ],
+    [
+     "Solid infill rotation template",
+     854
+    ],
+    [
+     "Apply gap fill",
+     884
+    ],
+    [
+     "Filter out tiny gaps 1",
+     914
+    ],
+    [
+     "mm",
+     920
+    ],
+    [
+     "Infill/wall overlap 15 %",
+     943
+    ],
+    [
+     "Advanced",
+     978
+    ],
+    [
+     "Align infill direction to",
+     1010
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 11,
+   "offset": 660,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Internal solid infill pattern",
+     734
+    ],
+    [
+     "Solid infill direction 45",
+     764
+    ],
+    [
+     "Solid infill rotation template",
+     794
+    ],
+    [
+     "Apply gap fill ~ Top and bot...",
+     824
+    ],
+    [
+     "Filter out tiny gaps 1",
+     854
+    ],
+    [
+     "mm",
+     860
+    ],
+    [
+     "Infill/wall overlap",
+     883
+    ],
+    [
+     "Advanced",
+     918
+    ],
+    [
+     "Align infill direction to",
+     950
+    ],
+    [
+     "model",
+     968
+    ],
+    [
+     "Insert solid layers",
+     998
+    ]
+   ]
+  },
+  {
+   "step": 12,
+   "offset": 720,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Solid infill rotation template",
+     734
+    ],
+    [
+     "Apply gap fill ~ Top and bot...",
+     764
+    ],
+    [
+     "Filter out tiny gaps 1",
+     794
+    ],
+    [
+     "mm",
+     800
+    ],
+    [
+     "Infill/wall overlap 15 %",
+     823
+    ],
+    [
+     "Advanced",
+     858
+    ],
+    [
+     "Align infill direction to",
+     890
+    ],
+    [
+     "model",
+     908
+    ],
+    [
+     "Insert solid layers",
+     938
+    ],
+    [
+     "infill",
+     965
+    ],
+    [
+     "External bridge 0",
+     968
+    ],
+    [
+     "direction",
+     986
+    ],
+    [
+     "infill",
+     1013
+    ],
+    [
+     "Internal bridge 0",
+     1016
+    ]
+   ]
+  },
+  {
+   "step": 13,
+   "offset": 780,
+   "lines": [
+    [
+     "Filter out tiny gaps 1",
+     734
+    ],
+    [
+     "mm",
+     740
+    ],
+    [
+     "Infill/wall overlap 15 %",
+     763
+    ],
+    [
+     "2 Advanced",
+     796
+    ],
+    [
+     "Align infill direction to",
+     830
+    ],
+    [
+     "model",
+     848
+    ],
+    [
+     "External bridge infill 0",
+     908
+    ],
+    [
+     "direction",
+     926
+    ],
+    [
+     "Internal bridge infill 0",
+     956
+    ],
+    [
+     "direction",
+     974
+    ],
+    [
+     "Minimum sparse infill 15",
+     1004
+    ],
+    [
+     "threshold",
+     1017
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 14,
+   "offset": 840,
+   "lines": [
+    [
+     "2",
+     736
+    ],
+    [
+     "Advanced",
+     738
+    ],
+    [
+     "Align infill direction to",
+     770
+    ],
+    [
+     "model",
+     788
+    ],
+    [
+     "Insert solid layers",
+     818
+    ],
+    [
+     "External bridge infill 0",
+     848
+    ],
+    [
+     "direction",
+     866
+    ],
+    [
+     "Internal bridge infill 0",
+     896
+    ],
+    [
+     "direction",
+     914
+    ],
+    [
+     "Minimum sparse infill 15",
+     944
+    ],
+    [
+     "threshold",
+     957
+    ],
+    [
+     "Infill combination",
+     991
+    ],
+    [
+     "Detect narrow internal solid",
+     1022
+    ],
+    [
+     "“",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 15,
+   "offset": 900,
+   "lines": [
+    [
+     "model “",
+     726
+    ],
+    [
+     "Insert solid layers",
+     758
+    ],
+    [
+     "External bridge infill 0",
+     788
+    ],
+    [
+     "direction",
+     806
+    ],
+    [
+     "Internal bridge infill 0",
+     836
+    ],
+    [
+     "direction",
+     854
+    ],
+    [
+     "Minimum sparse infill 15",
+     884
+    ],
+    [
+     "threshold mm",
+     897
+    ],
+    [
+     "Infill combination",
+     931
+    ],
+    [
+     "Detect narrow internal solid",
+     962
+    ],
+    [
+     "infill",
+     979
+    ],
+    [
+     "Ensure vertical shell",
+     1010
+    ],
+    [
+     "All",
+     1019
+    ]
+   ]
+  },
+  {
+   "step": 16,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 17,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 18,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 19,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 20,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 21,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 22,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 23,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 24,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 25,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 26,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 27,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 28,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 29,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 30,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 31,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 32,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 33,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 34,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 35,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 36,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 37,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 38,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 39,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 40,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 41,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 42,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 43,
+   "offset": 0,
+   "lines": [
+    [
+     "= Walls “",
+     723
+    ],
+    [
+     "Wall loops 2",
+     758
+    ],
+    [
+     "Alternate extra wall",
+     788
+    ],
+    [
+     "Detect thin walls",
+     818
+    ],
+    [
+     "= Top/bottom shells",
+     849
+    ],
+    [
+     "Top surface pattern",
+     884
+    ],
+    [
+     "Top shell layers 3 layers",
+     914
+    ],
+    [
+     "Top shell thickness 0.8 mm",
+     944
+    ],
+    [
+     "Bottom surface pattern",
+     974
+    ],
+    [
+     "Bottom shell layers 3 layers",
+     1004
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 44,
+   "offset": 60,
+   "lines": [
+    [
+     "Alternate extra wall",
+     728
+    ],
+    [
+     "Detect thin walls",
+     758
+    ],
+    [
+     "= Top/bottom shells",
+     789
+    ],
+    [
+     "Top surface pattern",
+     824
+    ],
+    [
+     "Top shell layers 3 layers",
+     854
+    ],
+    [
+     "Top shell thickness",
+     884
+    ],
+    [
+     "Bottom surface pattern",
+     914
+    ],
+    [
+     "Bottom shell layers 3 layers",
+     944
+    ],
+    [
+     "Bottom shell thickness 0",
+     974
+    ],
+    [
+     "mm",
+     980
+    ],
+    [
+     "Top/Bottom solid infill/wall 25",
+     1004
+    ],
+    [
+     "overlap",
+     1022
+    ]
+   ]
+  },
+  {
+   "step": 45,
+   "offset": 120,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "= Top/bottom shells",
+     729
+    ],
+    [
+     "Top surface pattern",
+     764
+    ],
+    [
+     "Top shell layers 3 layers",
+     794
+    ],
+    [
+     "Top shell thickness 0.8 mm",
+     824
+    ],
+    [
+     "Bottom surface pattern",
+     854
+    ],
+    [
+     "Bottom shell layers",
+     884
+    ],
+    [
+     "Bottom shell thickness 0",
+     914
+    ],
+    [
+     "mm",
+     920
+    ],
+    [
+     "Top/Bottom solid infill/wall 25",
+     944
+    ],
+    [
+     "overlap",
+     962
+    ]
+   ]
+  },
+  {
+   "step": 46,
+   "offset": 180,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Top shell layers 3 layers",
+     734
+    ],
+    [
+     "Top shell thickness 0.8 mm",
+     764
+    ],
+    [
+     "Bottom surface pattern",
+     794
+    ],
+    [
+     "Bottom shell layers 3 layers",
+     824
+    ],
+    [
+     "Bottom shell thickness 0",
+     854
+    ],
+    [
+     "mm",
+     860
+    ],
+    [
+     "Top/Bottom solid infill/wall 25",
+     884
+    ],
+    [
+     "overlap %",
+     902
+    ],
+    [
+     "Sparse infill density 15 %",
+     968
+    ],
+    [
+     "Fill Multiline 41",
+     998
+    ]
+   ]
+  },
+  {
+   "step": 47,
+   "offset": 240,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Bottom surface pattern",
+     734
+    ],
+    [
+     "Bottom shell layers 3 layers",
+     764
+    ],
+    [
+     "Bottom shell thickness 0",
+     794
+    ],
+    [
+     "mm",
+     800
+    ],
+    [
+     "Top/Bottom solid infill/wall 25",
+     824
+    ],
+    [
+     "overlap %",
+     842
+    ],
+    [
+     "Sparse infill density 15 %",
+     908
+    ],
+    [
+     "Fill Multiline 41",
+     938
+    ],
+    [
+     "Sparse infill pattern",
+     968
+    ],
+    [
+     "Sparse infill direction 45",
+     998
+    ]
+   ]
+  },
+  {
+   "step": 48,
+   "offset": 300,
+   "lines": [
+    [
+     "Bottom shell thickness 0",
+     734
+    ],
+    [
+     "mm",
+     740
+    ],
+    [
+     "Top/Bottom solid infill/wall 25",
+     764
+    ],
+    [
+     "overlap %",
+     782
+    ],
+    [
+     "Sparse infill density 15 %",
+     848
+    ],
+    [
+     "Fill Multiline",
+     878
+    ],
+    [
+     "Sparse infill pattern",
+     908
+    ],
+    [
+     "Sparse infill direction 45",
+     938
+    ],
+    [
+     "Sparse infill rotation",
+     968
+    ],
+    [
+     "template",
+     986
+    ],
+    [
+     "Maximum length of 20",
+     1016
+    ],
+    [
+     "_ mmor%",
+     1030
+    ]
+   ]
+  },
+  {
+   "step": 49,
+   "offset": 360,
+   "lines": [
+    [
+     "overlap * “",
+     722
+    ],
+    [
+     "Sparse infill density 15 %",
+     788
+    ],
+    [
+     "Fill Multiline ~ 4",
+     818
+    ],
+    [
+     "Sparse infill pattern",
+     848
+    ],
+    [
+     "Sparse infill direction",
+     878
+    ],
+    [
+     "Sparse infill rotation",
+     908
+    ],
+    [
+     "template",
+     926
+    ],
+    [
+     "Maximum length of theinfill 20",
+     956
+    ],
+    [
+     "mmor%",
+     968
+    ],
+    [
+     "Sparse infill anchor length ~ or %",
+     1004
+    ]
+   ]
+  },
+  {
+   "step": 50,
+   "offset": 420,
+   "lines": [
+    [
+     "‘",
+     724
+    ],
+    [
+     "Sparse infill density 15 %",
+     728
+    ],
+    [
+     "Fill Multiline ~ 4",
+     758
+    ],
+    [
+     "Sparse infill pattern",
+     788
+    ],
+    [
+     "Sparse infill direction 45",
+     818
+    ],
+    [
+     "Sparse infill rotation",
+     848
+    ],
+    [
+     "template",
+     866
+    ],
+    [
+     "Maximum length of theinfill 20",
+     896
+    ],
+    [
+     "mmor%",
+     908
+    ],
+    [
+     "%",
+     942
+    ],
+    [
+     "Sparse infill anchor length ~ or",
+     944
+    ],
+    [
+     "Internal solid infill pattern",
+     974
+    ],
+    [
+     "Solid infill direction 45 °",
+     1004
+    ]
+   ]
+  },
+  {
+   "step": 51,
+   "offset": 480,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Sparse infill pattern",
+     728
+    ],
+    [
+     "Sparse infill direction 45",
+     758
+    ],
+    [
+     "Sparse infill rotation",
+     788
+    ],
+    [
+     "template",
+     806
+    ],
+    [
+     "Maximum length of theinfill 20",
+     836
+    ],
+    [
+     "mmor%",
+     848
+    ],
+    [
+     "Sparse infill anchor length",
+     884
+    ],
+    [
+     "Internal solid infill pattern",
+     914
+    ],
+    [
+     "Solid infill direction 45 °",
+     944
+    ],
+    [
+     "Solid infill rotation template",
+     974
+    ],
+    [
+     "Apply gap fill ~ Top and bot...",
+     1004
+    ],
+    [
+     ". v",
+     1034
+    ]
+   ]
+  },
+  {
+   "step": 52,
+   "offset": 540,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Sparse infill rotation",
+     728
+    ],
+    [
+     "template",
+     746
+    ],
+    [
+     "Maximum length of theinfill 20",
+     776
+    ],
+    [
+     "mmor%",
+     788
+    ],
+    [
+     "%",
+     822
+    ],
+    [
+     "Sparse infill anchor length ~ or",
+     824
+    ],
+    [
+     "Internal solid infill pattern",
+     854
+    ],
+    [
+     "Solid infill direction",
+     884
+    ],
+    [
+     "Solid infill rotation template",
+     914
+    ],
+    [
+     "Apply gap fill ~ Top and bot...",
+     944
+    ],
+    [
+     "Filter out tiny gaps 1",
+     974
+    ],
+    [
+     "mm",
+     980
+    ],
+    [
+     "Infill/wall overlap 15 %",
+     1003
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 53,
+   "offset": 600,
+   "lines": [
+    [
+     "Maximum A",
+     718
+    ],
+    [
+     "Sparse infill anchor length ~ or %",
+     764
+    ],
+    [
+     "Internal solid infill pattern",
+     794
+    ],
+    [
+     "Solid infill direction 45 °",
+     824
+    ],
+    [
+     "Solid infill rotation template",
+     854
+    ],
+    [
+     "Apply gap fill",
+     884
+    ],
+    [
+     "Filter out tiny gaps 1",
+     914
+    ],
+    [
+     "mm",
+     920
+    ],
+    [
+     "Infill/wall overlap 15 %",
+     943
+    ],
+    [
+     "Advanced",
+     978
+    ],
+    [
+     "Align infill direction to",
+     1010
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 54,
+   "offset": 660,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Internal solid infill pattern",
+     734
+    ],
+    [
+     "Solid infill direction 45",
+     764
+    ],
+    [
+     "Solid infill rotation template",
+     794
+    ],
+    [
+     "Apply gap fill ~ Top and bot...",
+     824
+    ],
+    [
+     "Filter out tiny gaps 1",
+     854
+    ],
+    [
+     "mm",
+     860
+    ],
+    [
+     "Infill/wall overlap",
+     883
+    ],
+    [
+     "Advanced",
+     918
+    ],
+    [
+     "Align infill direction to",
+     950
+    ],
+    [
+     "model",
+     968
+    ],
+    [
+     "Insert solid layers",
+     998
+    ]
+   ]
+  },
+  {
+   "step": 55,
+   "offset": 720,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Solid infill rotation template",
+     734
+    ],
+    [
+     "Apply gap fill ~ Top and bot...",
+     764
+    ],
+    [
+     "Filter out tiny gaps 1",
+     794
+    ],
+    [
+     "mm",
+     800
+    ],
+    [
+     "Infill/wall overlap 15 %",
+     823
+    ],
+    [
+     "Advanced",
+     858
+    ],
+    [
+     "Align infill direction to",
+     890
+    ],
+    [
+     "model",
+     908
+    ],
+    [
+     "Insert solid layers",
+     938
+    ],
+    [
+     "infill",
+     965
+    ],
+    [
+     "External bridge 0",
+     968
+    ],
+    [
+     "direction",
+     986
+    ],
+    [
+     "infill",
+     1013
+    ],
+    [
+     "Internal bridge 0",
+     1016
+    ]
+   ]
+  },
+  {
+   "step": 56,
+   "offset": 780,
+   "lines": [
+    [
+     "Filter out tiny gaps 1",
+     734
+    ],
+    [
+     "mm",
+     740
+    ],
+    [
+     "Infill/wall overlap 15 %",
+     763
+    ],
+    [
+     "2 Advanced",
+     796
+    ],
+    [
+     "Align infill direction to",
+     830
+    ],
+    [
+     "model",
+     848
+    ],
+    [
+     "External bridge infill 0",
+     908
+    ],
+    [
+     "direction",
+     926
+    ],
+    [
+     "Internal bridge infill 0",
+     956
+    ],
+    [
+     "direction",
+     974
+    ],
+    [
+     "Minimum sparse infill 15",
+     1004
+    ],
+    [
+     "threshold",
+     1017
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 57,
+   "offset": 840,
+   "lines": [
+    [
+     "2",
+     736
+    ],
+    [
+     "Advanced",
+     738
+    ],
+    [
+     "Align infill direction to",
+     770
+    ],
+    [
+     "model",
+     788
+    ],
+    [
+     "Insert solid layers",
+     818
+    ],
+    [
+     "External bridge infill 0",
+     848
+    ],
+    [
+     "direction",
+     866
+    ],
+    [
+     "Internal bridge infill 0",
+     896
+    ],
+    [
+     "direction",
+     914
+    ],
+    [
+     "Minimum sparse infill 15",
+     944
+    ],
+    [
+     "threshold",
+     957
+    ],
+    [
+     "Infill combination",
+     991
+    ],
+    [
+     "Detect narrow internal solid",
+     1022
+    ],
+    [
+     "“",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 58,
+   "offset": 900,
+   "lines": [
+    [
+     "model “",
+     726
+    ],
+    [
+     "Insert solid layers",
+     758
+    ],
+    [
+     "External bridge infill 0",
+     788
+    ],
+    [
+     "direction",
+     806
+    ],
+    [
+     "Internal bridge infill 0",
+     836
+    ],
+    [
+     "direction",
+     854
+    ],
+    [
+     "Minimum sparse infill 15",
+     884
+    ],
+    [
+     "threshold mm",
+     897
+    ],
+    [
+     "Infill combination",
+     931
+    ],
+    [
+     "Detect narrow internal solid",
+     962
+    ],
+    [
+     "infill",
+     979
+    ],
+    [
+     "Ensure vertical shell",
+     1010
+    ],
+    [
+     "All",
+     1019
+    ]
+   ]
+  },
+  {
+   "step": 59,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 60,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 61,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 62,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 63,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 64,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 65,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 66,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 67,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 68,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 69,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 70,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 71,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 72,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 73,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 74,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 75,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 76,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 77,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 78,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 79,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 80,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 81,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 82,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 83,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 84,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold 15 mm",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  },
+  {
+   "step": 85,
+   "offset": 920,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Insert solid layers",
+     738
+    ],
+    [
+     "External bridge infill",
+     768
+    ],
+    [
+     "0",
+     777
+    ],
+    [
+     "direction",
+     786
+    ],
+    [
+     "Internal bridge infill",
+     816
+    ],
+    [
+     "0",
+     825
+    ],
+    [
+     "direction",
+     834
+    ],
+    [
+     "Minimum sparse infill",
+     864
+    ],
+    [
+     "threshold mu",
+     877
+    ],
+    [
+     "Infill combination",
+     911
+    ],
+    [
+     "Detect internal solid",
+     942
+    ],
+    [
+     "narrow",
+     945
+    ],
+    [
+     "infill",
+     959
+    ],
+    [
+     "Ensure vertical shell",
+     990
+    ],
+    [
+     "All",
+     999
+    ],
+    [
+     "thickness",
+     1008
+    ]
+   ]
+  }
+ ],
+ "shots": [
+  "census_strength_top.png",
+  "census_strength_mid.png",
+  "census_strength_bottom.png"
+ ],
+ "notes": [
+  "walk1 top after 22 up-rolls: ['= Walls “', 'Wall loops 2', 'Alternate extra wall']",
+  "walk1: low-hover moved",
+  "walk1: low-hover moved",
+  "walk1: low-hover moved",
+  "walk1: low-hover moved",
+  "walk1: low-hover moved",
+  "walk1: low-hover moved",
+  "walk1: low-hover moved",
+  "walk1: low-hover moved",
+  "walk1: low-hover moved",
+  "walk1: low-hover moved",
+  "walk1: low-hover moved",
+  "walk1: low-hover moved",
+  "walk1: low-hover moved",
+  "walk1: hit per-walk roll cap",
+  "walk2: low-hover moved",
+  "walk2: low-hover moved",
+  "walk2: low-hover moved",
+  "walk2: low-hover moved",
+  "walk2: low-hover moved",
+  "walk2: low-hover moved",
+  "walk2: low-hover moved",
+  "walk2: low-hover moved",
+  "walk2: low-hover moved",
+  "walk2: low-hover moved",
+  "walk2: low-hover moved",
+  "walk2: low-hover moved",
+  "walk2: low-hover moved",
+  "walk2: hit per-walk roll cap",
+  "bottom confirmed: stops [920, 920] agree within 60px"
+ ],
+ "raw": "OCR text preserved verbatim (misreads included) per task E spec"
+}
