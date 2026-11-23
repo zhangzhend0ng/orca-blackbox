@@ -60,7 +60,18 @@
 
 - ✅ **虚拟固件 API 通道补齐**（orca-virtual-u1 b1b063a）：`<sn>/request → <sn>/response`（u1-moonraker spec/mqtt.py 权威格式，api_qos=1）。补齐前 CLI 对 `printer.objects.list/subscribe` 全部 -32006 超时、web UI 设备页数据永远不就绪；补齐后 CLI cache 出现独立 `extruder` 对象（temperature/target/power/can_extrude）。
 - ✅ **`test_l2.py` 7/7 PASS**（温度/进度/文件名/故障/层号/离线/在线）：cache 级断言（= web UI 数据层消费的精确状态）；场景 7 含 broker 重启 → 自动重配对 → node-WS `action.device.connect`（**port=7125 必须显式**，CLI 存储端口陈旧为 53526）全链自动恢复。
-- ⚠️ **L2 UI 渲染层（canvas 文本）断言未达**：CLI web UI（Flutter CanvasKit）在本自动化环境**悬停可用、点击死**（CDP Input / agent-browser / OS SendInput / 语义节点点击全灭；Chrome+Edge 双浏览器对照；无 JS 异常、RPC 全应答）。另有三定律：页面 hidden（遮挡/副屏）→ 冻结渲染+忽略输入+语义树衰减，需 `Page.setWebLifecycleState('active')` + `setFocusEmulationEnabled(true)` 或启动标志 `--disable-backgrounding-occluded-windows --disable-features=CalculateNativeWinOcclusion`；语义树靠 `flt-semantics-placeholder` 点击（懒创建、reload 后重做）；断言备用通道 = Windows OCR（`ocr_words.ps1` 带词坐标）。工具已沉淀在 orca-virtual-u1 `tools/`（ocr_words.ps1 / ui_sem.sh / ws_watch.js / exc_watch.js）。破局路线见 orca-virtual-u1 `NEXT_SESSION_PROMPT.md`（用户手点一次导航 / Mac 侧开浏览器 / 接受数据链结论直进 L3）。
+- ⚠️（**当日晚已闭环，见本节末「L2 UI 渲染断言闭环」。以下为原始记录，其中“点击死”“glass pane 未初始化”两条结论已被纠正。**）**L2 UI 渲染层（canvas 文本）断言未达**：CLI web UI（Flutter CanvasKit）在本自动化环境**悬停可用、点击死**（CDP Input / agent-browser / OS SendInput / 语义节点点击全灭；Chrome+Edge 双浏览器对照；无 JS 异常、RPC 全应答）。另有三定律：页面 hidden（遮挡/副屏）→ 冻结渲染+忽略输入+语义树衰减，需 `Page.setWebLifecycleState('active')` + `setFocusEmulationEnabled(true)` 或启动标志 `--disable-backgrounding-occluded-windows --disable-features=CalculateNativeWinOcclusion`；语义树靠 `flt-semantics-placeholder` 点击（懒创建、reload 后重做）；断言备用通道 = Windows OCR（`ocr_words.ps1` 带词坐标）。工具已沉淀在 orca-virtual-u1 `tools/`（ocr_words.ps1 / ui_sem.sh / ws_watch.js / exc_watch.js）。破局路线见 orca-virtual-u1 `NEXT_SESSION_PROMPT.md`（用户手点一次导航 / Mac 侧开浏览器 / 接受数据链结论直进 L3）。
+
+### L2 UI 渲染断言闭环（2026-11-23 傍晚，SHADOW，宿主 dev 调试口径）
+
+- ✅ **`test_l2.py --ui` 17/17**（cache 8 + ui 9）：设备面板 web UI 的**实际渲染**被断言——温度（`210 / 215 °C`、`60 / 0 °C`）、进度（`35%`）、文件名、层（`34/68 layer`）、暂停（`Paused`）、故障（异常弹窗）、离线（离线弹窗 + 数据变占位）、在线（CLI **自行重连** 3–15s 后数据恢复）与恢复后的实时翻转（`80%`）。页面只开一次，之后全是实时更新断言。
+- ✅ **负对照 17/17**：每个 UI 检查先等正确预期成立，再要求同一页面状态下被篡改的预期失败。正向连续 4 次 17/17；cache-only 8/8。
+- **四钉收据**：SUT = CLI 自带设备面板 web UI `main.dart.js` sha256 `ce43ba92…2fbfc1`（`orca 1.10.0 build 20261116160427`）；CLI = `snapmaker_control_macos_arm64` sha256 `d7b813b0…38f44b`；mock 脚本 = `virtual_u1_mqtt.py` sha256 `a23b58a1…b21563`（本地=Mac）；剧本 = orca-virtual-u1 `c2b8046`（代码）+ `b505ca0`（文档）。
+- **断言通道**：语义树文本（精确，门禁）+ 进度条填充比例（截图像素解码，门禁：0.35 / 0.80）+ Windows OCR（旁证，非门禁——大号百分数读不出）。
+- **纠正上一轮四条**：① Control 按钮无需点击——监控页 URL 直达（`/web/flutter_web/index?tab=device_control&mode=1`，桌面内嵌入口）；该按钮的处理链是面向桌面宿主的 `refreshControl` 命令，浏览器里本就是空操作。② “glass pane 0×0 未初始化”是误判——渲染层在 shadow root 内，属该版引擎常态。③ “点击死”只属于有头遮挡实例；headless=new 下真实鼠标点击、悬停、语义点击均可用。④ “CLI 不自愈 / 授权被移除弹窗”是模拟器忘记配对的假象，补注册表后 CLI 自行重连。
+- **根因不是 UI 缺陷而是虚拟固件保真缺口**（6 项已修，均有消费证据）：`machine_state_manager` 应报 `{main_state, action_code}`；`info.total_layer`（单数）；`file_position` + `server.files.metadata`；异常通道（`server.exception.query` + `notify_exception_*`）；已绑定客户端注册表；状态文件撕裂读不再重置。清单与 ground truth 见 orca-virtual-u1 `NEXT_SESSION_PROMPT.md`。
+- **边界**：宿主直跑（Mac 夹具 + 宿主 headless Chrome），**非信管 VM 运行，不计 GREEN，不写飞书**。未进门禁的假设：`complete`/`error` 的机器状态稳态（真机未抓）、异常弹窗未走本地化标题、缩略图与文件列表接口为空、控制 RPC 未实现。被测物是 CLI 自带面板，**不是 Orca 桌面端**。
+- **首里程碑对照**：L2 状态呈现 3 条 → 已 5 条（温度/进度/文件名/层号/暂停）+ 报警负例 1 条（故障弹窗），均 SHADOW；**L3 上传回执仍 0/1**，是下一步。orca-virtual-u1 仓无 remote，仅本地提交（`c2b8046` 起）。
 
 
 
