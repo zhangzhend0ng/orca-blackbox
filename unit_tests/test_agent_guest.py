@@ -105,8 +105,10 @@ def test_project_worker_preserves_ready_and_switches_receipt_frames_report_at_re
 def test_reopen_profile_is_seeded_once_with_fresh_false_and_fixed_saved_input(tmp_path, monkeypatch):
     import harness
     seeded, launched = [],[]
-    def seed(path, fresh):
-        seeded.append((path,fresh))
+    def seed(path, fresh, conf_extra=None):
+        # the reopen session is seeded under the edit session's conf
+        # (dd3d40d: #296's rows exist only in develop mode)
+        seeded.append((path,fresh,conf_extra))
         path.mkdir()
     app=object()
     monkeypatch.setattr(harness,"profile",SimpleNamespace(seed_profile=seed),raising=False)
@@ -114,9 +116,23 @@ def test_reopen_profile_is_seeded_once_with_fresh_false_and_fixed_saved_input(tm
     monkeypatch.setattr(harness,"winutil",SimpleNamespace(),raising=False)
     saved=tmp_path/"projects/0001.3mf"
     result=worker._WindowsUI(tmp_path,model=saved,profile_name="profile_reopen")
-    assert seeded==[(tmp_path/"profile_reopen",False)]
+    assert seeded==[(tmp_path/"profile_reopen",False,None)]
     assert launched==[{"datadir":tmp_path/"profile_reopen","model":saved,"dismiss_wizard":True}]
     assert result.app is app and result.shape is None
     with pytest.raises(FileExistsError):
         worker._WindowsUI(tmp_path,model=saved,profile_name="profile_reopen")
     assert len(launched)==1
+
+
+def test_reopen_profile_gets_the_edit_sessions_conf(tmp_path, monkeypatch):
+    import harness
+    seeded = []
+    def seed(path, fresh, conf_extra=None):
+        seeded.append(conf_extra)
+        path.mkdir()
+    monkeypatch.setattr(harness,"profile",SimpleNamespace(seed_profile=seed),raising=False)
+    monkeypatch.setattr(harness,"launcher",SimpleNamespace(launch=lambda **kwargs:object()),raising=False)
+    monkeypatch.setattr(harness,"winutil",SimpleNamespace(),raising=False)
+    develop={"app":{"user_mode":"develop"}}
+    worker._WindowsUI(tmp_path,model=tmp_path/"projects/0001.3mf",profile_name="p",conf_extra=develop)
+    assert seeded==[develop]
