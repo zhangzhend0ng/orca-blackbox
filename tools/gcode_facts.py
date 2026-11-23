@@ -8,9 +8,12 @@ Nothing here judges. Every fact is reported with the number of moves it
 rests on, and a feature the model never needed (bridges on a cube, support
 without support enabled) is absent - absence is reported as absent.
 
-Reading rules, same as gcode_feature_speeds.py: Orca groups moves under
-`;TYPE:<name>` and starts each layer with `;LAYER_CHANGE`. F is modal, so
-an extruding move counts for a feed only once an F was set INSIDE its block.
+Reading rules: Orca groups moves under `;TYPE:<name>` and starts each
+layer with `;LAYER_CHANGE`. F is modal; an extruding move counts for the
+current F unless that F was set by a travel move (the entry travel's feed
+is not the feature's) - a feed set by an F-only, retract or prime line
+carries into the block, which matters on the first layer, where the walls
+run at the prime's F without any F line inside the block (run 1f8c9236).
 E on a move is the filament length of THAT move (each side of the cube
 carries the same E3.00173; M82 is not in the file) unless the file says
 M82, in which case it is a position and the difference to the previous E
@@ -56,7 +59,7 @@ def gcode_facts(path):
     layer = 0
     kind = None
     feed = None
-    feed_in_block = False
+    feed_ok = False
     absolute_e = False
     e_last = None
     x = y = None
@@ -68,11 +71,9 @@ def gcode_facts(path):
             if raw.startswith(";LAYER_CHANGE"):
                 layer += 1
                 out["layers"] += 1
-                feed_in_block = False
                 continue
             if raw.startswith(";TYPE:"):
                 kind = raw[6:].strip()
-                feed_in_block = False
                 if kind not in out["features"]:
                     out["features"][kind] = _new_feature()
                     out["feature_order"].append(kind)
@@ -140,8 +141,6 @@ def gcode_facts(path):
             found = F_RE.search(line)
             if found:
                 feed = _num(found.group(1))
-                if kind is not None:
-                    feed_in_block = True
             moving_xy = "X" in coords or "Y" in coords
             length = 0.0
             if moving_xy and x is not None and y is not None:
@@ -153,13 +152,19 @@ def gcode_facts(path):
             lifts = "Z" in coords
             extruding = delta is not None and delta > 0 and moving_xy and not lifts
             arc = line[:2] in ("G2", "G3")
+            if found:
+                # A feed set by a travel move is the entry travel's; one set by
+                # an F-only, retract or prime line carries over into the block
+                # (the first layer's walls run at the prime's F1800 in run
+                # 1f8c9236 without any F line inside the block).
+                feed_ok = not (moving_xy and not extruding)
             if extruding:
                 feature = out["features"].setdefault(kind or "Custom", _new_feature())
                 bucket = _bucket(layer)
                 feature["moves"] += 1
                 feature["e"] += delta
                 feature["length"] += length
-                if feed_in_block and feed:
+                if feed_ok and feed:
                     feature["feed"][bucket][feed] = feature["feed"][bucket].get(feed, 0) + 1
                 if tool is not None:
                     out["e_by_tool"][str(tool)] = round(out["e_by_tool"].get(str(tool), 0.0) + delta, 3)
