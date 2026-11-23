@@ -570,7 +570,32 @@ class Panel:
         point, size = self.geometry()
         grown = self.resize(size.x, min(960, 1080 - point.y - 15))
         note.append({"resized_to": [grown[1].x, grown[1].y]})
-        rows, row, tag = attempt("page-tall")
+        try:
+            rows, row, tag = attempt("page-tall")
+            return rows, row, note, tag
+        except RuntimeError as error:
+            note.append({"tall_window": brief(error)})
+        # The page does not scroll from injected input (A2): fold the group
+        # headers that are on screen so the groups below them move up, stopping
+        # as soon as the wanted group title is on screen.
+        point = self.geometry()[0]
+        done, folded = [], []
+        for index in range(4):
+            titles = [t for t in self.read(f"{prefix}-fold-{index}") if t["x"] - point.x < 26]
+            if any(norm(group) in norm(t["text"]) for t in titles):
+                break
+            todo = [t for t in titles if t["text"] not in done]
+            if not todo:
+                break
+            title = todo[0]
+            done.append(title["text"])
+            spot = (point.x + 10, title["y"] + title["h"] / 2)
+            self.click(*spot)
+            time.sleep(1.0)
+            after = [t["text"] for t in self.read(f"{prefix}-fold-{index}-after") if t["x"] - point.x < 26]
+            folded.append({"title": title["text"], "click": [round(spot[0]), round(spot[1])], "titles_after": after})
+        note.append({"folded": folded})
+        rows, row, tag = attempt("page-folded")
         return rows, row, note, tag
 
     def widen(self, tag):
