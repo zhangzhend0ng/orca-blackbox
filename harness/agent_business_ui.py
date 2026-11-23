@@ -164,6 +164,12 @@ class BusinessUI:
             self.guard()
             self.wu.msg_text(target, "-")
             self.guard()
+            if not self.wu.edit_text(target).lstrip().startswith("-"):
+                # The spin edit refuses the minus in front of a number too
+                # (fa run 9d2369fb: '100', caret home, '-' -> still '100',
+                # and the field committed +100). Walk down with the
+                # control's own Down key until the field reads the target.
+                self._spin_down_to(target, digits)
         else:
             self.wu.msg_text(target, text)
             self.guard()
@@ -176,6 +182,26 @@ class BusinessUI:
             raise ProtocolError("edit_target_disappeared")
         return {"target_hwnd": target, "control_class": "Edit", "before_text": before,
                 "after_text": self.wu.edit_text(target)}
+
+    def _spin_down_to(self, target, text):
+        """Press the spin edit's Down key (one message per step) until the
+        field reads the negative `text`. The step size is the control's own:
+        the field is read after every press. Gives up after 2000 presses or
+        three presses that move nothing; the caller's readback then reports
+        what the field holds."""
+        want = float(text)
+        stuck = 0
+        for _press in range(2000):
+            found = re.search(r"-?\d+(?:\.\d+)?", self.wu.edit_text(target) or "")
+            now = float(found.group(0)) if found else None
+            if now is None or now <= want:
+                return
+            before = self.wu.edit_text(target)
+            for message in (0x0100, 0x0101):              # WM_KEYDOWN / WM_KEYUP
+                self.wu._send_msg(target, message, 0x28, 0)   # VK_DOWN
+            stuck = stuck + 1 if self.wu.edit_text(target) == before else 0
+            if stuck >= 3:
+                return
 
     def export_mode(self):
         option, main = self.eu.find_print_buttons(self.app.hwnd)

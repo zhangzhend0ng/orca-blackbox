@@ -400,8 +400,17 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         ],
         # Feishu #278 (line 197): raft fields, raft_layers first so the rest
         # of the group settles.
+        # 2026-11-24 queue22 (VM run 5a4728b6): every field landed, and the
+        # app refused to slice - the slice button stays off with the toast
+        # 'Jump to tree support': a raft is not made together with the TREE
+        # support type, the fixture default. The Type combo is greyed until
+        # support is on, so Enable then Type -> Normal go first (the #279
+        # recipe); both keys are in the pilot as a recorded deviation.
         "uia_param_raft": [
-            {"tab": "Support", "tab_hint": "support", "op": "float", "label": ["Raft layers", "Raft"],
+            {"tab": "Support", "tab_hint": "support", "op": "checkbox",
+             "label": "Enable", "value": True, "group": "Support"},
+            {"op": "combo", "current": "Tree", "target": "Normal", "group": "Support"},
+            {"op": "float", "label": ["Raft layers", "Raft"],
              "value": "3", "group": "Raft"},
             {"op": "float", "label": ["Raft contact Z distance", "Raft contact distance",
                                       "Raft contact"], "value": "0.2", "group": "Raft"},

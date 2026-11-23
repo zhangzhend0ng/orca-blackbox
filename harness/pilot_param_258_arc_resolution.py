@@ -6,9 +6,18 @@ resolution and slice_closing_radius already equal the fixture config values
 (0.012 / 0.049 - measured in fixtures/agent_layer_cube.3mf; the Feishu names
 match the config keys exactly), so they stay assertion-only. Only the two
 checkboxes move (enable_arc_fitting / precise_z_height, both coBool,
-PrintConfig.cpp:3063 / :3054, fixture 0 -> 1). Arcs and precise Z rewrite
-extrusion geometry, not the layer grid: 27.2 mm is an exact 68 x 0.4
-multiple, so precise Z keeps the 68 x 0.4 / 27.2 schedule."""
+PrintConfig.cpp:3063 / :3054, fixture 0 -> 1).
+
+Recorded (2026-11-24, VM runs 0fe51b33 / 56846c08): all four values
+land, but the uniform 0.4 oracle does not hold under precise Z - and the
+docstring above was wrong about the cube. The mesh is 27.0 mm tall
+(-13.5..13.5). Without precise Z the slicer prints 68 layers on the 0.4
+grid and the top one at Z 27.2 (the grid rounded up: what the
+'68 x 0.4 / 27.2' oracle of the other cases measures). With precise Z the
+grid ends exactly at the object: 63 steps of 0.4, then five of 0.36, last
+Z 27.0. analyze_gcode requires uniform steps, so this case proves the
+four writes + settings preservation; the measured grid is on file here
+instead of an oracle (schedule=None, precedent #278)."""
 from .param_case_lib import make_verify
 
 CASE_ID = "param_258_arc_resolution"
@@ -17,4 +26,4 @@ GOAL = ("Enable arc fitting and precise Z height, keep resolution at 0.012 mm "
         "its placement, material assignment and every other setting.")
 VALUES = {"enable_arc_fitting": "1", "precise_z_height": "1",
           "resolution": "0.012", "slice_closing_radius": "0.049"}
-verify_business = make_verify(CASE_ID, VALUES, schedule={"layer_count": 68, "last_z": "27.2"})
+verify_business = make_verify(CASE_ID, VALUES)

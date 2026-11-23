@@ -962,14 +962,16 @@ import harness.param_case_lib as _pcl22  # noqa: E402
 
 if hasattr(_pcl22, "settle_dialog"):
     _clicks22, _posted22 = [], []
-    _modal22 = {"open": False}       # main window 4 disabled = a modal owns it
+    _modal22 = {"open": False, "command_closes": False}   # main window 4 disabled = a modal
 
     class _U22:
         """stands in for user32: PostMessageW is recorded, not called"""
 
         @staticmethod
-        def PostMessageW(h, msg, _w, _l):
-            _posted22.append((h, msg))
+        def PostMessageW(h, msg, w, _l):
+            _posted22.append((h, msg, w))
+            if msg == 0x0111 and _modal22["command_closes"]:
+                _modal22["open"] = False       # the box answered: the modal is gone
 
         @staticmethod
         def IsWindowEnabled(h):
@@ -986,7 +988,7 @@ if hasattr(_pcl22, "settle_dialog"):
         _eu22.wait_popup = lambda pid, timeout_s=0: (None, "panel", (1, 2, 3, 4), 77)
         r = _pcl22.settle_dialog(ui22, set())
         check("settle_dialog: no dialog but a combo popup -> WM_CLOSE to the popup, nothing clicked",
-              r == (None, "") and _posted22 == [(77, 0x0010)] and not _clicks22,
+              r == (None, "") and _posted22 == [(77, 0x0010, 0)] and not _clicks22,
               "%r %r" % (r, _posted22))
         _posted22.clear()
         _eu22.wait_popup = lambda pid, timeout_s=0: None
@@ -1022,12 +1024,35 @@ if hasattr(_pcl22, "settle_dialog"):
                                       ("&No", "Button", (180, 200, 240, 222), 12)]
         _pcl22.settle_dialog(ui22, set())          # no answer named
         check("settle_dialog: an unnamed dialog is closed, never answered",
-              _posted22 == [(99, 0x0010)] and not _clicks22, "%r %r" % (_clicks22, _posted22))
+              _posted22 == [(99, 0x0010, 0)] and not _clicks22, "%r %r" % (_clicks22, _posted22))
         _posted22.clear()
         _mu22.children = lambda dlg: [("OK", "Button", (100, 200, 160, 222), 11)]
         _pcl22.settle_dialog(ui22, set(), "Yes")
-        check("settle_dialog: a one-button box is closed even when an answer is named",
-              _posted22 == [(99, 0x0010)] and not _clicks22, "%r %r" % (_clicks22, _posted22))
+        check("settle_dialog: a one-button box is closed even when an answer is named "
+              "(the command is tried first and does not close it)",
+              _posted22 == [(99, 0x0111, 6), (99, 0x0010, 0)] and not _clicks22,
+              "%r %r" % (_clicks22, _posted22))
+        _posted22.clear()
+        # VM run eab35b9a: Windows 11 message boxes draw their buttons in a
+        # DirectUI child - no Button window; the box was closed = No.
+        _mu22.children = lambda dlg: [("...", "Static", (1, 1, 2, 2), 5)]
+        _modal22["command_closes"] = True
+        _wc22 = _wu22.window_class
+        _wu22.window_class = lambda h: "#32770"
+        try:
+            _pcl22.settle_dialog(ui22, set(), "Yes")
+        finally:
+            _wu22.window_class = _wc22
+        check("settle_dialog: a box without Button windows is answered by WM_COMMAND IDYES "
+              "(VM run eab35b9a)",
+              _posted22 == [(99, 0x0111, 6)] and not _clicks22 and not _modal22["open"],
+              "%r %r" % (_clicks22, _posted22))
+        _posted22.clear()
+        _modal22.update(open=True, command_closes=False)
+        _pcl22.settle_dialog(ui22, set(), "No")
+        check("settle_dialog: a command that does not close the box -> closed as before",
+              _posted22 == [(99, 0x0111, 7), (99, 0x0010, 0)] and not _clicks22,
+              "%r %r" % (_clicks22, _posted22))
     finally:
         (_mu22.toplevel, pp.dialog_body, _mu22.children, _eu22.wait_popup,
          _wu22.real_click_screen, _wu22.user32) = _saved22
@@ -1110,7 +1135,8 @@ def _ui24(ctl):
         window_class=lambda h: "Edit",
         user32=types.SimpleNamespace(IsChild=lambda a, b: True, IsWindowEnabled=lambda h: True),
         edit_text=lambda h: ctl.text, msg_click_screen=lambda *a: None,
-        _send_msg=lambda t, msg, w, l: ctl.setsel(w, l) if msg == 0x00B1 else None,
+        _send_msg=lambda t, msg, w, l: (ctl.setsel(w, l) if msg == 0x00B1
+                                         else ctl.key(w) if msg == 0x0100 else None),
         msg_text=lambda t, s: ctl.chars(s))
     ui = _abu24.BusinessUI.__new__(_abu24.BusinessUI)
     ui.wu, ui.app = wu, types.SimpleNamespace(hwnd=4)
@@ -1131,6 +1157,35 @@ receipt = _ui24(ctl).edit(10, 20, "150%")
 check("edit: a non-negative value is typed in one piece, as before",
       receipt["after_text"] == "150%" and ctl.msgs[1] == ("chars", "150%"),
       "after %r msgs %r" % (receipt["after_text"], ctl.msgs))
+
+
+import re as _re24  # noqa: E402
+
+
+class _SpinEdit24(_NumEdit24):
+    """fa run 9d2369fb: the minus is dropped wherever it is typed; Down
+    steps the value by the control's own amount (5 here)."""
+
+    step = 5
+
+    def chars(self, piece):
+        super().chars(piece.replace("-", ""))
+
+    def key(self, vk):
+        self.msgs.append(("key", vk))
+        found = _re24.search(r"-?\d+", self.text)
+        value = int(found.group(0)) if found else 0
+        self.text = str(value - self.step)
+
+
+ctl = _SpinEdit24()
+receipt = _ui24(ctl).edit(10, 20, "-100")
+downs = [m for m in ctl.msgs if m == ("key", 0x28)]
+check("edit: when the minus is refused, the spin's Down key walks the field to the target "
+      "(fa run 9d2369fb committed +100)", receipt["after_text"] == "-100",
+      "after %r msgs %r" % (receipt["after_text"], ctl.msgs[:8]))
+check("edit: the walk is one Down press per step and stops on the target (100 -> -100 by 5 = 40)",
+      len(downs) == 40, "downs %d" % len(downs))
 
 failed = [n for n, ok in results if not ok]
 print("\n%d checks, %d failed" % (len(results), len(failed)))

@@ -421,11 +421,15 @@ def settle_dialog(ui, known, answer=None):
         return None, ""
     body = pp.dialog_body(app.pid, dlg)
     buttons = [b for b in mixing_util.children(dlg) if b[1] == "Button"]
-    print("[param case] dialog after the checkbox: %r; buttons %r" % (
-        body[:160], [b[0] for b in buttons]), flush=True)
+    try:
+        cls = winutil.window_class(dlg)          # for the log only
+    except Exception:  # noqa: BLE001
+        cls = "?"
+    print("[param case] dialog after the checkbox: %r; class %r; buttons %r" % (
+        body[:160], cls, [b[0] for b in buttons]), flush=True)
     hit = how = None
-    if answer:
-        want = answer.replace("&", "").strip().lower()
+    want = answer.replace("&", "").strip().lower() if answer else None
+    if want:
         for _t, _c, r, h in buttons:
             if _t.replace("&", "").strip().lower().startswith(want):
                 hit, how = (r, h), "text"
@@ -443,6 +447,19 @@ def settle_dialog(ui, known, answer=None):
         print("[param case] answering %r by %s: click (%d,%d)" % (
             answer, how, (x0 + x1) // 2, (y0 + y1) // 2), flush=True)
         winutil.real_click_screen((x0 + x1) // 2, (y0 + y1) // 2)
+    elif want in ("yes", "no"):
+        # No Button window to click: a Windows 11 message box draws its
+        # buttons in a DirectUI child (VM run eab35b9a: buttons [], the box
+        # was closed = No, and the app switched spiral mode back off). The
+        # box's own command answers it - WM_COMMAND IDYES (6) / IDNO (7).
+        winutil.user32.PostMessageW(dlg, 0x0111, 6 if want == "yes" else 7, 0)  # WM_COMMAND
+        ui.pause(1.0)
+        if winutil.user32.IsWindowEnabled(app.hwnd):
+            print("[param case] answered %r by WM_COMMAND (no Button window in this box)" % (
+                answer,), flush=True)
+            return dlg, body
+        print("[param case] WM_COMMAND did not close the box", flush=True)
+        winutil.user32.PostMessageW(dlg, 0x0010, 0, 0)  # WM_CLOSE
     else:
         print("[param case] closing it (WM_CLOSE)", flush=True)
         winutil.user32.PostMessageW(dlg, 0x0010, 0, 0)  # WM_CLOSE

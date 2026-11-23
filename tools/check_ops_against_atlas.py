@@ -79,36 +79,46 @@ PAGE_ROWS = (json.loads(_PAGE_ROWS_FILE.read_text(encoding="utf-8"))["tabs"]
 # same scenario brings onto the page is missing there by construction (and
 # the census OCR garbled one or two others). Every entry names its proof;
 # an op that is not listed and does not match is a problem, as before.
+# Keyed by the op's FIRST label candidate (a group, by its name) and not by
+# op index: ops get inserted (raft gained Enable + Type in r5.6) and an
+# index key silently stops matching.
 CONDITIONAL = {
-    ("uia_param_raft", 1): "appears after Raft layers > 0 (VM run be0664ae: "
-    "'Raft contact Z distance 0.2 mm' once layers was 3)",
-    ("uia_param_prime_tower", 3): "exists only while Wall type is Cone "
-    "(ConfigManipulation.cpp:858; VM run aa451776 without it)",
-    ("uia_param_tree_support", 2): "the 'Tree supports' group appears after Style leaves "
-    "Default (VM run 1f23038c band; ConfigManipulation.cpp:755-763)",
-    ("uia_param_tree_support", 4): "needs support enabled (ConfigManipulation.cpp:771)",
-    ("uia_param_support_ironing", 3): "appears after support ironing is on",
-    ("uia_param_ironing_top", 1): "appears after ironing is on",
-    ("uia_param_wall_generator", 1): "appears with the Arachne generator",
-    ("uia_param_single_wall_avoid", 2): "appears with Make overhang printable on (#261 closed, queue20)",
-    ("uia_param_surface_flow", 0): "on the page; the census OCR read it 'Tan cirface flaw ratio' "
-    "(#271 closed, run 2aa82922)",
-    ("uia_param_gcode_output", 1): "develop mode only (case open: user_mode)",
-    ("uia_param_timelapse", 0): "not offered by the Snapmaker U1 machine (case N/A)",
+    ("uia_param_raft", "Raft contact Z distance"): "appears after Raft layers > 0 "
+    "(VM run be0664ae: 'Raft contact Z distance 0.2 mm' once layers was 3)",
+    ("uia_param_prime_tower", "Stabilization cone apex angle"): "exists only while Wall type is "
+    "Cone (ConfigManipulation.cpp:858; VM run aa451776 without it; #283 closed on fa706g3, "
+    "run 2bacb634)",
+    ("uia_param_tree_support", "Tree support branch angle"): "the 'Tree supports' group appears "
+    "after Style leaves Default (VM run 1f23038c band; ConfigManipulation.cpp:755-763; #282 "
+    "closed on fa706g3, run e946ad14)",
+    ("uia_param_tree_support", "Tree supports"): "the group title exists only after Style leaves "
+    "Default (same proof as the branch angle row)",
+    ("uia_param_tree_support", "Max bridge length"): "needs support enabled "
+    "(ConfigManipulation.cpp:771)",
+    ("uia_param_support_ironing", "Support Ironing linespacing"): "appears after support ironing "
+    "is on (#280 closed on fa706g3, run 51380cfe)",
+    ("uia_param_ironing_top", "roning"): "appears after ironing is on",
+    ("uia_param_wall_generator", "Wall distribution count"): "appears with the Arachne generator "
+    "(#260 closed, run 7e59e22a)",
+    ("uia_param_single_wall_avoid", "Max detour length"): "appears with Make overhang printable "
+    "on (#261 closed, run 3727296c)",
+    ("uia_param_surface_flow", "Top surface flow ratio"): "on the page; the census OCR read it "
+    "'Tan cirface flaw ratio' (#262 closed, run a7504d39)",
+    ("uia_param_gcode_output", "number"): "develop mode only (case open: user_mode)",
 }
-# Popup targets no census has listed yet: the enum is known from the source
-# and the run that opens the popup is the proof. Drop the entry once the
-# popup census (tools/param_ui_popups_2.4.0.json) has the row.
-PENDING_TARGET = {
-    ("uia_param_prime_tower", 2): ("Cone", "Wall type popup not censused; 'Cone' is an enum label "
-                                   "of wipe_tower_wall_type (PrintConfig.cpp:6389 Rectangle / Cone / Rib)"),
-}
+# Popup targets no census has listed yet: (scenario, op index) -> (target,
+# proof pending). The run that opens the popup is the proof; drop the entry
+# once the popup census (tools/param_ui_popups_2.4.0.json) has the row -
+# as 'Wall type' did after fa706g3 run 2bacb634 (Rectangle / Cone / Rib).
+PENDING_TARGET = {}
 # Scenarios whose control the fixture machine does not offer: checked
 # nowhere, reported once. The row stays in the case table (it is valid for
 # a machine with a camera) and the case is recorded N/A in the run ledger.
 NOT_APPLICABLE = {
-    "uia_param_timelapse": "no Timelapse row on Others for the Snapmaker U1 machine "
-    "(row census: Special mode = Slicing Mode / Print sequence / Intra-layer order / Spiral vase)",
+    "uia_param_timelapse": "only BBL printers get the Timelapse row "
+    "(ConfigManipulation.cpp:932 toggle_line(\"timelapse_type\", is_BBL_Printer)); the row census "
+    "of Others / Special mode on the U1 machine: Slicing Mode / Print sequence / Intra-layer "
+    "order / Spiral vase",
 }
 
 
@@ -241,9 +251,10 @@ def main():
                     cand, why = label_in_rows(tab, labels, op.get("group"))
                     if cand is not None:
                         pass
-                    elif (scenario, i) in CONDITIONAL:
+                    elif (scenario, labels[0]) in CONDITIONAL:
+                        why_cond = CONDITIONAL[(scenario, labels[0])]
                         notes.append(f"{scenario} op[{i}] label {labels!r}: CONDITIONAL row - "
-                                     f"{CONDITIONAL[(scenario, i)]}")
+                                     f"{why_cond}")
                     else:
                         problems.append(f"{scenario} op[{i}] label {labels!r}: {why}")
                 else:
@@ -343,9 +354,9 @@ def main():
                 titles = [r["title"] for r in CENSUS["tabs"].get(tab, [])] or \
                     [g.get("title") for g in ATLAS["pages"].get(tab, [])]
                 if titles and not any(group.lower() in (t or "").lower() for t in titles):
-                    if (scenario, i) in CONDITIONAL:
+                    if (scenario, group) in CONDITIONAL:
                         notes.append(f"{scenario} op[{i}] group {group!r}: CONDITIONAL title on "
-                                     f"{tab!r} - {CONDITIONAL[(scenario, i)]}")
+                                     f"{tab!r} - {CONDITIONAL[(scenario, group)]}")
                     else:
                         problems.append(f"{scenario} op[{i}] group {group!r}: no such group title on "
                                         f"tab {tab!r} (titles: {titles})")

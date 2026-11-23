@@ -1,6 +1,6 @@
 {
  "meta": {
-  "source": "census runs 67690ed4 / f1c5433b / c814315c on the 2.4.0 guest build (2026-11-23)",
+  "source": "census runs 67690ed4 / f1c5433b / c814315c on the 2.4.0 guest build (2026-11-23); Wall type from fa706g3 run 2bacb634 (2026-11-24, same build)",
   "note": "OCR'd rows of the option popups, top to bottom. 'tab' + 'row' identify the combo the way the op does: a rowcombo by its label (without '^'), a combo by the value it currently paints. Refresh with scenario uia_param_census. The source atlas is NOT the build: its enum labels ('Outer only', 'All external walls') are not what these popups paint."
  },
  "popups": [
@@ -17,6 +17,7 @@
   {"tab": "Multimaterial", "row": "Wipe tower", "items": ["Default", "1 PETG", "2 PLA", "3 PLA", "4 PLA", "5 PLA"]},
   {"tab": "Others", "row": "Brim type", "items": ["Mouse ear", "Painted", "Outer brim only", "Inner brim only", "Outer and inner brim", "No-brim"]},
   {"tab": "Others", "row": "By layer", "items": ["By layer", "By object"]},
-  {"tab": "Others", "row": "Fuzzy skin", "items": ["None", "Contour", "Contour and hole", "All walls"]}
+  {"tab": "Others", "row": "Fuzzy skin", "items": ["None", "Contour", "Contour and hole", "All walls"]},
+  {"tab": "Multimaterial", "row": "Wall type", "items": ["Rectangle", "Cone", "Rib"]}
  ]
 }

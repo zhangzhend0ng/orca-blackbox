@@ -19,6 +19,14 @@ GOAL = ("Set raft layers to 3, contact distance 0.2 mm, expansion 5 mm, first "
 # 2026-11-23: raft_expansion dropped - no UI row exists on the params page
 # (Tab.cpp line 2928-2921 appends only the other four). Recorded deviation
 # from the Feishu row, precedent: #267 top_color_penetration_layers.
+# Recorded deviation (2026-11-24, VM run 5a4728b6): enable_support=1 and
+# support_type=normal(auto) added. With the four raft values set the app
+# refused to slice - slice button off, toast 'Jump to tree support': a raft
+# is not made with the TREE support type, the fixture default (support off,
+# type Tree (auto)). Type is greyed until support is on, so the ops enable
+# support and switch Type to Normal first (the #279 recipe). The cube has no
+# overhangs, so no support body is generated beside the raft.
 VALUES = {"raft_layers": "3", "raft_contact_distance": "0.2",
-          "raft_first_layer_density": "100%", "raft_first_layer_expansion": "5"}
+          "raft_first_layer_density": "100%", "raft_first_layer_expansion": "5",
+          "enable_support": "1", "support_type": "normal(auto)"}
 verify_business = make_verify(CASE_ID, VALUES)
