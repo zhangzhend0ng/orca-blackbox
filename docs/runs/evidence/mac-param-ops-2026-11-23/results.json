@@ -6987,6 +6987,11 @@
    "op": "case:uia_param_surface_flow",
    "stamp": "060903",
    "ok": false
+  },
+  {
+   "op": "case:uia_param_speed_limits",
+   "stamp": "061300",
+   "ok": true
   }
  ],
  "summary": {
@@ -9314,75 +9319,803 @@
   },
   "case:uia_param_speed_limits": {
    "op": "case",
-   "ok": false,
-   "supervisor_error": "Traceback (most recent call last):\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 1920, in supervise\n    wait_for(result_file.is_file, \"Mac worker timed out\", ns.fuse)\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 86, in wait_for\n    raise TimeoutError(message)\nTimeoutError: Mac worker timed out\n",
-   "screenshots": {
-    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-entry.panel.png",
-    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-entry.png",
-    "op0-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-find-page-locate.panel.png",
-    "op0-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-find-page-locate.png",
-    "op0-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-find-page.panel.png",
-    "op0-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-find-page.png",
-    "op0-float-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-float-after.panel.png",
-    "op0-float-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-float-after.png",
-    "op0-float-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-float-page-locate.panel.png",
-    "op0-float-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-float-page-locate.png",
-    "op0-float-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-float-page.panel.png",
-    "op0-float-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-float-page.png",
-    "op0-switch-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-switch-advanced-ax-0.panel.png",
-    "op0-switch-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-switch-advanced-ax-0.png",
-    "op0-switch-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-switch-advanced-ax-1.panel.png",
-    "op0-switch-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-switch-advanced-ax-1.png",
-    "op0-switch-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-switch-advanced-ax-2.panel.png",
-    "op0-switch-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-switch-advanced-ax-2.png",
-    "op0-switch-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-switch-advanced-ax-3.panel.png",
-    "op0-switch-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-switch-advanced-ax-3.png",
-    "op0-switch-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-switch-advanced.panel.png",
-    "op0-switch-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-switch-advanced.png",
-    "op0-switch-quality-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-switch-quality-after.panel.png",
-    "op0-switch-quality-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-switch-quality-after.png",
-    "op0-switch-quality-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-switch-quality-before.panel.png",
-    "op0-switch-quality-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-switch-quality-before.png",
-    "op1-find-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-advanced.panel.png",
-    "op1-find-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-advanced.png",
-    "op1-find-fold-0-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-fold-0-after.panel.png",
-    "op1-find-fold-0-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-fold-0-after.png",
-    "op1-find-fold-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-fold-0.panel.png",
-    "op1-find-fold-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-fold-0.png",
-    "op1-find-fold-1-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-fold-1-after.panel.png",
-    "op1-find-fold-1-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-fold-1-after.png",
-    "op1-find-fold-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-fold-1.panel.png",
-    "op1-find-fold-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-fold-1.png",
-    "op1-find-page-full-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-locate.panel.png",
-    "op1-find-page-full-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-locate.png",
-    "op1-find-page-full-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-0.panel.png",
-    "op1-find-page-full-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-0.png",
-    "op1-find-page-full-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-1.panel.png",
-    "op1-find-page-full-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-1.png",
-    "op1-find-page-full-scroll-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-2.panel.png",
-    "op1-find-page-full-scroll-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-2.png",
-    "op1-find-page-full-scroll-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-3.panel.png",
-    "op1-find-page-full-scroll-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-3.png",
-    "op1-find-page-full-scroll-4.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-4.panel.png",
-    "op1-find-page-full-scroll-4.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-4.png",
-    "op1-find-page-full-scroll-5.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-5.panel.png",
-    "op1-find-page-full-scroll-5.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-5.png",
-    "op1-find-page-full-scroll-6.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-6.panel.png",
-    "op1-find-page-full-scroll-6.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-6.png",
-    "op1-find-page-full-scroll-7.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-7.panel.png",
-    "op1-find-page-full-scroll-7.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-7.png",
-    "op1-find-page-full-scroll-8.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-8.panel.png",
-    "op1-find-page-full-scroll-8.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-8.png",
-    "op1-find-page-full.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full.panel.png",
-    "op1-find-page-full.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full.png",
-    "op1-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-locate.panel.png",
-    "op1-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-locate.png",
-    "op1-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page.panel.png",
-    "op1-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page.png"
-   },
    "name": "uia_param_speed_limits",
-   "status": "not passed",
-   "reason": "supervisor error (its fuse fired, or the launch failed): no worker result - see supervisor_error"
+   "ok": true,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "entry": {
+    "dialogs": []
+   },
+   "status": "pass",
+   "readback": {
+    "status": "pass",
+    "scenario": "uia_param_speed_limits",
+    "case_id": "param_276_speed_limits",
+    "table": {
+     "path": "runner/macos/param_cases.json",
+     "source_commit": "2733ef6",
+     "sha256": "fb2f1d2313e8608cf37031656b2f71fe79531909dcd944fc8fda3f27f0aef05b"
+    },
+    "limits": {
+     "per_op": 110,
+     "case": 360,
+     "ops": {
+      "op0": 110,
+      "op1": 110,
+      "op2": 110
+     }
+    },
+    "keys": {
+     "outer_wall_speed": {
+      "expected": "700",
+      "before": "120",
+      "status": "pass",
+      "saved": "700",
+      "compared": "decimal"
+     },
+     "layer_height": {
+      "expected": "0.2",
+      "before": "0.4",
+      "status": "pass",
+      "saved": "0.2",
+      "compared": "decimal"
+     },
+     "outer_wall_line_width": {
+      "expected": "0.42",
+      "before": "0.82",
+      "status": "pass",
+      "saved": "0.42",
+      "compared": "decimal"
+     }
+    },
+    "title_after_save": "probe",
+    "ops_whose_readback_refused": []
+   },
+   "evidence": {
+    "steps": [
+     {
+      "index": 0,
+      "op": "float",
+      "label": "Layer height",
+      "group": null,
+      "value": "0.2",
+      "at": 0.0,
+      "tab": {
+       "name": "Quality",
+       "hint": "height",
+       "readback": [
+        {
+         "tab": "Quality",
+         "ok": true,
+         "page_text": [
+          "layer height",
+          "first layer height",
+          "0 4"
+         ]
+        }
+       ]
+      },
+      "row": {
+       "tab": "Quality",
+       "group": null,
+       "label": "Layer height",
+       "center": [
+        431,
+        843
+       ],
+       "window_local_center": [
+        71,
+        758
+       ],
+       "box": {
+        "x": 390,
+        "y": 835,
+        "w": 82,
+        "h": 16
+       },
+       "value_text": "0.4",
+       "screenshot": "find-page.png",
+       "label_candidate": "Layer height",
+       "match": {
+        "label": "Layer height",
+        "level": "exact",
+        "row": "Layer height",
+        "candidates": [
+         {
+          "label": "Layer height",
+          "hits": [
+           {
+            "level": "exact",
+            "row": "Layer height"
+           },
+           {
+            "level": "substring",
+            "row": "First layer height"
+           }
+          ]
+         },
+         {
+          "label": "layer height",
+          "hits": [
+           {
+            "level": "exact",
+            "row": "Layer height"
+           },
+           {
+            "level": "substring",
+            "row": "First layer height"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "label_candidates": [
+       "Layer height",
+       "layer height"
+      ],
+      "candidates_not_found": [
+       {
+        "label": "Layer height",
+        "hits": [
+         {
+          "level": "exact",
+          "row": "Layer height"
+         },
+         {
+          "level": "substring",
+          "row": "First layer height"
+         }
+        ]
+       },
+       {
+        "label": "layer height",
+        "hits": [
+         {
+          "level": "exact",
+          "row": "Layer height"
+         },
+         {
+          "level": "substring",
+          "row": "First layer height"
+         }
+        ]
+       }
+      ],
+      "notes": [
+       {
+        "tab_click": [
+         405,
+         777
+        ]
+       }
+      ],
+      "page_text": [
+       "layer height",
+       "first layer height",
+       "0 4"
+      ],
+      "readback": {
+       "tab": "Quality",
+       "label": "Layer height",
+       "before": "0.4",
+       "ax_value": "0.2",
+       "painted": "0.2",
+       "title": "*probe",
+       "expected": "0.2"
+      },
+      "readback_ok": true,
+      "evidence": {
+       "parameter": "layer_height",
+       "click": [
+        615,
+        841
+       ],
+       "notes": [
+        {
+         "tab_click": [
+          405,
+          777
+         ]
+        }
+       ],
+       "screenshots": {
+        "before": "op0-float-page.png",
+        "after": "op0-float-after.png"
+       },
+       "tab": {
+        "steps": [
+         {
+          "tab": "Quality",
+          "ok": true,
+          "click": [
+           405,
+           777
+          ],
+          "tabs_seen": [
+           "Others"
+          ],
+          "landmark": [
+           "layer height"
+          ],
+          "page_changed": false,
+          "page_text": [
+           "layer height",
+           "first layer height",
+           "0 4"
+          ],
+          "verified_by": "landmark"
+         }
+        ],
+        "advanced": {
+         "already_on": false,
+         "tabs_before": [
+          "Others",
+          "Quality",
+          "Strength",
+          "Support",
+          "Multimaterial"
+         ],
+         "value_before": 0,
+         "attempts": [
+          {
+           "how": "ax",
+           "value_before": 0,
+           "box": [
+            673.0,
+            689.0
+           ],
+           "tabs_after": [
+            [
+             "Others"
+            ],
+            [
+             "Others"
+            ],
+            [
+             "Others"
+            ],
+            [
+             "Others"
+            ]
+           ],
+           "value_after": 1
+          }
+         ],
+         "checkboxes": [
+          {
+           "x": 453.0,
+           "y": 686.0,
+           "words": "",
+           "value": 0
+          },
+          {
+           "x": 673.0,
+           "y": 689.0,
+           "words": "",
+           "value": 0
+          }
+         ],
+         "turned_on_by": "ax",
+         "speed_seen": false
+        }
+       }
+      },
+      "seconds": 72.3
+     },
+     {
+      "index": 1,
+      "op": "float",
+      "label": "^Outer wall",
+      "group": "Line width",
+      "value": "0.42",
+      "at": 72.3,
+      "row": {
+       "tab": "Quality",
+       "group": "Line width",
+       "label": "Outer wall",
+       "center": [
+        423,
+        936
+       ],
+       "window_local_center": [
+        63,
+        906
+       ],
+       "box": {
+        "x": 388,
+        "y": 927,
+        "w": 70,
+        "h": 18
+       },
+       "value_text": "0.82 mm or % -N",
+       "screenshot": "find-page-full.png",
+       "label_candidate": "^Outer wall",
+       "match": {
+        "label": "^Outer wall",
+        "level": "exact",
+        "row": "Outer wall",
+        "candidates": [
+         {
+          "label": "Outer wall line width",
+          "hits": []
+         },
+         {
+          "label": "^Outer wall",
+          "hits": [
+           {
+            "level": "exact",
+            "row": "Outer wall"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "label_candidates": [
+       "Outer wall line width",
+       "^Outer wall"
+      ],
+      "candidates_not_found": [
+       {
+        "label": "Outer wall line width",
+        "hits": []
+       },
+       {
+        "label": "^Outer wall",
+        "hits": [
+         {
+          "level": "exact",
+          "row": "Outer wall"
+         }
+        ]
+       }
+      ],
+      "notes": [
+       {
+        "tab_click": [
+         409,
+         777
+        ]
+       },
+       {
+        "standard_mode": "RuntimeError: Group title 'Line width' not visible; titles seen: ['Layer height']"
+       },
+       {
+        "advanced": {
+         "already_on": true,
+         "by": "ax value",
+         "value": 1,
+         "tabs": [
+          "Quality",
+          "Others"
+         ]
+        }
+       },
+       {
+        "maximized": {
+         "visible": [
+          0.0,
+          30.0,
+          1920.0,
+          972.0
+         ],
+         "frame": [
+          360.0,
+          30.0,
+          1200.0,
+          971.0
+         ]
+        }
+       },
+       {
+        "tab_click": [
+         405,
+         722
+        ]
+       }
+      ],
+      "page_text": [
+       "l layer height",
+       "layer height",
+       "first layer height",
+       "line width",
+       "0 2",
+       "0 4",
+       "mm",
+       "default",
+       "first layer",
+       "outer wall",
+       "inner wall",
+       "top surface",
+       "0 82",
+       "mm 0r",
+       "mm or",
+       "mmor",
+       "n"
+      ],
+      "readback": {
+       "tab": "Quality",
+       "label": "Outer wall",
+       "before": "0.82",
+       "ax_value": "0.42",
+       "painted": "0.42",
+       "title": "*probe",
+       "expected": "0.42"
+      },
+      "readback_ok": true,
+      "evidence": {
+       "parameter": "outer_wall_line_width",
+       "click": [
+        613,
+        934
+       ],
+       "notes": [
+        {
+         "tab_click": [
+          405,
+          722
+         ]
+        }
+       ],
+       "screenshots": {
+        "before": "op1-float-page.png",
+        "after": "op1-float-after.png"
+       },
+       "tab": null
+      },
+      "seconds": 45.7
+     },
+     {
+      "index": 2,
+      "op": "float",
+      "label": "^Outer wall",
+      "group": "Other layers speed",
+      "value": "700",
+      "at": 118.0,
+      "tab": {
+       "name": "Speed",
+       "hint": "speed",
+       "readback": [
+        {
+         "tab": "Speed",
+         "ok": true,
+         "page_text": [
+          "first layer speed",
+          "first layer",
+          "first layer infill",
+          "initial layer travel",
+          "speed"
+         ]
+        }
+       ]
+      },
+      "row": {
+       "tab": "Speed",
+       "group": "Other layers speed",
+       "label": "Outer wall",
+       "center": [
+        423,
+        952
+       ],
+       "window_local_center": [
+        63,
+        922
+       ],
+       "box": {
+        "x": 388,
+        "y": 943,
+        "w": 70,
+        "h": 19
+       },
+       "value_text": "120 mm/s",
+       "screenshot": "find-page.png",
+       "label_candidate": "^Outer wall",
+       "match": {
+        "label": "^Outer wall",
+        "level": "exact",
+        "row": "Outer wall",
+        "candidates": [
+         {
+          "label": "Outer wall speed",
+          "hits": []
+         },
+         {
+          "label": "^Outer wall",
+          "hits": [
+           {
+            "level": "exact",
+            "row": "Outer wall"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "label_candidates": [
+       "Outer wall speed",
+       "^Outer wall"
+      ],
+      "candidates_not_found": [
+       {
+        "label": "Outer wall speed",
+        "hits": []
+       },
+       {
+        "label": "^Outer wall",
+        "hits": [
+         {
+          "level": "exact",
+          "row": "Outer wall"
+         }
+        ]
+       }
+      ],
+      "notes": [
+       {
+        "tab_click": [
+         525,
+         722
+        ]
+       }
+      ],
+      "page_text": [
+       "first layer speed",
+       "first layer",
+       "first layer infill",
+       "initial layer travel",
+       "speed",
+       "number of slow layers",
+       "35",
+       "55",
+       "mm s",
+       "100 mm s or",
+       "layers",
+       "other layers speed",
+       "outer wall",
+       "inner wall",
+       "120",
+       "150"
+      ],
+      "readback": {
+       "tab": "Speed",
+       "label": "Outer wall",
+       "before": "120",
+       "ax_value": "700",
+       "painted": "700",
+       "title": "*probe",
+       "expected": "700"
+      },
+      "readback_ok": true,
+      "evidence": {
+       "parameter": "outer_wall_speed",
+       "click": [
+        563,
+        951
+       ],
+       "notes": [
+        {
+         "tab_click": [
+          525,
+          722
+         ]
+        }
+       ],
+       "screenshots": {
+        "before": "op2-float-page.png",
+        "after": "op2-float-after.png"
+       },
+       "tab": {
+        "steps": [
+         {
+          "tab": "Speed",
+          "ok": true,
+          "click": [
+           528,
+           722
+          ],
+          "tabs_seen": [
+           "Quality",
+           "Others"
+          ],
+          "landmark": [
+           "speed"
+          ],
+          "page_changed": true,
+          "page_text": [
+           "first layer speed",
+           "first layer",
+           "first layer infill",
+           "initial layer travel",
+           "speed",
+           "number of slow layers",
+           "35",
+           "55",
+           "mm s",
+           "100 mm s or",
+           "layers",
+           "other layers speed"
+          ],
+          "verified_by": "landmark"
+         }
+        ],
+        "advanced": {
+         "already_on": true,
+         "by": "ax value",
+         "value": 1,
+         "tabs": [
+          "Others"
+         ]
+        }
+       }
+      },
+      "seconds": 45.400000000000006
+     }
+    ],
+    "notes": [
+     {
+      "tab_click": [
+       525,
+       722
+      ]
+     }
+    ],
+    "other_changed_keys": {
+     "count": 35,
+     "keys": [
+      "bottom_color_penetration_layers",
+      "change_filament_gcode",
+      "different_settings_to_system",
+      "enable_tower_interface_cooldown_during_tower",
+      "enable_tower_interface_features",
+      "exclude_object",
+      "filament_adhesiveness_category",
+      "filament_flow_step_size",
+      "filament_flow_support",
+      "filament_grouping_mode",
+      "filament_tower_interface_pre_extrusion_dist",
+      "filament_tower_interface_pre_extrusion_length",
+      "filament_tower_interface_print_temp",
+      "filament_volume_type",
+      "filename_format",
+      "first_layer_travel_acceleration",
+      "first_layer_travel_jerk",
+      "machine_end_gcode",
+      "machine_start_gcode",
+      "max_bridge_length",
+      "nozzle_volume_type",
+      "prime_tower_enable_framework",
+      "print_settings_id",
+      "printer_flow_support",
+      "process_flow_support",
+      "project_schema_version",
+      "raft_first_layer_expansion",
+      "support_interface_min_area",
+      "support_transition_flow_ratio",
+      "support_transition_perimeter",
+      "support_transition_speed",
+      "top_color_penetration_layers",
+      "tree_support_branch_angle_organic",
+      "tree_support_transition_layers",
+      "version"
+     ]
+    }
+   },
+   "shots": {
+    "entry": "entry.png",
+    "op0-switch-advanced": "op0-switch-advanced.png",
+    "op0-switch-advanced-ax-0": "op0-switch-advanced-ax-0.png",
+    "op0-switch-advanced-ax-1": "op0-switch-advanced-ax-1.png",
+    "op0-switch-advanced-ax-2": "op0-switch-advanced-ax-2.png",
+    "op0-switch-advanced-ax-3": "op0-switch-advanced-ax-3.png",
+    "op0-switch-quality-before": "op0-switch-quality-before.png",
+    "op0-switch-quality-after": "op0-switch-quality-after.png",
+    "op0-find-page-locate": "op0-find-page-locate.png",
+    "op0-find-page": "op0-find-page.png",
+    "op0-float-page-locate": "op0-float-page-locate.png",
+    "op0-float-page": "op0-float-page.png",
+    "op0-float-after": "op0-float-after.png",
+    "op1-find-page-locate": "op1-find-page-locate.png",
+    "op1-find-page": "op1-find-page.png",
+    "op1-find-advanced": "op1-find-advanced.png",
+    "op1-find-page-full-locate": "op1-find-page-full-locate.png",
+    "op1-find-page-full": "op1-find-page-full.png",
+    "op1-float-page-locate": "op1-float-page-locate.png",
+    "op1-float-page": "op1-float-page.png",
+    "op1-float-after": "op1-float-after.png",
+    "op2-switch-advanced": "op2-switch-advanced.png",
+    "op2-switch-speed-before": "op2-switch-speed-before.png",
+    "op2-switch-speed-after": "op2-switch-speed-after.png",
+    "op2-find-page-locate": "op2-find-page-locate.png",
+    "op2-find-page": "op2-find-page.png",
+    "op2-float-page-locate": "op2-float-page-locate.png",
+    "op2-float-page": "op2-float-page.png",
+    "op2-float-after": "op2-float-after.png"
+   },
+   "notes": [
+    {
+     "tab_click": [
+      525,
+      722
+     ]
+    }
+   ],
+   "geometry": {
+    "origin": [
+     360.0,
+     30.0
+    ],
+    "size": [
+     1200.0,
+     971.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795471980.7037098,
+   "seconds": 192.8,
+   "screenshots": {
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-entry.png",
+    "op0-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op0-find-page-locate.panel.png",
+    "op0-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op0-find-page-locate.png",
+    "op0-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op0-find-page.panel.png",
+    "op0-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op0-find-page.png",
+    "op0-float-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op0-float-after.panel.png",
+    "op0-float-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op0-float-after.png",
+    "op0-float-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op0-float-page-locate.panel.png",
+    "op0-float-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op0-float-page-locate.png",
+    "op0-float-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op0-float-page.panel.png",
+    "op0-float-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op0-float-page.png",
+    "op0-switch-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op0-switch-advanced-ax-0.panel.png",
+    "op0-switch-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op0-switch-advanced-ax-0.png",
+    "op0-switch-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op0-switch-advanced-ax-1.panel.png",
+    "op0-switch-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op0-switch-advanced-ax-1.png",
+    "op0-switch-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op0-switch-advanced-ax-2.panel.png",
+    "op0-switch-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op0-switch-advanced-ax-2.png",
+    "op0-switch-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op0-switch-advanced-ax-3.panel.png",
+    "op0-switch-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op0-switch-advanced-ax-3.png",
+    "op0-switch-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op0-switch-advanced.panel.png",
+    "op0-switch-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op0-switch-advanced.png",
+    "op0-switch-quality-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op0-switch-quality-after.panel.png",
+    "op0-switch-quality-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op0-switch-quality-after.png",
+    "op0-switch-quality-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op0-switch-quality-before.panel.png",
+    "op0-switch-quality-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op0-switch-quality-before.png",
+    "op1-find-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op1-find-advanced.panel.png",
+    "op1-find-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op1-find-advanced.png",
+    "op1-find-page-full-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op1-find-page-full-locate.panel.png",
+    "op1-find-page-full-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op1-find-page-full-locate.png",
+    "op1-find-page-full.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op1-find-page-full.panel.png",
+    "op1-find-page-full.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op1-find-page-full.png",
+    "op1-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op1-find-page-locate.panel.png",
+    "op1-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op1-find-page-locate.png",
+    "op1-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op1-find-page.panel.png",
+    "op1-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op1-find-page.png",
+    "op1-float-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op1-float-after.panel.png",
+    "op1-float-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op1-float-after.png",
+    "op1-float-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op1-float-page-locate.panel.png",
+    "op1-float-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op1-float-page-locate.png",
+    "op1-float-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op1-float-page.panel.png",
+    "op1-float-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op1-float-page.png",
+    "op2-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op2-find-page-locate.panel.png",
+    "op2-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op2-find-page-locate.png",
+    "op2-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op2-find-page.panel.png",
+    "op2-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op2-find-page.png",
+    "op2-float-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op2-float-after.panel.png",
+    "op2-float-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op2-float-after.png",
+    "op2-float-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op2-float-page-locate.panel.png",
+    "op2-float-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op2-float-page-locate.png",
+    "op2-float-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op2-float-page.panel.png",
+    "op2-float-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op2-float-page.png",
+    "op2-switch-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op2-switch-advanced.panel.png",
+    "op2-switch-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op2-switch-advanced.png",
+    "op2-switch-speed-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op2-switch-speed-after.panel.png",
+    "op2-switch-speed-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op2-switch-speed-after.png",
+    "op2-switch-speed-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-061300-op2-switch-speed-before.panel.png",
+    "op2-switch-speed-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-061300/case-061300-op2-switch-speed-before.png"
+   }
   },
   "case:uia_param_arc_resolution": {
    "op": "case",
@@ -10474,6 +11207,78 @@
     "op0-switch-quality-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050208/case-050208-op0-switch-quality-before.png"
    },
    "name": "uia_param_surface_flow"
+  },
+  {
+   "op": "case",
+   "ok": false,
+   "supervisor_error": "Traceback (most recent call last):\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 1920, in supervise\n    wait_for(result_file.is_file, \"Mac worker timed out\", ns.fuse)\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 86, in wait_for\n    raise TimeoutError(message)\nTimeoutError: Mac worker timed out\n",
+   "screenshots": {
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-entry.png",
+    "op0-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-find-page-locate.panel.png",
+    "op0-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-find-page-locate.png",
+    "op0-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-find-page.panel.png",
+    "op0-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-find-page.png",
+    "op0-float-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-float-after.panel.png",
+    "op0-float-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-float-after.png",
+    "op0-float-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-float-page-locate.panel.png",
+    "op0-float-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-float-page-locate.png",
+    "op0-float-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-float-page.panel.png",
+    "op0-float-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-float-page.png",
+    "op0-switch-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-switch-advanced-ax-0.panel.png",
+    "op0-switch-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-switch-advanced-ax-0.png",
+    "op0-switch-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-switch-advanced-ax-1.panel.png",
+    "op0-switch-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-switch-advanced-ax-1.png",
+    "op0-switch-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-switch-advanced-ax-2.panel.png",
+    "op0-switch-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-switch-advanced-ax-2.png",
+    "op0-switch-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-switch-advanced-ax-3.panel.png",
+    "op0-switch-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-switch-advanced-ax-3.png",
+    "op0-switch-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-switch-advanced.panel.png",
+    "op0-switch-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-switch-advanced.png",
+    "op0-switch-quality-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-switch-quality-after.panel.png",
+    "op0-switch-quality-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-switch-quality-after.png",
+    "op0-switch-quality-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op0-switch-quality-before.panel.png",
+    "op0-switch-quality-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op0-switch-quality-before.png",
+    "op1-find-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-advanced.panel.png",
+    "op1-find-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-advanced.png",
+    "op1-find-fold-0-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-fold-0-after.panel.png",
+    "op1-find-fold-0-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-fold-0-after.png",
+    "op1-find-fold-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-fold-0.panel.png",
+    "op1-find-fold-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-fold-0.png",
+    "op1-find-fold-1-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-fold-1-after.panel.png",
+    "op1-find-fold-1-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-fold-1-after.png",
+    "op1-find-fold-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-fold-1.panel.png",
+    "op1-find-fold-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-fold-1.png",
+    "op1-find-page-full-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-locate.panel.png",
+    "op1-find-page-full-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-locate.png",
+    "op1-find-page-full-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-0.panel.png",
+    "op1-find-page-full-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-0.png",
+    "op1-find-page-full-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-1.panel.png",
+    "op1-find-page-full-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-1.png",
+    "op1-find-page-full-scroll-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-2.panel.png",
+    "op1-find-page-full-scroll-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-2.png",
+    "op1-find-page-full-scroll-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-3.panel.png",
+    "op1-find-page-full-scroll-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-3.png",
+    "op1-find-page-full-scroll-4.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-4.panel.png",
+    "op1-find-page-full-scroll-4.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-4.png",
+    "op1-find-page-full-scroll-5.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-5.panel.png",
+    "op1-find-page-full-scroll-5.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-5.png",
+    "op1-find-page-full-scroll-6.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-6.panel.png",
+    "op1-find-page-full-scroll-6.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-6.png",
+    "op1-find-page-full-scroll-7.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-7.panel.png",
+    "op1-find-page-full-scroll-7.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-7.png",
+    "op1-find-page-full-scroll-8.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full-scroll-8.panel.png",
+    "op1-find-page-full-scroll-8.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full-scroll-8.png",
+    "op1-find-page-full.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-full.panel.png",
+    "op1-find-page-full.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-full.png",
+    "op1-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page-locate.panel.png",
+    "op1-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page-locate.png",
+    "op1-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050552-op1-find-page.panel.png",
+    "op1-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050552/case-050552-op1-find-page.png"
+   },
+   "name": "uia_param_speed_limits",
+   "status": "not passed",
+   "reason": "supervisor error (its fuse fired, or the launch failed): no worker result - see supervisor_error"
   }
  ]
 }
