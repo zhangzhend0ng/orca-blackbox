@@ -378,10 +378,10 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             # 'Intra-layer order' (not 'By layer' as the table assumed).
             {"tab": "Others", "op": "combo", "current": "Intra-layer",
              "target": "By object", "group": "Special mode"},
-            {"op": "float", "label": ["Extruder clearance radius", "clearance radius"],
-             "value": "20", "group": "Special mode"},
-            {"op": "float", "label": ["Extruder clearance height to rod", "height to rod"],
-             "value": "30", "group": "Special mode"},
+            # 2026-11-23 atlas: the extruder-clearance rows live on the
+            # PRINTER settings page (Basic information) - unreachable from
+            # the process panel; ops dropped, keys dropped from VALUES
+            # (precedent: raft_expansion).
         ],
         # Feishu #293 (line 212): spiral on Others, then the seam combo on
         # Quality (the m5h quality-enums route).
