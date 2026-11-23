@@ -1,0 +1,2053 @@
+{
+ "version": "2.4.1",
+ "rows": [
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXScrollBar",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "scroll bar",
+    "value_num": null,
+    "enabled": true,
+    "x": 765.0,
+    "y": 796.0,
+    "w": 17.0,
+    "h": 89.0,
+    "key": null,
+    "states": [
+     "flat_default",
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "This is the height for each layer. Smaller layer heights give greater accuracy but longer printing time.\nparameter name\t: layer_height",
+    "ident": "",
+    "placeholder": "",
+    "value": "0.4",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 832.0,
+    "w": 83.0,
+    "h": 19.0,
+    "key": "layer_height",
+    "states": [
+     "flat_default",
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "This is the height of the first layer. Making the first layer height thicker can improve build plate adhesion.\nparameter name\t: initial_layer_print_height",
+    "ident": "",
+    "placeholder": "",
+    "value": "0.4",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 860.0,
+    "w": 83.0,
+    "h": 19.0,
+    "key": "initial_layer_print_height",
+    "states": [
+     "flat_default",
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "Improve shell precision by adjusting outer wall spacing. This also improves layer consistency. NOTE: This option will be ignored for outer-inner or inner-outer-inner wall sequences.\nparameter name\t: precise_outer_wall",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 988.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "precise_outer_wall",
+    "states": [
+     "flat_default"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "Use only one wall on flat top surfaces, to give more space to the top infill pattern.\nparameter name\t: only_one_wall_top",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 1052.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "only_one_wall_top",
+    "states": [
+     "flat_default"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "Use only one wall on first layer, to give more space to the bottom infill pattern.\nparameter name\t: only_one_wall_first_layer",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 1080.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "only_one_wall_first_layer",
+    "states": [
+     "flat_default"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "Default line width if other line widths are set to 0. If expressed as a %, it will be computed over the nozzle diameter.\nparameter name\t: line_width",
+    "ident": "",
+    "placeholder": "",
+    "value": "0.82",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 924.0,
+    "w": 55.0,
+    "h": 19.0,
+    "key": "line_width",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "Line width of initial layer. If expressed as a %, it will be computed over the nozzle diameter.\nparameter name\t: initial_layer_line_width",
+    "ident": "",
+    "placeholder": "",
+    "value": "0.82",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 952.0,
+    "w": 55.0,
+    "h": 19.0,
+    "key": "initial_layer_line_width",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "Line width of outer wall. If expressed as a %, it will be computed over the nozzle diameter.\nparameter name\t: outer_wall_line_width",
+    "ident": "",
+    "placeholder": "",
+    "value": "0.82",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 980.0,
+    "w": 55.0,
+    "h": 19.0,
+    "key": "outer_wall_line_width",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "Line width of inner wall. If expressed as a %, it will be computed over the nozzle diameter.\nparameter name\t: inner_wall_line_width",
+    "ident": "",
+    "placeholder": "",
+    "value": "0.82",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 1008.0,
+    "w": 55.0,
+    "h": 19.0,
+    "key": "inner_wall_line_width",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "Line width for top surfaces. If expressed as a %, it will be computed over the nozzle diameter.\nparameter name\t: top_surface_line_width",
+    "ident": "",
+    "placeholder": "",
+    "value": "0.82",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 1036.0,
+    "w": 55.0,
+    "h": 19.0,
+    "key": "top_surface_line_width",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "Line width of internal sparse infill. If expressed as a %, it will be computed over the nozzle diameter.\nparameter name\t: sparse_infill_line_width",
+    "ident": "",
+    "placeholder": "",
+    "value": "0.82",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 1064.0,
+    "w": 55.0,
+    "h": 19.0,
+    "key": "sparse_infill_line_width",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "Line width of internal solid infill. If expressed as a %, it will be computed over the nozzle diameter.\nparameter name\t: internal_solid_infill_line_width",
+    "ident": "",
+    "placeholder": "",
+    "value": "0.82",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 1092.0,
+    "w": 55.0,
+    "h": 19.0,
+    "key": "internal_solid_infill_line_width",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "Line width of support. If expressed as a %, it will be computed over the nozzle diameter.\nparameter name\t: support_line_width",
+    "ident": "",
+    "placeholder": "",
+    "value": "0.82",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 1120.0,
+    "w": 55.0,
+    "h": 19.0,
+    "key": "support_line_width",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "This option causes the inner seams to be shifted backwards based on their depth, forming a zigzag pattern.\nparameter name\t: staggered_inner_seams",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 1212.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "staggered_inner_seams",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "In order to reduce the visibility of the seam in a closed loop extrusion, the loop is interrupted and shortened by a specified amount.\nThis amount can be specified in millimeters or as a percentage of the current extruder diameter. The default value for this parameter is 10%.\nparameter name\t: seam_gap",
+    "ident": "",
+    "placeholder": "",
+    "value": "15%",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 1240.0,
+    "w": 55.0,
+    "h": 19.0,
+    "key": "seam_gap",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "The wipe speed is determined by the speed of the current extrusion role. e.g. if a wipe action is executed immediately following an outer wall extrusion, the speed of the outer wall extrusion will be utilized for the wipe action.\nparameter name\t: role_based_wipe_speed",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 1296.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "role_based_wipe_speed",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXStaticText",
+    "title": "",
+    "desc": "",
+    "help": "The wipe speed is determined by the speed setting specified in this configuration. If the value is expressed as a percentage (e.g. 80%), it will be calculated based on the travel speed setting above. The default value for this parameter is 80%.\nparameter name\t: wipe_speed",
+    "ident": "",
+    "placeholder": "",
+    "value": "80%",
+    "role_desc": "text",
+    "value_num": null,
+    "enabled": false,
+    "x": 612.0,
+    "y": 1324.0,
+    "w": 46.0,
+    "h": 19.0,
+    "key": "wipe_speed",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "To minimize the visibility of the seam in a closed loop extrusion, a small inward movement is executed before the extruder leaves the loop.\nparameter name\t: wipe_on_loops",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 1352.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "wipe_on_loops",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "To minimize visibility of potential overextrusion at the start of an external perimeter when printing with Outer/Inner or Inner/Outer/Inner wall print order, the de-retraction is performed slightly on the inside from the start of the external perimeter. That way any potential over extrusion is hidden from the outside surface.\n\nThis is useful when printing with Outer/Inner or Inner/Outer/Inner wall print order as in these modes it is more likely an external perimeter is printed immediately after a de-retraction move.\nparameter name\t: wipe_before_external_loop",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 1380.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "wipe_before_external_loop",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "Cracks smaller than 2x gap closing radius are being filled during the triangle mesh slicing. The gap closing operation may reduce the final print resolution, therefore it is advisable to keep the value reasonably low.\nparameter name\t: slice_closing_radius",
+    "ident": "",
+    "placeholder": "",
+    "value": "0.049",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 1444.0,
+    "w": 83.0,
+    "h": 19.0,
+    "key": "slice_closing_radius",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "The G-code path is generated after simplifying the contour of models to avoid too many points and G-code lines. Smaller values mean higher resolution and more time required to slice.\nparameter name\t: resolution",
+    "ident": "",
+    "placeholder": "",
+    "value": "0.012",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 1472.0,
+    "w": 83.0,
+    "h": 19.0,
+    "key": "resolution",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "Enable this to get a G-code file which has G2 and G3 moves. The fitting tolerance is same as the resolution.\n\nNote: For Klipper machines, this option is recommended to be disabled. Klipper does not benefit from arc commands as these are split again into line segments by the firmware. This results in a reduction in surface quality as line segments are converted to arcs by the slicer and then back to line segments by the firmware.\nparameter name\t: enable_arc_fitting",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 1500.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "enable_arc_fitting",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "Holes in objects will expand or contract in the XY plane by the set value. Positive values make holes bigger and negative values make holes smaller. This function is used to adjust sizes slightly when objects have assembly issues.\nparameter name\t: xy_hole_compensation",
+    "ident": "",
+    "placeholder": "",
+    "value": "0",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 1528.0,
+    "w": 83.0,
+    "h": 19.0,
+    "key": "xy_hole_compensation",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "Contours of objects will expand or contract in the XY plane by the set value. Positive values make contours bigger and negative values make contours smaller. This function is used to adjust sizes slightly when objects have assembly issues.\nparameter name\t: xy_contour_compensation",
+    "ident": "",
+    "placeholder": "",
+    "value": "0",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 1556.0,
+    "w": 83.0,
+    "h": 19.0,
+    "key": "xy_contour_compensation",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "This shrinks the first layer on the build plate to compensate for elephant foot effect.\nparameter name\t: elefant_foot_compensation",
+    "ident": "",
+    "placeholder": "",
+    "value": "0.15",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 1584.0,
+    "w": 83.0,
+    "h": 19.0,
+    "key": "elefant_foot_compensation",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "The number of layers on which the elephant foot compensation will be active. The first layer will be shrunk by the elephant foot compensation value, then the next layers will be linearly shrunk less, up to the layer indicated by this value.\nparameter name\t: elefant_foot_compensation_layers",
+    "ident": "",
+    "placeholder": "",
+    "value": "1",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 627.0,
+    "y": 1620.0,
+    "w": 56.0,
+    "h": 19.0,
+    "key": "elefant_foot_compensation_layers",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "Improve shell precision by adjusting outer wall spacing. This also improves layer consistency. NOTE: This option will be ignored for outer-inner or inner-outer-inner wall sequences.\nparameter name\t: precise_outer_wall",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 1656.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "precise_outer_wall",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "Enable this to get precise z height of object after slicing. It will get the precise object height by fine-tuning the layer heights of the last few layers. Note that this is an experimental parameter.\nparameter name\t: precise_z_height",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 1684.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "precise_z_height",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "Search for almost-circular holes that span more than one layer and convert the geometry to polyholes. Use the nozzle size and the (biggest) diameter to compute the polyhole.\nSee http://hydraraptor.blogspot.com/2011/02/polyholes.html\nparameter name\t: hole_to_polyhole",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 1712.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "hole_to_polyhole",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "Order of wall/infill. When the tickbox is unchecked the walls are printed first, which works best in most cases.\n\nPrinting infill first may help with extreme overhangs as the walls have the neighbouring infill to adhere to. However, the infill will slightly push out the printed walls where it is attached to them, resulting in a worse external surface finish. It can also cause the infill to shine through the external surfaces of the part.\nparameter name\t: is_infill_first",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 1932.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "is_infill_first",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "This factor affects the amount of material for top solid infill. You can decrease it slightly to have smooth surface finish.\n\nThe actual top surface flow used is calculated by multiplying this value with the filament flow ratio, and if set, the object's flow ratio.\nparameter name\t: top_solid_infill_flow_ratio",
+    "ident": "",
+    "placeholder": "",
+    "value": "1",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 1988.0,
+    "w": 103.0,
+    "h": 19.0,
+    "key": "top_solid_infill_flow_ratio",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "This factor affects the amount of material for bottom solid infill.\n\nThe actual bottom solid infill flow used is calculated by multiplying this value with the filament flow ratio, and if set, the object's flow ratio.\nparameter name\t: bottom_solid_infill_flow_ratio",
+    "ident": "",
+    "placeholder": "",
+    "value": "1",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 2016.0,
+    "w": 103.0,
+    "h": 19.0,
+    "key": "bottom_solid_infill_flow_ratio",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "Use only one wall on flat top surfaces, to give more space to the top infill pattern.\nparameter name\t: only_one_wall_top",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 2044.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "only_one_wall_top",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "If a top surface has to be printed and it's partially covered by another layer, it won't be considered at a top layer where its width is below this value. This can be useful to not let the 'one perimeter on top' trigger on surface that should be covered only by perimeters. This value can be a mm or a % of the perimeter extrusion width.\nWarning: If enabled, artifacts can be created if you have some thin features on the next layer, like letters. Set this setting to 0 to remove these artifacts.\nparameter name\t: min_width_top_surface",
+    "ident": "",
+    "placeholder": "",
+    "value": "200%",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 2072.0,
+    "w": 55.0,
+    "h": 19.0,
+    "key": "min_width_top_surface",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "Use only one wall on first layer, to give more space to the bottom infill pattern.\nparameter name\t: only_one_wall_first_layer",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 2100.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "only_one_wall_first_layer",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "Detour and avoid to travel across wall which may cause blob on surface\nparameter name\t: reduce_crossing_wall",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 2128.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "reduce_crossing_wall",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "Enable flow compensation for small infill areas.\nparameter name\t: small_area_infill_flow_compensation",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 2164.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "small_area_infill_flow_compensation",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "Decrease this value slightly (for example 0.9) to reduce the amount of material for bridge, to improve sag.\n\nThe actual bridge flow used is calculated by multiplying this value with the filament flow ratio, and if set, the object's flow ratio.\nparameter name\t: bridge_flow",
+    "ident": "",
+    "placeholder": "",
+    "value": "0.8",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 2236.0,
+    "w": 103.0,
+    "h": 19.0,
+    "key": "bridge_flow",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "This value governs the thickness of the internal bridge layer. This is the first layer over sparse infill. Decrease this value slightly (for example 0.9) to improve surface quality over sparse infill.\n\nThe actual internal bridge flow used is calculated by multiplying this value with the bridge flow ratio, the filament flow ratio, and if set, the object's flow ratio.\nparameter name\t: internal_bridge_flow",
+    "ident": "",
+    "placeholder": "",
+    "value": "1",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 2264.0,
+    "w": 103.0,
+    "h": 19.0,
+    "key": "internal_bridge_flow",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "Controls the density (spacing) of external bridge lines. Default is 100%.\n\nLower density external bridges can help improve reliability as there is more space for air to circulate around the extruded bridge, improving its cooling speed. Minimum is 10%.\n\nHigher densities can produce smoother bridge surfaces, as overlapping lines provide additional support during printing. Maximum is 120%. \nNote: Bridge density that is too high can cause warping or overextrusion.\nparameter name\t: bridge_density",
+    "ident": "",
+    "placeholder": "",
+    "value": "60",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 2292.0,
+    "w": 94.0,
+    "h": 19.0,
+    "key": "bridge_density",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "Controls the density (spacing) of internal bridge lines. 100% means solid bridge. Default is 100%.\n\nLower density internal bridges can help reduce top surface pillowing and improve internal bridge reliability as there is more space for air to circulate around the extruded bridge, improving its cooling speed.\n\nThis option works particularly well when combined with the second internal bridge over infill option, further improving internal bridging structure before solid infill is extruded.\nparameter name\t: internal_bridge_density",
+    "ident": "",
+    "placeholder": "",
+    "value": "100",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 612.0,
+    "y": 2320.0,
+    "w": 94.0,
+    "h": 19.0,
+    "key": "internal_bridge_density",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "If enabled, bridges are more reliable and can bridge longer distances but may look worse. If disabled, bridges look better but are reliable only for shorter distances.\nparameter name\t: thick_bridges",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 2348.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "thick_bridges",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "If enabled, thick internal bridges will be used. It's usually recommended to have this feature turned on. However, consider turning it off if you are using large nozzles.\nparameter name\t: thick_internal_bridges",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 2376.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "thick_internal_bridges",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "This detects the overhang percentage relative to line width and uses a different speed to print. For 100%% overhang, bridging speed is used.\nparameter name\t: detect_overhang_wall",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 2524.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "detect_overhang_wall",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "Modify the geometry to print overhangs without support material.\nparameter name\t: make_overhang_printable",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 2552.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "make_overhang_printable",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "Create additional perimeter paths over steep overhangs and areas where bridges cannot be anchored.\nparameter name\t: extra_perimeters_on_overhangs",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 2580.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "extra_perimeters_on_overhangs",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "flat",
+   "row": {
+    "role": "AXCheckBox",
+    "title": "",
+    "desc": "",
+    "help": "Extrude perimeters that have a part over an overhang in the reverse direction on even layers. This alternating pattern can drastically improve steep overhangs.\n\nThis setting can also help reduce part warping due to the reduction of stresses in the part walls.\nparameter name\t: overhang_reverse",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "toggle button",
+    "value_num": null,
+    "enabled": true,
+    "x": 605.0,
+    "y": 2608.0,
+    "w": 20.0,
+    "h": 20.0,
+    "key": "overhang_reverse",
+    "states": [
+     "flat_advanced",
+     "flat_return"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "Search plate, object and part.",
+    "value": "",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 387.0,
+    "y": 718.0,
+    "w": 381.0,
+    "h": 18.0,
+    "key": null,
+    "states": [
+     "outline_tree",
+     "outline_expand0",
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXOutline",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "outline",
+    "value_num": null,
+    "enabled": true,
+    "x": 360.0,
+    "y": 741.0,
+    "w": 422.0,
+    "h": 82.0,
+    "key": null,
+    "states": [
+     "outline_tree",
+     "outline_expand0",
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXScrollArea",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "scroll area",
+    "value_num": null,
+    "enabled": false,
+    "x": 361.0,
+    "y": 742.0,
+    "w": 420.0,
+    "h": 80.0,
+    "key": null,
+    "states": [
+     "outline_tree",
+     "outline_expand0",
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXRow",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "outline row",
+    "value_num": null,
+    "enabled": false,
+    "x": 361.0,
+    "y": 742.0,
+    "w": 420.0,
+    "h": 18.0,
+    "key": null,
+    "states": [
+     "outline_tree",
+     "outline_expand0",
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXGroup",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "group",
+    "value_num": null,
+    "enabled": false,
+    "x": 361.0,
+    "y": 742.0,
+    "w": 310.0,
+    "h": 18.0,
+    "key": null,
+    "states": [
+     "outline_tree",
+     "outline_expand0",
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXColumn",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "32434363008",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "column",
+    "value_num": null,
+    "enabled": false,
+    "x": 361.0,
+    "y": 742.0,
+    "w": 310.0,
+    "h": 80.0,
+    "key": null,
+    "states": [
+     "outline_tree",
+     "outline_expand0",
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXDisclosureTriangle",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "disclosure triangle",
+    "value_num": null,
+    "enabled": true,
+    "x": 363.0,
+    "y": 742.0,
+    "w": 12.0,
+    "h": 17.0,
+    "key": null,
+    "states": [
+     "outline_tree",
+     "outline_expand0",
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "<wxCustomRendererObject: 0x78c9e6ec0>",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 379.0,
+    "y": 742.0,
+    "w": 292.0,
+    "h": 17.0,
+    "key": null,
+    "states": [
+     "outline_tree"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXColumn",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "32433465856",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "column",
+    "value_num": null,
+    "enabled": false,
+    "x": 671.0,
+    "y": 742.0,
+    "w": 30.0,
+    "h": 80.0,
+    "key": null,
+    "states": [
+     "outline_tree",
+     "outline_expand0",
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "<wxCustomRendererObject: 0x78c9e7d30>",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": false,
+    "x": 701.0,
+    "y": 742.0,
+    "w": 50.0,
+    "h": 17.0,
+    "key": null,
+    "states": [
+     "outline_tree"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXColumn",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "32433470720",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "column",
+    "value_num": null,
+    "enabled": false,
+    "x": 701.0,
+    "y": 742.0,
+    "w": 50.0,
+    "h": 80.0,
+    "key": null,
+    "states": [
+     "outline_tree",
+     "outline_expand0",
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXColumn",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "32433464192",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "column",
+    "value_num": null,
+    "enabled": false,
+    "x": 751.0,
+    "y": 742.0,
+    "w": 30.0,
+    "h": 80.0,
+    "key": null,
+    "states": [
+     "outline_tree",
+     "outline_expand0",
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXRow",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "outline row",
+    "value_num": null,
+    "enabled": false,
+    "x": 361.0,
+    "y": 760.0,
+    "w": 420.0,
+    "h": 18.0,
+    "key": null,
+    "states": [
+     "outline_tree"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXGroup",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "group",
+    "value_num": null,
+    "enabled": false,
+    "x": 361.0,
+    "y": 760.0,
+    "w": 310.0,
+    "h": 18.0,
+    "key": null,
+    "states": [
+     "outline_tree"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXDisclosureTriangle",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "disclosure triangle",
+    "value_num": null,
+    "enabled": true,
+    "x": 363.0,
+    "y": 760.0,
+    "w": 12.0,
+    "h": 17.0,
+    "key": null,
+    "states": [
+     "outline_tree"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "<wxCustomRendererObject: 0x78c9e7d30>",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 379.0,
+    "y": 760.0,
+    "w": 292.0,
+    "h": 17.0,
+    "key": null,
+    "states": [
+     "outline_tree"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "<wxCustomRendererObject: 0x78c9e6ec0>",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": false,
+    "x": 701.0,
+    "y": 760.0,
+    "w": 50.0,
+    "h": 17.0,
+    "key": null,
+    "states": [
+     "outline_tree"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "<wxCustomRendererObject: 0x78c9e76f0>",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 379.0,
+    "y": 742.0,
+    "w": 292.0,
+    "h": 24.0,
+    "key": null,
+    "states": [
+     "outline_expand0"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "<wxCustomRendererObject: 0x78c9e6420>",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": false,
+    "x": 701.0,
+    "y": 742.0,
+    "w": 50.0,
+    "h": 24.0,
+    "key": null,
+    "states": [
+     "outline_expand0"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXRow",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "outline row",
+    "value_num": null,
+    "enabled": false,
+    "x": 361.0,
+    "y": 767.0,
+    "w": 420.0,
+    "h": 25.0,
+    "key": null,
+    "states": [
+     "outline_expand0",
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "<wxCustomRendererObject: 0x78c9e76f0>",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 387.0,
+    "y": 767.0,
+    "w": 284.0,
+    "h": 24.0,
+    "key": null,
+    "states": [
+     "outline_expand0"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "<wxCustomRendererObject: 0x78c9e7570>",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 701.0,
+    "y": 767.0,
+    "w": 50.0,
+    "h": 24.0,
+    "key": null,
+    "states": [
+     "outline_expand0"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXRow",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "outline row",
+    "value_num": null,
+    "enabled": false,
+    "x": 361.0,
+    "y": 792.0,
+    "w": 420.0,
+    "h": 25.0,
+    "key": null,
+    "states": [
+     "outline_expand0",
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXGroup",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "group",
+    "value_num": null,
+    "enabled": false,
+    "x": 361.0,
+    "y": 792.0,
+    "w": 310.0,
+    "h": 25.0,
+    "key": null,
+    "states": [
+     "outline_expand0",
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXDisclosureTriangle",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "disclosure triangle",
+    "value_num": null,
+    "enabled": true,
+    "x": 363.0,
+    "y": 792.0,
+    "w": 12.0,
+    "h": 24.0,
+    "key": null,
+    "states": [
+     "outline_expand0",
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "<wxCustomRendererObject: 0x78c9e7850>",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 379.0,
+    "y": 792.0,
+    "w": 292.0,
+    "h": 24.0,
+    "key": null,
+    "states": [
+     "outline_expand0"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "<wxCustomRendererObject: 0x78c9e7570>",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": false,
+    "x": 701.0,
+    "y": 792.0,
+    "w": 50.0,
+    "h": 24.0,
+    "key": null,
+    "states": [
+     "outline_expand0"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "<wxCustomRendererObject: 0x78c9e7850>",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 379.0,
+    "y": 742.0,
+    "w": 292.0,
+    "h": 24.0,
+    "key": null,
+    "states": [
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "<wxCustomRendererObject: 0x78c9e7410>",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": false,
+    "x": 701.0,
+    "y": 742.0,
+    "w": 50.0,
+    "h": 24.0,
+    "key": null,
+    "states": [
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "<wxCustomRendererObject: 0x78c9e7850>",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 387.0,
+    "y": 767.0,
+    "w": 284.0,
+    "h": 24.0,
+    "key": null,
+    "states": [
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "<wxCustomRendererObject: 0x78c9e6420>",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 701.0,
+    "y": 767.0,
+    "w": 50.0,
+    "h": 24.0,
+    "key": null,
+    "states": [
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "<wxCustomRendererObject: 0x78c9e6c60>",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": true,
+    "x": 379.0,
+    "y": 792.0,
+    "w": 292.0,
+    "h": 24.0,
+    "key": null,
+    "states": [
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXTextField",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "<wxCustomRendererObject: 0x78c9e6420>",
+    "role_desc": "text field",
+    "value_num": null,
+    "enabled": false,
+    "x": 701.0,
+    "y": 792.0,
+    "w": 50.0,
+    "h": 24.0,
+    "key": null,
+    "states": [
+     "outline_expand1"
+    ]
+   }
+  },
+  {
+   "mode": "outline",
+   "row": {
+    "role": "AXScrollBar",
+    "title": "",
+    "desc": "",
+    "help": "",
+    "ident": "",
+    "placeholder": "",
+    "value": "",
+    "role_desc": "scroll bar",
+    "value_num": null,
+    "enabled": true,
+    "x": 765.0,
+    "y": 796.0,
+    "w": 17.0,
+    "h": 89.0,
+    "key": null,
+    "states": [
+     "outline_tab_b"
+    ]
+   }
+  }
+ ],
+ "meta": {
+  "captured_at": "2026-11-23T12:09:26",
+  "window_origin": [
+   360.0,
+   85.0
+  ],
+  "window_size": [
+   1200,
+   800
+  ],
+  "flat_rows": 48,
+  "outline_rows": 34,
+  "flat_with_help": 47,
+  "flat_with_key": 47,
+  "outline_states": [
+   "outline_tree",
+   "outline_expand0",
+   "outline_expand1",
+   "outline_tab_b"
+  ],
+  "outline_attr_names": null,
+  "outline_counts_by_state": {
+   "outline_tree": {
+    "AXRows": null,
+    "AXVisibleRows": null,
+    "AXColumns": null
+   },
+   "outline_expand0": {
+    "AXRows": null,
+    "AXVisibleRows": null,
+    "AXColumns": null
+   },
+   "outline_expand1": {
+    "AXRows": null,
+    "AXVisibleRows": null,
+    "AXColumns": null
+   },
+   "outline_tab_b": null
+  },
+  "actions": [
+   {
+    "action": "boot",
+    "version": "2.4.1",
+    "pid": 90415,
+    "origin": [
+     360.0,
+     85.0
+    ]
+   },
+   {
+    "action": "AXPress",
+    "target": "advanced_checkbox",
+    "at": [
+     673,
+     689
+    ],
+    "error": null
+   },
+   {
+    "action": "AXPress",
+    "target": "view_checkbox",
+    "at": [
+     453,
+     686
+    ],
+    "error": null
+   },
+   {
+    "action": "click",
+    "target": "tab_band",
+    "at": [
+     525,
+     703
+    ]
+   },
+   {
+    "action": "click",
+    "target": "tab_band",
+    "at": [
+     390,
+     703
+    ]
+   }
+  ],
+  "notes": [
+   "read-only census: view-state switches only (Advanced checkbox, view checkbox, tab-band clicks, disclosure triangles); no AXValue writes, no project save",
+   "outline cells render via wxCustomRendererObject; their AXValue is a native pointer string, not readable text (Mac 2.4.1 hard virtualization)",
+   "flat-list rows stay fully AX-exposed offscreen; y coordinates exceed the 885 px window bottom on purpose"
+  ]
+ }
+}
