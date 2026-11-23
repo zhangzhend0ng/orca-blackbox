@@ -498,8 +498,16 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         # Initial layer / Outer wall / ... - Tab.cpp:2261), not the
         # table's *_line_width key names; 'Outer wall' also proven by the
         # #276 run pair.
+        # 2026-11-24 (VM run e0905644): all seven fields landed and the
+        # slicer refused - 'Too small line width' (Print.cpp
+        # validate_extrusion_width: a width must be GREATER than the layer
+        # height, and the fixture's layers are 0.4 mm; top surface 0.40 is
+        # not above them). The table's values are written for thinner
+        # layers: layer height 0.2 goes first, as a recorded deviation.
         "uia_param_line_width_all": [
-            {"tab": "Quality", "tab_hint": "height", "op": "float", "label": "Default",
+            {"tab": "Quality", "tab_hint": "height", "op": "float",
+             "label": ["^Layer height"], "value": "0.2", "group": "Layer height"},
+            {"op": "float", "label": "Default",
              "value": "0.42", "group": "Line width"},
             # Band 513aabe1: the Quality top rows render "First layer ..."
             {"op": "float", "label": ["First layer", "Initial layer"], "value": "0.5", "group": "Line width"},
