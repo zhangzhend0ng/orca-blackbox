@@ -6670,5 +6670,13 @@
    ],
    "session_note": "02:08, before the first run: the test instance left behind by run 015828 (pid 39221, scratch datadir, no supervisor alive) was killed - screencapture is full-screen, so a leftover window would sit in the evidence frames. The kill command matched by command-line text and also hit pid 44384, which was the shell running that very command: its argv holds the grep patterns (verified 02:26 with a marker pattern - the shell and its subshell both match). No other Orca instance was involved. This note first read 44384 as a second test instance of unknown origin; that was wrong and is corrected. No harness Orca instance is left running (pgrep -x Snapmaker_Orca: none, 02:26)"
   }
+ },
+ "case_table": {
+  "path": "runner/macos/param_cases.json",
+  "source_commit": "2733ef6",
+  "source_branch": "origin/codex/glm-dev-20261124",
+  "source_path": "tools/param_cases_export.json",
+  "sha256": "fb2f1d2313e8608cf37031656b2f71fe79531909dcd944fc8fda3f27f0aef05b",
+  "note": "byte-identical copy of the file at that commit (git show, no merge of the branch); the platform-independent export of the 42 Feishu param cases"
  }
 }
