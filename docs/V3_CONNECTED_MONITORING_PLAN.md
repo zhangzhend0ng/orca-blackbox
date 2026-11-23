@@ -65,13 +65,14 @@
 ### L2 UI 渲染断言闭环（2026-11-23 傍晚，SHADOW，宿主 dev 调试口径）
 
 - ✅ **`test_l2.py --ui` 17/17**（cache 8 + ui 9）：设备面板 web UI 的**实际渲染**被断言——温度（`210 / 215 °C`、`60 / 0 °C`）、进度（`35%`）、文件名、层（`34/68 layer`）、暂停（`Paused`）、故障（异常弹窗）、离线（离线弹窗 + 数据变占位）、在线（CLI **自行重连** 3–15s 后数据恢复）与恢复后的实时翻转（`80%`）。页面只开一次，之后全是实时更新断言。
-- ✅ **负对照 17/17**：每个 UI 检查先等正确预期成立，再要求同一页面状态下被篡改的预期失败。正向连续 4 次 17/17；cache-only 8/8。
-- **四钉收据**：SUT = CLI 自带设备面板 web UI `main.dart.js` sha256 `ce43ba92…2fbfc1`（`orca 1.10.0 build 20261116160427`）；CLI = `snapmaker_control_macos_arm64` sha256 `d7b813b0…38f44b`；mock 脚本 = `virtual_u1_mqtt.py` sha256 `a23b58a1…b21563`（本地=Mac）；剧本 = orca-virtual-u1 `c2b8046`（代码）+ `b505ca0`（文档）。
+- ✅ **负对照 17/17**：每个 UI 检查先等正确预期成立，再要求同一页面状态下被篡改的预期失败。正向连续 4 次 17/17（备选入口页面）；改用桌面端权威页面后再正向 17/17、负对照 17/17；cache-only 8/8。
+- **四钉收据**：SUT = CLI 自带设备面板 web UI `main.dart.js` sha256 `ce43ba92…2fbfc1`（`orca 1.10.0 build 20261116160427`）；CLI = `snapmaker_control_macos_arm64` sha256 `d7b813b0…38f44b`；mock 脚本 = `virtual_u1_mqtt.py` sha256 `a23b58a1…b21563`（本地=Mac）；剧本 = orca-virtual-u1 `7972d34`（`c2b8046` 首版 + `b505ca0` 文档 + `7972d34` 权威页面入口）。页面 = CLI `/api/health` 的 `server_url.device_control`。
 - **断言通道**：语义树文本（精确，门禁）+ 进度条填充比例（截图像素解码，门禁：0.35 / 0.80）+ Windows OCR（旁证，非门禁——大号百分数读不出）。
-- **纠正上一轮四条**：① Control 按钮无需点击——监控页 URL 直达（`/web/flutter_web/index?tab=device_control&mode=1`，桌面内嵌入口）；该按钮的处理链是面向桌面宿主的 `refreshControl` 命令，浏览器里本就是空操作。② “glass pane 0×0 未初始化”是误判——渲染层在 shadow root 内，属该版引擎常态。③ “点击死”只属于有头遮挡实例；headless=new 下真实鼠标点击、悬停、语义点击均可用。④ “CLI 不自愈 / 授权被移除弹窗”是模拟器忘记配对的假象，补注册表后 CLI 自行重连。
+- **纠正上一轮四条**：① Control 按钮无需点击——监控页 URL 直达，权威来源是 CLI `/api/health` 的 `server_url.device_control`（`/web/flutter_web/device_control`，上游 `GatewayService::web_url` 读的就是这张表，Orca 桌面设备页加载的即此页）；该按钮的处理链是面向桌面宿主的 `refreshControl` 命令，浏览器里本就是空操作。② “glass pane 0×0 未初始化”是误判——渲染层在 shadow root 内，属该版引擎常态。③ “点击死”只属于有头遮挡实例；headless=new 下真实鼠标点击、悬停、语义点击均可用。④ “CLI 不自愈 / 授权被移除弹窗”是模拟器忘记配对的假象，补注册表后 CLI 自行重连。
 - **根因不是 UI 缺陷而是虚拟固件保真缺口**（6 项已修，均有消费证据）：`machine_state_manager` 应报 `{main_state, action_code}`；`info.total_layer`（单数）；`file_position` + `server.files.metadata`；异常通道（`server.exception.query` + `notify_exception_*`）；已绑定客户端注册表；状态文件撕裂读不再重置。清单与 ground truth 见 orca-virtual-u1 `NEXT_SESSION_PROMPT.md`。
 - **边界**：宿主直跑（Mac 夹具 + 宿主 headless Chrome），**非信管 VM 运行，不计 GREEN，不写飞书**。未进门禁的假设：`complete`/`error` 的机器状态稳态（真机未抓）、异常弹窗未走本地化标题、缩略图与文件列表接口为空、控制 RPC 未实现。被测物是 CLI 自带面板，**不是 Orca 桌面端**。
-- **首里程碑对照**：L2 状态呈现 3 条 → 已 5 条（温度/进度/文件名/层号/暂停）+ 报警负例 1 条（故障弹窗），均 SHADOW；**L3 上传回执仍 0/1**，是下一步。orca-virtual-u1 仓无 remote，仅本地提交（`c2b8046` 起）。
+- **首里程碑对照**：L2 状态呈现 3 条 → 已 5 条（温度/进度/文件名/层号/暂停）+ 报警负例 1 条（故障弹窗），均 SHADOW；**L3 上传回执仍 0/1**，是下一步。L3 前置：客机到 Mac `172.18.6.213:7125` 的可达性未验；客机桌面被 glm 批队列占用期间不得启动。
+- **落点**：orca-virtual-u1 仓无 remote，仅本地提交（至 `7972d34`）。本工作流在 orca-blackbox 的改动走独立分支 `connected-monitoring/l2-ui-20261123`，**不进批队列分支** `codex/glm-flash-expansion-20261121-0217`（该分支上每条 run 的 `launch.ps1` 硬编码宿主 HEAD，批中提交会让后续 run 快败）。
 
 
 
