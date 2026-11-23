@@ -18,7 +18,7 @@ LAYER_FIXTURE_SHA256 = "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d
 # the same cube on the U1 0.4 nozzle, 0.20mm Standard, PLA. Built and pinned by
 # tools/build_feishu_std_fixture.py; nothing else may write it.
 STD_FIXTURE = "fixtures/feishu_std_cube.3mf"
-STD_FIXTURE_SHA256 = "0690071f9501bac804d17c025015f2fe2bed4ce48b90e2f28946e307c56c1a0b"
+STD_FIXTURE_SHA256 = "51852905e23aa78248947fe88b8dee85dd0f05cf5cbf8cb599181caa1565a9c1"
 # A scenario named `<base>_std02` is `<base>` on STD_FIXTURE: the same tab spec, ops,
 # pilot and dispatch, another fixture (native_pilots.native_fixture). The full name
 # stays in scope.json and the report, so those runs keep apart from the cube's.

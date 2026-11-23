@@ -1945,9 +1945,10 @@ _saved31 = _control31(_cube_raw31, _cube_raw31, _gcode31)
 check("save-only control: a project saved unchanged passes the existing preserved rule (empty change set) "
       "and records the layer changes, the feeds and an empty config diff",
       _saved31.get("other_settings_preserved") is True and _saved31.get("case_id") == "param_save_only_control"
-      and _saved31.get("layer_change_lines") == 2 and _saved31.get("config_changes") == []
-      and _saved31.get("feature_speeds", {}).get("travel", {}).get("first") == {"9000": 1}
-      and _saved31.get("feature_speeds", {}).get("Sparse infill", {}).get("other") == {"2400": 1}
+      and _saved31.get("layer_change_lines") == 2
+      and _saved31.get("config_changes") == {"count": 0, "keys": "", "sample": []}
+      and _saved31.get("feature_speeds", {}).get("travel", {}).get("first") == "9000x1"
+      and _saved31.get("feature_speeds", {}).get("Sparse infill", {}).get("other") == "2400x1"
       and "schedule_error" in _saved31, "got %r" % (_saved31,))
 check("save-only control: a project whose config changed is refused by the existing rule",
       _code31(_control31, _edited_raw31, _cube_raw31, _gcode31) == "pilot_unrelated_setting_changed:layer_height",
@@ -1955,8 +1956,31 @@ check("save-only control: a project whose config changed is refused by the exist
 _baseline_run31 = _baseline_verify31(_std_raw31, _std_raw31, _gcode31)
 check("save-only baseline: the precondition fixture saved unchanged passes the same rule and records its facts",
       _baseline_run31.get("other_settings_preserved") is True and _baseline_run31.get("case_id") == "param_std_save_only"
-      and _baseline_run31.get("layer_change_lines") == 2 and _baseline_run31.get("config_changes") == [],
+      and _baseline_run31.get("layer_change_lines") == 2
+      and _baseline_run31.get("config_changes") == {"count": 0, "keys": "", "sample": []},
       "got %r" % (_baseline_run31,))
+# The result is the business check's detail, which run_verdict bounds to 4096 characters;
+# the first real control (baa3168, 51 changed keys each with its values) overflowed it and
+# was reported native_evidence_unavailable. A save that rewrote every migrated key and
+# added the app's defaults still has to fit.
+from harness import pilot_common as _pcm35  # noqa: E402
+_migrated35 = dict(_cube_config31)
+for _key35 in _pcm35._VECTOR_MIGRATIONS:
+    if isinstance(_migrated35.get(_key35), str):
+        _migrated35[_key35] = [_migrated35[_key35]]
+_migrated35.update(_pcm35._ADDED_DEFAULTS)
+_wide35 = b"".join(b";LAYER_CHANGE\n;TYPE:F%d\nG1 X10 Y10 E1 F1800\nG1 X20 Y10 E2\n" % (n,) for n in range(2))
+_wide35 = b"".join(b";TYPE:Feature number %d\nG1 F1800\nG1 X10 Y%d E1\nG1 X20 Y%d E2\nG1 F2400\nG1 X30 Y%d E3\n" % (n, n, n, n)
+                   for n in range(16)) + _wide35
+_migrated_raw35 = _archive31(_json31.dumps(_migrated35).encode())
+_big35 = _control31(_migrated_raw35, _cube_raw31, _wide35)
+check("save-only control: a save that rewrote %d migrated keys and added %d defaults passes the rule, "
+      "counts every change and keeps its result inside the 4096-character check detail"
+      % (len(_pcm35._VECTOR_MIGRATIONS), len(_pcm35._ADDED_DEFAULTS)),
+      _big35.get("other_settings_preserved") is True
+      and _big35["config_changes"]["count"] == len(_pcm35._VECTOR_MIGRATIONS) + len(_pcm35._ADDED_DEFAULTS)
+      and len(_json31.dumps(_big35, sort_keys=True)) <= 4096,
+      "count %r len %r" % (_big35.get("config_changes", {}).get("count"), len(_json31.dumps(_big35, sort_keys=True))))
 
 failed = [n for n, ok in results if not ok]
 print("\n%d checks, %d failed" % (len(results), len(failed)))

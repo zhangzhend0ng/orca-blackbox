@@ -19,8 +19,9 @@ How the config is ported (it starts as the cube's config):
   - the preset ids and every key the chosen PLA presets define follow the chosen
     presets;
   - every other key keeps the cube's value; no key is added or removed;
-  - different_settings_to_system is the manifest of the new config: the keys where it
-    differs from the 0.4 presets, per section, the way the app writes it.
+  - different_settings_to_system is the manifest the app itself writes for this
+    project (measured, see APP_MANIFEST); where the config differs from the 0.4
+    presets of the host's 2.4.1 tree is reported, not written into the fixture.
 
 The flattener is validated before any of that: the cube's chain read through
 `inherits` has to reproduce the cube's config key by key, and the leaf presets
@@ -323,6 +324,10 @@ def manifest(new, process, filaments, machine):
 
 MANIFEST_SECTIONS = ("print", "filament_1", "filament_2", "filament_3", "filament_4", "filament_5", "printer")
 
+# What the 2.4.0 build writes into different_settings_to_system when a project of
+# this shape is loaded and saved untouched (the first save-only controls, 2026-11-24).
+APP_MANIFEST = ["mixed_filament_definitions", "", "", "", "", "", ""]
+
 
 def check_manifest(value, new, process, filaments, machine):
     """Both ways, read back from the serialised strings: every key the manifest names
@@ -499,17 +504,29 @@ def main():
 
     # 2. Port, force, manifest, assert, build.
     new, changed, overrode, forced_over, single = port(fixture, cube, std, filament_keys)
-    # different_settings_to_system is the manifest of ITS OWN config. On load the app
-    # keeps the listed keys from the project and re-applies every other key from the
-    # system preset of that name when it finds one (Preset.cpp:2140-2153). The cube's
-    # manifest names the cube's one difference; left in place it would not be this
-    # config's, and a key this config differs in would be silently reset on load.
+    # different_settings_to_system: the app writes this manifest at save, from the
+    # project as it loaded it, against the presets it resolved for it. Measured on
+    # the 2.4.0 build with both fixtures loaded and saved untouched (VM c88272e,
+    # fa706g3 7c067c0, the first save-only controls): ['mixed_filament_definitions',
+    # '', '', '', '', '', ''] for the cube AND for the first build of this fixture,
+    # whose own manifest named 6 print and 3 printer keys. The presets load as the
+    # project's own (their names get "(fixture.3mf)"), every project value is kept,
+    # and the manifest names only the app-managed key. Carrying the computed list
+    # made the preserved-settings rule refuse the plain save (the app's list is not
+    # a superset of it: pilot_dirty_manifest_out_of_scope). So the fixture carries
+    # what the app will write; where this config differs from the 0.4 presets of
+    # the host's 2.4.1 tree is kept for the report.
     process04, machine04 = flatten(std_links["process"]), flatten(std_links["printer"])
     filaments04 = [flatten(std_links["filaments"][name]) for name in std_order]
-    new["different_settings_to_system"] = manifest(new, process04, filaments04, machine04)
+    differs_from_chain = manifest(new, process04, filaments04, machine04)
+    check_manifest(differs_from_chain, new, process04, filaments04, machine04)
+    new["different_settings_to_system"] = list(fixture["different_settings_to_system"])
+    require(new["different_settings_to_system"] == APP_MANIFEST,
+            "the cube's manifest is not the measured one: %r" % (fixture["different_settings_to_system"],))
     if "different_settings_to_system" not in changed:
         changed.append("different_settings_to_system")
-    manifest_names = check_manifest(new["different_settings_to_system"], new, process04, filaments04, machine04)
+    manifest_names = {name: [key for key in text.split(";") if key]
+                      for name, text in zip(MANIFEST_SECTIONS, differs_from_chain)}
     units = assert_sane(new, fixture)
     built = build_archive(source, dump(new))
     config_size = check_archive(source, built, new)
@@ -549,8 +566,9 @@ def main():
                  "kept_from_cube": {key: brief(fixture[key]) for key in
                                     ("filament_ids", "from", "version") if fixture[key] == new[key]}},
         "different_settings_to_system": {"value": new["different_settings_to_system"],
+                                         "measured_on": "VM c88272e, fa706g3 7c067c0",
                                          "count": sum(len(keys) for keys in manifest_names.values()),
-                                         "sections": manifest_names,
+                                         "differs_from_0.4_chain": manifest_names,
                                          "cube": fixture["different_settings_to_system"]},
         "settings": {key: new[key] for key in RECORDED},
         "initial_layer_print_height": new["initial_layer_print_height"],

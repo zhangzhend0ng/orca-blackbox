@@ -46,6 +46,9 @@ VALUES = {}
 GOAL = ("Save the loaded project without changing any setting. Preserve the cube geometry, "
         "its placement, material assignment and every setting.")
 LIMIT = 120
+SAMPLE = 6          # changed keys shown with their values; the rest by name
+KEYS_CHARS = 1500   # room for the changed keys' names
+DETAIL_ROOM = 3800  # what the result may take of the 4096-character check detail
 
 
 def _cut(value):
@@ -54,12 +57,17 @@ def _cut(value):
 
 
 def _config_changes(project, fixture, cancelled):
-    """[{key, before, after}] of the keys whose value differs between the two project
-    configs, raw comparison: a key added by the save or rewritten in form counts."""
+    """{"count", "keys", "sample"} of the keys whose value differs between the two
+    project configs, raw comparison: a key added by the save or rewritten in form
+    counts. The whole list is recomputed offline from the two 3MFs (the proof and
+    input/fixture.3mf of the run); the result carries what fits in a check's detail."""
     saved, original = (_json(archive["Metadata/project_settings.config"])
-                       for archive in (_archive(project, cancelled), _archive(fixture, cancelled)))
-    return [{"key": key, "before": _cut(original.get(key)), "after": _cut(saved.get(key))}
-            for key in sorted(set(saved) | set(original)) if saved.get(key) != original.get(key)]
+                       for archive in (_archive(project, cancelled), (_archive(fixture, cancelled))))
+    changed = sorted(key for key in set(saved) | set(original) if saved.get(key) != original.get(key))
+    return {"count": len(changed),
+            "keys": " ".join(changed)[:KEYS_CHARS],
+            "sample": [{"key": key, "before": _cut(original.get(key)), "after": _cut(saved.get(key))}
+                       for key in changed[:SAMPLE]]}
 
 
 def _layers(gcode, settings):
@@ -75,17 +83,17 @@ def _layers(gcode, settings):
 
 
 def _feeds(gcode):
-    """feature_speeds() reads a file, so the exported bytes go to one for the call.
-    Its feed keys are floats ("1800.0" once serialised): a whole feed is written as
-    its integer."""
+    """{feature: {"blocks": n, "first": "2100x4 2563.154x44", "other": "1864x31 ..."}} - the
+    four most used feeds per layer band, feed x moves. feature_speeds() reads a
+    file, so the exported bytes go to one for the call."""
     with tempfile.TemporaryDirectory(prefix="orca-bb-feeds-") as folder:
         path = Path(folder) / "export.gcode"
         path.write_bytes(gcode)
         table = feature_speeds(str(path), travel=True)
-    name = lambda feed: str(int(feed)) if feed == int(feed) else str(feed)
-    return {kind: {"blocks": row["blocks"],
-                   "first": {name(feed): moves for feed, moves in sorted(row["first"].items())},
-                   "other": {name(feed): moves for feed, moves in sorted(row["other"].items())}}
+    name = lambda feed: str(int(feed)) if feed == int(feed) else str(round(feed, 3))
+    top = lambda row: " ".join("%sx%d" % (name(feed), moves)
+                               for feed, moves in sorted(row.items(), key=lambda kv: -kv[1])[:4]) or "-"
+    return {kind: {"blocks": row["blocks"], "first": top(row["first"]), "other": top(row["other"])}
             for kind, row in table.items()}
 
 
@@ -100,6 +108,14 @@ def _control(case_id):
         result["layer_change_lines"] = sum(1 for line in text.splitlines() if line.startswith(";LAYER_CHANGE"))
         result["feature_speeds"] = _feeds(gcode)
         result["config_changes"] = _config_changes(project, fixture, cancelled)
+        # The result IS the business check's detail, bounded to 4096 characters
+        # (run_verdict.CheckResult) - the first control run (baa3168) overflowed it
+        # and was reported native_evidence_unavailable. Give up the sample first,
+        # then the key list; the counts always stay.
+        for droppable in ("sample", "keys"):
+            if len(json.dumps(result, sort_keys=True)) <= DETAIL_ROOM:
+                break
+            result["config_changes"][droppable] = "(dropped: over the check's detail bound)"
         return result
 
     return verify_business
