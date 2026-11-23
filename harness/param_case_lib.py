@@ -507,11 +507,14 @@ def census_param_pages(ui):
         pp.click_tab(app, "Others", "")
         pp.scroll_group_into_view(app, "Special mode")
 
-        def open_and_report(tag, click):
-            r, _h, cur = pp.find_option_combo_seq(app, ("By", "Layer"), None)
+        def open_and_report(tag, locate):
+            """Open the combo whose painted value is `locate`; report the
+            popup geometry and the window a click on 'By object' would hit.
+            Returns (popup_rect, popup_hwnd, combo_rect) or None."""
+            r, _h, cur = pp.find_option_combo_seq(app, locate, None)
             if not r:
-                say("   %s: combo not found" % tag)
-                return
+                say("   %s: combo %r not found" % (tag, locate))
+                return None
             winutil.msg_click_screen((r[0] + r[2]) // 2, (r[1] + r[3]) // 2, app.hwnd)
             popup = None
             for _ in range(20):
@@ -519,47 +522,54 @@ def census_param_pages(ui):
                 if popup:
                     break
             if not popup:
-                say("   %s: combo rect=%r text=%r -> no popup" % (tag, r, cur))
-                return
+                say("   %s: combo rect=%r text=%r -> NO popup within 10s" % (tag, r, cur))
+                return None
             pr, ph = popup[2], popup[3]
             time.sleep(0.8)
             w, hgt, bgra = winutil.capture_window(ph)
             img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
             words = mdu.ocr_words_img(img, scale=3)
             hits = pp.popup_line_hits(words, "by object")
-            say("   %s: combo rect=%r popup rect=%r capture=%dx%d words=%r hits=%r" % (
-                tag, r, pr, w, hgt, [(t, x, y) for t, x, y, *_ in words], hits))
+            say("   %s: combo rect=%r popup rect=%r capture=%dx%d words=%r" % (
+                tag, r, pr, w, hgt, [(t, x, y) for t, x, y, *_ in words]))
             for cx_, cy_, _line in hits[:1]:
                 x, y = pr[0] + cx_, pr[1] + cy_
                 target = winutil.window_from_screen_point(x, y)
-                say("      click point (%d,%d) -> class=%s rect=%r (popup class=%s)" % (
+                say("      'By object' click point (%d,%d) -> class=%s rect=%r (popup class=%s)" % (
                     x, y, cls(target), winutil.window_rect(target) if target else None, cls(ph)))
-                if click:
-                    winutil.msg_click_screen(x, y)
-                    time.sleep(2.5)
-                    _r2, _h2, cur2 = pp.find_option_combo_seq(app, ("By", "Object"), None)
-                    say("      clicked -> combo text now %r" % (cur2,))
+            return pr, ph, r
 
-        open_and_report("at-edge", click=False)
-        try:
-            from PIL import ImageGrab
-            ImageGrab.grab(all_screens=True).save(ui.artifacts / "param_failure.png")
-            say("   screen shot with the popup open saved")
-        except Exception as exc:
-            say("   screen shot failed: %s: %s" % (type(exc).__name__, exc))
-        mdu._send_keys([(0x1B, False), (0x1B, True)])
-        time.sleep(0.8)
-        # r3c: the engine's own path - it parks the row before opening
-        # anything, refuses to click off-screen and verifies by the combo's
-        # window text.
+        def close(opened):
+            if opened:
+                pr, ph, r = opened
+                say("   close_popup -> %r" % (pp.close_popup(
+                    app, ph, ((r[0] + r[2]) // 2, (r[1] + r[3]) // 2)),))
+
+        # The engine's own path first, on a control nothing has touched: it
+        # parks the row before opening anything, refuses to click off-screen
+        # and verifies by the combo's window text.
         try:
             res = pp.set_combo_by_popup(app, ("By", "Layer"), "By object",
                                         group_substr="Special mode", log="[census]")
             say("   engine set_combo_by_popup -> %r" % (res,))
-            _r3, _h3, cur3 = pp.find_option_combo_seq(app, ("By", "Object"), None)
-            say("   combo located by 'By Object' afterwards: rect=%r text=%r" % (_r3, cur3))
         except Exception as exc:
             say("   engine set_combo_by_popup failed: %s: %s" % (type(exc).__name__, exc))
+        _r3, _h3, cur3 = pp.find_option_combo_seq(app, ("By", "Object"), None)
+        say("   combo located by 'By Object' afterwards: rect=%r text=%r" % (_r3, cur3))
+        # Then the raw geometry where the row is now, and whether a popup
+        # that was just closed can be reopened at once (census e80c899c:
+        # after a bare ESC the next click opened nothing).
+        opened = open_and_report("after-commit", ("By", "Object"))
+        if opened:
+            try:
+                from PIL import ImageGrab
+                ImageGrab.grab(all_screens=True).save(ui.artifacts / "param_failure.png")
+                say("   screen shot with the popup open saved")
+            except Exception as exc:
+                say("   screen shot failed: %s: %s" % (type(exc).__name__, exc))
+        close(opened)
+        opened = open_and_report("reopened-after-close", ("By", "Object"))
+        close(opened)
     except Exception as exc:
         say("POPUP probe failed: %s: %s" % (type(exc).__name__, exc))
     raise ProtocolError("param_census_done")

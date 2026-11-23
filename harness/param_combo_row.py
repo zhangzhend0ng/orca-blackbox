@@ -97,12 +97,16 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
     offscreen = False
     words = []
     for attempt in (1, 2):
-        winutil.msg_click_screen(cx, cy, app.hwnd)
         popup = None
-        for _ in range(20):
-            popup = export_util.wait_popup(app.pid, timeout_s=0.5)
+        for click in (1, 2):   # a just-dismissed popup can swallow a click
+            winutil.msg_click_screen(cx, cy, app.hwnd)
+            for _ in range(12 if click == 1 else 20):
+                popup = export_util.wait_popup(app.pid, timeout_s=0.5)
+                if popup:
+                    break
             if popup:
                 break
+            time.sleep(0.6)
         if not popup:
             raise ProtocolError("param_combo_popup:" + label)
         pr, ph = popup[2], popup[3]

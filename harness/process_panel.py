@@ -1392,14 +1392,18 @@ def popup_hit_clickable(popup_hwnd, x, y):
 
 
 def close_popup(session, popup_hwnd, combo_point):
-    """Dismiss an open options popup: ESC, and should it still be there a
-    click on its own combo (a click anywhere else closes it too, but might
-    toggle something on the way)."""
+    """Dismiss an open options popup; True once its window is gone or
+    hidden. ESC first, then - if it is still there - a click on its own
+    combo, which toggles it (a click anywhere else closes it too, but might
+    toggle something on the way). Measured in census e80c899c: after ESC
+    the next click on the combo opened nothing, i.e. the popup was still up
+    and that outside click only closed it."""
     mdu._send_keys([(0x1B, False), (0x1B, True)])
     time.sleep(0.6)
-    if user32.IsWindowVisible(popup_hwnd):
+    if popup_hwnd and user32.IsWindowVisible(popup_hwnd):
         winutil.msg_click_screen(combo_point[0], combo_point[1], session.hwnd)
         time.sleep(0.6)
+    return not (popup_hwnd and user32.IsWindowVisible(popup_hwnd))
 
 
 def set_combo_by_popup(session, locate, target_substr, log="[panel]",
@@ -1435,13 +1439,17 @@ def set_combo_by_popup(session, locate, target_substr, log="[panel]",
         return find_option_combo(session, locate, psm=psm)
 
     def _open():
-        """Click the combo; its popup's (rect, hwnd) or None."""
-        winutil.msg_click_screen((r[0] + r[2]) // 2, (r[1] + r[3]) // 2,
-                                 session.hwnd)
-        for _ in range(20):
-            popup = export_util.wait_popup(session.pid, timeout_s=0.5)
-            if popup:
-                return popup[2], popup[3]
+        """Click the combo; its popup's (rect, hwnd) or None. A control
+        whose popup was just dismissed can swallow the first click (census
+        e80c899c), so the click is repeated once."""
+        for attempt in range(2):
+            winutil.msg_click_screen((r[0] + r[2]) // 2, (r[1] + r[3]) // 2,
+                                     session.hwnd)
+            for _ in range(12 if attempt == 0 else 20):
+                popup = export_util.wait_popup(session.pid, timeout_s=0.5)
+                if popup:
+                    return popup[2], popup[3]
+            time.sleep(0.6)
         return None
 
     def _words(ph):
@@ -1529,22 +1537,25 @@ def set_combo_by_popup(session, locate, target_substr, log="[panel]",
                     break
                 pr = popup2[2]
         time.sleep(1.5)
-    # The combo is a real ComboBox and its window text is the committed
-    # value: reading it is exact and free, while the OCR verify below scans
-    # whole pages for the painted value (38 notches in run 6640e4a9). A
-    # rebuild may have replaced the control, so fall through when it is gone.
+    # Verification, cheapest and most exact first. The combo is a real
+    # ComboBox and its window text is the committed value: reading it is
+    # free and settles the question both ways (run 6640e4a9 scanned whole
+    # pages for the painted value - 38 notches - to learn that nothing had
+    # changed). A rebuild may have replaced the control; then the painted
+    # value on the current band is checked against whole lines (a
+    # multi-word target is never inside ONE OCR word), and only after that
+    # does find_option_combo scan the page (single-word targets, combos
+    # that expose no window text).
     buf = ctypes.create_unicode_buffer(256)
     if h and user32.IsWindow(h):
         user32.GetWindowTextW(h, buf, 256)
     ok = bool(buf.value) and target_substr.lower() in buf.value.lower()
-    if ok:
-        print(f"{log} combo window text now {buf.value!r}")
-    if not ok:
-        ok = find_option_combo(session, target_substr, psm=psm)[1] is not None
-    if not ok and " " in target_substr.strip():
-        # find_option_row matches inside ONE OCR word; re-check a multi-word
-        # target against whole painted lines (popup_line_hits).
+    if buf.value:
+        print(f"{log} combo window text now {buf.value!r} -> {ok}")
+    if not ok and not buf.value and " " in target_substr.strip():
         ok = bool(popup_line_hits(ocr_band(session, psm=psm), target_substr))
+    if not ok and not buf.value:
+        ok = find_option_combo(session, target_substr, psm=psm)[1] is not None
     if not ok and verify_seq:
         if group_substr:
             scroll_group_into_view(session, group_substr)
