@@ -201,6 +201,21 @@ def edit_param_layer_pair(ui):
     ui.main_input()
 
 
+# App config a scenario needs beyond profile.MINIMAL_CONF, merged when the
+# edit session's profile is seeded (tools/native_save_guest.py ->
+# ProjectUI(conf_extra=...) -> profile.seed_profile). A scenario that needs
+# nothing must not be listed: the conf is part of the run's conditions and
+# is written into the worker report.
+# 2026-11-24 (#296): gcode_add_line_number is comDevelop - the row exists
+# only while the app runs in develop mode (GUI_App.cpp:6564-6566: mode
+# "develop" -> comDevelop; the page's Advanced switch only reaches
+# comAdvanced). It cannot be on for every scenario: develop mode adds rows
+# to every page and the labels are calibrated on the default pages.
+SCENARIO_CONF = {
+    "uia_param_gcode_output": {"user_mode": "develop"},
+    "uia_param_census_develop": {"user_mode": "develop"},
+}
+
 # The full per-scenario op table (moved to module level so
 # tools/check_ops_against_atlas.py can validate labels offline).
 PARAM_OPS = {        "uia_param_ironing_top": [
@@ -941,7 +956,7 @@ def edit_project(ui, scenario, canvas, *, mix_census=False):
         assign_filament_slot2(ui)
     elif scenario == "uia_param_layer_pair":
         edit_param_layer_pair(ui)
-    elif scenario == "uia_param_census":
+    elif scenario in ("uia_param_census", "uia_param_census_develop"):
         from .param_case_lib import census_param_pages
         census_param_pages(ui)
     elif scenario.startswith("uia_param_"):

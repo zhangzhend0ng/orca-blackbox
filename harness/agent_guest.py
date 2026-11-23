@@ -51,7 +51,8 @@ def _encode_capture(capture):
 
 
 class _WindowsUI:
-    def __init__(self, artifacts, model=None, profile_name="profile", *, boot_ready=None, guard=None):
+    def __init__(self, artifacts, model=None, profile_name="profile", *, boot_ready=None, guard=None,
+                 conf_extra=None):
         from harness import launcher, profile, winutil
         self.winutil = winutil
         if type(profile_name) is not str or profile_name not in {"profile", "profile_reopen"}:
@@ -59,7 +60,10 @@ class _WindowsUI:
         target = artifacts / profile_name
         if target.exists():
             raise FileExistsError("profile already exists")
-        profile.seed_profile(target, fresh=False)
+        # conf_extra: app config a scenario needs beyond MINIMAL_CONF
+        # (profile.seed_profile merges it one level deep). Nothing passes it
+        # unless the scenario is listed in native_script_baseline.SCENARIO_CONF.
+        profile.seed_profile(target, fresh=False, conf_extra=conf_extra)
         options = {} if boot_ready is None else {"dismiss_blockers": False, "boot_demote_s": 0}
         self.app = launcher.launch(datadir=target, model=model, dismiss_wizard=True, **options)
         self.shape = None

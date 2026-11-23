@@ -460,6 +460,7 @@ check("stall guard: a page that really stopped is still the page end (9 unchange
 #     (filament_features passed ['^Wipe tower', 'tower'] straight through
 #     and died on list.startswith, run 6b399e48).
 import harness.param_combo_row as pcr  # noqa: E402
+import harness.native_script_baseline as nsb  # noqa: E402
 from harness.agent_protocol import ProtocolError  # noqa: E402
 calls = []
 _real13 = (pcr.pick_combo_at_label, pp.ensure_advanced, pp.click_tab)
@@ -1235,6 +1236,28 @@ check("edit: when the minus is refused, the spin's Down key walks the field to t
       "after %r msgs %r" % (receipt["after_text"], ctl.msgs[:8]))
 check("edit: the walk is one Down press per step and stops on the target (100 -> -100 by 5 = 40)",
       len(downs) == 40, "downs %d" % len(downs))
+
+# 25. App config per scenario (#296: the 'Add line number' row exists only
+#     in develop mode). The conf is seeded with the edit session's profile
+#     and nothing else may depend on it; a scenario that needs nothing must
+#     not be listed.
+if hasattr(nsb, "SCENARIO_CONF"):
+    import inspect as _insp25  # noqa: E402
+    from harness import agent_business_ui as _abu25, agent_guest as _ag25, native_matrix as _nm25  # noqa: E402
+    check("SCENARIO_CONF: every listed scenario is registered",
+          set(nsb.SCENARIO_CONF) <= set(_nm25.SCENARIOS), "%r" % (sorted(nsb.SCENARIO_CONF),))
+    check("SCENARIO_CONF: lists exactly the cases whose rows need develop mode",
+          set(nsb.SCENARIO_CONF) == {"uia_param_gcode_output", "uia_param_census_develop"},
+          "%r" % (sorted(nsb.SCENARIO_CONF),))
+    check("SCENARIO_CONF: the conf reaches profile.seed_profile (the guest UI and BusinessUI take conf_extra)",
+          "conf_extra" in _insp25.signature(_ag25._WindowsUI.__init__).parameters
+          and "conf_extra" in _insp25.signature(_abu25.BusinessUI.__init__).parameters)
+    src25 = (_Path(nsb.__file__).resolve().parent.parent / "tools" / "native_save_guest.py").read_text(encoding="utf-8")
+    check("SCENARIO_CONF: the worker hands it to ProjectUI and records it in its report",
+          "SCENARIO_CONF.get(scenario)" in src25 and "conf_extra=conf_extra" in src25
+          and 'report["app_conf_extra"]' in src25)
+else:
+    print("N/A  SCENARIO_CONF (absent on this tree)")
 
 failed = [n for n, ok in results if not ok]
 print("\n%d checks, %d failed" % (len(results), len(failed)))

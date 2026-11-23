@@ -217,7 +217,13 @@ def worker(run_id, actor="codex", scenario="base"):
             report["resolved_plan_sha256"] = digest(canonical(bound_plan))
         else:
             fixture = native_fixture(scenario)
-        ui = ProjectUI(root, guard, fixture=fixture, ready_on_open=ready_on_open, probe_boot=probe_boot)
+        from harness.native_script_baseline import SCENARIO_CONF
+        conf_extra = SCENARIO_CONF.get(scenario)
+        if conf_extra:
+            # part of the run's conditions: say so in the report
+            report["app_conf_extra"] = conf_extra
+        ui = ProjectUI(root, guard, fixture=fixture, ready_on_open=ready_on_open, probe_boot=probe_boot,
+                       conf_extra=conf_extra)
         if probe_boot:
             report["mix_boot_probe"] = {"initial": ui.base.boot_scan}
         (root / "input/fixture.3mf").chmod(stat.S_IREAD)
