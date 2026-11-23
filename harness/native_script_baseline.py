@@ -201,12 +201,9 @@ def edit_param_layer_pair(ui):
     ui.main_input()
 
 
-def edit_param_cases(ui, scenario):
-    """Feishu 常用工艺参数 supplement cases (declarative process-panel ops)."""
-    from .param_case_lib import run_ops
-
-    ops = {
-        "uia_param_ironing_top": [
+# The full per-scenario op table (moved to module level so
+# tools/check_ops_against_atlas.py can validate labels offline).
+PARAM_OPS = {        "uia_param_ironing_top": [
             # 2026-11-22 run 1c5b910c: the row WAS on-band ('lroning type ~
             # No ironing') but single-word containment can never match the
             # two-word painted value - use the word-SEQUENCE locate tuple;
@@ -267,7 +264,10 @@ def edit_param_cases(ui, scenario):
             {"op": "float", "label": ["Small perimeter speed", "Small perimeter"], "value": "50"},
         ],
         "uia_param_fuzzy": [
-            {"tab": "Quality", "tab_hint": "height", "op": "rowcombo", "label": "Fuzzy skin",
+            # atlas + band 244ae35e: the fuzzy rows are on the Others page
+            # (Special mode area), NOT Quality - the case ran on the wrong
+            # tab since authoring.
+            {"tab": "Others", "op": "rowcombo", "label": "Fuzzy skin",
              "target": "All external walls", "group": "Fuzzy"},
             {"op": "float", "label": "point distance", "value": "0.6", "group": "Fuzzy"},
             {"op": "float", "label": "thickness", "value": "0.3", "group": "Fuzzy"},
@@ -355,11 +355,14 @@ def edit_param_cases(ui, scenario):
             # 2026-11-23: raft_expansion has NO row on the params page
             # (Tab.cpp appends only raft_layers/contact_distance/first_layer_
             # density/first_layer_expansion) - op and value dropped.
-            {"op": "float", "label": ["Raft initial layer density", "nitial layer density",
-                                       "Raft first layer density", "first layer density"],
+            # atlas: labels are 'Initial layer density'/'Initial layer
+            # expansion' (path rows); OCR renders 'lnitial' - the 2-word
+            # variant matches at the second word regardless of the I/l mangle.
+            {"op": "float", "label": ["layer density", "Raft initial layer density",
+                                       "Raft first layer density"],
              "value": "100", "group": "Raft"},
-            {"op": "float", "label": ["Raft initial layer expansion", "nitial layer expansion",
-                                      "Raft first layer expansion", "first layer expansion"],
+            {"op": "float", "label": ["layer expansion", "Raft initial layer expansion",
+                                      "Raft first layer expansion"],
              "value": "5", "group": "Raft"},
         ],
         # Feishu #279 (line 198): the row is painted 'Support/Interface
@@ -693,7 +696,14 @@ def edit_param_cases(ui, scenario):
             {"tab": "Others", "op": "checkbox", "label": "Exclude",
              "value": True, "group": "G-code output"},
         ],
-    }.get(scenario)
+}
+
+
+def edit_param_cases(ui, scenario):
+    """Feishu 常用工艺参数 supplement cases (declarative process-panel ops)."""
+    from .param_case_lib import run_ops
+
+    ops = PARAM_OPS.get(scenario)
     if ops is None:
         raise ProtocolError("param_case_ops:" + scenario)
     try:

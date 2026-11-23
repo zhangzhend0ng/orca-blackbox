@@ -149,7 +149,7 @@ SCENARIOS = {
     "uia_param_bridge": ("Quality", None),
     "uia_param_first_speeds": ("Speed", None),
     "uia_param_feature_speeds": ("Speed", None),
-    "uia_param_fuzzy": ("Quality", None),
+    "uia_param_fuzzy": ("Others", None),  # atlas+band 244ae35e: fuzzy rows live on Others
     "uia_param_overhang_speeds": ("Speed", None),
     "uia_param_accelerations": ("Speed", None),
     "uia_param_skirt": ("Others", None),
