@@ -1,0 +1,84 @@
+{
+ "task": "mac-param-ops-2026-11-23",
+ "ops": {
+  "find_row": {
+   "op": "find_row",
+   "ok": true,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "readback": {
+    "tab": "Strength",
+    "group": "Walls",
+    "label": "Wall loops",
+    "center": [
+     424,
+     843
+    ],
+    "window_local_center": [
+     64,
+     758
+    ],
+    "box": {
+     "x": 390,
+     "y": 835,
+     "w": 68,
+     "h": 16
+    },
+    "value_text": "^ 2",
+    "screenshot": "find-page.png"
+   },
+   "evidence": {
+    "notes": [
+     {
+      "tab_click": [
+       479,
+       777
+      ]
+     }
+    ],
+    "page_text": [
+     "walls",
+     "wall loops",
+     "2",
+     "top bottom shells"
+    ]
+   },
+   "shots": {
+    "entry": "entry.png",
+    "find-page-locate": "find-page-locate.png",
+    "find-page": "find-page.png"
+   },
+   "geometry": {
+    "origin": [
+     360.0,
+     85.0
+    ],
+    "size": [
+     1200.0,
+     800.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795445685.8344262,
+   "seconds": 31.3,
+   "screenshots": {
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-225446-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-225446/find_row-225446-entry.png",
+    "find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-225446-find-page-locate.panel.png",
+    "find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-225446/find_row-225446-find-page-locate.png",
+    "find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-225446-find-page.panel.png",
+    "find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-225446/find_row-225446-find-page.png"
+   }
+  }
+ },
+ "attempts": [
+  {
+   "op": "find_row",
+   "stamp": "225446",
+   "ok": true
+  }
+ ]
+}
