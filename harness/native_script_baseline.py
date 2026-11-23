@@ -252,16 +252,23 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             # Band evidence (run 5edba086): the Speed page rows read
             # "First layer speed / First layer infill / Initial layer travel";
             # travel is a coFloatsOrPercent stored with '%' (preset "80%").
-            # The first row of the Speed page is two-line: label 'First layer
-            # speed', its Edit ~34px lower (run 0b7886bc: row_y=730, Edit
-            # cy=764) - hence "below". The group 'Initial layer speed' is the
-            # page's FIRST group: at the page top its title rests above the
-            # visible band, so scroll_group_into_view could never satisfy its
-            # in-band test and wheeled for 2 x 420s per failed op - the real
-            # reason every #270 run looked wedged.
+            # The group 'Initial layer speed' is the page's FIRST group: at
+            # the page top its title rests above the visible band, so
+            # scroll_group_into_view could never satisfy its in-band test
+            # and wheeled for 2 x 420s per failed op - the real reason every
+            # #270 run looked wedged.
+            # 2026-11-24: on the 2.4.0 page the first row's label is 'First
+            # layer' (row fixture: 'First layer 35 mm/s'); 'First layer speed'
+            # is the TITLE above it. run f96dbc0b passed because the older
+            # engine took that title line for the row and 'below' its Edit -
+            # the row's own Edit, 34px under the title. The engine skips
+            # title lines since r3, so the row is anchored by its value
+            # first ('First layer 35', #272 recipe) and by its label second
+            # ('First layer' also starts 'First layer infill' - the scan
+            # goes down from the group top and meets this row first).
             {"tab": "Speed", "tab_hint": "speed", "op": "float",
-             "label": ["^First layer speed"], "value": "30",
-             "group": "First layer speed", "below": True},
+             "label": ["^First layer 35", "^First layer"], "value": "30",
+             "group": "First layer speed"},
             {"op": "float", "label": "^First layer infill", "value": "40",
              "group": "First layer speed"},
             {"op": "float", "label": "^Initial layer travel", "value": "150%",
@@ -401,15 +408,16 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             # 2026-11-23: raft_expansion has NO row on the params page
             # (Tab.cpp appends only raft_layers/contact_distance/first_layer_
             # density/first_layer_expansion) - op and value dropped.
-            # atlas: labels are 'Initial layer density'/'Initial layer
-            # expansion' (path rows); OCR renders 'lnitial' - the 2-word
-            # variant matches at the second word regardless of the I/l mangle.
-            {"op": "float", "label": ["layer density", "Raft initial layer density",
-                                       "Raft first layer density"],
-             "value": "100", "group": "Raft"},
-            {"op": "float", "label": ["layer expansion", "Raft initial layer expansion",
-                                      "Raft first layer expansion"],
-             "value": "5", "group": "Raft"},
+            # 2026-11-24 queue21 (VM run be0664ae): the first-layer rows are
+            # NOT in the Raft group - the 2.4.0 page paints them as 'First
+            # layer density' / 'First layer expansion' in the Support group,
+            # above 'On build plate only' (row fixture param_ui_rows_2.4.0
+            # .json). Raft holds 'Raft layers' and 'Raft contact Z distance'
+            # only, and those two ops had already landed in that run.
+            {"op": "float", "label": ["^First layer density", "First layer density"],
+             "value": "100", "group": "Support"},
+            {"op": "float", "label": ["^First layer expansion", "First layer expansion"],
+             "value": "5", "group": "Support"},
         ],
         # Feishu #279 (line 198). 2026-11-23 census c814315c: the support
         # body filament is the 'Support/raft base' row (group 'Filament for
@@ -443,9 +451,15 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         ],
         # Feishu #293 (line 212): spiral on Others, then the seam combo on
         # Quality (the m5h quality-enums route).
+        # Feishu #293 (line 212): the Spiral vase tick makes the app ask
+        # whether to switch wall loops / top layers / sparse infill to vase
+        # values (ConfigManipulation.cpp:321-351) - the answer is Yes, and
+        # those three keys are in the pilot's VALUES as a recorded
+        # deviation (VM run 49723134: the box was never seen, see
+        # param_case_lib.settle_dialog).
         "uia_param_spiral_vase": [
             {"tab": "Others", "op": "checkbox", "label": "Spiral",
-             "value": True, "group": "Special mode"},
+             "value": True, "group": "Special mode", "answer": "Yes"},
             {"tab": "Quality", "tab_hint": "height", "op": "combo", "current": "Aligned",
              "target": "nearest", "group": "Seam"},
         ],
@@ -638,8 +652,21 @@ PARAM_OPS = {        "uia_param_ironing_top": [
              "group": "Prime tower"},
             {"op": "checkbox", "label": "sparse", "value": True,
              "group": "Prime tower"},
+            # 2026-11-24 queue21 (VM run aa451776): the apex-angle row exists
+            # only while Wall type is Cone (ConfigManipulation.cpp:858
+            # toggle_line("wipe_tower_cone_angle", ... wall_type == wtwCone))
+            # - with the goal's rib walls the page goes Wall type / Extra
+            # rib length / Rib width / Fillet wall and the scan ran to the
+            # page end. The goal wants rib walls AND angle 15: switch to
+            # Cone, set the angle, switch back to Rib. The value stays in
+            # the config while the row is hidden (the proof reads the saved
+            # project, both keys are in VALUES).
+            {"op": "rowcombo", "label": "^Wall type", "target": "Cone",
+             "group": "Prime tower"},
             {"op": "float", "label": ["Stabilization cone apex angle",
                                       "Stabilization cone"], "value": "15",
+             "group": "Prime tower"},
+            {"op": "rowcombo", "label": "^Wall type", "target": "Rib",
              "group": "Prime tower"},
         ],
         # Feishu #285 (line 204): ooze_prevention already at target - no
@@ -714,10 +741,14 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         # :691-703) which HIDES branch_angle/adaptive/max_bridge, so the
         # Style combo ('Default' -> 'Tree Slim', popup word 'Slim') must run
         # before the floats; each later op re-anchors by its own group.
-        # wall loops + max bridge live in 'Advanced'; so does the branch
-        # angle - the Support page has no 'Tree supports' title (census
-        # c101c0f4: Support / Raft / Filament for Supports / Support
-        # ironing / Advanced).
+        # wall loops + max bridge live in 'Advanced'. The branch angle is in
+        # the 'Tree supports' group, which is CONDITIONAL: census c101c0f4
+        # saw no such title on the default page, and queue21 (VM run
+        # 1f23038c) showed why - the title and its rows (Tree support
+        # branch distance / diameter / angle, Adaptive layer height) appear
+        # only after Style leaves 'Default'. The scan confined to 'Advanced'
+        # OCR'd 'Tree support branch angle' in the very next band and still
+        # reported param_row; the group is 'Tree supports' now.
         "uia_param_tree_support": [
             {"tab": "Support", "tab_hint": "support", "op": "checkbox",
              "label": "Enable", "value": True, "group": "Support"},
@@ -725,7 +756,7 @@ PARAM_OPS = {        "uia_param_ironing_top": [
              "group": "Support"},
             {"op": "float", "label": ["Tree support branch angle",
                                       "branch angle"], "value": "40",
-             "group": "Advanced"},
+             "group": "Tree supports"},
             {"op": "float", "label": ["Support wall loops", "wall loops"],
              "value": "1", "group": "Advanced"},
             {"op": "float", "label": ["Max bridge length", "bridge length"],
@@ -756,13 +787,17 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         ],
         # Feishu #286 (line 205): flush_into_support already 1 - no op.
         # 'objects' containment hits the infill row (group's first row,
-        # apostrophe-proof); 'this' is unique to the middle row; the group
-        # title's 'Flush' is never an anchor (titles carry no checkbox).
+        # apostrophe-proof); the group title's 'Flush' is never an anchor
+        # (titles carry no checkbox).
+        # 2026-11-24 queue21 (VM run): the 'this' op is gone - the middle
+        # row 'Flush into this object' is not painted in the GLOBAL config
+        # (ConfigManipulation.cpp:886 toggle_line("flush_into_objects",
+        # !is_global_config)); the page shows infill + support only (row
+        # fixture) and the run died on param_checkbox:this. flush_into_objects
+        # leaves the pilot's VALUES with a recorded deviation.
         "uia_param_flush_options": [
             {"tab": "Multimaterial", "tab_hint": "tower", "op": "checkbox",
              "label": "objects", "value": True, "group": "Flush options"},
-            {"op": "checkbox", "label": "this", "value": True,
-             "group": "Flush options"},
             {"op": "float", "label": ["Prime volume", "Prime vol"],
              "value": "40", "group": "Prime tower"},
         ],
