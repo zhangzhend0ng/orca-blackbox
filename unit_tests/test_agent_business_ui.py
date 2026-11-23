@@ -58,7 +58,14 @@ def test_edit_uses_model_client_coordinate_native_selection_and_own_value():
     result = ui.edit(100, 200, "0.40")
     assert actions[0] == ("click", 1100, 2200, 11)
     assert ("message", 20, 0x00B1, 0, -1) in actions
-    assert result == {"target_hwnd": 20, "control_class": "Edit", "before_text": "0.4", "after_text": "0.40"}
+    # `committed` came with the focus-loss commit of multi-line fields (r9):
+    # an Enter commit reports True, a text left in the field reports False.
+    assert result == {"target_hwnd": 20, "control_class": "Edit", "before_text": "0.4",
+                      "after_text": "0.40", "committed": True}
+    actions.clear()
+    result = ui.edit(100, 200, "0.41", enter=False)
+    assert result["committed"] is False and result["after_text"] == "0.41"
+    assert ("text", 20, "\r") not in actions
 
 
 def test_cancel_before_edit_prevents_any_input():
