@@ -520,16 +520,27 @@ def group_titles(session):
     return out
 
 
+def client_origin(session):
+    """Screen (x, y) of the frame's CLIENT origin. OCR coordinates are
+    client coordinates (the capture is the client area), while kids() and
+    frect() are WINDOW-rect relative; on the maximized guest frame the two
+    differ by the 7px invisible border (frame (-7,-7,1927,1039), client
+    (0,0,1920,1032)). Anything that compares an OCR y with a window rect
+    has to go through this (speed_limits run 1e944276: the title word's top
+    was 726 in client coords, the title window 730-748 window-relative)."""
+    return winutil.client_to_screen(session.hwnd, 0, 0)
+
+
 def on_title_line(session, y, tol=3):
     """True when client y lies on a visible GROUP TITLE line. A title can be
     spelled exactly like the first row under it: 'Layer height' heads the
     Quality page and is also its first row's label. The OCR scan took the
     title for the row and found no Edit on it (speed_limits, run fc5b643c;
     before r3 the row's Edit 32px lower was still picked up by a wide
-    tolerance)."""
-    f = frect(session)
+    tolerance). `y` is a client coordinate; so is the title rect here."""
+    oy = client_origin(session)[1]
     for _t, r, _h in group_titles(session):
-        if r[1] - f[1] - tol <= y <= r[3] - f[1] + tol:
+        if r[1] - oy - tol <= y <= r[3] - oy + tol:
             return True
     return False
 
@@ -542,18 +553,18 @@ def scroll_signature(session):
 
 
 def group_span(session, substr):
-    """(y_top, y_bottom) client band that belongs to ONE options group: from
+    """(y_top, y_bottom) CLIENT band that belongs to ONE options group: from
     just below its title to the next group's title. Lets a label search stay
     inside the group it asked for - 'Outer wall' and 'Travel' exist in three
     groups of the Speed page (2.4.0 screenshot, run f0e683fb) and a row label
     can be spelled exactly like its group title ('Overhang speed').
     None when there is no such title."""
     titles = group_titles(session)
-    f = frect(session)
+    oy = client_origin(session)[1]
     for i, (t, r, _h) in enumerate(titles):
         if substr.lower() in t.lower():
-            top = r[3] - f[1]
-            bottom = titles[i + 1][1][1] - f[1] if i + 1 < len(titles) else top + 4000
+            top = r[3] - oy
+            bottom = titles[i + 1][1][1] - oy if i + 1 < len(titles) else top + 4000
             return (top, bottom)
     return None
 
@@ -718,13 +729,16 @@ def row_checkboxes(session, y_client, y_tol=12, x_lo=200, x_hi=420):
     band = [k for k in kids(session)
             if k[1] == "Button" and not k[0].strip()
             and user32.IsWindowVisible(k[3])]
+    # y_client is an OCR (client) coordinate: compare against the CLIENT
+    # origin, not the window rect (7px apart on the maximized guest frame).
+    oy = client_origin(session)[1]
     sq = [(r, h) for t, c, r, h, lx, ly in band
           if 12 <= r[2] - r[0] <= 26 and 12 <= r[3] - r[1] <= 26
-          and abs((r[1] + r[3]) // 2 - frect(session)[1] - y_client) <= y_tol
+          and abs((r[1] + r[3]) // 2 - oy - y_client) <= y_tol
           and x_lo <= lx <= x_hi]
     edits = [(r, h) for t, c, r, h, lx, ly in kids(session)
              if c == "Edit" and user32.IsWindowVisible(h)
-             and abs((r[1] + r[3]) // 2 - frect(session)[1] - y_client) <= y_tol]
+             and abs((r[1] + r[3]) // 2 - oy - y_client) <= y_tol]
     out = []
     for r, h in sq:
         cx = (r[0] + r[2]) // 2
@@ -1288,10 +1302,20 @@ def cycle_combo_to(session, rect, hwnd, target_word, max_steps=4):
 
 def find_option_checkbox(session, label_substr, group_substr=None):
     """[(rect, hwnd)] checkbox candidates on the option row labeled
-    `label_substr` (m4g's find_subdivide_row, generalized)."""
-    word, y_row = find_option_row(session, label_substr, group_substr)
-    if not word:
-        return []
+    `label_substr` (m4g's find_subdivide_row, generalized). A label with a
+    space in it is matched as a PHRASE: find_option_row looks inside ONE
+    OCR word, so 'Detect overhang' / 'Slow down' could never match
+    (overhang_speeds scanned the whole page twice in each of queue18 and
+    queue19: f775cd31, 90881c68)."""
+    if " " in label_substr.strip():
+        from .param_case_lib import _find_phrase_row
+        y_row = _find_phrase_row(session, label_substr, group_substr)
+        if y_row is None:
+            return []
+    else:
+        word, y_row = find_option_row(session, label_substr, group_substr)
+        if not word:
+            return []
     return row_checkboxes(session, y_row, y_tol=14)
 
 
@@ -1374,7 +1398,11 @@ def park_for_popup(session, rect):
     short = POPUP_ROOM - (work[3] - rect[3])
     if short <= 0:
         return 0
-    notches = min(8, -(-short // WHEEL_STEP_PX) + 1)
+    # Exactly enough notches, no spare one: a spare pushed rows that sat at
+    # the very bottom (bottom 1009/1030) 300px up, i.e. above the viewport
+    # top, where OCR no longer saw the label (brim 5a73aee3, filament_features
+    # f27ba25c: 'param_combo_row_after_park' / a hunt for a row that was gone).
+    notches = min(8, -(-short // WHEEL_STEP_PX))
     wheel_viewport(session, vp, notches, delta=-120)
     print(f"[panel] popup parking: row bottom {rect[3]} had "
           f"{work[3] - rect[3]}px of {POPUP_ROOM}px above the work-area "

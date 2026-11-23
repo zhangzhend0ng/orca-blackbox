@@ -328,7 +328,12 @@ check("_topbar: rows scrolled above the frame -> toolbar still found", hit == TO
 #    being invisible made scroll_group_into_view wheel AWAY from it
 #    (feature_speeds op 3: 68 notches, 'no such group title').
 if hasattr(pp, "group_titles"):
-    FRAME = (0, 0, 1920, 1046)   # frame-relative == screen in this fake
+    # The maximized guest frame (census c101c0f4) and its client origin: a
+    # window-rect-relative y is the client y + 7. OCR coordinates are client
+    # coordinates (the capture is the client area), so comparing the two
+    # directly is 7px off (speed_limits 1e944276: the 'Layer height' title's
+    # text top 726 client, its window 723-741 screen = 730-748 frame).
+    FRAME = (-7, -7, 1927, 1039)
     KIDS = [
         ("panel", "wxWindowNR", (8, 725, 428, 1038), 5, 16, 732),          # the viewport
         ("First layer speed", "wxWindowNR", (20, 300, 413, 318), 10, 33, 307),  # title, scrolled up
@@ -341,7 +346,8 @@ if hasattr(pp, "group_titles"):
         ("Jerk(XY)", "wxWindowNR", (20, 990, 413, 1008), 909, 33, 997),    # a hidden page's copy
         ("Snapmaker U1 (0.8 nozzle)(fixture.3mf)", "wxWindowNR", (77, 159, 415, 185), 31, 84, 166),
     ]
-    _real9 = (pp.kids, pp.process_row_y, pp.options_viewport, pp.user32, pp.frect)
+    _real9 = (pp.kids, pp.process_row_y, pp.options_viewport, pp.user32, pp.frect,
+              getattr(pp, "client_origin", None))
     pp.kids = lambda session: list(KIDS)
     pp.process_row_y = lambda session: 614
     pp.options_viewport = lambda session: ((8, 725, 428, 1038), 5)
@@ -351,6 +357,7 @@ if hasattr(pp, "group_titles"):
         IsWindowVisible=lambda h: h != 909,
         IsChild=lambda parent, h: h in (10, 21, 22, 23))
     pp.frect = lambda session: FRAME
+    pp.client_origin = lambda session: (0, 0)
     try:
         titles = pp.group_titles(None)
         # the REAL functions: earlier checks replace the module attributes
@@ -358,17 +365,22 @@ if hasattr(pp, "group_titles"):
         span_top = REAL_SPAN(None, "Other layers speed")
         line = ((REAL_TITLE_LINE(None, 404), REAL_TITLE_LINE(None, 430),
                  REAL_TITLE_LINE(None, 960)) if REAL_TITLE_LINE else "absent")
+        # the title's painted text starts ~3px under its window top
+        near = REAL_TITLE_LINE(None, 403) if REAL_TITLE_LINE else "absent"
     finally:
-        pp.kids, pp.process_row_y, pp.options_viewport, pp.user32, pp.frect = _real9
+        (pp.kids, pp.process_row_y, pp.options_viewport, pp.user32, pp.frect,
+         pp.client_origin) = _real9
     check("group_titles: unit labels, containers, preset windows and hidden copies are not titles",
           [t for t, _r, _h in titles] == ["First layer speed", "Other layers speed", "Acceleration", "Jerk(XY)"],
           repr(titles))
-    check("group_span: a group runs to the NEXT GROUP TITLE, not to its first unit label",
+    check("group_span (client coords): a group runs to the NEXT GROUP TITLE, not to its first unit label",
           span_acc == (1618, 1970), "got %r" % (span_acc,))
-    check("group_span: a title scrolled above the Process row still bounds its group",
+    check("group_span (client coords): a title scrolled above the Process row still bounds its group",
           span_top == (418, 1600), "got %r" % (span_top,))
     check("on_title_line: the title line yes, the row under it no, elsewhere no",
           line == (True, False, False), "got %r" % (line,))
+    check("on_title_line: the title text 3px under its window top counts despite the 7px frame/client gap",
+          near is True, "got %r" % (near,))
 else:
     print("N/A  group_titles (absent on this tree)")
 
@@ -507,10 +519,14 @@ if hasattr(pp, "park_for_popup"):
         other = pp.popup_hit_clickable(333, 350, 1007)
     finally:
         pp.winutil.window_from_screen_point, pp.user32 = _real14[3], _real14[4]
-    check("park_for_popup: the by_object combo (bottom 987) is 175px short -> 4 notches down",
-          n_edge == 4 and sent[0] == (4, -120), "notches=%r sent=%r" % (n_edge, sent))
-    check("park_for_popup: bottom 860 is 48px short -> 2 notches; bottom 807 has room -> the page is left alone",
-          n_mid == 2 and n_high == 0 and sent == [(4, -120), (2, -120)], "mid=%r high=%r sent=%r" % (n_mid, n_high, sent))
+    # Exactly enough notches. r3c added a spare one: a row that sat at the
+    # very bottom (bottom 1009 / 1030) then went 300px up - above the
+    # viewport top, where its label could no longer be read (brim 5a73aee3,
+    # filament_features f27ba25c).
+    check("park_for_popup: the by_object combo (bottom 987) is 175px short -> 3 notches, no spare",
+          n_edge == 3 and sent[0] == (3, -120), "notches=%r sent=%r" % (n_edge, sent))
+    check("park_for_popup: bottom 860 is 48px short -> 1 notch; bottom 807 has room -> the page is left alone",
+          n_mid == 1 and n_high == 0 and sent == [(3, -120), (1, -120)], "mid=%r high=%r sent=%r" % (n_mid, n_high, sent))
     check("popup_hit_clickable: 'By object' at y=1035 is under the taskbar -> not clickable",
           under_taskbar is False, "got %r" % (under_taskbar,))
     check("popup_hit_clickable: a row inside the popup is clickable, another window is not",

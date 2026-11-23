@@ -180,10 +180,12 @@ def _find_phrase_row(app, phrase, group_substr=None):
     for direction in (-120, 120):
         stall.reset()
         started = time.monotonic()
+        last_band = None
+        way = "down" if direction < 0 else "up"
         for _ in range(pp.SCAN_NOTCHES):
             if time.monotonic() - started > pp.SCAN_SECONDS:
                 print("[param-phrase] %ss cap reached scanning %s for %r" % (
-                    pp.SCAN_SECONDS, "down" if direction < 0 else "up", phrase), flush=True)
+                    pp.SCAN_SECONDS, way, phrase), flush=True)
                 break
             # Re-read every step: the span is in client coordinates and the
             # page moves under it. Frozen at the start it rejected the
@@ -191,11 +193,20 @@ def _find_phrase_row(app, phrase, group_substr=None):
             # starting position (queue18).
             span = pp.group_span(app, group_substr) if group_substr else None
             words = pp.ocr_band(app, psm=3)
+            # The band on every change, like find_option_row: without it a
+            # failed scan left nothing to read (queue19 brim / filament_features).
+            band = " ".join(w for w, *_ in words)[:120]
+            if band != last_band:
+                print("[param-phrase] %r%s %s band: %r" % (
+                    phrase, " in %r" % group_substr if group_substr else "", way, band), flush=True)
+                last_band = band
             for i in range(len(words)):
                 if hit(i, words) and (span is None or span[0] <= words[i][2] < span[1]):
                     found = words[i][2] + words[i][4] // 2
                     break
             if found is not None:
+                print("[param-phrase] %r found %s at y=%r span=%r" % (
+                    phrase, way, found, span), flush=True)
                 break
             vp = pp.options_viewport(app)
             if vp:
@@ -410,7 +421,7 @@ def census_param_pages(ui):
     import ctypes.wintypes as wt
     import time
     import numpy as np
-    from harness import export_util, mix_dialog_util as mdu, winutil
+    from harness import export_util, mix_dialog_util as mdu, mixing_util, winutil
     from . import process_panel as pp
 
     app = ui.app
@@ -570,6 +581,49 @@ def census_param_pages(ui):
         close(opened)
         opened = open_and_report("reopened-after-close", ("By", "Object"))
         close(opened)
+        # 'Brim type' is a painted-value combo (no ComboBox hwnd; its value
+        # window is a titled wxWindowNR 120 wide). Three runs OCR'd its popup
+        # as empty (f323be97, 5a73aee3 and queue17's brim). Open it the way
+        # pick_combo_at_label does and dump every top-level window of the
+        # app plus the capture of whatever is new.
+        try:
+            pp.scroll_group_into_view(app, "Brim")
+            y_row = _find_phrase_row(app, "^Brim type", None)
+            say("BRIM '^Brim type' row y=%r" % (y_row,))
+            if y_row is not None:
+                left = winutil.window_rect(_canvas_hwnd(ui))[0]
+                cx, cy = left - 90, y_row + pp.client_origin(app)[1]
+                target = winutil.window_from_screen_point(cx, cy)
+                buf = ctypes.create_unicode_buffer(128)
+                u32.GetWindowTextW(target, buf, 128) if target else None
+                say("   value-zone point (%d,%d) -> class=%s rect=%r text=%r" % (
+                    cx, cy, cls(target), winutil.window_rect(target) if target else None, buf.value))
+                before = {w[3] for w in mixing_util.toplevel(app.pid)}
+                winutil.msg_click_screen(cx, cy, app.hwnd)
+                time.sleep(1.5)
+                after = mixing_util.toplevel(app.pid)
+                new = [w for w in after if w[3] not in before]
+                say("   app top-levels: %r" % ([(c, t, r) for c, t, r, _h in after],))
+                for c, t, r, h in new:
+                    try:
+                        w, hgt, bgra = winutil.capture_window(h)
+                        img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
+                        words = mdu.ocr_words_img(img, scale=3)
+                        say("   NEW top-level class=%s text=%r rect=%r hwnd=%s capture=%dx%d "
+                            "words=%r" % (c, t, r, h, w, hgt, [(a, b, d) for a, b, d, *_ in words]))
+                    except Exception as exc:
+                        say("   NEW top-level class=%s text=%r rect=%r hwnd=%s capture failed: %s: %s" % (
+                            c, t, r, h, type(exc).__name__, exc))
+                try:
+                    from PIL import ImageGrab
+                    ImageGrab.grab(all_screens=True).save(ui.artifacts / "param_failure.png")
+                    say("   screen shot with the Brim popup open saved")
+                except Exception as exc:
+                    say("   screen shot failed: %s: %s" % (type(exc).__name__, exc))
+                for c, t, r, h in new:
+                    say("   close_popup(%r) -> %r" % (t, pp.close_popup(app, h, (cx, cy))))
+        except Exception as exc:
+            say("BRIM probe failed: %s: %s" % (type(exc).__name__, exc))
     except Exception as exc:
         say("POPUP probe failed: %s: %s" % (type(exc).__name__, exc))
     raise ProtocolError("param_census_done")

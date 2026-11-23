@@ -285,7 +285,10 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             {"op": "float", "label": "^Top surface", "value": "120", "group": "Other layers speed"},
             {"op": "float", "label": ["^Small perimeters threshold", "threshold"], "value": "10",
              "group": "Other layers speed"},
-            {"op": "float", "label": "^Small perimeters", "value": "50", "group": "Other layers speed"},
+            # The speed row's unit is 'mm/s or %': a bare 50 is 50 mm/s. The
+            # case wants 50% (pilot VALUES '50%'); run b1103170 stored '50'
+            # and died at verification with the other five values right.
+            {"op": "float", "label": "^Small perimeters", "value": "50%", "group": "Other layers speed"},
         ],
         "uia_param_fuzzy": [
             # atlas + band 244ae35e: the fuzzy rows are on the Others page

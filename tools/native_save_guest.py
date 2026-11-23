@@ -365,6 +365,13 @@ def worker(run_id, actor="codex", scenario="base"):
 
 
 if __name__ == "__main__":
+    # The suite captures this process's stdout into native_worker.log. That
+    # stream is block buffered, so every print without flush=True landed
+    # only when the buffer filled - the log read out of order and could not
+    # be followed as a sequence (queue19, 2026-11-23).
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(line_buffering=True)
     p = argparse.ArgumentParser()
     p.add_argument("--run-id", required=True)
     p.add_argument("--actor", choices=("codex", "zcode", "script"), default="codex")
