@@ -256,6 +256,15 @@ def main():
           wanted == [("X-Y hole compensation", 725)] and on_after == [("C Ironing", 943)]
           and refused is not None and "Precision" in refused)
 
+    # the op limits (step 10): each op gets min(OP_FUSE, the case's time left before the save)
+    now = 1_000_000.0
+    at = (50, 160, 270, 381)
+    sizes = [pc.op_limit(now + pc.CASE_FUSE, now + t) for t in at]
+    out["op_limits"] = {"case": pc.CASE_FUSE, "per_op": pc.OP_FUSE, "save": pc.SAVE,
+                        "seconds_at": dict(zip(at, sizes))}
+    check("op limits: 110 s for an op that starts 50 s and 160 s into the case, 50 s at 270 s, "
+          "none at 381 s (the save's 40 s kept inside the case's 360 s)",
+          sizes == [110, 110, 50, -61])
     failed = [name for name, ok in checks if not ok]
     print(json.dumps({"ok": not failed, "checks": len(checks), "failed": failed, "out": out},
                      indent=1, ensure_ascii=False))

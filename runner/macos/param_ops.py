@@ -77,6 +77,12 @@ def require(condition, message):
         raise RuntimeError(message)
 
 
+class OpFuse(Exception):
+    """The op ran out of its own time (param_case gives each op OP_FUSE seconds); raised by
+    Panel.read at its next page read. Not a RuntimeError: the locate chain's `except
+    RuntimeError` handlers must not take it for a page that was not read."""
+
+
 def wait_for(read, message, seconds=10):
     end = time.monotonic() + seconds
     while time.monotonic() < end:
@@ -357,6 +363,7 @@ class Panel:
         self.full = False  # the window was given the screen's full height in this process
         self.last_shot = None  # the shot the last reading came from (group_titles reads its glyph strip)
         self.glyphs = (None, [])  # (shot, y ranges of its fold glyphs), read once per shot
+        self.deadline = None  # monotonic time after which read raises OpFuse (one op's limit)
 
     def geometry(self):
         point = self.desktop.position(self.window)
@@ -471,7 +478,10 @@ class Panel:
         return png
 
     def read(self, tag, full=False):
-        """Capture `tag` and OCR it; the settings column unless `full`."""
+        """Capture `tag` and OCR it; the settings column unless `full`. Every chain reads the
+        page at least every few seconds, so this is where an op's own fuse is checked."""
+        if self.deadline and time.monotonic() > self.deadline:
+            raise OpFuse(f"op fuse: {round(time.monotonic() - self.deadline)} s past this op's limit")
         png = self.shot(tag)
         crop = None
         if not full:
@@ -1956,6 +1966,12 @@ def supervise(ns):
         result = json.loads(result_file.read_text())
     except Exception:
         result["supervisor_error"] = traceback.format_exc()[-1200:]
+        progress = work / "progress.json"  # what param_case put down after each finished op
+        if not result_file.is_file() and progress.is_file():
+            try:
+                result["progress"] = json.loads(progress.read_text())
+            except ValueError as failure:
+                result["progress_error"] = brief(failure, 200)
     finally:
         if registered:
             subprocess.run(["launchctl", "bootout", domain + "/" + label], stdout=subprocess.DEVNULL,

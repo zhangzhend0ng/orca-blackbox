@@ -39,7 +39,10 @@ SOURCE_COMMIT = "2733ef6"  # origin codex/glm-dev-20261124, tools/param_cases_ex
 # The keys each op may carry besides `op` (tab / tab_hint: switch to that page first); any
 # other key is a form this version does not run.
 ROW_KEYS = {"tab", "tab_hint", "label", "group"}
-FUSE_FLOOR = 360  # seconds; a case whose row is below the fold did not finish in 200 (run 031559)
+CASE_FUSE = 360  # seconds for the whole case from the supervisor's start: launch, ops, save
+OP_FUSE = 110  # seconds one op may take from its entry; travel_speed's longest locate took 52.8
+SAVE = 40  # kept after the last op for Save Project and the keys read from the saved project
+PROGRESS = po.WORK / "progress.json"  # the ops finished so far, put down after each one
 RUNNABLE = {"float": ROW_KEYS | {"value"}, "checkbox": ROW_KEYS | {"value"},
             "rowcombo": ROW_KEYS | {"target"}}
 
@@ -173,6 +176,25 @@ def prefixed(index, done):
     return evidence
 
 
+def op_limit(case_end, now=None):
+    """Seconds the op that starts now may take: OP_FUSE, or less when the case's end is nearer
+    than that and the save's SAVE seconds (the supervisor gives the whole case CASE_FUSE)."""
+    left = case_end - SAVE - (time.time() if now is None else now)
+    return round(min(OP_FUSE, left), 1)
+
+
+def fuse_of(error):
+    """Whether an op stopped on its own fuse: the OpFuse itself, or the error raised while it
+    was being handled (locate and scroll_to wrap a chain's error in their own)."""
+    seen = set()
+    while error is not None and id(error) not in seen:
+        if isinstance(error, po.OpFuse):
+            return True
+        seen.add(id(error))
+        error = error.__context__ or error.__cause__
+    return False
+
+
 def op_case(panel, ns):
     """The `case` operation of param_ops: every op of the case, Save Project, the keys judged."""
     case = ns["_case"]
@@ -180,12 +202,36 @@ def op_case(panel, ns):
     po.require(blocked is None, f"unsupported op: {json.dumps(blocked, ensure_ascii=False)[:400]}")
     started, before, saved = time.time(), po.settings_of(po.PROJECT), None
     steps, stopped, tab = [], None, None
+    case_end = ns.get("case_end")  # wall-clock; po.supervise hands its own fuse's end over
+    limits = {"per_op": OP_FUSE, "case": ns.get("fuse"), "ops": {}}
+    head = {"scenario": case["scenario"], "case_id": case["case_id"], "table": case["_table"],
+            "limits": limits}
+
+    def put_down(state, reason=None):
+        """The record so far, after each op: a supervisor kill (the case's fuse, a launch
+        fault) takes result.json with it, and with it every op before the one it hit (run
+        050914: op0's cell click). Written through a neighbour and renamed, never half."""
+        record = {**head, "status": "not passed", "state": state, "steps": steps}
+        if reason:
+            record["reason"] = reason
+        neighbour = PROGRESS.with_suffix(".tmp")
+        neighbour.write_text(json.dumps(record, ensure_ascii=False))
+        neighbour.replace(PROGRESS)
+
     for index, op in enumerate(case["ops"]):
         step = {"index": index, "op": op["op"], "label": op.get("label"), "group": op.get("group"),
                 "value": op.get("value"), "at": round(time.time() - started, 1)}
         steps.append(step)
         per_op_shots(panel, index)
+        # Each op has its own limit, checked by Panel.read: an op that runs out is this op's own
+        # error (recorded, nothing saved), not a supervisor kill in the middle of a later op
+        # that takes every op's result with it (runs 050552 / 050914 / 051203).
+        op_fuse = op_limit(case_end) if case_end else OP_FUSE  # min(OP_FUSE, the case's time left)
+        limits["ops"][f"op{index}"] = op_fuse
+        panel.deadline = time.monotonic() + max(op_fuse, 0)
         try:
+            po.require(op_fuse > 0, f"case fuse: less than the save's {SAVE} s left before the "
+                                    f"case's end for this op")
             tab_evidence = None
             if op.get("tab"):  # the op names a tab when the case changes page
                 tab = op["tab"]
@@ -211,7 +257,11 @@ def op_case(panel, ns):
                 step.update(readback=done["readback"], readback_ok=done["ok"])
             step["evidence"] = {**prefixed(index, done), "tab": tab_evidence}
         except Exception as error:
+            panel.deadline = None  # the error shot below is not this op's to pay for
             step["error"] = po.brief(error, 2500)
+            step["op_fuse"] = fuse_of(error)
+            if step["op_fuse"]:
+                step["error"] = f"op fuse ({op_fuse} s): {step['error']}"
             try:  # what the page showed where the op stopped
                 step["page_text_at_error"] = panel.page_text(panel.read("error"))[:60]
             except RuntimeError as failure:
@@ -220,14 +270,19 @@ def op_case(panel, ns):
         finally:
             for name in ("shot", "shot_prefix"):  # back to the Panel's own methods
                 panel.__dict__.pop(name, None)
+            panel.deadline = None
         step["seconds"] = round(time.time() - started, 1) - step["at"]
+        reason = None
+        if stopped:
+            reason = (f"stopped at op {stopped['index']} ({stopped['op']} {stopped.get('label')}): "
+                      f"{stopped['error'][:600]}")
+        put_down("stopped" if stopped else "ops running", reason)
         if stopped:
             break
     result = {"status": "not passed", "scenario": case["scenario"], "case_id": case["case_id"],
-              "table": case["_table"]}
+              "table": case["_table"], "limits": limits}
     if stopped:
-        result["reason"] = (f"stopped at op {stopped['index']} ({stopped['op']} {stopped.get('label')}): "
-                            f"{stopped['error'][:600]}")
+        result["reason"] = reason
     else:
         try:
             saved = po.save_settings(panel)
@@ -303,15 +358,15 @@ def main(argv=None):
         return po.worker_main(json.loads(argv[1]))
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--case", required=True, metavar="SCENARIO", help="a scenario of param_cases.json")
-    parser.add_argument("--fuse", type=int, help="seconds before the supervisor gives up "
-                        "(default: 120 + 80 per op, never less than %d: one op may need the whole "
-                        "fallback chain, a checkbox op walks it twice)" % FUSE_FLOOR)
+    parser.add_argument("--fuse", type=int, help="seconds before the supervisor gives up on the "
+                        "whole case (launch, ops, save); at most %d" % CASE_FUSE)
     ns = parser.parse_args(argv)
     case = load_case(ns.case)
     ns.op, ns.name = "case", ns.case
-    ns.fuse = ns.fuse or max(FUSE_FLOOR, 120 + 80 * len(case["ops"]))
+    ns.fuse = min(ns.fuse or CASE_FUSE, CASE_FUSE)
+    ns.case_end = time.time() + ns.fuse  # the worker sizes each op's limit against it
     result = {"op": "case", "name": case["scenario"], "case_id": case["case_id"], "ok": False,
-              "table": case["_table"]}
+              "table": case["_table"], "limits": {"per_op": OP_FUSE, "case": ns.fuse}}
     if case.get("app_conf"):
         return finish({**result, "status": "needs develop mode", "app_conf": case["app_conf"]})
     blocked = unsupported(case)
