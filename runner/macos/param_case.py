@@ -150,15 +150,32 @@ def locate(panel, op, tab):
                       f"{op.get('group')!r}: {json.dumps(tried, ensure_ascii=False)[-3000:]}")
 
 
+def per_op_shots(panel, index):
+    """The operations name their shots fixed ('float-after'); keep one set per op. Every capture
+    goes through shot (read calls it), so the prefix goes there once: a tag handed to shot is
+    never prefixed already."""
+    panel.shot_prefix = f"op{index}"
+    panel.shot = lambda tag: po.Panel.shot(panel, f"{panel.shot_prefix}-{tag}")
+
+
+def on_disk(panel, tag):
+    """The name shot `tag` has on disk. locate_row hands back the bare tag (check-page), while
+    per_op_shots stored that capture as op1-check-page.png; the bare name is not a file in out/
+    (run 034725 cut from the bare names and stopped right after its cell click)."""
+    name = f"{panel.shot_prefix}-{tag}"
+    po.require((po.OUT / f"{name}.png").is_file(), f"Shot {name!r} is not a file in {po.OUT}")
+    return name
+
+
 def tick(panel, op, tab, label):
     """The cell click of tick_checkbox (set_checkbox's check turn), without its save."""
     rows, row, note, tag = panel.locate_row(tab, op.get("group"), label, "check")
-    base = po.checkbox_strip(panel, row, tag)
+    base = po.checkbox_strip(panel, row, on_disk(panel, tag))  # refused here, before any click
     gx, gy = panel.geometry()[0].x + po.VALUE_X, row["y"] + row["h"] / 2
     panel.click(gx, gy)
     time.sleep(0.9)
     panel.shot("check-checked")
-    changed = po.pixel_diff(po.checkbox_strip(panel, row, "check-checked"), base)
+    changed = po.pixel_diff(po.checkbox_strip(panel, row, on_disk(panel, "check-checked")), base)
     po.require(panel.dirty and changed > 8,
                f"The cell click did not tick the box: dirty={panel.dirty}, pixels changed={changed}")
     return {"ok": True,
@@ -188,9 +205,7 @@ def op_case(panel, ns):
         step = {"index": index, "op": op["op"], "label": op.get("label"), "group": op.get("group"),
                 "value": op.get("value"), "at": round(time.time() - started, 1)}
         steps.append(step)
-        # The operations name their shots fixed ('float-after'); keep one set per op. Every
-        # capture goes through shot (read calls it), so the prefix goes there once.
-        panel.shot = lambda tag, _index=index: po.Panel.shot(panel, f"op{_index}-{tag}")
+        per_op_shots(panel, index)
         try:
             tab_evidence = None
             if op.get("tab"):  # the op names a tab when the case changes page
@@ -219,12 +234,12 @@ def op_case(panel, ns):
         except Exception as error:
             step["error"] = po.brief(error, 2500)
             try:  # what the page showed where the op stopped
-                step["page_text_at_error"] = panel.page_text(panel.read(f"op{index}-error"))[:60]
+                step["page_text_at_error"] = panel.page_text(panel.read("error"))[:60]
             except RuntimeError as failure:
                 step["page_text_at_error"] = f"<not read: {po.brief(failure, 200)}>"
             stopped = step
         finally:
-            for name in ("shot", "find_row"):  # back to the Panel's own methods
+            for name in ("shot", "shot_prefix", "find_row"):  # back to the Panel's own methods
                 panel.__dict__.pop(name, None)
         step["seconds"] = round(time.time() - started, 1) - step["at"]
         if stopped:
