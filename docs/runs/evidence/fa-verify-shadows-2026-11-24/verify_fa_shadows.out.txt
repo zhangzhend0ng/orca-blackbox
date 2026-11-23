@@ -1,0 +1,26 @@
+run       case                               keys  mismatches
+0c8f604e  pilot_param_279_support_filament      4  0
+b9d0efa5  pilot_param_284_filament_features     5  0
+83cce033  pilot_param_281_support_interface     8  0
+51380cfe  pilot_param_280_support_ironing       6  0
+d9df6fdb  pilot_param_287_material_advanced     5  0
+6b8fa2d9  pilot_param_295_fuzzy                 3  0
+2bacb634  pilot_param_283_prime_tower           8  0
+e946ad14  pilot_param_282_tree_support          8  0
+f0175fa7  pilot_param_286_flush_options         3  0
+0eb5a417  pilot_param_285_ooze_prevention       3  0
+TOTAL     10 runs                              53  0
+
+run       layer_height      spiral_mode       enable_support  
+0c8f604e  0.4               0                 1               
+b9d0efa5  0.4               0                 1               
+83cce033  0.4               0                 1               
+51380cfe  0.4               0                 1               
+d9df6fdb  0.4               0                 1               
+6b8fa2d9  0.4               0                 0               
+2bacb634  0.4               0                 0               
+e946ad14  0.4               0                 1               
+f0175fa7  0.4               0                 0               
+0eb5a417  0.4               0                 0               
+
+0 mismatches in 53 keys across 10 readable runs; 0 unreadable runs
