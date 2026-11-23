@@ -905,15 +905,9 @@ class Panel:
         trail["to_top"] = self.scroll_top(self.scroll_up_button)
         trail["steps"] = []
         x, y, w, h = self.viewport()
+        moved = 1
         for index in range(24):
-            knob = self.knob_at()
-            for button in self.scroll_down_buttons:
-                before = self.knob_at()
-                self.press_scroll(button, 1)
-                if self.knob_at() != before:
-                    break
-            moved = self.knob_at() - knob
-            rows = self.read(f"{tag}-{index}")
+            rows = self.read(f"{tag}-{index}")  # look first: one page step empties this small viewport
             title, row, missing, titles = None, None, None, []
             try:
                 # The group title as find_row reads it (x < TITLE_X): the stricter fold-icon
@@ -939,6 +933,13 @@ class Panel:
             if not moved:
                 step["end_of_page"] = True
                 break
+            knob = self.knob_at()
+            for button in self.scroll_down_buttons:
+                before = self.knob_at()
+                self.press_scroll(button, 1)
+                if self.knob_at() != before:
+                    break
+            moved = self.knob_at() - knob
         raise RuntimeError(f"{group!r} / {label!r} not on the page after scrolling to its end: "
                            f"{json.dumps(trail)[-600:]}")
 

@@ -4824,78 +4824,36 @@
   "scenario": {
    "op": "scenario",
    "ok": false,
-   "supervisor_error": "Traceback (most recent call last):\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 1806, in supervise\n    wait_for(result_file.is_file, \"Mac worker timed out\", ns.fuse)\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 82, in wait_for\n    raise TimeoutError(message)\nTimeoutError: Mac worker timed out\n",
+   "supervisor_error": "Traceback (most recent call last):\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 1812, in supervise\n    wait_for(result_file.is_file, \"Mac worker timed out\", ns.fuse)\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 82, in wait_for\n    raise TimeoutError(message)\nTimeoutError: Mac worker timed out\n",
    "screenshots": {
-    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-entry.panel.png",
-    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-entry.png",
-    "scen-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-advanced-ax-0.panel.png",
-    "scen-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-advanced-ax-0.png",
-    "scen-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-advanced-ax-1.panel.png",
-    "scen-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-advanced-ax-1.png",
-    "scen-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-advanced-ax-2.panel.png",
-    "scen-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-advanced-ax-2.png",
-    "scen-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-advanced-ax-3.panel.png",
-    "scen-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-advanced-ax-3.png",
-    "scen-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-advanced.panel.png",
-    "scen-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-advanced.png",
-    "scen-page-adv-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-adv-locate.panel.png",
-    "scen-page-adv-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-adv-locate.png",
-    "scen-page-adv-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-adv-scroll-0.panel.png",
-    "scen-page-adv-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-adv-scroll-0.png",
-    "scen-page-adv-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-adv-scroll-1.panel.png",
-    "scen-page-adv-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-adv-scroll-1.png",
-    "scen-page-adv-scroll-10.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-adv-scroll-10.panel.png",
-    "scen-page-adv-scroll-10.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-adv-scroll-10.png",
-    "scen-page-adv-scroll-11.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-adv-scroll-11.panel.png",
-    "scen-page-adv-scroll-11.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-adv-scroll-11.png",
-    "scen-page-adv-scroll-12.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-adv-scroll-12.panel.png",
-    "scen-page-adv-scroll-12.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-adv-scroll-12.png",
-    "scen-page-adv-scroll-13.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-adv-scroll-13.panel.png",
-    "scen-page-adv-scroll-13.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-adv-scroll-13.png",
-    "scen-page-adv-scroll-14.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-adv-scroll-14.panel.png",
-    "scen-page-adv-scroll-14.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-adv-scroll-14.png",
-    "scen-page-adv-scroll-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-adv-scroll-2.panel.png",
-    "scen-page-adv-scroll-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-adv-scroll-2.png",
-    "scen-page-adv-scroll-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-adv-scroll-3.panel.png",
-    "scen-page-adv-scroll-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-adv-scroll-3.png",
-    "scen-page-adv-scroll-4.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-adv-scroll-4.panel.png",
-    "scen-page-adv-scroll-4.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-adv-scroll-4.png",
-    "scen-page-adv-scroll-5.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-adv-scroll-5.panel.png",
-    "scen-page-adv-scroll-5.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-adv-scroll-5.png",
-    "scen-page-adv-scroll-6.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-adv-scroll-6.panel.png",
-    "scen-page-adv-scroll-6.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-adv-scroll-6.png",
-    "scen-page-adv-scroll-7.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-adv-scroll-7.panel.png",
-    "scen-page-adv-scroll-7.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-adv-scroll-7.png",
-    "scen-page-adv-scroll-8.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-adv-scroll-8.panel.png",
-    "scen-page-adv-scroll-8.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-adv-scroll-8.png",
-    "scen-page-adv-scroll-9.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-adv-scroll-9.panel.png",
-    "scen-page-adv-scroll-9.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-adv-scroll-9.png",
-    "scen-page-adv.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-adv.panel.png",
-    "scen-page-adv.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-adv.png",
-    "scen-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-locate.panel.png",
-    "scen-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-locate.png",
-    "scen-page-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-scroll-0.panel.png",
-    "scen-page-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-scroll-0.png",
-    "scen-page-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-scroll-1.panel.png",
-    "scen-page-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-scroll-1.png",
-    "scen-page-scroll-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-scroll-2.panel.png",
-    "scen-page-scroll-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-scroll-2.png",
-    "scen-page-scroll-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-scroll-3.panel.png",
-    "scen-page-scroll-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-scroll-3.png",
-    "scen-page-scroll-4.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-scroll-4.panel.png",
-    "scen-page-scroll-4.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-scroll-4.png",
-    "scen-page-scroll-5.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-scroll-5.panel.png",
-    "scen-page-scroll-5.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-scroll-5.png",
-    "scen-page-scroll-6.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page-scroll-6.panel.png",
-    "scen-page-scroll-6.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page-scroll-6.png",
-    "scen-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-page.panel.png",
-    "scen-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-page.png",
-    "scen-widen-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-widen-0.panel.png",
-    "scen-widen-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-widen-0.png",
-    "scen-widen-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-widen-1.panel.png",
-    "scen-widen-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-widen-1.png",
-    "scen-widen-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015301-scen-widen-after.panel.png",
-    "scen-widen-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015301/scenario-015301-scen-widen-after.png"
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015828-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015828/scenario-015828-entry.png",
+    "scen-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015828-scen-advanced-ax-0.panel.png",
+    "scen-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015828/scenario-015828-scen-advanced-ax-0.png",
+    "scen-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015828-scen-advanced-ax-1.panel.png",
+    "scen-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015828/scenario-015828-scen-advanced-ax-1.png",
+    "scen-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015828-scen-advanced-ax-2.panel.png",
+    "scen-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015828/scenario-015828-scen-advanced-ax-2.png",
+    "scen-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015828-scen-advanced-ax-3.panel.png",
+    "scen-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015828/scenario-015828-scen-advanced-ax-3.png",
+    "scen-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015828-scen-advanced.panel.png",
+    "scen-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015828/scenario-015828-scen-advanced.png",
+    "scen-page-adv-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015828-scen-page-adv-locate.panel.png",
+    "scen-page-adv-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015828/scenario-015828-scen-page-adv-locate.png",
+    "scen-page-adv-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015828-scen-page-adv-scroll-0.panel.png",
+    "scen-page-adv-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015828/scenario-015828-scen-page-adv-scroll-0.png",
+    "scen-page-adv.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015828-scen-page-adv.panel.png",
+    "scen-page-adv.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015828/scenario-015828-scen-page-adv.png",
+    "scen-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015828-scen-page-locate.panel.png",
+    "scen-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015828/scenario-015828-scen-page-locate.png",
+    "scen-page-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015828-scen-page-scroll-0.panel.png",
+    "scen-page-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015828/scenario-015828-scen-page-scroll-0.png",
+    "scen-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015828-scen-page.panel.png",
+    "scen-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015828/scenario-015828-scen-page.png",
+    "scen-widen-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015828-scen-widen-0.panel.png",
+    "scen-widen-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015828/scenario-015828-scen-widen-0.png",
+    "scen-widen-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-015828-scen-widen-1.panel.png",
+    "scen-widen-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-015828/scenario-015828-scen-widen-1.png"
    }
   },
   "pick_combo:rerun": {
@@ -5004,6 +4962,472 @@
     "combo-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014224/pick_combo-014224-combo-page.png",
     "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014224-entry.panel.png",
     "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014224/pick_combo-014224-entry.png"
+   }
+  },
+  "scenario:thin-wall": {
+   "op": "scenario",
+   "name": "thin-wall",
+   "ok": true,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "entry": {
+    "dialogs": []
+   },
+   "readback": {
+    "scenario": "thin-wall",
+    "edit": {
+     "click": [
+      613,
+      898
+     ],
+     "pixels_changed_vs_before": 806,
+     "screenshot": "scen-checked.png"
+    },
+    "saved": {
+     "key": "detect_thin_wall",
+     "value": "1",
+     "expected": "1"
+    },
+    "title_after_save": "probe"
+   },
+   "evidence": {
+    "notes": [
+     {
+      "tab_click": [
+       479,
+       777
+      ]
+     },
+     {
+      "standard_mode": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', '2', 'top bottom shells']"
+     },
+     {
+      "advanced": {
+       "already_on": false,
+       "tabs_before": [
+        "Quality",
+        "Strength",
+        "Support",
+        "Multimaterial",
+        "Others"
+       ],
+       "attempts": [
+        {
+         "how": "ax",
+         "value_before": 0,
+         "box": [
+          673.0,
+          689.0
+         ],
+         "tabs_after": [
+          [
+           "Others"
+          ],
+          [
+           "Others"
+          ],
+          [
+           "Others"
+          ],
+          [
+           "Others"
+          ]
+         ],
+         "value_after": 1
+        }
+       ],
+       "checkboxes": [
+        {
+         "x": 453.0,
+         "y": 686.0,
+         "words": "",
+         "value": 0
+        },
+        {
+         "x": 673.0,
+         "y": 689.0,
+         "words": "",
+         "value": 0
+        }
+       ],
+       "turned_on_by": "ax",
+       "speed_seen": false
+      }
+     },
+     {
+      "tab_click": [
+       470,
+       777
+      ]
+     },
+     {
+      "advanced_mode": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', 'alternate extra wall', '2']"
+     },
+     {
+      "widened": {
+       "collapsed": [
+        {
+         "header": "(0 Filaments",
+         "click": [
+          424,
+          466
+         ]
+        },
+        {
+         "header": "(0 Filaments",
+         "click": [
+          424,
+          466
+         ]
+        }
+       ],
+       "process_header_y_after": 690.0
+      }
+     },
+     {
+      "tab_click": [
+       470,
+       777
+      ]
+     },
+     {
+      "wide_window": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', 'alternate extra wall', '2']"
+     },
+     {
+      "resized_to": [
+       1200.0,
+       916.0
+      ]
+     },
+     {
+      "tab_click": [
+       458,
+       777
+      ]
+     }
+    ],
+    "edit": {}
+   },
+   "shots": {
+    "entry": "entry.png",
+    "scen-page-locate": "scen-page-locate.png",
+    "scen-page": "scen-page.png",
+    "scen-page-scroll-0": "scen-page-scroll-0.png",
+    "scen-advanced": "scen-advanced.png",
+    "scen-advanced-ax-0": "scen-advanced-ax-0.png",
+    "scen-advanced-ax-1": "scen-advanced-ax-1.png",
+    "scen-advanced-ax-2": "scen-advanced-ax-2.png",
+    "scen-advanced-ax-3": "scen-advanced-ax-3.png",
+    "scen-page-adv-locate": "scen-page-adv-locate.png",
+    "scen-page-adv": "scen-page-adv.png",
+    "scen-page-adv-scroll-0": "scen-page-adv-scroll-0.png",
+    "scen-widen-0": "scen-widen-0.png",
+    "scen-widen-1": "scen-widen-1.png",
+    "scen-widen-after": "scen-widen-after.png",
+    "scen-page-wide-locate": "scen-page-wide-locate.png",
+    "scen-page-wide": "scen-page-wide.png",
+    "scen-page-wide-scroll-0": "scen-page-wide-scroll-0.png",
+    "scen-page-tall-locate": "scen-page-tall-locate.png",
+    "scen-page-tall": "scen-page-tall.png",
+    "scen-checked": "scen-checked.png"
+   },
+   "notes": [
+    {
+     "tab_click": [
+      479,
+      777
+     ]
+    },
+    {
+     "standard_mode": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', '2', 'top bottom shells']"
+    },
+    {
+     "advanced": {
+      "already_on": false,
+      "tabs_before": [
+       "Quality",
+       "Strength",
+       "Support",
+       "Multimaterial",
+       "Others"
+      ],
+      "attempts": [
+       {
+        "how": "ax",
+        "value_before": 0,
+        "box": [
+         673.0,
+         689.0
+        ],
+        "tabs_after": [
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ]
+        ],
+        "value_after": 1
+       }
+      ],
+      "checkboxes": [
+       {
+        "x": 453.0,
+        "y": 686.0,
+        "words": "",
+        "value": 0
+       },
+       {
+        "x": 673.0,
+        "y": 689.0,
+        "words": "",
+        "value": 0
+       }
+      ],
+      "turned_on_by": "ax",
+      "speed_seen": false
+     }
+    },
+    {
+     "tab_click": [
+      470,
+      777
+     ]
+    },
+    {
+     "advanced_mode": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', 'alternate extra wall', '2']"
+    },
+    {
+     "widened": {
+      "collapsed": [
+       {
+        "header": "(0 Filaments",
+        "click": [
+         424,
+         466
+        ]
+       },
+       {
+        "header": "(0 Filaments",
+        "click": [
+         424,
+         466
+        ]
+       }
+      ],
+      "process_header_y_after": 690.0
+     }
+    },
+    {
+     "tab_click": [
+      470,
+      777
+     ]
+    },
+    {
+     "wide_window": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', 'alternate extra wall', '2']"
+    },
+    {
+     "resized_to": [
+      1200.0,
+      916.0
+     ]
+    },
+    {
+     "tab_click": [
+      458,
+      777
+     ]
+    }
+   ],
+   "geometry": {
+    "origin": [
+     360.0,
+     85.0
+    ],
+    "size": [
+     1200.0,
+     916.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795457590.55614,
+   "seconds": 136.0,
+   "screenshots": {
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-entry.png",
+    "scen-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-advanced-ax-0.panel.png",
+    "scen-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-advanced-ax-0.png",
+    "scen-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-advanced-ax-1.panel.png",
+    "scen-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-advanced-ax-1.png",
+    "scen-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-advanced-ax-2.panel.png",
+    "scen-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-advanced-ax-2.png",
+    "scen-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-advanced-ax-3.panel.png",
+    "scen-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-advanced-ax-3.png",
+    "scen-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-advanced.panel.png",
+    "scen-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-advanced.png",
+    "scen-checked.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-checked.cell.png",
+    "scen-checked.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-checked.panel.png",
+    "scen-checked.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-checked.png",
+    "scen-page-adv-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-page-adv-locate.panel.png",
+    "scen-page-adv-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-page-adv-locate.png",
+    "scen-page-adv-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-page-adv-scroll-0.panel.png",
+    "scen-page-adv-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-page-adv-scroll-0.png",
+    "scen-page-adv.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-page-adv.panel.png",
+    "scen-page-adv.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-page-adv.png",
+    "scen-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-page-locate.panel.png",
+    "scen-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-page-locate.png",
+    "scen-page-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-page-scroll-0.panel.png",
+    "scen-page-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-page-scroll-0.png",
+    "scen-page-tall-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-page-tall-locate.panel.png",
+    "scen-page-tall-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-page-tall-locate.png",
+    "scen-page-tall.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-page-tall.cell.png",
+    "scen-page-tall.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-page-tall.panel.png",
+    "scen-page-tall.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-page-tall.png",
+    "scen-page-wide-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-page-wide-locate.panel.png",
+    "scen-page-wide-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-page-wide-locate.png",
+    "scen-page-wide-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-page-wide-scroll-0.panel.png",
+    "scen-page-wide-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-page-wide-scroll-0.png",
+    "scen-page-wide.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-page-wide.panel.png",
+    "scen-page-wide.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-page-wide.png",
+    "scen-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-page.panel.png",
+    "scen-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-page.png",
+    "scen-widen-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-widen-0.panel.png",
+    "scen-widen-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-widen-0.png",
+    "scen-widen-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-widen-1.panel.png",
+    "scen-widen-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-widen-1.png",
+    "scen-widen-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021310-scen-widen-after.panel.png",
+    "scen-widen-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021310/scenario-021310-scen-widen-after.png"
+   }
+  },
+  "scenario:print-sequence": {
+   "op": "scenario",
+   "name": "print-sequence",
+   "ok": false,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "entry": {
+    "dialogs": []
+   },
+   "evidence": {
+    "error": "Traceback (most recent call last):\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.19lsi5g4/param_ops.py\", line 1706, in run_worker\n    result.update(OPS[ns[\"op\"]](panel, ns))\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.19lsi5g4/param_ops.py\", line 1310, in op_scenario\n    done = OPS[edit](panel, case)\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.19lsi5g4/param_ops.py\", line 1218, in op_pick_combo\n    panel.click(gx, gy, guard=False)\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.19lsi5g4/param_ops.py\", line 433, in click\n    self._mouse(kind, gx, gy, wid)\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.19lsi5g4/param_ops.py\", line 408, in _mouse\n    point, size = self.geometry()\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.19lsi5g4/param_ops.py\", line 354, in geometry\n    point = self.desktop.position(self.window)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.19lsi5g4/accessibility.py\", line 204, in position\n    raise RuntimeError(\"Missing field position\")\nRuntimeError: Missing field position\n"
+   },
+   "shots": {
+    "entry": "entry.png",
+    "combo-page-locate": "combo-page-locate.png",
+    "combo-page": "combo-page.png",
+    "combo-page-scroll-0": "combo-page-scroll-0.png",
+    "combo-page-scroll-1": "combo-page-scroll-1.png",
+    "combo-page-scroll-2": "combo-page-scroll-2.png"
+   },
+   "notes": [
+    {
+     "tab_click": [
+      740,
+      776
+     ]
+    },
+    {
+     "scrolled": {
+      "not_found": "RuntimeError: Group title 'Special mode' not visible; titles seen: ['~ Skirt']",
+      "buttons": {
+       "down": [
+        2,
+        0
+       ],
+       "up": 1,
+       "knob_dy": {
+        "0": [
+         3.0,
+         3.0
+        ],
+        "1": [
+         -3.0,
+         -3.0
+        ],
+        "2": [
+         12.0,
+         12.0
+        ],
+        "3": [
+         -12.0,
+         -12.0
+        ]
+       }
+      },
+      "to_top": {
+       "button": 1,
+       "presses": 1,
+       "knob_at": [
+        3.0,
+        3.0
+       ]
+      },
+      "steps": [
+       {
+        "step": 0,
+        "knob_dy": 1,
+        "titles": [
+         "~ Skirt"
+        ]
+       },
+       {
+        "step": 1,
+        "knob_dy": 12.0,
+        "titles": [
+         "90 Brim"
+        ]
+       },
+       {
+        "step": 2,
+        "knob_dy": 13.0,
+        "titles": [
+         "EK Special mode"
+        ],
+        "row_y": 859.0
+       }
+      ]
+     }
+    }
+   ],
+   "geometry": {
+    "origin": [
+     360.0,
+     85.0
+    ],
+    "size": [
+     1200.0,
+     800.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795457705.774652,
+   "seconds": 60.1,
+   "screenshots": {
+    "combo-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021505-combo-page-locate.panel.png",
+    "combo-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021505/scenario-021505-combo-page-locate.png",
+    "combo-page-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021505-combo-page-scroll-0.panel.png",
+    "combo-page-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021505/scenario-021505-combo-page-scroll-0.png",
+    "combo-page-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021505-combo-page-scroll-1.panel.png",
+    "combo-page-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021505/scenario-021505-combo-page-scroll-1.png",
+    "combo-page-scroll-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021505-combo-page-scroll-2.panel.png",
+    "combo-page-scroll-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021505/scenario-021505-combo-page-scroll-2.png",
+    "combo-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021505-combo-page.panel.png",
+    "combo-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021505/scenario-021505-combo-page.png",
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-021505-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-021505/scenario-021505-entry.png"
    }
   }
  },
@@ -5122,6 +5546,26 @@
    "op": "scenario",
    "stamp": "015301",
    "ok": false
+  },
+  {
+   "op": "scenario",
+   "stamp": "015610",
+   "ok": false
+  },
+  {
+   "op": "scenario",
+   "stamp": "015828",
+   "ok": false
+  },
+  {
+   "op": "scenario:thin-wall",
+   "stamp": "021310",
+   "ok": true
+  },
+  {
+   "op": "scenario:print-sequence",
+   "stamp": "021505",
+   "ok": false
   }
  ],
  "summary": {
@@ -5172,20 +5616,33 @@
      "key": "layer_height",
      "value": "0.2",
      "expected": "0.2"
+    },
+    "thin-wall": {
+     "run": "021310",
+     "key": "detect_thin_wall",
+     "value": "1",
+     "expected": "1",
+     "seconds": 136.0,
+     "fuse": 240,
+     "via": "the fallback chain: standard mode -> Advanced mode (AXPress on the Advanced box, value 0 -> 1) -> collapse Filaments -> resize; the row was then on the Strength page and the cell click (613,898) ticked it, Save Project, key read from the saved 3mf",
+     "scroll_to": "NOT PROVEN inside the group: it stopped at step 0 in all three attempts (standard, Advanced, wide) because the 'Walls' title was on screen and 'Detect thin walls' was not (the group's third row, 88 px under its title, absent from the page reads until after the resize step; the window stayed 1200x916 - whether the resize or the time after the collapse re-laid out the viewport is not isolated)",
+     "earlier_timeouts": {
+      "runs": [
+       "014759",
+       "015301",
+       "015610",
+       "015828"
+      ],
+      "status": "NOT PROVEN - four supervisor timeouts, no worker result (014759 + 015301 at the 240 s fuse, 015610 + 015828 at a 90 s fuse)",
+      "stuck_at": [
+       "014759 / 015301 (my scroll change, both fixed since but not re-proven): scroll_to paged the Strength page to its end - first for the Advanced-only row in standard mode, then because its title test (x within 12 px) did not see 'Walls'",
+       "the real limit: 'Detect thin walls' is below the fold INSIDE the visible 'Walls' group; scroll_to treats 'title on screen, row missing' as 'not on this page' and hands over to the old fallbacks (collapse Printer/Filaments -> resize -> tall window), which is also how the B4 proving run got there (124.1 s)",
+       "015828 (look-first scroll, 90 s fuse) stopped after one read in standard and in Advanced mode, reached the collapse step and ran out of time: 90 s cannot tell, and it was never run at the default 240 s"
+      ]
+     }
     }
    },
    "not_proved": {
-    "thin-wall": {
-     "status": "NOT PROVEN - timed out under the 240 s fuse",
-     "runs": [
-      "014759",
-      "015301"
-     ],
-     "stuck_at": [
-      "first run: scroll_to paged the standard-mode Strength page to its end looking for the Advanced-only row 'Detect thin walls'",
-      "second run: in Advanced mode scroll_to judged the 'Walls' title absent (title_of wants x within 12 px of the window edge, find_row accepts < 26 px) and paged the page 15 steps, then the widen fallback ran out of time"
-     ]
-    },
     "print-sequence": {
      "status": "NOT RUN - the time budget went to the thin-wall timeouts"
     }
@@ -5198,7 +5655,7 @@
    },
    "set_checkbox_after_scroll_change": {
     "status": "OPEN - B4's proof predates the scroll change",
-    "detail": "locate_row with scroll_to did not reach Strength / 'Detect thin walls' inside the fuse in either thin-wall run; the title test now matches find_row's (not re-run - the title test now matches find_row's, unverified)"
+    "detail": "the thin-wall scenario reaches the row since run 021310 (through Advanced mode + collapse + resize); the plain set_checkbox op was not re-run after the scroll change"
    }
   },
   "ops": {
@@ -5238,13 +5695,14 @@
     "last_run": "014352",
     "screenshots": 8
    },
-   "scenario": {
-    "ok": false,
-    "what": "the two thin-wall timeouts, records of the supervisor (no worker result)",
-    "last_attempt": "015301",
-    "screenshots": 70
+   "scenario:thin-wall": {
+    "ok": true,
+    "last_run": "021310",
+    "screenshots": 44,
+    "earlier_timeouts": 4
    }
   },
-  "summary_written_at": "2026-11-24 01:54:22"
+  "summary_written_at": "2026-11-24 02:15:09",
+  "code_after_the_proof": "scroll_to / locate_row changed three times after run 014004 (title test like find_row, look before paging, click retry on a missed AX read): pick_combo was not re-run on the final code; scenario layer-height (014352) ran on the title-test version"
  }
 }
