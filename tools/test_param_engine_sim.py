@@ -1317,7 +1317,7 @@ if hasattr(nsb, "SCENARIO_CONF"):
           and "conf_extra" in _insp25.signature(_abu25.BusinessUI.__init__).parameters)
     src25 = (_Path(nsb.__file__).resolve().parent.parent / "tools" / "native_save_guest.py").read_text(encoding="utf-8")
     check("SCENARIO_CONF: the worker hands it to ProjectUI and records it in its report",
-          "SCENARIO_CONF.get(scenario)" in src25 and "conf_extra=conf_extra" in src25
+          "SCENARIO_CONF.get(base_scenario(scenario))" in src25 and "conf_extra=conf_extra" in src25
           and 'report["app_conf_extra"]' in src25)
 else:
     print("N/A  SCENARIO_CONF (absent on this tree)")
@@ -1648,6 +1648,234 @@ if hasattr(pcl, "_is_multiline"):
          pp.ensure_advanced, pp.click_tab, pp.top_dialog_set, pcl.settle_dialog) = _saved30
 else:
     print("N/A  r9 review (absent on this tree)")
+
+
+def _code31(fn, *args):
+    """The message a call raised with (any ValueError: _require's _InvalidEvidence is
+    not the ProtocolError _raises waits for), or None."""
+    try:
+        fn(*args)
+    except ValueError as exc:
+        return str(exc)
+    return None
+
+
+# 31. The `_std02` suffix rule (2026-11-24): `<uia_param_x>_std02` is `uia_param_x` on
+#     fixtures/feishu_std_cube.3mf - the same ops, pilot, goal, tab spec, app conf and
+#     edit_project dispatch, another fixture - for every param scenario the matrix
+#     knows. Offline: the dispatch is read through recorders, nothing opens the app.
+import hashlib as _h31  # noqa: E402
+import io as _io31  # noqa: E402
+import json as _json31  # noqa: E402
+import zipfile as _zip31  # noqa: E402
+import harness.param_mix_census as _mix31  # noqa: E402
+from harness import agent_protocol as _ap31, native_pilots as _np31  # noqa: E402
+from harness.native_matrix import SCENARIOS as _ALL31  # noqa: E402
+from harness.native_matrix import scenario_names as _names31, scenario_spec as _tab31  # noqa: E402
+from harness.native_save_session import native_contract as _contract31, native_spec as _found31  # noqa: E402
+from harness.run_verdict import contract_digest as _digest31  # noqa: E402
+
+_SUFFIX31, _BASELINE31 = _ap31.STD_SUFFIX, _ap31.STD_SCENARIO
+_CUBE31 = (_ap31.LAYER_FIXTURE, _ap31.LAYER_FIXTURE_SHA256)
+_STD31 = (_ap31.STD_FIXTURE, _ap31.STD_FIXTURE_SHA256)
+_sha31 = lambda pair: _h31.sha256((_Path(root) / pair[0]).read_bytes()).hexdigest()
+check("std02: both fixtures on disk are the pinned bytes",
+      _sha31(_CUBE31) == _CUBE31[1] and _sha31(_STD31) == _STD31[1])
+
+
+def _ops31(ops):
+    """Ops as the fixture sees them: a rowcombo's target is the one part that may differ."""
+    return None if ops is None else [dict(op, target=None) if op.get("op") == "rowcombo" else op for op in ops]
+
+
+def _route31(scenario):
+    """The edit_project branches a scenario takes, as (function, scenario it was handed)."""
+    calls = []
+    owners = [(nsb, name) for name in ("edit_param_cases", "edit_param_layer_pair", "edit_layer", "move_x",
+                                       "edit_process_combo", "edit_quality_enums", "add_mix_recipes",
+                                       "assign_filament_slot2")] + [(pcl, "census_param_pages"), (_mix31, "census_mix_dialog")]
+    saved = [(owner, name, owner.__dict__[name]) for owner, name in owners]
+    try:
+        for owner, name in owners:
+            def spy(ui, *rest, name=name):
+                calls.append((name, rest[0] if name == "edit_param_cases" else None))
+            owner.__dict__[name] = spy
+        nsb.edit_project(None, scenario, None)
+    finally:
+        for owner, name, genuine in saved:
+            owner.__dict__[name] = genuine
+    return calls
+
+
+def _same_pilot31(name, twin):
+    """One pilot object and one goal for both; a probe has none, and so has its twin."""
+    try:
+        return (_np31.pilot_module(twin) is _np31.pilot_module(name)
+                and _np31.business_goal(twin) == _np31.business_goal(name))
+    except ValueError:
+        return (_code31(_np31.pilot_module, name) is not None
+                and _code31(_np31.pilot_module, twin) is not None)
+
+
+def _holds31(name):
+    twin = name + _SUFFIX31
+    try:
+        route, twin_route = _route31(name), _route31(twin)
+        return (_tab31("script", twin) == _tab31("script", name)
+                and _tab31("zcode", twin) == _tab31("zcode", name)
+                and _ops31(nsb.scenario_ops(twin)) == _ops31(nsb.scenario_ops(name))
+                and _same_pilot31(name, twin)
+                and _np31.native_fixture(name) == _CUBE31 and _np31.native_fixture(twin) == _STD31
+                and nsb.SCENARIO_CONF.get(_ap31.base_scenario(twin)) == nsb.SCENARIO_CONF.get(name)
+                and [what for what, _scenario in twin_route] == [what for what, _scenario in route]
+                and all(scenario in (None, twin) for _what, scenario in twin_route)
+                and _found31(_digest31(_contract31("script", twin))) == ("script", twin)
+                and _found31(_digest31(_contract31("zcode", twin))) == ("zcode", twin)
+                and _digest31(_contract31("script", twin)) != _digest31(_contract31("script", name)))
+    except Exception as exc:  # noqa: BLE001 - named with the scenario below
+        print("   std02 %s: %s: %s" % (name, type(exc).__name__, exc))
+        return False
+
+
+_names31 = set(_names31())
+_twinned31 = [name for name in sorted(_ALL31) if name.startswith("uia_param_") and name + _SUFFIX31 in _names31]
+_broken31 = [name for name in _twinned31 if not _holds31(name)]
+check("std02: %d param scenarios - the twin has its base's ops, pilot, goal, tab spec, app conf "
+      "and dispatch on the precondition fixture, the base keeps the cube fixture, and each "
+      "contract resolves to its full name" % len(_twinned31), not _broken31, "failing: %r" % (_broken31,))
+
+_baseline31 = _BASELINE31
+_controls31 = (_np31.native_fixture("uia_param_save_only") == _CUBE31
+               and _np31.native_fixture(_baseline31) == _STD31
+               and _np31.pilot_module("uia_param_save_only").CASE_ID == "param_save_only_control"
+               and _np31.pilot_module(_baseline31).CASE_ID == "param_std_save_only"
+               and nsb.scenario_ops("uia_param_save_only") == [] and nsb.scenario_ops(_baseline31) == []
+               and "uia_param_save_only" + _SUFFIX31 not in _names31 and _baseline31 + _SUFFIX31 not in _names31)
+check("std02: the two save-only controls are registered without ops on their own fixture and have no twin",
+      _controls31)
+
+
+def _refused31(name):
+    lookups = (lambda: _tab31("script", name), lambda: _tab31("zcode", name), lambda: _np31.pilot_module(name))
+    return all(_code31(lookup) is not None for lookup in lookups)
+
+
+_outside31 = ["uia_hybrid_layer", "quality_a", "pilot_strength", "uia_param_bogus", "_std02"]
+check("std02: a `_std02` name outside the param family, or of an unregistered base, is no scenario",
+      all(_refused31(name + _SUFFIX31) for name in _outside31), "%r" % (_outside31,))
+
+# The PETG target. The extruder popups paint "<n> <filament type>": Default / 1 PETG /
+# 2 PLA / 3 PLA / 4 PLA / 5 PLA on the cube (census 67690ed4 / c814315c); every filament
+# of the precondition fixture is PLA, so 'PETG' names no row there and row 1 reads "1 PLA".
+_petg31 = [name for name in sorted(nsb.PARAM_OPS)
+           if any(op.get("op") == "rowcombo" and op.get("target") == "PETG" for op in nsb.PARAM_OPS[name])]
+
+
+def _swapped31(before, after):
+    """True when `after` is `before` with the PETG rowcombo targets reading "1 PLA"."""
+    return (len(before) == len(after)
+            and all(a == b or (a.get("op") == "rowcombo" and a.get("target") == "PETG"
+                               and dict(b, target="PETG") == a) for a, b in zip(before, after))
+            and any(op.get("target") == "1 PLA" for op in after))
+
+
+check("std02: in the twin of each of the %d scenarios that pick the PETG extruder (%s) that target "
+      "reads '1 PLA' and nothing else changes; the base's ops are the table's own objects"
+      % (len(_petg31), " ".join(name.replace("uia_param_", "") for name in _petg31)),
+      _petg31 and all(nsb.scenario_ops(name) is nsb.PARAM_OPS[name]
+                      and _swapped31(nsb.PARAM_OPS[name], nsb.scenario_ops(name + _SUFFIX31))
+                      for name in _petg31), "%r" % (_petg31,))
+
+
+def _popup31(labels):
+    """OCR words of a popup: one line of tokens per label."""
+    words = []
+    for row, label in enumerate(labels):
+        words += [(token, 12 * column, 24 * row, 30, 12) for column, token in enumerate(label.split(" "))]
+    return words
+
+
+_rows31 = lambda labels, target: [text for _x, _y, text in pp.popup_line_hits(_popup31(labels), target)]
+_cube_popup31 = _rows31(["Default", "1 PETG", "2 PLA", "3 PLA", "4 PLA", "5 PLA"], "PETG")
+_std_popup31 = _popup31(["Default", "1 PLA", "2 PLA", "3 PLA", "4 PLA", "5 PLA"])
+check("std02: on the cube's popup 'PETG' is one row; on the precondition fixture's popup it is none",
+      _cube_popup31 == ["1 PETG"] and _rows31(["Default", "1 PLA", "2 PLA", "3 PLA", "4 PLA", "5 PLA"], "PETG") == [])
+check("std02: on the precondition fixture's popup '1 PLA' is row 1 alone, a preset name is no row, "
+      "'PLA' is all five rows (the first one read would be clicked)",
+      [text for _x, _y, text in pp.popup_line_hits(_std_popup31, "1 PLA")] == ["1 PLA"]
+      and pp.popup_line_hits(_std_popup31, "Generic PLA") == []
+      and [text for _x, _y, text in pp.popup_line_hits(_std_popup31, "PLA")]
+      == ["1 PLA", "2 PLA", "3 PLA", "4 PLA", "5 PLA"])
+check("std02: the rowcombo readback accepts a row that paints '1 PLA' for the target '1 PLA'",
+      pcr._shows("1 PLA", "1 PLA"))
+
+# 32. The layer schedule a case asserts was measured on the cube: it belongs to the
+#     fixture (2026-11-24). make_verify asserts it on the cube only; on the precondition
+#     fixture the layers are recorded until a run has measured them. analyze_gcode is
+#     stubbed: what is decided here is what is done with its count.
+_cube_raw31, _std_raw31 = ((_Path(root) / pair[0]).read_bytes() for pair in (_CUBE31, _STD31))
+
+
+def _archive31(config):
+    """A one-member project: the settings config alone is all the verifier reads."""
+    buffer = _io31.BytesIO()
+    with _zip31.ZipFile(buffer, "w") as archive:
+        archive.writestr("Metadata/project_settings.config", config)
+    return buffer.getvalue()
+
+
+_cube_config31 = _json31.loads(_zip31.ZipFile(_io31.BytesIO(_cube_raw31)).read("Metadata/project_settings.config"))
+_other_raw31 = _archive31(_json31.dumps(_cube_config31).encode())       # same settings, another archive
+_edited_config31 = dict(_cube_config31, layer_height="0.3")
+_edited_raw31 = _archive31(_json31.dumps(_edited_config31).encode())
+_verify31 = pcl.make_verify("sim32_schedule", {}, schedule={"layer_count": 68, "last_z": "27.2"})
+_layers31 = {"layer_count": 134, "first_z": "0.25", "last_z": "27.05", "sha256": "0" * 64}
+_genuine_analyze31 = pcl.analyze_gcode
+try:
+    pcl.analyze_gcode = lambda raw, **options: dict(_layers31)
+    _on_std31 = _verify31(_std_raw31, _std_raw31, b"gcode")
+    _on_cube31 = _code31(_verify31, _cube_raw31, _cube_raw31, b"gcode")
+    _on_other31 = _code31(_verify31, _other_raw31, _other_raw31, b"gcode")
+    pcl.analyze_gcode = lambda raw, **options: dict(_layers31, layer_count=68, first_z="0.4", last_z="27.2")
+    _cube_ok31 = _verify31(_cube_raw31, _cube_raw31, b"gcode")
+finally:
+    pcl.analyze_gcode = _genuine_analyze31
+check("schedule: on the precondition fixture a make_verify verifier does not raise on 134 layers "
+      "and records the measured count, first Z and last Z",
+      _on_std31 == {"case_id": "sim32_schedule", "other_settings_preserved": True, "layer_count": 134,
+                    "last_z": "27.05", "gcode_sha256": "0" * 64, "first_z": "0.25", "schedule_asserted": False},
+      "got %r" % (_on_std31,))
+check("schedule: on the cube the same verifier still raises on 134 layers",
+      _on_cube31 == "param_layer_count", "got %r" % (_on_cube31,))
+check("schedule: ... and passes on 68 layers with the result it always gave",
+      _cube_ok31 == {"case_id": "sim32_schedule", "other_settings_preserved": True, "layer_count": 68,
+                     "last_z": "27.2", "gcode_sha256": "0" * 64}, "got %r" % (_cube_ok31,))
+check("schedule: a fixture nobody pinned is refused", _on_other31 == "param_fixture_unregistered",
+      "got %r" % (_on_other31,))
+
+# 33. The save-only controls run the cases' path with no op and are judged by the same
+#     rule with an empty change set; the G-code facts are recorded. The real fixture
+#     bytes are project and fixture at once (every setting preserved by construction).
+_gcode31 = (b";LAYER_CHANGE\n;TYPE:External perimeter\nG1 X10 Y10 E1 F1800\nG1 X20 Y10 E2\n"
+            b"G0 X30 Y10 F9000\n;LAYER_CHANGE\n;TYPE:Sparse infill\nG1 X40 Y10 E3 F2400\n")
+_control31 = _np31.pilot_module("uia_param_save_only").verify_business
+_baseline_verify31 = _np31.pilot_module(_baseline31).verify_business
+_saved31 = _control31(_cube_raw31, _cube_raw31, _gcode31)
+check("save-only control: a project saved unchanged passes the existing preserved rule (empty change set) "
+      "and records the layer changes, the feeds and an empty config diff",
+      _saved31.get("other_settings_preserved") is True and _saved31.get("case_id") == "param_save_only_control"
+      and _saved31.get("layer_change_lines") == 2 and _saved31.get("config_changes") == []
+      and _saved31.get("feature_speeds", {}).get("travel", {}).get("first") == {"9000": 1}
+      and _saved31.get("feature_speeds", {}).get("Sparse infill", {}).get("other") == {"2400": 1}
+      and "schedule_error" in _saved31, "got %r" % (_saved31,))
+check("save-only control: a project whose config changed is refused by the existing rule",
+      _code31(_control31, _edited_raw31, _cube_raw31, _gcode31) == "pilot_unrelated_setting_changed:layer_height",
+      "got %r" % (_code31(_control31, _edited_raw31, _cube_raw31, _gcode31),))
+_baseline_run31 = _baseline_verify31(_std_raw31, _std_raw31, _gcode31)
+check("save-only baseline: the precondition fixture saved unchanged passes the same rule and records its facts",
+      _baseline_run31.get("other_settings_preserved") is True and _baseline_run31.get("case_id") == "param_std_save_only"
+      and _baseline_run31.get("layer_change_lines") == 2 and _baseline_run31.get("config_changes") == [],
+      "got %r" % (_baseline_run31,))
 
 failed = [n for n, ok in results if not ok]
 print("\n%d checks, %d failed" % (len(results), len(failed)))

@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 import sys
 
-from .agent_protocol import ProtocolError, read_json
+from .agent_protocol import STD_SCENARIO, STD_TARGETS, ProtocolError, base_scenario, read_json
 from .native_matrix import (UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO,
     UIA_MIX_RECIPES, UIA_MOVE_LAYER, UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS)
 
@@ -876,7 +876,29 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             {"tab": "Others", "op": "checkbox", "label": "Exclude",
              "value": True, "group": "G-code output"},
         ],
+        # Save-only controls (2026-11-24): no operation. run_ops still switches
+        # Advanced on, then the worker saves, reopens, slices and exports as for
+        # every parameter case. The cube here; the precondition fixture in the
+        # second (native_pilots.native_fixture).
+        "uia_param_save_only": [],
+        STD_SCENARIO: [],
 }
+
+
+def scenario_ops(scenario):
+    """The ops `scenario` runs: its base scenario's PARAM_OPS entry (None when it has
+    none). A `_std02` scenario is that scenario on the precondition fixture, whose
+    filaments are all PLA: its extruder popup rows are "1 PLA" .. "5 PLA" (the rows
+    paint "<n> <filament type>", census 67690ed4 / c814315c), so a rowcombo target that
+    named the cube's extruder 1 by its type names row 1 there
+    (agent_protocol.STD_TARGETS). The table is not touched - it stays what the cube
+    runs; only an op whose target was substituted comes back as a copy."""
+    base = base_scenario(scenario)
+    ops = PARAM_OPS.get(base)
+    substituted = lambda op: op.get("op") == "rowcombo" and op.get("target") in STD_TARGETS
+    if ops is None or base == scenario or not any(substituted(op) for op in ops):
+        return ops
+    return [dict(op, target=STD_TARGETS[op["target"]]) if substituted(op) else op for op in ops]
 
 
 def _save_failure_shot(ui, scenario):
@@ -897,7 +919,7 @@ def edit_param_cases(ui, scenario):
     """Feishu 常用工艺参数 supplement cases (declarative process-panel ops)."""
     from .param_case_lib import run_ops
 
-    ops = PARAM_OPS.get(scenario)
+    ops = scenario_ops(scenario)
     if ops is None:
         raise ProtocolError("param_case_ops:" + scenario)
     try:
@@ -949,6 +971,8 @@ def assign_filament_slot2(ui):
 
 
 def edit_project(ui, scenario, canvas, *, mix_census=False):
+    # A `_std02` name is dispatched as its base scenario: only the fixture differs.
+    base = base_scenario(scenario)
     if scenario in {UIA_LAYER_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO}:
         if scenario == UIA_LAYER_STRENGTH_SCENARIO:
             quality = ui.wait(lambda: ui.named_child("Quality"), 15)
@@ -968,12 +992,12 @@ def edit_project(ui, scenario, canvas, *, mix_census=False):
         add_mix_recipes(ui, census=mix_census)
     elif scenario == "pilot_material":
         assign_filament_slot2(ui)
-    elif scenario == "uia_param_layer_pair":
+    elif base == "uia_param_layer_pair":
         edit_param_layer_pair(ui)
-    elif scenario in ("uia_param_census", "uia_param_census_develop"):
+    elif base in ("uia_param_census", "uia_param_census_develop"):
         from .param_case_lib import census_param_pages
         census_param_pages(ui)
-    elif scenario == "uia_param_mix_census":
+    elif base == "uia_param_mix_census":
         from .param_mix_census import census_mix_dialog
         census_mix_dialog(ui)
     elif scenario.startswith("uia_param_"):
