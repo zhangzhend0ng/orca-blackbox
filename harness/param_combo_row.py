@@ -4,6 +4,7 @@ pp.set_combo_by_popup locates the combo by its painted VALUE, which is
 ambiguous when sibling rows share a value (run 6d6fef17: two 'Monotonic'
 pattern rows). This helper locates the combo by its painted ROW LABEL
 (phrase OCR) and reuses the same popup capture/OCR/click mechanics."""
+import re
 import time
 
 from .agent_protocol import ProtocolError
@@ -212,9 +213,39 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
     value, line = _row_value(ui, label, anchor=(cx, cy))
     print("[popup] row %r now paints value %r, line %r (wanted %r)" % (
         label, value, line, target), flush=True)
-    if target.lower() not in value.lower():
+    if not _shows(value, target):
         raise ProtocolError("param_combo_readback:" + target + ":" +
                             (value or line)[:60])
+
+
+def _shows(value, target):
+    """True when one reading of `value` is exactly the words of `target`
+    (readings are joined with ' | '). Not a substring test: 'Rib' is inside
+    'Rectangle', and three of the twelve rowcombo targets are the first word
+    of another entry of their own popup ('Rectilinear Interlaced',
+    'Aligned Rectilinear') - a substring readback passes the wrong pick
+    (fa review of 36cbb8c). Digits and signs are ignored: '1 PETG' is PETG."""
+    want = re.findall(r"[a-z]+", target.lower())
+    for reading in value.split(" | "):
+        words = [w for w in re.findall(r"[a-z]+", reading.lower()) if len(w) >= 2]
+        if words == want:
+            return True
+    return False
+
+
+def _line_names(line, label):
+    """True when the OCR line on the anchor carries the row's label - or is
+    empty: a just-changed row drops out of the band OCR (fa run e9071eba),
+    which is exactly when the anchor is needed. A non-empty line WITHOUT
+    the label means the page moved under the anchor and the reading belongs
+    to another row (fa review). OCR swaps I/l and drops endings, so a label
+    word counts as seen when some line word starts with its first three
+    letters."""
+    words = re.findall(r"[a-z]+", line.lower())
+    if not words:
+        return True
+    return any(any(w.startswith(part[:3]) for w in words)
+               for part in re.findall(r"[a-z]+", label.lstrip("^").lower()) if len(part) >= 3)
 
 
 def _row_value(ui, label, anchor=None):
@@ -242,14 +273,15 @@ def _row_value(ui, label, anchor=None):
     app = ui.app
     try:
         ox, oy = pp.client_origin(app)
-        value = line = ""
+        anchored = ("", "")
         if anchor is not None:
-            value, line = _read_row(ui, anchor[1] - oy, ox, oy)
-            if value:
-                return value, line
+            anchored = _read_row(ui, anchor[1] - oy, ox, oy)
+            if anchored[0] and _line_names(anchored[1], label):
+                return anchored
         y = _find_phrase_row(app, label, group_substr=None)
         if y is None or (anchor is not None and y == anchor[1] - oy):
-            return value, line
+            # nothing better than the anchor: its reading goes back unchecked
+            return anchored
         return _read_row(ui, y, ox, oy)
     except Exception as exc:  # diagnostic path: never mask the real failure
         print("[popup] row value not read: %s: %s" % (type(exc).__name__, exc), flush=True)
@@ -267,7 +299,10 @@ def _read_row(ui, y, ox, oy):
             continue
         if not (pp.VALUE_X0 - 10 <= lx < pp.SB_W and r[2] - r[0] <= 320):
             continue
-        if abs((r[1] + r[3]) // 2 - (y + oy)) <= 14:
+        # centre within 10 px of the line and no taller than a value window
+        # (26 px): at the old +/-14 the boxes of a 27 px stack could both
+        # land in one reading (fa review)
+        if abs((r[1] + r[3]) // 2 - (y + oy)) <= 10 and (r[3] - r[1]) <= 30:
             boxes.append(r)
             texts.append(t.strip())
     img = pp.capture_bgr(app)

@@ -483,7 +483,8 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         # param_case_lib.settle_dialog).
         "uia_param_spiral_vase": [
             {"tab": "Others", "op": "checkbox", "label": "Spiral",
-             "value": True, "group": "Special mode", "answer": "Yes"},
+             "value": True, "group": "Special mode", "answer": "Yes",
+             "dialog": "Spiral mode"},
             {"tab": "Quality", "tab_hint": "height", "op": "combo", "current": "Aligned",
              "target": "nearest", "group": "Seam"},
         ],

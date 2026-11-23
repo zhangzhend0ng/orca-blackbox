@@ -381,23 +381,65 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
         raise ProtocolError("param_uia_readback:" + label_substr + ":" + repr(receipt.get("after_text"))[:40])
 
 
-def settle_dialog(ui, known, answer=None):
+def _dialog_gone(ui, dlg, timeout_s):
+    """True once the main window is enabled again and `dlg` no longer
+    exists. Polls every 0.25 s up to `timeout_s`."""
+    import time
+    from . import winutil
+
+    app = ui.app
+    started = time.monotonic()
+    while time.monotonic() - started < timeout_s:
+        if winutil.user32.IsWindowEnabled(app.hwnd) and not winutil.user32.IsWindow(dlg):
+            return time.monotonic() - started
+        ui.pause(0.25)
+    return None
+
+
+def _page_settled(ui, timeout_s=15.0):
+    """Wait until the panel's child windows (handles, texts, rects) read
+    the same twice 0.5 s apart - a confirmed edit rebuilds the page, and
+    locating a row on a half-rebuilt page hits the wrong one."""
+    import time
+    from . import process_panel as pp
+
+    def signature():
+        return [(t, c, r, h) for t, c, r, h, _lx, _ly in pp.kids(ui.app)]
+
+    started = time.monotonic()
+    last = signature()
+    while time.monotonic() - started < timeout_s:
+        ui.pause(0.5)
+        now = signature()
+        if now == last:
+            return True
+        last = now
+    return False
+
+
+def settle_dialog(ui, known, answer=None, expect=None):
     """(hwnd, text) of the dialog the app opened right after an op, or
-    (None, ''). With `answer` (a button text such as 'Yes') that button is
-    pressed; without it the dialog is closed, as before.
+    (None, ''). `answer` names the button to press ('Yes'); `expect` is a
+    piece of the question the op expects (e.g. 'Spiral mode'). A box whose
+    text does not carry `expect` is closed, never answered: a rule meant for
+    one question must not say Yes to another.
 
     Spiral vase (VM run 49723134): ticking the box makes the app ask
     whether to switch wall loops / top layers / sparse infill to vase
-    values (ConfigManipulation.cpp:321-351, a wxYES|wxNO MessageDialog).
-    The old code waited for the combo popup - export_util.wait_popup is a
-    top-level wxWindowNR 'panel', which a message box never is - so the
-    box stayed open and the next guard raised main_window_modal_blocked.
-    Closing it means No: the app then switches spiral mode back off, which
-    is why the op names the answer instead.
+    values (ConfigManipulation.cpp:321-351). The old code waited for the
+    combo popup - export_util.wait_popup is a top-level wxWindowNR 'panel',
+    which a message box never is - so the box stayed open and the next
+    guard raised main_window_modal_blocked. Closing it means No: the app
+    then switches spiral mode back off, which is why the op names the
+    answer.
 
     The box is found by its EFFECT - a modal disables the main window, the
-    same fact the next guard would trip on - and not by class or by a size
-    guess: find_conflict_dialog only knows small #32770s."""
+    same fact the next guard would trip on - and then taken by class
+    '#32770' owned by the main window. It is wx's own dialog: its buttons
+    are OWNER-DRAWN wxWindowNR windows, not 'Button's (VM run d8cec0d4:
+    children Static / wxWindowNR x3; the three ways before that - Button
+    children, a native task dialog's TDM_CLICK_BUTTON, WM_COMMAND and a
+    real Enter - could not work and each cost a run)."""
     from . import export_util, mixing_util, process_panel as pp, winutil
     import time
 
@@ -409,8 +451,10 @@ def settle_dialog(ui, known, answer=None):
             new = [w for w in mixing_util.toplevel(app.pid)
                    if w[3] not in known and w[3] != app.hwnd
                    and (w[2][3] - w[2][1]) < 400]
-            if new:
-                dlg = new[0][3]
+            owned = [w for w in new if w[0] == "#32770"
+                     and winutil.user32.GetWindow(w[3], 4) == app.hwnd]   # GW_OWNER
+            if owned or new:
+                dlg = (owned or new)[0][3]
                 break
         time.sleep(0.25)
     if dlg is None:
@@ -421,11 +465,6 @@ def settle_dialog(ui, known, answer=None):
         return None, ""
     body = pp.dialog_body(app.pid, dlg)
     kids = mixing_util.children(dlg)
-    # The box is wx's own dialog: class '#32770' like every wxDialog, and
-    # its buttons are OWNER-DRAWN wxWindowNR windows, not 'Button's (VM run
-    # d8cec0d4: children Static / wxWindowNR x3). A button is a child with
-    # text whose class is Button or wxWindowNR; failing that, the two small
-    # untitled children are the Yes/No pair, left to right.
     buttons = [b for b in kids if b[1] in ("Button", "wxWindowNR") and b[0].strip()]
     if not buttons:
         small = sorted((b for b in kids if b[1] != "Static"
@@ -440,17 +479,28 @@ def settle_dialog(ui, known, answer=None):
     print("[param case] dialog after the checkbox: %r; class %r; children %r; buttons %r" % (
         body[:160], cls, [(t, c) for t, c, _r, _h in kids][:12],
         [(t, c, r) for t, c, r, _h in buttons]), flush=True)
-    hit = how = None
+
+    def close(why):
+        print("[param case] %s - closing it (WM_CLOSE)" % why, flush=True)
+        winutil.user32.PostMessageW(dlg, 0x0010, 0, 0)  # WM_CLOSE
+        gone = _dialog_gone(ui, dlg, 8.0)
+        print("[param case] box gone: %s" % ("after %.1f s" % gone if gone is not None else "NO"),
+              flush=True)
+
     want = answer.replace("&", "").strip().lower() if answer else None
+    if want and expect and expect.lower() not in body.lower():
+        close("the box is not the expected one (%r is not in its text)" % expect)
+        return dlg, body
+    hit = how = None
     if want:
         for _t, _c, r, h in buttons:
             if _t.replace("&", "").strip().lower().startswith(want):
                 hit, how = (r, h), "text"
-        if hit is None and len(buttons) == 2 and want in ("yes", "no"):
+        if hit is None and expect and len(buttons) == 2 and want in ("yes", "no"):
             # a native box labels its buttons in the Windows language
             # ('是/否'), so the text rule misses: in a two-button Yes/No
             # box Yes is the first one. Only for an op that named the
-            # answer - never a guess on an unnamed box.
+            # answer AND the question - never a guess on an unnamed box.
             first = buttons[0][0].replace("&", "").strip().lower()
             first_is_no = first.startswith("no") or first.startswith("否")
             index = (want == "no") != first_is_no
@@ -460,47 +510,52 @@ def settle_dialog(ui, known, answer=None):
         print("[param case] answering %r by %s: click (%d,%d)" % (
             answer, how, (x0 + x1) // 2, (y0 + y1) // 2), flush=True)
         winutil.real_click_screen((x0 + x1) // 2, (y0 + y1) // 2)
-    elif want in ("yes", "no"):
+        gone = _dialog_gone(ui, dlg, 10.0)
+        if gone is None:
+            raise ProtocolError("param_dialog_not_closed:" + str(answer))
+        print("[param case] box gone after %.1f s; page settled: %s" % (
+            gone, _page_settled(ui)), flush=True)
+        return dlg, body
+    if want in ("yes", "no") and expect and not any(k[1] == "Button" for k in kids):
         # No button window to click. A native box of this app would be a
         # TASK DIALOG (buttons drawn in a DirectUI child, WM_COMMAND
         # ignored) and the guest keeps the app out of the foreground, so no
-        # real key ever reaches it (VM runs eab35b9a / 4d9731ec / 9ef272d0:
-        # closed = No every time). Each way below is checked by the main
+        # real key ever reaches it. Each way below is checked by the main
         # window being enabled again; WM_CLOSE (= No) is the last resort.
         command = 6 if want == "yes" else 7                 # IDYES / IDNO
-        print("[param case] box children: %r" % [(t, c) for t, c, _r, _h in kids][:12],
-              flush=True)
 
         def answered(how):
-            ui.pause(1.0)
-            if winutil.user32.IsWindowEnabled(app.hwnd):
-                print("[param case] answered %r by %s" % (answer, how), flush=True)
+            gone = _dialog_gone(ui, dlg, 2.0)
+            if gone is not None:
+                print("[param case] answered %r by %s; box gone after %.1f s" % (
+                    answer, how, gone), flush=True)
                 return True
             return False
 
         winutil.user32.PostMessageW(dlg, 0x046A, command, 0)    # TDM_CLICK_BUTTON = WM_USER + 102
         if answered("TDM_CLICK_BUTTON (task dialog)"):
+            _page_settled(ui)
             return dlg, body
         winutil.user32.PostMessageW(dlg, 0x0111, command, 0)   # WM_COMMAND
         if answered("WM_COMMAND"):
+            _page_settled(ui)
             return dlg, body
         if want == "yes":
             for message in (0x0100, 0x0101):                   # WM_KEYDOWN / WM_KEYUP
                 winutil.user32.PostMessageW(dlg, message, 0x0D, 0)   # VK_RETURN: default button
             if answered("a posted Enter"):
+                _page_settled(ui)
                 return dlg, body
             from harness import mix_dialog_util as mdu
             if winutil.force_set_foreground(dlg):
                 ui.pause(0.5)
                 mdu._send_keys([(0x0D, False), (0x0D, True)])   # a real Enter, only in front
                 if answered("a real Enter"):
+                    _page_settled(ui)
                     return dlg, body
-        print("[param case] no way to answer the box - closing it (WM_CLOSE = No)", flush=True)
-        winutil.user32.PostMessageW(dlg, 0x0010, 0, 0)  # WM_CLOSE
+        close("no way to answer the box")
     else:
-        print("[param case] closing it (WM_CLOSE)", flush=True)
-        winutil.user32.PostMessageW(dlg, 0x0010, 0, 0)  # WM_CLOSE
-    ui.pause(1.0)
+        close("no answer named for this box" if not want else "no expected question named")
     return dlg, body
 
 
@@ -557,7 +612,7 @@ def run_ops(ui, ops):
             # 0.21->0.06 then raised, run 7cb0e911).
             if not (isinstance(ok, tuple) and ok[0] == op["value"]):
                 raise ProtocolError("param_checkbox:" + op["label"])
-            settle_dialog(ui, known_dialogs, op.get("answer"))
+            settle_dialog(ui, known_dialogs, op.get("answer"), op.get("dialog"))
         elif kind == "rowcombo":
             from .param_combo_row import pick_combo_at_label
             # A list label gets the same candidate treatment as float ops

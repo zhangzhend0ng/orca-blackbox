@@ -954,22 +954,28 @@ finally:
     (pcr._find_phrase_row, pp.client_origin, pp.kids, pp.user32, pp.capture_bgr,
      pp.options_viewport, _mdu21.ocr_words_img) = _saved21
 
-# 22. A modal the app opens after a checkbox is found and answered. Spiral
-#     vase (VM run 49723134): the Yes/No box stayed open - wait_popup only
-#     knows the combo popup - and the next guard raised
-#     main_window_modal_blocked. On the guest the box is a TASK DIALOG: no
-#     Button window, WM_COMMAND ignored, the app never in the foreground
-#     (runs eab35b9a / 4d9731ec / 9ef272d0) - the ladder is tried in order
-#     and each way is checked by the main window being enabled again.
+# 22. A modal the app opens after a checkbox is found and answered, and the
+#     answer is checked. Spiral vase (VM run 49723134): the Yes/No box stayed
+#     open - wait_popup only knows the combo popup - and the next guard raised
+#     main_window_modal_blocked. On the guest the box is wx's own dialog with
+#     owner-drawn wxWindowNR buttons (runs eab35b9a / 4d9731ec / 9ef272d0 /
+#     d8cec0d4). The fa review of 36cbb8c added: the box is taken by class and
+#     owner, only the expected question is answered, and the answer is not
+#     believed until the box is gone and the page has settled.
 from harness import export_util as _eu22  # noqa: E402
 from harness import mix_dialog_util as _mdu22, mixing_util as _mu22, winutil as _wu22  # noqa: E402
 import harness.param_case_lib as _pcl22  # noqa: E402
 
 if hasattr(_pcl22, "settle_dialog"):
     _clicks22, _posted22, _keys22 = [], [], []
-    # main window 4 is disabled while 'open'; 'closes_with' = the message
-    # that answers the box in the fake; 'enter_closes' = a real Enter does
-    _modal22 = {"open": False, "closes_with": None, "enter_closes": False, "fg": False}
+    # main window 4 is disabled while 'open' (box 99). 'closes_with' = the
+    # message that answers the box in the fake; 'click_closes' = a real click
+    # on a button does; 'enter_closes' = a real Enter does.
+    _modal22 = {"open": False, "closes_with": None, "enter_closes": False, "fg": False,
+                "click_closes": True}
+    BOX22 = ("#32770", "Orca", (800, 400, 1120, 560), 99)
+    TIP22 = ("tooltips_class32", "", (900, 300, 1000, 320), 98)
+    _windows22 = [BOX22]
 
     class _U22:
         """stands in for user32: PostMessageW is recorded, not called"""
@@ -984,21 +990,34 @@ if hasattr(_pcl22, "settle_dialog"):
         def IsWindowEnabled(h):
             return not (h == 4 and _modal22["open"])
 
+        @staticmethod
+        def IsWindow(h):
+            return h == 99 and _modal22["open"]
+
+        @staticmethod
+        def GetWindow(h, cmd):
+            return 4 if (h == 99 and cmd == 4) else 0     # GW_OWNER: the main window
+
+    def _click22(x, y):
+        _clicks22.append((x, y))
+        if _modal22["click_closes"]:
+            _modal22["open"] = False
+
     def _enter22(keys):
         _keys22.append(keys)
         if _modal22["enter_closes"]:
             _modal22["open"] = False
 
-    _saved22 = (_mu22.toplevel, pp.dialog_body, _mu22.children, _eu22.wait_popup,
+    _saved22 = (_mu22.toplevel, pp.dialog_body, pp.kids, _mu22.children, _eu22.wait_popup,
                 _wu22.real_click_screen, _wu22.user32, _wu22.force_set_foreground, _mdu22._send_keys)
     try:
         _wu22.user32 = _U22
-        _wu22.real_click_screen = lambda x, y: _clicks22.append((x, y))
+        _wu22.real_click_screen = _click22
         _wu22.force_set_foreground = lambda h: _modal22["fg"]
         _mdu22._send_keys = _enter22
         ui22 = types.SimpleNamespace(app=types.SimpleNamespace(pid=3, hwnd=4), pause=lambda s: None)
         # NOT #32770-only: the box is found by its effect on the main window
-        _mu22.toplevel = lambda pid: [("wxWindowNR", "Orca", (800, 400, 1120, 560), 99)]
+        _mu22.toplevel = lambda pid: list(_windows22)
         _eu22.wait_popup = lambda pid, timeout_s=0: (None, "panel", (1, 2, 3, 4), 77)
         r = _pcl22.settle_dialog(ui22, set())
         check("settle_dialog: no dialog but a combo popup -> WM_CLOSE to the popup, nothing clicked",
@@ -1012,68 +1031,101 @@ if hasattr(_pcl22, "settle_dialog"):
         SPIRAL = ("Spiral mode only works when wall loops is 1, support is disabled, top shell "
                   "layers is 0 ... Change these settings automatically? Yes - Change ... No - Give up")
         pp.dialog_body = lambda pid, dlg: SPIRAL
+        pp.kids = lambda app: []                       # the rebuilt page: stable at once
         STATIC22 = ("...", "Static", (1, 1, 2, 2), 5)
         YES_NO22 = [("&Yes", "Button", (100, 200, 160, 222), 11),
                     ("&No", "Button", (180, 200, 240, 222), 12)]
         _mu22.children = lambda dlg: [STATIC22] + YES_NO22
         _modal22["open"] = True
-        r = _pcl22.settle_dialog(ui22, set(), "Yes")
+        r = _pcl22.settle_dialog(ui22, set(), "Yes", "Spiral mode")
         check("settle_dialog: the spiral box is answered Yes - the Yes button is clicked, not closed",
-              r[0] == 99 and _clicks22 == [(130, 211)] and not _posted22,
+              r[0] == 99 and _clicks22 == [(130, 211)] and not _posted22 and not _modal22["open"],
               "%r %r" % (_clicks22, _posted22))
         _clicks22.clear()
-        _modal22["open"] = True
+        _modal22.update(open=True, click_closes=False)
+        try:
+            _pcl22.settle_dialog(ui22, set(), "Yes", "Spiral mode")
+            raised22 = "nothing"
+        except ProtocolError as exc22:
+            raised22 = str(exc22)
+        check("settle_dialog: a click that does not close the box is an error, not a silent next op "
+              "(fa review: 'clicked' and 'closed' could not be told apart)",
+              raised22 == "param_dialog_not_closed:Yes" and _clicks22 == [(130, 211)],
+              "%r %r" % (raised22, _clicks22))
+        _clicks22.clear()
+        _modal22.update(open=True, click_closes=True)
         _mu22.children = lambda dlg: [STATIC22, ("\u662f(&Y)", "Button", (100, 200, 160, 222), 11),
                                       ("\u5426(&N)", "Button", (180, 200, 240, 222), 12)]
-        _pcl22.settle_dialog(ui22, set(), "Yes")
-        check("settle_dialog: a box labelled in the Windows language - Yes is the first of two",
+        _pcl22.settle_dialog(ui22, set(), "Yes", "Spiral mode")
+        check("settle_dialog: a box labelled in the Windows language - Yes is the first of two "
+              "(the op named the question)",
               _clicks22 == [(130, 211)], "%r" % (_clicks22,))
         _clicks22.clear()
         _modal22["open"] = True
-        _mu22.children = lambda dlg: [("&No", "Button", (100, 200, 160, 222), 11),
-                                      ("&Yes", "Button", (180, 200, 240, 222), 12)]
-        _pcl22.settle_dialog(ui22, set(), "Yes")
-        check("settle_dialog: ... unless the first button says No",
-              _clicks22 == [(210, 211)], "%r" % (_clicks22,))
-        _clicks22.clear()
+        _mu22.children = lambda dlg: [("OK", "Button", (100, 200, 160, 222), 11),
+                                      ("Cancel", "Button", (180, 200, 240, 222), 12)]
+        _pcl22.settle_dialog(ui22, set(), "Yes")          # no expected question named
+        check("settle_dialog: two buttons that do not say Yes and no named question -> closed, "
+              "the left one is NOT clicked for 'Yes' (fa review)",
+              not _clicks22 and _posted22 == [(99, 0x0010, 0)], "%r %r" % (_clicks22, _posted22))
+        _posted22.clear()
+        _modal22["open"] = True
+        _mu22.children = lambda dlg: [STATIC22] + YES_NO22
+        _pcl22.settle_dialog(ui22, set(), "Yes", "Delete the project?")   # another question
+        check("settle_dialog: a box that is not the expected question is never answered",
+              not _clicks22 and _posted22 == [(99, 0x0010, 0)], "%r %r" % (_clicks22, _posted22))
+        _posted22.clear()
         _modal22["open"] = True
         _mu22.children = lambda dlg: list(YES_NO22)
         _pcl22.settle_dialog(ui22, set())          # no answer named
         check("settle_dialog: an unnamed dialog is closed, never answered",
               _posted22 == [(99, 0x0010, 0)] and not _clicks22, "%r %r" % (_clicks22, _posted22))
+        _posted22.clear()
+        _modal22["open"] = True
+        _windows22[:] = [TIP22, BOX22]             # a tooltip window is listed BEFORE the box
+        _mu22.children = lambda dlg: [STATIC22] + YES_NO22
+        r = _pcl22.settle_dialog(ui22, set(), "Yes", "Spiral mode")
+        check("settle_dialog: the box is the #32770 owned by the main window, not the first new window "
+              "(fa review)",
+              r[0] == 99 and _clicks22 == [(130, 211)], "%r %r" % (r, _clicks22))
+        _clicks22.clear()
+        _modal22["open"] = True
+        _windows22[:] = [TIP22]                    # nothing owned: the only new window is taken
+        r = _pcl22.settle_dialog(ui22, set())
+        check("settle_dialog: with no owned box the only new window is still handled (and closed)",
+              r[0] == 98 and _posted22 == [(98, 0x0010, 0)], "%r %r" % (r, _posted22))
+        _windows22[:] = [BOX22]
         LADDER22 = [(99, 0x046A, 6), (99, 0x0111, 6), (99, 0x0100, 0x0D), (99, 0x0101, 0x0D)]
-        # VM run d8cec0d4: the box is wx's own dialog - its buttons are
-        # owner-drawn wxWindowNR windows with the label as window text
-        _modal22.update(open=True)
+        # VM run d8cec0d4: owner-drawn wx buttons (wxWindowNR with the label)
+        _posted22.clear()
+        _modal22["open"] = True
         _mu22.children = lambda dlg: [STATIC22, ("&Yes", "wxWindowNR", (100, 200, 160, 222), 11),
                                       ("&No", "wxWindowNR", (180, 200, 240, 222), 12),
                                       ("", "wxWindowNR", (20, 40, 300, 120), 13)]
-        _clicks22.clear()
-        _posted22.clear()
-        _pcl22.settle_dialog(ui22, set(), "Yes")
+        _pcl22.settle_dialog(ui22, set(), "Yes", "Spiral mode")
         check("settle_dialog: owner-drawn wx buttons (wxWindowNR with the label) are found and clicked "
               "(VM run d8cec0d4)", _clicks22 == [(130, 211)] and not _posted22, "%r %r" % (_clicks22, _posted22))
-        _modal22.update(open=True)
+        _modal22["open"] = True
         _mu22.children = lambda dlg: [STATIC22, ("", "wxWindowNR", (180, 200, 240, 222), 12),
                                       ("", "wxWindowNR", (100, 200, 160, 222), 11),
                                       ("", "wxWindowNR", (20, 40, 300, 120), 13)]
         _clicks22.clear()
-        _pcl22.settle_dialog(ui22, set(), "Yes")
+        _pcl22.settle_dialog(ui22, set(), "Yes", "Spiral mode")
         check("settle_dialog: two small untitled children are the Yes/No pair, left one is Yes",
               _clicks22 == [(130, 211)], "%r" % (_clicks22,))
-        _modal22.update(open=True)
+        _modal22["open"] = True
         _clicks22.clear()
-        _pcl22.settle_dialog(ui22, set(), "No")
+        _pcl22.settle_dialog(ui22, set(), "No", "Spiral mode")
         check("settle_dialog: ... and No is the right one",
               _clicks22 == [(210, 211)], "%r" % (_clicks22,))
         _posted22.clear()
         _clicks22.clear()
         _modal22["open"] = True
         _mu22.children = lambda dlg: [("OK", "Button", (100, 200, 160, 222), 11)]
-        _pcl22.settle_dialog(ui22, set(), "Yes")
+        _pcl22.settle_dialog(ui22, set(), "Yes", "Spiral mode")
         check("settle_dialog: a one-button box with a Yes named - nothing answers it, closed "
-              "(the whole ladder is tried first)",
-              _posted22 == LADDER22 + [(99, 0x0010, 0)] and not _clicks22, "%r" % (_posted22,))
+              "(the ladder is only tried for a native box without Button windows)",
+              _posted22 == [(99, 0x0010, 0)] and not _clicks22, "%r" % (_posted22,))
         _mu22.children = lambda dlg: [STATIC22]           # the task dialog: no Button window
         for closes, want, name in (
                 (0x046A, [(99, 0x046A, 6)], "TDM_CLICK_BUTTON answers the task dialog (first in the ladder)"),
@@ -1081,30 +1133,30 @@ if hasattr(_pcl22, "settle_dialog"):
                 (0x0100, LADDER22, "a posted Enter answers it (down and up are posted, then checked)")):
             _posted22.clear()
             _modal22.update(open=True, closes_with=closes)
-            _pcl22.settle_dialog(ui22, set(), "Yes")
+            _pcl22.settle_dialog(ui22, set(), "Yes", "Spiral mode")
             check("settle_dialog: " + name,
                   _posted22 == want and not _modal22["open"] and not _keys22, "%r" % (_posted22,))
         _posted22.clear()
         _keys22.clear()
         _modal22.update(open=True, closes_with=None, fg=True, enter_closes=True)
-        _pcl22.settle_dialog(ui22, set(), "Yes")
+        _pcl22.settle_dialog(ui22, set(), "Yes", "Spiral mode")
         check("settle_dialog: ... then a real Enter, but only once the box is the foreground window",
               _keys22 == [[(0x0D, False), (0x0D, True)]] and not _modal22["open"]
               and _posted22 == LADDER22, "%r %r" % (_posted22, _keys22))
         _posted22.clear()
         _keys22.clear()
         _modal22.update(open=True, fg=False)
-        _pcl22.settle_dialog(ui22, set(), "Yes")
+        _pcl22.settle_dialog(ui22, set(), "Yes", "Spiral mode")
         check("settle_dialog: ... and when the box is not in front nothing is typed; it is closed",
               _posted22 == LADDER22 + [(99, 0x0010, 0)] and not _keys22, "%r %r" % (_posted22, _keys22))
         _posted22.clear()
         _modal22.update(open=True, closes_with=None)
-        _pcl22.settle_dialog(ui22, set(), "No")
+        _pcl22.settle_dialog(ui22, set(), "No", "Spiral mode")
         check("settle_dialog: 'No' never types an Enter; unanswered -> closed",
               _posted22 == [(99, 0x046A, 7), (99, 0x0111, 7), (99, 0x0010, 0)] and not _keys22,
               "%r %r" % (_posted22, _keys22))
     finally:
-        (_mu22.toplevel, pp.dialog_body, _mu22.children, _eu22.wait_popup,
+        (_mu22.toplevel, pp.dialog_body, pp.kids, _mu22.children, _eu22.wait_popup,
          _wu22.real_click_screen, _wu22.user32, _wu22.force_set_foreground, _mdu22._send_keys) = _saved22
 else:
     print("N/A  settle_dialog (absent on this tree)")
@@ -1286,6 +1338,119 @@ if hasattr(pp, "ADVANCED_SWITCH"):
           and '(conf_extra or {}).get("user_mode") == "develop"' in src26)
 else:
     print("N/A  ADVANCED_SWITCH (absent on this tree)")
+
+# 27. The fa review of 36cbb8c (2026-11-24 02:35): a substring readback
+#     passes the wrong pick, the value band took two stacked boxes, an
+#     unchecked anchor reading was believed, and the negative walk could
+#     overshoot and commit.
+if hasattr(pcr, "_shows"):
+    check("readback: the target must BE the value's words - 'Rib' is not 'Rectangle'",
+          not pcr._shows("Rectangle | ~ Rectangle", "Rib") and pcr._shows("Rib", "Rib"))
+    check("readback: 'Rectilinear' does not accept 'Rectilinear Interlaced' (its own popup's next entry)",
+          not pcr._shows("Rectilinear Interlaced", "Rectilinear") and pcr._shows("Rectilinear", "Rectilinear"))
+    check("readback: digits and signs are ignored - '1 PETG' is PETG, readings are checked one by one",
+          pcr._shows("PETG | PETG", "PETG") and pcr._shows("1 PETG | ~ 1 PETG", "PETG")
+          and pcr._shows("Outer brim only | ~ Outer brim only", "Outer brim only"))
+    check("line names: an empty line counts (a just-changed row drops out of the OCR), "
+          "a line without the label does not",
+          pcr._line_names("", "^Fuzzy skin") and pcr._line_names("Support/raft base", "^Support/raft base")
+          and not pcr._line_names("Fuzzy skin generator mode ~ Displacement", "Interface pattern"))
+
+    _saved27 = (pcr._find_phrase_row, pp.client_origin, pp.kids, pp.user32, pp.capture_bgr,
+                pp.options_viewport, _mdu21.ocr_words_img)
+    try:
+        pcr._find_phrase_row = lambda app, label, group_substr=None: 835
+        pp.client_origin = lambda app: (0, 0)
+        pp.user32 = types.SimpleNamespace(IsWindowVisible=lambda h: True)
+        pp.capture_bgr = lambda app: _np21.zeros((1032, 1920, 3), _np21.uint8)
+        pp.options_viewport = lambda app: ((1, 718, 421, 1031),)
+        _mdu21.ocr_words_img = lambda crop, scale=3, psm=6: []
+        # two value windows 27 px apart (the overhang stack): only the one
+        # on the asked line is read
+        pp.kids = lambda app: [("10", "wxWindowNR", (246, 774, 366, 800), 8, 253, 781),
+                               ("20", "wxWindowNR", (246, 801, 366, 827), 9, 253, 808)]
+        ui27 = types.SimpleNamespace(app=types.SimpleNamespace(hwnd=4, pid=3))
+        check("read row: of two boxes 27 px apart only the one on the asked line is read "
+              "(old band +/-14 took both)",
+              pcr._read_row(ui27, 787, 0, 0)[0] == "10" and pcr._read_row(ui27, 814, 0, 0)[0] == "20",
+              "%r %r" % (pcr._read_row(ui27, 787, 0, 0)[0], pcr._read_row(ui27, 814, 0, 0)[0]))
+        # the anchor line names ANOTHER row: the phrase scan places the row
+        _scan27 = []
+        pcr._find_phrase_row = lambda app, label, group_substr=None: (_scan27.append(label), 814)[1]
+        pp.kids = lambda app: [("Displacement", "wxWindowNR", (246, 774, 366, 800), 8, 253, 781),
+                               ("Contour", "wxWindowNR", (246, 801, 366, 827), 9, 253, 808)]
+        _ocr27 = {"calls": 0}
+
+        def _words27(crop, scale=3, psm=6):
+            # the band (424 wide, starting at viewport y 718) reads the ANCHOR
+            # line (y 787) as the generator-mode row; the label row itself
+            # sits above it. y is relative to the band: 12 -> 737, 56 -> 781,
+            # 83 -> 808.
+            if crop.shape[1] == pp.SB_W:
+                return [("Fuzzy", 13, 12, 50, 14), ("skin", 70, 12, 40, 14),
+                        ("generator", 13, 56, 80, 14), ("mode", 100, 56, 40, 14),
+                        ("Contour", 26, 83, 70, 14)]
+            return [("Displacement", 4, 3, 90, 12)] if crop.shape[0] < 40 else [("Contour", 4, 3, 70, 12)]
+        _mdu21.ocr_words_img = _words27
+        value, line = pcr._row_value(ui27, "Fuzzy skin", anchor=(306, 787))
+        check("readback: an anchor whose line names another row is not believed - the row the "
+              "phrase scan places is read",
+              _scan27 == ["Fuzzy skin"], "scans %r value %r" % (_scan27, value))
+    finally:
+        (pcr._find_phrase_row, pp.client_origin, pp.kids, pp.user32, pp.capture_bgr,
+         pp.options_viewport, _mdu21.ocr_words_img) = _saved27
+
+    import re as _re27  # noqa: E402
+
+    class _Spin27(_NumEdit24):
+        step = 0.5
+        dead = False                             # a dead control ignores Down
+
+        def chars(self, piece):
+            super().chars(piece.replace("-", ""))
+
+        def key(self, vk):
+            self.msgs.append(("key", vk))
+            if self.dead:
+                return
+            found = _re27.search(r"-?\d+(?:\.\d+)?", self.text)
+            self.text = "%.2f" % (float(found.group(0)) - self.step) if found else self.text
+    ctl = _Spin27()
+    ctl.text = "0.2"
+    ctl.dead = False
+    ui = _ui24(ctl)
+    raised = _raises(ui.edit, 10, 20, "-0.1")
+    check("negative edit: a target off the control's grid (0.2 -> -0.1 by 0.5) is refused, "
+          "nothing is committed",
+          isinstance(raised, str) and raised.startswith("param_negative_off_grid")
+          and ("chars", "\r") not in ctl.msgs, "raised %r msgs %r" % (raised, ctl.msgs[-3:]))
+    ctl = _Spin27()
+    ctl.text = "100"
+    ctl.dead = True                      # the control ignores Down
+    ui = _ui24(ctl)
+    raised = _raises(ui.edit, 10, 20, "-100")
+    check("negative edit: a control that does not step is refused before anything is committed",
+          isinstance(raised, str) and raised.startswith("param_negative_no_spin")
+          and ("chars", "\r") not in ctl.msgs, "raised %r" % (raised,))
+    ctl = _Spin27()
+    ctl.text = "-150"
+    ctl.step = 7                                   # 50 is not a multiple of 7
+    ui = _ui24(ctl)
+    raised = _raises(ui.edit, 10, 20, "-100")
+    check("negative edit: the real field (-150 by 7) cannot reach -100 - refused, nothing committed",
+          isinstance(raised, str) and raised.startswith("param_negative_off_grid")
+          and ("chars", "\r") not in ctl.msgs, "raised %r" % (raised,))
+    ctl = _Spin27()
+    ctl.text = "-150"
+    ctl.step = 5
+    ui = _ui24(ctl)
+    ui.edit(10, 20, "-100")
+    check("negative edit: the typed digits leave +100; by 5 it walks to -100 in 40 presses and commits",
+          ctl.text == "-100.00" and ("chars", "\r") in ctl.msgs
+          and len([m for m in ctl.msgs if m == ("key", 40)]) == 40,
+          "field %r keys %d" % (ctl.text, len([m for m in ctl.msgs if m == ("key", 40)])))
+else:
+    print("N/A  readback/negative hardening (absent on this tree)")
 
 failed = [n for n, ok in results if not ok]
 print("\n%d checks, %d failed" % (len(results), len(failed)))

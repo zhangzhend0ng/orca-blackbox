@@ -30,6 +30,13 @@ def _discard_choice(caption, children, *, close_requested=False):
     return choices[0] if len(choices) == 1 else None
 
 
+def _field_value(text):
+    """The number a numeric edit shows (first signed decimal in its text),
+    or None when there is none."""
+    found = re.search(r"-?\d+(?:\.\d+)?", text or "")
+    return float(found.group(0)) if found else None
+
+
 class BusinessUI:
     def __init__(self, artifacts: Path, guard, *, fixture=(LAYER_FIXTURE, LAYER_FIXTURE_SHA256),
                  ready_on_open=None, probe_boot=False, conf_extra=None):
@@ -166,11 +173,13 @@ class BusinessUI:
             self.guard()
             self.wu.msg_text(target, "-")
             self.guard()
-            if not self.wu.edit_text(target).lstrip().startswith("-"):
+            if _field_value(self.wu.edit_text(target)) != -float(digits[1:]):
                 # The spin edit refuses the minus in front of a number too
                 # (fa run 9d2369fb: '100', caret home, '-' -> still '100',
                 # and the field committed +100). Walk down with the
                 # control's own Down key until the field reads the target.
+                # Judged by VALUE, not by the sign of the text: a field left
+                # holding a lone '-' passes a prefix test (fa review).
                 self._spin_down_to(target, digits)
         else:
             self.wu.msg_text(target, text)
@@ -186,24 +195,40 @@ class BusinessUI:
                 "after_text": self.wu.edit_text(target)}
 
     def _spin_down_to(self, target, text):
-        """Press the spin edit's Down key (one message per step) until the
-        field reads the negative `text`. The step size is the control's own:
-        the field is read after every press. Gives up after 2000 presses or
-        three presses that move nothing; the caller's readback then reports
-        what the field holds."""
+        """Walk the spin edit down to the negative `text` with its own Down
+        key (one message per step). The step is MEASURED on the first press:
+        the old loop stopped at the first value <= target, so a step that
+        does not divide the distance overshot and committed a wrong number
+        (fa review: 0.2 -> -0.1 by 0.5 lands on -0.3). Raises when the
+        control does not step, when the target is off its grid, or when the
+        walk does not end on the target - then nothing is committed."""
         want = float(text)
-        stuck = 0
-        for _press in range(2000):
-            found = re.search(r"-?\d+(?:\.\d+)?", self.wu.edit_text(target) or "")
-            now = float(found.group(0)) if found else None
-            if now is None or now <= want:
-                return
-            before = self.wu.edit_text(target)
+
+        def value():
+            return _field_value(self.wu.edit_text(target))
+
+        def press():
             for message in (0x0100, 0x0101):              # WM_KEYDOWN / WM_KEYUP
                 self.wu._send_msg(target, message, 0x28, 0)   # VK_DOWN
-            stuck = stuck + 1 if self.wu.edit_text(target) == before else 0
-            if stuck >= 3:
-                return
+
+        start = value()
+        if start is None or start <= want:
+            raise ProtocolError("param_negative_start:" + repr(self.wu.edit_text(target)))
+        press()
+        after = value()
+        if after is None or after >= start:
+            raise ProtocolError("param_negative_no_spin:" + repr(self.wu.edit_text(target)))
+        step = start - after
+        presses = (start - want) / step
+        if abs(presses - round(presses)) > 1e-6 or round(presses) > 2000:
+            raise ProtocolError("param_negative_off_grid:" + text + ":step=" + str(step))
+        for _extra in range(int(round(presses)) - 1):
+            press()
+            if value() <= want:
+                break
+        if value() is None or abs(value() - want) > 1e-9:
+            raise ProtocolError("param_negative_not_reached:" + text + ":"
+                                + repr(self.wu.edit_text(target)))
 
     def export_mode(self):
         option, main = self.eu.find_print_buttons(self.app.hwnd)
