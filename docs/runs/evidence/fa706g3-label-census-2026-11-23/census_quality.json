@@ -1,0 +1,3845 @@
+{
+ "tab": "Quality",
+ "version": "2.3.5-nightly",
+ "build": "01.10.01.50",
+ "captured": "2026-11-23 12:20",
+ "channel": "zcode_gui_task session-1 worker: real SendInput wheel (1 notch/step, >=550ms settle), PrintWindow capture, pytesseract eng psm=6 scale=3",
+ "psm": 6,
+ "walks": 2,
+ "wheel_steps": 70,
+ "scroll_px_per_notch": 60,
+ "row_y_space": "page-absolute px reconstructed from frame displacement; viewport y = row y - offset of the frame it was read in",
+ "rows": [
+  {
+   "text": "= Layer height",
+   "y": 723
+  },
+  {
+   "text": "Layer height 04",
+   "y": 758
+  },
+  {
+   "text": "mm",
+   "y": 764
+  },
+  {
+   "text": "First layer height 04 mm",
+   "y": 788
+  },
+  {
+   "text": "= Line width",
+   "y": 819
+  },
+  {
+   "text": "Line width",
+   "y": 822
+  },
+  {
+   "text": "Default 0.82 mmor%",
+   "y": 851
+  },
+  {
+   "text": "First layer 0.82 mmor%",
+   "y": 884
+  },
+  {
+   "text": "‘",
+   "y": 904
+  },
+  {
+   "text": "Outer wall 0.82 mmor%",
+   "y": 914
+  },
+  {
+   "text": "Inner wall 0.82 mmor%",
+   "y": 944
+  },
+  {
+   "text": "‘",
+   "y": 964
+  },
+  {
+   "text": "Top surface 0.82 mmor%",
+   "y": 974
+  },
+  {
+   "text": "Sparse infill 0.82 mmor%",
+   "y": 1004
+  },
+  {
+   "text": "‘",
+   "y": 1024
+  },
+  {
+   "text": "Internal solid infill 0.82 mmor%",
+   "y": 1034
+  },
+  {
+   "text": "Support 0.82 mmor%",
+   "y": 1064
+  },
+  {
+   "text": "v",
+   "y": 1088
+  },
+  {
+   "text": "= | Seam",
+   "y": 1095
+  },
+  {
+   "text": "Seam position Aligned",
+   "y": 1130
+  },
+  {
+   "text": "~",
+   "y": 1135
+  },
+  {
+   "text": "A",
+   "y": 1144
+  },
+  {
+   "text": "Staggered inner seams",
+   "y": 1160
+  },
+  {
+   "text": "Seam gap",
+   "y": 1190
+  },
+  {
+   "text": "A",
+   "y": 1204
+  },
+  {
+   "text": "Scarf joint seam (beta) ~ None",
+   "y": 1219
+  },
+  {
+   "text": "Role base wipe speed",
+   "y": 1250
+  },
+  {
+   "text": "A",
+   "y": 1264
+  },
+  {
+   "text": "Wipe speed 80% mm/sor%",
+   "y": 1280
+  },
+  {
+   "text": "Wipe on loops",
+   "y": 1310
+  },
+  {
+   "text": "¥",
+   "y": 1328
+  },
+  {
+   "text": "Wipe before external loop",
+   "y": 1340
+  },
+  {
+   "text": "+4 Precision",
+   "y": 1371
+  },
+  {
+   "text": "Precision",
+   "y": 1374
+  },
+  {
+   "text": "Slice gap closing radius 0.049",
+   "y": 1406
+  },
+  {
+   "text": "Resolution 0.012 mm",
+   "y": 1434
+  },
+  {
+   "text": "Resolution mm A",
+   "y": 1436
+  },
+  {
+   "text": "Arc fitting",
+   "y": 1466
+  },
+  {
+   "text": "X-Y hole compensation U mm A",
+   "y": 1498
+  },
+  {
+   "text": "X-Y contour compensation 0",
+   "y": 1526
+  },
+  {
+   "text": "mm",
+   "y": 1532
+  },
+  {
+   "text": "Elephant foot compensation 0.15 mm",
+   "y": 1556
+  },
+  {
+   "text": "toot compensation | U.15 mm",
+   "y": 1558
+  },
+  {
+   "text": "Elephant foot compensation layers",
+   "y": 1586
+  },
+  {
+   "text": "1",
+   "y": 1595
+  },
+  {
+   "text": "layers ~",
+   "y": 1602
+  },
+  {
+   "text": "Precise wall",
+   "y": 1634
+  },
+  {
+   "text": "Precise 7 height",
+   "y": 1664
+  },
+  {
+   "text": "°",
+   "y": 1684
+  },
+  {
+   "text": "¥",
+   "y": 1688
+  },
+  {
+   "text": "Convert holes to polyholes",
+   "y": 1694
+  },
+  {
+   "text": "Ironing",
+   "y": 1728
+  },
+  {
+   "text": "¥",
+   "y": 1748
+  },
+  {
+   "text": "lroning type ~ No ironing",
+   "y": 1760
+  },
+  {
+   "text": "Wall generator",
+   "y": 1794
+  },
+  {
+   "text": "= Yall A",
+   "y": 1799
+  },
+  {
+   "text": "Wall generator Classic",
+   "y": 1826
+  },
+  {
+   "text": "~",
+   "y": 1831
+  },
+  {
+   "text": "#2 Walls and surfaces",
+   "y": 1857
+  },
+  {
+   "text": "7",
+   "y": 1868
+  },
+  {
+   "text": "Walls printing order ~ Inner/Outer",
+   "y": 1892
+  },
+  {
+   "text": "Print infill first A",
+   "y": 1922
+  },
+  {
+   "text": "v",
+   "y": 1928
+  },
+  {
+   "text": "Wall loop direction ~ Auto",
+   "y": 1952
+  },
+  {
+   "text": "Top surface flow ratio 1 “",
+   "y": 1982
+  },
+  {
+   "text": "Bottom surface flow ratio 1",
+   "y": 2012
+  },
+  {
+   "text": "Only one wall on top “",
+   "y": 2042
+  },
+  {
+   "text": "“",
+   "y": 2048
+  },
+  {
+   "text": "surfaces",
+   "y": 2059
+  },
+  {
+   "text": "One wall threshold 200% mmor%",
+   "y": 2090
+  },
+  {
+   "text": "A",
+   "y": 2104
+  },
+  {
+   "text": "¥",
+   "y": 2108
+  },
+  {
+   "text": "Only one wall on first layer",
+   "y": 2120
+  },
+  {
+   "text": "Avoid crossing walls",
+   "y": 2150
+  },
+  {
+   "text": "A",
+   "y": 2164
+  },
+  {
+   "text": "v",
+   "y": 2168
+  },
+  {
+   "text": "Small area flow",
+   "y": 2180
+  },
+  {
+   "text": "compensation (beta)",
+   "y": 2198
+  },
+  {
+   "text": "v",
+   "y": 2228
+  },
+  {
+   "text": "Bridging",
+   "y": 2232
+  },
+  {
+   "text": "Bridge flow ratio 08",
+   "y": 2264
+  },
+  {
+   "text": "°",
+   "y": 2284
+  },
+  {
+   "text": "Internal bridge flow ratio 1",
+   "y": 2294
+  },
+  {
+   "text": "External bridge density 60 %",
+   "y": 2324
+  },
+  {
+   "text": "‘",
+   "y": 2344
+  },
+  {
+   "text": "Internal bridge density 100 %",
+   "y": 2354
+  },
+  {
+   "text": "Thick external bridges",
+   "y": 2384
+  },
+  {
+   "text": "Thick internal bridges |",
+   "y": 2414
+  },
+  {
+   "text": "Extra bridge layers (beta) ~ Disabled",
+   "y": 2444
+  },
+  {
+   "text": "v",
+   "y": 2468
+  },
+  {
+   "text": "Filter out small internal",
+   "y": 2474
+  },
+  {
+   "text": "~ Filter",
+   "y": 2488
+  },
+  {
+   "text": "bridges ~",
+   "y": 2492
+  },
+  {
+   "text": "Bridge counterbore holes None",
+   "y": 2522
+  },
+  {
+   "text": "~ “",
+   "y": 2527
+  },
+  {
+   "text": "Overhangs",
+   "y": 2556
+  },
+  {
+   "text": "|",
+   "y": 2586
+  },
+  {
+   "text": "Detect overhang walls |",
+   "y": 2588
+  },
+  {
+   "text": "Make overhangs printable",
+   "y": 2618
+  },
+  {
+   "text": "Extra perimeters on",
+   "y": 2648
+  },
+  {
+   "text": "overhangs",
+   "y": 2666
+  },
+  {
+   "text": "Reverse on even",
+   "y": 2696
+  }
+ ],
+ "row_count": 102,
+ "frames": [
+  {
+   "step": 0,
+   "offset": 0,
+   "lines": [
+    [
+     "= Layer height",
+     723
+    ],
+    [
+     "Layer height 04",
+     758
+    ],
+    [
+     "mm",
+     764
+    ],
+    [
+     "First layer height 04 mm",
+     788
+    ],
+    [
+     "= Line width",
+     819
+    ],
+    [
+     "Default 0.82 mmor%",
+     851
+    ],
+    [
+     "First layer",
+     884
+    ],
+    [
+     "Outer wall 0.82 mmor%",
+     914
+    ],
+    [
+     "Inner wall 0.82 mmor%",
+     944
+    ],
+    [
+     "Top surface 0.82 mmor%",
+     974
+    ],
+    [
+     "Sparse infill 0.82 mmor%",
+     1004
+    ]
+   ]
+  },
+  {
+   "step": 1,
+   "offset": 60,
+   "lines": [
+    [
+     "First layer height 04 mm",
+     728
+    ],
+    [
+     "=",
+     759
+    ],
+    [
+     "Line width",
+     762
+    ],
+    [
+     "Default 0.82 mmor%",
+     791
+    ],
+    [
+     "First layer 0.82 mmor%",
+     824
+    ],
+    [
+     "Outer wall 0.82 mmor%",
+     854
+    ],
+    [
+     "Inner wall",
+     884
+    ],
+    [
+     "Top surface 0.82 mmor%",
+     914
+    ],
+    [
+     "Sparse infill 0.82 mmor%",
+     944
+    ],
+    [
+     "Internal solid infill 0.82 mmor%",
+     974
+    ],
+    [
+     "Support 0.82 mmor%",
+     1004
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 2,
+   "offset": 120,
+   "lines": [
+    [
+     "‘",
+     724
+    ],
+    [
+     "Default 0.82 mmor%",
+     731
+    ],
+    [
+     "First layer 0.82 mmor%",
+     764
+    ],
+    [
+     "Outer wall 0.82 mmor%",
+     794
+    ],
+    [
+     "Inner wall 0.82 mmor%",
+     824
+    ],
+    [
+     "Top surface 0.82 mmor%",
+     854
+    ],
+    [
+     "Sparse infill",
+     884
+    ],
+    [
+     "Internal solid infill 0.82 mmor%",
+     914
+    ],
+    [
+     "Support 0.82 mmor%",
+     944
+    ],
+    [
+     "= |",
+     975
+    ],
+    [
+     "Seam",
+     978
+    ],
+    [
+     "Seam position Aligned",
+     1010
+    ],
+    [
+     "~",
+     1015
+    ]
+   ]
+  },
+  {
+   "step": 3,
+   "offset": 180,
+   "lines": [
+    [
+     "‘",
+     724
+    ],
+    [
+     "Outer wall 0.82 mmor%",
+     734
+    ],
+    [
+     "Inner wall 0.82 mmor%",
+     764
+    ],
+    [
+     "Top surface 0.82 mmor%",
+     794
+    ],
+    [
+     "Sparse infill 0.82 mmor%",
+     824
+    ],
+    [
+     "Internal solid infill mmor%",
+     854
+    ],
+    [
+     "= | Seam",
+     915
+    ],
+    [
+     "Seam position Aligned",
+     950
+    ],
+    [
+     "~",
+     955
+    ],
+    [
+     "Staggered inner seams",
+     980
+    ],
+    [
+     "Seam gap",
+     1010
+    ]
+   ]
+  },
+  {
+   "step": 4,
+   "offset": 240,
+   "lines": [
+    [
+     "‘",
+     724
+    ],
+    [
+     "Top surface 0.82 mmor%",
+     734
+    ],
+    [
+     "Sparse infill 0.82 mmor%",
+     764
+    ],
+    [
+     "Internal solid infill mmor%",
+     794
+    ],
+    [
+     "Support 0.82 mmor%",
+     824
+    ],
+    [
+     "= |",
+     855
+    ],
+    [
+     "Seam",
+     858
+    ],
+    [
+     "Seam position Aligned",
+     890
+    ],
+    [
+     "~",
+     895
+    ],
+    [
+     "Staggered inner seams",
+     920
+    ],
+    [
+     "Seam gap",
+     950
+    ],
+    [
+     "Scarf joint seam (beta) ~ None",
+     979
+    ],
+    [
+     "Role base wipe speed",
+     1010
+    ]
+   ]
+  },
+  {
+   "step": 5,
+   "offset": 300,
+   "lines": [
+    [
+     "‘",
+     724
+    ],
+    [
+     "Internal solid infill mmor%",
+     734
+    ],
+    [
+     "Support 0.82 mmor%",
+     764
+    ],
+    [
+     "= | Seam",
+     795
+    ],
+    [
+     "Seam position Aligned",
+     830
+    ],
+    [
+     "~",
+     835
+    ],
+    [
+     "Staggered inner seams",
+     860
+    ],
+    [
+     "Seam gap",
+     890
+    ],
+    [
+     "Scarf",
+     917
+    ],
+    [
+     "joint seam (beta) ~ None",
+     920
+    ],
+    [
+     "Role base wipe speed",
+     950
+    ],
+    [
+     "Wipe speed 80% mm/sor%",
+     980
+    ],
+    [
+     "Wipe on loops",
+     1010
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 6,
+   "offset": 360,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "= |",
+     735
+    ],
+    [
+     "Seam",
+     738
+    ],
+    [
+     "Seam position Aligned",
+     770
+    ],
+    [
+     "~",
+     775
+    ],
+    [
+     "Staggered inner seams",
+     800
+    ],
+    [
+     "Seam gap",
+     830
+    ],
+    [
+     "Scarf",
+     857
+    ],
+    [
+     "joint seam (beta) ~ None",
+     860
+    ],
+    [
+     "Role base wipe speed",
+     890
+    ],
+    [
+     "Wipe speed 80% mm/sor%",
+     920
+    ],
+    [
+     "Wipe on loops",
+     950
+    ],
+    [
+     "Wipe before external loop",
+     980
+    ],
+    [
+     "+4 Precision",
+     1011
+    ]
+   ]
+  },
+  {
+   "step": 7,
+   "offset": 420,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Staggered inner seams",
+     740
+    ],
+    [
+     "Seam gap",
+     770
+    ],
+    [
+     "Scarf",
+     797
+    ],
+    [
+     "joint seam (beta) ~ None",
+     800
+    ],
+    [
+     "Role base wipe speed",
+     830
+    ],
+    [
+     "Wipe speed 80% mm/sor%",
+     860
+    ],
+    [
+     "Wipe on loops",
+     890
+    ],
+    [
+     "Wipe before external loop",
+     920
+    ],
+    [
+     "+4",
+     951
+    ],
+    [
+     "Precision",
+     954
+    ],
+    [
+     "Slice gap closing radius 0.049",
+     986
+    ],
+    [
+     "mm",
+     992
+    ],
+    [
+     "Resolution",
+     1014
+    ],
+    [
+     "0.012 mm",
+     1016
+    ]
+   ]
+  },
+  {
+   "step": 8,
+   "offset": 480,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Scarf",
+     737
+    ],
+    [
+     "joint seam (beta) ~ None",
+     740
+    ],
+    [
+     "Role base wipe speed",
+     770
+    ],
+    [
+     "Wipe speed 80% mm/sor%",
+     800
+    ],
+    [
+     "Wipe on loops",
+     830
+    ],
+    [
+     "Wipe before external loop",
+     860
+    ],
+    [
+     "+4 Precision",
+     891
+    ],
+    [
+     "Slice gap closing radius 0.049",
+     926
+    ],
+    [
+     "mm",
+     932
+    ],
+    [
+     "Resolution 0.012 mm",
+     954
+    ],
+    [
+     "Arc fitting",
+     986
+    ],
+    [
+     "X-¥ hole compensation 0 mm",
+     1016
+    ]
+   ]
+  },
+  {
+   "step": 9,
+   "offset": 540,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Wipe speed 80% mm/sor%",
+     740
+    ],
+    [
+     "Wipe on loops",
+     770
+    ],
+    [
+     "Wipe before external loop",
+     800
+    ],
+    [
+     "+4",
+     831
+    ],
+    [
+     "Precision",
+     834
+    ],
+    [
+     "Slice gap closing radius",
+     866
+    ],
+    [
+     "Resolution",
+     894
+    ],
+    [
+     "0.012 mm",
+     896
+    ],
+    [
+     "Arc fitting",
+     926
+    ],
+    [
+     "X-Y hole compensation 0 mm",
+     956
+    ],
+    [
+     "X-Y contour compensation 0",
+     986
+    ],
+    [
+     "mm",
+     992
+    ],
+    [
+     "Elephant foot compensation 0.15 mm",
+     1016
+    ]
+   ]
+  },
+  {
+   "step": 10,
+   "offset": 600,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Wipe before external loop",
+     740
+    ],
+    [
+     "+4 Precision",
+     771
+    ],
+    [
+     "Slice gap closing radius 0.049",
+     806
+    ],
+    [
+     "mm",
+     812
+    ],
+    [
+     "Resolution 0.012 mm",
+     834
+    ],
+    [
+     "Arc fitting",
+     866
+    ],
+    [
+     "X-Y hole compensation 0 mm",
+     896
+    ],
+    [
+     "X-Y contour compensation 0",
+     926
+    ],
+    [
+     "mm",
+     932
+    ],
+    [
+     "Elephant foot compensation 0.15 mm",
+     956
+    ],
+    [
+     "Elephant foot compensation layers",
+     986
+    ],
+    [
+     "1",
+     995
+    ],
+    [
+     "layers ~",
+     1002
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 11,
+   "offset": 660,
+   "lines": [
+    [
+     "+5",
+     718
+    ],
+    [
+     "Slice gap closing radius 0.049",
+     746
+    ],
+    [
+     "mm",
+     752
+    ],
+    [
+     "Resolution",
+     774
+    ],
+    [
+     "0.012 mm",
+     776
+    ],
+    [
+     "Arc fitting",
+     806
+    ],
+    [
+     "X-Y hole compensation 0 mm",
+     836
+    ],
+    [
+     "X-¥ contour compensation",
+     866
+    ],
+    [
+     "Elephant foot compensation 0.15 mm",
+     896
+    ],
+    [
+     "foot compensation layers",
+     925
+    ],
+    [
+     "Precise wall",
+     974
+    ],
+    [
+     "Precise 7 height",
+     1004
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 12,
+   "offset": 720,
+   "lines": [
+    [
+     "Resolution mm A",
+     716
+    ],
+    [
+     "Arc fitting",
+     746
+    ],
+    [
+     "X-Y hole compensation 0 mm",
+     776
+    ],
+    [
+     "X-Y contour compensation 0",
+     806
+    ],
+    [
+     "mm",
+     812
+    ],
+    [
+     "Elephant foot compensation 0.15 mm",
+     836
+    ],
+    [
+     "foot compensation",
+     865
+    ],
+    [
+     "Precise wall",
+     914
+    ],
+    [
+     "Precise 7 height",
+     944
+    ],
+    [
+     "Convert holes to polyholes",
+     974
+    ],
+    [
+     "Ironing",
+     1008
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 13,
+   "offset": 780,
+   "lines": [
+    [
+     "X-Y hole compensation U mm A",
+     718
+    ],
+    [
+     "X-Y contour compensation 0",
+     746
+    ],
+    [
+     "mm",
+     752
+    ],
+    [
+     "Elephant foot compensation 0.15 mm",
+     776
+    ],
+    [
+     "foot compensation layers",
+     805
+    ],
+    [
+     "Precise wall",
+     854
+    ],
+    [
+     "Precise 7 height",
+     884
+    ],
+    [
+     "Convert holes to polyholes",
+     914
+    ],
+    [
+     "Ironing",
+     948
+    ],
+    [
+     "lroning type ~ No ironing",
+     980
+    ],
+    [
+     "== Wall",
+     1011
+    ],
+    [
+     "generator",
+     1015
+    ]
+   ]
+  },
+  {
+   "step": 14,
+   "offset": 840,
+   "lines": [
+    [
+     "toot compensation | U.15 mm",
+     718
+    ],
+    [
+     "foot compensation layers",
+     745
+    ],
+    [
+     "Precise wall",
+     794
+    ],
+    [
+     "Precise 7 height",
+     824
+    ],
+    [
+     "Convert holes to polyholes",
+     854
+    ],
+    [
+     "Ironing",
+     888
+    ],
+    [
+     "lroning type ~ No ironing",
+     920
+    ],
+    [
+     "==",
+     951
+    ],
+    [
+     "Wall generator",
+     954
+    ],
+    [
+     "Wall generator Classic",
+     986
+    ],
+    [
+     "~",
+     991
+    ],
+    [
+     "#2 Walls and surfaces",
+     1017
+    ],
+    [
+     "7",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 15,
+   "offset": 900,
+   "lines": [
+    [
+     "Precise wall",
+     734
+    ],
+    [
+     "Precise 7 height",
+     764
+    ],
+    [
+     "Convert holes to polyholes",
+     794
+    ],
+    [
+     "Ironing",
+     828
+    ],
+    [
+     "lroning type ~ No ironing",
+     860
+    ],
+    [
+     "== Wall",
+     891
+    ],
+    [
+     "generator",
+     895
+    ],
+    [
+     "Wall generator Classic",
+     926
+    ],
+    [
+     "~",
+     931
+    ],
+    [
+     "#2 Walls and surfaces",
+     957
+    ],
+    [
+     "Walls printing order ~ Inner/Outer",
+     992
+    ],
+    [
+     "Print infill first",
+     1022
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 16,
+   "offset": 960,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Convert holes to polyholes",
+     734
+    ],
+    [
+     "Ironing",
+     768
+    ],
+    [
+     "lroning type ~ No ironing",
+     800
+    ],
+    [
+     "==",
+     831
+    ],
+    [
+     "Wall generator",
+     834
+    ],
+    [
+     "Wall generator",
+     866
+    ],
+    [
+     "#2 Walls and surfaces",
+     897
+    ],
+    [
+     "Walls printing order ~ Inner/Outer",
+     932
+    ],
+    [
+     "Print infill first",
+     962
+    ],
+    [
+     "Wall loop direction ~ Auto",
+     992
+    ],
+    [
+     "Top surface flow ratio 1",
+     1022
+    ]
+   ]
+  },
+  {
+   "step": 17,
+   "offset": 1020,
+   "lines": [
+    [
+     "lroning type ~ No ironing",
+     740
+    ],
+    [
+     "== Wall",
+     771
+    ],
+    [
+     "generator",
+     775
+    ],
+    [
+     "Wall generator Classic",
+     806
+    ],
+    [
+     "~",
+     811
+    ],
+    [
+     "#2 Walls and surfaces",
+     837
+    ],
+    [
+     "Walls printing order",
+     872
+    ],
+    [
+     "Print infill first",
+     902
+    ],
+    [
+     "Wall loop direction ~ Auto",
+     932
+    ],
+    [
+     "Top surface flow ratio 1",
+     962
+    ],
+    [
+     "Bottom surface flow ratio 1",
+     992
+    ],
+    [
+     "Only one wall on top",
+     1022
+    ],
+    [
+     "“",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 18,
+   "offset": 1080,
+   "lines": [
+    [
+     "= Yall A",
+     719
+    ],
+    [
+     "Wall generator Classic",
+     746
+    ],
+    [
+     "~",
+     751
+    ],
+    [
+     "#2 Walls and surfaces",
+     777
+    ],
+    [
+     "Walls printing order ~ Inner/Outer",
+     812
+    ],
+    [
+     "Print infill first",
+     842
+    ],
+    [
+     "Wall loop direction",
+     872
+    ],
+    [
+     "Top surface flow ratio 1",
+     902
+    ],
+    [
+     "Bottom surface flow ratio 1",
+     932
+    ],
+    [
+     "Only one wall on top",
+     962
+    ],
+    [
+     "surfaces",
+     979
+    ],
+    [
+     "One wall threshold 200% mmor%",
+     1010
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 19,
+   "offset": 1140,
+   "lines": [
+    [
+     "Walls and surfaces “",
+     720
+    ],
+    [
+     "Walls printing order ~ Inner/Outer",
+     752
+    ],
+    [
+     "Print infill first",
+     782
+    ],
+    [
+     "Wall loop direction ~ Auto",
+     812
+    ],
+    [
+     "Top surface flow ratio 1",
+     842
+    ],
+    [
+     "Bottom surface flow ratio",
+     872
+    ],
+    [
+     "Only one wall on top",
+     902
+    ],
+    [
+     "surfaces",
+     919
+    ],
+    [
+     "One wall threshold 200% mmor%",
+     950
+    ],
+    [
+     "Only one wall on first layer",
+     980
+    ],
+    [
+     "Avoid crossing walls",
+     1010
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 20,
+   "offset": 1200,
+   "lines": [
+    [
+     "Print infill first A",
+     722
+    ],
+    [
+     "Wall loop direction ~ Auto",
+     752
+    ],
+    [
+     "Top surface flow ratio 1",
+     782
+    ],
+    [
+     "Bottom surface flow ratio 1",
+     812
+    ],
+    [
+     "Only one wall on top",
+     842
+    ],
+    [
+     "surfaces",
+     859
+    ],
+    [
+     "One wall threshold 200% mmor%",
+     890
+    ],
+    [
+     "Only one wall on first layer",
+     920
+    ],
+    [
+     "Avoid crossing walls",
+     950
+    ],
+    [
+     "Small area flow",
+     980
+    ],
+    [
+     "compensation (beta)",
+     998
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 21,
+   "offset": 1260,
+   "lines": [
+    [
+     "Top surface flow ratio 1 “",
+     722
+    ],
+    [
+     "Bottom surface flow ratio 1",
+     752
+    ],
+    [
+     "Only one wall on top",
+     782
+    ],
+    [
+     "surfaces",
+     799
+    ],
+    [
+     "One wall threshold 200% mmor%",
+     830
+    ],
+    [
+     "Only one wall on first layer",
+     860
+    ],
+    [
+     "Avoid crossing walls",
+     890
+    ],
+    [
+     "Small area flow",
+     920
+    ],
+    [
+     "compensation (beta)",
+     938
+    ],
+    [
+     "Bridging",
+     972
+    ],
+    [
+     "Bridge flow ratio 08",
+     1004
+    ],
+    [
+     ". ¥",
+     1034
+    ]
+   ]
+  },
+  {
+   "step": 22,
+   "offset": 1320,
+   "lines": [
+    [
+     "Only one wall on top “",
+     722
+    ],
+    [
+     "surfaces",
+     739
+    ],
+    [
+     "One wall threshold 200% mmor%",
+     770
+    ],
+    [
+     "Only one wall on first layer",
+     800
+    ],
+    [
+     "Avoid crossing walls",
+     830
+    ],
+    [
+     "Small area flow",
+     860
+    ],
+    [
+     "compensation (beta)",
+     878
+    ],
+    [
+     "Bridging",
+     912
+    ],
+    [
+     "Bridge flow ratio 08",
+     944
+    ],
+    [
+     "Internal bridge flow ratio 1",
+     974
+    ],
+    [
+     "External bridge density 60 %",
+     1004
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 23,
+   "offset": 1380,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Only one wall on first layer",
+     740
+    ],
+    [
+     "Avoid crossing walls",
+     770
+    ],
+    [
+     "Small area flow",
+     800
+    ],
+    [
+     "compensation (beta)",
+     818
+    ],
+    [
+     "Bridging",
+     852
+    ],
+    [
+     "Bridge flow ratio",
+     884
+    ],
+    [
+     "Internal bridge flow ratio 1",
+     914
+    ],
+    [
+     "External bridge density 60 %",
+     944
+    ],
+    [
+     "Internal bridge density 100 %",
+     974
+    ],
+    [
+     "Thick external bridges",
+     1004
+    ]
+   ]
+  },
+  {
+   "step": 24,
+   "offset": 1440,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Small area flow",
+     740
+    ],
+    [
+     "compensation (beta)",
+     758
+    ],
+    [
+     "Bridging",
+     792
+    ],
+    [
+     "Bridge flow ratio 08",
+     824
+    ],
+    [
+     "Internal bridge flow ratio 1",
+     854
+    ],
+    [
+     "External bridge density",
+     884
+    ],
+    [
+     "Internal bridge density 100 %",
+     914
+    ],
+    [
+     "Thick external bridges",
+     944
+    ],
+    [
+     "Thick internal bridges |",
+     974
+    ],
+    [
+     "Extra bridge layers (beta) ~ Disabled",
+     1004
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 25,
+   "offset": 1500,
+   "lines": [
+    [
+     "Bridging",
+     732
+    ],
+    [
+     "Bridge flow ratio 08",
+     764
+    ],
+    [
+     "Internal bridge flow ratio 1",
+     794
+    ],
+    [
+     "External bridge density 60 %",
+     824
+    ],
+    [
+     "Internal bridge density 100 %",
+     854
+    ],
+    [
+     "Thick external bridges",
+     884
+    ],
+    [
+     "Thick internal bridges |",
+     914
+    ],
+    [
+     "Extra bridge layers (beta) ~ Disabled",
+     944
+    ],
+    [
+     "bridg out small internal",
+     974
+    ],
+    [
+     "~ Filter",
+     988
+    ],
+    [
+     "Bridge counterbore holes None",
+     1022
+    ],
+    [
+     "~ “",
+     1027
+    ]
+   ]
+  },
+  {
+   "step": 26,
+   "offset": 1560,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Internal bridge flow ratio 1",
+     734
+    ],
+    [
+     "External bridge density 60 %",
+     764
+    ],
+    [
+     "Internal bridge density 100 %",
+     794
+    ],
+    [
+     "Thick external bridges",
+     824
+    ],
+    [
+     "Thick internal bridges |",
+     854
+    ],
+    [
+     "Extra bridge layers (beta)",
+     884
+    ],
+    [
+     "bridg out small internal",
+     914
+    ],
+    [
+     "~ Filter",
+     928
+    ],
+    [
+     "Bridge counterbore holes None",
+     962
+    ],
+    [
+     "~",
+     967
+    ],
+    [
+     "Overhangs",
+     996
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 27,
+   "offset": 1620,
+   "lines": [
+    [
+     "‘",
+     724
+    ],
+    [
+     "Internal bridge density 100 %",
+     734
+    ],
+    [
+     "Thick external bridges",
+     764
+    ],
+    [
+     "Thick internal bridges |",
+     794
+    ],
+    [
+     "Extra bridge layers (beta) ~ Disabled",
+     824
+    ],
+    [
+     "bridg out small internal",
+     854
+    ],
+    [
+     "Bridge counterbore holes None",
+     902
+    ],
+    [
+     "~",
+     907
+    ],
+    [
+     "Overhangs",
+     936
+    ],
+    [
+     "|",
+     966
+    ],
+    [
+     "Detect overhang walls",
+     968
+    ],
+    [
+     "Make overhangs printable",
+     998
+    ],
+    [
+     "i v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 28,
+   "offset": 1680,
+   "lines": [
+    [
+     "Thick internal bridges |",
+     734
+    ],
+    [
+     "Extra bridge layers (beta) ~ Disabled",
+     764
+    ],
+    [
+     "Filter out small internal",
+     794
+    ],
+    [
+     "~ Filter",
+     808
+    ],
+    [
+     "bridges",
+     812
+    ],
+    [
+     "Bridge counterbore holes None",
+     842
+    ],
+    [
+     "~",
+     847
+    ],
+    [
+     "Overhangs",
+     876
+    ],
+    [
+     "Detect overhang walls |",
+     908
+    ],
+    [
+     "Make overhangs printable",
+     938
+    ],
+    [
+     "Extra perimeters on",
+     968
+    ],
+    [
+     "overhangs",
+     986
+    ],
+    [
+     "Reverse on even",
+     1016
+    ]
+   ]
+  },
+  {
+   "step": 29,
+   "offset": 1700,
+   "lines": [
+    [
+     "ca A",
+     716
+    ],
+    [
+     "Extra bridge layers (beta) ~ Disabled",
+     744
+    ],
+    [
+     "Filter small internal",
+     774
+    ],
+    [
+     "out Filter",
+     775
+    ],
+    [
+     "bridges ~",
+     792
+    ],
+    [
+     "Bridge counterbore holes None",
+     822
+    ],
+    [
+     "~",
+     827
+    ],
+    [
+     "Overhangs",
+     856
+    ],
+    [
+     "Detect overhang walls |",
+     888
+    ],
+    [
+     "Make overhangs printable",
+     918
+    ],
+    [
+     "Extra perimeters on",
+     948
+    ],
+    [
+     "overhangs",
+     966
+    ],
+    [
+     "Reverse on even",
+     996
+    ]
+   ]
+  },
+  {
+   "step": 30,
+   "offset": 0,
+   "lines": [
+    [
+     "= Layer height",
+     723
+    ],
+    [
+     "Layer height 04",
+     758
+    ],
+    [
+     "mm",
+     764
+    ],
+    [
+     "First layer height 04 mm",
+     788
+    ],
+    [
+     "= Line width",
+     819
+    ],
+    [
+     "Default 0.82 mmor%",
+     851
+    ],
+    [
+     "First layer",
+     884
+    ],
+    [
+     "Outer wall 0.82 mmor%",
+     914
+    ],
+    [
+     "Inner wall 0.82 mmor%",
+     944
+    ],
+    [
+     "Top surface 0.82 mmor%",
+     974
+    ],
+    [
+     "Sparse infill 0.82 mmor%",
+     1004
+    ]
+   ]
+  },
+  {
+   "step": 31,
+   "offset": 60,
+   "lines": [
+    [
+     "First layer height 04 mm",
+     728
+    ],
+    [
+     "=",
+     759
+    ],
+    [
+     "Line width",
+     762
+    ],
+    [
+     "Default 0.82 mmor%",
+     791
+    ],
+    [
+     "First layer 0.82 mmor%",
+     824
+    ],
+    [
+     "Outer wall 0.82 mmor%",
+     854
+    ],
+    [
+     "Inner wall",
+     884
+    ],
+    [
+     "Top surface 0.82 mmor%",
+     914
+    ],
+    [
+     "Sparse infill 0.82 mmor%",
+     944
+    ],
+    [
+     "Internal solid infill 0.82 mmor%",
+     974
+    ],
+    [
+     "Support 0.82 mmor%",
+     1004
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 32,
+   "offset": 120,
+   "lines": [
+    [
+     "‘",
+     724
+    ],
+    [
+     "Default 0.82 mmor%",
+     731
+    ],
+    [
+     "First layer 0.82 mmor%",
+     764
+    ],
+    [
+     "Outer wall 0.82 mmor%",
+     794
+    ],
+    [
+     "Inner wall 0.82 mmor%",
+     824
+    ],
+    [
+     "Top surface 0.82 mmor%",
+     854
+    ],
+    [
+     "Sparse infill",
+     884
+    ],
+    [
+     "Internal solid infill 0.82 mmor%",
+     914
+    ],
+    [
+     "Support 0.82 mmor%",
+     944
+    ],
+    [
+     "= |",
+     975
+    ],
+    [
+     "Seam",
+     978
+    ],
+    [
+     "Seam position Aligned",
+     1010
+    ],
+    [
+     "~",
+     1015
+    ]
+   ]
+  },
+  {
+   "step": 33,
+   "offset": 180,
+   "lines": [
+    [
+     "‘",
+     724
+    ],
+    [
+     "Outer wall 0.82 mmor%",
+     734
+    ],
+    [
+     "Inner wall 0.82 mmor%",
+     764
+    ],
+    [
+     "Top surface 0.82 mmor%",
+     794
+    ],
+    [
+     "Sparse infill 0.82 mmor%",
+     824
+    ],
+    [
+     "Internal solid infill mmor%",
+     854
+    ],
+    [
+     "= | Seam",
+     915
+    ],
+    [
+     "Seam position Aligned",
+     950
+    ],
+    [
+     "~",
+     955
+    ],
+    [
+     "Staggered inner seams",
+     980
+    ],
+    [
+     "Seam gap",
+     1010
+    ]
+   ]
+  },
+  {
+   "step": 34,
+   "offset": 240,
+   "lines": [
+    [
+     "‘",
+     724
+    ],
+    [
+     "Top surface 0.82 mmor%",
+     734
+    ],
+    [
+     "Sparse infill 0.82 mmor%",
+     764
+    ],
+    [
+     "Internal solid infill mmor%",
+     794
+    ],
+    [
+     "Support 0.82 mmor%",
+     824
+    ],
+    [
+     "= |",
+     855
+    ],
+    [
+     "Seam",
+     858
+    ],
+    [
+     "Seam position Aligned",
+     890
+    ],
+    [
+     "~",
+     895
+    ],
+    [
+     "Staggered inner seams",
+     920
+    ],
+    [
+     "Seam gap",
+     950
+    ],
+    [
+     "Scarf joint seam (beta) ~ None",
+     979
+    ],
+    [
+     "Role base wipe speed",
+     1010
+    ]
+   ]
+  },
+  {
+   "step": 35,
+   "offset": 300,
+   "lines": [
+    [
+     "‘",
+     724
+    ],
+    [
+     "Internal solid infill mmor%",
+     734
+    ],
+    [
+     "Support 0.82 mmor%",
+     764
+    ],
+    [
+     "= | Seam",
+     795
+    ],
+    [
+     "Seam position Aligned",
+     830
+    ],
+    [
+     "~",
+     835
+    ],
+    [
+     "Staggered inner seams",
+     860
+    ],
+    [
+     "Seam gap",
+     890
+    ],
+    [
+     "Scarf",
+     917
+    ],
+    [
+     "joint seam (beta) ~ None",
+     920
+    ],
+    [
+     "Role base wipe speed",
+     950
+    ],
+    [
+     "Wipe speed 80% mm/sor%",
+     980
+    ],
+    [
+     "Wipe on loops",
+     1010
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 36,
+   "offset": 360,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "= |",
+     735
+    ],
+    [
+     "Seam",
+     738
+    ],
+    [
+     "Seam position Aligned",
+     770
+    ],
+    [
+     "~",
+     775
+    ],
+    [
+     "Staggered inner seams",
+     800
+    ],
+    [
+     "Seam gap",
+     830
+    ],
+    [
+     "Scarf",
+     857
+    ],
+    [
+     "joint seam (beta) ~ None",
+     860
+    ],
+    [
+     "Role base wipe speed",
+     890
+    ],
+    [
+     "Wipe speed 80% mm/sor%",
+     920
+    ],
+    [
+     "Wipe on loops",
+     950
+    ],
+    [
+     "Wipe before external loop",
+     980
+    ],
+    [
+     "+4 Precision",
+     1011
+    ]
+   ]
+  },
+  {
+   "step": 37,
+   "offset": 420,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Staggered inner seams",
+     740
+    ],
+    [
+     "Seam gap",
+     770
+    ],
+    [
+     "Scarf",
+     797
+    ],
+    [
+     "joint seam (beta) ~ None",
+     800
+    ],
+    [
+     "Role base wipe speed",
+     830
+    ],
+    [
+     "Wipe speed 80% mm/sor%",
+     860
+    ],
+    [
+     "Wipe on loops",
+     890
+    ],
+    [
+     "Wipe before external loop",
+     920
+    ],
+    [
+     "+4",
+     951
+    ],
+    [
+     "Precision",
+     954
+    ],
+    [
+     "Slice gap closing radius 0.049",
+     986
+    ],
+    [
+     "mm",
+     992
+    ],
+    [
+     "Resolution",
+     1014
+    ],
+    [
+     "0.012 mm",
+     1016
+    ]
+   ]
+  },
+  {
+   "step": 38,
+   "offset": 480,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Scarf",
+     737
+    ],
+    [
+     "joint seam (beta) ~ None",
+     740
+    ],
+    [
+     "Role base wipe speed",
+     770
+    ],
+    [
+     "Wipe speed 80% mm/sor%",
+     800
+    ],
+    [
+     "Wipe on loops",
+     830
+    ],
+    [
+     "Wipe before external loop",
+     860
+    ],
+    [
+     "+4 Precision",
+     891
+    ],
+    [
+     "Slice gap closing radius 0.049",
+     926
+    ],
+    [
+     "mm",
+     932
+    ],
+    [
+     "Resolution 0.012 mm",
+     954
+    ],
+    [
+     "Arc fitting",
+     986
+    ],
+    [
+     "X-¥ hole compensation 0 mm",
+     1016
+    ]
+   ]
+  },
+  {
+   "step": 39,
+   "offset": 540,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Wipe speed 80% mm/sor%",
+     740
+    ],
+    [
+     "Wipe on loops",
+     770
+    ],
+    [
+     "Wipe before external loop",
+     800
+    ],
+    [
+     "+4",
+     831
+    ],
+    [
+     "Precision",
+     834
+    ],
+    [
+     "Slice gap closing radius",
+     866
+    ],
+    [
+     "Resolution",
+     894
+    ],
+    [
+     "0.012 mm",
+     896
+    ],
+    [
+     "Arc fitting",
+     926
+    ],
+    [
+     "X-Y hole compensation 0 mm",
+     956
+    ],
+    [
+     "X-Y contour compensation 0",
+     986
+    ],
+    [
+     "mm",
+     992
+    ],
+    [
+     "Elephant foot compensation 0.15 mm",
+     1016
+    ]
+   ]
+  },
+  {
+   "step": 40,
+   "offset": 600,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Wipe before external loop",
+     740
+    ],
+    [
+     "+4 Precision",
+     771
+    ],
+    [
+     "Slice gap closing radius 0.049",
+     806
+    ],
+    [
+     "mm",
+     812
+    ],
+    [
+     "Resolution 0.012 mm",
+     834
+    ],
+    [
+     "Arc fitting",
+     866
+    ],
+    [
+     "X-Y hole compensation 0 mm",
+     896
+    ],
+    [
+     "X-Y contour compensation 0",
+     926
+    ],
+    [
+     "mm",
+     932
+    ],
+    [
+     "Elephant foot compensation 0.15 mm",
+     956
+    ],
+    [
+     "Elephant foot compensation layers",
+     986
+    ],
+    [
+     "1",
+     995
+    ],
+    [
+     "layers ~",
+     1002
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 41,
+   "offset": 660,
+   "lines": [
+    [
+     "+5",
+     718
+    ],
+    [
+     "Slice gap closing radius 0.049",
+     746
+    ],
+    [
+     "mm",
+     752
+    ],
+    [
+     "Resolution",
+     774
+    ],
+    [
+     "0.012 mm",
+     776
+    ],
+    [
+     "Arc fitting",
+     806
+    ],
+    [
+     "X-Y hole compensation 0 mm",
+     836
+    ],
+    [
+     "X-¥ contour compensation",
+     866
+    ],
+    [
+     "Elephant foot compensation 0.15 mm",
+     896
+    ],
+    [
+     "foot compensation layers",
+     925
+    ],
+    [
+     "Precise wall",
+     974
+    ],
+    [
+     "Precise 7 height",
+     1004
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 42,
+   "offset": 720,
+   "lines": [
+    [
+     "Resolution mm A",
+     716
+    ],
+    [
+     "Arc fitting",
+     746
+    ],
+    [
+     "X-Y hole compensation 0 mm",
+     776
+    ],
+    [
+     "X-Y contour compensation 0",
+     806
+    ],
+    [
+     "mm",
+     812
+    ],
+    [
+     "Elephant foot compensation 0.15 mm",
+     836
+    ],
+    [
+     "foot compensation",
+     865
+    ],
+    [
+     "Precise wall",
+     914
+    ],
+    [
+     "Precise 7 height",
+     944
+    ],
+    [
+     "Convert holes to polyholes",
+     974
+    ],
+    [
+     "Ironing",
+     1008
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 43,
+   "offset": 780,
+   "lines": [
+    [
+     "X-Y hole compensation U mm A",
+     718
+    ],
+    [
+     "X-Y contour compensation 0",
+     746
+    ],
+    [
+     "mm",
+     752
+    ],
+    [
+     "Elephant foot compensation 0.15 mm",
+     776
+    ],
+    [
+     "foot compensation layers",
+     805
+    ],
+    [
+     "Precise wall",
+     854
+    ],
+    [
+     "Precise 7 height",
+     884
+    ],
+    [
+     "Convert holes to polyholes",
+     914
+    ],
+    [
+     "Ironing",
+     948
+    ],
+    [
+     "lroning type ~ No ironing",
+     980
+    ],
+    [
+     "== Wall",
+     1011
+    ],
+    [
+     "generator",
+     1015
+    ]
+   ]
+  },
+  {
+   "step": 44,
+   "offset": 840,
+   "lines": [
+    [
+     "toot compensation | U.15 mm",
+     718
+    ],
+    [
+     "foot compensation layers",
+     745
+    ],
+    [
+     "Precise wall",
+     794
+    ],
+    [
+     "Precise 7 height",
+     824
+    ],
+    [
+     "Convert holes to polyholes",
+     854
+    ],
+    [
+     "Ironing",
+     888
+    ],
+    [
+     "lroning type ~ No ironing",
+     920
+    ],
+    [
+     "==",
+     951
+    ],
+    [
+     "Wall generator",
+     954
+    ],
+    [
+     "Wall generator Classic",
+     986
+    ],
+    [
+     "~",
+     991
+    ],
+    [
+     "#2 Walls and surfaces",
+     1017
+    ],
+    [
+     "7",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 45,
+   "offset": 900,
+   "lines": [
+    [
+     "Precise wall",
+     734
+    ],
+    [
+     "Precise 7 height",
+     764
+    ],
+    [
+     "Convert holes to polyholes",
+     794
+    ],
+    [
+     "Ironing",
+     828
+    ],
+    [
+     "lroning type ~ No ironing",
+     860
+    ],
+    [
+     "== Wall",
+     891
+    ],
+    [
+     "generator",
+     895
+    ],
+    [
+     "Wall generator Classic",
+     926
+    ],
+    [
+     "~",
+     931
+    ],
+    [
+     "#2 Walls and surfaces",
+     957
+    ],
+    [
+     "Walls printing order ~ Inner/Outer",
+     992
+    ],
+    [
+     "Print infill first",
+     1022
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 46,
+   "offset": 960,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Convert holes to polyholes",
+     734
+    ],
+    [
+     "Ironing",
+     768
+    ],
+    [
+     "lroning type ~ No ironing",
+     800
+    ],
+    [
+     "==",
+     831
+    ],
+    [
+     "Wall generator",
+     834
+    ],
+    [
+     "Wall generator",
+     866
+    ],
+    [
+     "#2 Walls and surfaces",
+     897
+    ],
+    [
+     "Walls printing order ~ Inner/Outer",
+     932
+    ],
+    [
+     "Print infill first",
+     962
+    ],
+    [
+     "Wall loop direction ~ Auto",
+     992
+    ],
+    [
+     "Top surface flow ratio 1",
+     1022
+    ]
+   ]
+  },
+  {
+   "step": 47,
+   "offset": 1020,
+   "lines": [
+    [
+     "lroning type ~ No ironing",
+     740
+    ],
+    [
+     "== Wall",
+     771
+    ],
+    [
+     "generator",
+     775
+    ],
+    [
+     "Wall generator Classic",
+     806
+    ],
+    [
+     "~",
+     811
+    ],
+    [
+     "#2 Walls and surfaces",
+     837
+    ],
+    [
+     "Walls printing order",
+     872
+    ],
+    [
+     "Print infill first",
+     902
+    ],
+    [
+     "Wall loop direction ~ Auto",
+     932
+    ],
+    [
+     "Top surface flow ratio 1",
+     962
+    ],
+    [
+     "Bottom surface flow ratio 1",
+     992
+    ],
+    [
+     "Only one wall on top",
+     1022
+    ],
+    [
+     "“",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 48,
+   "offset": 1080,
+   "lines": [
+    [
+     "= Yall A",
+     719
+    ],
+    [
+     "Wall generator Classic",
+     746
+    ],
+    [
+     "~",
+     751
+    ],
+    [
+     "#2 Walls and surfaces",
+     777
+    ],
+    [
+     "Walls printing order ~ Inner/Outer",
+     812
+    ],
+    [
+     "Print infill first",
+     842
+    ],
+    [
+     "Wall loop direction",
+     872
+    ],
+    [
+     "Top surface flow ratio 1",
+     902
+    ],
+    [
+     "Bottom surface flow ratio 1",
+     932
+    ],
+    [
+     "Only one wall on top",
+     962
+    ],
+    [
+     "surfaces",
+     979
+    ],
+    [
+     "One wall threshold 200% mmor%",
+     1010
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 49,
+   "offset": 1140,
+   "lines": [
+    [
+     "Walls and surfaces “",
+     720
+    ],
+    [
+     "Walls printing order ~ Inner/Outer",
+     752
+    ],
+    [
+     "Print infill first",
+     782
+    ],
+    [
+     "Wall loop direction ~ Auto",
+     812
+    ],
+    [
+     "Top surface flow ratio 1",
+     842
+    ],
+    [
+     "Bottom surface flow ratio",
+     872
+    ],
+    [
+     "Only one wall on top",
+     902
+    ],
+    [
+     "surfaces",
+     919
+    ],
+    [
+     "One wall threshold 200% mmor%",
+     950
+    ],
+    [
+     "Only one wall on first layer",
+     980
+    ],
+    [
+     "Avoid crossing walls",
+     1010
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 50,
+   "offset": 1200,
+   "lines": [
+    [
+     "Print infill first A",
+     722
+    ],
+    [
+     "Wall loop direction ~ Auto",
+     752
+    ],
+    [
+     "Top surface flow ratio 1",
+     782
+    ],
+    [
+     "Bottom surface flow ratio 1",
+     812
+    ],
+    [
+     "Only one wall on top",
+     842
+    ],
+    [
+     "surfaces",
+     859
+    ],
+    [
+     "One wall threshold 200% mmor%",
+     890
+    ],
+    [
+     "Only one wall on first layer",
+     920
+    ],
+    [
+     "Avoid crossing walls",
+     950
+    ],
+    [
+     "Small area flow",
+     980
+    ],
+    [
+     "compensation (beta)",
+     998
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 51,
+   "offset": 1260,
+   "lines": [
+    [
+     "Top surface flow ratio 1 “",
+     722
+    ],
+    [
+     "Bottom surface flow ratio 1",
+     752
+    ],
+    [
+     "Only one wall on top",
+     782
+    ],
+    [
+     "surfaces",
+     799
+    ],
+    [
+     "One wall threshold 200% mmor%",
+     830
+    ],
+    [
+     "Only one wall on first layer",
+     860
+    ],
+    [
+     "Avoid crossing walls",
+     890
+    ],
+    [
+     "Small area flow",
+     920
+    ],
+    [
+     "compensation (beta)",
+     938
+    ],
+    [
+     "Bridging",
+     972
+    ],
+    [
+     "Bridge flow ratio 08",
+     1004
+    ],
+    [
+     ". ¥",
+     1034
+    ]
+   ]
+  },
+  {
+   "step": 52,
+   "offset": 1320,
+   "lines": [
+    [
+     "Only one wall on top “",
+     722
+    ],
+    [
+     "surfaces",
+     739
+    ],
+    [
+     "One wall threshold 200% mmor%",
+     770
+    ],
+    [
+     "Only one wall on first layer",
+     800
+    ],
+    [
+     "Avoid crossing walls",
+     830
+    ],
+    [
+     "Small area flow",
+     860
+    ],
+    [
+     "compensation (beta)",
+     878
+    ],
+    [
+     "Bridging",
+     912
+    ],
+    [
+     "Bridge flow ratio 08",
+     944
+    ],
+    [
+     "Internal bridge flow ratio 1",
+     974
+    ],
+    [
+     "External bridge density 60 %",
+     1004
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 53,
+   "offset": 1380,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Only one wall on first layer",
+     740
+    ],
+    [
+     "Avoid crossing walls",
+     770
+    ],
+    [
+     "Small area flow",
+     800
+    ],
+    [
+     "compensation (beta)",
+     818
+    ],
+    [
+     "Bridging",
+     852
+    ],
+    [
+     "Bridge flow ratio",
+     884
+    ],
+    [
+     "Internal bridge flow ratio 1",
+     914
+    ],
+    [
+     "External bridge density 60 %",
+     944
+    ],
+    [
+     "Internal bridge density 100 %",
+     974
+    ],
+    [
+     "Thick external bridges",
+     1004
+    ]
+   ]
+  },
+  {
+   "step": 54,
+   "offset": 1440,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Small area flow",
+     740
+    ],
+    [
+     "compensation (beta)",
+     758
+    ],
+    [
+     "Bridging",
+     792
+    ],
+    [
+     "Bridge flow ratio 08",
+     824
+    ],
+    [
+     "Internal bridge flow ratio 1",
+     854
+    ],
+    [
+     "External bridge density",
+     884
+    ],
+    [
+     "Internal bridge density 100 %",
+     914
+    ],
+    [
+     "Thick external bridges",
+     944
+    ],
+    [
+     "Thick internal bridges |",
+     974
+    ],
+    [
+     "Extra bridge layers (beta) ~ Disabled",
+     1004
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 55,
+   "offset": 1500,
+   "lines": [
+    [
+     "Bridging",
+     732
+    ],
+    [
+     "Bridge flow ratio 08",
+     764
+    ],
+    [
+     "Internal bridge flow ratio 1",
+     794
+    ],
+    [
+     "External bridge density 60 %",
+     824
+    ],
+    [
+     "Internal bridge density 100 %",
+     854
+    ],
+    [
+     "Thick external bridges",
+     884
+    ],
+    [
+     "Thick internal bridges |",
+     914
+    ],
+    [
+     "Extra bridge layers (beta) ~ Disabled",
+     944
+    ],
+    [
+     "bridg out small internal",
+     974
+    ],
+    [
+     "~ Filter",
+     988
+    ],
+    [
+     "Bridge counterbore holes None",
+     1022
+    ],
+    [
+     "~ “",
+     1027
+    ]
+   ]
+  },
+  {
+   "step": 56,
+   "offset": 1560,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Internal bridge flow ratio 1",
+     734
+    ],
+    [
+     "External bridge density 60 %",
+     764
+    ],
+    [
+     "Internal bridge density 100 %",
+     794
+    ],
+    [
+     "Thick external bridges",
+     824
+    ],
+    [
+     "Thick internal bridges |",
+     854
+    ],
+    [
+     "Extra bridge layers (beta)",
+     884
+    ],
+    [
+     "bridg out small internal",
+     914
+    ],
+    [
+     "~ Filter",
+     928
+    ],
+    [
+     "Bridge counterbore holes None",
+     962
+    ],
+    [
+     "~",
+     967
+    ],
+    [
+     "Overhangs",
+     996
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 57,
+   "offset": 1620,
+   "lines": [
+    [
+     "‘",
+     724
+    ],
+    [
+     "Internal bridge density 100 %",
+     734
+    ],
+    [
+     "Thick external bridges",
+     764
+    ],
+    [
+     "Thick internal bridges |",
+     794
+    ],
+    [
+     "Extra bridge layers (beta) ~ Disabled",
+     824
+    ],
+    [
+     "bridg out small internal",
+     854
+    ],
+    [
+     "Bridge counterbore holes None",
+     902
+    ],
+    [
+     "~",
+     907
+    ],
+    [
+     "Overhangs",
+     936
+    ],
+    [
+     "|",
+     966
+    ],
+    [
+     "Detect overhang walls",
+     968
+    ],
+    [
+     "Make overhangs printable",
+     998
+    ],
+    [
+     "i v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 58,
+   "offset": 1680,
+   "lines": [
+    [
+     "Thick internal bridges |",
+     734
+    ],
+    [
+     "Extra bridge layers (beta) ~ Disabled",
+     764
+    ],
+    [
+     "Filter out small internal",
+     794
+    ],
+    [
+     "~ Filter",
+     808
+    ],
+    [
+     "bridges",
+     812
+    ],
+    [
+     "Bridge counterbore holes None",
+     842
+    ],
+    [
+     "~",
+     847
+    ],
+    [
+     "Overhangs",
+     876
+    ],
+    [
+     "Detect overhang walls |",
+     908
+    ],
+    [
+     "Make overhangs printable",
+     938
+    ],
+    [
+     "Extra perimeters on",
+     968
+    ],
+    [
+     "overhangs",
+     986
+    ],
+    [
+     "Reverse on even",
+     1016
+    ]
+   ]
+  },
+  {
+   "step": 59,
+   "offset": 1700,
+   "lines": [
+    [
+     "ca A",
+     716
+    ],
+    [
+     "Extra bridge layers (beta) ~ Disabled",
+     744
+    ],
+    [
+     "Filter small internal",
+     774
+    ],
+    [
+     "out Filter",
+     775
+    ],
+    [
+     "bridges ~",
+     792
+    ],
+    [
+     "Bridge counterbore holes None",
+     822
+    ],
+    [
+     "~",
+     827
+    ],
+    [
+     "Overhangs",
+     856
+    ],
+    [
+     "Detect overhang walls |",
+     888
+    ],
+    [
+     "Make overhangs printable",
+     918
+    ],
+    [
+     "Extra perimeters on",
+     948
+    ],
+    [
+     "overhangs",
+     966
+    ],
+    [
+     "Reverse on even",
+     996
+    ]
+   ]
+  }
+ ],
+ "shots": [
+  "census_quality_top.png",
+  "census_quality_mid.png",
+  "census_quality_bottom.png"
+ ],
+ "notes": [
+  "walk1 top after 9 up-rolls: ['= Layer height', 'Layer height 04', 'mm']",
+  "walk1: stop at offset=1700px",
+  "walk2: stop at offset=1700px",
+  "bottom confirmed: stops [1700, 1700] agree within 60px"
+ ],
+ "raw": "OCR text preserved verbatim (misreads included) per task E spec"
+}

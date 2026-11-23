@@ -1,0 +1,3094 @@
+{
+ "tab": "Speed",
+ "version": "2.3.5-nightly",
+ "build": "01.10.01.50",
+ "captured": "2026-11-23 16:14",
+ "channel": "zcode_gui_task session-1 worker: real SendInput wheel (1 notch/step, >=550ms settle), PrintWindow capture, pytesseract eng psm=6 scale=3; E2 driver: per-frame partial flush, movement judged by row displacement, page reset by tab rebuild",
+ "psm": 6,
+ "complete": true,
+ "stop_reason": "bottom confirmed: stops [1240, 1240] agree within 60px",
+ "stopped_at": {
+  "walk": 2,
+  "offset": 1240,
+  "kind": "static",
+  "viewport_rows": [
+   [
+    "°",
+    724
+   ],
+   [
+    "Default 0",
+    729
+   ],
+   [
+    "Outer wall 9 mm/s",
+    762
+   ],
+   [
+    "Inner wall 9 mm/s",
+    792
+   ],
+   [
+    "Infill 9",
+    819
+   ],
+   [
+    "mm/s",
+    825
+   ],
+   [
+    "Top surface 9 mm/s",
+    852
+   ],
+   [
+    "First layer 9 mm/s",
+    882
+   ],
+   [
+    "Travel 12 mm/s",
+    910
+   ],
+   [
+    "Advanced",
+    946
+   ],
+   [
+    "¥",
+    1028
+   ]
+  ],
+  "walk_stops": [
+   1240,
+   1240
+  ]
+ },
+ "walks": 2,
+ "wheel_steps": 79,
+ "scroll_px_per_notch": 60,
+ "row_y_space": "page-absolute px reconstructed from frame displacement; viewport y = row y - offset of the frame it was read in",
+ "rows": [
+  {
+   "text": "~) First layer speed “",
+   "y": 723
+  },
+  {
+   "text": "First layer 35",
+   "y": 758
+  },
+  {
+   "text": "First layer infill 55",
+   "y": 788
+  },
+  {
+   "text": "Initial layer travel",
+   "y": 818
+  },
+  {
+   "text": "100% mm/s or %",
+   "y": 827
+  },
+  {
+   "text": "Number of slow",
+   "y": 866
+  },
+  {
+   "text": "~ 0 layers",
+   "y": 873
+  },
+  {
+   "text": "layers 9 ayers",
+   "y": 882
+  },
+  {
+   "text": "~",
+   "y": 887
+  },
+  {
+   "text": "°",
+   "y": 904
+  },
+  {
+   "text": "Other layers speed",
+   "y": 918
+  },
+  {
+   "text": "Outer wall 120 mms",
+   "y": 950
+  },
+  {
+   "text": "A",
+   "y": 964
+  },
+  {
+   "text": "Inner wall 150 mms",
+   "y": 980
+  },
+  {
+   "text": "Small perimeters 50% mm/sor%",
+   "y": 1010
+  },
+  {
+   "text": "wero A",
+   "y": 1018
+  },
+  {
+   "text": "Small perimeters 0 vam",
+   "y": 1040
+  },
+  {
+   "text": "threshold",
+   "y": 1058
+  },
+  {
+   "text": "mm/s",
+   "y": 1082
+  },
+  {
+   "text": "Sparse infill 100",
+   "y": 1088
+  },
+  {
+   "text": "Internal solid infill 150 mm/s",
+   "y": 1118
+  },
+  {
+   "text": "Top surface 150",
+   "y": 1148
+  },
+  {
+   "text": "Gap infill 50 mm/s",
+   "y": 1178
+  },
+  {
+   "text": "fa Overhang speed",
+   "y": 1209
+  },
+  {
+   "text": "Overhang speed",
+   "y": 1212
+  },
+  {
+   "text": "Slow down for",
+   "y": 1244
+  },
+  {
+   "text": "overhangs",
+   "y": 1262
+  },
+  {
+   "text": "Slow down for curled",
+   "y": 1292
+  },
+  {
+   "text": "perimeters",
+   "y": 1310
+  },
+  {
+   "text": "A",
+   "y": 1324
+  },
+  {
+   "text": "0 (10%, 2596)",
+   "y": 1338
+  },
+  {
+   "text": "mm/sor%",
+   "y": 1341
+  },
+  {
+   "text": "50 [25%, 50%)",
+   "y": 1364
+  },
+  {
+   "text": "Overh erhang speed",
+   "y": 1379
+  },
+  {
+   "text": "25 [50%, 75%)",
+   "y": 1390
+  },
+  {
+   "text": "5 mm/sor% 100%",
+   "y": 1416
+  },
+  {
+   "text": "30 mm/s External",
+   "y": 1446
+  },
+  {
+   "text": "Brid rage |",
+   "y": 1461
+  },
+  {
+   "text": "100% mm/sor% Internal",
+   "y": 1472
+  },
+  {
+   "text": "Travel speed",
+   "y": 1508
+  },
+  {
+   "text": "Travel 500",
+   "y": 1538
+  },
+  {
+   "text": "mimv's",
+   "y": 1543
+  },
+  {
+   "text": "°",
+   "y": 1564
+  },
+  {
+   "text": "Acceleration",
+   "y": 1574
+  },
+  {
+   "text": "Normal printing 10000)",
+   "y": 1606
+  },
+  {
+   "text": "°",
+   "y": 1624
+  },
+  {
+   "text": "Outer wall 5000 mm/s*",
+   "y": 1636
+  },
+  {
+   "text": "mm/s*",
+   "y": 1638
+  },
+  {
+   "text": "Inner wall 10000 =",
+   "y": 1666
+  },
+  {
+   "text": "°",
+   "y": 1684
+  },
+  {
+   "text": "¥",
+   "y": 1688
+  },
+  {
+   "text": "Bridge 50% %",
+   "y": 1696
+  },
+  {
+   "text": "or %",
+   "y": 1702
+  },
+  {
+   "text": "Sparse infill 100% mm/s’ or %",
+   "y": 1726
+  },
+  {
+   "text": "¥",
+   "y": 1748
+  },
+  {
+   "text": "Internal solid infill 100% mm/s’",
+   "y": 1756
+  },
+  {
+   "text": "First layer 500",
+   "y": 1786
+  },
+  {
+   "text": "¥",
+   "y": 1808
+  },
+  {
+   "text": "Top surface 2000 mm/s*",
+   "y": 1816
+  },
+  {
+   "text": "Travel 10000 =",
+   "y": 1844
+  },
+  {
+   "text": "°",
+   "y": 1864
+  },
+  {
+   "text": "Enable accel to",
+   "y": 1876
+  },
+  {
+   "text": "accel to 50",
+   "y": 1904
+  },
+  {
+   "text": "A",
+   "y": 1924
+  },
+  {
+   "text": "¥",
+   "y": 1928
+  },
+  {
+   "text": "Jerk(XY)",
+   "y": 1939
+  },
+  {
+   "text": "Default 0",
+   "y": 1969
+  },
+  {
+   "text": "mm/s",
+   "y": 1975
+  },
+  {
+   "text": "Outer wall ? mm/s",
+   "y": 2002
+  },
+  {
+   "text": "Inner wall 9 mm/s",
+   "y": 2032
+  },
+  {
+   "text": "Infill 9 mm/s",
+   "y": 2059
+  },
+  {
+   "text": "mm/s",
+   "y": 2065
+  },
+  {
+   "text": "Top surface 9 mm/s",
+   "y": 2092
+  },
+  {
+   "text": "First layer 9 mm/s",
+   "y": 2122
+  },
+  {
+   "text": "Travel 12 mm/s",
+   "y": 2150
+  },
+  {
+   "text": "Advanced",
+   "y": 2186
+  },
+  {
+   "text": "Extrusion rate",
+   "y": 2216
+  },
+  {
+   "text": "0 5",
+   "y": 2227
+  },
+  {
+   "text": "¥",
+   "y": 2268
+  }
+ ],
+ "row_count": 79,
+ "frames": [
+  {
+   "step": 0,
+   "walk": 1,
+   "offset": 0,
+   "lines": [
+    [
+     "~) First layer speed “",
+     723
+    ],
+    [
+     "First layer 35",
+     758
+    ],
+    [
+     "First layer infill 55",
+     788
+    ],
+    [
+     "ayer travel",
+     818
+    ],
+    [
+     "100%",
+     827
+    ],
+    [
+     "Number of slow",
+     866
+    ],
+    [
+     "9 is “",
+     875
+    ],
+    [
+     "layers ~",
+     882
+    ],
+    [
+     "Other layers speed",
+     918
+    ],
+    [
+     "Outer wall 120 mms",
+     950
+    ],
+    [
+     "Inner wall 150 mms",
+     980
+    ],
+    [
+     "Small perimeters 50% mm/sor%",
+     1010
+    ]
+   ]
+  },
+  {
+   "step": 1,
+   "walk": 1,
+   "offset": 60,
+   "lines": [
+    [
+     "‘",
+     724
+    ],
+    [
+     "First layer infill 55",
+     728
+    ],
+    [
+     "Initial layer travel",
+     758
+    ],
+    [
+     "100% mm/s or %",
+     767
+    ],
+    [
+     "Number of slow",
+     806
+    ],
+    [
+     "layers 9 ayers",
+     822
+    ],
+    [
+     "~",
+     827
+    ],
+    [
+     "Other layers speed",
+     858
+    ],
+    [
+     "Outer wall 120 mms",
+     890
+    ],
+    [
+     "Inner wall 150 mms",
+     920
+    ],
+    [
+     "Small perimeters 50% mm/sor%",
+     950
+    ],
+    [
+     "Small perimeters 0",
+     980
+    ],
+    [
+     "threshold",
+     998
+    ],
+    [
+     ".",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 2,
+   "walk": 1,
+   "offset": 120,
+   "lines": [
+    [
+     "Number of slow",
+     746
+    ],
+    [
+     "~ 0 layers",
+     753
+    ],
+    [
+     "layers ~",
+     762
+    ],
+    [
+     "Other layers speed",
+     798
+    ],
+    [
+     "Outer wall 120 mms",
+     830
+    ],
+    [
+     "Inner wall 150 mms",
+     860
+    ],
+    [
+     "Small perimeters 50% mm/sor%",
+     890
+    ],
+    [
+     "Small perimeters 0",
+     920
+    ],
+    [
+     "threshold",
+     938
+    ],
+    [
+     "Sparse infill 100",
+     968
+    ],
+    [
+     "Internal solid infill 150",
+     998
+    ]
+   ]
+  },
+  {
+   "step": 3,
+   "walk": 1,
+   "offset": 180,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Other layers speed",
+     738
+    ],
+    [
+     "Outer wall 120 mms",
+     770
+    ],
+    [
+     "Inner wall 150 mms",
+     800
+    ],
+    [
+     "Small perimeters 50% mm/sor%",
+     830
+    ],
+    [
+     "Small perimeters",
+     860
+    ],
+    [
+     "threshold",
+     878
+    ],
+    [
+     "Sparse infill 100",
+     908
+    ],
+    [
+     "Internal solid infill 150 mm/s",
+     938
+    ],
+    [
+     "Top surface 150",
+     968
+    ],
+    [
+     "Gap infill 50 mm/s",
+     998
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 4,
+   "walk": 1,
+   "offset": 240,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Inner wall 150 mms",
+     740
+    ],
+    [
+     "Small perimeters 50% mm/sor%",
+     770
+    ],
+    [
+     "Small perimeters 0 vam",
+     800
+    ],
+    [
+     "threshold",
+     818
+    ],
+    [
+     "Sparse infill 100",
+     848
+    ],
+    [
+     "Internal solid infill",
+     878
+    ],
+    [
+     "Top surface 150",
+     908
+    ],
+    [
+     "Gap infill 50 mm/s",
+     938
+    ],
+    [
+     "fa Overhang speed",
+     969
+    ],
+    [
+     "Slow down for",
+     1004
+    ],
+    [
+     "overhangs",
+     1022
+    ],
+    [
+     "“",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 5,
+   "walk": 1,
+   "offset": 300,
+   "lines": [
+    [
+     "wero A",
+     718
+    ],
+    [
+     "Small perimeters 0",
+     740
+    ],
+    [
+     "threshold",
+     758
+    ],
+    [
+     "Sparse infill 100",
+     788
+    ],
+    [
+     "Internal solid infill 150",
+     818
+    ],
+    [
+     "Top surface 150",
+     848
+    ],
+    [
+     "Overhang speed",
+     912
+    ],
+    [
+     "Slow down for",
+     944
+    ],
+    [
+     "overhangs",
+     962
+    ],
+    [
+     "Slow down for curled",
+     992
+    ],
+    [
+     "perimeters",
+     1010
+    ]
+   ]
+  },
+  {
+   "step": 6,
+   "walk": 1,
+   "offset": 360,
+   "lines": [
+    [
+     "mm/s",
+     722
+    ],
+    [
+     "Sparse infill 100",
+     728
+    ],
+    [
+     "Internal solid infill 150",
+     758
+    ],
+    [
+     "Top surface 150",
+     788
+    ],
+    [
+     "Gap infill 50",
+     818
+    ],
+    [
+     "Overhang speed",
+     852
+    ],
+    [
+     "Slow down for",
+     884
+    ],
+    [
+     "overhangs",
+     902
+    ],
+    [
+     "Slow down for curled",
+     932
+    ],
+    [
+     "perimeters",
+     950
+    ],
+    [
+     "(10%, 2596)",
+     977
+    ],
+    [
+     "0",
+     978
+    ],
+    [
+     "50 5094)",
+     1004
+    ],
+    [
+     "Overhang speed",
+     1019
+    ]
+   ]
+  },
+  {
+   "step": 7,
+   "walk": 1,
+   "offset": 420,
+   "lines": [
+    [
+     "Top surface 150",
+     728
+    ],
+    [
+     "Gap infill 50",
+     758
+    ],
+    [
+     "f= Overhang speed",
+     789
+    ],
+    [
+     "Slow down for",
+     824
+    ],
+    [
+     "overhangs",
+     842
+    ],
+    [
+     "Slow down for curled",
+     872
+    ],
+    [
+     "perimeters",
+     890
+    ],
+    [
+     "0 (10%, 25%)",
+     918
+    ],
+    [
+     "mm/sor%",
+     921
+    ],
+    [
+     "|",
+     941
+    ],
+    [
+     "50 [25%, 50%)",
+     944
+    ],
+    [
+     "Overhang speed",
+     959
+    ],
+    [
+     "75%)",
+     969
+    ],
+    [
+     "5 mm/sor% 100%",
+     996
+    ],
+    [
+     "30 mms",
+     1026
+    ]
+   ]
+  },
+  {
+   "step": 8,
+   "walk": 1,
+   "offset": 480,
+   "lines": [
+    [
+     "Za Overhang speed",
+     729
+    ],
+    [
+     "Slow down for",
+     764
+    ],
+    [
+     "overhangs",
+     782
+    ],
+    [
+     "Slow down for curled",
+     812
+    ],
+    [
+     "perimeters",
+     830
+    ],
+    [
+     "| (10%, 25%)",
+     855
+    ],
+    [
+     "0",
+     858
+    ],
+    [
+     "Overhang speed",
+     899
+    ],
+    [
+     "25 [50%, 75%)",
+     910
+    ],
+    [
+     "5 | [75%, 100%",
+     936
+    ],
+    [
+     "30 External",
+     966
+    ],
+    [
+     "mm/s",
+     969
+    ],
+    [
+     "Bridge |",
+     981
+    ],
+    [
+     "100% mm/sor% Internal",
+     992
+    ]
+   ]
+  },
+  {
+   "step": 9,
+   "walk": 1,
+   "offset": 540,
+   "lines": [
+    [
+     "overhangs",
+     722
+    ],
+    [
+     "Slow down for curled",
+     752
+    ],
+    [
+     "perimeters",
+     770
+    ],
+    [
+     "0 (10%, 2596)",
+     798
+    ],
+    [
+     "50 5094)",
+     824
+    ],
+    [
+     "Overhang speed |",
+     839
+    ],
+    [
+     "25 [50%, 75%)",
+     850
+    ],
+    [
+     "[75%, 1009",
+     875
+    ],
+    [
+     "30 mm/s External",
+     906
+    ],
+    [
+     "Bridge |",
+     921
+    ],
+    [
+     "100% mm/sor% Internal",
+     932
+    ],
+    [
+     "°c;",
+     965
+    ],
+    [
+     "Travel speed",
+     968
+    ],
+    [
+     "Travel 500",
+     998
+    ],
+    [
+     "mms",
+     1003
+    ],
+    [
+     ".",
+     1034
+    ]
+   ]
+  },
+  {
+   "step": 10,
+   "walk": 1,
+   "offset": 600,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "(10%, 2596)",
+     737
+    ],
+    [
+     "0",
+     738
+    ],
+    [
+     "50 or % 50%)",
+     764
+    ],
+    [
+     "Overh erhang speed",
+     779
+    ],
+    [
+     "25 75%)",
+     790
+    ],
+    [
+     "5 mm/sor% 100%",
+     816
+    ],
+    [
+     "30 | External",
+     846
+    ],
+    [
+     "mm/s",
+     849
+    ],
+    [
+     "Brid rage |",
+     861
+    ],
+    [
+     "100% mm/sor% Internal",
+     872
+    ],
+    [
+     "Travel speed",
+     908
+    ],
+    [
+     "Travel 500",
+     938
+    ],
+    [
+     "mimv's",
+     943
+    ],
+    [
+     "Acceleration",
+     974
+    ],
+    [
+     "Normal printing 10000)",
+     1006
+    ]
+   ]
+  },
+  {
+   "step": 11,
+   "walk": 1,
+   "offset": 660,
+   "lines": [
+    [
+     "Overhang speed",
+     719
+    ],
+    [
+     "[50%, 75%)",
+     729
+    ],
+    [
+     "5 mm/sor% 100%",
+     756
+    ],
+    [
+     "30 mm/s External",
+     786
+    ],
+    [
+     "Bridge |",
+     801
+    ],
+    [
+     "100% mm/sor% Internal",
+     812
+    ],
+    [
+     "Travel speed",
+     848
+    ],
+    [
+     "Acceleration",
+     914
+    ],
+    [
+     "Normal printing 10000)",
+     946
+    ],
+    [
+     "Outer wall 5000",
+     976
+    ],
+    [
+     "Inner wall 10000 =",
+     1006
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 12,
+   "walk": 1,
+   "offset": 720,
+   "lines": [
+    [
+     "30 External ™",
+     726
+    ],
+    [
+     "mm/s",
+     729
+    ],
+    [
+     "Bridge |",
+     741
+    ],
+    [
+     "100% mm/sor% Internal",
+     752
+    ],
+    [
+     "Travel speed",
+     788
+    ],
+    [
+     "Travel 500",
+     818
+    ],
+    [
+     "mms",
+     823
+    ],
+    [
+     "Acceleration",
+     854
+    ],
+    [
+     "Normal printing",
+     886
+    ],
+    [
+     "Outer wall 5000 mm/s*",
+     916
+    ],
+    [
+     "Inner wall 10000 =",
+     946
+    ],
+    [
+     "Bridge 50% %",
+     976
+    ],
+    [
+     "or",
+     979
+    ],
+    [
+     "Sparse infill 100% mm/s’ or %",
+     1006
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 13,
+   "walk": 1,
+   "offset": 780,
+   "lines": [
+    [
+     "=",
+     725
+    ],
+    [
+     "Travel speed",
+     728
+    ],
+    [
+     "Travel 500",
+     758
+    ],
+    [
+     "mms",
+     763
+    ],
+    [
+     "Acceleration",
+     794
+    ],
+    [
+     "Normal printing 10000)",
+     826
+    ],
+    [
+     "Outer wall 5000",
+     856
+    ],
+    [
+     "mm/s*",
+     858
+    ],
+    [
+     "Inner wall",
+     886
+    ],
+    [
+     "Bridge 50%",
+     916
+    ],
+    [
+     "or %",
+     922
+    ],
+    [
+     "Sparse infill 100% mm/s’ or %",
+     946
+    ],
+    [
+     "Internal solid infill 100%",
+     976
+    ],
+    [
+     "mm/s’ or %",
+     978
+    ],
+    [
+     "First layer 500",
+     1006
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 14,
+   "walk": 1,
+   "offset": 840,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Acceleration",
+     734
+    ],
+    [
+     "Normal printing 10000)",
+     766
+    ],
+    [
+     "Outer wall 5000 mm/s*",
+     796
+    ],
+    [
+     "Inner wall 10000 =",
+     826
+    ],
+    [
+     "Bridge 50%",
+     856
+    ],
+    [
+     "or %",
+     862
+    ],
+    [
+     "Sparse infill",
+     886
+    ],
+    [
+     "Internal solid infill 100% mm/s’",
+     916
+    ],
+    [
+     "or %",
+     922
+    ],
+    [
+     "First layer 500",
+     946
+    ],
+    [
+     "Top surface 2000",
+     976
+    ],
+    [
+     "mm/s*",
+     978
+    ],
+    [
+     "Travel 10000 =",
+     1004
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 15,
+   "walk": 1,
+   "offset": 900,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Outer wall 5000",
+     736
+    ],
+    [
+     "Inner wall 10000 =",
+     766
+    ],
+    [
+     "Bridge 50%",
+     796
+    ],
+    [
+     "or %",
+     802
+    ],
+    [
+     "Sparse infill 100% mm/s’ or %",
+     826
+    ],
+    [
+     "Internal solid infill 100%",
+     856
+    ],
+    [
+     "mm/s’ or %",
+     858
+    ],
+    [
+     "First layer",
+     886
+    ],
+    [
+     "Top surface 2000 mm/s*",
+     916
+    ],
+    [
+     "Travel 10000 =",
+     944
+    ],
+    [
+     "Enable accel to",
+     976
+    ],
+    [
+     "accel to 50",
+     1004
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 16,
+   "walk": 1,
+   "offset": 960,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Bridge 50%",
+     736
+    ],
+    [
+     "or %",
+     742
+    ],
+    [
+     "Sparse infill 100% mm/s’ or %",
+     766
+    ],
+    [
+     "Internal solid infill 100% mm/s’",
+     796
+    ],
+    [
+     "or %",
+     802
+    ],
+    [
+     "First layer 500",
+     826
+    ],
+    [
+     "Top surface 2000",
+     856
+    ],
+    [
+     "mm/s*",
+     858
+    ],
+    [
+     "Enable accel to",
+     916
+    ],
+    [
+     "accel to 50",
+     944
+    ],
+    [
+     "Jerk(XY)",
+     979
+    ],
+    [
+     "Default 0",
+     1009
+    ]
+   ]
+  },
+  {
+   "step": 17,
+   "walk": 1,
+   "offset": 1020,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Internal solid infill 100%",
+     736
+    ],
+    [
+     "mm/s’ or %",
+     738
+    ],
+    [
+     "First layer 500",
+     766
+    ],
+    [
+     "Top surface 2000 mm/s*",
+     796
+    ],
+    [
+     "Travel 10000 =",
+     824
+    ],
+    [
+     "Enable accel to",
+     856
+    ],
+    [
+     "accel to",
+     886
+    ],
+    [
+     "Jerk(XY)",
+     919
+    ],
+    [
+     "Default 0",
+     949
+    ],
+    [
+     "Outer wall 9 mms",
+     982
+    ],
+    [
+     "Inner wall 9",
+     1012
+    ],
+    [
+     "mms",
+     1015
+    ]
+   ]
+  },
+  {
+   "step": 18,
+   "walk": 1,
+   "offset": 1080,
+   "lines": [
+    [
+     "Top surface 2000 mm/s*",
+     736
+    ],
+    [
+     "Travel 10000 =",
+     764
+    ],
+    [
+     "Enable accel to",
+     796
+    ],
+    [
+     "accel to 50",
+     824
+    ],
+    [
+     "Jerk(XY)",
+     859
+    ],
+    [
+     "Default 0",
+     889
+    ],
+    [
+     "mm/s",
+     895
+    ],
+    [
+     "Outer wall ? mm/s",
+     922
+    ],
+    [
+     "Inner wall 9",
+     952
+    ],
+    [
+     "mm/s",
+     955
+    ],
+    [
+     "Infill 9 mm/s",
+     979
+    ],
+    [
+     "Top surface 9 mm/s",
+     1012
+    ]
+   ]
+  },
+  {
+   "step": 19,
+   "walk": 1,
+   "offset": 1140,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Enable accel to",
+     736
+    ],
+    [
+     "accel to 50",
+     764
+    ],
+    [
+     "Jerk(XY)",
+     799
+    ],
+    [
+     "Default 0",
+     829
+    ],
+    [
+     "Outer wall 9 mm/s",
+     862
+    ],
+    [
+     "Inner wall 9",
+     892
+    ],
+    [
+     "mm/s",
+     895
+    ],
+    [
+     "Infill 9 mm/s",
+     919
+    ],
+    [
+     "Top surface 9",
+     952
+    ],
+    [
+     "mm/s",
+     955
+    ],
+    [
+     "First layer 9 mm/s",
+     982
+    ],
+    [
+     "Travel 12 mm/s",
+     1010
+    ]
+   ]
+  },
+  {
+   "step": 20,
+   "walk": 1,
+   "offset": 1200,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "lel)",
+     737
+    ],
+    [
+     "Jerk(XY)",
+     739
+    ],
+    [
+     "Default 0",
+     769
+    ],
+    [
+     "Outer wall 9 mm/s",
+     802
+    ],
+    [
+     "Inner wall 9",
+     832
+    ],
+    [
+     "mm/s",
+     835
+    ],
+    [
+     "Infill 9 mm/s",
+     859
+    ],
+    [
+     "Top surface 9",
+     892
+    ],
+    [
+     "mm/s",
+     895
+    ],
+    [
+     "First layer 9 mm/s",
+     922
+    ],
+    [
+     "Travel 12",
+     950
+    ],
+    [
+     "mm/s",
+     955
+    ],
+    [
+     "Advanced",
+     986
+    ],
+    [
+     "Extrusion rate",
+     1016
+    ],
+    [
+     "0 5",
+     1027
+    ]
+   ]
+  },
+  {
+   "step": 21,
+   "walk": 1,
+   "offset": 1240,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Default 0",
+     729
+    ],
+    [
+     "Outer wall 9 mm/s",
+     762
+    ],
+    [
+     "Inner wall 9 mm/s",
+     792
+    ],
+    [
+     "Infill 9",
+     819
+    ],
+    [
+     "mm/s",
+     825
+    ],
+    [
+     "Top surface 9 mm/s",
+     852
+    ],
+    [
+     "First layer 9 mm/s",
+     882
+    ],
+    [
+     "Travel 12 mm/s",
+     910
+    ],
+    [
+     "Advanced",
+     946
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 22,
+   "walk": 2,
+   "offset": 0,
+   "lines": [
+    [
+     "~) First layer speed “",
+     723
+    ],
+    [
+     "First layer 35",
+     758
+    ],
+    [
+     "First layer infill 55",
+     788
+    ],
+    [
+     "ayer travel",
+     818
+    ],
+    [
+     "100%",
+     827
+    ],
+    [
+     "Number of slow",
+     866
+    ],
+    [
+     "layers ~",
+     882
+    ],
+    [
+     "Other layers speed",
+     918
+    ],
+    [
+     "Outer wall 120 mms",
+     950
+    ],
+    [
+     "Inner wall 150 mms",
+     980
+    ],
+    [
+     "Small perimeters 50% mm/sor%",
+     1010
+    ]
+   ]
+  },
+  {
+   "step": 23,
+   "walk": 2,
+   "offset": 60,
+   "lines": [
+    [
+     "‘",
+     724
+    ],
+    [
+     "First layer infill 55",
+     728
+    ],
+    [
+     "Initial layer travel",
+     758
+    ],
+    [
+     "100% mm/s or %",
+     767
+    ],
+    [
+     "Number of slow",
+     806
+    ],
+    [
+     "layers 9 ayers",
+     822
+    ],
+    [
+     "~",
+     827
+    ],
+    [
+     "Other layers speed",
+     858
+    ],
+    [
+     "Outer wall 120 mms",
+     890
+    ],
+    [
+     "Inner wall 150 mms",
+     920
+    ],
+    [
+     "Small perimeters 50% mm/sor%",
+     950
+    ],
+    [
+     "Small perimeters 0",
+     980
+    ],
+    [
+     "threshold",
+     998
+    ],
+    [
+     ".",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 24,
+   "walk": 2,
+   "offset": 120,
+   "lines": [
+    [
+     "Number of slow",
+     746
+    ],
+    [
+     "~ 0 layers",
+     753
+    ],
+    [
+     "layers ~",
+     762
+    ],
+    [
+     "Other layers speed",
+     798
+    ],
+    [
+     "Outer wall 120 mms",
+     830
+    ],
+    [
+     "Inner wall 150 mms",
+     860
+    ],
+    [
+     "Small perimeters 50% mm/sor%",
+     890
+    ],
+    [
+     "Small perimeters 0",
+     920
+    ],
+    [
+     "threshold",
+     938
+    ],
+    [
+     "Sparse infill 100",
+     968
+    ],
+    [
+     "Internal solid infill 150",
+     998
+    ]
+   ]
+  },
+  {
+   "step": 25,
+   "walk": 2,
+   "offset": 180,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Other layers speed",
+     738
+    ],
+    [
+     "Outer wall 120 mms",
+     770
+    ],
+    [
+     "Inner wall 150 mms",
+     800
+    ],
+    [
+     "Small perimeters 50% mm/sor%",
+     830
+    ],
+    [
+     "Small perimeters",
+     860
+    ],
+    [
+     "threshold",
+     878
+    ],
+    [
+     "Sparse infill 100",
+     908
+    ],
+    [
+     "Internal solid infill 150 mm/s",
+     938
+    ],
+    [
+     "Top surface 150",
+     968
+    ],
+    [
+     "Gap infill 50 mm/s",
+     998
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 26,
+   "walk": 2,
+   "offset": 240,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Inner wall 150 mms",
+     740
+    ],
+    [
+     "Small perimeters 50% mm/sor%",
+     770
+    ],
+    [
+     "Small perimeters 0 vam",
+     800
+    ],
+    [
+     "threshold",
+     818
+    ],
+    [
+     "Sparse infill 100",
+     848
+    ],
+    [
+     "Internal solid infill",
+     878
+    ],
+    [
+     "Top surface 150",
+     908
+    ],
+    [
+     "Gap infill 50 mm/s",
+     938
+    ],
+    [
+     "fa Overhang speed",
+     969
+    ],
+    [
+     "Slow down for",
+     1004
+    ],
+    [
+     "overhangs",
+     1022
+    ],
+    [
+     "“",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 27,
+   "walk": 2,
+   "offset": 300,
+   "lines": [
+    [
+     "wero A",
+     718
+    ],
+    [
+     "Small perimeters 0",
+     740
+    ],
+    [
+     "threshold",
+     758
+    ],
+    [
+     "Sparse infill 100",
+     788
+    ],
+    [
+     "Internal solid infill 150",
+     818
+    ],
+    [
+     "Top surface 150",
+     848
+    ],
+    [
+     "Overhang speed",
+     912
+    ],
+    [
+     "Slow down for",
+     944
+    ],
+    [
+     "overhangs",
+     962
+    ],
+    [
+     "Slow down for curled",
+     992
+    ],
+    [
+     "perimeters",
+     1010
+    ]
+   ]
+  },
+  {
+   "step": 28,
+   "walk": 2,
+   "offset": 360,
+   "lines": [
+    [
+     "mm/s",
+     722
+    ],
+    [
+     "Sparse infill 100",
+     728
+    ],
+    [
+     "Internal solid infill 150",
+     758
+    ],
+    [
+     "Top surface 150",
+     788
+    ],
+    [
+     "Gap infill 50",
+     818
+    ],
+    [
+     "Overhang speed",
+     852
+    ],
+    [
+     "Slow down for",
+     884
+    ],
+    [
+     "overhangs",
+     902
+    ],
+    [
+     "Slow down for curled",
+     932
+    ],
+    [
+     "perimeters",
+     950
+    ],
+    [
+     "(10%, 2596)",
+     977
+    ],
+    [
+     "0",
+     978
+    ],
+    [
+     "50 5094)",
+     1004
+    ],
+    [
+     "Overhang speed",
+     1019
+    ]
+   ]
+  },
+  {
+   "step": 29,
+   "walk": 2,
+   "offset": 420,
+   "lines": [
+    [
+     "Top surface 150",
+     728
+    ],
+    [
+     "Gap infill 50",
+     758
+    ],
+    [
+     "f= Overhang speed",
+     789
+    ],
+    [
+     "Slow down for",
+     824
+    ],
+    [
+     "overhangs",
+     842
+    ],
+    [
+     "Slow down for curled",
+     872
+    ],
+    [
+     "perimeters",
+     890
+    ],
+    [
+     "0 (10%, 25%)",
+     918
+    ],
+    [
+     "mm/sor%",
+     921
+    ],
+    [
+     "|",
+     941
+    ],
+    [
+     "50 [25%, 50%)",
+     944
+    ],
+    [
+     "Overhang speed",
+     959
+    ],
+    [
+     "75%)",
+     969
+    ],
+    [
+     "5 mm/sor% 100%",
+     996
+    ],
+    [
+     "30 mms",
+     1026
+    ]
+   ]
+  },
+  {
+   "step": 30,
+   "walk": 2,
+   "offset": 480,
+   "lines": [
+    [
+     "Za Overhang speed",
+     729
+    ],
+    [
+     "Slow down for",
+     764
+    ],
+    [
+     "overhangs",
+     782
+    ],
+    [
+     "Slow down for curled",
+     812
+    ],
+    [
+     "perimeters",
+     830
+    ],
+    [
+     "| (10%, 25%)",
+     855
+    ],
+    [
+     "0",
+     858
+    ],
+    [
+     "Overhang speed",
+     899
+    ],
+    [
+     "25 [50%, 75%)",
+     910
+    ],
+    [
+     "5 | [75%, 100%",
+     936
+    ],
+    [
+     "30 External",
+     966
+    ],
+    [
+     "mm/s",
+     969
+    ],
+    [
+     "Bridge |",
+     981
+    ],
+    [
+     "100% mm/sor% Internal",
+     992
+    ]
+   ]
+  },
+  {
+   "step": 31,
+   "walk": 2,
+   "offset": 540,
+   "lines": [
+    [
+     "overhangs",
+     722
+    ],
+    [
+     "Slow down for curled",
+     752
+    ],
+    [
+     "perimeters",
+     770
+    ],
+    [
+     "0 (10%, 2596)",
+     798
+    ],
+    [
+     "50 5094)",
+     824
+    ],
+    [
+     "Overhang speed |",
+     839
+    ],
+    [
+     "25 [50%, 75%)",
+     850
+    ],
+    [
+     "[75%, 1009",
+     875
+    ],
+    [
+     "30 mm/s External",
+     906
+    ],
+    [
+     "Bridge |",
+     921
+    ],
+    [
+     "100% mm/sor% Internal",
+     932
+    ],
+    [
+     "°c;",
+     965
+    ],
+    [
+     "Travel speed",
+     968
+    ],
+    [
+     "Travel 500",
+     998
+    ],
+    [
+     "mms",
+     1003
+    ],
+    [
+     ".",
+     1034
+    ]
+   ]
+  },
+  {
+   "step": 32,
+   "walk": 2,
+   "offset": 600,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "(10%, 2596)",
+     737
+    ],
+    [
+     "0",
+     738
+    ],
+    [
+     "50 or % 50%)",
+     764
+    ],
+    [
+     "Overh erhang speed",
+     779
+    ],
+    [
+     "25 75%)",
+     790
+    ],
+    [
+     "5 mm/sor% 100%",
+     816
+    ],
+    [
+     "30 | External",
+     846
+    ],
+    [
+     "mm/s",
+     849
+    ],
+    [
+     "Brid rage |",
+     861
+    ],
+    [
+     "100% mm/sor% Internal",
+     872
+    ],
+    [
+     "Travel speed",
+     908
+    ],
+    [
+     "Travel 500",
+     938
+    ],
+    [
+     "mimv's",
+     943
+    ],
+    [
+     "Acceleration",
+     974
+    ],
+    [
+     "Normal printing 10000)",
+     1006
+    ]
+   ]
+  },
+  {
+   "step": 33,
+   "walk": 2,
+   "offset": 660,
+   "lines": [
+    [
+     "Overhang speed",
+     719
+    ],
+    [
+     "[50%, 75%)",
+     729
+    ],
+    [
+     "5 mm/sor% 100%",
+     756
+    ],
+    [
+     "30 mm/s External",
+     786
+    ],
+    [
+     "Bridge |",
+     801
+    ],
+    [
+     "100% mm/sor% Internal",
+     812
+    ],
+    [
+     "Travel speed",
+     848
+    ],
+    [
+     "Acceleration",
+     914
+    ],
+    [
+     "Normal printing 10000)",
+     946
+    ],
+    [
+     "Outer wall 5000",
+     976
+    ],
+    [
+     "Inner wall 10000 =",
+     1006
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 34,
+   "walk": 2,
+   "offset": 720,
+   "lines": [
+    [
+     "30 External ™",
+     726
+    ],
+    [
+     "mm/s",
+     729
+    ],
+    [
+     "Bridge |",
+     741
+    ],
+    [
+     "100% mm/sor% Internal",
+     752
+    ],
+    [
+     "Travel speed",
+     788
+    ],
+    [
+     "Travel 500",
+     818
+    ],
+    [
+     "mms",
+     823
+    ],
+    [
+     "Acceleration",
+     854
+    ],
+    [
+     "Normal printing",
+     886
+    ],
+    [
+     "Outer wall 5000 mm/s*",
+     916
+    ],
+    [
+     "Inner wall 10000 =",
+     946
+    ],
+    [
+     "Bridge 50% %",
+     976
+    ],
+    [
+     "or",
+     979
+    ],
+    [
+     "Sparse infill 100% mm/s’ or %",
+     1006
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 35,
+   "walk": 2,
+   "offset": 780,
+   "lines": [
+    [
+     "=",
+     725
+    ],
+    [
+     "Travel speed",
+     728
+    ],
+    [
+     "Travel 500",
+     758
+    ],
+    [
+     "mms",
+     763
+    ],
+    [
+     "Acceleration",
+     794
+    ],
+    [
+     "Normal printing 10000)",
+     826
+    ],
+    [
+     "Outer wall 5000",
+     856
+    ],
+    [
+     "mm/s*",
+     858
+    ],
+    [
+     "Inner wall",
+     886
+    ],
+    [
+     "Bridge 50%",
+     916
+    ],
+    [
+     "or %",
+     922
+    ],
+    [
+     "Sparse infill 100% mm/s’ or %",
+     946
+    ],
+    [
+     "Internal solid infill 100%",
+     976
+    ],
+    [
+     "mm/s’ or %",
+     978
+    ],
+    [
+     "First layer 500",
+     1006
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 36,
+   "walk": 2,
+   "offset": 840,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Acceleration",
+     734
+    ],
+    [
+     "Normal printing 10000)",
+     766
+    ],
+    [
+     "Outer wall 5000 mm/s*",
+     796
+    ],
+    [
+     "Inner wall 10000 =",
+     826
+    ],
+    [
+     "Bridge 50%",
+     856
+    ],
+    [
+     "or %",
+     862
+    ],
+    [
+     "Sparse infill",
+     886
+    ],
+    [
+     "Internal solid infill 100% mm/s’",
+     916
+    ],
+    [
+     "or %",
+     922
+    ],
+    [
+     "First layer 500",
+     946
+    ],
+    [
+     "Top surface 2000",
+     976
+    ],
+    [
+     "mm/s*",
+     978
+    ],
+    [
+     "Travel 10000 =",
+     1004
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 37,
+   "walk": 2,
+   "offset": 900,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Outer wall 5000",
+     736
+    ],
+    [
+     "Inner wall 10000 =",
+     766
+    ],
+    [
+     "Bridge 50%",
+     796
+    ],
+    [
+     "or %",
+     802
+    ],
+    [
+     "Sparse infill 100% mm/s’ or %",
+     826
+    ],
+    [
+     "Internal solid infill 100%",
+     856
+    ],
+    [
+     "mm/s’ or %",
+     858
+    ],
+    [
+     "First layer",
+     886
+    ],
+    [
+     "Top surface 2000 mm/s*",
+     916
+    ],
+    [
+     "Travel 10000 =",
+     944
+    ],
+    [
+     "Enable accel to",
+     976
+    ],
+    [
+     "accel to 50",
+     1004
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 38,
+   "walk": 2,
+   "offset": 960,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Bridge 50%",
+     736
+    ],
+    [
+     "or %",
+     742
+    ],
+    [
+     "Sparse infill 100% mm/s’ or %",
+     766
+    ],
+    [
+     "Internal solid infill 100% mm/s’",
+     796
+    ],
+    [
+     "or %",
+     802
+    ],
+    [
+     "First layer 500",
+     826
+    ],
+    [
+     "Top surface 2000",
+     856
+    ],
+    [
+     "mm/s*",
+     858
+    ],
+    [
+     "Enable accel to",
+     916
+    ],
+    [
+     "accel to 50",
+     944
+    ],
+    [
+     "Jerk(XY)",
+     979
+    ],
+    [
+     "Default 0",
+     1009
+    ]
+   ]
+  },
+  {
+   "step": 39,
+   "walk": 2,
+   "offset": 1020,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Internal solid infill 100%",
+     736
+    ],
+    [
+     "mm/s’ or %",
+     738
+    ],
+    [
+     "First layer 500",
+     766
+    ],
+    [
+     "Top surface 2000 mm/s*",
+     796
+    ],
+    [
+     "Travel 10000 =",
+     824
+    ],
+    [
+     "Enable accel to",
+     856
+    ],
+    [
+     "accel to",
+     886
+    ],
+    [
+     "Jerk(XY)",
+     919
+    ],
+    [
+     "Default 0",
+     949
+    ],
+    [
+     "Outer wall 9 mms",
+     982
+    ],
+    [
+     "Inner wall 9",
+     1012
+    ],
+    [
+     "mms",
+     1015
+    ]
+   ]
+  },
+  {
+   "step": 40,
+   "walk": 2,
+   "offset": 1080,
+   "lines": [
+    [
+     "Top surface 2000 mm/s*",
+     736
+    ],
+    [
+     "Travel 10000 =",
+     764
+    ],
+    [
+     "Enable accel to",
+     796
+    ],
+    [
+     "accel to 50",
+     824
+    ],
+    [
+     "Jerk(XY)",
+     859
+    ],
+    [
+     "Default 0",
+     889
+    ],
+    [
+     "mm/s",
+     895
+    ],
+    [
+     "Outer wall ? mm/s",
+     922
+    ],
+    [
+     "Inner wall 9",
+     952
+    ],
+    [
+     "mm/s",
+     955
+    ],
+    [
+     "Infill 9 mm/s",
+     979
+    ],
+    [
+     "Top surface 9 mm/s",
+     1012
+    ]
+   ]
+  },
+  {
+   "step": 41,
+   "walk": 2,
+   "offset": 1140,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Enable accel to",
+     736
+    ],
+    [
+     "accel to 50",
+     764
+    ],
+    [
+     "Jerk(XY)",
+     799
+    ],
+    [
+     "Default 0",
+     829
+    ],
+    [
+     "Outer wall 9 mm/s",
+     862
+    ],
+    [
+     "Inner wall 9",
+     892
+    ],
+    [
+     "mm/s",
+     895
+    ],
+    [
+     "Infill 9 mm/s",
+     919
+    ],
+    [
+     "Top surface 9",
+     952
+    ],
+    [
+     "mm/s",
+     955
+    ],
+    [
+     "First layer 9 mm/s",
+     982
+    ],
+    [
+     "Travel 12 mm/s",
+     1010
+    ]
+   ]
+  },
+  {
+   "step": 42,
+   "walk": 2,
+   "offset": 1200,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "lel)",
+     737
+    ],
+    [
+     "Jerk(XY)",
+     739
+    ],
+    [
+     "Default 0",
+     769
+    ],
+    [
+     "Outer wall 9 mm/s",
+     802
+    ],
+    [
+     "Inner wall 9",
+     832
+    ],
+    [
+     "mm/s",
+     835
+    ],
+    [
+     "Infill 9 mm/s",
+     859
+    ],
+    [
+     "Top surface 9",
+     892
+    ],
+    [
+     "mm/s",
+     895
+    ],
+    [
+     "First layer 9 mm/s",
+     922
+    ],
+    [
+     "Travel 12",
+     950
+    ],
+    [
+     "mm/s",
+     955
+    ],
+    [
+     "Advanced",
+     986
+    ],
+    [
+     "Extrusion rate",
+     1016
+    ],
+    [
+     "0 5",
+     1027
+    ]
+   ]
+  },
+  {
+   "step": 43,
+   "walk": 2,
+   "offset": 1240,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Default 0",
+     729
+    ],
+    [
+     "Outer wall 9 mm/s",
+     762
+    ],
+    [
+     "Inner wall 9 mm/s",
+     792
+    ],
+    [
+     "Infill 9",
+     819
+    ],
+    [
+     "mm/s",
+     825
+    ],
+    [
+     "Top surface 9 mm/s",
+     852
+    ],
+    [
+     "First layer 9 mm/s",
+     882
+    ],
+    [
+     "Travel 12 mm/s",
+     910
+    ],
+    [
+     "Advanced",
+     946
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  }
+ ],
+ "shots": [
+  "census_speed_top.png",
+  "census_speed_mid.png",
+  "census_speed_bottom.png"
+ ],
+ "frame_shots": "C:\\coil\\fa706_diag\\out\\census_speed_f*.png (sidebar crop scale 2, one per OCR'd frame)",
+ "frame_shots_count": 81,
+ "frame_jitters": 20,
+ "notes": [
+  "walk1: top after 2 up-rolls (2 static): ['~) First layer speed “', 'First layer 35', 'First layer infill 55']",
+  "walk1: stop at offset=1240px (primary pt (300, 880))",
+  "walk2: top after 15 up-rolls (2 static): ['~) First layer speed “', 'First layer 35', 'First layer infill 55']",
+  "walk2: stop at offset=1240px (primary pt (300, 880))",
+  "bottom confirmed: stops [1240, 1240] agree within 60px"
+ ],
+ "raw": "OCR text preserved verbatim (misreads included) per task E spec"
+}

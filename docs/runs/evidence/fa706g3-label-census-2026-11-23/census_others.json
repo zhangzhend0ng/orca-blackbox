@@ -1,0 +1,2641 @@
+{
+ "tab": "Others",
+ "version": "2.3.5-nightly",
+ "build": "01.10.01.50",
+ "captured": "2026-11-23 16:56",
+ "channel": "zcode_gui_task session-1 worker: real SendInput wheel (1 notch/step, >=550ms settle), PrintWindow capture, pytesseract eng psm=6 scale=3; E2 driver: per-frame partial flush, movement judged by row displacement, page reset by tab rebuild; E3 hardening: full-cycle static test, gutter wheel points, box-rule fallback for text-less frames",
+ "psm": 6,
+ "complete": false,
+ "stop_reason": "page budget exhausted before bottom (offset=1320px, walk 2)",
+ "stopped_at": {
+  "walk": 2,
+  "offset": 1320,
+  "kind": "budget",
+  "viewport_rows": [
+   [
+    "=| Notes",
+    741
+   ]
+  ],
+  "walk_stops": [
+   1320
+  ]
+ },
+ "walks": 2,
+ "wheel_steps": 140,
+ "scroll_px_per_notch": 60,
+ "row_y_space": "page-absolute px reconstructed from frame displacement; viewport y = row y - offset of the frame it was read in",
+ "rows": [
+  {
+   "text": "Skirt “",
+   "y": 726
+  },
+  {
+   "text": "Skirt loops ~ 0",
+   "y": 758
+  },
+  {
+   "text": "skirt type ~ Combined",
+   "y": 788
+  },
+  {
+   "text": "Skirt minimum extrusion",
+   "y": 818
+  },
+  {
+   "text": "0 am",
+   "y": 827
+  },
+  {
+   "text": "length",
+   "y": 836
+  },
+  {
+   "text": "length A",
+   "y": 838
+  },
+  {
+   "text": "Skirt distance 2",
+   "y": 866
+  },
+  {
+   "text": "mm",
+   "y": 872
+  },
+  {
+   "text": "Skirt start point -135",
+   "y": 896
+  },
+  {
+   "text": "Skirt speed 50 mm/s",
+   "y": 926
+  },
+  {
+   "text": "layers",
+   "y": 953
+  },
+  {
+   "text": "Skirt height — 1 layers",
+   "y": 956
+  },
+  {
+   "text": "Draft shield Disabled",
+   "y": 985
+  },
+  {
+   "text": "~",
+   "y": 991
+  },
+  {
+   "text": "‘L Brim A",
+   "y": 1018
+  },
+  {
+   "text": "Brim",
+   "y": 1020
+  },
+  {
+   "text": "Brim type ~ Auto",
+   "y": 1052
+  },
+  {
+   "text": "Brim width 5 A",
+   "y": 1082
+  },
+  {
+   "text": "mm “",
+   "y": 1088
+  },
+  {
+   "text": "Brim-object gap 0.1 mm",
+   "y": 1112
+  },
+  {
+   "text": "Special mode “",
+   "y": 1146
+  },
+  {
+   "text": "Slicing Mode Regular",
+   "y": 1178
+  },
+  {
+   "text": "~",
+   "y": 1183
+  },
+  {
+   "text": "Print sequence ~ By layer",
+   "y": 1208
+  },
+  {
+   "text": "Intra-layer order Default",
+   "y": 1238
+  },
+  {
+   "text": "Spiral vase",
+   "y": 1268
+  },
+  {
+   "text": "=| Fuzzy skin",
+   "y": 1299
+  },
+  {
+   "text": "Fuzzy skin",
+   "y": 1302
+  },
+  {
+   "text": "v",
+   "y": 1328
+  },
+  {
+   "text": "Fuzzy skin None",
+   "y": 1334
+  },
+  {
+   "text": "Fuzzy skin generator mode ~ Displacement",
+   "y": 1364
+  },
+  {
+   "text": "°",
+   "y": 1384
+  },
+  {
+   "text": "Fuzzy skin noise type Classic",
+   "y": 1394
+  },
+  {
+   "text": "~",
+   "y": 1399
+  },
+  {
+   "text": "Fuzzy skin point distance 0.3 mm",
+   "y": 1424
+  },
+  {
+   "text": "*",
+   "y": 1444
+  },
+  {
+   "text": "v",
+   "y": 1448
+  },
+  {
+   "text": "Fuzzy skin thickness 0.2",
+   "y": 1454
+  },
+  {
+   "text": "Apply fuzzy skin to first",
+   "y": 1484
+  },
+  {
+   "text": "layer “",
+   "y": 1496
+  },
+  {
+   "text": "layer",
+   "y": 1500
+  },
+  {
+   "text": "[> G-code output",
+   "y": 1533
+  },
+  {
+   "text": "Reduce infill retraction |",
+   "y": 1568
+  },
+  {
+   "text": "Verbose G-code",
+   "y": 1598
+  },
+  {
+   "text": "@",
+   "y": 1626
+  },
+  {
+   "text": "Label objects |",
+   "y": 1628
+  },
+  {
+   "text": "Exclude objects",
+   "y": 1658
+  },
+  {
+   "text": "{input_filename “",
+   "y": 1684
+  },
+  {
+   "text": "*",
+   "y": 1687
+  },
+  {
+   "text": "_base}_",
+   "y": 1702
+  },
+  {
+   "text": "{filament_type",
+   "y": 1720
+  },
+  {
+   "text": "[O}}_",
+   "y": 1738
+  },
+  {
+   "text": "Filename format {print_time}.gc",
+   "y": 1748
+  },
+  {
+   "text": "{print_time}.ge",
+   "y": 1756
+  },
+  {
+   "text": "ode",
+   "y": 1775
+  },
+  {
+   "text": "Filename format A",
+   "y": 1798
+  },
+  {
+   "text": "7",
+   "y": 1808
+  },
+  {
+   "text": "> Post-processing Scripts",
+   "y": 1839
+  },
+  {
+   "text": "| |",
+   "y": 1856
+  },
+  {
+   "text": "|",
+   "y": 1898
+  },
+  {
+   "text": "> Post-processing Scripts",
+   "y": 1939
+  },
+  {
+   "text": "Post-processing . Scripts",
+   "y": 1942
+  },
+  {
+   "text": "=| Notes",
+   "y": 2063
+  },
+  {
+   "text": "=| Notes",
+   "y": 2163
+  },
+  {
+   "text": "Notes",
+   "y": 2166
+  }
+ ],
+ "row_count": 66,
+ "frames": [
+  {
+   "step": 0,
+   "walk": 1,
+   "offset": 0,
+   "lines": [
+    [
+     "Skirt “",
+     726
+    ],
+    [
+     "Skirt loops ~ 0",
+     758
+    ],
+    [
+     "skirt type ~ Combined",
+     788
+    ],
+    [
+     "Skirt minimum extrusion",
+     818
+    ],
+    [
+     "0 am",
+     827
+    ],
+    [
+     "length",
+     836
+    ],
+    [
+     "Skirt distance 2",
+     866
+    ],
+    [
+     "mm",
+     872
+    ],
+    [
+     "Skirt start point -135",
+     896
+    ],
+    [
+     "Skirt speed 50 mm/s",
+     926
+    ],
+    [
+     "Skirt height — 1 layers",
+     956
+    ],
+    [
+     "Draft shield Disabled",
+     985
+    ],
+    [
+     "~",
+     991
+    ],
+    [
+     "Brim",
+     1020
+    ],
+    [
+     "7",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 1,
+   "walk": 1,
+   "offset": 60,
+   "lines": [
+    [
+     "Skirt type ~ Combined",
+     728
+    ],
+    [
+     "Skirt minimum extrusion",
+     758
+    ],
+    [
+     "0 am",
+     767
+    ],
+    [
+     "length",
+     776
+    ],
+    [
+     "Skirt distance 2",
+     806
+    ],
+    [
+     "mm",
+     812
+    ],
+    [
+     "Skirt start point -135",
+     836
+    ],
+    [
+     "Skirt speed 50 mm/s",
+     866
+    ],
+    [
+     "—",
+     894
+    ],
+    [
+     "Skirt height 1 layers",
+     896
+    ],
+    [
+     "Draft shield Disabled",
+     925
+    ],
+    [
+     "~",
+     931
+    ],
+    [
+     "Brim",
+     960
+    ],
+    [
+     "Brim type ~ Auto",
+     992
+    ],
+    [
+     "Brim width 5",
+     1022
+    ],
+    [
+     "mm “",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 2,
+   "walk": 1,
+   "offset": 120,
+   "lines": [
+    [
+     "length A",
+     718
+    ],
+    [
+     "Skirt distance 2",
+     746
+    ],
+    [
+     "mm",
+     752
+    ],
+    [
+     "Skirt start point -135",
+     776
+    ],
+    [
+     "Skirt speed 50 mm/s",
+     806
+    ],
+    [
+     "Skirt height — 1 layers",
+     836
+    ],
+    [
+     "Draft shield Disabled",
+     865
+    ],
+    [
+     "~",
+     871
+    ],
+    [
+     "Brim",
+     900
+    ],
+    [
+     "Brim type ~ Auto",
+     932
+    ],
+    [
+     "Brim width 5",
+     962
+    ],
+    [
+     "mm",
+     968
+    ],
+    [
+     "Brim-object gap 0.1 mm",
+     992
+    ],
+    [
+     "Special mode",
+     1026
+    ]
+   ]
+  },
+  {
+   "step": 3,
+   "walk": 1,
+   "offset": 180,
+   "lines": [
+    [
+     "start point -135 A",
+     718
+    ],
+    [
+     "Skirt speed 50 mm/s",
+     746
+    ],
+    [
+     "—",
+     774
+    ],
+    [
+     "Skirt height 1 layers",
+     776
+    ],
+    [
+     "Draft shield Disabled",
+     805
+    ],
+    [
+     "~",
+     811
+    ],
+    [
+     "Brim",
+     840
+    ],
+    [
+     "Brim width 5",
+     902
+    ],
+    [
+     "mm",
+     908
+    ],
+    [
+     "Brim-object gap 0.1 mm",
+     932
+    ],
+    [
+     "Special mode",
+     966
+    ],
+    [
+     "Slicing Mode Regular",
+     998
+    ],
+    [
+     "~",
+     1003
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 4,
+   "walk": 1,
+   "offset": 240,
+   "lines": [
+    [
+     "layers",
+     713
+    ],
+    [
+     "Skirt heignt 1 A",
+     718
+    ],
+    [
+     "Draft shield Disabled",
+     745
+    ],
+    [
+     "~",
+     751
+    ],
+    [
+     "‘0 Brim",
+     777
+    ],
+    [
+     "Brim type ~ Auto",
+     812
+    ],
+    [
+     "Brim width 5",
+     842
+    ],
+    [
+     "mm",
+     848
+    ],
+    [
+     "Brim-object gap",
+     872
+    ],
+    [
+     "Special mode",
+     906
+    ],
+    [
+     "Slicing Mode Regular",
+     938
+    ],
+    [
+     "~",
+     943
+    ],
+    [
+     "Print sequence ~ By layer",
+     968
+    ],
+    [
+     "Intra-layer order Default",
+     998
+    ],
+    [
+     "~",
+     1003
+    ],
+    [
+     "i v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 5,
+   "walk": 1,
+   "offset": 300,
+   "lines": [
+    [
+     "‘L Brim A",
+     718
+    ],
+    [
+     "Brim type ~ Auto",
+     752
+    ],
+    [
+     "Brim width 5",
+     782
+    ],
+    [
+     "mm",
+     788
+    ],
+    [
+     "Brim-object gap 0.1 mm",
+     812
+    ],
+    [
+     "Special mode",
+     846
+    ],
+    [
+     "Slicing Mode",
+     878
+    ],
+    [
+     "Print sequence ~ By layer",
+     908
+    ],
+    [
+     "Intra-layer order Default",
+     938
+    ],
+    [
+     "~",
+     943
+    ],
+    [
+     "Spiral vase",
+     968
+    ],
+    [
+     "=|",
+     999
+    ],
+    [
+     "Fuzzy skin",
+     1002
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 6,
+   "walk": 1,
+   "offset": 360,
+   "lines": [
+    [
+     "Brim width 5 A",
+     722
+    ],
+    [
+     "mm",
+     728
+    ],
+    [
+     "Brim-object gap 0.1 mm",
+     752
+    ],
+    [
+     "Special mode",
+     786
+    ],
+    [
+     "Slicing Mode Regular",
+     818
+    ],
+    [
+     "~",
+     823
+    ],
+    [
+     "Print sequence ~ By layer",
+     848
+    ],
+    [
+     "Intra-layer order",
+     878
+    ],
+    [
+     "Spiral vase",
+     908
+    ],
+    [
+     "=| Fuzzy skin",
+     939
+    ],
+    [
+     "Fuzzy skin None",
+     974
+    ],
+    [
+     "~",
+     979
+    ],
+    [
+     "Fuzzy skin generator mode ~ Displacement",
+     1004
+    ]
+   ]
+  },
+  {
+   "step": 7,
+   "walk": 1,
+   "offset": 420,
+   "lines": [
+    [
+     "Special mode “",
+     726
+    ],
+    [
+     "Slicing Mode Regular",
+     758
+    ],
+    [
+     "~",
+     763
+    ],
+    [
+     "Print sequence ~ By layer",
+     788
+    ],
+    [
+     "Intra-layer order Default",
+     818
+    ],
+    [
+     "~",
+     823
+    ],
+    [
+     "Spiral vase",
+     848
+    ],
+    [
+     "=|",
+     879
+    ],
+    [
+     "Fuzzy skin",
+     882
+    ],
+    [
+     "Fuzzy skin None",
+     914
+    ],
+    [
+     "~",
+     919
+    ],
+    [
+     "Fuzzy skin generator mode ~ Displacement",
+     944
+    ],
+    [
+     "Fuzzy skin noise type Classic",
+     974
+    ],
+    [
+     "~",
+     979
+    ],
+    [
+     "Fuzzy skin point distance 0.3 mm",
+     1004
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 8,
+   "walk": 1,
+   "offset": 480,
+   "lines": [
+    [
+     "Print sequence ~ By layer",
+     728
+    ],
+    [
+     "Intra-layer order Default",
+     758
+    ],
+    [
+     "~",
+     763
+    ],
+    [
+     "Spiral vase",
+     788
+    ],
+    [
+     "=| Fuzzy skin",
+     819
+    ],
+    [
+     "Fuzzy skin None",
+     854
+    ],
+    [
+     "~",
+     859
+    ],
+    [
+     "Fuzzy skin generator mode",
+     884
+    ],
+    [
+     "Fuzzy skin noise type Classic",
+     914
+    ],
+    [
+     "~",
+     919
+    ],
+    [
+     "Fuzzy skin point distance 0.3 mm",
+     944
+    ],
+    [
+     "Fuzzy skin thickness 0.2",
+     974
+    ],
+    [
+     "mm",
+     980
+    ],
+    [
+     "Apply fuzzy skin to first",
+     1004
+    ],
+    [
+     "layer",
+     1020
+    ],
+    [
+     "“",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 9,
+   "walk": 1,
+   "offset": 540,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Spiral vase",
+     728
+    ],
+    [
+     "=|",
+     759
+    ],
+    [
+     "Fuzzy skin",
+     762
+    ],
+    [
+     "Fuzzy skin None",
+     794
+    ],
+    [
+     "~",
+     799
+    ],
+    [
+     "Fuzzy skin generator mode ~ Displacement",
+     824
+    ],
+    [
+     "Fuzzy skin noise type Classic",
+     854
+    ],
+    [
+     "~",
+     859
+    ],
+    [
+     "Fuzzy skin point distance",
+     884
+    ],
+    [
+     "Fuzzy skin thickness 0.2",
+     914
+    ],
+    [
+     "mm",
+     920
+    ],
+    [
+     "Apply fuzzy skin to first",
+     944
+    ],
+    [
+     "layer",
+     962
+    ],
+    [
+     "G-code output",
+     996
+    ],
+    [
+     ".",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 10,
+   "walk": 1,
+   "offset": 600,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Fuzzy skin None",
+     734
+    ],
+    [
+     "~",
+     739
+    ],
+    [
+     "Fuzzy skin generator mode ~ Displacement",
+     764
+    ],
+    [
+     "Fuzzy skin noise type Classic",
+     794
+    ],
+    [
+     "~",
+     799
+    ],
+    [
+     "Fuzzy skin point distance 0.3 mm",
+     824
+    ],
+    [
+     "Fuzzy skin thickness 0.2",
+     854
+    ],
+    [
+     "mm",
+     860
+    ],
+    [
+     "Apply fuzzy skin to first",
+     884
+    ],
+    [
+     "layer",
+     902
+    ],
+    [
+     "G-code output",
+     936
+    ],
+    [
+     "|",
+     966
+    ],
+    [
+     "Reduce infill retraction",
+     968
+    ],
+    [
+     "Verbose G-code",
+     998
+    ],
+    [
+     "i v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 11,
+   "walk": 1,
+   "offset": 660,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Fuzzy skin noise type Classic",
+     734
+    ],
+    [
+     "~",
+     739
+    ],
+    [
+     "Fuzzy skin point distance 0.3 mm",
+     764
+    ],
+    [
+     "Fuzzy skin thickness 0.2",
+     794
+    ],
+    [
+     "mm",
+     800
+    ],
+    [
+     "Apply fuzzy skin to first",
+     824
+    ],
+    [
+     "layer",
+     842
+    ],
+    [
+     "G-code output",
+     876
+    ],
+    [
+     "Reduce infill retraction |",
+     908
+    ],
+    [
+     "Verbose G-code",
+     938
+    ],
+    [
+     "@",
+     966
+    ],
+    [
+     "Label objects",
+     968
+    ],
+    [
+     "Exclude objects",
+     998
+    ]
+   ]
+  },
+  {
+   "step": 12,
+   "walk": 1,
+   "offset": 720,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Fuzzy skin thickness 0.2",
+     734
+    ],
+    [
+     "mm",
+     740
+    ],
+    [
+     "Apply fuzzy skin to first",
+     764
+    ],
+    [
+     "layer",
+     782
+    ],
+    [
+     "G-code output",
+     816
+    ],
+    [
+     "|",
+     846
+    ],
+    [
+     "Reduce infill retraction",
+     848
+    ],
+    [
+     "Verbose G-code",
+     878
+    ],
+    [
+     "Label objects |",
+     908
+    ],
+    [
+     "Exclude objects",
+     938
+    ],
+    [
+     "{input_filename",
+     964
+    ],
+    [
+     "_base}_",
+     982
+    ],
+    [
+     "{filament_type",
+     1000
+    ],
+    [
+     "[O}}_",
+     1018
+    ]
+   ]
+  },
+  {
+   "step": 13,
+   "walk": 1,
+   "offset": 780,
+   "lines": [
+    [
+     "layer “",
+     716
+    ],
+    [
+     "> G-code output",
+     753
+    ],
+    [
+     "Reduce infill retraction |",
+     788
+    ],
+    [
+     "Verbose G-code",
+     818
+    ],
+    [
+     "|",
+     846
+    ],
+    [
+     "Label objects",
+     848
+    ],
+    [
+     "Exclude objects",
+     878
+    ],
+    [
+     "{input_filename",
+     904
+    ],
+    [
+     "_base}_",
+     922
+    ],
+    [
+     "{filament_type",
+     940
+    ],
+    [
+     "[O}}_",
+     958
+    ],
+    [
+     "{print_time}.ge",
+     976
+    ],
+    [
+     "ode",
+     995
+    ],
+    [
+     "Filename format",
+     1018
+    ],
+    [
+     "7",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 14,
+   "walk": 1,
+   "offset": 840,
+   "lines": [
+    [
+     "| “",
+     726
+    ],
+    [
+     "Reduce infill retraction",
+     728
+    ],
+    [
+     "Verbose G-code",
+     758
+    ],
+    [
+     "Label objects |",
+     788
+    ],
+    [
+     "Exclude objects",
+     818
+    ],
+    [
+     "{input_filename",
+     844
+    ],
+    [
+     "_base}_",
+     862
+    ],
+    [
+     "{filament_type",
+     880
+    ],
+    [
+     "[O}}_",
+     898
+    ],
+    [
+     "{print_time}.ge",
+     916
+    ],
+    [
+     "ode",
+     935
+    ],
+    [
+     "Filename format",
+     958
+    ]
+   ]
+  },
+  {
+   "step": 15,
+   "walk": 1,
+   "offset": 900,
+   "lines": [
+    [
+     "a",
+     726
+    ],
+    [
+     "Label objects",
+     728
+    ],
+    [
+     "Exclude objects",
+     758
+    ],
+    [
+     "{input_filename",
+     784
+    ],
+    [
+     "_base}_",
+     802
+    ],
+    [
+     "{filament_type",
+     820
+    ],
+    [
+     "[O}}_",
+     838
+    ],
+    [
+     "{print_time}.ge",
+     856
+    ],
+    [
+     "ode",
+     875
+    ],
+    [
+     "Filename format",
+     898
+    ]
+   ]
+  },
+  {
+   "step": 16,
+   "walk": 1,
+   "offset": 960,
+   "lines": [
+    [
+     "{input_filename “",
+     724
+    ],
+    [
+     "_base}_",
+     742
+    ],
+    [
+     "{filament_type",
+     760
+    ],
+    [
+     "[O}}_",
+     778
+    ],
+    [
+     "{print_time}.ge",
+     796
+    ],
+    [
+     "ode",
+     815
+    ],
+    [
+     "Filename format",
+     838
+    ],
+    [
+     "> Post-processing Scripts",
+     979
+    ]
+   ]
+  },
+  {
+   "step": 17,
+   "walk": 1,
+   "offset": 1020,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "{print_time}.gc",
+     736
+    ],
+    [
+     "ode",
+     754
+    ],
+    [
+     "Filename format",
+     778
+    ],
+    [
+     "> Post-processing Scripts",
+     919
+    ]
+   ]
+  },
+  {
+   "step": 18,
+   "walk": 1,
+   "offset": 1080,
+   "lines": [
+    [
+     "Filename format A",
+     718
+    ],
+    [
+     "> Post-processing Scripts",
+     859
+    ]
+   ]
+  },
+  {
+   "step": 19,
+   "walk": 1,
+   "offset": 1140,
+   "lines": [
+    [
+     "| |",
+     716
+    ],
+    [
+     "> Post-processing Scripts",
+     799
+    ],
+    [
+     "=|",
+     1023
+    ],
+    [
+     "Notes",
+     1026
+    ]
+   ]
+  },
+  {
+   "step": 20,
+   "walk": 1,
+   "offset": 1200,
+   "lines": [
+    [
+     "Post-processing . Scripts",
+     742
+    ],
+    [
+     "=| Notes",
+     963
+    ]
+   ]
+  },
+  {
+   "step": 21,
+   "walk": 1,
+   "offset": 1260,
+   "lines": []
+  },
+  {
+   "step": 22,
+   "walk": 1,
+   "offset": 1320,
+   "lines": []
+  },
+  {
+   "step": 23,
+   "walk": 2,
+   "offset": 0,
+   "lines": [
+    [
+     "Skirt “",
+     726
+    ],
+    [
+     "Skirt loops ~ 0",
+     758
+    ],
+    [
+     "skirt type ~ Combined",
+     788
+    ],
+    [
+     "Skirt minimum extrusion",
+     818
+    ],
+    [
+     "0 am",
+     827
+    ],
+    [
+     "length",
+     836
+    ],
+    [
+     "Skirt distance 2",
+     866
+    ],
+    [
+     "mm",
+     872
+    ],
+    [
+     "Skirt start point -135",
+     896
+    ],
+    [
+     "Skirt speed 50 mm/s",
+     926
+    ],
+    [
+     "Skirt height — 1 layers",
+     956
+    ],
+    [
+     "Draft shield Disabled",
+     985
+    ],
+    [
+     "~",
+     991
+    ],
+    [
+     "Brim",
+     1020
+    ],
+    [
+     "7",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 24,
+   "walk": 2,
+   "offset": 60,
+   "lines": [
+    [
+     "Skirt type ~ Combined",
+     728
+    ],
+    [
+     "Skirt minimum extrusion",
+     758
+    ],
+    [
+     "0 am",
+     767
+    ],
+    [
+     "length",
+     776
+    ],
+    [
+     "Skirt distance 2",
+     806
+    ],
+    [
+     "mm",
+     812
+    ],
+    [
+     "Skirt start point -135",
+     836
+    ],
+    [
+     "Skirt speed 50 mm/s",
+     866
+    ],
+    [
+     "—",
+     894
+    ],
+    [
+     "Skirt height 1 layers",
+     896
+    ],
+    [
+     "Draft shield Disabled",
+     925
+    ],
+    [
+     "~",
+     931
+    ],
+    [
+     "Brim",
+     960
+    ],
+    [
+     "Brim type ~ Auto",
+     992
+    ],
+    [
+     "Brim width 5",
+     1022
+    ],
+    [
+     "mm “",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 25,
+   "walk": 2,
+   "offset": 120,
+   "lines": [
+    [
+     "length A",
+     718
+    ],
+    [
+     "Skirt distance 2",
+     746
+    ],
+    [
+     "mm",
+     752
+    ],
+    [
+     "Skirt start point -135",
+     776
+    ],
+    [
+     "Skirt speed 50 mm/s",
+     806
+    ],
+    [
+     "Skirt height — 1 layers",
+     836
+    ],
+    [
+     "Draft shield Disabled",
+     865
+    ],
+    [
+     "~",
+     871
+    ],
+    [
+     "Brim",
+     900
+    ],
+    [
+     "Brim type ~ Auto",
+     932
+    ],
+    [
+     "Brim width 5",
+     962
+    ],
+    [
+     "mm",
+     968
+    ],
+    [
+     "Brim-object gap 0.1 mm",
+     992
+    ],
+    [
+     "Special mode",
+     1026
+    ]
+   ]
+  },
+  {
+   "step": 26,
+   "walk": 2,
+   "offset": 180,
+   "lines": [
+    [
+     "Skirt start point",
+     718
+    ],
+    [
+     "Skirt speed 50 mm/s",
+     746
+    ],
+    [
+     "—",
+     774
+    ],
+    [
+     "Skirt height 1 layers",
+     776
+    ],
+    [
+     "Draft shield Disabled",
+     805
+    ],
+    [
+     "~",
+     811
+    ],
+    [
+     "Brim",
+     840
+    ],
+    [
+     "Brim type ~ Auto",
+     872
+    ],
+    [
+     "Brim width 5",
+     902
+    ],
+    [
+     "mm",
+     908
+    ],
+    [
+     "Brim-object gap 0.1 mm",
+     932
+    ],
+    [
+     "Special mode",
+     966
+    ],
+    [
+     "Slicing Mode Regular",
+     998
+    ],
+    [
+     "~",
+     1003
+    ],
+    [
+     "i v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 27,
+   "walk": 2,
+   "offset": 240,
+   "lines": [
+    [
+     "layers",
+     713
+    ],
+    [
+     "Skirt heignt 1 A",
+     718
+    ],
+    [
+     "Draft shield Disabled",
+     745
+    ],
+    [
+     "~",
+     751
+    ],
+    [
+     "‘0 Brim",
+     777
+    ],
+    [
+     "Brim type ~ Auto",
+     812
+    ],
+    [
+     "Brim width 5",
+     842
+    ],
+    [
+     "mm",
+     848
+    ],
+    [
+     "Brim-object gap 0.1 mm",
+     872
+    ],
+    [
+     "Special mode",
+     906
+    ],
+    [
+     "Slicing Mode Regular",
+     938
+    ],
+    [
+     "~",
+     943
+    ],
+    [
+     "Print sequence ~ By layer",
+     968
+    ],
+    [
+     "Intra-layer order Default",
+     998
+    ],
+    [
+     "~",
+     1003
+    ],
+    [
+     "i v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 28,
+   "walk": 2,
+   "offset": 300,
+   "lines": [
+    [
+     "‘L Brim A",
+     718
+    ],
+    [
+     "Brim type ~ Auto",
+     752
+    ],
+    [
+     "Brim width 5",
+     782
+    ],
+    [
+     "mm",
+     788
+    ],
+    [
+     "Brim-object gap 0.1 mm",
+     812
+    ],
+    [
+     "Special mode",
+     846
+    ],
+    [
+     "Slicing Mode Regular",
+     878
+    ],
+    [
+     "~",
+     883
+    ],
+    [
+     "Print sequence ~ By layer",
+     908
+    ],
+    [
+     "Intra-layer order Default",
+     938
+    ],
+    [
+     "~",
+     943
+    ],
+    [
+     "Spiral vase",
+     968
+    ],
+    [
+     "=|",
+     999
+    ],
+    [
+     "Fuzzy skin",
+     1002
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 29,
+   "walk": 2,
+   "offset": 360,
+   "lines": [
+    [
+     "Brim width 5 A",
+     722
+    ],
+    [
+     "mm",
+     728
+    ],
+    [
+     "Brim-object gap 0.1 mm",
+     752
+    ],
+    [
+     "Special mode",
+     786
+    ],
+    [
+     "Slicing Mode Regular",
+     818
+    ],
+    [
+     "~",
+     823
+    ],
+    [
+     "Print sequence ~ By layer",
+     848
+    ],
+    [
+     "Intra-layer order Default",
+     878
+    ],
+    [
+     "~",
+     883
+    ],
+    [
+     "Spiral vase",
+     908
+    ],
+    [
+     "=| Fuzzy skin",
+     939
+    ],
+    [
+     "Fuzzy skin None",
+     974
+    ],
+    [
+     "~",
+     979
+    ],
+    [
+     "Fuzzy skin generator mode ~ Displacement",
+     1004
+    ]
+   ]
+  },
+  {
+   "step": 30,
+   "walk": 2,
+   "offset": 420,
+   "lines": [
+    [
+     "Special mode “",
+     726
+    ],
+    [
+     "Slicing Mode Regular",
+     758
+    ],
+    [
+     "~",
+     763
+    ],
+    [
+     "Print sequence ~ By layer",
+     788
+    ],
+    [
+     "Intra-layer order Default",
+     818
+    ],
+    [
+     "~",
+     823
+    ],
+    [
+     "Spiral vase",
+     848
+    ],
+    [
+     "=|",
+     879
+    ],
+    [
+     "Fuzzy skin",
+     882
+    ],
+    [
+     "Fuzzy skin None",
+     914
+    ],
+    [
+     "~",
+     919
+    ],
+    [
+     "Fuzzy skin generator mode ~ Displacement",
+     944
+    ],
+    [
+     "Fuzzy skin noise type Classic",
+     974
+    ],
+    [
+     "~",
+     979
+    ],
+    [
+     "Fuzzy skin point distance 0.3 mm",
+     1004
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 31,
+   "walk": 2,
+   "offset": 480,
+   "lines": [
+    [
+     "Print sequence ~ By layer",
+     728
+    ],
+    [
+     "Intra-layer order Default",
+     758
+    ],
+    [
+     "~",
+     763
+    ],
+    [
+     "Spiral vase",
+     788
+    ],
+    [
+     "=| Fuzzy skin",
+     819
+    ],
+    [
+     "Fuzzy skin None",
+     854
+    ],
+    [
+     "~",
+     859
+    ],
+    [
+     "Fuzzy skin generator mode ~ Displacement",
+     884
+    ],
+    [
+     "Fuzzy skin noise type Classic",
+     914
+    ],
+    [
+     "~",
+     919
+    ],
+    [
+     "Fuzzy skin point distance 0.3 mm",
+     944
+    ],
+    [
+     "Fuzzy skin thickness 0.2",
+     974
+    ],
+    [
+     "mm",
+     980
+    ],
+    [
+     "Apply fuzzy skin to first",
+     1004
+    ],
+    [
+     "layer",
+     1020
+    ],
+    [
+     "“",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 32,
+   "walk": 2,
+   "offset": 540,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Spiral vase",
+     728
+    ],
+    [
+     "=|",
+     759
+    ],
+    [
+     "Fuzzy skin",
+     762
+    ],
+    [
+     "Fuzzy skin None",
+     794
+    ],
+    [
+     "~",
+     799
+    ],
+    [
+     "Fuzzy skin generator mode ~ Displacement",
+     824
+    ],
+    [
+     "Fuzzy skin noise type Classic",
+     854
+    ],
+    [
+     "~",
+     859
+    ],
+    [
+     "Fuzzy skin point distance 0.3 mm",
+     884
+    ],
+    [
+     "Fuzzy skin thickness 0.2",
+     914
+    ],
+    [
+     "mm",
+     920
+    ],
+    [
+     "Apply fuzzy skin to first",
+     944
+    ],
+    [
+     "layer",
+     962
+    ],
+    [
+     "G-code output",
+     996
+    ],
+    [
+     ".",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 33,
+   "walk": 2,
+   "offset": 600,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Fuzzy skin None",
+     734
+    ],
+    [
+     "~",
+     739
+    ],
+    [
+     "Fuzzy skin generator mode ~ Displacement",
+     764
+    ],
+    [
+     "Fuzzy skin noise type Classic",
+     794
+    ],
+    [
+     "~",
+     799
+    ],
+    [
+     "Fuzzy skin point distance 0.3 mm",
+     824
+    ],
+    [
+     "Fuzzy skin thickness 0.2",
+     854
+    ],
+    [
+     "mm",
+     860
+    ],
+    [
+     "Apply fuzzy skin to first",
+     884
+    ],
+    [
+     "layer",
+     902
+    ],
+    [
+     "G-code output",
+     936
+    ],
+    [
+     "|",
+     966
+    ],
+    [
+     "Reduce infill retraction",
+     968
+    ],
+    [
+     "Verbose G-code",
+     998
+    ],
+    [
+     "i v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 34,
+   "walk": 2,
+   "offset": 660,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "Fuzzy skin noise type Classic",
+     734
+    ],
+    [
+     "~",
+     739
+    ],
+    [
+     "Fuzzy skin point distance 0.3 mm",
+     764
+    ],
+    [
+     "Fuzzy skin thickness 0.2",
+     794
+    ],
+    [
+     "mm",
+     800
+    ],
+    [
+     "Apply fuzzy skin to first",
+     824
+    ],
+    [
+     "layer",
+     842
+    ],
+    [
+     "G-code output",
+     876
+    ],
+    [
+     "Reduce infill retraction |",
+     908
+    ],
+    [
+     "Verbose G-code",
+     938
+    ],
+    [
+     "@",
+     966
+    ],
+    [
+     "Label objects",
+     968
+    ],
+    [
+     "Exclude objects",
+     998
+    ]
+   ]
+  },
+  {
+   "step": 35,
+   "walk": 2,
+   "offset": 720,
+   "lines": [
+    [
+     "*",
+     724
+    ],
+    [
+     "Fuzzy skin thickness 0.2",
+     734
+    ],
+    [
+     "mm",
+     740
+    ],
+    [
+     "Apply fuzzy skin to first",
+     764
+    ],
+    [
+     "layer",
+     782
+    ],
+    [
+     "> G-code output",
+     813
+    ],
+    [
+     "|",
+     846
+    ],
+    [
+     "Reduce infill retraction",
+     848
+    ],
+    [
+     "Verbose G-code",
+     878
+    ],
+    [
+     "Label objects |",
+     908
+    ],
+    [
+     "Exclude objects",
+     938
+    ],
+    [
+     "{input_filename",
+     964
+    ],
+    [
+     "*",
+     967
+    ],
+    [
+     "_base}_",
+     982
+    ],
+    [
+     "{filament_type",
+     1000
+    ],
+    [
+     "ilename forma",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 36,
+   "walk": 2,
+   "offset": 780,
+   "lines": [
+    [
+     "layer A",
+     716
+    ],
+    [
+     "[> G-code output",
+     753
+    ],
+    [
+     "Reduce infill retraction",
+     788
+    ],
+    [
+     "Verbose G-code",
+     818
+    ],
+    [
+     "Label objects",
+     848
+    ],
+    [
+     "Exclude objects",
+     878
+    ],
+    [
+     "{input_filename",
+     904
+    ],
+    [
+     "«",
+     907
+    ],
+    [
+     "_base}_",
+     922
+    ],
+    [
+     "{filament_type",
+     940
+    ],
+    [
+     "Filename format {print_time}.gc",
+     968
+    ],
+    [
+     "ode",
+     995
+    ]
+   ]
+  },
+  {
+   "step": 37,
+   "walk": 2,
+   "offset": 840,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Reduce infill retraction",
+     728
+    ],
+    [
+     "Verbose G-code",
+     758
+    ],
+    [
+     "Label objects",
+     788
+    ],
+    [
+     "Exclude objects",
+     818
+    ],
+    [
+     "{input_filename",
+     844
+    ],
+    [
+     "«",
+     847
+    ],
+    [
+     "_base}_",
+     862
+    ],
+    [
+     "{filament_type",
+     880
+    ],
+    [
+     "Filename format {print_time}.gc",
+     908
+    ],
+    [
+     "ode",
+     935
+    ],
+    [
+     ">",
+     999
+    ],
+    [
+     "Post-processing Scripts",
+     1002
+    ]
+   ]
+  },
+  {
+   "step": 38,
+   "walk": 2,
+   "offset": 900,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Label objects",
+     728
+    ],
+    [
+     "Exclude objects",
+     758
+    ],
+    [
+     "{input_filename",
+     784
+    ],
+    [
+     "«",
+     787
+    ],
+    [
+     "_base}_",
+     802
+    ],
+    [
+     "{filament_type",
+     820
+    ],
+    [
+     "Filename format {print_time}.gc",
+     848
+    ],
+    [
+     "ode",
+     875
+    ],
+    [
+     "> Post-processing Scripts",
+     939
+    ]
+   ]
+  },
+  {
+   "step": 39,
+   "walk": 2,
+   "offset": 960,
+   "lines": [
+    [
+     "{input_filename A",
+     724
+    ],
+    [
+     "«",
+     727
+    ],
+    [
+     "_base}_",
+     742
+    ],
+    [
+     "{filament_type",
+     760
+    ],
+    [
+     "Filename format {print_time}.gc",
+     788
+    ],
+    [
+     "ode",
+     815
+    ],
+    [
+     "Post-processing Scripts",
+     882
+    ]
+   ]
+  },
+  {
+   "step": 40,
+   "walk": 2,
+   "offset": 1020,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Filename format {print_time}.ge",
+     728
+    ],
+    [
+     "ode",
+     755
+    ],
+    [
+     "> Post-processing Scripts",
+     819
+    ],
+    [
+     "|",
+     878
+    ]
+   ]
+  },
+  {
+   "step": 41,
+   "walk": 2,
+   "offset": 1080,
+   "lines": [
+    [
+     ">",
+     759
+    ],
+    [
+     "Post-processing Scripts",
+     762
+    ],
+    [
+     "=| Notes",
+     983
+    ]
+   ]
+  },
+  {
+   "step": 42,
+   "walk": 2,
+   "offset": 1140,
+   "lines": []
+  },
+  {
+   "step": 43,
+   "walk": 2,
+   "offset": 1200,
+   "lines": []
+  },
+  {
+   "step": 44,
+   "walk": 2,
+   "offset": 1260,
+   "lines": []
+  },
+  {
+   "step": 45,
+   "walk": 2,
+   "offset": 1320,
+   "lines": [
+    [
+     "=| Notes",
+     741
+    ]
+   ]
+  }
+ ],
+ "shots": [
+  "census_others_top.png",
+  "census_others_mid.png",
+  "census_others_bottom.png"
+ ],
+ "frame_shots": "C:\\coil\\fa706_diag\\out\\census_others_f*.png (sidebar crop scale 2, one per OCR'd frame)",
+ "frame_shots_count": 146,
+ "frame_jitters": 28,
+ "notes": [
+  "walk1: top after 35 up-rolls (8 static, 0 blank regrabs): ['Skirt “', 'Skirt loops ~ 0', 'skirt type ~ Combined']",
+  "walk1: stop at offset=1320px (primary pt (150, 900))",
+  "walk2: top after 33 up-rolls (8 static, 4 blank regrabs): ['Skirt “', 'Skirt loops ~ 0', 'skirt type ~ Combined']",
+  "page budget exhausted before bottom (offset=1320px, walk 2)"
+ ],
+ "raw": "OCR text preserved verbatim (misreads included) per task E spec"
+}
