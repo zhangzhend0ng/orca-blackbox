@@ -23,8 +23,8 @@ the Feishu wording, order is plate order):
     立方体2     cube, 15 mm edge, on extruder 3 (the others keep the template's)
 
 Each mesh is centred on its own XY origin with z = 0 at the bottom and is
-placed by the item transform alone: centres x = 45 / 85 / 125 / 165 / 205,
-all on y = 135. The plate carries the template's slicer settings unchanged.
+placed by the item transform alone: centres x = 35 / 80 / 128 / 176 / 215,
+all on y = 135, never less than 20 mm apart. The plate carries the template's slicer settings unchanged.
 
 How the project is derived. Nothing about the template's settings is assumed,
 only its container: one top-level object with one component in its own mesh
@@ -89,7 +89,11 @@ SETTINGS_MEMBER = "Metadata/model_settings.config"
 PROJECT_SETTINGS_MEMBER = "Metadata/project_settings.config"
 
 PLATE_Y = 135                       # mm; the row every object centre sits on
-CENTRE_X = (45, 85, 125, 165, 205)   # mm; object centres in plate order
+# Spaced for the by-object rows (#292, #297): every gap is at least 20 mm so
+# the slicer has room to print object after object (the first layout left 14
+# mm beside the 32 mm bridge).
+CENTRE_X = (35, 80, 128, 176, 215)   # mm; object centres in plate order
+MIN_GAP = 20                        # mm; smallest clearance between two objects
 NO_ROTATION = "1 0 0 0 1 0 0 0 1"    # rotation/scale part of the 3MF transform
 IDENTITY_TRANSFORM = "1 0 0 0 1 0 0 0 1 0 0 0"
 IDENTITY_MATRIX = "1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"
@@ -1461,7 +1465,8 @@ def validate_layout(audit: Audit, measured: dict[int, Measured], say: Say) -> No
                 f"{placed.shape.name}: sits at {centre} with its bottom at z = {low[2]}, not at ({CENTRE_X[k]}, {PLATE_Y}, 0)")
     ids = [placed.object_id for placed in audit.objects]
     gaps = [plate[following][0][0] - plate[earlier][1][0] for earlier, following in zip(ids, ids[1:])]
-    require(min(gaps) > 0, f"two objects overlap on the plate (x gaps {gaps})")
+    require(min(gaps) >= MIN_GAP,
+            f"objects closer than {MIN_GAP} mm (x gaps {gaps}): the by-object rows need the clearance")
     say(f"placement (mesh bounding box + item transform): centres x {list(CENTRE_X)} on y = {PLATE_Y}, bottoms at z = 0; "
         f"x gaps between neighbours {[number(gap) for gap in gaps]} mm, smallest {number(min(gaps))} mm")
 

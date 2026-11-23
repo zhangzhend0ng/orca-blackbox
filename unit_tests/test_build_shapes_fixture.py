@@ -148,7 +148,7 @@ def test_valid_project_passes_every_check() -> None:
     lines: list[str] = []
     objects = bf.validate(build(), bf.read_template(TEMPLATE), lines.append)
     assert [placed.shape.name for placed in objects] == ["立方体", "圆柱体", "搭桥", "悬垂台阶", "立方体2"]
-    assert any("9 of 9" in line for line in lines) and any("smallest 14 mm" in line for line in lines)
+    assert any("9 of 9" in line for line in lines) and any("smallest 21.5 mm" in line for line in lines)
 
 
 @pytest.mark.parametrize("edit,message", [
@@ -183,8 +183,8 @@ def test_broken_mesh_is_rejected(edit: Callable[[str], str], message: str) -> No
     pytest.param(MODEL, lambda data: replace_once(data.decode("utf-8"), 'p:path="/3D/Objects/搭桥_3.model"',
                                                   'p:path="/3D/Objects/搭桥_3x.model"').encode("utf-8"),
                  "disagree", id="component-path-disagrees-with-the-relationship"),
-    pytest.param(MODEL, lambda data: replace_once(data.decode("utf-8"), "1 0 0 0 1 0 0 0 1 125 135 0",
-                                                  "1 0 0 0 1 0 0 0 1 125 136 0").encode("utf-8"),
+    pytest.param(MODEL, lambda data: replace_once(data.decode("utf-8"), "1 0 0 0 1 0 0 0 1 128 135 0",
+                                                  "1 0 0 0 1 0 0 0 1 128 136 0").encode("utf-8"),
                  "build item 2 has transform", id="build-item-moved"),
     pytest.param(SETTINGS, lambda data: replace_once(data.decode("utf-8"), '<metadata key="extruder" value="3"/>',
                                                      '<metadata key="extruder" value="1"/>').encode("utf-8"),
@@ -195,8 +195,8 @@ def test_broken_mesh_is_rejected(edit: Callable[[str], str], message: str) -> No
     pytest.param(SETTINGS, lambda data: re.sub(r'(?s)  <object id="6">.*?  </object>\n', "",
                                                data.decode("utf-8")).encode("utf-8"),
                  "not 5 objects", id="one-object-missing"),
-    pytest.param(SETTINGS, lambda data: replace_once(data.decode("utf-8"), '1 0 0 0 1 0 0 0 1 165 135 0" offset',
-                                                     '1 0 0 0 1 0 0 0 1 165 134 0" offset').encode("utf-8"),
+    pytest.param(SETTINGS, lambda data: replace_once(data.decode("utf-8"), '1 0 0 0 1 0 0 0 1 176 135 0" offset',
+                                                     '1 0 0 0 1 0 0 0 1 176 134 0" offset').encode("utf-8"),
                  "assemble_item 3 is not the template's", id="assemble-transform-differs-from-the-build-item"),
     pytest.param(SETTINGS, lambda data: replace_once(data.decode("utf-8"), 'key="identify_id" value="94"',
                                                      'key="identify_id" value="93"').encode("utf-8"),
