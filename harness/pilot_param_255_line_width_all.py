@@ -16,10 +16,12 @@ GOAL = ("Set default line width to 0.42 mm, initial layer line width to 0.50 mm,
 # The slicer refuses top_surface_line_width 0.40 on the fixture's 0.4 mm
 # layers ('Too small line width', Print.cpp validate_extrusion_width: a
 # width must be greater than the layer height). The ops lower the layer
-# height first; the schedule oracle is measured on the first run and not
-# assumed (the docstring's '68 x 0.4 / 27.2' no longer applies).
+# height first. Schedule measured with analyze_gcode on fa706g3 run
+# 4499d0c4: first layer 0.4, then 133 x 0.2 -> 134 layers, last Z 27.0 -
+# the object's height exactly, no grid overshoot (the docstring's
+# '68 x 0.4 / 27.2' no longer applies).
 VALUES = {"line_width": "0.42", "initial_layer_line_width": "0.5",
           "outer_wall_line_width": "0.42", "inner_wall_line_width": "0.45",
           "top_surface_line_width": "0.4", "sparse_infill_line_width": "0.45",
           "support_line_width": "0.42", "layer_height": "0.2"}
-verify_business = make_verify(CASE_ID, VALUES)
+verify_business = make_verify(CASE_ID, VALUES, schedule={"layer_count": 134, "last_z": "27"})
