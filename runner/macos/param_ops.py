@@ -425,8 +425,17 @@ class Panel:
             require(modal is None, f"A modal dialog is covering the project: {modal}")
         wid = self.window_id(point, size)
         require(ax.post_allowed(), "Targeted input requires event posting permission")
-        for kind in (1, 2):
-            self._mouse(kind, gx, gy, wid)
+        for attempt in range(3):  # a busy app can miss an AX read (run 014224: "Missing field position")
+            posted = False
+            try:
+                for kind in (1, 2):
+                    self._mouse(kind, gx, gy, wid)
+                    posted = True
+                break
+            except RuntimeError as error:
+                if posted or attempt == 2 or "Missing field" not in str(error):
+                    raise  # never repeat a half-sent click
+                time.sleep(0.6)
 
     def drag(self, gx, gy, tx, ty, steps=8):
         """Press at (gx, gy), drag in a straight line to (tx, ty), release."""
@@ -1224,7 +1233,9 @@ def op_pick_combo(panel, ns):
             attempt = {"how": take, "painted_after": painted_now(shot), "title": panel.title,
                        "screenshot_after": shot + ".png"}
             plan.setdefault("takes", []).append(attempt)
-            if norm(attempt["painted_after"]) == norm(target):
+            # The judged value: the row's painted words, less the dropdown glyph OCR glues in
+            # front of them ('~ By object', 'v By object').
+            if title_key(attempt["painted_after"]) == norm(target):
                 chosen = attempt
                 break
         if chosen:
@@ -1237,6 +1248,54 @@ def op_pick_combo(panel, ns):
             "evidence": {"notes": note, "attempts": attempts,
                          "screenshots": {"before": tag + ".png", "popup": f"combo-0-cell-popup.png",
                                          "after": chosen["screenshot_after"] if chosen else None}}}
+
+
+# --- step 4: one edit, Save Project, the key read from the saved 3mf ---
+
+SCENARIOS = {  # name: (operation, project_settings.config key, value expected there, its arguments)
+    "layer-height": ("set_float", "layer_height", "0.2",
+                     {"tab": "Quality", "group": "Layer height", "label": "Layer height", "value": "0.2"}),
+    "thin-wall": ("set_checkbox", "detect_thin_wall", "1",
+                  {"tab": "Strength", "group": "Walls", "label": "Detect thin walls", "key": "detect_thin_wall"}),
+    "print-sequence": ("pick_combo", "print_sequence", "by object",
+                       {"tab": "Others", "group": "Special mode", "label": "Print sequence",
+                        "target": "By object"})}
+
+
+def tick_checkbox(panel, ns):
+    """The first turn of set_checkbox on its own: tick the row's cell, Save Project, and return
+    (the saved key, what the click did)."""
+    rows, row, note, tag = panel.locate_row(ns["tab"], ns["group"], ns["label"], "scen")
+    base = checkbox_strip(panel, row, tag)
+    gx, gy = panel.geometry()[0].x + VALUE_X, row["y"] + row["h"] / 2
+    panel.click(gx, gy)
+    time.sleep(0.9)
+    panel.shot("scen-checked")
+    changed = pixel_diff(checkbox_strip(panel, row, "scen-checked"), base)
+    require(panel.dirty and changed > 8,
+            f"The cell click did not tick the box: dirty={panel.dirty}, pixels changed={changed}")
+    return save_settings(panel).get(ns["key"]), {"click": [round(gx), round(gy)],
+                                                 "pixels_changed_vs_before": changed,
+                                                 "screenshot": "scen-checked.png"}
+
+
+def op_scenario(panel, ns):
+    """One edit through its operation, Save Project, then the key read from the saved 3mf's
+    Metadata/project_settings.config; proven only when the saved value is the expected one."""
+    edit, key, want, case = SCENARIOS[ns["name"]]
+    case = {**ns, **case}
+    if edit == "set_checkbox":
+        value, taken = tick_checkbox(panel, case)
+        done = {"ok": value is not None, "readback": taken, "evidence": {}}
+    else:
+        done = OPS[edit](panel, case)
+        require(done["ok"], f"{edit} did not take: {json.dumps(done['readback'])[:300]}")
+        value = save_settings(panel).get(key)
+    saved = {"key": key, "value": None if value is None else str(value), "expected": want}
+    return {"ok": done["ok"] and saved["value"] == want,
+            "readback": {"scenario": ns["name"], "edit": done["readback"], "saved": saved,
+                         "title_after_save": panel.title},
+            "evidence": {"notes": panel.last_notes, "edit": done["evidence"]}}
 
 
 # --- step 2: how the page reaches a group below the fold ---
@@ -1555,7 +1614,8 @@ def op_scroll_page(panel, ns):
 
 
 OPS = {"switch_tab": op_switch_tab, "find_row": op_find_row, "set_float": op_set_float,
-       "set_checkbox": op_set_checkbox, "pick_combo": op_pick_combo, "scroll_page": op_scroll_page}
+       "set_checkbox": op_set_checkbox, "pick_combo": op_pick_combo, "scroll_page": op_scroll_page,
+       "scenario": op_scenario}
 
 
 # --- Aqua-session worker ---
@@ -1597,7 +1657,7 @@ def run_worker(ns):
     console_uid = os.stat("/dev/console").st_uid
     require(ax.trusted(), "Accessibility permission is missing for the Aqua worker")
     info = plistlib.loads((APP / "Contents/Info.plist").read_bytes())
-    result = {"op": ns["op"], "ok": True, "sut": {"version": info.get("CFBundleShortVersionString")},
+    result = {"op": ns["op"], "name": ns.get("name"), "ok": True, "sut": {"version": info.get("CFBundleShortVersionString")},
               "console_uid": console_uid, "test_uid": os.getuid()}
     with ax.Desktop(console_uid) as desktop:
         desktop.check_session()
@@ -1709,8 +1769,9 @@ def record(result, stamp):
     path = EVIDENCE / "results.json"
     data = (json.loads(path.read_text()) if path.is_file() else
             {"task": "mac-param-ops-2026-11-23", "ops": {}, "attempts": []})
-    data["ops"][result["op"]] = result
-    data["attempts"].append({"op": result["op"], "stamp": stamp, "ok": result["ok"]})
+    key = ":".join(filter(None, (result["op"], result.get("name"))))  # scenarios stay apart
+    data["ops"][key] = result
+    data["attempts"].append({"op": key, "stamp": stamp, "ok": result["ok"]})
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n")
 
@@ -1774,6 +1835,7 @@ def parser():
     scroll.add_argument("--tab", default="Others")
     scroll.add_argument("--group", default="Special mode")
     scroll.add_argument("--label", default="Print sequence")
+    sub.add_parser("scenario").add_argument("--name", required=True, choices=sorted(SCENARIOS))
     for case in sub.choices.values():
         case.add_argument("--fuse", type=int, default=240)
     root.add_argument("--worker", metavar="JSON", help=argparse.SUPPRESS)

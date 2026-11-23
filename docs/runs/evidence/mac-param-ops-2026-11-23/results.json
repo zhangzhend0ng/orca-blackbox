@@ -845,7 +845,7 @@
   },
   "pick_combo": {
    "op": "pick_combo",
-   "ok": true,
+   "ok": false,
    "sut": {
     "version": "2.4.1"
    },
@@ -854,168 +854,15 @@
    "entry": {
     "dialogs": []
    },
-   "readback": {
-    "tab": "Others",
-    "label": "Print sequence",
-    "before": "~ By layer",
-    "after": "~ By object",
-    "expected": "By object",
-    "click": [
-     620,
-     866
-    ],
-    "entry_click": [
-     662,
-     923
-    ],
-    "taken_by": "open-down-return-keys"
-   },
    "evidence": {
-    "notes": [
-     {
-      "tab_click": [
-       740,
-       776
-      ]
-     },
-     {
-      "scrolled": {
-       "not_found": "RuntimeError: Group title 'Special mode' not visible; titles seen: ['~ Skirt']",
-       "buttons": {
-        "down": [
-         2,
-         0
-        ],
-        "up": 1,
-        "knob_dy": {
-         "0": [
-          3.0,
-          3.0
-         ],
-         "1": [
-          -3.0,
-          -3.0
-         ],
-         "2": [
-          12.0,
-          12.0
-         ],
-         "3": [
-          -12.0,
-          -12.0
-         ]
-        }
-       },
-       "to_top": {
-        "button": 1,
-        "presses": 1,
-        "knob_at": [
-         3.0,
-         3.0
-        ]
-       },
-       "steps": [
-        {
-         "step": 0,
-         "knob_dy": 12.0,
-         "titles": []
-        },
-        {
-         "step": 1,
-         "knob_dy": 13.0,
-         "titles": [
-          "EK Special mode"
-         ],
-         "row_y": 859.0
-        }
-       ]
-      }
-     }
-    ],
-    "attempts": [
-     {
-      "how": "cell",
-      "click": [
-       620,
-       866
-      ],
-      "focused": {
-       "role": "AXWindow",
-       "box": [
-        360.0,
-        85.0,
-        1200.0,
-        800.0
-       ],
-       "help": ""
-      },
-      "popup_entries_seen": [
-       "By layer",
-       "By object"
-      ],
-      "entry_box": {
-       "x": 628,
-       "y": 913,
-       "w": 67,
-       "h": 20
-      },
-      "entry_click": [
-       662,
-       923
-      ],
-      "windows": [
-       [
-        "AXUnknown",
-        "",
-        [
-         606,
-         884,
-         120,
-         52
-        ]
-       ],
-       [
-        "AXStandardWindow",
-        "probe",
-        [
-         360,
-         85,
-         1200,
-         800
-        ]
-       ]
-      ],
-      "takes": [
-       {
-        "how": "pointer",
-        "painted_after": "v By object",
-        "title": "*probe",
-        "screenshot_after": "combo-0-cell-pointer-after.png"
-       },
-       {
-        "how": "open-down-return-keys",
-        "painted_after": "~ By object",
-        "title": "*probe",
-        "screenshot_after": "combo-0-cell-open-down-return-keys-after.png"
-       }
-      ]
-     }
-    ],
-    "screenshots": {
-     "before": "combo-page.png",
-     "popup": "combo-0-cell-popup.png",
-     "after": "combo-0-cell-open-down-return-keys-after.png"
-    }
+    "error": "Traceback (most recent call last):\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.rk7u1p7h/param_ops.py\", line 1678, in run_worker\n    result.update(OPS[ns[\"op\"]](panel, ns))\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.rk7u1p7h/param_ops.py\", line 1193, in op_pick_combo\n    panel.click(gx, gy, guard=False)\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.rk7u1p7h/param_ops.py\", line 429, in click\n    self._mouse(kind, gx, gy, wid)\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.rk7u1p7h/param_ops.py\", line 407, in _mouse\n    point, size = self.geometry()\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.rk7u1p7h/param_ops.py\", line 353, in geometry\n    point = self.desktop.position(self.window)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.rk7u1p7h/accessibility.py\", line 204, in position\n    raise RuntimeError(\"Missing field position\")\nRuntimeError: Missing field position\n"
    },
    "shots": {
     "entry": "entry.png",
     "combo-page-locate": "combo-page-locate.png",
     "combo-page": "combo-page.png",
     "combo-page-scroll-0": "combo-page-scroll-0.png",
-    "combo-page-scroll-1": "combo-page-scroll-1.png",
-    "combo-0-cell-popup": "combo-0-cell-popup.png",
-    "combo-0-cell-pointer-after": "combo-0-cell-pointer-after.png",
-    "combo-0-cell-open-down-return-keys-after": "combo-0-cell-open-down-return-keys-after.png"
+    "combo-page-scroll-1": "combo-page-scroll-1.png"
    },
    "notes": [
     {
@@ -1089,25 +936,19 @@
     ]
    },
    "orca_left": [],
-   "finished_at": 1795455604.6721358,
-   "seconds": 73.4,
+   "finished_at": 1795455743.765929,
+   "seconds": 56.4,
    "screenshots": {
-    "combo-0-cell-open-down-return-keys-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014004-combo-0-cell-open-down-return-keys-after.panel.png",
-    "combo-0-cell-open-down-return-keys-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014004/pick_combo-014004-combo-0-cell-open-down-return-keys-after.png",
-    "combo-0-cell-pointer-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014004-combo-0-cell-pointer-after.panel.png",
-    "combo-0-cell-pointer-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014004/pick_combo-014004-combo-0-cell-pointer-after.png",
-    "combo-0-cell-popup.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014004-combo-0-cell-popup.panel.png",
-    "combo-0-cell-popup.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014004/pick_combo-014004-combo-0-cell-popup.png",
-    "combo-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014004-combo-page-locate.panel.png",
-    "combo-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014004/pick_combo-014004-combo-page-locate.png",
-    "combo-page-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014004-combo-page-scroll-0.panel.png",
-    "combo-page-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014004/pick_combo-014004-combo-page-scroll-0.png",
-    "combo-page-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014004-combo-page-scroll-1.panel.png",
-    "combo-page-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014004/pick_combo-014004-combo-page-scroll-1.png",
-    "combo-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014004-combo-page.panel.png",
-    "combo-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014004/pick_combo-014004-combo-page.png",
-    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014004-entry.panel.png",
-    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014004/pick_combo-014004-entry.png"
+    "combo-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014224-combo-page-locate.panel.png",
+    "combo-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014224/pick_combo-014224-combo-page-locate.png",
+    "combo-page-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014224-combo-page-scroll-0.panel.png",
+    "combo-page-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014224/pick_combo-014224-combo-page-scroll-0.png",
+    "combo-page-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014224-combo-page-scroll-1.panel.png",
+    "combo-page-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014224/pick_combo-014224-combo-page-scroll-1.png",
+    "combo-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014224-combo-page.panel.png",
+    "combo-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014224/pick_combo-014224-combo-page.png",
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014224-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014224/pick_combo-014224-entry.png"
    }
   },
   "scroll_page": {
@@ -4717,6 +4558,103 @@
     "scroll-top-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-scroll-top-2.png",
     "scroll-top-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scroll_page-012119/scroll_page-012119-scroll-top-3.png"
    }
+  },
+  "scenario:layer-height": {
+   "op": "scenario",
+   "name": "layer-height",
+   "ok": true,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "entry": {
+    "dialogs": []
+   },
+   "readback": {
+    "scenario": "layer-height",
+    "edit": {
+     "tab": "Quality",
+     "label": "Layer height",
+     "before": "0.4",
+     "ax_value": "0.2",
+     "painted": "0.2",
+     "title": "*probe",
+     "expected": "0.2"
+    },
+    "saved": {
+     "key": "layer_height",
+     "value": "0.2",
+     "expected": "0.2"
+    },
+    "title_after_save": "probe"
+   },
+   "evidence": {
+    "notes": [
+     {
+      "tab_click": [
+       402,
+       778
+      ]
+     }
+    ],
+    "edit": {
+     "parameter": "layer_height",
+     "click": [
+      615,
+      841
+     ],
+     "notes": [
+      {
+       "tab_click": [
+        402,
+        778
+       ]
+      }
+     ],
+     "screenshots": {
+      "before": "float-page.png",
+      "after": "float-after.png"
+     }
+    }
+   },
+   "shots": {
+    "entry": "entry.png",
+    "float-page-locate": "float-page-locate.png",
+    "float-page": "float-page.png",
+    "float-after": "float-after.png"
+   },
+   "notes": [
+    {
+     "tab_click": [
+      402,
+      778
+     ]
+    }
+   ],
+   "geometry": {
+    "origin": [
+     360.0,
+     85.0
+    ],
+    "size": [
+     1200.0,
+     800.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795455832.2127612,
+   "seconds": 43.3,
+   "screenshots": {
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-014352-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-014352/scenario-014352-entry.png",
+    "float-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-014352-float-after.panel.png",
+    "float-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-014352/scenario-014352-float-after.png",
+    "float-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-014352-float-page-locate.panel.png",
+    "float-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-014352/scenario-014352-float-page-locate.png",
+    "float-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/scenario-014352-float-page.panel.png",
+    "float-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/scenario-014352/scenario-014352-float-page.png"
+   }
   }
  },
  "attempts": [
@@ -4813,6 +4751,16 @@
   {
    "op": "pick_combo",
    "stamp": "014004",
+   "ok": true
+  },
+  {
+   "op": "pick_combo",
+   "stamp": "014224",
+   "ok": false
+  },
+  {
+   "op": "scenario:layer-height",
+   "stamp": "014352",
    "ok": true
   }
  ],
