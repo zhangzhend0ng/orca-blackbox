@@ -420,13 +420,26 @@ def settle_dialog(ui, known, answer=None):
             ui.pause(0.6)
         return None, ""
     body = pp.dialog_body(app.pid, dlg)
-    buttons = [b for b in mixing_util.children(dlg) if b[1] == "Button"]
+    kids = mixing_util.children(dlg)
+    # The box is wx's own dialog: class '#32770' like every wxDialog, and
+    # its buttons are OWNER-DRAWN wxWindowNR windows, not 'Button's (VM run
+    # d8cec0d4: children Static / wxWindowNR x3). A button is a child with
+    # text whose class is Button or wxWindowNR; failing that, the two small
+    # untitled children are the Yes/No pair, left to right.
+    buttons = [b for b in kids if b[1] in ("Button", "wxWindowNR") and b[0].strip()]
+    if not buttons:
+        small = sorted((b for b in kids if b[1] != "Static"
+                        and (b[2][3] - b[2][1]) <= 40 and (b[2][2] - b[2][0]) <= 160),
+                       key=lambda b: b[2][0])
+        if len(small) == 2:
+            buttons = small
     try:
         cls = winutil.window_class(dlg)          # for the log only
     except Exception:  # noqa: BLE001
         cls = "?"
-    print("[param case] dialog after the checkbox: %r; class %r; buttons %r" % (
-        body[:160], cls, [b[0] for b in buttons]), flush=True)
+    print("[param case] dialog after the checkbox: %r; class %r; children %r; buttons %r" % (
+        body[:160], cls, [(t, c) for t, c, _r, _h in kids][:12],
+        [(t, c, r) for t, c, r, _h in buttons]), flush=True)
     hit = how = None
     want = answer.replace("&", "").strip().lower() if answer else None
     if want:
@@ -448,15 +461,14 @@ def settle_dialog(ui, known, answer=None):
             answer, how, (x0 + x1) // 2, (y0 + y1) // 2), flush=True)
         winutil.real_click_screen((x0 + x1) // 2, (y0 + y1) // 2)
     elif want in ("yes", "no"):
-        # No Button window to click. The box the app shows is a TASK DIALOG
-        # (class #32770 with a DirectUI child): its buttons are not windows
-        # and it ignores WM_COMMAND - VM runs eab35b9a (closed = No),
-        # 4d9731ec and 9ef272d0 (the command and a real Enter did not close
-        # it; the guest keeps the app out of the foreground, so no key
-        # ever reaches it). Each way below is checked by the main window
-        # being enabled again; WM_CLOSE (= No) is the last resort.
+        # No button window to click. A native box of this app would be a
+        # TASK DIALOG (buttons drawn in a DirectUI child, WM_COMMAND
+        # ignored) and the guest keeps the app out of the foreground, so no
+        # real key ever reaches it (VM runs eab35b9a / 4d9731ec / 9ef272d0:
+        # closed = No every time). Each way below is checked by the main
+        # window being enabled again; WM_CLOSE (= No) is the last resort.
         command = 6 if want == "yes" else 7                 # IDYES / IDNO
-        print("[param case] box children: %r" % [c for _t, c, _r, _h in mixing_util.children(dlg)][:12],
+        print("[param case] box children: %r" % [(t, c) for t, c, _r, _h in kids][:12],
               flush=True)
 
         def answered(how):

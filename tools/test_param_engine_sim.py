@@ -1041,7 +1041,32 @@ if hasattr(_pcl22, "settle_dialog"):
         check("settle_dialog: an unnamed dialog is closed, never answered",
               _posted22 == [(99, 0x0010, 0)] and not _clicks22, "%r %r" % (_clicks22, _posted22))
         LADDER22 = [(99, 0x046A, 6), (99, 0x0111, 6), (99, 0x0100, 0x0D), (99, 0x0101, 0x0D)]
+        # VM run d8cec0d4: the box is wx's own dialog - its buttons are
+        # owner-drawn wxWindowNR windows with the label as window text
+        _modal22.update(open=True)
+        _mu22.children = lambda dlg: [STATIC22, ("&Yes", "wxWindowNR", (100, 200, 160, 222), 11),
+                                      ("&No", "wxWindowNR", (180, 200, 240, 222), 12),
+                                      ("", "wxWindowNR", (20, 40, 300, 120), 13)]
+        _clicks22.clear()
         _posted22.clear()
+        _pcl22.settle_dialog(ui22, set(), "Yes")
+        check("settle_dialog: owner-drawn wx buttons (wxWindowNR with the label) are found and clicked "
+              "(VM run d8cec0d4)", _clicks22 == [(130, 211)] and not _posted22, "%r %r" % (_clicks22, _posted22))
+        _modal22.update(open=True)
+        _mu22.children = lambda dlg: [STATIC22, ("", "wxWindowNR", (180, 200, 240, 222), 12),
+                                      ("", "wxWindowNR", (100, 200, 160, 222), 11),
+                                      ("", "wxWindowNR", (20, 40, 300, 120), 13)]
+        _clicks22.clear()
+        _pcl22.settle_dialog(ui22, set(), "Yes")
+        check("settle_dialog: two small untitled children are the Yes/No pair, left one is Yes",
+              _clicks22 == [(130, 211)], "%r" % (_clicks22,))
+        _modal22.update(open=True)
+        _clicks22.clear()
+        _pcl22.settle_dialog(ui22, set(), "No")
+        check("settle_dialog: ... and No is the right one",
+              _clicks22 == [(210, 211)], "%r" % (_clicks22,))
+        _posted22.clear()
+        _clicks22.clear()
         _modal22["open"] = True
         _mu22.children = lambda dlg: [("OK", "Button", (100, 200, 160, 222), 11)]
         _pcl22.settle_dialog(ui22, set(), "Yes")
