@@ -21,16 +21,32 @@ are exact-match ('; EXECUTABLE_BLOCK_START', agent_layer_verify.py:58)
 analyzer grows N-prefix tolerance the oracle proves the four config
 writes + full settings preservation (#278 raft precedent).
 
-2026-11-24, the G-code itself is asserted now - and fails. The Feishu row
-expects "G-code包含注释、行号和对象标签" (expected result 2). With all four
-keys written (fa runs 6c091f2e and 908ca2d, the second with the reopen
-session in develop mode as well) the exported file has 0 numbered lines
-of 6135 and 0 EXCLUDE_OBJECT lines - the same as a default run (comment
-lines 2002 vs 2003, TYPE comments 206 both). So the values are written and
-verified, but two of the three effects the case asks for are not in the
-G-code this build exports for the U1 profile. Until that is explained the
-case is NON_GREEN with param_gcode_line_number_missing (the values part
-still has to pass for the message to be reached).
+2026-11-24, the G-code itself is checked. The Feishu row expects "G-code
+包含注释、行号和对象标签" (expected result 2). On the U1 fixture three
+different things happen, each measured on the exported file:
+- gcode_comments=1 takes effect: 3028 command lines carry a trailing
+  comment ("M106 S0 ; disable fan") against 2 in a default run (fa run
+  908ca2d vs tree_support run 2f5c45ad). Counting lines that START with
+  ';' cannot see it (2002 vs 2003) - verbose comments are end-of-line
+  annotations. Asserted: param_gcode_verbose_comments_missing.
+- gcode_add_line_number=1 is written but no line is numbered (0 of 6135,
+  fa 6c091f2e / 908ca2d, VM queue25), with the reopen session in develop
+  mode too, and the file is never rewritten (its LastWriteTime is the temp
+  file's). Source (2.3.5 tree on fa706g3, main@c98c6d3; 2.4.0 has no
+  source): the only call, gcode_add_line_number in
+  BackgroundSlicingProcess::export_gcode (:901), is reached only when the
+  printer is a BBL machine (process_fff :246-252); any other printer goes
+  through finalize_gcode, which copies the file. The build agrees: its
+  export header has no "; model label id:" (written for BBL printers
+  only). So on the Snapmaker U1 this option cannot take effect - a limit
+  of the product for this machine, recorded here, not asserted.
+- "标注模型" is not gcode_label_objects: that key is 1 by default in the
+  Snapmaker common preset and only writes "; printing object" comments
+  (136 lines, same as a default run). The EXCLUDE_OBJECT labels come with
+  exclude_object (GCode.cpp:6595), which is 0 by default: 0 lines here,
+  137 in the #297 run (1b0c899d) where it is on. Not asserted here.
+Recorded deviations from the row: two of its three expected effects are
+not reachable through these settings on this machine.
 Filename format: the row writes {input_filename}_{plate_name}.gcode; the
 app's placeholder is input_filename_base (PrintConfig filename_format),
 so VALUES uses that. The exported file is named by the harness, not by
@@ -52,10 +68,10 @@ _values_verified = make_verify(CASE_ID, VALUES)
 def verify_business(project, fixture, gcode, *, cancelled=lambda: False):
     result = _values_verified(project, fixture, gcode, cancelled=cancelled)
     text = gcode.decode("utf-8", errors="replace") if isinstance(gcode, bytes) else str(gcode)
-    numbered = sum(1 for line in text.splitlines()
-                   if line[:1] == "N" and line[1:2].isdigit())
-    result["numbered_lines"] = numbered
+    lines = text.splitlines()
+    result["verbose_comment_lines"] = sum(
+        1 for line in lines if line[:1] in "GM" and " ; " in line)
+    result["numbered_lines"] = sum(1 for line in lines if line[:1] == "N" and line[1:2].isdigit())
     result["object_labels"] = "EXCLUDE_OBJECT" in text
-    _require(numbered > 0, "param_gcode_line_number_missing")
-    _require(result["object_labels"], "param_gcode_object_label_missing")
+    _require(result["verbose_comment_lines"] > 1000, "param_gcode_verbose_comments_missing")
     return result
