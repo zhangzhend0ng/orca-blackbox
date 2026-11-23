@@ -7225,7 +7225,7 @@
     "screenshots": 16
    }
   },
-  "summary_written_at": "2026-11-24 06:17:24",
+  "summary_written_at": "2026-11-24 06:48:52",
   "code_after_the_proof": "final code = look-first scroll + painted_is() + pick_combo --take. On the final code: pick_combo pointer / keys (022226 / 022357) and scenario print-sequence (022045). One step behind it (no painted_is, no --take; neither is on that path): scenario thin-wall (021310). Older: the five op proofs and scenario layer-height (014352)",
   "pick_combo_attribution": {
    "status": "ISOLATED - the pointer click completes the pick; it is also the first input of the full sequence, so the keys that follow it are redundant",
@@ -7334,15 +7334,14 @@
     "uia_param_wall_thin",
     "uia_param_layer_pair",
     "uia_param_travel_speed",
-    "uia_param_speed_limits"
+    "uia_param_surface_flow",
+    "uia_param_speed_limits",
+    "uia_param_arc_resolution"
    ],
    "unsupported op": [],
    "needs develop mode": [],
    "not_passed": {
-    "uia_param_surface_flow": "NOT PROVEN, 4 GUI attempt(s), latest run 060903 (139.5 s; op0's own 110 s fuse fired; nothing saved). The group-title test no longer stops it: on the real GUI the scroll chain read the titles ['ELayer height', 'Line width'], ['Seam'], ['E5 Precision'], ['C Ironing'], ['Wall generator', 'Walls and surfaces'] and at the 5th press found the row 'Top surface flow ratio' under 'Walls and surfaces' (exact, y 975). BLOCKER now: one op's 110 s do not cover the case's only op - tab switch 41 s, find chain 63 s (5 scroll steps), then set_float's own locate had read the page once when the fuse fired (06:08:57, 110 s after the op's entry at 06:07:07); by run 050552's 22.3 s for an edit the op needs about 135 s. No cell clicked, no value written. NOT FIXED (the 110 s per op is the decided limit)",
-    "uia_param_speed_limits": "PASS in step 10 (run 061300) - see pass_runs",
-    "uia_param_arc_resolution": "NOT PROVEN, 1 GUI attempt(s), latest run 050914 (the 170 s fuse fired; op0's cell was clicked, its effect is not recorded); not re-run in step 10. op1 ('Precise Z height', Precision group) is held by the scroll stop that step 10 did not change: the title is on the page with the wanted row still below the fold, and one press on the row is on the page without its title (050208 scroll-3: 'Precise Z height' y 881, the only title 'C Ironing' y 943). NOT FIXED",
-    "uia_param_precision_comp": "NOT PROVEN latest run 061619, 2 GUI attempt(s), 155.9 s: op0 stopped where the Precision title is on the page with its first rows under it and the wanted row below the fold (3 scroll presses, as in 051203; the scroll stop is unchanged in step 10, its change is NOT VERIFIED), then the fold step folded nothing and a second scroll chain's search for the scrollbar's buttons ran into op0's 110 s fuse, 16 s past the limit (the fuse is checked at page reads only); ops 1 and 2 not started, no cell clicked, nothing saved. NOT FIXED"
+    "uia_param_precision_comp": "NOT PROVEN, 3 GUI attempt(s) (051203, 061619, 063651). The scroll stop no longer stops it (063651: op0's chain pressed on past 'E5 Precision' and took the row as a row of the group entered). BLOCKER now: set_float refuses the row - no numeric value token is OCR-read on 'X-Y hole compensation' ('mm' only). NOT FIXED"
    },
    "not_run": [],
    "not_run_why": "none: every asked case has been run at least once",
@@ -7356,7 +7355,6 @@
     "group-title test: FIXED in step 10 (9a5df16) - a title is told by the ink of its fold glyph in the strip at the column's left edge, not by the x of its text. Offline replay 24 of 24 (param_locate_check.py exit 0); on the GUI by run 061300 (uia_param_speed_limits PASS: 'Line width' with its text at x 26) and run 060903 (surface_flow: 'Walls and surfaces' at x 28, its row found). The three earlier passing cases were not re-run on it",
     "after the fold steps of runs 043936 and 050208 the worker's own final geometry read raised 'Missing field position' and op_case's result was lost with it; cause NOT INVESTIGATED",
     "the fuses of runs 050552 (200 s) and 050914 (170 s) were sized by me for what was left of the 28-minute box, under the 230-280 s a 2-3 op case needs with the 45 s launch and the Advanced switch (about 45 s of AXPress polls before the first op): both attempts ended in the fuse, not in an op's own error. A 3-op case was not completed in the box",
-    "scroll_to leaves the page too early (NOT FIXED; it stops uia_param_precision_comp): a title with 40 px of room under it and no wanted row is read as 'the row is not on this page (an Advanced-only one in standard mode), so scrolling cannot find it'. Run 051203 scroll-2: 'E5 Precision' at x 2, y 849 with 'Slice gap closing radius' (y 883), 'Resolution' (y 911) and 'Arc fitting' (y 939) under it, the wanted 'X-Y hole compensation' further down the group; the chain stopped after 3 presses and went to the fold steps, although one more press brings that row up (050208 scroll-3 reads it at y 725). uia_param_arc_resolution's op1 ('Precise Z height') is in the same group; it did not get that far in 050914, so for it this is an inference",
     "a supervisor timeout still leaves the test instance running (B7 note, seen twice more): pids 21278 (050552) and 23205 (050914) killed by hand at 05:06:13 and 05:09:21 after confirming each command names its orca-bb-param-ops work dir; no Orca process and no LaunchAgent job left at the end of step 9",
     "other keys: 35 keys differ between the fixture's config and the saved one in each save so far (layer_pair 034408, wall_thin 035959, travel_speed 045829); review material, not judged on Mac, no save-only control was run",
     "step 8's blocker (b) is CLOSED: param_case.locate runs one chain per op (3114cb8) and travel_speed 045829 reaches its row 52.8 s after the op's entry; step 8's blocker (a), the 60 s target, is met by that run (52.8 s to the shot, 57.8 s to the end of the read)",
@@ -7364,7 +7362,10 @@
     "scroll stop (NOT CHANGED in step 10, the change is NOT VERIFIED): scroll_to still stops where the group title is on the page with 40 px of room under it and the wanted row is not. Taking that stop out was tried and dropped: one press on, the row is on the page and its title above it, and find_row, which needs the title, refuses it (051203 scroll-2 -> 050208 scroll-3: 'X-Y hole compensation' y 725, the only title 'C Ironing' y 943; the chain then paged to the page end, 24 presses). Rows of a group whose title has left the page have no attribution - the other matter, to be proven on its own. It holds uia_param_precision_comp op0 and uia_param_arc_resolution op1",
     "op fuse of 110 s against uia_param_surface_flow's only op (NOT FIXED; the limit is as decided): run 060903 needs about 135 s for that op (tab switch 41 s + find chain 63 s with 5 scroll steps + set_float's locate and edit about 30 s); the fuse fired in set_float's first locate",
     "op fuse is checked at page reads only (seen in run 061619): the op ran 16 s past its limit inside a scroll chain's search for the scrollbar's buttons (AX presses, no page read); an op can overrun by whatever runs between two reads - NOT FIXED",
-    "op-level record: the fuse side is verified by run 060903 (the op's own error and its row are in the result, progress.json state 'stopped'); the pickup of progress.json on a missing result.json (a supervisor kill) is NOT verified by a run"
+    "op-level record: the fuse side is verified by run 060903 (the op's own error and its row are in the result, progress.json state 'stopped'); the pickup of progress.json on a missing result.json (a supervisor kill) is NOT verified by a run",
+    "scroll_to leaves the page too early: CHANGED in step 11 (3117e51) - a title that is the last one on the page with no wanted row is not a stop; the rows of a group whose title is above the page are its group's. Offline 36 of 36; on the GUI by run 063651 (op0 of uia_param_precision_comp reached 'X-Y hole compensation' on the page one press on) and run 064139 (uia_param_arc_resolution PASS: op1's 'Precise Z height' taken as a row of the group entered and ticked)",
+    "set_float refuses a row whose value is not read as a numeric token (NOT FIXED; it stops uia_param_precision_comp): run 063651, 'No numeric value token on the row' on 'X-Y hole compensation' - the page reads only 'mm' on that row's line (the row's value is 0; 050208 scroll-3's reading shows the same). op_set_float clicks the first token with a digit; a cell click at the value column on the row's line was not tried",
+    "the fuse is checked at page reads only, so an op can run past its limit while no page is read (step 10's note, unchanged); no fuse fired in step 11 (longest op: 127.0 s of 150 s)"
    ],
    "harness_notes": [
     "the supervisor needs .venv/bin/python (3.11): /usr/bin/python3 is 3.9 and stops at staging (first attempt 03:12:16, no GUI action, nothing recorded)",
@@ -7376,12 +7377,14 @@
     "the before/after proof of 034019 is the OCR of the panel crops, run after the run: this session's model cannot view images",
     "the supervisor needs .venv/bin/python (3.11): /usr/bin/python3 is 3.9 and stops at staging (seen a third time at 06:05:02 in step 10: no LaunchAgent registered, no GUI action, nothing recorded)"
    ],
-   "summary_written_at": "2026-11-24 06:17:24",
+   "summary_written_at": "2026-11-24 06:48:52",
    "pass_runs": {
     "uia_param_wall_thin": "run 035959, 177.2 s: wall_loops 2 -> saved 4 (expected 4, decimal); detect_thin_wall 0 -> saved 1 (expected 1, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 1",
-    "uia_param_layer_pair": "run 034408, 124.4 s: layer_height 0.4 -> saved 0.2 (expected 0.2, decimal); initial_layer_print_height 0.4 -> saved 0.25 (expected 0.25, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 1",
-    "uia_param_travel_speed": "run 045829, 147.6 s: travel_speed 500 -> saved 300 (expected 300, decimal); title after Save Project: 'probe'; Orca left: []; 35 other keys changed (review material, not judged); n = 1",
-    "uia_param_speed_limits": "run 061300, 192.8 s: layer_height 0.4 -> saved 0.2 (expected 0.2, decimal); outer_wall_line_width 0.82 -> saved 0.42 (expected 0.42, decimal); outer_wall_speed 120 -> saved 700 (expected 700, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 1"
+    "uia_param_layer_pair": "run 034408, 124.4 s (step 7) and again run 064408, 138.0 s (step 11, on 3117e51): layer_height 0.4 -> saved 0.2 (expected 0.2, decimal); initial_layer_print_height 0.4 -> saved 0.25 (expected 0.25, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed in each (review material, not judged); n = 2",
+    "uia_param_travel_speed": "run 045829, 147.6 s: travel_speed 500 -> saved 300 (expected 300, decimal); title after Save Project: 'probe'; Orca left: []; 35 other keys changed (review material, not judged) ; and again run 064719, 149.9 s (step 11, on 3117e51): travel_speed 500 -> saved 300 (expected 300, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 2",
+    "uia_param_speed_limits": "run 061300, 192.8 s: layer_height 0.4 -> saved 0.2 (expected 0.2, decimal); outer_wall_line_width 0.82 -> saved 0.42 (expected 0.42, decimal); outer_wall_speed 120 -> saved 700 (expected 700, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 1",
+    "uia_param_surface_flow": "run 062702, 253.4 s: top_solid_infill_flow_ratio 1 -> saved 1.1 (expected 1.1, decimal); bottom_solid_infill_flow_ratio 1 -> saved 0.9 (expected 0.9, decimal); print_flow_ratio 1 -> saved 1 (expected 1, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 1",
+    "uia_param_arc_resolution": "run 064139, 240.7 s: enable_arc_fitting 0 -> saved 1 (expected 1, decimal); precise_z_height 0 -> saved 1 (expected 1, decimal); resolution 0.012 -> saved 0.012 (expected 0.012, decimal); slice_closing_radius 0.049 -> saved 0.049 (expected 0.049, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 1"
    },
    "blockers_e81e9fc_now": {
     "1 fuse": "default is now max(360, 120 + 80 per op) s (949ce13); neither run since reached it",
@@ -7392,7 +7395,9 @@
     "uia_param_wall_thin": 35,
     "uia_param_layer_pair": 35,
     "uia_param_travel_speed": 35,
-    "uia_param_speed_limits": 35
+    "uia_param_speed_limits": 35,
+    "uia_param_surface_flow": 35,
+    "uia_param_arc_resolution": 35
    },
    "step7": {
     "what": "step 7 in a 28-minute box: the tick() shot file names fixed with an offline check (90af1ba), then the case list in the asked order, one GUI attempt per case, no --fuse passed (default max(360, 120 + 80 per op) s)",
@@ -7544,6 +7549,62 @@
     "uia_param_speed_limits": "PASS run 061300, 192.8 s, 2 GUI attempt(s); the first pass, on the step-10 title rule (050552 was stopped by the title test)",
     "uia_param_arc_resolution": "NOT PROVEN latest run 050914, 1 GUI attempt(s); not re-run in step 10: op0's effect not recorded; op1 is held by the scroll stop that step 10 did not change",
     "uia_param_precision_comp": "NOT PROVEN latest run 061619, 2 GUI attempt(s), 155.9 s: op0 stopped where the Precision title is on the page with its first rows under it and the wanted row below the fold (3 scroll presses, as in 051203; the scroll stop is unchanged in step 10, its change is NOT VERIFIED), then the fold step folded nothing and a second scroll chain's search for the scrollbar's buttons ran into op0's 110 s fuse, 16 s past the limit (the fuse is checked at page reads only); ops 1 and 2 not started, no cell clicked, nothing saved. NOT FIXED"
+   },
+   "cumulative": {
+    "asked": 7,
+    "tried": 7,
+    "passed": 6,
+    "not_proven": 1,
+    "not_run": []
+   },
+   "step11": {
+    "what": "step 11 in a 28-minute box (06:21:37 to 06:49:37): the fuse at 150 s per op and 420 s per case with an offline check; uia_param_surface_flow and uia_param_arc_resolution on that code; the rows of a group whose title has left the page as one change of its own (offline replay of 051203, 050208 and 050552) and uia_param_precision_comp on it; arc_resolution again on it; the old PASSes re-run as the box allowed; this summary. Nothing pushed",
+    "commits": {
+     "fuse 150 / 420": "ef8cd27",
+     "surface_flow 062702": "ac1df9e",
+     "arc_resolution 063341 (NOT PROVEN, step-1 code)": "4403178",
+     "the change: rows of a group whose title left the page": "3117e51",
+     "precision_comp 063651 (NOT PROVEN)": "69449bc",
+     "arc_resolution 064139 (PASS)": "5d7dd95",
+     "layer_pair 064408 (PASS again)": "0cfcfe7",
+     "travel_speed 064719 (PASS again)": "ff07023"
+    },
+    "fuse": "OP_FUSE 110 -> 150 s, CASE_FUSE 360 -> 420 s (SAVE 40 s kept): each op gets min(150, the case's time left before the save). Offline: 150 / 150 / 110 / -1 s at 50 / 160 / 270 / 381 s into the case; the whole 150 s up to 230 s into the case; surface_flow's op0 (about 135 s by 060903) leaves 15 s; three ops of 135 s do not fit (the third starts at 270 s and gets 110 s). The tab switch's 41 s was not touched",
+    "the_change": "scroll_to: a page whose wanted title is the last title on it and carries no wanted row is not a stop any more - the chain presses on; from the page the title has left, the rows from the viewport's top down to the first title on the page are that group's (Panel.entered, read by find_row; last_match.group_by 'entered'); the chain stops at the row, where a title that follows the group is on the page with no wanted row above it, or where the page cannot move. click_tab forgets the entered group when another tab is opened and keeps it when the tab that is already open is clicked",
+    "offline_check": "runner/macos/param_locate_check.py on 3117e51: exit 0, 36 of 36. 051203's pages: the chain goes on past 'E5 Precision' (3 presses, 4 pages read) and takes 'X-Y hole compensation' at y 725 as a row of the group entered; op0's locate replayed whole (param_case.locate: one chain; set_float's own locate: no chain). 050208 scroll-4 and 050552 page-full through scroll_to: found at once under their titles, one page read, no press - and against the code before the change, on the same readings, titles, row boxes, last_match and scroll_to's result are equal; only 051203's scroll-2 page differs (stopped with 0 presses before, presses on now). Of the 28 checks before the change: 26 untouched and passing, the 051203 stop check replaced by the new behaviour, the refusal check split in two with its three assertion terms kept. param_case_check: exit 0",
+    "tried_this_step": [
+     "uia_param_surface_flow",
+     "uia_param_arc_resolution",
+     "uia_param_precision_comp"
+    ],
+    "passed_this_step": [
+     "uia_param_surface_flow",
+     "uia_param_arc_resolution"
+    ],
+    "reruns_of_old_passes": "three old PASSes (wall_thin, layer_pair, travel_speed), two of them re-run on the step-11 code (3117e51), both PASS again: uia_param_layer_pair run 064408, 138.0 s (commit 0cfcfe7); uia_param_travel_speed run 064719, 149.9 s (commit ff07023). uia_param_wall_thin not re-run in step 11: the box's time went to the two above and a third run would not have ended before the box; its pass stays the one of step 7 (run 035959), on older code",
+    "not_verified": [
+     "the pickup of progress.json on a missing result.json: no run of step 11 walked it - each wrote result.json (062702, 063341, 063651, 064139, 064408, 064719)",
+     "op0's edit of uia_param_precision_comp: on the GUI the row has no numeric token (063651); offline the saved reading shows the same",
+     "uia_param_wall_thin on the step-11 code: not re-run (layer_pair and travel_speed were, both PASS again)"
+    ],
+    "case_lines": {
+     "uia_param_wall_thin": "PASS run 035959, 177.2 s, 3 GUI attempt(s); wall_loops 2 -> saved 4 (expected 4); detect_thin_wall 0 -> saved 1 (expected 1); Orca left: []; the pass of step 7, on the step-7 code; not re-run in steps 10 and 11 (the box ran out: the third old PASS would have needed about 3.5 minutes)",
+     "uia_param_layer_pair": "PASS run 064408, 138.0 s, 2 GUI attempt(s); layer_height 0.4 -> saved 0.2 (expected 0.2); initial_layer_print_height 0.4 -> saved 0.25 (expected 0.25); Orca left: []; the pass of step 7 (034408) and again in step 11 on the step-11 code (3117e51): op0 '^Layer height' 73.0 s with the tab switch (70.8 s in 034408), op1 '^First layer height' 28.1 s (26.0 s); both rows under their title on the page, no scroll chain; both keys as in 034408",
+     "uia_param_travel_speed": "PASS run 064719, 149.9 s, 4 GUI attempt(s); travel_speed 500 -> saved 300 (expected 300); Orca left: []; the earlier pass (run 045829) and again in step 11 on the step-11 code (3117e51): op0 'Travel' -> 300, 120.8 s with the tab switch; the row under its title on the page (group_by 'title'), the find chain read 4 pages; travel_speed as in the earlier pass",
+     "uia_param_surface_flow": "PASS run 062702, 253.4 s, 5 GUI attempt(s); top_solid_infill_flow_ratio 1 -> saved 1.1 (expected 1.1); bottom_solid_infill_flow_ratio 1 -> saved 0.9 (expected 0.9); print_flow_ratio 1 -> saved 1 (expected 1); Orca left: []; the first pass (5th attempt), on the step-11 fuse (ef8cd27): op0 127.0 s with the tab switch and 5 presses, op1 99.2 s with 2 presses; both rows exact",
+     "uia_param_speed_limits": "PASS run 061300, 192.8 s, 2 GUI attempt(s); outer_wall_speed 120 -> saved 700 (expected 700); layer_height 0.4 -> saved 0.2 (expected 0.2); outer_wall_line_width 0.82 -> saved 0.42 (expected 0.42); Orca left: []; the pass of step 10 (run 061300), on the step-10 code; not re-run in step 11",
+     "uia_param_arc_resolution": "PASS run 064139, 240.7 s, 3 GUI attempt(s); enable_arc_fitting 0 -> saved 1 (expected 1); precise_z_height 0 -> saved 1 (expected 1); resolution 0.012 -> saved 0.012 (expected 0.012); slice_closing_radius 0.049 -> saved 0.049 (expected 0.049); Orca left: []; the first pass (3rd attempt), on the step-11 code with the change of step 11-4 (3117e51): op0 113.7 s under its title; op1 96.4 s - the chain went on past the page run 063341 stopped at and took 'Precise Z height' on the next page as a row of the group whose title is above it (group_by 'entered'), 25 presses of scroll_top inside",
+     "uia_param_precision_comp": "NOT PROVEN run 063651, 144.4 s, 3 GUI attempt(s); BLOCKER, new, not fixed (run 063651 on 3117e51): the chain of op0 now reaches 'X-Y hole compensation' on the page one press on, as a row of the group entered, and set_float's own locate reads it without a second chain; set_float then refuses the row - 'No numeric value token on the row': the page reads only 'mm' on that row's line (its value is 0; nothing with a digit is OCR-read there). op0 stopped at 119.0 s of 150 s, no fuse fired; no cell clicked, nothing saved; ops 1 and 2 not started"
+    }
+   },
+   "step11_case_lines": {
+    "uia_param_wall_thin": "PASS run 035959, 177.2 s, 3 GUI attempt(s); wall_loops 2 -> saved 4 (expected 4); detect_thin_wall 0 -> saved 1 (expected 1); Orca left: []; the pass of step 7, on the step-7 code; not re-run in steps 10 and 11 (the box ran out: the third old PASS would have needed about 3.5 minutes)",
+    "uia_param_layer_pair": "PASS run 064408, 138.0 s, 2 GUI attempt(s); layer_height 0.4 -> saved 0.2 (expected 0.2); initial_layer_print_height 0.4 -> saved 0.25 (expected 0.25); Orca left: []; the pass of step 7 (034408) and again in step 11 on the step-11 code (3117e51): op0 '^Layer height' 73.0 s with the tab switch (70.8 s in 034408), op1 '^First layer height' 28.1 s (26.0 s); both rows under their title on the page, no scroll chain; both keys as in 034408",
+    "uia_param_travel_speed": "PASS run 064719, 149.9 s, 4 GUI attempt(s); travel_speed 500 -> saved 300 (expected 300); Orca left: []; the earlier pass (run 045829) and again in step 11 on the step-11 code (3117e51): op0 'Travel' -> 300, 120.8 s with the tab switch; the row under its title on the page (group_by 'title'), the find chain read 4 pages; travel_speed as in the earlier pass",
+    "uia_param_surface_flow": "PASS run 062702, 253.4 s, 5 GUI attempt(s); top_solid_infill_flow_ratio 1 -> saved 1.1 (expected 1.1); bottom_solid_infill_flow_ratio 1 -> saved 0.9 (expected 0.9); print_flow_ratio 1 -> saved 1 (expected 1); Orca left: []; the first pass (5th attempt), on the step-11 fuse (ef8cd27): op0 127.0 s with the tab switch and 5 presses, op1 99.2 s with 2 presses; both rows exact",
+    "uia_param_speed_limits": "PASS run 061300, 192.8 s, 2 GUI attempt(s); outer_wall_speed 120 -> saved 700 (expected 700); layer_height 0.4 -> saved 0.2 (expected 0.2); outer_wall_line_width 0.82 -> saved 0.42 (expected 0.42); Orca left: []; the pass of step 10 (run 061300), on the step-10 code; not re-run in step 11",
+    "uia_param_arc_resolution": "PASS run 064139, 240.7 s, 3 GUI attempt(s); enable_arc_fitting 0 -> saved 1 (expected 1); precise_z_height 0 -> saved 1 (expected 1); resolution 0.012 -> saved 0.012 (expected 0.012); slice_closing_radius 0.049 -> saved 0.049 (expected 0.049); Orca left: []; the first pass (3rd attempt), on the step-11 code with the change of step 11-4 (3117e51): op0 113.7 s under its title; op1 96.4 s - the chain went on past the page run 063341 stopped at and took 'Precise Z height' on the next page as a row of the group whose title is above it (group_by 'entered'), 25 presses of scroll_top inside",
+    "uia_param_precision_comp": "NOT PROVEN run 063651, 144.4 s, 3 GUI attempt(s); BLOCKER, new, not fixed (run 063651 on 3117e51): the chain of op0 now reaches 'X-Y hole compensation' on the page one press on, as a row of the group entered, and set_float's own locate reads it without a second chain; set_float then refuses the row - 'No numeric value token on the row': the page reads only 'mm' on that row's line (its value is 0; nothing with a digit is OCR-read there). op0 stopped at 119.0 s of 150 s, no fuse fired; no cell clicked, nothing saved; ops 1 and 2 not started"
    }
   }
  },
