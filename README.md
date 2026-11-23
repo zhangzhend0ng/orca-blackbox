@@ -19,7 +19,7 @@
 3. **提交**：阶段性成果及时 commit+push（客机 09-03 起 git clone 跟踪 origin，未推送的改动到不了客机）；状态如实——红可以提交，**禁止把未验证写成 GREEN**。
 4. **收尾三步**：`runner/hv_harvest.ps1` 拉结果 → commit+push → `tools/feishu_writeback.py`（仅 GREEN/已覆盖项，宿主 lark-cli，**禁止把扫码/授权 URL 甩给用户**）。
 5. **边界**：上游源码 `C:\coil\Projects\SnapmakerOrca` 只读，禁止修改；任务范围外的事不做。
-6. **第二条实体线（物理机 fa706g3，2026-11-23 起）**：用途是在客机之外并行跑参数族用例，不是回归证据来源的变更。约束：(a) 必须用与客机**同一份 2.4.0 构建**和**同一版 Snapmaker 预设**（宿主资源与客机相差 325 个预设文件，第一次跑就因 `change_filament_gcode` 不同被判「改了无关设置」）；(b) 放行开关是 `ORCA_BB_ALLOW_TESTBOX=1`（`host_guard.allow_testbox`，与 dev 用的 `ORCA_BB_ALLOW_HOST` 分开），每个 run 写 `execution_host.json`，结果只能计 SHADOW；(c) GUI 只能经**计划任务**进交互会话（`glm_line`），SSH 会话里直跑 GUI 会崩；(d) 它执行的 HEAD 在其 GUI 批运行期间不得改变——同步只在批与批之间做。宿主入口脚本不在仓库内（`C:\coil\vm_setup\fa_line\`），细节见[运行记录](docs/runs/glm-flash-expansion-2026-11-21.md)。
+6. **第二条实体线（物理机 fa706g3，2026-11-23 起）**：用途是在客机之外并行跑参数族用例，不是回归证据来源的变更。约束：(a) 必须用与客机**同一份 2.4.0 构建**和**同一版 Snapmaker 预设**（fa706g3 上的资源与客机相差 325 个预设文件——`C:\coil\vm_setup\fa_line\manifest_diff.py` 比较客机预设清单与 fa 侧目录；第一次跑就因 `change_filament_gcode` 不同被判「改了无关设置」）；(b) 放行开关是 `ORCA_BB_ALLOW_TESTBOX=1`（`host_guard.allow_testbox`，与 dev 用的 `ORCA_BB_ALLOW_HOST` 分开），每个 run 写 `execution_host.json`，结果只能计 SHADOW；(c) GUI 只能经**计划任务**进交互会话（`glm_line`），SSH 会话里直跑 GUI 会崩；(d) 它执行的 HEAD 在其 GUI 批运行期间不得改变——同步只在批与批之间做。宿主入口脚本不在仓库内（`C:\coil\vm_setup\fa_line\`），细节见[运行记录](docs/runs/glm-flash-expansion-2026-11-21.md)。参数族闭环数一律用 `python tools/param_closure_list.py --ids` 现算。
 
 v3 运行骨架入口见 [架构设计](docs/V3_RUNTIME_ARCHITECTURE.md) 和 [使用与边界](docs/V3_FOUNDATION.md)。当前 `python tools/v3_session.py smoke` 仅验证无 GUI 的 synthetic 完整调用链，不能作为产品回归通过证据。
 
@@ -29,7 +29,7 @@ Mac 后台工程编辑用例从原始立方体切片开始，以新名字编辑�
 
 当前指定的 **ZCode / Snapmaker glm-5.3-flash** 路线入口为 `python -B tools/native_save_demo.py --actor zcode`；[接口与边界](docs/V3_ZCODE_ACTOR.md)。已通过一次真实客机编辑保存、新profile重开及112层G-code独立验证；五个开发失败run保留，详见[运行记录](docs/runs/zcode-snapmaker-2026-11-17.md)。使用现有公司供应商配置，仅计SHADOW，不进入发布GREEN。
 
-三业务线并行探索入口见[业务pilot](docs/V3_BUSINESS_PILOTS.md)：检查器并行开发、客机GUI串行试跑，工艺壁环数与逻辑材料槽各取得一次SHADOW，模型平移因输入能力不足已预检阻塞；详见[首批记录](docs/runs/zcode-business-pilots-2026-11-17.md)。不替换[旧稳定性7/8结果](docs/runs/zcode-matrix-2026-11-17.md)，不计87条或发布GREEN。
+三业务线并行探索入口见[业务pilot](docs/V3_BUSINESS_PILOTS.md)（下文的「87 条」是 11-17 时点的登记册数；11-21 冻结为 89 条登记，见[台账](docs/V3_MIGRATION_LEDGER.md)）
 
 首个真实 Script 的接入与验证方式见 [m0 Script adapter](docs/V3_SCRIPT_ADAPTER.md)，客机入口为 `runner/hv_go.ps1 -V3 -Cases m0_boot_check`；结果单独记 SHADOW，不进入发布 GREEN。
 
@@ -59,7 +59,7 @@ harness/            驱动核心（纯 ctypes，零第三方依赖即可跑 m0�
                     看板配置见 deploy/monitoring/README.md）
 m0_boot_check.py    里程碑0：启动→定位→截图→关闭 冒烟
 m1/m2/m3*/m4*/m5*   用例（m1 层驱动验证 → m2 切片链 → m3 业务路径 →
-                    m4 混色全链路 → m5 工艺参数主流程；35 例全绿套件 = m3j..m5h）
+                    m4 混色全链路 → m5 工艺参数主流程；35 例套件 = m3j..m5h，「全绿」是历史口径、本会话未复算）
 diag_*.py           与用例同名的诊断脚本（不猜坐标/标签，先 diag 实证）
 fixtures/           vendored 3mf/stl 测试夹具（原 monorepo tests/data/test_3mf 子集）
 resources/          vendored 预设子集（profiles/{Snapmaker,BBL} + printers，~9MB；

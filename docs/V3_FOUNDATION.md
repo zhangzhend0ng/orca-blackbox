@@ -44,4 +44,4 @@ python -B tools/v3_session.py smoke
 
 本批另修复 `tests/m5_common.py`：菜单未出现或 OCR 无词时不能迭代 None、不能点击；未点击 Delete 不能只凭低色度判断成功；启动后异常会尝试关闭本 session 并保留原错。保持原阈值和有限重试，不宣称已解释菜单失败或文件占用根因。
 
-GUI 验证必须走 `win11-test` 的 `runner/hv_go.ps1`。宿主单测和模拟依赖不是 GUI 回归证据。客机结果与收尾状态另见本批运行记录；未验证项目不得写为 GREEN。
+GUI 验证必须走 `win11-test` 的 `runner/hv_go.ps1`。参数族用例另在 fa706g3 第二条实体线上并行跑（README 纪律 6：同一份构建与预设、`ORCA_BB_ALLOW_TESTBOX=1` 显式放行、只计 SHADOW，不是回归证据）。宿主单测和模拟依赖不是 GUI 回归证据。客机结果与收尾状态另见本批运行记录；未验证项目不得写为 GREEN。

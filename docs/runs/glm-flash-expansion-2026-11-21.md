@@ -255,12 +255,12 @@ guard 于会话后恢复 ready（OK/US 出口）。客机重新同步至 edcaa13
 
 ## 飞书补充段进展（2026-11-22 05:0x–07:0x）
 
-**已闭环 3/5**（全部 SHADOW：参数写入+保持项+冻结重开+G-code 排程）：
+**首批 5 条中已闭环 3 条（3/44；全部 SHADOW
 - **#266 墙圈数与薄壁** `05dd9020`（168.8s）：wall_loops=4 + detect_thin_wall=1，68 层保持。
 - **#267 外壳层数与图案** `f324120d`（185.2s）：top=5/bottom=3 + concentric/rectilinear 双图案切换。top_color_penetration_layers 缺席为记录的口径缩减。
 - （#254 见前段）
 
-**打通的共享能力**（后续 39 条待实现用例直接受益）：行标签是 OG_CustomCtrl 绘制（无 HWND，census f5acdb1a 实证）→ 落地"OCR 短语找行 + 枚举 Edit/ComboBox 按行 y 配对"引擎（param_case_lib + param_combo_row）；修复 4 处 `EnumChildWindows` 少传 lparam 的宿疾（含 hybrid 标签增强自 a4a53a6 起被静默降级的事实——bottom_strength 通过实为模型自选对，先前"标签修复闭环"归因有误，予以更正）；预设脏清单键 `different_settings_to_system` 的合法规则。
+**打通的共享能力**（当时后续 39 条待实现用例直接受益；截至 11-24 03:40 未清 3 条）
 
 **在攻 2 条**：#268（Gyroid 在图案弹窗第 2+ 页，滚动投递未生效）、#259（熨烫组 Speed 行 OCR 未中）。失败 run 全留证据。
 
@@ -273,7 +273,7 @@ guard 于会话后恢复 ready（OK/US 出口）。客机重新同步至 edcaa13
 - **#268 填充组合**（5 跑：9866d291/79ca1e8c/ce169b74/7968a6db/a8837dcc/08f6904b/96c325d3）：密度/方向/重叠/Gap fill 全链已通，唯一卡点=图案弹窗中 **Gyroid 在列表深处且自绘弹窗滚动回弹**（真光标轮与 PostMessage 轮均不累积；列表可见页恒从 Aligned 起）。下一步：专项探针（拖动弹窗滚动条或逐行小步轮+沉降）。
 - **#259 熨烫组合**（60237e59/7eadbe35/a3fd0bff）：组合切换已通、Flow/Spacing 为目标值故跳过编辑；卡点=Topmost 选后页面重建中 **Speed 行的绘制标签未OCR命中**（Speed/Ironing speed/speed 三变体全空）。下一步：重建后带 band 打印定位真实标签。
 
-**共享引擎沉淀**（供剩余 39 条直接复用）：行定位（OCR 短语+多词）→ 控件配对（Edit/ComboBox 枚举按行 y，侧栏恒在画布左）→ ui.edit 已证提交链；弹窗选取（捕获+OCR+点击+容错匹配+真光标轮）；脏清单规则；变更集注册表。全部带失败 run 实证注释。
+**共享引擎沉淀**（供当时剩余 39 条直接复用；截至 11-24 03:40 未清 3 条）
 
 
 ## 交接快照（2026-11-22 13:0x，供三机并行新会话接手）
@@ -304,7 +304,7 @@ batch2 四例与两个老卡点的全部证据就绪；引擎与注册链完好�
 - **楔子根因**：客机 `.desktop_locks` 陈旧租约→新 run FileExistsError 秒退→demo 等满上限。自愈=批前清锁+timeout 900 看门狗（queue7 起）。
 - **#268 填充组合 `f307ef1f` SHADOW**（3.5min）：Gyroid 弹窗首次选中+参数写入+保持项+冻结重开+G-code 排程全绿。唯二修复=fa 配方入引擎（真滚轮+触摸条兜底+real_drag_screen）与 pilot 键名 top_bottom_infill_wall_overlap（74fe62e3 diff 实证；验证器既有规则已覆盖类型噪声）。
 - 在攻：#259 combo 提交步（row 已达、点击未落，text=None）；#264/#271 标签族与 #290/#291 combo/enable 族——全部留 band 证据；#270 first_speeds 标签已校准待复跑。
-- 补充路线 44 条进度：**已闭环 4/5 → 5 项在库可攻**（#254/#266/#267/#268 + Mac 侧口径）；fa 新 authored 7 条（#276-279/#292-294）注册待跑。
+- 补充路线 44 条进度：**首批 5 条中已闭环 4 条（4/44）→ 5 项在库可攻**
 
 **合并**（宿主唯一合并点）：fa 分支（诊断+7 pilot+物理首跑，b4fd7d7）+ Mac 分支（runner 移植+签核表，6dc02a7）均并入本分支并推送；agent 分支 origin 侧同步（codex/mac-author 代理推送；fa 中转检出接力）。
 
@@ -313,7 +313,7 @@ batch2 四例与两个老卡点的全部证据就绪；引擎与注册链完好�
 
 ## 续会话（2026-11-22 22:00–23 日 00:25）：#259/#268 双卡点全灭
 
-- **#259 熨烫 `073f086f` SHADOW**：补充路线 **5/5 全闭环**（#254/#259/#266/#267/#268）。收敛链（六轮实证迭代，每轮失败即修）：①combo 元组未解包静默吞错→解包 raise；②find_option_row 滚深 6→12（"lroning type ~ No ironing" 行入 band 但双词值永远匹配不上单 OCR 词）；③词序定位元组 ("No","ironing")+单词 popup target "Topmost"→combo 提交成功、Ironing 组六行重建；④Speed 页行 OCR "lroning"（I→l）需单词包含变体 "roning"（前缀匹配救不了）；⑤编辑值序列化为单元素数组 ['60']→make_verify+inspect_preserved_settings 双处规范化；⑥**键名错位**：分析器返回 ironing_xy_e_moves 而判据读 ironing_moves（恒 0，从未被熨烫用例触发过）。
+- **#259 熨烫 `073f086f` SHADOW**：补充路线 **首批 5 条全闭环（5/44）**
 - **fa 作者链首验**：#277 support_basic `91678bcb` **SHADOW**（agent 编写→宿主审查合并→VM 首跑一次通过）。
 - fa B2 闭环（04fa1ff）：第二批 7 条（#255-257/#260-261/#272-273）夹具实测键名零偏差+四方注册断言；已合入主线 54582a9。**fa 累计 authored 14 条**。
 - Mac A2 闭环（5c503ca，blocked 精确归因）：wall_loops 控件在硬虚拟化 outline 未物化区、该页所有滚动通道失效、Mac build 预设行无 edit 图标；修正两处上轮误判（AXValue/AXHelp 可读、扁平页滚动箭头有效）；解锁三路径=屏幕录制 TCC/Automation TCC/上游 AX 补全。
@@ -323,18 +323,18 @@ batch2 四例与两个老卡点的全部证据就绪；引擎与注册链完好�
 
 ## 九小时续航会话（2026-11-23 00:25–08:10，GLM 总控）
 
-**SHADOW 净增 +4：#257 精度补偿（8ff22123）、#273 空驶速度（3c1ab0d1）、#297 排除对象（01163442）** + 早段 #259。补充+参数族累计闭环 **8 条**（#254/#257/#259/#266/#267/#268/#273/#277/#297 计 9——含 fa 作者链 3 条：#277/#257/#273 + fa B4 1 条 #297）。
+**SHADOW 净增 +4：#257 精度补偿（8ff22123）、#273 空驶速度（3c1ab0d1）、#297 排除对象（01163442）** + 早段 #259。参数族累计闭环 **9 条**（#254/#257/#259/#266/#267/#268/#273/#277/#297——含 fa 作者链 3 条：#277/#257/#273 + fa B4 1 条 #297）。
 
 **引擎级修复（根因三连）**：
 1. **双向滚动**（b7c11f8）：编辑提交后面板重建、滚动落点随机（983bab81 从页底起搜）——短语搜索改「下 12 轮 + 回上 26 轮」。line_width 因此全链至 save、by_object 因此通过 combo。
 2. **租约陈旧接管**（99b5d6d）：锁内写 PID、获取冲突验活接管——异常路径不释放锁的楔子根因之一。
 3. **combo 元组解包**：run_ops 不再静默吞 set_combo_by_popup 失败（#259 六轮收敛链首环）。
 
-**fa706g3 四批全闭环（B1-B4）**：**累计 authored 29 条 + 2 条混色族归因**（mixed_filament_* 无参数页行，需 mix 引擎链）——飞书 44 条参数族全部入库或归因。作者链首验通过率 4/29 首跑 SHADOW（#277/#257/#273/#297），其余留 band 证据分层校准中。
+**fa706g3 四批全闭环（B1-B4）**：**累计 authored 29 条 + 2 条混色族只做归因**（mixed_filament_* 无参数页行，需 mix 引擎链，未登记）——合计 42 条登记为参数场景模块。作者链首验通过率 4/29 首跑 SHADOW（#277/#257/#273/#297），其余留 band 证据分层校准中。
 
 **Mac A2/B2 闭环**：面板寻址 blocked 精确归因（硬虚拟化 outline+滚动全灭+Mac build 无预设 edit 图标；AXHelp 可读/滚动箭头有效两误判修正）；写回工单 216 行对账（可立即写回 6 行 SHADOW 口径、待首跑 21+、维持 189）。
 
-**queue14 终态（23 场景 40 run）**：1 SHADOW + 22 留证。失败分类：参数行/标签族 9、checkbox 状态回读 5、file_toolbar_missing 3（ESC 重试已加未验证）、楔 3、slice_button_unavailable 2、模态 1。skirt/timelapse/arc_resolution 执行完成但验证未过（终层校准）。
+**queue14 终态（23 场景 40 run）**：1 SHADOW + 22 留证。失败分类：参数行/标签族 9、checkbox 状态回读 5、file_toolbar_missing 3（ESC 重试已加未验证）、楔 3、slice_button_unavailable 2、模态 1（分类合计 23，比 22 条留证多 1，哪一类多计未逐条复核）。skirt/timelapse/arc_resolution 执行完成但验证未过（终层校准）。
 
 **楔子（宿主侧 launch 链）未根除**：本窗口发生率 ~25%（租约修复前 ~40%）；签名=hv_go 全输出而 launch_done 未写、客机无 run 目录。已缓解：900→620s 看门狗+即时重试（queue14 起 rc=124 也重试）。根因候选：提权子进程在 hv_go 返回后、写 launch_done 前被外部终止——下一窗口用 Sysmon/ETW 跟踪。
 
@@ -359,8 +359,8 @@ batch2 四例与两个老卡点的全部证据就绪；引擎与注册链完好�
 | Others | 66 | 54 | **false**（15 分钟页预算在第二轮 1320px 处用完；尾部 y>1800 两轮坐标差约 100px，有重复行） |
 
 普查直接回答的事实：
-- **Others 页没有 `Add line number` 行**。G-code 输出组整组是 Reduce infill retraction / Verbose G-code / Label objects / Exclude objects / Filename format；对 163 张帧裁图做不带过滤的离线重读，`line number` 零命中。VM 2.4.0 的全页扫描同样没找到。**#296 的行号操作不在工艺参数页**，属用例范围问题。
-- **Others 页没有 `Timelapse` 行**（同法零命中）。#294 延时摄影不属工艺参数页。
+- **Others 页（默认模式）没有 `Add line number` 行**（11-24 更正：该行只在应用的 develop 模式出现；按场景播种 develop 模式后 #296 已 SHADOW，见「续五」）。G-code 输出组整组是 Reduce infill retraction / Verbose G-code / Label objects / Exclude objects / Filename format；对 163 张帧裁图做不带过滤的离线重读，`line number` 零命中。VM 2.4.0 的全页扫描同样没找到。
+- **Others 页没有 `Timelapse` 行**（同法零命中；11-24 更正：源码 `toggle_line("timelapse_type", is_BBL_Printer)`，仅 BBL 机型有，U1 上不适用）。#294 延时摄影不属 U1 的工艺参数页。
 - `Flush into this object` 在 2.3.5 不存在（2.4.0 源码有，版本差异）；支撑冲刷行的真实行名是 `Flush into objects' support`。
 - 新种子配置启动后页签只有五个、没有 Speed，点一次 Advanced 才出现六个；切页签不回页顶（滚动位置跨页签共享）；Others 页大片区域吞滚轮。
 
@@ -394,7 +394,7 @@ batch2 四例与两个老卡点的全部证据就绪；引擎与注册链完好�
 
 ## 续三：queue18 的账、普查探针与 r3c（2026-11-23 17:45 起，GLM 5.4 总控）
 
-**结论（截至 21:10，queue20 在跑）：queue18（r3b）10 个场景 1 过 9 败、queue19（r3c.1）10 个场景 3 过 7 败，两次都在确认失败是引擎级之后手动停掉；本节新增 SHADOW 5 条——#263 bridge（55e8a417）、#270 first_speeds（f96dbc0b）、#292 by_object（b6bc43ae）、#274 accelerations（43897d4d）、#256 seam_wipe（6b5ea183），均独立核实（business/path 两项 pass、重开保存件逐值等于 pilot 期望、G-code 已导出）。参数族闭环 14/44（32%），GREEN 仍为 0。**
+**结论（截至 21:10，queue20 在跑）：queue18（r3b）10 个场景 1 过 9 败、queue19（r3c.1）10 个场景 2 过 8 败、另有队前验证 run by_object（b6bc43ae）SHADOW
 
 **queue18（引擎 024733e，每个场景一次，业务失败不重试）**
 
@@ -429,7 +429,7 @@ batch2 四例与两个老卡点的全部证据就绪；引擎与注册链完好�
 
 **验证顺序**：离线测试 → 普查探针（e80c899c：IsChild 属实、停靠生效）→ 一个最便宜的真实场景 by_object（b6bc43ae，SHADOW：停靠 4 格 → 弹窗 813–869 → 窗口文本 `By object`；business/path 两项 pass，保存件 `print_sequence='by object'`）→ queue19。
 
-**queue19（r3c.1 = 0a7687d）10 个场景 3 过 7 败**，第 9 个之后停（又一次多烧了几个）：
+**queue19（r3c.1 = 0a7687d）10 个场景 2 过 8 败**（下表；第 3 个通过 by_object b6bc43ae 是上面的队前验证 run，不在表里；#270 f96dbc0b 是 r3 修后的单跑，见「续二」）
 
 | 场景 | run | 结果 | 失败签名 → 定性 |
 |---|---|---|---|
