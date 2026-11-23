@@ -1,0 +1,3936 @@
+{
+ "task": "mac-author A6: negative controls for verify_walls_differential",
+ "generated_at": "2026-11-23T08:35:05.058898+00:00",
+ "python": "3.11.9",
+ "hash_seed": "0",
+ "method": "offline call of the unchanged criterion with (saved project, repository fixture, SUT identity); constructed projects = copy + rewritten Metadata/project_settings.config + repack, temp dir only; 'redirected temp copy' = module ROOT pointed at a temp copy of runner/macos/walls_control.* for that one call, committed files untouched; no GUI, no Orca launch; the criterion raises at the first violation only, so a control names one offending key even when several were planted",
+ "criterion": {
+  "path": "runner/macos_project_copy.py",
+  "function": "runner/macos_project_copy.py:74",
+  "file_sha256": "ceb2d0006968eee9f3141526530f44ad21d91a855ea6c6e11e586fe29db3287b",
+  "function_sha256": "30dd8a0e526293c5f25de83a6d02423e29220f41ac135ce9ee580ba45a49af0c",
+  "last_commit_touching_it": "c6c259db57b161944a70da672c594ba25dd3c424",
+  "working_tree_equals_head": true,
+  "baseline_last_commit": "c6c259db57b161944a70da672c594ba25dd3c424"
+ },
+ "inputs": {
+  "fixture": {
+   "path": "fixtures/agent_layer_cube.3mf",
+   "sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+   "bytes": 30292
+  },
+  "control": {
+   "path": "runner/macos/walls_control.3mf",
+   "sha256": "2e8a5caf0a9b5dfc10ffee08207ce6a6b5103df24579987cd123396b9fa834d9",
+   "bytes": 24020
+  },
+  "control_metadata": {
+   "path": "runner/macos/walls_control.json",
+   "sha256": "cdacad1c8decf7af3582873c6c9189dd93ed475cc81dfdfb3b13b1feda16ce0b",
+   "bytes": 893
+  },
+  "A": {
+   "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+   "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+   "bytes": 24027
+  },
+  "A_result": {
+   "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/result.json",
+   "sha256": "ff694a0abea849e3793c6cb5fd23f6131b1188d0ffea29f68a5adf5792f45404",
+   "bytes": 3870
+  },
+  "C": {
+   "path": "artifacts/mac_project_copy/ffe0c6e45c2c456b94e904ded891c1ac/wall-3-copy.3mf",
+   "sha256": "8d6ca231589a22f04dabb602dfde74b0dd34feaaaf9bd69712d2552c86073fa9",
+   "bytes": 24024
+  },
+  "C_result": {
+   "path": "artifacts/mac_project_copy/ffe0c6e45c2c456b94e904ded891c1ac/result.json",
+   "sha256": "6993c6e4fa60d21c8f76ba05a78970b7abb8acb37f2e5bd726d4b78381c8352d",
+   "bytes": 3107
+  },
+  "L": {
+   "path": "artifacts/mac_project_copy/0a24557a0c5f49809b14ad6a52d47c5e/layer-024-copy.3mf",
+   "sha256": "15b606c9c07e0c8c81aab41534ad49041b4fef8db3091b6144e2c9cba0f88436",
+   "bytes": 24029
+  },
+  "L_result": {
+   "path": "artifacts/mac_project_copy/0a24557a0c5f49809b14ad6a52d47c5e/result.json",
+   "sha256": "e993692c990eee17a5d6eaadd39fade7c679ffbc63d485b231331a5f703ca00d",
+   "bytes": 3600
+  },
+  "mac_sut": {
+   "version": "2.4.1",
+   "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+  },
+  "other_build_on_record": {
+   "version": "2.4.0",
+   "executable_sha256": "5c48644d7da18b50636ceeee4ef9fd2eaf6d4e8ac05bd88752f40e3717fc47bf"
+  },
+  "bindings": {
+   "fixture_equals_LAYER_FIXTURE_SHA256": true,
+   "control_equals_metadata_digest": true,
+   "saved_equals_receipt_and_slice_project": {
+    "A": true,
+    "C": true,
+    "L": true
+   },
+   "committed_A5_result_copy_identical": {
+    "A": true,
+    "C": true
+   }
+  },
+  "note": "artifacts/ is gitignored: the A/C/L inputs exist only on this host; their digests are in the committed A5 result JSONs"
+ },
+ "construction": {
+  "temp_dir": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_",
+  "reserialization_identical_without_edits": {
+   "fixture": true,
+   "control": true,
+   "A": true,
+   "C": true,
+   "migration_only": true
+  },
+  "all_constructions_verified": true
+ },
+ "controls": [
+  {
+   "id": "A",
+   "title": "saved project of run 306d3efe (the SHADOW run)",
+   "required": true,
+   "expect": {
+    "verdict": "PASS"
+   },
+   "note": "",
+   "input": {
+    "kind": "real",
+    "file": {
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    }
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "PASS",
+    "exception": null,
+    "code": null,
+    "detail": null,
+    "error": null
+   },
+   "as_expected": true
+  },
+  {
+   "id": "B",
+   "title": "committed control baseline judged as if it were the saved project",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "pilot_wall_loops_target"
+   },
+   "note": "",
+   "input": {
+    "kind": "real",
+    "file": {
+     "path": "runner/macos/walls_control.3mf",
+     "sha256": "2e8a5caf0a9b5dfc10ffee08207ce6a6b5103df24579987cd123396b9fa834d9",
+     "bytes": 24020
+    }
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "pilot_wall_loops_target",
+    "detail": null,
+    "error": "pilot_wall_loops_target"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "B2",
+   "title": "hardened B: baseline + wall_loops=3, manifest untouched",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "pilot_dirty_manifest_out_of_scope"
+   },
+   "note": "the baseline alone only trips the wall_loops gate; this reaches the differential",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/B2.3mf",
+     "sha256": "b293f9bf7cf2d5974eed96611f95eaa756a45ba487ba65de4f57b659e89a38ff",
+     "bytes": 23792
+    },
+    "base": {
+     "id": "control",
+     "path": "runner/macos/walls_control.3mf",
+     "sha256": "2e8a5caf0a9b5dfc10ffee08207ce6a6b5103df24579987cd123396b9fa834d9",
+     "bytes": 24020
+    },
+    "planted": {
+     "wall_loops": [
+      "\"2\"",
+      "\"3\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "wall_loops"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "pilot_dirty_manifest_out_of_scope",
+    "detail": null,
+    "error": "pilot_dirty_manifest_out_of_scope"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "B3",
+   "title": "hardened B: baseline + wall_loops=3 + manifest recording only wall_loops",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "initial_layer_print_height"
+   },
+   "note": "the control's own edit key is never exempted",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/B3.3mf",
+     "sha256": "99cff2203eef8ee4f410165d94e49774193c0d60d85105e002559c8edb7536d0",
+     "bytes": 23794
+    },
+    "base": {
+     "id": "control",
+     "path": "runner/macos/walls_control.3mf",
+     "sha256": "2e8a5caf0a9b5dfc10ffee08207ce6a6b5103df24579987cd123396b9fa834d9",
+     "bytes": 24020
+    },
+    "planted": {
+     "wall_loops": [
+      "\"2\"",
+      "\"3\""
+     ],
+     "different_settings_to_system": [
+      "[\"initial_layer_print_height;mixed_filament_definitions\", \"\", \"\", \"\", \"\", \"\", \"\"]",
+      "[\"mixed_filament_definitions;wall_loops\", \"\", \"\", \"\", \"\", \"\", \"\"]"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "different_settings_to_system",
+      "wall_loops"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "initial_layer_print_height",
+    "error": "mac_walls_unrelated_setting_changed:initial_layer_print_height"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "C",
+   "title": "saved project of first run ffe0c6e4 (recorded NON_GREEN under the old oracle)",
+   "required": false,
+   "expect": {
+    "verdict": "PASS"
+   },
+   "note": "report-only by the task: either outcome is acceptable; PASS is the prediction from the key-level diff",
+   "input": {
+    "kind": "real",
+    "file": {
+     "path": "artifacts/mac_project_copy/ffe0c6e45c2c456b94e904ded891c1ac/wall-3-copy.3mf",
+     "sha256": "8d6ca231589a22f04dabb602dfde74b0dd34feaaaf9bd69712d2552c86073fa9",
+     "bytes": 24024
+    }
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "PASS",
+    "exception": null,
+    "code": null,
+    "detail": null,
+    "error": null
+   },
+   "as_expected": true
+  },
+  {
+   "id": "D",
+   "title": "control copy, initial_layer_print_height 0.44 -> 0.5, wall_loops still 2",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "pilot_wall_loops_target"
+   },
+   "note": "rejected by the wall_loops gate; the same kind of change riding along with wall_loops=3 is D2-D4",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/D.3mf",
+     "sha256": "7c107fb7e67569c39a67a5cc9601a6e8fcfa3b1bf43dd405f61d85c2be9be848",
+     "bytes": 23793
+    },
+    "base": {
+     "id": "control",
+     "path": "runner/macos/walls_control.3mf",
+     "sha256": "2e8a5caf0a9b5dfc10ffee08207ce6a6b5103df24579987cd123396b9fa834d9",
+     "bytes": 24020
+    },
+    "planted": {
+     "initial_layer_print_height": [
+      "\"0.44\"",
+      "\"0.5\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "initial_layer_print_height"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "pilot_wall_loops_target",
+    "detail": null,
+    "error": "pilot_wall_loops_target"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "D2",
+   "title": "A + initial_layer_print_height 0.4 -> 0.44 (the control's own edit value)",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "initial_layer_print_height"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/D2.3mf",
+     "sha256": "3937a5583b4fb7dd2d1f537a87da61541d7a6ca2e1caa547e8589a7243676a54",
+     "bytes": 23803
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "initial_layer_print_height": [
+      "\"0.4\"",
+      "\"0.44\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "initial_layer_print_height"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "initial_layer_print_height",
+    "error": "mac_walls_unrelated_setting_changed:initial_layer_print_height"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "D3",
+   "title": "A + line_width 0.82 -> 0.9 (plain key outside the migration)",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "line_width"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/D3.3mf",
+     "sha256": "f6fa475d100882782a4d67378acbbbe7f31c5b0c28c8636a15f3e6cf6218dc73",
+     "bytes": 23801
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "line_width": [
+      "\"0.82\"",
+      "\"0.9\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "line_width"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "line_width",
+    "error": "mac_walls_unrelated_setting_changed:line_width"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "D4",
+   "title": "A + inner_wall_speed ['150'] -> ['160'] (migrated key, third value)",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "inner_wall_speed"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/D4.3mf",
+     "sha256": "883bc141141e8d9c5b58ffe7e3a7e4898362435e9b631028656b4da47ca531ad",
+     "bytes": 23802
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "inner_wall_speed": [
+      "[\"150\"]",
+      "[\"160\"]"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "inner_wall_speed"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "inner_wall_speed",
+    "error": "mac_walls_unrelated_setting_changed:inner_wall_speed"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "D5",
+   "title": "A + unknown key",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unknown_addition",
+    "detail": "z_fake_key"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/D5.3mf",
+     "sha256": "75fa59f7f8e330771a515fc5a28ea47495975a6c657c23a70a46342a1d83e0fa",
+     "bytes": 23807
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "z_fake_key": [
+      "null",
+      "\"1\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [
+      "z_fake_key"
+     ],
+     "removed": [],
+     "changed": [],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unknown_addition",
+    "detail": "z_fake_key",
+    "error": "mac_walls_unknown_addition:z_fake_key"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "D6",
+   "title": "A + project_schema_version '1' -> '2' (one of the 24 added keys)",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unknown_addition",
+    "detail": "project_schema_version"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/D6.3mf",
+     "sha256": "4f388696118cc9276f971e8e02a376fde431f51f783cd1ef970e76518e7c6b20",
+     "bytes": 23802
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "project_schema_version": [
+      "\"1\"",
+      "\"2\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "project_schema_version"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unknown_addition",
+    "detail": "project_schema_version",
+    "error": "mac_walls_unknown_addition:project_schema_version"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "D7",
+   "title": "A - top_shell_layers (key deleted)",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": null,
+    "exception": "KeyError"
+   },
+   "note": "rejected, but uncoded: run() would record the bare key name as the error",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/D7.3mf",
+     "sha256": "2deab75ee27d79246763367078bbf43b77f2f7571804ef0dda031949e3446f2b",
+     "bytes": 23796
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {},
+    "removed": [
+     "top_shell_layers"
+    ],
+    "settings_diff": {
+     "added": [],
+     "removed": [
+      "top_shell_layers"
+     ],
+     "changed": [],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "KeyError",
+    "code": null,
+    "detail": null,
+    "error": "'top_shell_layers'"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "D8",
+   "title": "A + manifest also listing layer_height (value unchanged)",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "pilot_dirty_manifest_out_of_scope"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/D8.3mf",
+     "sha256": "4ef620d4725fcc68feaa96cd9ed93266386ea27335d9b5e7780e4a1942ec393c",
+     "bytes": 23804
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "different_settings_to_system": [
+      "[\"mixed_filament_definitions;wall_loops\", \"\", \"\", \"\", \"\", \"\", \"\"]",
+      "[\"mixed_filament_definitions;wall_loops;layer_height\", \"\", \"\", \"\", \"\", \"\", \"\"]"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "different_settings_to_system"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "pilot_dirty_manifest_out_of_scope",
+    "detail": null,
+    "error": "pilot_dirty_manifest_out_of_scope"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "D9",
+   "title": "A + manifest without mixed_filament_definitions",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "pilot_dirty_manifest_out_of_scope"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/D9.3mf",
+     "sha256": "6fc941e820d23dbe0338f08611ba68882593986429610ee0dab3fce2677c22f9",
+     "bytes": 23789
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "different_settings_to_system": [
+      "[\"mixed_filament_definitions;wall_loops\", \"\", \"\", \"\", \"\", \"\", \"\"]",
+      "[\"wall_loops\", \"\", \"\", \"\", \"\", \"\", \"\"]"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "different_settings_to_system"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "pilot_dirty_manifest_out_of_scope",
+    "detail": null,
+    "error": "pilot_dirty_manifest_out_of_scope"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "D10",
+   "title": "A + top_shell_layers '3' -> 3 (int)",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "top_shell_layers"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/D10.3mf",
+     "sha256": "39567f70b263afd63c8521917600521c35bce2f692df06b7e4cecd40c85fc251",
+     "bytes": 23801
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "top_shell_layers": [
+      "\"3\"",
+      "3"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "top_shell_layers"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "top_shell_layers",
+    "error": "mac_walls_unrelated_setting_changed:top_shell_layers"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "D11",
+   "title": "fixture + wall_loops=3 + travel_speed -> ['400'] (no migration at all)",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "travel_speed"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/D11.3mf",
+     "sha256": "88b7b00ca2023facd7bdea8cd40bdb7734a6f59537b0b9ca8310443e29ca4500",
+     "bytes": 30296
+    },
+    "base": {
+     "id": "fixture",
+     "path": "fixtures/agent_layer_cube.3mf",
+     "sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+     "bytes": 30292
+    },
+    "planted": {
+     "wall_loops": [
+      "\"2\"",
+      "\"3\""
+     ],
+     "travel_speed": [
+      "\"500\"",
+      "[\"400\"]"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "travel_speed",
+      "wall_loops"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "travel_speed",
+    "error": "mac_walls_unrelated_setting_changed:travel_speed"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "D12",
+   "title": "A - different_settings_to_system (manifest key deleted)",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": null,
+    "exception": "KeyError"
+   },
+   "note": "rejected, but uncoded (same path as D7)",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/D12.3mf",
+     "sha256": "6a962cf36ae9d5597235c30d015de860d52e064ab1330d73370ce9803738eb0f",
+     "bytes": 23759
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {},
+    "removed": [
+     "different_settings_to_system"
+    ],
+    "settings_diff": {
+     "added": [],
+     "removed": [
+      "different_settings_to_system"
+     ],
+     "changed": [],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "KeyError",
+    "code": null,
+    "detail": null,
+    "error": "'different_settings_to_system'"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "E",
+   "title": "control copy + wall_loops=3 + five other parameters (manifest untouched)",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "bottom_shell_layers"
+   },
+   "note": "first violation only: bottom_shell_layers sorts before the manifest key",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/E.3mf",
+     "sha256": "2331e2dfcf4914361216f7115c3db1d4752b197362c1b5c7b3f3f0c004928d93",
+     "bytes": 23796
+    },
+    "base": {
+     "id": "control",
+     "path": "runner/macos/walls_control.3mf",
+     "sha256": "2e8a5caf0a9b5dfc10ffee08207ce6a6b5103df24579987cd123396b9fa834d9",
+     "bytes": 24020
+    },
+    "planted": {
+     "wall_loops": [
+      "\"2\"",
+      "\"3\""
+     ],
+     "layer_height": [
+      "\"0.4\"",
+      "\"0.24\""
+     ],
+     "top_shell_layers": [
+      "\"3\"",
+      "\"5\""
+     ],
+     "bottom_shell_layers": [
+      "\"3\"",
+      "\"4\""
+     ],
+     "sparse_infill_density": [
+      "\"15%\"",
+      "\"30%\""
+     ],
+     "travel_speed": [
+      "[\"500\"]",
+      "[\"400\"]"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "bottom_shell_layers",
+      "layer_height",
+      "sparse_infill_density",
+      "top_shell_layers",
+      "travel_speed",
+      "wall_loops"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "bottom_shell_layers",
+    "error": "mac_walls_unrelated_setting_changed:bottom_shell_layers"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "E2",
+   "title": "control copy with its own edit undone + wall_loops=3 + manifest + five other parameters",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "bottom_shell_layers"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/E2.3mf",
+     "sha256": "7299fc6609ece4dc35125ca4ed4d3b27d0acc3bdee4ff9f408ec4c94ffdb2c08",
+     "bytes": 23795
+    },
+    "base": {
+     "id": "migration_only",
+     "path": "(in-memory construction)",
+     "sha256": "0d57d2a890c110510f613b696f14d2d2aa29c906937c10bb293a82e94e85ffab",
+     "bytes": 23781
+    },
+    "planted": {
+     "wall_loops": [
+      "\"2\"",
+      "\"3\""
+     ],
+     "different_settings_to_system": [
+      "[\"mixed_filament_definitions\", \"\", \"\", \"\", \"\", \"\", \"\"]",
+      "[\"mixed_filament_definitions;wall_loops\", \"\", \"\", \"\", \"\", \"\", \"\"]"
+     ],
+     "layer_height": [
+      "\"0.4\"",
+      "\"0.24\""
+     ],
+     "top_shell_layers": [
+      "\"3\"",
+      "\"5\""
+     ],
+     "bottom_shell_layers": [
+      "\"3\"",
+      "\"4\""
+     ],
+     "sparse_infill_density": [
+      "\"15%\"",
+      "\"30%\""
+     ],
+     "travel_speed": [
+      "[\"500\"]",
+      "[\"400\"]"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "bottom_shell_layers",
+      "different_settings_to_system",
+      "layer_height",
+      "sparse_infill_density",
+      "top_shell_layers",
+      "travel_speed",
+      "wall_loops"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "bottom_shell_layers",
+    "error": "mac_walls_unrelated_setting_changed:bottom_shell_layers"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "E3",
+   "title": "A + the same five other parameters",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "bottom_shell_layers"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/E3.3mf",
+     "sha256": "bff164d88a00d47164c973eeaa0e33a0f76442a72a581147619dfa1540b1f120",
+     "bytes": 23804
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "layer_height": [
+      "\"0.4\"",
+      "\"0.24\""
+     ],
+     "top_shell_layers": [
+      "\"3\"",
+      "\"5\""
+     ],
+     "bottom_shell_layers": [
+      "\"3\"",
+      "\"4\""
+     ],
+     "sparse_infill_density": [
+      "\"15%\"",
+      "\"30%\""
+     ],
+     "travel_speed": [
+      "[\"500\"]",
+      "[\"400\"]"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "bottom_shell_layers",
+      "layer_height",
+      "sparse_infill_density",
+      "top_shell_layers",
+      "travel_speed"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "bottom_shell_layers",
+    "error": "mac_walls_unrelated_setting_changed:bottom_shell_layers"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "E4",
+   "title": "A + bottom_shell_layers alone",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "bottom_shell_layers"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/E4.3mf",
+     "sha256": "bc707f3415911c8b0a292fb7a71027960b88b575f01e197a872772ffa73540bf",
+     "bytes": 23802
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "bottom_shell_layers": [
+      "\"3\"",
+      "\"4\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "bottom_shell_layers"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "bottom_shell_layers",
+    "error": "mac_walls_unrelated_setting_changed:bottom_shell_layers"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "E5",
+   "title": "A + layer_height alone",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "layer_height"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/E5.3mf",
+     "sha256": "67f116e38a6823f8b165da343e4ffea0241f969ad56acaaf8cf630afcd5ea491",
+     "bytes": 23801
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "layer_height": [
+      "\"0.4\"",
+      "\"0.24\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "layer_height"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "layer_height",
+    "error": "mac_walls_unrelated_setting_changed:layer_height"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "E6",
+   "title": "A + sparse_infill_density alone",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "sparse_infill_density"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/E6.3mf",
+     "sha256": "5d735501ad4f8dcf1230f14d82c950246d4c6db76c462c95029ac9eeeb01f460",
+     "bytes": 23799
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "sparse_infill_density": [
+      "\"15%\"",
+      "\"30%\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "sparse_infill_density"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "sparse_infill_density",
+    "error": "mac_walls_unrelated_setting_changed:sparse_infill_density"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "E7",
+   "title": "A + top_shell_layers alone",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "top_shell_layers"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/E7.3mf",
+     "sha256": "c4556b5a8fd0d878ec444a075d08f8ee98cf80e44e38815754fe5427da67acd6",
+     "bytes": 23801
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "top_shell_layers": [
+      "\"3\"",
+      "\"5\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "top_shell_layers"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "top_shell_layers",
+    "error": "mac_walls_unrelated_setting_changed:top_shell_layers"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "E8",
+   "title": "A + travel_speed alone",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "travel_speed"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/E8.3mf",
+     "sha256": "cc2b881e061dfc2c30cecf203d320cdaf8d6a9d9643932e798cf8d0f4b0b71e4",
+     "bytes": 23797
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "travel_speed": [
+      "[\"500\"]",
+      "[\"400\"]"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "travel_speed"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "travel_speed",
+    "error": "mac_walls_unrelated_setting_changed:travel_speed"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "E9",
+   "title": "control copy, own edit undone + wall_loops=3 + manifest + the five parameters minus bottom_shell_layers",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "layer_height"
+   },
+   "note": "peeling: removing the reported violator uncovers the next one",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/E9.3mf",
+     "sha256": "74084b5a8e6f25da748dc9953fb4af3fc099ccbf00ec91def9af0f9a3062e5bd",
+     "bytes": 23793
+    },
+    "base": {
+     "id": "migration_only",
+     "path": "(in-memory construction)",
+     "sha256": "0d57d2a890c110510f613b696f14d2d2aa29c906937c10bb293a82e94e85ffab",
+     "bytes": 23781
+    },
+    "planted": {
+     "wall_loops": [
+      "\"2\"",
+      "\"3\""
+     ],
+     "different_settings_to_system": [
+      "[\"mixed_filament_definitions\", \"\", \"\", \"\", \"\", \"\", \"\"]",
+      "[\"mixed_filament_definitions;wall_loops\", \"\", \"\", \"\", \"\", \"\", \"\"]"
+     ],
+     "layer_height": [
+      "\"0.4\"",
+      "\"0.24\""
+     ],
+     "sparse_infill_density": [
+      "\"15%\"",
+      "\"30%\""
+     ],
+     "top_shell_layers": [
+      "\"3\"",
+      "\"5\""
+     ],
+     "travel_speed": [
+      "[\"500\"]",
+      "[\"400\"]"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "different_settings_to_system",
+      "layer_height",
+      "sparse_infill_density",
+      "top_shell_layers",
+      "travel_speed",
+      "wall_loops"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "layer_height",
+    "error": "mac_walls_unrelated_setting_changed:layer_height"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "E10",
+   "title": "control copy, own edit undone + wall_loops=3 + manifest + the five parameters minus bottom_shell_layers, layer_height",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "sparse_infill_density"
+   },
+   "note": "peeling: removing the reported violator uncovers the next one",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/E10.3mf",
+     "sha256": "ade6377097e0ae5a52cd806a7f2667bcfe78f0fc8983dd568b5f24c3a37f9069",
+     "bytes": 23790
+    },
+    "base": {
+     "id": "migration_only",
+     "path": "(in-memory construction)",
+     "sha256": "0d57d2a890c110510f613b696f14d2d2aa29c906937c10bb293a82e94e85ffab",
+     "bytes": 23781
+    },
+    "planted": {
+     "wall_loops": [
+      "\"2\"",
+      "\"3\""
+     ],
+     "different_settings_to_system": [
+      "[\"mixed_filament_definitions\", \"\", \"\", \"\", \"\", \"\", \"\"]",
+      "[\"mixed_filament_definitions;wall_loops\", \"\", \"\", \"\", \"\", \"\", \"\"]"
+     ],
+     "sparse_infill_density": [
+      "\"15%\"",
+      "\"30%\""
+     ],
+     "top_shell_layers": [
+      "\"3\"",
+      "\"5\""
+     ],
+     "travel_speed": [
+      "[\"500\"]",
+      "[\"400\"]"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "different_settings_to_system",
+      "sparse_infill_density",
+      "top_shell_layers",
+      "travel_speed",
+      "wall_loops"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "sparse_infill_density",
+    "error": "mac_walls_unrelated_setting_changed:sparse_infill_density"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "E11",
+   "title": "control copy, own edit undone + wall_loops=3 + manifest + the five parameters minus bottom_shell_layers, layer_height, sparse_infill_density",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "top_shell_layers"
+   },
+   "note": "peeling: removing the reported violator uncovers the next one",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/E11.3mf",
+     "sha256": "951fcc08f8acf84111d146abe3a507dfcfc5906cb5346427afa07cedfcd5bd01",
+     "bytes": 23790
+    },
+    "base": {
+     "id": "migration_only",
+     "path": "(in-memory construction)",
+     "sha256": "0d57d2a890c110510f613b696f14d2d2aa29c906937c10bb293a82e94e85ffab",
+     "bytes": 23781
+    },
+    "planted": {
+     "wall_loops": [
+      "\"2\"",
+      "\"3\""
+     ],
+     "different_settings_to_system": [
+      "[\"mixed_filament_definitions\", \"\", \"\", \"\", \"\", \"\", \"\"]",
+      "[\"mixed_filament_definitions;wall_loops\", \"\", \"\", \"\", \"\", \"\", \"\"]"
+     ],
+     "top_shell_layers": [
+      "\"3\"",
+      "\"5\""
+     ],
+     "travel_speed": [
+      "[\"500\"]",
+      "[\"400\"]"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "different_settings_to_system",
+      "top_shell_layers",
+      "travel_speed",
+      "wall_loops"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "top_shell_layers",
+    "error": "mac_walls_unrelated_setting_changed:top_shell_layers"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "E12",
+   "title": "control copy, own edit undone + wall_loops=3 + manifest + the five parameters minus bottom_shell_layers, layer_height, sparse_infill_density, top_shell_layers",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "travel_speed"
+   },
+   "note": "peeling: removing the reported violator uncovers the next one",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/E12.3mf",
+     "sha256": "2b5d42978f457210fa13f17b5bcc853e73e8024e729148db10906ece9a4880ef",
+     "bytes": 23788
+    },
+    "base": {
+     "id": "migration_only",
+     "path": "(in-memory construction)",
+     "sha256": "0d57d2a890c110510f613b696f14d2d2aa29c906937c10bb293a82e94e85ffab",
+     "bytes": 23781
+    },
+    "planted": {
+     "wall_loops": [
+      "\"2\"",
+      "\"3\""
+     ],
+     "different_settings_to_system": [
+      "[\"mixed_filament_definitions\", \"\", \"\", \"\", \"\", \"\", \"\"]",
+      "[\"mixed_filament_definitions;wall_loops\", \"\", \"\", \"\", \"\", \"\", \"\"]"
+     ],
+     "travel_speed": [
+      "[\"500\"]",
+      "[\"400\"]"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "different_settings_to_system",
+      "travel_speed",
+      "wall_loops"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "travel_speed",
+    "error": "mac_walls_unrelated_setting_changed:travel_speed"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "F",
+   "title": "control copy + wall_loops=4",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "pilot_wall_loops_target"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/F.3mf",
+     "sha256": "c02ad17ce37852155abb9ba54712dbcc9ee8b13ecfe6309d1795fc648410ed0b",
+     "bytes": 23792
+    },
+    "base": {
+     "id": "control",
+     "path": "runner/macos/walls_control.3mf",
+     "sha256": "2e8a5caf0a9b5dfc10ffee08207ce6a6b5103df24579987cd123396b9fa834d9",
+     "bytes": 24020
+    },
+    "planted": {
+     "wall_loops": [
+      "\"2\"",
+      "\"4\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "wall_loops"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "pilot_wall_loops_target",
+    "detail": null,
+    "error": "pilot_wall_loops_target"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "F2",
+   "title": "A with wall_loops 3 -> 4",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "pilot_wall_loops_target"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/F2.3mf",
+     "sha256": "f16ed0cecb55ea26d875038a9cba79414ea299c69452b370f9988a3206e3ad8f",
+     "bytes": 23798
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "wall_loops": [
+      "\"3\"",
+      "\"4\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "wall_loops"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "pilot_wall_loops_target",
+    "detail": null,
+    "error": "pilot_wall_loops_target"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "F3",
+   "title": "A with wall_loops '03'",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "pilot_wall_loops_target"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/F3.3mf",
+     "sha256": "e8e5e9c5405a56d8ec5a13a1312628e856d95118879a83077a326c7416d5a291",
+     "bytes": 23798
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "wall_loops": [
+      "\"3\"",
+      "\"03\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "wall_loops"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "pilot_wall_loops_target",
+    "detail": null,
+    "error": "pilot_wall_loops_target"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "F4",
+   "title": "A with wall_loops 3 (int)",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "pilot_wall_loops_target"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/F4.3mf",
+     "sha256": "50d780543d5174c6ee3da92211025515f631da0d7682431f1a8a9815d03842cc",
+     "bytes": 23798
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "wall_loops": [
+      "\"3\"",
+      "3"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "wall_loops"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "pilot_wall_loops_target",
+    "detail": null,
+    "error": "pilot_wall_loops_target"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "F5",
+   "title": "A without the wall_loops key",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "pilot_wall_loops_target"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/F5.3mf",
+     "sha256": "07671722bcf22e7cbaa53811f9742f8b1422a25b1d7d2471a289383ff6ac074b",
+     "bytes": 23793
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {},
+    "removed": [
+     "wall_loops"
+    ],
+    "settings_diff": {
+     "added": [],
+     "removed": [
+      "wall_loops"
+     ],
+     "changed": [],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "pilot_wall_loops_target",
+    "detail": null,
+    "error": "pilot_wall_loops_target"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "G1",
+   "title": "A judged as the win11-test build on record (2.4.0, other executable)",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "Walls control baseline was recorded on a different Orca build"
+   },
+   "note": "",
+   "input": {
+    "kind": "real",
+    "file": {
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    }
+   },
+   "sut": {
+    "version": "2.4.0",
+    "executable_sha256": "5c48644d7da18b50636ceeee4ef9fd2eaf6d4e8ac05bd88752f40e3717fc47bf"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "Walls control baseline was recorded on a different Orca build",
+    "detail": null,
+    "error": "Walls control baseline was recorded on a different Orca build"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "G2",
+   "title": "A judged with only the version changed",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "Walls control baseline was recorded on a different Orca build"
+   },
+   "note": "",
+   "input": {
+    "kind": "real",
+    "file": {
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    }
+   },
+   "sut": {
+    "version": "2.4.0",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "Walls control baseline was recorded on a different Orca build",
+    "detail": null,
+    "error": "Walls control baseline was recorded on a different Orca build"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "G3",
+   "title": "A judged with only the executable digest changed",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "Walls control baseline was recorded on a different Orca build"
+   },
+   "note": "",
+   "input": {
+    "kind": "real",
+    "file": {
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    }
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "5c48644d7da18b50636ceeee4ef9fd2eaf6d4e8ac05bd88752f40e3717fc47bf"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "Walls control baseline was recorded on a different Orca build",
+    "detail": null,
+    "error": "Walls control baseline was recorded on a different Orca build"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "G4",
+   "title": "2.3.6 fixture (an older build's save) judged under the Mac build identity",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "pilot_wall_loops_target"
+   },
+   "note": "identity assumed equal, so the content gate decides",
+   "input": {
+    "kind": "real",
+    "file": {
+     "path": "fixtures/agent_layer_cube.3mf",
+     "sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+     "bytes": 30292
+    }
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "pilot_wall_loops_target",
+    "detail": null,
+    "error": "pilot_wall_loops_target"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "G5",
+   "title": "fixture + wall_loops=3 (2.3.6 schema, no migration) under the Mac build identity",
+   "required": false,
+   "expect": {
+    "verdict": "PASS"
+   },
+   "note": "boundary: the criterion does not require the migration signature when the identity is presented as equal",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/G5.3mf",
+     "sha256": "2954dee93a6b416551aedc35939b43bee32711ba0a728db1a9dd3b0309f7b6a7",
+     "bytes": 30292
+    },
+    "base": {
+     "id": "fixture",
+     "path": "fixtures/agent_layer_cube.3mf",
+     "sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+     "bytes": 30292
+    },
+    "planted": {
+     "wall_loops": [
+      "\"2\"",
+      "\"3\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "wall_loops"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "PASS",
+    "exception": null,
+    "code": null,
+    "detail": null,
+    "error": null
+   },
+   "as_expected": true
+  },
+  {
+   "id": "G6",
+   "title": "baseline file replaced by the 2.3.6 fixture, metadata untouched; A judged",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "Committed walls control baseline digest mismatch"
+   },
+   "note": "a swapped file alone trips the digest, not the identity lock",
+   "input": {
+    "kind": "real",
+    "file": {
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    }
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "redirected temp copy",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "Committed walls control baseline digest mismatch",
+    "detail": null,
+    "error": "Committed walls control baseline digest mismatch"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "G7",
+   "title": "baseline replaced and re-digested (2.3.6 fixture), SUT unchanged; A judged",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unknown_addition"
+   },
+   "note": "not an identity rejection: the json's SUT is untouched, the content decides; the named key is whichever added key comes first in set order",
+   "input": {
+    "kind": "real",
+    "file": {
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    }
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "redirected temp copy",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unknown_addition",
+    "detail": "first_layer_travel_acceleration",
+    "error": "mac_walls_unknown_addition:first_layer_travel_acceleration"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "G8",
+   "title": "baseline replaced, re-digested and re-attributed to the 2.4.0 build; A judged",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "Walls control baseline was recorded on a different Orca build"
+   },
+   "note": "",
+   "input": {
+    "kind": "real",
+    "file": {
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    }
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "redirected temp copy",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "Walls control baseline was recorded on a different Orca build",
+    "detail": null,
+    "error": "Walls control baseline was recorded on a different Orca build"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "G9",
+   "title": "poisoned baseline (A's own project); an open-without-edit save judged",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "pilot_wall_loops_target"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed_in_memory",
+    "file": {
+     "path": "(in-memory construction)",
+     "sha256": "0d57d2a890c110510f613b696f14d2d2aa29c906937c10bb293a82e94e85ffab",
+     "bytes": 23781
+    }
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "redirected temp copy",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "pilot_wall_loops_target",
+    "detail": null,
+    "error": "pilot_wall_loops_target"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "G10",
+   "title": "poisoned baseline (A's own project); A + five other parameters judged",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "bottom_shell_layers"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/G10.3mf",
+     "sha256": "bff164d88a00d47164c973eeaa0e33a0f76442a72a581147619dfa1540b1f120",
+     "bytes": 23804
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "layer_height": [
+      "\"0.4\"",
+      "\"0.24\""
+     ],
+     "top_shell_layers": [
+      "\"3\"",
+      "\"5\""
+     ],
+     "bottom_shell_layers": [
+      "\"3\"",
+      "\"4\""
+     ],
+     "sparse_infill_density": [
+      "\"15%\"",
+      "\"30%\""
+     ],
+     "travel_speed": [
+      "[\"500\"]",
+      "[\"400\"]"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "bottom_shell_layers",
+      "layer_height",
+      "sparse_infill_density",
+      "top_shell_layers",
+      "travel_speed"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "redirected temp copy",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "bottom_shell_layers",
+    "error": "mac_walls_unrelated_setting_changed:bottom_shell_layers"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "G11",
+   "title": "poisoned baseline (A's own project); A + initial_layer_print_height 0.44 judged",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "initial_layer_print_height"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/G11.3mf",
+     "sha256": "3937a5583b4fb7dd2d1f537a87da61541d7a6ca2e1caa547e8589a7243676a54",
+     "bytes": 23803
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "initial_layer_print_height": [
+      "\"0.4\"",
+      "\"0.44\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "initial_layer_print_height"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "redirected temp copy",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "initial_layer_print_height",
+    "error": "mac_walls_unrelated_setting_changed:initial_layer_print_height"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "G12",
+   "title": "baseline replaced by another save of the same build (layer SHADOW run 0a24557a, re-digested); A judged",
+   "required": false,
+   "expect": {
+    "verdict": "PASS"
+   },
+   "note": "boundary: same build, same migration noise",
+   "input": {
+    "kind": "real",
+    "file": {
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    }
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "redirected temp copy",
+   "outcome": {
+    "verdict": "PASS",
+    "exception": null,
+    "code": null,
+    "detail": null,
+    "error": null
+   },
+   "as_expected": true
+  },
+  {
+   "id": "G13",
+   "title": "same swapped layer baseline; A + layer_height 0.24 (the swapped baseline's own edit)",
+   "required": false,
+   "expect": {
+    "verdict": "PASS"
+   },
+   "note": "boundary: a real edit carried by the baseline on a key other than the json's control_edit_key becomes an exempt value",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/G13.3mf",
+     "sha256": "67f116e38a6823f8b165da343e4ffea0241f969ad56acaaf8cf630afcd5ea491",
+     "bytes": 23801
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "layer_height": [
+      "\"0.4\"",
+      "\"0.24\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "layer_height"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "redirected temp copy",
+   "outcome": {
+    "verdict": "PASS",
+    "exception": null,
+    "code": null,
+    "detail": null,
+    "error": null
+   },
+   "as_expected": true
+  },
+  {
+   "id": "G14",
+   "title": "same swapped layer baseline; A + layer_height 0.3 (any other value)",
+   "required": true,
+   "expect": {
+    "verdict": "REJECT",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "layer_height"
+   },
+   "note": "",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/G14.3mf",
+     "sha256": "0af57bef982f02bf78abfadb0ec9160e553d3bd4be1c6c62711dfa5087a67d0f",
+     "bytes": 23801
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "layer_height": [
+      "\"0.4\"",
+      "\"0.3\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "layer_height"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "redirected temp copy",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "layer_height",
+    "error": "mac_walls_unrelated_setting_changed:layer_height"
+   },
+   "as_expected": true
+  },
+  {
+   "id": "X1",
+   "title": "A with the migrated key version put back to 2.3.6",
+   "required": false,
+   "expect": {
+    "verdict": "PASS"
+   },
+   "note": "boundary: a migrated key left at the fixture value needs no exemption",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/X1.3mf",
+     "sha256": "d34099ff7c7ca96b4c14a4efdd98cf2025389455f5c15d7f447f7c89d6a8ac65",
+     "bytes": 23802
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "version": [
+      "\"2.4.1\"",
+      "\"2.3.6\""
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "version"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "PASS",
+    "exception": null,
+    "code": null,
+    "detail": null,
+    "error": null
+   },
+   "as_expected": true
+  },
+  {
+   "id": "X2",
+   "title": "fixture + wall_loops=3 + travel_speed -> ['500'] (exactly the migration value)",
+   "required": false,
+   "expect": {
+    "verdict": "PASS"
+   },
+   "note": "boundary: a change landing exactly on the migration value is exempt",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/X2.3mf",
+     "sha256": "a44acf240a13c7ec02e2c5dfd6def23bb1806b432049688773b59aa4c1c7c9b2",
+     "bytes": 30294
+    },
+    "base": {
+     "id": "fixture",
+     "path": "fixtures/agent_layer_cube.3mf",
+     "sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+     "bytes": 30292
+    },
+    "planted": {
+     "wall_loops": [
+      "\"2\"",
+      "\"3\""
+     ],
+     "travel_speed": [
+      "\"500\"",
+      "[\"500\"]"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "travel_speed",
+      "wall_loops"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "PASS",
+    "exception": null,
+    "code": null,
+    "detail": null,
+    "error": null
+   },
+   "as_expected": true
+  },
+  {
+   "id": "X3",
+   "title": "A with the manifest entry for wall_loops removed",
+   "required": false,
+   "expect": {
+    "verdict": "PASS"
+   },
+   "note": "boundary: the manifest clause is an upper bound",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/X3.3mf",
+     "sha256": "c6fa3dde4f679417593dcf81407bfd09b1ace8b90d0273ae34bcf4e792f43b66",
+     "bytes": 23790
+    },
+    "base": {
+     "id": "A",
+     "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/wall-3-copy.3mf",
+     "sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56",
+     "bytes": 24027
+    },
+    "planted": {
+     "different_settings_to_system": [
+      "[\"mixed_filament_definitions;wall_loops\", \"\", \"\", \"\", \"\", \"\", \"\"]",
+      "[\"mixed_filament_definitions\", \"\", \"\", \"\", \"\", \"\", \"\"]"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "different_settings_to_system"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "PASS",
+    "exception": null,
+    "code": null,
+    "detail": null,
+    "error": null
+   },
+   "as_expected": true
+  },
+  {
+   "id": "X4",
+   "title": "control minus its own edit plus the walls edit (config rebuilt from the baseline)",
+   "required": true,
+   "expect": {
+    "verdict": "PASS"
+   },
+   "note": "positive control for the constructions: the baseline's migration plus the walls edit alone must pass",
+   "input": {
+    "kind": "constructed",
+    "file": {
+     "path": "/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-walls-a6.7b1zbqa_/X4.3mf",
+     "sha256": "7522cb81568495d794542b03abb5de921d21580a3f83319736b9853659ea1c6b",
+     "bytes": 23789
+    },
+    "base": {
+     "id": "control",
+     "path": "runner/macos/walls_control.3mf",
+     "sha256": "2e8a5caf0a9b5dfc10ffee08207ce6a6b5103df24579987cd123396b9fa834d9",
+     "bytes": 24020
+    },
+    "planted": {
+     "initial_layer_print_height": [
+      "\"0.44\"",
+      "\"0.4\""
+     ],
+     "wall_loops": [
+      "\"2\"",
+      "\"3\""
+     ],
+     "different_settings_to_system": [
+      "[\"initial_layer_print_height;mixed_filament_definitions\", \"\", \"\", \"\", \"\", \"\", \"\"]",
+      "[\"mixed_filament_definitions;wall_loops\", \"\", \"\", \"\", \"\", \"\", \"\"]"
+     ]
+    },
+    "removed": [],
+    "settings_diff": {
+     "added": [],
+     "removed": [],
+     "changed": [
+      "different_settings_to_system",
+      "initial_layer_print_height",
+      "wall_loops"
+     ],
+     "other_entries_identical": true
+    },
+    "construction_verified": true
+   },
+   "sut": {
+    "version": "2.4.1",
+    "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+   },
+   "baseline": "committed",
+   "outcome": {
+    "verdict": "PASS",
+    "exception": null,
+    "code": null,
+    "detail": null,
+    "error": null
+   },
+   "as_expected": true,
+   "settings_identical_to_run_A": true
+  }
+ ],
+ "summary": {
+  "A": {
+   "pass": [
+    "A"
+   ],
+   "rejected": 0,
+   "all_as_predicted": true
+  },
+  "B": {
+   "pass": [],
+   "rejected": 3,
+   "all_as_predicted": true
+  },
+  "C": {
+   "pass": [
+    "C"
+   ],
+   "rejected": 0,
+   "all_as_predicted": true
+  },
+  "D": {
+   "pass": [],
+   "rejected": 12,
+   "all_as_predicted": true
+  },
+  "E": {
+   "pass": [],
+   "rejected": 12,
+   "all_as_predicted": true
+  },
+  "F": {
+   "pass": [],
+   "rejected": 5,
+   "all_as_predicted": true
+  },
+  "G": {
+   "pass": [
+    "G5",
+    "G12",
+    "G13"
+   ],
+   "rejected": 11,
+   "all_as_predicted": true
+  },
+  "X": {
+   "pass": [
+    "X1",
+    "X2",
+    "X3",
+    "X4"
+   ],
+   "rejected": 0,
+   "all_as_predicted": true
+  }
+ },
+ "conclusion": {
+  "form": "B/D/E/F_ALL_REJECTED",
+  "required_controls_off_prediction": [],
+  "other_controls_off_prediction": [],
+  "C_under_the_new_criterion": "PASS"
+ },
+ "task_letters": {
+  "A": {
+   "control": "A",
+   "outcome": {
+    "verdict": "PASS",
+    "exception": null,
+    "code": null,
+    "detail": null,
+    "error": null
+   }
+  },
+  "B": {
+   "control": "B",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "pilot_wall_loops_target",
+    "detail": null,
+    "error": "pilot_wall_loops_target"
+   }
+  },
+  "C": {
+   "control": "C",
+   "outcome": {
+    "verdict": "PASS",
+    "exception": null,
+    "code": null,
+    "detail": null,
+    "error": null
+   }
+  },
+  "D": {
+   "control": "D",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "pilot_wall_loops_target",
+    "detail": null,
+    "error": "pilot_wall_loops_target"
+   }
+  },
+  "E": {
+   "control": "E",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "mac_walls_unrelated_setting_changed",
+    "detail": "bottom_shell_layers",
+    "error": "mac_walls_unrelated_setting_changed:bottom_shell_layers"
+   }
+  },
+  "F": {
+   "control": "F",
+   "outcome": {
+    "verdict": "REJECT",
+    "exception": "ValueError",
+    "code": "pilot_wall_loops_target",
+    "detail": null,
+    "error": "pilot_wall_loops_target"
+   }
+  },
+  "G": {
+   "other_build_save_available": false,
+   "identity_presented_differently": {
+    "G1": {
+     "verdict": "REJECT",
+     "exception": "ValueError",
+     "code": "Walls control baseline was recorded on a different Orca build",
+     "detail": null,
+     "error": "Walls control baseline was recorded on a different Orca build"
+    },
+    "G2": {
+     "verdict": "REJECT",
+     "exception": "ValueError",
+     "code": "Walls control baseline was recorded on a different Orca build",
+     "detail": null,
+     "error": "Walls control baseline was recorded on a different Orca build"
+    },
+    "G3": {
+     "verdict": "REJECT",
+     "exception": "ValueError",
+     "code": "Walls control baseline was recorded on a different Orca build",
+     "detail": null,
+     "error": "Walls control baseline was recorded on a different Orca build"
+    },
+    "G8": {
+     "verdict": "REJECT",
+     "exception": "ValueError",
+     "code": "Walls control baseline was recorded on a different Orca build",
+     "detail": null,
+     "error": "Walls control baseline was recorded on a different Orca build"
+    }
+   },
+   "baseline_file_replaced_by_the_2.3.6_fixture": {
+    "G6": {
+     "verdict": "REJECT",
+     "exception": "ValueError",
+     "code": "Committed walls control baseline digest mismatch",
+     "detail": null,
+     "error": "Committed walls control baseline digest mismatch"
+    },
+    "G7": {
+     "verdict": "REJECT",
+     "exception": "ValueError",
+     "code": "mac_walls_unknown_addition",
+     "detail": "first_layer_travel_acceleration",
+     "error": "mac_walls_unknown_addition:first_layer_travel_acceleration"
+    }
+   }
+  }
+ },
+ "control_baseline_hygiene": {
+  "vs_run_A": {
+   "added_keys_identical_to_control": true,
+   "removed_keys": [],
+   "changed_only_in_control": [
+    "initial_layer_print_height"
+   ],
+   "changed_only_in_run": [
+    "wall_loops"
+   ],
+   "shared_changed_keys": 56,
+   "shared_changed_all_same_value": true,
+   "manifest_run": "mixed_filament_definitions;wall_loops",
+   "manifest_control": "initial_layer_print_height;mixed_filament_definitions",
+   "manifest_fixture": "mixed_filament_definitions"
+  },
+  "vs_run_C": {
+   "added_keys_identical_to_control": true,
+   "removed_keys": [],
+   "changed_only_in_control": [
+    "initial_layer_print_height"
+   ],
+   "changed_only_in_run": [
+    "wall_loops"
+   ],
+   "shared_changed_keys": 56,
+   "shared_changed_all_same_value": true,
+   "manifest_run": "mixed_filament_definitions;wall_loops",
+   "manifest_control": "initial_layer_print_height;mixed_filament_definitions",
+   "manifest_fixture": "mixed_filament_definitions"
+  },
+  "vector_migrated_keys": 46,
+  "vector_migrated_keys_equal_windows_track_list": true,
+  "added_keys_matching_windows_track_defaults": [
+   "filament_flow_step_size",
+   "filament_flow_support",
+   "filament_grouping_mode",
+   "filament_volume_type",
+   "nozzle_volume_type",
+   "printer_flow_support",
+   "process_flow_support",
+   "project_schema_version"
+  ],
+  "windows_track_added_defaults": [
+   "filament_flow_step_size",
+   "filament_flow_support",
+   "filament_grouping_mode",
+   "filament_volume_type",
+   "nozzle_volume_type",
+   "printer_flow_support",
+   "process_flow_support",
+   "project_schema_version"
+  ],
+  "un_edited_baseline_gcode_echo_agrees_with_saved_migration": {
+   "keys_checked": 56,
+   "keys_echoed": 55,
+   "keys_agree": 55,
+   "disagreeing": [],
+   "not_echoed": [
+    "version"
+   ]
+  }
+ },
+ "question_1_exemptions": {
+  "rows": [
+   {
+    "key": "bottom_color_penetration_layers",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "\"3\"",
+    "control": "\"3\""
+   },
+   {
+    "key": "enable_tower_interface_cooldown_during_tower",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "\"0\"",
+    "control": "\"0\""
+   },
+   {
+    "key": "enable_tower_interface_features",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "\"0\"",
+    "control": "\"0\""
+   },
+   {
+    "key": "filament_adhesiveness_category",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "[\"300\", \"100\", \"100\", \"100\", \"100\"]",
+    "control": "[\"300\", \"100\", \"100\", \"100\", \"100\"]"
+   },
+   {
+    "key": "filament_flow_step_size",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "[\"1\", \"1\", \"1\", \"1\", \"1\"]",
+    "control": "[\"1\", \"1\", \"1\", \"1\", \"1\"]"
+   },
+   {
+    "key": "filament_flow_support",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "[\"standard\", \"standard\", \"standard\", \"standard\", \"standard\"]",
+    "control": "[\"standard\", \"standard\", \"standard\", \"standard\", \"standard\"]"
+   },
+   {
+    "key": "filament_grouping_mode",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "\"standard\"",
+    "control": "\"standard\""
+   },
+   {
+    "key": "filament_tower_interface_pre_extrusion_dist",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "[\"10\", \"10\", \"10\", \"10\", \"10\"]",
+    "control": "[\"10\", \"10\", \"10\", \"10\", \"10\"]"
+   },
+   {
+    "key": "filament_tower_interface_pre_extrusion_length",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "[\"0\", \"0\", \"0\", \"0\", \"0\"]",
+    "control": "[\"0\", \"0\", \"0\", \"0\", \"0\"]"
+   },
+   {
+    "key": "filament_tower_interface_print_temp",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "[\"-1\", \"-1\", \"-1\", \"-1\", \"-1\"]",
+    "control": "[\"-1\", \"-1\", \"-1\", \"-1\", \"-1\"]"
+   },
+   {
+    "key": "filament_volume_type",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "[\"standard\", \"standard\", \"standard\", \"standard\", \"standard\"]",
+    "control": "[\"standard\", \"standard\", \"standard\", \"standard\", \"standard\"]"
+   },
+   {
+    "key": "first_layer_travel_acceleration",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "\"100%\"",
+    "control": "\"100%\""
+   },
+   {
+    "key": "first_layer_travel_jerk",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "\"100%\"",
+    "control": "\"100%\""
+   },
+   {
+    "key": "nozzle_volume_type",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "[\"standard\", \"standard\", \"standard\", \"standard\"]",
+    "control": "[\"standard\", \"standard\", \"standard\", \"standard\"]"
+   },
+   {
+    "key": "prime_tower_enable_framework",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "\"0\"",
+    "control": "\"0\""
+   },
+   {
+    "key": "printer_flow_support",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "[\"standard\"]",
+    "control": "[\"standard\"]"
+   },
+   {
+    "key": "process_flow_support",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "[\"standard\"]",
+    "control": "[\"standard\"]"
+   },
+   {
+    "key": "project_schema_version",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "\"1\"",
+    "control": "\"1\""
+   },
+   {
+    "key": "support_interface_min_area",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "\"0.25\"",
+    "control": "\"0.25\""
+   },
+   {
+    "key": "support_transition_flow_ratio",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "\"1\"",
+    "control": "\"1\""
+   },
+   {
+    "key": "support_transition_perimeter",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "\"1\"",
+    "control": "\"1\""
+   },
+   {
+    "key": "support_transition_speed",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "[\"50\"]",
+    "control": "[\"50\"]"
+   },
+   {
+    "key": "top_color_penetration_layers",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "\"3\"",
+    "control": "\"3\""
+   },
+   {
+    "key": "tree_support_transition_layers",
+    "clause": "added_key_equal_to_control",
+    "kind": "new_schema_key",
+    "fixture": null,
+    "saved": "\"2\"",
+    "control": "\"2\""
+   },
+   {
+    "key": "accel_to_decel_enable",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"1\"",
+    "saved": "[\"1\"]",
+    "control": "[\"1\"]"
+   },
+   {
+    "key": "accel_to_decel_factor",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"50%\"",
+    "saved": "[\"50%\"]",
+    "control": "[\"50%\"]"
+   },
+   {
+    "key": "bridge_acceleration",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"50%\"",
+    "saved": "[\"50%\"]",
+    "control": "[\"50%\"]"
+   },
+   {
+    "key": "bridge_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"30\"",
+    "saved": "[\"30\"]",
+    "control": "[\"30\"]"
+   },
+   {
+    "key": "change_filament_gcode",
+    "clause": "changed_key_equal_to_control",
+    "kind": "machine_template_gcode_refresh",
+    "fixture": "\";===== date: 20251213 =====================\\n\\n; Change Tool[previous_extruder] -> Tool[next_ex...(len 1174, sha256 9d8b71e1123c)",
+    "saved": "\";===== date: 20261003 =====================\\n; Change Tool[previous_extruder] -> Tool[next_extr...(len 1605, sha256 0bdc1b735f0c)",
+    "control": "\";===== date: 20261003 =====================\\n; Change Tool[previous_extruder] -> Tool[next_extr...(len 1605, sha256 0bdc1b735f0c)"
+   },
+   {
+    "key": "default_acceleration",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"10000\"",
+    "saved": "[\"10000\"]",
+    "control": "[\"10000\"]"
+   },
+   {
+    "key": "default_jerk",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"0\"",
+    "saved": "[\"0\"]",
+    "control": "[\"0\"]"
+   },
+   {
+    "key": "default_junction_deviation",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"0\"",
+    "saved": "[\"0\"]",
+    "control": "[\"0\"]"
+   },
+   {
+    "key": "enable_overhang_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"1\"",
+    "saved": "[\"1\"]",
+    "control": "[\"1\"]"
+   },
+   {
+    "key": "exclude_object",
+    "clause": "changed_key_equal_to_control",
+    "kind": "default_value_change",
+    "fixture": "\"0\"",
+    "saved": "\"1\"",
+    "control": "\"1\""
+   },
+   {
+    "key": "extrusion_rate_smoothing_external_perimeter_only",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"0\"",
+    "saved": "[\"0\"]",
+    "control": "[\"0\"]"
+   },
+   {
+    "key": "filename_format",
+    "clause": "changed_key_equal_to_control",
+    "kind": "filename_template_placeholder",
+    "fixture": "\"{input_filename_base}_{filament_type[0]}_{print_time}.gcode\"",
+    "saved": "\"{input_filename_base}_{filament_type[initial_tool]}_{print_time}.gcode\"",
+    "control": "\"{input_filename_base}_{filament_type[initial_tool]}_{print_time}.gcode\""
+   },
+   {
+    "key": "gap_infill_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"50\"",
+    "saved": "[\"50\"]",
+    "control": "[\"50\"]"
+   },
+   {
+    "key": "infill_jerk",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"9\"",
+    "saved": "[\"9\"]",
+    "control": "[\"9\"]"
+   },
+   {
+    "key": "initial_layer_acceleration",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"500\"",
+    "saved": "[\"500\"]",
+    "control": "[\"500\"]"
+   },
+   {
+    "key": "initial_layer_infill_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"55\"",
+    "saved": "[\"55\"]",
+    "control": "[\"55\"]"
+   },
+   {
+    "key": "initial_layer_jerk",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"9\"",
+    "saved": "[\"9\"]",
+    "control": "[\"9\"]"
+   },
+   {
+    "key": "initial_layer_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"35\"",
+    "saved": "[\"35\"]",
+    "control": "[\"35\"]"
+   },
+   {
+    "key": "initial_layer_travel_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"100%\"",
+    "saved": "[\"100%\"]",
+    "control": "[\"100%\"]"
+   },
+   {
+    "key": "inner_wall_acceleration",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"10000\"",
+    "saved": "[\"10000\"]",
+    "control": "[\"10000\"]"
+   },
+   {
+    "key": "inner_wall_jerk",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"9\"",
+    "saved": "[\"9\"]",
+    "control": "[\"9\"]"
+   },
+   {
+    "key": "inner_wall_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"150\"",
+    "saved": "[\"150\"]",
+    "control": "[\"150\"]"
+   },
+   {
+    "key": "internal_bridge_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"100%\"",
+    "saved": "[\"100%\"]",
+    "control": "[\"100%\"]"
+   },
+   {
+    "key": "internal_solid_infill_acceleration",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"100%\"",
+    "saved": "[\"100%\"]",
+    "control": "[\"100%\"]"
+   },
+   {
+    "key": "internal_solid_infill_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"150\"",
+    "saved": "[\"150\"]",
+    "control": "[\"150\"]"
+   },
+   {
+    "key": "ironing_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"30\"",
+    "saved": "[\"30\"]",
+    "control": "[\"30\"]"
+   },
+   {
+    "key": "machine_end_gcode",
+    "clause": "changed_key_equal_to_control",
+    "kind": "machine_template_gcode_refresh",
+    "fixture": "\"{if print_sequence == \\\"by object\\\"}\\nG91\\nG1 X2 Y2 Z1 F24000\\nG90\\nG1 Z{max_layer_z+2} F600\\n{...(len 130, sha256 b56edabcb68b)",
+    "saved": "\";===== date: 20261003 =====================\\n; layer [layer_num]\\n; max_layer_z [max_layer_z]\\n...(len 462, sha256 f77bfd9960f6)",
+    "control": "\";===== date: 20261003 =====================\\n; layer [layer_num]\\n; max_layer_z [max_layer_z]\\n...(len 462, sha256 f77bfd9960f6)"
+   },
+   {
+    "key": "machine_start_gcode",
+    "clause": "changed_key_equal_to_control",
+    "kind": "machine_template_gcode_refresh",
+    "fixture": "\";===== date: 20260128 =====================\\n\\nPRINT_START\\nDEFECT_DETECTION_START\\nSET_PRINT_S...(len 7132, sha256 a5a286d3f1d8)",
+    "saved": "\";===== date: 20260128 =====================\\n\\nPRINT_START\\nDEFECT_DETECTION_START\\nSET_PRINT_S...(len 6401, sha256 6dc2d3811829)",
+    "control": "\";===== date: 20260128 =====================\\n\\nPRINT_START\\nDEFECT_DETECTION_START\\nSET_PRINT_S...(len 6401, sha256 6dc2d3811829)"
+   },
+   {
+    "key": "max_bridge_length",
+    "clause": "changed_key_equal_to_control",
+    "kind": "default_value_change",
+    "fixture": "\"10\"",
+    "saved": "\"0\"",
+    "control": "\"0\""
+   },
+   {
+    "key": "max_volumetric_extrusion_rate_slope",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"0\"",
+    "saved": "[\"0\"]",
+    "control": "[\"0\"]"
+   },
+   {
+    "key": "max_volumetric_extrusion_rate_slope_segment_length",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"3\"",
+    "saved": "[\"3\"]",
+    "control": "[\"3\"]"
+   },
+   {
+    "key": "outer_wall_acceleration",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"5000\"",
+    "saved": "[\"5000\"]",
+    "control": "[\"5000\"]"
+   },
+   {
+    "key": "outer_wall_jerk",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"9\"",
+    "saved": "[\"9\"]",
+    "control": "[\"9\"]"
+   },
+   {
+    "key": "outer_wall_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"120\"",
+    "saved": "[\"120\"]",
+    "control": "[\"120\"]"
+   },
+   {
+    "key": "overhang_1_4_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"0\"",
+    "saved": "[\"0\"]",
+    "control": "[\"0\"]"
+   },
+   {
+    "key": "overhang_2_4_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"50\"",
+    "saved": "[\"50\"]",
+    "control": "[\"50\"]"
+   },
+   {
+    "key": "overhang_3_4_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"25\"",
+    "saved": "[\"25\"]",
+    "control": "[\"25\"]"
+   },
+   {
+    "key": "overhang_4_4_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"5\"",
+    "saved": "[\"5\"]",
+    "control": "[\"5\"]"
+   },
+   {
+    "key": "print_settings_id",
+    "clause": "changed_key_equal_to_control",
+    "kind": "preset_rename",
+    "fixture": "\"0.40 Standard @Snapmaker U1 (0.8 nozzle)\"",
+    "saved": "\"0.40mm Standard @Snapmaker U1 (0.8 nozzle)\"",
+    "control": "\"0.40mm Standard @Snapmaker U1 (0.8 nozzle)\""
+   },
+   {
+    "key": "raft_first_layer_expansion",
+    "clause": "changed_key_equal_to_control",
+    "kind": "default_value_change",
+    "fixture": "\"2\"",
+    "saved": "\"-1\"",
+    "control": "\"-1\""
+   },
+   {
+    "key": "slow_down_layers",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"0\"",
+    "saved": "[\"0\"]",
+    "control": "[\"0\"]"
+   },
+   {
+    "key": "slowdown_for_curled_perimeters",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"0\"",
+    "saved": "[\"0\"]",
+    "control": "[\"0\"]"
+   },
+   {
+    "key": "small_perimeter_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"50%\"",
+    "saved": "[\"50%\"]",
+    "control": "[\"50%\"]"
+   },
+   {
+    "key": "small_perimeter_threshold",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"0\"",
+    "saved": "[\"0\"]",
+    "control": "[\"0\"]"
+   },
+   {
+    "key": "sparse_infill_acceleration",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"100%\"",
+    "saved": "[\"100%\"]",
+    "control": "[\"100%\"]"
+   },
+   {
+    "key": "sparse_infill_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"100\"",
+    "saved": "[\"100\"]",
+    "control": "[\"100\"]"
+   },
+   {
+    "key": "support_interface_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"80\"",
+    "saved": "[\"80\"]",
+    "control": "[\"80\"]"
+   },
+   {
+    "key": "support_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"150\"",
+    "saved": "[\"150\"]",
+    "control": "[\"150\"]"
+   },
+   {
+    "key": "top_surface_acceleration",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"2000\"",
+    "saved": "[\"2000\"]",
+    "control": "[\"2000\"]"
+   },
+   {
+    "key": "top_surface_jerk",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"9\"",
+    "saved": "[\"9\"]",
+    "control": "[\"9\"]"
+   },
+   {
+    "key": "top_surface_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"150\"",
+    "saved": "[\"150\"]",
+    "control": "[\"150\"]"
+   },
+   {
+    "key": "travel_acceleration",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"10000\"",
+    "saved": "[\"10000\"]",
+    "control": "[\"10000\"]"
+   },
+   {
+    "key": "travel_jerk",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"12\"",
+    "saved": "[\"12\"]",
+    "control": "[\"12\"]"
+   },
+   {
+    "key": "travel_speed",
+    "clause": "changed_key_equal_to_control",
+    "kind": "vector_migration_scalar_to_1_element_list",
+    "fixture": "\"500\"",
+    "saved": "[\"500\"]",
+    "control": "[\"500\"]"
+   },
+   {
+    "key": "tree_support_branch_angle_organic",
+    "clause": "changed_key_equal_to_control",
+    "kind": "default_value_change",
+    "fixture": "\"40\"",
+    "saved": "\"45\"",
+    "control": "\"45\""
+   },
+   {
+    "key": "version",
+    "clause": "changed_key_equal_to_control",
+    "kind": "schema_version",
+    "fixture": "\"2.3.6\"",
+    "saved": "\"2.4.1\"",
+    "control": "\"2.4.1\""
+   }
+  ],
+  "by_kind": {
+   "default_value_change": 4,
+   "filename_template_placeholder": 1,
+   "machine_template_gcode_refresh": 3,
+   "new_schema_key": 24,
+   "preset_rename": 1,
+   "schema_version": 1,
+   "vector_migration_scalar_to_1_element_list": 46
+  },
+  "closure": {
+   "fixture_keys": 578,
+   "exempt_added": 24,
+   "exempt_changed": 56,
+   "keys_rejecting_any_change": 520,
+   "keys_with_their_own_rule": [
+    "wall_loops",
+    "different_settings_to_system"
+   ]
+  }
+ },
+ "question_2_provenance": {
+  "readback_2_3_3": {
+   "channel": "GUI, read on the Mac by the worker; not read from any file",
+   "nature": "a matched-reading gate: the worker polls until the reading equals the wanted value (30 s) and fails otherwise, so a recorded value is a reading that matched",
+   "edit": [
+    "runner/macos/project_copy.py:305",
+    "runner/macos/project_copy.py:307",
+    "runner/macos/project_copy.py:310"
+   ],
+   "baseline_and_reopen": [
+    "runner/macos/project_copy.py:423",
+    "runner/macos/project_copy.py:427",
+    "runner/macos/project_copy.py:429"
+   ],
+   "screen_ocr": [
+    "runner/macos/project_copy.py:202",
+    "runner/macos/project_copy.py:209",
+    "runner/macos/project_copy.py:219",
+    "runner/macos/project_copy.py:222",
+    "runner/macos/project_copy.py:270"
+   ],
+   "host_assertion": "runner/macos_project_copy.py:216"
+  },
+  "gcode_echo": {
+   "channel": "direct file read on the host; the file is the slicer's temporary plate G-code (not a GUI export: gui_gcode_export is NOT_TESTED)",
+   "plate_identified_by_open_descriptor": [
+    "runner/macos/project_copy.py:325",
+    "runner/macos/project_copy.py:327"
+   ],
+   "plate_read_and_receipt": [
+    "runner/macos/project_copy.py:349",
+    "runner/macos/project_copy.py:361"
+   ],
+   "host_read": "runner/macos_project_copy.py:225",
+   "host_lineage_check": "runner/macos_project_copy.py:118"
+  },
+  "run_A": {
+   "readback": {
+    "baseline": "2",
+    "edit": "3",
+    "reopen": "3"
+   },
+   "readback_pids": {
+    "baseline": 25404,
+    "edit": 25754,
+    "reopen": 26039
+   },
+   "gcode_echo_edited": [
+    "3"
+   ],
+   "gcode_echo_edited_lines": [
+    7167
+   ],
+   "gcode_echo_baseline": [
+    "2"
+   ],
+   "gcode_echo_baseline_lines": [
+    6291
+   ],
+   "edited_gcode": {
+    "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/edited.gcode",
+    "sha256": "cd78d1a82820c8226e4b8ac5455ca0e57e44b127c7dd94b966a3324d0b14585f",
+    "bytes": 185781
+   },
+   "baseline_gcode": {
+    "path": "artifacts/mac_project_copy/306d3efe6882427e806afaaf9e2ad7f1/baseline.gcode",
+    "sha256": "2ccfab6609d75694cee6ad77cd5adc8ae81374eb87ab43285487ae0e92641460",
+    "bytes": 167992
+   },
+   "edited_receipt": {
+    "phase": "reopen",
+    "pid": 26039,
+    "source": "open_process_plate",
+    "size": 185781,
+    "sha256": "cd78d1a82820c8226e4b8ac5455ca0e57e44b127c7dd94b966a3324d0b14585f",
+    "project_sha256": "436d6baf701f027dd7f74e9cc33c629b328ac4cab325b02f5561dc4386888d56"
+   },
+   "edited_gcode_digest_equals_receipt": true,
+   "slicer_config_echo_before_vs_after": {
+    "same_block_length": true,
+    "block_lines": 592,
+    "keys_echoed": 590,
+    "differing_lines": 2,
+    "difference": [
+     {
+      "block_line": 65,
+      "baseline": "; different_settings_to_system = mixed_filament_definitions;;;;;;",
+      "edited": "; different_settings_to_system = mixed_filament_definitions;wall_loops;;;;;;"
+     },
+     {
+      "block_line": 555,
+      "baseline": "; wall_loops = 2",
+      "edited": "; wall_loops = 3"
+     }
+    ],
+    "keys_whose_echo_changed": [
+     "different_settings_to_system",
+     "wall_loops"
+    ],
+    "only_wall_loops_and_its_manifest_entry_differ": true
+   },
+   "saved_artifact_replay": {
+    "reopened_fields_2_3_3": true,
+    "edited_plate": {
+     "verdict": "PASS",
+     "layer_count": 68,
+     "origin": "gui_plate_temporary"
+    },
+    "echo_is_exactly_3": true
+   }
+  },
+  "run_C": {
+   "readback": {
+    "baseline": "2",
+    "edit": "3",
+    "reopen": "3"
+   },
+   "readback_pids": {
+    "baseline": 21385,
+    "edit": 21645,
+    "reopen": 22022
+   },
+   "gcode_echo_edited": [
+    "3"
+   ],
+   "gcode_echo_edited_lines": [
+    7167
+   ],
+   "gcode_echo_baseline": [
+    "2"
+   ],
+   "gcode_echo_baseline_lines": [
+    6291
+   ],
+   "edited_gcode": {
+    "path": "artifacts/mac_project_copy/ffe0c6e45c2c456b94e904ded891c1ac/edited.gcode",
+    "sha256": "9e1fdb967d2ddcfa8510ce7aa669d2bd5c680ce190d260d0da197474e352eb08",
+    "bytes": 185781
+   },
+   "baseline_gcode": {
+    "path": "artifacts/mac_project_copy/ffe0c6e45c2c456b94e904ded891c1ac/baseline.gcode",
+    "sha256": "98168cea64dca875ec9f9e2def0028d2fc70cd2a0250287ba664e1b5dfc67a81",
+    "bytes": 167992
+   },
+   "edited_receipt": {
+    "phase": "reopen",
+    "pid": 22022,
+    "source": "open_process_plate",
+    "size": 185781,
+    "sha256": "9e1fdb967d2ddcfa8510ce7aa669d2bd5c680ce190d260d0da197474e352eb08",
+    "project_sha256": "8d6ca231589a22f04dabb602dfde74b0dd34feaaaf9bd69712d2552c86073fa9"
+   },
+   "edited_gcode_digest_equals_receipt": true,
+   "slicer_config_echo_before_vs_after": {
+    "same_block_length": true,
+    "block_lines": 592,
+    "keys_echoed": 590,
+    "differing_lines": 2,
+    "difference": [
+     {
+      "block_line": 65,
+      "baseline": "; different_settings_to_system = mixed_filament_definitions;;;;;;",
+      "edited": "; different_settings_to_system = mixed_filament_definitions;wall_loops;;;;;;"
+     },
+     {
+      "block_line": 555,
+      "baseline": "; wall_loops = 2",
+      "edited": "; wall_loops = 3"
+     }
+    ],
+    "keys_whose_echo_changed": [
+     "different_settings_to_system",
+     "wall_loops"
+    ],
+    "only_wall_loops_and_its_manifest_entry_differ": true
+   },
+   "saved_artifact_replay": {
+    "reopened_fields_2_3_3": true,
+    "edited_plate": {
+     "verdict": "PASS",
+     "layer_count": 68,
+     "origin": "gui_plate_temporary"
+    },
+    "echo_is_exactly_3": true
+   }
+  }
+ },
+ "run_C_vs_A": {
+  "project_settings_config_identical": true,
+  "entries_differing": [
+   "Metadata/model_settings.config"
+  ],
+  "differing_entry_difference": "only <metadata key=\"source_file\">: each run's staging temp directory",
+  "edited_gcode": {
+   "line_1_identical": true,
+   "line_2": [
+    "; generated by Snapmaker Orca 2.4.1 on 2026-11-23 at 13:35:09",
+    "; generated by Snapmaker Orca 2.4.1 on 2026-11-23 at 13:25:57"
+   ],
+   "identical_except_line_2": true,
+   "sha256_without_line_2": "0baa3a690757c9848a75dbb0f29621a41c31a32d7fc21df5e3980c655033a79e"
+  },
+  "old_oracle": {
+   "A": {
+    "verdict": "REJECT",
+    "error": "pilot_config_unknown_addition"
+   },
+   "C": {
+    "verdict": "REJECT",
+    "error": "pilot_config_unknown_addition"
+   }
+  },
+  "new_criterion": {
+   "A": {
+    "verdict": "PASS",
+    "exception": null,
+    "code": null,
+    "detail": null,
+    "error": null
+   },
+   "C": {
+    "verdict": "PASS",
+    "exception": null,
+    "code": null,
+    "detail": null,
+    "error": null
+   }
+  },
+  "recorded": {
+   "A": {
+    "verdict": "SHADOW"
+   },
+   "C": {
+    "verdict": "NON_GREEN",
+    "failure_stage": "verify.saved_project",
+    "error": "pilot_config_unknown_addition"
+   },
+   "host_checks_never_reached_in_C": [
+    "verify.reopened_fields",
+    "verify.edited_slice",
+    "wall_loops gcode echo"
+   ]
+  },
+  "note": "C is not re-verdicted: its recorded NON_GREEN stands; this only states what the new criterion returns for its bytes"
+ },
+ "integrity": {
+  "committed_baseline_unchanged_after_run": true,
+  "module_root_restored": true,
+  "git_status_runner": ""
+ }
+}
