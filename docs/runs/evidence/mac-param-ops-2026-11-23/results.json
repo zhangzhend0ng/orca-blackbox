@@ -7002,6 +7002,11 @@
    "op": "case:uia_param_surface_flow",
    "stamp": "062702",
    "ok": true
+  },
+  {
+   "op": "case:uia_param_arc_resolution",
+   "stamp": "063341",
+   "ok": false
   }
  ],
  "summary": {
@@ -10618,62 +10623,589 @@
   },
   "case:uia_param_arc_resolution": {
    "op": "case",
-   "ok": false,
-   "supervisor_error": "Traceback (most recent call last):\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 1920, in supervise\n    wait_for(result_file.is_file, \"Mac worker timed out\", ns.fuse)\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 86, in wait_for\n    raise TimeoutError(message)\nTimeoutError: Mac worker timed out\n",
-   "screenshots": {
-    ".op1-find-page-full.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-.op1-find-page-full.png",
-    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-entry.panel.png",
-    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-entry.png",
-    "op0-check-checked.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-check-checked.cell.png",
-    "op0-check-checked.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-check-checked.panel.png",
-    "op0-check-checked.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-check-checked.png",
-    "op0-check-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-check-page-locate.panel.png",
-    "op0-check-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-check-page-locate.png",
-    "op0-check-page.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-check-page.cell.png",
-    "op0-check-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-check-page.panel.png",
-    "op0-check-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-check-page.png",
-    "op0-find-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-find-advanced.panel.png",
-    "op0-find-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-find-advanced.png",
-    "op0-find-page-full-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-find-page-full-locate.panel.png",
-    "op0-find-page-full-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-find-page-full-locate.png",
-    "op0-find-page-full-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-find-page-full-scroll-0.panel.png",
-    "op0-find-page-full-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-find-page-full-scroll-0.png",
-    "op0-find-page-full-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-find-page-full-scroll-1.panel.png",
-    "op0-find-page-full-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-find-page-full-scroll-1.png",
-    "op0-find-page-full-scroll-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-find-page-full-scroll-2.panel.png",
-    "op0-find-page-full-scroll-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-find-page-full-scroll-2.png",
-    "op0-find-page-full.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-find-page-full.panel.png",
-    "op0-find-page-full.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-find-page-full.png",
-    "op0-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-find-page-locate.panel.png",
-    "op0-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-find-page-locate.png",
-    "op0-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-find-page.panel.png",
-    "op0-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-find-page.png",
-    "op0-switch-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-switch-advanced-ax-0.panel.png",
-    "op0-switch-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-switch-advanced-ax-0.png",
-    "op0-switch-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-switch-advanced-ax-1.panel.png",
-    "op0-switch-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-switch-advanced-ax-1.png",
-    "op0-switch-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-switch-advanced-ax-2.panel.png",
-    "op0-switch-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-switch-advanced-ax-2.png",
-    "op0-switch-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-switch-advanced-ax-3.panel.png",
-    "op0-switch-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-switch-advanced-ax-3.png",
-    "op0-switch-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-switch-advanced.panel.png",
-    "op0-switch-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-switch-advanced.png",
-    "op0-switch-quality-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-switch-quality-after.panel.png",
-    "op0-switch-quality-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-switch-quality-after.png",
-    "op0-switch-quality-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-switch-quality-before.panel.png",
-    "op0-switch-quality-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-switch-quality-before.png",
-    "op1-find-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op1-find-advanced.panel.png",
-    "op1-find-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op1-find-advanced.png",
-    "op1-find-page-full-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op1-find-page-full-locate.panel.png",
-    "op1-find-page-full-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op1-find-page-full-locate.png",
-    "op1-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op1-find-page-locate.panel.png",
-    "op1-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op1-find-page-locate.png",
-    "op1-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op1-find-page.panel.png",
-    "op1-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op1-find-page.png"
-   },
    "name": "uia_param_arc_resolution",
+   "ok": false,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "entry": {
+    "dialogs": []
+   },
    "status": "not passed",
-   "reason": "supervisor error (its fuse fired, or the launch failed): no worker result - see supervisor_error"
+   "readback": {
+    "status": "not passed",
+    "scenario": "uia_param_arc_resolution",
+    "case_id": "param_258_arc_resolution",
+    "table": {
+     "path": "runner/macos/param_cases.json",
+     "source_commit": "2733ef6",
+     "sha256": "fb2f1d2313e8608cf37031656b2f71fe79531909dcd944fc8fda3f27f0aef05b"
+    },
+    "limits": {
+     "per_op": 150,
+     "case": 420,
+     "ops": {
+      "op0": 150,
+      "op1": 150
+     }
+    },
+    "reason": "stopped at op 1 (checkbox height): RuntimeError: Row not found for any label candidate ['height'] in tab 'Quality', group 'Precision': RuntimeError: Row 'height' not visible in group 'Precision'; page reads: ['olal jullt sedm ueld', 'role base wipe speed', 'wipe speed', 'wipe on loops', 'wipe before external loop', 'ivuiic', '80', 'mm s 0r', 'e3 precision', 'slice gap closing radius', 'resolution', 'arc fitting', '0 049', '0 012', 'mm']"
+   },
+   "evidence": {
+    "steps": [
+     {
+      "index": 0,
+      "op": "checkbox",
+      "label": "fitting",
+      "group": "Precision",
+      "value": true,
+      "at": 0.0,
+      "tab": {
+       "name": "Quality",
+       "hint": "height",
+       "readback": [
+        {
+         "tab": "Quality",
+         "ok": true,
+         "page_text": [
+          "layer height",
+          "first layer height",
+          "0 4"
+         ]
+        }
+       ]
+      },
+      "row": {
+       "tab": "Quality",
+       "group": "Precision",
+       "label": "Arc fitting",
+       "center": [
+        422,
+        976
+       ],
+       "window_local_center": [
+        62,
+        946
+       ],
+       "box": {
+        "x": 390,
+        "y": 969,
+        "w": 64,
+        "h": 15
+       },
+       "value_text": "",
+       "screenshot": "find-page-full.png",
+       "label_candidate": "fitting",
+       "match": {
+        "label": "fitting",
+        "level": "substring",
+        "row": "Arc fitting",
+        "candidates": [
+         {
+          "label": "fitting",
+          "hits": [
+           {
+            "level": "substring",
+            "row": "Arc fitting"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "label_candidates": [
+       "fitting"
+      ],
+      "candidates_not_found": [
+       {
+        "label": "fitting",
+        "hits": [
+         {
+          "level": "substring",
+          "row": "Arc fitting"
+         }
+        ]
+       }
+      ],
+      "notes": [
+       {
+        "tab_click": [
+         405,
+         777
+        ]
+       },
+       {
+        "standard_mode": "RuntimeError: Group title 'Precision' not visible; titles seen: ['Layer height']"
+       },
+       {
+        "advanced": {
+         "already_on": true,
+         "by": "ax value",
+         "value": 1,
+         "tabs": [
+          "Others"
+         ]
+        }
+       },
+       {
+        "maximized": {
+         "visible": [
+          0.0,
+          30.0,
+          1920.0,
+          972.0
+         ],
+         "frame": [
+          360.0,
+          30.0,
+          1200.0,
+          971.0
+         ]
+        }
+       },
+       {
+        "tab_click": [
+         403,
+         723
+        ]
+       },
+       {
+        "scrolled": {
+         "not_found": "RuntimeError: Group title 'Precision' not visible; titles seen: ['ELayer height', 'Line width']",
+         "buttons": {
+          "down": [
+           2,
+           0
+          ],
+          "up": 1,
+          "knob_dy": {
+           "0": [
+            2.0,
+            2.0
+           ],
+           "1": [
+            -2.0,
+            -2.0
+           ],
+           "2": [
+            33.0,
+            33.0
+           ],
+           "3": [
+            -33.0,
+            -33.0
+           ]
+          }
+         },
+         "to_top": {
+          "button": 1,
+          "presses": 1,
+          "knob_at": [
+           3.0,
+           3.0
+          ]
+         },
+         "steps": [
+          {
+           "step": 0,
+           "knob_dy": 1,
+           "titles": [
+            "ELayer height",
+            "Line width"
+           ]
+          },
+          {
+           "step": 1,
+           "knob_dy": 33.0,
+           "titles": [
+            "Seam"
+           ]
+          },
+          {
+           "step": 2,
+           "knob_dy": 33.0,
+           "titles": [
+            "E5 Precision"
+           ],
+           "row_y": 969.0
+          }
+         ],
+         "left": 21
+        }
+       }
+      ],
+      "page_text": [
+       "olal jullt sedm ueld",
+       "role base wipe speed",
+       "wipe speed",
+       "wipe on loops",
+       "wipe before external loop",
+       "ivuiic",
+       "80",
+       "mm s 0r",
+       "e5 precision",
+       "slice gap closing radius",
+       "resolution",
+       "0 049",
+       "0 012",
+       "mm",
+       "arc fitting"
+      ],
+      "readback": {
+       "tab": "Quality",
+       "label": "Arc fitting",
+       "click": [
+        613,
+        976
+       ],
+       "pixels_changed_vs_before": 603
+      },
+      "readback_ok": true,
+      "evidence": {
+       "notes": [
+        {
+         "tab_click": [
+          406,
+          721
+         ]
+        }
+       ],
+       "page_text": [
+        "olal jullt sedm ueld",
+        "role base wipe speed",
+        "wipe speed",
+        "wipe on loops",
+        "wipe before external loop",
+        "ivuiic",
+        "80",
+        "mm s 0r",
+        "e5 precision",
+        "slice gap closing radius",
+        "resolution",
+        "0 049",
+        "0 012",
+        "mm",
+        "arc fitting"
+       ],
+       "screenshots": {
+        "before": "op0-check-page.png",
+        "after": "op0-check-checked.png"
+       },
+       "tab": {
+        "steps": [
+         {
+          "tab": "Quality",
+          "ok": true,
+          "click": [
+           405,
+           777
+          ],
+          "tabs_seen": [
+           "Others"
+          ],
+          "landmark": [
+           "layer height"
+          ],
+          "page_changed": false,
+          "page_text": [
+           "layer height",
+           "first layer height",
+           "0 4"
+          ],
+          "verified_by": "landmark"
+         }
+        ],
+        "advanced": {
+         "already_on": false,
+         "tabs_before": [
+          "Others",
+          "Quality",
+          "Strength",
+          "Support",
+          "Multimaterial"
+         ],
+         "value_before": 0,
+         "attempts": [
+          {
+           "how": "ax",
+           "value_before": 0,
+           "box": [
+            673.0,
+            689.0
+           ],
+           "tabs_after": [
+            [
+             "Others"
+            ],
+            [
+             "Others"
+            ],
+            [
+             "Others"
+            ],
+            [
+             "Others"
+            ]
+           ],
+           "value_after": 1
+          }
+         ],
+         "checkboxes": [
+          {
+           "x": 453.0,
+           "y": 686.0,
+           "words": "",
+           "value": 0
+          },
+          {
+           "x": 673.0,
+           "y": 689.0,
+           "words": "",
+           "value": 0
+          }
+         ],
+         "turned_on_by": "ax",
+         "speed_seen": false
+        }
+       }
+      },
+      "seconds": 113.1
+     },
+     {
+      "index": 1,
+      "op": "checkbox",
+      "label": "height",
+      "group": "Precision",
+      "value": true,
+      "at": 113.1,
+      "error": "RuntimeError: Row not found for any label candidate ['height'] in tab 'Quality', group 'Precision': RuntimeError: Row 'height' not visible in group 'Precision'; page reads: ['olal jullt sedm ueld', 'role base wipe speed', 'wipe speed', 'wipe on loops', 'wipe before external loop', 'ivuiic', '80', 'mm s 0r', 'e3 precision', 'slice gap closing radius', 'resolution', 'arc fitting', '0 049', '0 012', 'mm']",
+      "op_fuse": false,
+      "page_text_at_error": [
+       "olal jullt sedm ueld",
+       "role base wipe speed",
+       "wipe speed",
+       "wipe on loops",
+       "wipe before external loop",
+       "ivuiic",
+       "80",
+       "mm s 0r",
+       "e3 precision",
+       "slice gap closing radius",
+       "resolution",
+       "arc fitting",
+       "0 049",
+       "0 012",
+       "mm"
+      ],
+      "seconds": 128.0
+     }
+    ],
+    "notes": [
+     {
+      "tab_click": [
+       406,
+       721
+      ]
+     },
+     {
+      "standard_mode": "RuntimeError: Row 'height' not visible in group 'Precision'; page reads: ['olal jullt sedm ueld', 'role base wipe speed', 'wipe speed', 'wipe on loops', 'wipe before external loop', 'ivuiic', '80', 'mm s 0r', 'e3 precision', 'slice gap closing radius', 'resolution', 'arc fitting', '0 049', '0 012', 'mm']"
+     },
+     {
+      "advanced": {
+       "already_on": true,
+       "by": "ax value",
+       "value": 1,
+       "tabs": [
+        "Others"
+       ]
+      }
+     },
+     {
+      "tab_click": [
+       406,
+       721
+      ]
+     },
+     {
+      "full_window": "RuntimeError: Row 'height' not visible in group 'Precision'; page reads: ['olal jullt sedm ueld', 'role base wipe speed', 'wipe speed', 'wipe on loops', 'wipe before external loop', 'ivuiic', '80', 'mm s 0r', 'e3 precision', 'slice gap closing radius', 'resolution', 'arc fitting', '0 049', '0 012', 'mm']"
+     },
+     {
+      "folded": []
+     },
+     {
+      "tab_click": [
+       406,
+       721
+      ]
+     }
+    ],
+    "other_changed_keys": {
+     "count": 0,
+     "keys": []
+    }
+   },
+   "shots": {
+    "entry": "entry.png",
+    "op0-switch-advanced": "op0-switch-advanced.png",
+    "op0-switch-advanced-ax-0": "op0-switch-advanced-ax-0.png",
+    "op0-switch-advanced-ax-1": "op0-switch-advanced-ax-1.png",
+    "op0-switch-advanced-ax-2": "op0-switch-advanced-ax-2.png",
+    "op0-switch-advanced-ax-3": "op0-switch-advanced-ax-3.png",
+    "op0-switch-quality-before": "op0-switch-quality-before.png",
+    "op0-switch-quality-after": "op0-switch-quality-after.png",
+    "op0-find-page-locate": "op0-find-page-locate.png",
+    "op0-find-page": "op0-find-page.png",
+    "op0-find-advanced": "op0-find-advanced.png",
+    "op0-find-page-full-locate": "op0-find-page-full-locate.png",
+    "op0-find-page-full": "op0-find-page-full.png",
+    "op0-find-page-full-scroll-0": "op0-find-page-full-scroll-0.png",
+    "op0-find-page-full-scroll-1": "op0-find-page-full-scroll-1.png",
+    "op0-find-page-full-scroll-2": "op0-find-page-full-scroll-2.png",
+    "op0-check-page-locate": "op0-check-page-locate.png",
+    "op0-check-page": "op0-check-page.png",
+    "op0-check-checked": "op0-check-checked.png",
+    "op1-find-page-locate": "op1-find-page-locate.png",
+    "op1-find-page": "op1-find-page.png",
+    "op1-find-advanced": "op1-find-advanced.png",
+    "op1-find-page-full-locate": "op1-find-page-full-locate.png",
+    "op1-find-page-full": "op1-find-page-full.png",
+    "op1-find-page-full-scroll-0": "op1-find-page-full-scroll-0.png",
+    "op1-find-page-full-scroll-1": "op1-find-page-full-scroll-1.png",
+    "op1-find-page-full-scroll-2": "op1-find-page-full-scroll-2.png",
+    "op1-find-fold-0": "op1-find-fold-0.png",
+    "op1-find-page-folded-locate": "op1-find-page-folded-locate.png",
+    "op1-find-page-folded": "op1-find-page-folded.png",
+    "op1-find-page-folded-scroll-0": "op1-find-page-folded-scroll-0.png",
+    "op1-find-page-folded-scroll-1": "op1-find-page-folded-scroll-1.png",
+    "op1-find-page-folded-scroll-2": "op1-find-page-folded-scroll-2.png",
+    "op1-error": "op1-error.png"
+   },
+   "notes": [
+    {
+     "tab_click": [
+      406,
+      721
+     ]
+    },
+    {
+     "standard_mode": "RuntimeError: Row 'height' not visible in group 'Precision'; page reads: ['olal jullt sedm ueld', 'role base wipe speed', 'wipe speed', 'wipe on loops', 'wipe before external loop', 'ivuiic', '80', 'mm s 0r', 'e3 precision', 'slice gap closing radius', 'resolution', 'arc fitting', '0 049', '0 012', 'mm']"
+    },
+    {
+     "advanced": {
+      "already_on": true,
+      "by": "ax value",
+      "value": 1,
+      "tabs": [
+       "Others"
+      ]
+     }
+    },
+    {
+     "tab_click": [
+      406,
+      721
+     ]
+    },
+    {
+     "full_window": "RuntimeError: Row 'height' not visible in group 'Precision'; page reads: ['olal jullt sedm ueld', 'role base wipe speed', 'wipe speed', 'wipe on loops', 'wipe before external loop', 'ivuiic', '80', 'mm s 0r', 'e3 precision', 'slice gap closing radius', 'resolution', 'arc fitting', '0 049', '0 012', 'mm']"
+    },
+    {
+     "folded": []
+    },
+    {
+     "tab_click": [
+      406,
+      721
+     ]
+    }
+   ],
+   "geometry": {
+    "origin": [
+     360.0,
+     30.0
+    ],
+    "size": [
+     1200.0,
+     971.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795473221.026222,
+   "seconds": 266.6,
+   "screenshots": {
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-entry.png",
+    "op0-check-checked.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-check-checked.cell.png",
+    "op0-check-checked.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-check-checked.panel.png",
+    "op0-check-checked.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-check-checked.png",
+    "op0-check-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-check-page-locate.panel.png",
+    "op0-check-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-check-page-locate.png",
+    "op0-check-page.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-check-page.cell.png",
+    "op0-check-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-check-page.panel.png",
+    "op0-check-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-check-page.png",
+    "op0-find-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-find-advanced.panel.png",
+    "op0-find-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-find-advanced.png",
+    "op0-find-page-full-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-find-page-full-locate.panel.png",
+    "op0-find-page-full-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-find-page-full-locate.png",
+    "op0-find-page-full-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-find-page-full-scroll-0.panel.png",
+    "op0-find-page-full-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-find-page-full-scroll-0.png",
+    "op0-find-page-full-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-find-page-full-scroll-1.panel.png",
+    "op0-find-page-full-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-find-page-full-scroll-1.png",
+    "op0-find-page-full-scroll-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-find-page-full-scroll-2.panel.png",
+    "op0-find-page-full-scroll-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-find-page-full-scroll-2.png",
+    "op0-find-page-full.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-find-page-full.panel.png",
+    "op0-find-page-full.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-find-page-full.png",
+    "op0-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-find-page-locate.panel.png",
+    "op0-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-find-page-locate.png",
+    "op0-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-find-page.panel.png",
+    "op0-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-find-page.png",
+    "op0-switch-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-switch-advanced-ax-0.panel.png",
+    "op0-switch-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-switch-advanced-ax-0.png",
+    "op0-switch-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-switch-advanced-ax-1.panel.png",
+    "op0-switch-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-switch-advanced-ax-1.png",
+    "op0-switch-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-switch-advanced-ax-2.panel.png",
+    "op0-switch-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-switch-advanced-ax-2.png",
+    "op0-switch-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-switch-advanced-ax-3.panel.png",
+    "op0-switch-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-switch-advanced-ax-3.png",
+    "op0-switch-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-switch-advanced.panel.png",
+    "op0-switch-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-switch-advanced.png",
+    "op0-switch-quality-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-switch-quality-after.panel.png",
+    "op0-switch-quality-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-switch-quality-after.png",
+    "op0-switch-quality-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op0-switch-quality-before.panel.png",
+    "op0-switch-quality-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op0-switch-quality-before.png",
+    "op1-error.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op1-error.panel.png",
+    "op1-error.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op1-error.png",
+    "op1-find-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op1-find-advanced.panel.png",
+    "op1-find-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op1-find-advanced.png",
+    "op1-find-fold-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op1-find-fold-0.panel.png",
+    "op1-find-fold-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op1-find-fold-0.png",
+    "op1-find-page-folded-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op1-find-page-folded-locate.panel.png",
+    "op1-find-page-folded-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op1-find-page-folded-locate.png",
+    "op1-find-page-folded-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op1-find-page-folded-scroll-0.panel.png",
+    "op1-find-page-folded-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op1-find-page-folded-scroll-0.png",
+    "op1-find-page-folded-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op1-find-page-folded-scroll-1.panel.png",
+    "op1-find-page-folded-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op1-find-page-folded-scroll-1.png",
+    "op1-find-page-folded-scroll-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op1-find-page-folded-scroll-2.panel.png",
+    "op1-find-page-folded-scroll-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op1-find-page-folded-scroll-2.png",
+    "op1-find-page-folded.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op1-find-page-folded.panel.png",
+    "op1-find-page-folded.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op1-find-page-folded.png",
+    "op1-find-page-full-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op1-find-page-full-locate.panel.png",
+    "op1-find-page-full-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op1-find-page-full-locate.png",
+    "op1-find-page-full-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op1-find-page-full-scroll-0.panel.png",
+    "op1-find-page-full-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op1-find-page-full-scroll-0.png",
+    "op1-find-page-full-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op1-find-page-full-scroll-1.panel.png",
+    "op1-find-page-full-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op1-find-page-full-scroll-1.png",
+    "op1-find-page-full-scroll-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op1-find-page-full-scroll-2.panel.png",
+    "op1-find-page-full-scroll-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op1-find-page-full-scroll-2.png",
+    "op1-find-page-full.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op1-find-page-full.panel.png",
+    "op1-find-page-full.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op1-find-page-full.png",
+    "op1-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op1-find-page-locate.panel.png",
+    "op1-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op1-find-page-locate.png",
+    "op1-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063341-op1-find-page.panel.png",
+    "op1-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063341/case-063341-op1-find-page.png"
+   }
   },
   "case:uia_param_precision_comp": {
    "op": "case",
@@ -12431,6 +12963,65 @@
     "op0-switch-quality-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-060903-op0-switch-quality-before.panel.png",
     "op0-switch-quality-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-060903/case-060903-op0-switch-quality-before.png"
    }
+  },
+  {
+   "op": "case",
+   "ok": false,
+   "supervisor_error": "Traceback (most recent call last):\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 1920, in supervise\n    wait_for(result_file.is_file, \"Mac worker timed out\", ns.fuse)\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 86, in wait_for\n    raise TimeoutError(message)\nTimeoutError: Mac worker timed out\n",
+   "screenshots": {
+    ".op1-find-page-full.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-.op1-find-page-full.png",
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-entry.png",
+    "op0-check-checked.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-check-checked.cell.png",
+    "op0-check-checked.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-check-checked.panel.png",
+    "op0-check-checked.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-check-checked.png",
+    "op0-check-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-check-page-locate.panel.png",
+    "op0-check-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-check-page-locate.png",
+    "op0-check-page.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-check-page.cell.png",
+    "op0-check-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-check-page.panel.png",
+    "op0-check-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-check-page.png",
+    "op0-find-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-find-advanced.panel.png",
+    "op0-find-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-find-advanced.png",
+    "op0-find-page-full-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-find-page-full-locate.panel.png",
+    "op0-find-page-full-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-find-page-full-locate.png",
+    "op0-find-page-full-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-find-page-full-scroll-0.panel.png",
+    "op0-find-page-full-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-find-page-full-scroll-0.png",
+    "op0-find-page-full-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-find-page-full-scroll-1.panel.png",
+    "op0-find-page-full-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-find-page-full-scroll-1.png",
+    "op0-find-page-full-scroll-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-find-page-full-scroll-2.panel.png",
+    "op0-find-page-full-scroll-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-find-page-full-scroll-2.png",
+    "op0-find-page-full.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-find-page-full.panel.png",
+    "op0-find-page-full.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-find-page-full.png",
+    "op0-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-find-page-locate.panel.png",
+    "op0-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-find-page-locate.png",
+    "op0-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-find-page.panel.png",
+    "op0-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-find-page.png",
+    "op0-switch-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-switch-advanced-ax-0.panel.png",
+    "op0-switch-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-switch-advanced-ax-0.png",
+    "op0-switch-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-switch-advanced-ax-1.panel.png",
+    "op0-switch-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-switch-advanced-ax-1.png",
+    "op0-switch-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-switch-advanced-ax-2.panel.png",
+    "op0-switch-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-switch-advanced-ax-2.png",
+    "op0-switch-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-switch-advanced-ax-3.panel.png",
+    "op0-switch-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-switch-advanced-ax-3.png",
+    "op0-switch-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-switch-advanced.panel.png",
+    "op0-switch-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-switch-advanced.png",
+    "op0-switch-quality-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-switch-quality-after.panel.png",
+    "op0-switch-quality-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-switch-quality-after.png",
+    "op0-switch-quality-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op0-switch-quality-before.panel.png",
+    "op0-switch-quality-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op0-switch-quality-before.png",
+    "op1-find-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op1-find-advanced.panel.png",
+    "op1-find-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op1-find-advanced.png",
+    "op1-find-page-full-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op1-find-page-full-locate.panel.png",
+    "op1-find-page-full-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op1-find-page-full-locate.png",
+    "op1-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op1-find-page-locate.panel.png",
+    "op1-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op1-find-page-locate.png",
+    "op1-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-050914-op1-find-page.panel.png",
+    "op1-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-050914/case-050914-op1-find-page.png"
+   },
+   "name": "uia_param_arc_resolution",
+   "status": "not passed",
+   "reason": "supervisor error (its fuse fired, or the launch failed): no worker result - see supervisor_error"
   }
  ]
 }
