@@ -1572,6 +1572,83 @@ if hasattr(pp, "set_option_checkbox"):
 else:
     print("N/A  checkbox modal (absent on this tree)")
 
+# 30. The fa review of 53278b8. (a) a modal that was already up before the
+#     click swallowed it - the "state flipped" verdict was a lie; (b) a box
+#     answered No puts the setting back while the op said True; (c) a text
+#     field whose focus could not be moved off never committed; (d) a text
+#     with a digit in it took the Enter branch - the CONTROL decides now.
+if hasattr(pcl, "_is_multiline"):
+    RECT30 = ((100, 800, 118, 818), 5)
+    _saved30 = (pp.find_option_checkbox, pp.checked_state, pp.real_click, pp.user32, pp.winutil,
+                pp.ensure_advanced, pp.click_tab, pp.top_dialog_set, pcl.settle_dialog)
+    _state30 = {"enabled": True, "modal_after_click": True, "paint": 0.0}
+    pp.find_option_checkbox = lambda session, label, group=None: [RECT30]
+    pp.checked_state = lambda session, rect: _state30["paint"]
+    pp.real_click = lambda rect: _state30.update(enabled=not _state30["modal_after_click"])
+    pp.user32 = types.SimpleNamespace(IsWindowEnabled=lambda h: _state30["enabled"])
+    pp.winutil = types.SimpleNamespace(user32=pp.user32, SetCursorPos=lambda x, y: None,
+                                       msg_click_screen=lambda x, y, root=None: None)
+    session30 = types.SimpleNamespace(hwnd=1)
+    try:
+        _state30.update(enabled=True, modal_after_click=True, paint=0.0)
+        got = pp.set_option_checkbox(session30, "Spiral", True, "Special mode")
+        check("checkbox: enabled before the click, a modal after it -> taken as toggled",
+              got == (True, RECT30[0]), "%r" % (got,))
+        _state30.update(enabled=False, modal_after_click=True, paint=0.0)   # somebody else's modal
+        got = pp.set_option_checkbox(session30, "Nope", True, None, tries=2)
+        check("checkbox: a main window that was disabled BEFORE the click is not evidence of a tick "
+              "(the click was swallowed)",
+              got == (None, None), "%r" % (got,))
+        # (b) run_ops reads the box again after the box was settled
+        fake_ui30 = types.SimpleNamespace(app=None, main_input=lambda: None, pause=lambda s: None)
+        pp.ensure_advanced = lambda app, want=True: True
+        pp.click_tab = lambda app, tab, hint="": True
+        pp.top_dialog_set = lambda app: set()
+        pp.set_option_checkbox = lambda *a, **k: (True, RECT30[0])
+        pcl.settle_dialog = lambda ui, known, answer=None, expect=None: (99, "Spiral mode ...")
+        _state30.update(paint=0.0)                    # the app put it back
+        msg = _raises(pcl.run_ops, fake_ui30, [{"op": "checkbox", "label": "Spiral", "value": True,
+                                                "group": "Special mode", "answer": "Yes"}])
+        check("run_ops checkbox: a box that reads OFF after its dialog was settled is "
+              "param_checkbox:...:reverted, not a pass",
+              isinstance(msg, str) and msg == "param_checkbox:Spiral:reverted", "got %r" % (msg,))
+        _state30.update(paint=0.9)
+        pcl.run_ops(fake_ui30, [{"op": "checkbox", "label": "Spiral", "value": True,
+                                 "group": "Special mode", "answer": "Yes"}])
+        check("run_ops checkbox: a box that reads ON after its dialog passes", True)
+        # (c) the text field's focus must have left the Edit
+        _wu30 = types.SimpleNamespace(user32=types.SimpleNamespace(GetWindowLongW=lambda h, i: 0x0004))
+        check("uia_set_float: a multi-line control is a text field whatever the value looks like",
+              pcl._is_multiline(_wu30, 55, "v2") and not pcl._is_multiline(
+                  types.SimpleNamespace(user32=types.SimpleNamespace(GetWindowLongW=lambda h, i: 0x0080)), 55))
+        check("uia_set_float: without a readable style the old rule holds (a value with no digit is text)",
+              pcl._is_multiline(types.SimpleNamespace(), 55, "{input_filename_base}") and not pcl._is_multiline(
+                  types.SimpleNamespace(), 55, "12"))
+        ctl = _NumEdit24()
+        ui = _UI28(ctl)
+        ui.wu.user32 = _wu30.user32
+        _focus28[:] = []
+        _saved_focus30 = (pp.focus_off_edit, pcl._find_phrase_row_any, sys.modules.get("win32gui"),
+                          "_fake28" in globals())
+        pp.focus_off_edit = lambda session, why="": "Edit"       # could not move the focus off
+        if "_fake28" in globals():
+            pcl._find_phrase_row_any = lambda app, phrase, group_substr=None: (800, "Filename format")
+            sys.modules["win32gui"] = _fake28                     # the edit and the canvas anchor
+        try:
+            msg = _raises(pcl.uia_set_float, ui, "Filename format", "v2 {a}", "G-code output")
+        finally:
+            pp.focus_off_edit, pcl._find_phrase_row_any = _saved_focus30[0], _saved_focus30[1]
+            if _saved_focus30[3]:
+                sys.modules["win32gui"] = _saved_focus30[2]
+        check("uia_set_float: a text field whose focus stays in the Edit is an error "
+              "(its text would read equal without a commit)",
+              isinstance(msg, str) and msg.startswith("param_text_field_focus_stuck"), "got %r" % (msg,))
+    finally:
+        (pp.find_option_checkbox, pp.checked_state, pp.real_click, pp.user32, pp.winutil,
+         pp.ensure_advanced, pp.click_tab, pp.top_dialog_set, pcl.settle_dialog) = _saved30
+else:
+    print("N/A  r9 review (absent on this tree)")
+
 failed = [n for n, ok in results if not ok]
 print("\n%d checks, %d failed" % (len(results), len(failed)))
 sys.exit(1 if failed else 0)

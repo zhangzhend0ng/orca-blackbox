@@ -251,6 +251,21 @@ def _find_phrase_row(app, phrase, group_substr=None):
     return _find_phrase_row_any(app, phrase, group_substr)[0]
 
 
+def _is_multiline(wu, handle, value=None):
+    """True when the Edit carries ES_MULTILINE (GWL_STYLE bit 0x0004). With
+    the style unreadable (no user32 on a fake) the old rule decides: a value
+    with no number in it is text."""
+    user32 = getattr(wu, "user32", None)
+    get_style = getattr(user32, "GetWindowLongW", None)
+    if get_style is not None:
+        try:
+            return bool(get_style(handle, -16) & 0x0004)
+        except Exception:  # noqa: BLE001
+            pass
+    found = re.search(r"-?\d+(?:\.\d+)?", str(value))
+    return found is None
+
+
 def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, below=False):
     """Set a sidebar float Edit: OCR locates the painted row (OG_CustomCtrl
     draws row labels without HWNDs - only group headers are windows, the
@@ -375,15 +390,19 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
         except _Inv:
             return None
 
-    if _num(value) is None:
+    if _is_multiline(wu, handle, value):
         # A TEXT field (the filename format of #296) is multi-line: Enter is
         # a newline in it, not a commit - fa run a9cce05e saved
         # '{input_filename_base}_{plate_name}.gcode\n'. The value commits
-        # when the field loses focus; the readback is the whole text.
+        # when the field loses focus; the readback is the whole text. The
+        # CONTROL decides (ES_MULTILINE), not the value: a text with a digit
+        # in it used to take the Enter branch (fa review of 53278b8).
         receipt = ui.edit(x, y, str(value), enter=False)
         from . import process_panel as pp
-        pp.focus_off_edit(app, "text field commit")
+        focus = pp.focus_off_edit(app, "text field commit")
         ui.pause(2.0)
+        if focus == "Edit":
+            raise ProtocolError("param_text_field_focus_stuck:" + label_substr)
         after = ui.wu.edit_text(handle)
         if (receipt["target_hwnd"] != handle
                 or after.replace("\r\n", "\n") != str(value)):
@@ -626,7 +645,20 @@ def run_ops(ui, ops):
             # 0.21->0.06 then raised, run 7cb0e911).
             if not (isinstance(ok, tuple) and ok[0] == op["value"]):
                 raise ProtocolError("param_checkbox:" + op["label"])
-            settle_dialog(ui, known_dialogs, op.get("answer"), op.get("dialog"))
+            settled = settle_dialog(ui, known_dialogs, op.get("answer"), op.get("dialog"))
+            if settled[0] is not None:
+                # A box was answered or closed. Answered No (or closed =
+                # No), the app puts the setting back (ConfigManipulation
+                # .cpp:350) while the op above still says it is set: read
+                # the box again on the settled page (fa review, Q1c).
+                ui.main_input()
+                found = pp.find_option_checkbox(app, op["label"], op.get("group"))
+                if found:
+                    now_on = pp.checked_state(app, found[0][0]) > pp.CHECKED_FRACTION
+                    print("[param case] checkbox %r reads %s after the box" % (
+                        op["label"], now_on), flush=True)
+                    if now_on != op["value"]:
+                        raise ProtocolError("param_checkbox:" + op["label"] + ":reverted")
         elif kind == "rowcombo":
             from .param_combo_row import pick_combo_at_label
             # A list label gets the same candidate treatment as float ops

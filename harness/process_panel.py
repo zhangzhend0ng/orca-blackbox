@@ -684,6 +684,7 @@ def focus_off_edit(session, why=""):
             time.sleep(0.3)
             after = focus_info(session)[1]
     print(f"[panel] focus reset ({why}): {before} -> {after}", flush=True)
+    return after
 
 
 class _StallGuard:
@@ -1732,6 +1733,7 @@ def set_option_checkbox(session, label_substr, want_checked,
                 return None, None
         for rect, h in cands[:3]:
             before = checked_state(session, rect)
+            enabled_before = bool(user32.IsWindowEnabled(session.hwnd))
             if attempt < 2:
                 real_click(rect)
             else:
@@ -1747,7 +1749,7 @@ def set_option_checkbox(session, label_substr, want_checked,
             now_on = after > CHECKED_FRACTION
             if now_on == want_checked:
                 return now_on, rect
-            if not user32.IsWindowEnabled(session.hwnd):
+            if (enabled_before and not user32.IsWindowEnabled(session.hwnd)):
                 # The tick took effect and the app asked something at once:
                 # a modal owns the main window, every further click is
                 # blocked and the frame no longer paints the box as checked
@@ -1755,7 +1757,10 @@ def set_option_checkbox(session, label_substr, want_checked,
                 # 0.00 four times; on the guest the same tick read 0.88 by
                 # timing luck, run 680d5426). The state is the opposite of
                 # what it was; run_ops settles the box next and the saved
-                # project is the proof.
+                # project is the proof. Only when the main window was
+                # ENABLED before the click: a modal that was already up
+                # swallowed the click, and "flipped" would be a lie (fa
+                # review of 53278b8, Q1a).
                 toggled = not (before > CHECKED_FRACTION)
                 print(f"[panel] checkbox {label_substr!r}: modal after the tick "
                       f"-> taken as {toggled}", flush=True)
