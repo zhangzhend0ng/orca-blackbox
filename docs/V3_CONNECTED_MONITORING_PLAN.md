@@ -36,13 +36,15 @@
 
 原计划其余阶段不变。
 
-## Phase 1 最终状态（2026-11-23，协议 95% 贯通，详见独立工程 README）
+## Phase 1 最终状态（2026-11-23，**连接成功**，详见独立工程 `C:\coil\Projects\orca-virtual-u1\`）
 
-完整协议规格+虚拟 U1 工程 → `C:\coil\Projects\orca-virtual-u1\README.md`
+完整协议规格+虚拟 U1 工程 → `C:\coil\Projects\orca-virtual-u1\README.md`（git 仓库 `cb52749`）
 
-**已通**：发现→MQTT v5 连接→confirm_lan_status(unauthorized)→request_lan_auth(authorizing)→CLI 日志确认 `notify.device.authorization_changed`
-**待通**：notify_lan_auth(approve+mTLS 证书) 消化——已部署 QoS1+2s 延迟修复，待一次成功触发验证
-**根因排除**：6 种应答帧变体（state/QoS/retain/v5属性/前缀/分隔符）全部排除；真机抓包（230 帧 pcapng）提供了字节级基准
+**✅ 配对连接全通**（2026-11-23 10:40）：CLI 返回 `connected=true`，U1-MOCK 出现在设备列表（online, Snapmaker U1, v1.4.1）。根因=大通知（4KB 含 PEM 证书）不被 dart_mqtt 处理；迷你通知（仅 state/clientid/sn）通过后 CLI 直接 connected。
+
+**⚠️ 心跳待修**：连接 60s 后 CLI 报 `heartbeat lost`——需调整 `<sn>/status` 推送频率/格式。
+
+**⚠️ mDNS 组播风暴事故**（2026-11-23）：旧版广播器因无退避+宽泛匹配在生产网发送 23k pps（77Mbps），致同事 PC CPU0 DPC 77%。已完全重写（`mdns_safe.py`）：30s 间隔、10/min 硬上限、精确匹配、预检、21 项离线单测全过后才部署。修复后 2 包/分钟。
 
 ## Phase 1 实测进展（2026-11-23 深夜，Mac 侧，九小时计划第 1.5h）
 
