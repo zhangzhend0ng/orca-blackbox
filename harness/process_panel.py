@@ -1173,6 +1173,14 @@ def find_option_combo(session, current_value, psm=3):
     if not hwnd or hwnd == session.hwnd:
         return (None, None, None)
     rc = winutil.window_rect(hwnd)
+    if (rc[2] - rc[0]) > 250 or (rc[3] - rc[1]) > 60:
+        # WindowFromPoint skips DISABLED windows and hands back the row
+        # container instead: the value is greyed (Support Type/Style until
+        # support is on, Draft shield until skirt loops > 0; census c814315c:
+        # a 393x270 container under 'Tree'). Clicking it opens nothing.
+        print(f"[panel] value {current_value!r} is painted on a disabled control "
+              f"(container {rc} under it) - not a clickable combo", flush=True)
+        return (None, None, None)
     buf = ctypes.create_unicode_buffer(256)
     user32.GetWindowTextW(hwnd, buf, 256)
     return (rc, hwnd, buf.value)
@@ -1321,7 +1329,18 @@ def find_option_checkbox(session, label_substr, group_substr=None):
         word, y_row = find_option_row(session, label_substr, group_substr)
         if not word:
             return []
-    return row_checkboxes(session, y_row, y_tol=14)
+    cands = row_checkboxes(session, y_row, y_tol=14)
+    if not cands:
+        # A label that wraps to two lines ('Slow down for curled /
+        # perimeters'): the box is centred on the ROW, about 15px off the
+        # matched line's centre (overhang_curl c8225950 found the label and
+        # nothing within 14px). Only that narrow band counts, so the next
+        # row's box (30px or more away) still cannot.
+        around = (row_checkboxes(session, y_row + 15, y_tol=8)
+                  + row_checkboxes(session, y_row - 15, y_tol=8))
+        if len(around) == 1:
+            cands = around
+    return cands
 
 
 def find_option_row_seq(session, seq, group_substr=None,
@@ -1374,6 +1393,10 @@ def find_option_combo_seq(session, seq, group_substr=None, psm=3):
     if not hwnd or hwnd == session.hwnd:
         return (None, None, None)
     rc = winutil.window_rect(hwnd)
+    if (rc[2] - rc[0]) > 250 or (rc[3] - rc[1]) > 60:
+        print(f"[panel] value {seq!r} is painted on a disabled control "
+              f"(container {rc} under it) - not a clickable combo", flush=True)
+        return (None, None, None)
     buf = ctypes.create_unicode_buffer(256)
     user32.GetWindowTextW(hwnd, buf, 256)
     return (rc, hwnd, buf.value)
@@ -1491,7 +1514,7 @@ def set_combo_by_popup(session, locate, target_substr, log="[panel]",
         for _attempt in range(3):
             w, hgt, bgra = winutil.capture_window(ph)
             img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
-            words = mdu.ocr_words_img(img, scale=3)
+            words = mdu.ocr_words_img(img, scale=3, psm=6)   # list-like popup: see pick_combo_at_label
             if words:
                 break
             time.sleep(0.6)

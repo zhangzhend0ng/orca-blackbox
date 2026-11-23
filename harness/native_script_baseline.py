@@ -407,12 +407,17 @@ PARAM_OPS = {        "uia_param_ironing_top": [
                                       "Raft first layer expansion"],
              "value": "5", "group": "Raft"},
         ],
-        # Feishu #279 (line 198): the row is painted 'Support/Interface
-        # filament' (two combos); single-word label so phrase-join OCR can
-        # match it. Interface already 0 - no second op.
+        # Feishu #279 (line 198). 2026-11-23 census c814315c: the support
+        # body filament is the 'Support/raft base' row (group 'Filament for
+        # Supports'); it is greyed until support is enabled, so Enable goes
+        # first. The extruder popup lists Default / 1 PETG / 2 PLA / ... -
+        # 'PETG' names extruder 1 (the bare number is not OCR-stable). The
+        # interface row already sits at 0 - no second op.
         "uia_param_support_filament": [
-            {"tab": "Support", "tab_hint": "support", "op": "rowcombo", "label": "filament",
-             "target": "1", "group": "Support"},
+            {"tab": "Support", "tab_hint": "support", "op": "checkbox",
+             "label": "Enable", "value": True, "group": "Support"},
+            {"op": "rowcombo", "label": "^Support/raft base", "target": "PETG",
+             "group": "Filament for Supports"},
         ],
         # Feishu #292 (line 211): clearance rows appear once by-object is set.
         "uia_param_by_object": [
@@ -673,7 +678,10 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             {"op": "float", "label": ["Top lnterface spacing",
                                       "Top interface spacing"], "value": "0",
              "group": "Advanced"},
-            {"op": "combo", "current": "Auto", "target": "Rectilinear",
+            # 2026-11-23 census c814315c: the Advanced group's combo row is
+            # 'Interface pattern' (popup: Rectilinear / Concentric /
+            # Rectilinear Interlaced / Grid); no value 'Auto' is painted.
+            {"op": "rowcombo", "label": "Interface pattern", "target": "Rectilinear",
              "group": "Advanced"},
         ],
         # Feishu #282 (line 201): support_type already 'tree(auto)',
@@ -707,9 +715,15 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         # MULTIMATERIAL / 'Filament for Features'. On the Support tab the
         # word 'filament' only hit the group TITLE 'Filament for Supports'
         # (no combo there - run be75f8b8: param_combo_popup).
+        # 2026-11-23 census 40989dec / c814315c: that Multimaterial group is
+        # Walls / Infill / Solid infill / Wipe tower - no support row. The
+        # support body filament is the Support tab's 'Support/raft base'
+        # (#279), greyed until support is on. Same ops as #279.
         "uia_param_filament_features": [
-            {"tab": "Multimaterial", "op": "rowcombo",
-             "label": ["^Wipe tower", "tower"], "target": "1", "group": "Filament for Features"},
+            {"tab": "Support", "tab_hint": "support", "op": "checkbox",
+             "label": "Enable", "value": True, "group": "Support"},
+            {"op": "rowcombo", "label": "^Support/raft base", "target": "PETG",
+             "group": "Filament for Supports"},
         ],
         # Feishu #286 (line 205): flush_into_support already 1 - no op.
         # 'objects' containment hits the infill row (group's first row,
@@ -726,12 +740,14 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         # Feishu #287 (line 206): support_interface_filament already 0 and
         # interface_shells is coBool - the table's '=2' writes as 1
         # (module header records the deviation). 'shells' is band-unique
-        # and OCR-safe; then the #279 rowcombo on Support.
+        # and OCR-safe; then the #279 ops on Support (census c814315c).
         "uia_param_material_advanced": [
             {"tab": "Multimaterial", "tab_hint": "tower", "op": "checkbox",
              "label": "shells", "value": True, "group": "Advanced"},
-            {"tab": "Support", "tab_hint": "support", "op": "rowcombo",
-             "label": "filament", "target": "1", "group": "Support"},
+            {"tab": "Support", "tab_hint": "support", "op": "checkbox",
+             "label": "Enable", "value": True, "group": "Support"},
+            {"op": "rowcombo", "label": "^Support/raft base", "target": "PETG",
+             "group": "Filament for Supports"},
         ],
         # Feishu #296 (line 215): gcode_label_objects already 1 - no op.
         # Others carries NO tab_hint (param_tab:Others lesson). 'Verbose'

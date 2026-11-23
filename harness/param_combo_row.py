@@ -29,7 +29,7 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
         if y_row is None:
             return None
         canvas_left = wu.window_rect(_canvas(ui))[0]
-        origin_y = wu.client_to_screen(app.hwnd, 0, 0)[1]
+        origin_x, origin_y = wu.client_to_screen(app.hwnd, 0, 0)
         combo = []
 
         def collect(handle, _):
@@ -38,7 +38,11 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
                 return True
             b = wu.window_rect(handle)
             cy = (b[1] + b[3]) // 2 - origin_y
-            if abs(cy - y_row) <= 14 and 0 <= (b[0] + b[2]) // 2 < canvas_left:
+            # On the matched line, or ~15px off it: a label that wraps to
+            # two lines has its control centred on the ROW (fa706g3 review;
+            # find_option_checkbox does the same for boxes).
+            if (abs(cy - y_row) <= 14 or abs(abs(cy - y_row) - 15) <= 8) \
+                    and 0 <= (b[0] + b[2]) // 2 < canvas_left:
                 combo.append((handle, list(b)))
             return True
 
@@ -48,8 +52,19 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
         elif len(combo) == 0:
             # Painted-value combos carry no ComboBox HWND (runs 5e095f2c/
             # 79ca1e8c): the value zone at the row's right opens the popup.
-            bounds = (canvas_left - 150, y_row + origin_y - 13,
-                      canvas_left - 30, y_row + origin_y + 13)
+            # The value is its own small window (census f1c5433b: 120x26
+            # 'Auto'): take that window's centre when the point resolves to
+            # one. WindowFromPoint hands back the big row container for a
+            # DISABLED value - that is left to the open attempt to report.
+            best = None
+            for dy in (0, 15, -15):
+                target = winutil.window_from_screen_point(canvas_left - 90, y_row + dy + origin_y)
+                rect = winutil.window_rect(target) if target else None
+                if rect and (rect[2] - rect[0]) <= 250 and (rect[3] - rect[1]) <= 60:
+                    best = rect
+                    break
+            bounds = best or (canvas_left - 150, y_row + origin_y - 13,
+                              canvas_left - 30, y_row + origin_y + 13)
         else:
             raise ProtocolError("param_combo_field:" + label + ":" + str(len(combo)))
         return ((bounds[0] + bounds[2]) // 2, (bounds[1] + bounds[3]) // 2), bounds
@@ -82,12 +97,15 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
         return False
 
     def _popup_words(ph):
+        # psm 6 (uniform block): the default psm 3 dropped whole rows of
+        # list-like popups - '1 PETG' and '5 PLA' of the extruder list were
+        # missing while '2) PLA' / '4 PLA' came through (census c814315c).
         time.sleep(0.8)
         words_ = []
         for _attempt in range(3):
             w, hgt, bgra = winutil.capture_window(ph)
             img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
-            words_ = mdu.ocr_words_img(img, scale=3)
+            words_ = mdu.ocr_words_img(img, scale=3, psm=6)
             if words_:
                 break
             time.sleep(0.6)
@@ -159,7 +177,7 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
         time.sleep(0.45)
         w, hgt, bgra = winutil.capture_window(ph)
         img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
-        words = mdu.ocr_words_img(img, scale=3)
+        words = mdu.ocr_words_img(img, scale=3, psm=6)
         if _click_target(words, pr, ph) is True:
             clicked = True
         if clicked:
@@ -172,7 +190,7 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
             time.sleep(0.6)
             w, hgt, bgra = winutil.capture_window(ph)
             img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
-            words = mdu.ocr_words_img(img, scale=3)
+            words = mdu.ocr_words_img(img, scale=3, psm=6)
     if not clicked:
         raise ProtocolError("param_combo_target:" + target + ":" +
                             "|".join(t for t, *_ in words)[:80])
