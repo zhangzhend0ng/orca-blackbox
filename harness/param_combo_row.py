@@ -94,8 +94,12 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
                 print("[popup] row %r at (%d,%d) is off-screen (popup %r, "
                       "work area %r)" % (target, x, y, pr, pp.work_area()), flush=True)
                 return "offscreen"
+            print("[popup] clicking %r at (%d,%d) in popup %r; rows OCR'd: %r" % (
+                target, x, y, pr, [(t, x_, y_) for t, x_, y_, *_ in words_][:16]), flush=True)
             winutil.msg_click_screen(x, y)
             return True
+        print("[popup] %r not among the popup rows: %r" % (
+            target, [(t, x_, y_) for t, x_, y_, *_ in words_][:16]), flush=True)
         return False
 
     def _popup_words(ph):
@@ -118,6 +122,8 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
     words = []
     for attempt in (1, 2):
         popup = None
+        print("[popup] row %r: opening the combo at (%d,%d) attempt %d" % (
+            label, cx, cy, attempt), flush=True)
         for click in (1, 2):   # a just-dismissed popup can swallow a click
             winutil.msg_click_screen(cx, cy, app.hwnd)
             for _ in range(12 if click == 1 else 20):
@@ -130,6 +136,7 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
         if not popup:
             raise ProtocolError("param_combo_popup:" + label)
         pr, ph = popup[2], popup[3]
+        print("[popup] opened %r" % (pr,), flush=True)
         words = _popup_words(ph)
         first = _click_target(words, pr, ph)
         if first is True:
@@ -198,6 +205,37 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
                             "|".join(t for t, *_ in words)[:80])
     time.sleep(2.5)  # a combo commit rebuilds the page
     ui.main_input()
+    # Readback (r4.2). This function used to return after its click with no
+    # postcondition at all: fa run f4b87b67 logged nothing, reported success
+    # and left the row painting 'Fuzzy skin ~ None'. The row's painted line
+    # must carry the target now.
+    line = _row_line(ui, label)
+    print("[popup] row %r now paints %r (wanted %r)" % (label, line, target), flush=True)
+    if target.lower() not in line.lower():
+        raise ProtocolError("param_combo_readback:" + target + ":" + line[:60])
+
+
+def _row_line(ui, label):
+    """The painted text of the row labeled `label` where it is now ('' when
+    the row cannot be found or read)."""
+    wu, app = ui.wu, ui.app
+    from harness import mix_dialog_util as mdu
+    import numpy as np
+    try:
+        y = _find_phrase_row(app, label, group_substr=None)
+        if y is None:
+            return ""
+        img = pp.capture_bgr(app)
+        vp = pp.options_viewport(app)
+        ox, oy = wu.client_to_screen(app.hwnd, 0, 0)
+        y0 = max(0, vp[0][1] - oy)
+        y1 = min(img.shape[0], vp[0][3] - oy)
+        words = mdu.ocr_words_img(img[y0:y1, :424], scale=3, psm=6)
+        line = [w for w, x, yy, ww, hh in words if abs((yy + hh // 2) + y0 - y) <= 16]
+        return " ".join(line)
+    except Exception as exc:  # diagnostic path: never mask the real failure
+        print("[popup] row line not read: %s: %s" % (type(exc).__name__, exc), flush=True)
+        return ""
 
 
 def _canvas(ui):

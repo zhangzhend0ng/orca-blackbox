@@ -720,6 +720,46 @@ if REAL_FIND_ANY is not None:
 else:
     print("N/A  _find_phrase_row_any (absent on this tree)")
 
+# 16c. run_ops hands EACH float op its own label. r4.1 looked the candidates
+#      up under a name that only the rowcombo branch defined: a float op
+#      after a rowcombo op searched for the rowcombo's label, any other
+#      float op died on a NameError (fa run f4b87b67) - and no test ran
+#      run_ops with a float op at all (the Mac audit said so the same hour).
+if hasattr(pcl, "_find_phrase_row_any"):
+    seen = []
+    _saved16c = (pcl.uia_set_float, pcr.pick_combo_at_label, pp.ensure_advanced, pp.click_tab,
+                 pp.neutralize_focus)
+    pcl.uia_set_float = lambda ui, label, value, group_substr=None, field_index=None, below=False: (
+        seen.append(("float", label, value, group_substr)) or _raises_float())
+    pcr.pick_combo_at_label = lambda ui, label, target, group_substr=None: seen.append(
+        ("rowcombo", label, target, group_substr))
+    pp.ensure_advanced = lambda app, want=True: True
+    pp.click_tab = lambda app, tab, hint="", *a, **k: True
+    pp.neutralize_focus = lambda app: None
+
+    def _raises_float():
+        return None
+    fake_ui = types.SimpleNamespace(app=None, main_input=lambda: None, pause=lambda s: None)
+    try:
+        pcl.run_ops(fake_ui, [
+            {"tab": "Others", "op": "rowcombo", "label": "Fuzzy skin", "target": "Contour", "group": "Fuzzy"},
+            {"op": "float", "label": "point distance", "value": "0.6", "group": "Fuzzy"},
+        ])
+    except Exception as exc:  # NameError on r4.1
+        seen.append(("crash", type(exc).__name__))
+    try:
+        pcl.run_ops(fake_ui, [{"tab": "Quality", "op": "float", "label": ["Layer height"], "value": "0.2"}])
+    except Exception as exc:
+        seen.append(("crash", type(exc).__name__))
+    finally:
+        (pcl.uia_set_float, pcr.pick_combo_at_label, pp.ensure_advanced, pp.click_tab,
+         pp.neutralize_focus) = _saved16c
+    floats = [s for s in seen if s[0] == "float"]
+    check("run_ops: a float op after a rowcombo op gets ITS OWN label (not the rowcombo's)",
+          floats and tuple(floats[0][1]) == ("point distance",), "seen %r" % (seen,))
+    check("run_ops: a float op with no rowcombo before it does not crash",
+          len(floats) == 2 and floats[1][1] == ["Layer height"], "seen %r" % (seen,))
+
 # 17. find_option_row_seq scans like find_option_row, in the value column.
 #     Until r4 it looked at the start view and 5 notches down: a value deeper
 #     than ~10 rows below its group title was unreachable (fa review D1), and

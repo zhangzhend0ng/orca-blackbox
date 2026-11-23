@@ -401,6 +401,12 @@ def run_ops(ui, ops):
             # order (_find_phrase_row_any). The per-candidate loop this
             # replaces paid a whole-page search for every candidate that is
             # not on the page.
+            # `labels` must come from THIS op: the first version of this
+            # branch used a name that only the rowcombo branch defined, so a
+            # float op after a rowcombo op edited the rowcombo's label (fa
+            # run f4b87b67: 'point distance' searched for 'Fuzzy skin') and
+            # any other float op died on a NameError.
+            labels = op["label"] if isinstance(op["label"], (tuple, list)) else (op["label"],)
             uia_set_float(ui, labels, str(op["value"]), group_substr=op.get("group"),
                           field_index=op.get("field"), below=bool(op.get("below")))
             pp.neutralize_focus(app)
