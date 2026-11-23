@@ -134,5 +134,5 @@ def test_reopen_profile_gets_the_edit_sessions_conf(tmp_path, monkeypatch):
     monkeypatch.setattr(harness,"launcher",SimpleNamespace(launch=lambda **kwargs:object()),raising=False)
     monkeypatch.setattr(harness,"winutil",SimpleNamespace(),raising=False)
     develop={"app":{"user_mode":"develop"}}
-    worker._WindowsUI(tmp_path,model=tmp_path/"projects/0001.3mf",profile_name="p",conf_extra=develop)
+    worker._WindowsUI(tmp_path,model=tmp_path/"projects/0001.3mf",profile_name="profile_reopen",conf_extra=develop)
     assert seeded==[develop]
