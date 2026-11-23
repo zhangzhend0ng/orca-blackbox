@@ -6571,6 +6571,11 @@
    "op": "case:uia_param_travel_speed",
    "stamp": "040643",
    "ok": false
+  },
+  {
+   "op": "case:uia_param_surface_flow",
+   "stamp": "041357",
+   "ok": false
   }
  ],
  "summary": {
@@ -6769,7 +6774,7 @@
     "screenshots": 16
    }
   },
-  "summary_written_at": "2026-11-24 03:49:40",
+  "summary_written_at": "2026-11-24 04:14:50",
   "code_after_the_proof": "final code = look-first scroll + painted_is() + pick_combo --take. On the final code: pick_combo pointer / keys (022226 / 022357) and scenario print-sequence (022045). One step behind it (no painted_is, no --take; neither is on that path): scenario thin-wall (021310). Older: the five op proofs and scenario layer-height (014352)",
   "pick_combo_attribution": {
    "status": "ISOLATED - the pointer click completes the pick; it is also the first input of the full sequence, so the keys that follow it are redundant",
@@ -6875,31 +6880,32 @@
     "uia_param_precision_comp"
    ],
    "pass": [
+    "uia_param_wall_thin",
     "uia_param_layer_pair"
    ],
    "unsupported op": [],
    "needs develop mode": [],
    "not_passed": {
-    "uia_param_wall_thin": "NOT PROVEN, 2 GUI attempts: 031559 (fuse 200 s fired, no worker result, nothing saved) and 034725 (179.7 s, fuse not reached: op0 Wall loops=4 read back ok; op1 found 'Detect thin walls' at the resize step, then stopped after the cell click on a harness defect - param_case.tick() strip file name; nothing saved) - see cases[\"case:uia_param_wall_thin\"]"
+    "uia_param_travel_speed": "NOT PROVEN, 1 GUI attempt(s) 040643; latest run 040643, no worker result (the 360 s default fuse fired): status 'not passed'; ops done: none; stopped: supervisor error (its fuse fired, or the launch failed): no worker result - see supervisor_error; the test instance it left was killed by hand (see blockers)",
+    "uia_param_surface_flow": "NOT PROVEN, 1 GUI attempt(s) 041357; latest run 041357, no worker result (the 360 s default fuse fired): status 'not passed'; ops done: none; stopped: supervisor error (its fuse fired, or the launch failed): no worker result - see supervisor_error; the test instance it left was killed by hand (see blockers)"
    },
    "not_run": [
-    "uia_param_travel_speed",
-    "uia_param_surface_flow",
     "uia_param_speed_limits",
     "uia_param_arc_resolution",
     "uia_param_precision_comp"
    ],
-   "not_run_why": "step 6 was boxed to 28 minutes; the fuse default, the ensure_advanced fix with its check and the two cases asked for used it",
+   "not_run_why": "step 7 was boxed to 28 minutes: the fix with its offline check and three GUI attempts (two of them 6-minute fuse timeouts) used it",
    "differences": [
     "uia_param_layer_pair: none for its two keys",
     "uia_param_wall_thin 034725: Wall loops painted '4' on the row after the edit (031559 could not read that number); 'Detect thin walls' is on the page in Advanced mode only, below the fold at 1200x800 and on screen at 1200x916",
     "the Windows rows are not in this repo run; nothing else established"
    ],
    "blockers": [
-    "param_case.tick(): checkbox_strip gets the tag without the op prefix and looks for out/check-checked.cell.png, while the case saves every shot under its op prefix (op1-check-checked.png) -> FileNotFoundError after the cell click, the case stops before Save Project. NOT FIXED; no third attempt (as instructed). The click was posted once in 034725 and its effect was not read",
-    "not exercised on the GUI: a checkbox tick up to a saved value, rowcombo -> pick_combo inside a case, Save Project after a float and a checkbox, detect_thin_wall in the saved-values judge",
-    "a case with a row below the fold takes about 3 minutes (034725: 70.6 s for op0, 84.7 s for op1 up to the error); the 360 s default fuse has room for little more than the second locate chain that tick() walks",
-    "uia_param_layer_pair's other_changed_keys: 35 keys differ between the fixture's config and the saved one (print_settings_id, version, machine gcode, filament_* ...) - review material, not judged, no save-only control was run"
+    "param_case.tick() strip file name: FIXED (90af1ba, per_op_shots / on_disk) and proven on the GUI by run 035959 (uia_param_wall_thin PASS, the strips cut from op1-check-page.cell.png / op1-check-checked.cell.png)",
+    "locate_row's scroll chain, NOT FIXED: for a row under a group title that is off screen, scroll_to runs its steps in the standard attempt and again in the Advanced attempt before the resize step, and the page does not scroll from injected input (A2). uia_param_travel_speed (1 op, run 040643: 20 + 20 scroll steps) and uia_param_surface_flow (2 ops, run 041357: 24 steps in the standard attempt, the fuse fired at the 17th of the Advanced one) each spent their whole 360 s fuse there; the widen / tall-window steps that bring such a row into view were not reached. No cell was clicked in either run. The same waits for speed_limits, arc_resolution and precision_comp: every op of them carries a group",
+    "a supervisor timeout leaves the test instance running (B7 note, seen again): pids 93241 (040643) and 96464 (041357) killed by hand at 04:07:57 and 04:14:12 after confirming each command names its orca-bb-param-ops work dir; no Orca process and no LaunchAgent job left",
+    "not exercised on the GUI: rowcombo -> pick_combo inside a case, a checkbox that must end unchecked (no reader for its painted state)",
+    "other keys: 35 keys differ between the fixture's config and the saved one in each save so far (layer_pair 034408, wall_thin 035959); review material, not judged on Mac, no save-only control was run"
    ],
    "harness_notes": [
     "the supervisor needs .venv/bin/python (3.11): /usr/bin/python3 is 3.9 and stops at staging (first attempt 03:12:16, no GUI action, nothing recorded)",
@@ -6910,14 +6916,45 @@
     "the supervisor runs under .venv/bin/python (3.11) and the worker under the trusted Python 3.9 (seen again 03:38:20: /usr/bin/python3 stopped at staging, no GUI action)",
     "the before/after proof of 034019 is the OCR of the panel crops, run after the run: this session's model cannot view images"
    ],
-   "summary_written_at": "2026-11-24 03:49:40",
+   "summary_written_at": "2026-11-24 04:14:50",
    "pass_runs": {
-    "uia_param_layer_pair": "run 034408, 124.4 s, param_case.py --case, no --fuse passed (default 360 s): layer_height 0.4 -> saved 0.2, initial_layer_print_height 0.4 -> saved 0.25 (expected 0.2 / 0.25), both read from the saved 3mf; title 'probe' after Save Project; no Orca instance left; n = 1"
+    "uia_param_wall_thin": "run 035959, 177.2 s: wall_loops 2 -> saved 4 (expected 4, decimal); detect_thin_wall 0 -> saved 1 (expected 1, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 1",
+    "uia_param_layer_pair": "run 034408, 124.4 s: layer_height 0.4 -> saved 0.2 (expected 0.2, decimal); initial_layer_print_height 0.4 -> saved 0.25 (expected 0.25, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 1"
    },
    "blockers_e81e9fc_now": {
     "1 fuse": "default is now max(360, 120 + 80 per op) s (949ce13); neither run since reached it",
     "2 ensure_advanced misread": "FIXED (84d6421): the box's own AX value decides. Check run 034019 (op advanced_check, saves nothing): call 1 switched it on (0 -> 1); calls 2 and 3 returned already_on with no attempt while the band's OCR read only 'Others' (Speed glued into 'Quality Strength Speed Support Multimaterial'). Case run 034725: the one call inside op1's chain returned already_on, no toggle. The check's own record has ok=false (first criterion asked for Speed as a whole token); corrected criterion NOT re-run on the GUI",
     "3 below the fold": "reached without new code: 034725 found the row at the resize step (1200x916) after standard / Advanced / wide; no scrollbar method and no maximize was added or used"
+   },
+   "other_changed_keys_per_case": {
+    "uia_param_wall_thin": 35,
+    "uia_param_layer_pair": 35
+   },
+   "step7": {
+    "what": "step 7 in a 28-minute box: the tick() shot file names fixed with an offline check (90af1ba), then the case list in the asked order, one GUI attempt per case, no --fuse passed (default max(360, 120 + 80 per op) s)",
+    "case_commits": {
+     "uia_param_wall_thin": "5766182",
+     "uia_param_travel_speed": "8152641",
+     "uia_param_surface_flow": "recorded with this summary commit"
+    },
+    "offline_check": "runner/macos/param_case_check.py (no Orca, no screen): the bare names are refused with the run 034725 error; tick() cuts op1-check-page.cell.png + op1-check-checked.cell.png with one click; a page shot missing from disk is refused with 0 clicks",
+    "tried_this_step": [
+     "uia_param_wall_thin",
+     "uia_param_travel_speed",
+     "uia_param_surface_flow"
+    ],
+    "gui_time": "wall_thin 177.2 s; travel_speed and surface_flow each ran to the 360 s fuse",
+    "tried": 3,
+    "passed": 1
+   },
+   "step7_case_lines": {
+    "uia_param_wall_thin": "PASS run 035959, 177.2 s, 3 GUI attempt(s)",
+    "uia_param_layer_pair": "PASS run 034408, 124.4 s, 1 GUI attempt(s)",
+    "uia_param_travel_speed": "NOT PROVEN run 040643, 360 s fuse fired supervisor error (its fuse fired, or the launch failed): no worker result - see supervisor_error",
+    "uia_param_surface_flow": "NOT PROVEN run 041357, 360 s fuse fired supervisor error (its fuse fired, or the launch failed): no worker result - see supervisor_error",
+    "uia_param_speed_limits": "NOT RUN",
+    "uia_param_arc_resolution": "NOT RUN",
+    "uia_param_precision_comp": "NOT RUN"
    }
   }
  },
@@ -8004,6 +8041,124 @@
     "op0-switch-speed-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-040643/case-040643-op0-switch-speed-before.png"
    },
    "name": "uia_param_travel_speed",
+   "status": "not passed",
+   "reason": "supervisor error (its fuse fired, or the launch failed): no worker result - see supervisor_error"
+  },
+  "case:uia_param_surface_flow": {
+   "op": "case",
+   "ok": false,
+   "supervisor_error": "Traceback (most recent call last):\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 1866, in supervise\n    wait_for(result_file.is_file, \"Mac worker timed out\", ns.fuse)\n  File \"/Users/coilwin/orca-blackbox/runner/macos/param_ops.py\", line 84, in wait_for\n    raise TimeoutError(message)\nTimeoutError: Mac worker timed out\n",
+   "screenshots": {
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-entry.png",
+    "op0-find-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-advanced.panel.png",
+    "op0-find-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-advanced.png",
+    "op0-find-page-adv-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-locate.panel.png",
+    "op0-find-page-adv-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-locate.png",
+    "op0-find-page-adv-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-scroll-0.panel.png",
+    "op0-find-page-adv-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-scroll-0.png",
+    "op0-find-page-adv-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-scroll-1.panel.png",
+    "op0-find-page-adv-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-scroll-1.png",
+    "op0-find-page-adv-scroll-10.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-scroll-10.panel.png",
+    "op0-find-page-adv-scroll-10.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-scroll-10.png",
+    "op0-find-page-adv-scroll-11.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-scroll-11.panel.png",
+    "op0-find-page-adv-scroll-11.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-scroll-11.png",
+    "op0-find-page-adv-scroll-12.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-scroll-12.panel.png",
+    "op0-find-page-adv-scroll-12.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-scroll-12.png",
+    "op0-find-page-adv-scroll-13.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-scroll-13.panel.png",
+    "op0-find-page-adv-scroll-13.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-scroll-13.png",
+    "op0-find-page-adv-scroll-14.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-scroll-14.panel.png",
+    "op0-find-page-adv-scroll-14.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-scroll-14.png",
+    "op0-find-page-adv-scroll-15.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-scroll-15.panel.png",
+    "op0-find-page-adv-scroll-15.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-scroll-15.png",
+    "op0-find-page-adv-scroll-16.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-scroll-16.panel.png",
+    "op0-find-page-adv-scroll-16.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-scroll-16.png",
+    "op0-find-page-adv-scroll-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-scroll-2.panel.png",
+    "op0-find-page-adv-scroll-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-scroll-2.png",
+    "op0-find-page-adv-scroll-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-scroll-3.panel.png",
+    "op0-find-page-adv-scroll-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-scroll-3.png",
+    "op0-find-page-adv-scroll-4.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-scroll-4.panel.png",
+    "op0-find-page-adv-scroll-4.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-scroll-4.png",
+    "op0-find-page-adv-scroll-5.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-scroll-5.panel.png",
+    "op0-find-page-adv-scroll-5.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-scroll-5.png",
+    "op0-find-page-adv-scroll-6.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-scroll-6.panel.png",
+    "op0-find-page-adv-scroll-6.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-scroll-6.png",
+    "op0-find-page-adv-scroll-7.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-scroll-7.panel.png",
+    "op0-find-page-adv-scroll-7.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-scroll-7.png",
+    "op0-find-page-adv-scroll-8.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-scroll-8.panel.png",
+    "op0-find-page-adv-scroll-8.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-scroll-8.png",
+    "op0-find-page-adv-scroll-9.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv-scroll-9.panel.png",
+    "op0-find-page-adv-scroll-9.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv-scroll-9.png",
+    "op0-find-page-adv.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-adv.panel.png",
+    "op0-find-page-adv.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-adv.png",
+    "op0-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-locate.panel.png",
+    "op0-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-locate.png",
+    "op0-find-page-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-0.panel.png",
+    "op0-find-page-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-0.png",
+    "op0-find-page-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-1.panel.png",
+    "op0-find-page-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-1.png",
+    "op0-find-page-scroll-10.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-10.panel.png",
+    "op0-find-page-scroll-10.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-10.png",
+    "op0-find-page-scroll-11.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-11.panel.png",
+    "op0-find-page-scroll-11.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-11.png",
+    "op0-find-page-scroll-12.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-12.panel.png",
+    "op0-find-page-scroll-12.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-12.png",
+    "op0-find-page-scroll-13.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-13.panel.png",
+    "op0-find-page-scroll-13.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-13.png",
+    "op0-find-page-scroll-14.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-14.panel.png",
+    "op0-find-page-scroll-14.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-14.png",
+    "op0-find-page-scroll-15.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-15.panel.png",
+    "op0-find-page-scroll-15.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-15.png",
+    "op0-find-page-scroll-16.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-16.panel.png",
+    "op0-find-page-scroll-16.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-16.png",
+    "op0-find-page-scroll-17.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-17.panel.png",
+    "op0-find-page-scroll-17.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-17.png",
+    "op0-find-page-scroll-18.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-18.panel.png",
+    "op0-find-page-scroll-18.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-18.png",
+    "op0-find-page-scroll-19.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-19.panel.png",
+    "op0-find-page-scroll-19.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-19.png",
+    "op0-find-page-scroll-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-2.panel.png",
+    "op0-find-page-scroll-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-2.png",
+    "op0-find-page-scroll-20.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-20.panel.png",
+    "op0-find-page-scroll-20.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-20.png",
+    "op0-find-page-scroll-21.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-21.panel.png",
+    "op0-find-page-scroll-21.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-21.png",
+    "op0-find-page-scroll-22.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-22.panel.png",
+    "op0-find-page-scroll-22.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-22.png",
+    "op0-find-page-scroll-23.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-23.panel.png",
+    "op0-find-page-scroll-23.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-23.png",
+    "op0-find-page-scroll-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-3.panel.png",
+    "op0-find-page-scroll-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-3.png",
+    "op0-find-page-scroll-4.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-4.panel.png",
+    "op0-find-page-scroll-4.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-4.png",
+    "op0-find-page-scroll-5.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-5.panel.png",
+    "op0-find-page-scroll-5.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-5.png",
+    "op0-find-page-scroll-6.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-6.panel.png",
+    "op0-find-page-scroll-6.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-6.png",
+    "op0-find-page-scroll-7.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-7.panel.png",
+    "op0-find-page-scroll-7.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-7.png",
+    "op0-find-page-scroll-8.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-8.panel.png",
+    "op0-find-page-scroll-8.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-8.png",
+    "op0-find-page-scroll-9.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page-scroll-9.panel.png",
+    "op0-find-page-scroll-9.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page-scroll-9.png",
+    "op0-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-find-page.panel.png",
+    "op0-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-find-page.png",
+    "op0-switch-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-switch-advanced-ax-0.panel.png",
+    "op0-switch-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-switch-advanced-ax-0.png",
+    "op0-switch-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-switch-advanced-ax-1.panel.png",
+    "op0-switch-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-switch-advanced-ax-1.png",
+    "op0-switch-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-switch-advanced-ax-2.panel.png",
+    "op0-switch-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-switch-advanced-ax-2.png",
+    "op0-switch-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-switch-advanced-ax-3.panel.png",
+    "op0-switch-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-switch-advanced-ax-3.png",
+    "op0-switch-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-switch-advanced.panel.png",
+    "op0-switch-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-switch-advanced.png",
+    "op0-switch-quality-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-switch-quality-after.panel.png",
+    "op0-switch-quality-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-switch-quality-after.png",
+    "op0-switch-quality-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-041357-op0-switch-quality-before.panel.png",
+    "op0-switch-quality-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-041357/case-041357-op0-switch-quality-before.png"
+   },
+   "name": "uia_param_surface_flow",
    "status": "not passed",
    "reason": "supervisor error (its fuse fired, or the launch failed): no worker result - see supervisor_error"
   }
