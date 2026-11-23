@@ -72,12 +72,360 @@
     "find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-225446-find-page.panel.png",
     "find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-225446/find_row-225446-find-page.png"
    }
+  },
+  "switch_tab": {
+   "op": "switch_tab",
+   "ok": true,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "readback": [
+    {
+     "tab": "Quality",
+     "ok": true,
+     "page_text": [
+      "layer height",
+      "first layer height",
+      "0 4"
+     ]
+    },
+    {
+     "tab": "Strength",
+     "ok": true,
+     "page_text": [
+      "walls",
+      "wall loops",
+      "alternate extra wall",
+      "2"
+     ]
+    },
+    {
+     "tab": "Speed",
+     "ok": true,
+     "page_text": [
+      "first layer speed",
+      "firstlayer",
+      "first layer infill",
+      "35",
+      "mm s"
+     ]
+    },
+    {
+     "tab": "Support",
+     "ok": true,
+     "page_text": [
+      "n support",
+      "enable support",
+      "type",
+      "tree auto"
+     ]
+    },
+    {
+     "tab": "Multimaterial",
+     "ok": true,
+     "page_text": [
+      "bl prime tower",
+      "enable",
+      "width",
+      "30"
+     ]
+    },
+    {
+     "tab": "Others",
+     "ok": true,
+     "page_text": [
+      "l skirt",
+      "skirt loops",
+      "skirt type",
+      "0",
+      "v combined"
+     ]
+    }
+   ],
+   "evidence": {
+    "steps": [
+     {
+      "tab": "Quality",
+      "ok": true,
+      "click": [
+       405,
+       777
+      ],
+      "tabs_seen": [
+       "Others"
+      ],
+      "landmark": [
+       "layer height"
+      ],
+      "page_changed": false,
+      "page_text": [
+       "layer height",
+       "first layer height",
+       "0 4"
+      ],
+      "verified_by": "landmark"
+     },
+     {
+      "tab": "Strength",
+      "ok": true,
+      "click": [
+       470,
+       777
+      ],
+      "tabs_seen": [
+       "Others"
+      ],
+      "landmark": [
+       "wall loops",
+       "walls"
+      ],
+      "page_changed": true,
+      "page_text": [
+       "walls",
+       "wall loops",
+       "alternate extra wall",
+       "2"
+      ],
+      "verified_by": "landmark"
+     },
+     {
+      "tab": "Speed",
+      "ok": true,
+      "click": [
+       528,
+       777
+      ],
+      "tabs_seen": [
+       "Others"
+      ],
+      "landmark": [
+       "speed"
+      ],
+      "page_changed": true,
+      "page_text": [
+       "first layer speed",
+       "firstlayer",
+       "first layer infill",
+       "35",
+       "mm s",
+       "55"
+      ],
+      "verified_by": "landmark"
+     },
+     {
+      "tab": "Support",
+      "ok": true,
+      "click": [
+       582,
+       777
+      ],
+      "tabs_seen": [
+       "Others"
+      ],
+      "landmark": [
+       "support"
+      ],
+      "page_changed": true,
+      "page_text": [
+       "n support",
+       "enable support",
+       "type",
+       "tree auto"
+      ],
+      "verified_by": "landmark"
+     },
+     {
+      "tab": "Multimaterial",
+      "ok": true,
+      "click": [
+       666,
+       777
+      ],
+      "tabs_seen": [
+       "Others"
+      ],
+      "landmark": [
+       "tower"
+      ],
+      "page_changed": true,
+      "page_text": [
+       "bl prime tower",
+       "enable",
+       "width",
+       "30"
+      ],
+      "verified_by": "landmark"
+     },
+     {
+      "tab": "Others",
+      "ok": true,
+      "click": [
+       752,
+       776
+      ],
+      "tabs_seen": [
+       "Others"
+      ],
+      "landmark": [
+       "skirt"
+      ],
+      "page_changed": true,
+      "page_text": [
+       "l skirt",
+       "skirt loops",
+       "skirt type",
+       "0",
+       "v combined"
+      ],
+      "verified_by": "landmark"
+     }
+    ],
+    "advanced": {
+     "already_on": false,
+     "tabs_before": [
+      "Others",
+      "Quality",
+      "Strength",
+      "Support",
+      "Multimaterial"
+     ],
+     "attempts": [
+      {
+       "how": "ax",
+       "value_before": 0,
+       "box": [
+        673.0,
+        689.0
+       ],
+       "tabs_after": [
+        [
+         "Others"
+        ],
+        [
+         "Others"
+        ],
+        [
+         "Others"
+        ],
+        [
+         "Others"
+        ]
+       ],
+       "value_after": 1
+      }
+     ],
+     "checkboxes": [
+      {
+       "x": 453.0,
+       "y": 686.0,
+       "words": "",
+       "value": 0
+      },
+      {
+       "x": 673.0,
+       "y": 689.0,
+       "words": "",
+       "value": 0
+      }
+     ],
+     "turned_on_by": "ax",
+     "speed_seen": false
+    }
+   },
+   "shots": {
+    "entry": "entry.png",
+    "switch-advanced": "switch-advanced.png",
+    "switch-advanced-ax-0": "switch-advanced-ax-0.png",
+    "switch-advanced-ax-1": "switch-advanced-ax-1.png",
+    "switch-advanced-ax-2": "switch-advanced-ax-2.png",
+    "switch-advanced-ax-3": "switch-advanced-ax-3.png",
+    "switch-quality-before": "switch-quality-before.png",
+    "switch-quality-after": "switch-quality-after.png",
+    "switch-strength-before": "switch-strength-before.png",
+    "switch-strength-after": "switch-strength-after.png",
+    "switch-speed-before": "switch-speed-before.png",
+    "switch-speed-after": "switch-speed-after.png",
+    "switch-support-before": "switch-support-before.png",
+    "switch-support-after": "switch-support-after.png",
+    "switch-multimaterial-before": "switch-multimaterial-before.png",
+    "switch-multimaterial-after": "switch-multimaterial-after.png",
+    "switch-others-before": "switch-others-before.png",
+    "switch-others-after": "switch-others-after.png"
+   },
+   "geometry": {
+    "origin": [
+     360.0,
+     85.0
+    ],
+    "size": [
+     1200.0,
+     800.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795446166.480627,
+   "seconds": 108.4,
+   "screenshots": {
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-entry.png",
+    "switch-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-advanced-ax-0.panel.png",
+    "switch-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-advanced-ax-0.png",
+    "switch-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-advanced-ax-1.panel.png",
+    "switch-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-advanced-ax-1.png",
+    "switch-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-advanced-ax-2.panel.png",
+    "switch-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-advanced-ax-2.png",
+    "switch-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-advanced-ax-3.panel.png",
+    "switch-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-advanced-ax-3.png",
+    "switch-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-advanced.panel.png",
+    "switch-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-advanced.png",
+    "switch-multimaterial-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-multimaterial-after.panel.png",
+    "switch-multimaterial-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-multimaterial-after.png",
+    "switch-multimaterial-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-multimaterial-before.panel.png",
+    "switch-multimaterial-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-multimaterial-before.png",
+    "switch-others-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-others-after.panel.png",
+    "switch-others-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-others-after.png",
+    "switch-others-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-others-before.panel.png",
+    "switch-others-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-others-before.png",
+    "switch-quality-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-quality-after.panel.png",
+    "switch-quality-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-quality-after.png",
+    "switch-quality-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-quality-before.panel.png",
+    "switch-quality-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-quality-before.png",
+    "switch-speed-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-speed-after.panel.png",
+    "switch-speed-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-speed-after.png",
+    "switch-speed-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-speed-before.panel.png",
+    "switch-speed-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-speed-before.png",
+    "switch-strength-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-strength-after.panel.png",
+    "switch-strength-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-strength-after.png",
+    "switch-strength-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-strength-before.panel.png",
+    "switch-strength-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-strength-before.png",
+    "switch-support-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-support-after.panel.png",
+    "switch-support-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-support-after.png",
+    "switch-support-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-support-before.panel.png",
+    "switch-support-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-support-before.png"
+   }
   }
  },
  "attempts": [
   {
    "op": "find_row",
    "stamp": "225446",
+   "ok": true
+  },
+  {
+   "op": "switch_tab",
+   "stamp": "225635",
+   "ok": false
+  },
+  {
+   "op": "switch_tab",
+   "stamp": "230011",
+   "ok": false
+  },
+  {
+   "op": "switch_tab",
+   "stamp": "230246",
    "ok": true
   }
  ]

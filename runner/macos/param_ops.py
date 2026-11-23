@@ -52,7 +52,7 @@ TABS = ("Quality", "Strength", "Speed", "Support", "Multimaterial", "Others")
 LANDMARKS = {"Quality": ("layer height",), "Strength": ("wall loops", "walls"),
              "Speed": ("speed",), "Support": ("support",),
              "Multimaterial": ("tower", "ooze", "wipe", "flush"),
-             "Others": ("special", "sequence", "g-code", "spiral")}
+             "Others": ("skirt", "special", "sequence", "g-code", "spiral")}
 PANEL_WIDTH = 470  # left settings column, px at scale 1.0
 TITLE_X = 26       # group titles start left of this offset, row labels right of it
 IEND = b"IEND\xaeB\x60\x82"
@@ -486,17 +486,29 @@ class Panel:
         if "Speed" in self.tabs_seen(rows):
             return {"already_on": True, "tabs": self.tabs_seen(rows)}
         note = {"already_on": False, "tabs_before": self.tabs_seen(rows), "attempts": []}
-        for attempt in ("ax", "label", "left"):
-            taken = None
-            if attempt == "ax":
-                boxes = self.checkboxes()
-                note["checkboxes"] = [{k: v for k, v in b.items() if k != "element"} for b in boxes]
-                box = next((b for b in boxes if "advanced" in b["words"].lower()), None)
+        boxes = None
+        for attempt in ("ax", "box", "label", "left"):
+            taken, box = None, None
+            if attempt in ("ax", "box"):
+                # The Advanced box carries no AX title/help: it is the AXCheckBox
+                # painted at the right end of its OCR label (A2 map: 673,689).
+                if boxes is None:
+                    boxes = self.checkboxes()
+                    note["checkboxes"] = [{k: v for k, v in b.items() if k != "element"} for b in boxes]
+                text = next((r for r in rows if norm(r["text"]) == "advanced"), None)
+                right = text["x"] + text["w"] if text else None
+                near = [b for b in boxes if right is not None and abs(b["y"] - text["y"]) <= 12
+                        and -6 <= b["x"] - right <= 40]
+                named = next((b for b in boxes if "advanced" in b["words"].lower()), None)
+                box = (min(near, key=lambda b: abs(b["x"] - right)) if near else None) or named
                 if box is None:
-                    note["attempts"].append({"how": "ax", "skipped": "no AX checkbox mentions Advanced"})
+                    note["attempts"].append({"how": attempt, "skipped": "no AX checkbox at the Advanced label"})
                     continue
-                taken = {"how": "ax", "value_before": box["value"]}
-                self.desktop.act(self.pid, box["element"], "AXPress")
+                taken = {"how": attempt, "value_before": box["value"], "box": [box["x"], box["y"]]}
+                if attempt == "ax":
+                    self.desktop.act(self.pid, box["element"], "AXPress")
+                else:
+                    self.click(box["x"] + 8, box["y"] + 8)
             else:
                 text = next((r for r in rows if norm(r["text"]) == "advanced"), None)
                 if text is None:
@@ -505,13 +517,24 @@ class Panel:
                 x = text["x"] + text["w"] / 2 if attempt == "label" else text["x"] - 9
                 self.click(x, text["y"] + text["h"] / 2)
                 taken = {"how": attempt, "click": [round(x), round(text["y"] + text["h"] / 2)]}
-            time.sleep(1.5)
-            rows = self.read(f"{tag}-{attempt}")
-            taken["tabs_after"] = self.tabs_seen(rows)
+            # The mode switch rebuilds the page: poll the band instead of trusting
+            # one early read, and never toggle a second time once the box reads 1.
+            seen = []
+            for poll in range(4):
+                time.sleep(1.2)
+                rows = self.read(f"{tag}-{attempt}-{poll}")
+                seen.append(self.tabs_seen(rows))
+                if "Speed" in seen[-1]:
+                    break
+            taken["tabs_after"] = seen
+            if box is not None and attempt in ("ax", "box"):
+                taken["value_after"] = cf_scalar(self.desktop, self.desktop.attr(box["element"], "AXValue"))
             note["attempts"].append(taken)
-            if "Speed" in taken["tabs_after"]:
+            if "Speed" in seen[-1] or taken.get("value_after") == 1:
                 note["turned_on_by"] = attempt
+                note["speed_seen"] = "Speed" in seen[-1]
                 return note
+            rows = self.read(f"{tag}-{attempt}-later")
         raise RuntimeError(f"Advanced mode did not switch on: {json.dumps(note)[:700]}")
 
     def locate_row(self, tab, group, label, prefix):
@@ -536,11 +559,40 @@ class Panel:
             return rows, row, note, tag
         except RuntimeError as error:
             note.append({"advanced_mode": brief(error)})
+        note.append({"widened": self.widen(f"{prefix}-widen")})
+        try:
+            rows, row, tag = attempt("page-wide")
+            return rows, row, note, tag
+        except RuntimeError as error:
+            note.append({"wide_window": brief(error)})
         point, size = self.geometry()
         grown = self.resize(size.x, min(960, 1080 - point.y - 15))
         note.append({"resized_to": [grown[1].x, grown[1].y]})
         rows, row, tag = attempt("page-tall")
         return rows, row, note, tag
+
+    def widen(self, tag):
+        """Collapse the Printer and Filaments sections: the Process page then owns
+        the settings column's height (its viewport is three lines otherwise)."""
+        note = {"collapsed": []}
+        for index in range(2):
+            rows = self.read(f"{tag}-{index}")
+            point = self.geometry()[0]
+            process = next((r for r in rows if norm(r["text"]) == "process"), None)
+            headers = [] if process is None else [
+                r for r in rows if r["y"] < process["y"] - 20 and r["x"] - point.x < 40
+                and norm(r["text"]).endswith(("printer", "filaments"))]
+            if not headers:
+                note["process_header_y"] = process["y"] if process else None
+                break
+            header = max(headers, key=lambda r: r["y"])
+            at = (header["x"] + header["w"] / 2, header["y"] + header["h"] / 2)
+            self.click(*at)
+            time.sleep(1.2)
+            note["collapsed"].append({"header": header["text"], "click": [round(at[0]), round(at[1])]})
+        process = next((r for r in self.read(f"{tag}-after") if norm(r["text"]) == "process"), None)
+        note["process_header_y_after"] = process["y"] if process else None
+        return note
 
 
 # --- operations (each returns the fields of its JSON line) ---
