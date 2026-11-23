@@ -6229,6 +6229,161 @@
     "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-022357-entry.panel.png",
     "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-022357/pick_combo-022357-entry.png"
    }
+  },
+  "advanced_check": {
+   "op": "advanced_check",
+   "name": null,
+   "ok": false,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "entry": {
+    "dialogs": []
+   },
+   "readback": {
+    "first": {
+     "already_on": false,
+     "turned_on_by": "ax",
+     "speed_seen": false
+    },
+    "second": {
+     "already_on": true,
+     "by": "ax value",
+     "value": 1,
+     "tabs": [
+      "Others"
+     ]
+    },
+    "third": {
+     "already_on": true,
+     "by": "ax value",
+     "value": 1,
+     "tabs": []
+    },
+    "value_after": 1,
+    "tabs_after": [
+     "Others"
+    ],
+    "dirty": false,
+    "ok": false
+   },
+   "evidence": {
+    "calls": [
+     {
+      "already_on": false,
+      "tabs_before": [
+       "Others",
+       "Quality",
+       "Strength",
+       "Support",
+       "Multimaterial"
+      ],
+      "value_before": 0,
+      "attempts": [
+       {
+        "how": "ax",
+        "value_before": 0,
+        "box": [
+         673.0,
+         689.0
+        ],
+        "tabs_after": [
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ]
+        ],
+        "value_after": 1
+       }
+      ],
+      "checkboxes": [
+       {
+        "x": 453.0,
+        "y": 686.0,
+        "words": "",
+        "value": 0
+       },
+       {
+        "x": 673.0,
+        "y": 689.0,
+        "words": "",
+        "value": 0
+       }
+      ],
+      "turned_on_by": "ax",
+      "speed_seen": false
+     },
+     {
+      "already_on": true,
+      "by": "ax value",
+      "value": 1,
+      "tabs": [
+       "Others"
+      ]
+     },
+     {
+      "already_on": true,
+      "by": "ax value",
+      "value": 1,
+      "tabs": []
+     }
+    ]
+   },
+   "shots": {
+    "entry": "entry.png",
+    "advanced-check-1": "advanced-check-1.png",
+    "advanced-check-1-ax-0": "advanced-check-1-ax-0.png",
+    "advanced-check-1-ax-1": "advanced-check-1-ax-1.png",
+    "advanced-check-1-ax-2": "advanced-check-1-ax-2.png",
+    "advanced-check-1-ax-3": "advanced-check-1-ax-3.png",
+    "advanced-check-2": "advanced-check-2.png",
+    "advanced-check-3": "advanced-check-3.png",
+    "advanced-check-after": "advanced-check-after.png"
+   },
+   "notes": [],
+   "geometry": {
+    "origin": [
+     360.0,
+     85.0
+    ],
+    "size": [
+     1200.0,
+     800.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795462819.464299,
+   "seconds": 75.7,
+   "screenshots": {
+    "advanced-check-1-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/advanced_check-034019-advanced-check-1-ax-0.panel.png",
+    "advanced-check-1-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/advanced_check-034019/advanced_check-034019-advanced-check-1-ax-0.png",
+    "advanced-check-1-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/advanced_check-034019-advanced-check-1-ax-1.panel.png",
+    "advanced-check-1-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/advanced_check-034019/advanced_check-034019-advanced-check-1-ax-1.png",
+    "advanced-check-1-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/advanced_check-034019-advanced-check-1-ax-2.panel.png",
+    "advanced-check-1-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/advanced_check-034019/advanced_check-034019-advanced-check-1-ax-2.png",
+    "advanced-check-1-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/advanced_check-034019-advanced-check-1-ax-3.panel.png",
+    "advanced-check-1-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/advanced_check-034019/advanced_check-034019-advanced-check-1-ax-3.png",
+    "advanced-check-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/advanced_check-034019-advanced-check-1.panel.png",
+    "advanced-check-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/advanced_check-034019/advanced_check-034019-advanced-check-1.png",
+    "advanced-check-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/advanced_check-034019-advanced-check-2.panel.png",
+    "advanced-check-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/advanced_check-034019/advanced_check-034019-advanced-check-2.png",
+    "advanced-check-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/advanced_check-034019-advanced-check-3.panel.png",
+    "advanced-check-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/advanced_check-034019/advanced_check-034019-advanced-check-3.png",
+    "advanced-check-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/advanced_check-034019-advanced-check-after.panel.png",
+    "advanced-check-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/advanced_check-034019/advanced_check-034019-advanced-check-after.png",
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/advanced_check-034019-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/advanced_check-034019/advanced_check-034019-entry.png"
+   }
   }
  },
  "attempts": [
@@ -6390,6 +6545,11 @@
   {
    "op": "case:uia_param_wall_thin",
    "stamp": "031559",
+   "ok": false
+  },
+  {
+   "op": "advanced_check",
+   "stamp": "034019",
    "ok": false
   }
  ],

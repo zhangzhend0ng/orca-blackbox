@@ -568,27 +568,36 @@ class Panel:
                               "value": cf_scalar(self.desktop, self.desktop.attr(element, "AXValue"))})
         return found
 
+    def advanced_box(self, rows):
+        """(the Process header's Advanced checkbox, every checkbox of the panel). The box carries
+        no AX title/help: it is the AXCheckBox painted at the right end of its OCR label
+        (A2 map: 673,689). None when neither reading picks one out."""
+        boxes = self.checkboxes()
+        named = next((b for b in boxes if "advanced" in b["words"].lower()), None)
+        text = next((r for r in rows if norm(r["text"]) == "advanced"), None)
+        near = []
+        if text is not None:
+            right = text["x"] + text["w"]
+            near = [b for b in boxes if abs(b["y"] - text["y"]) <= 12 and -6 <= b["x"] - right <= 40]
+        return (min(near, key=lambda b: abs(b["x"] - right)) if near else None) or named, boxes
+
     def ensure_advanced(self, tag):
-        """Switch the Process header's Advanced checkbox on; Speed in the tab band proves it."""
+        """Switch the Process header's Advanced checkbox on. Whether it is on is read from the
+        box's own AX value, not from the tab band: Vision glues neighbouring tab names ('Speed
+        Support Multimaterial' as one token), tabs_seen matches whole tokens, Speed is not seen
+        and a box that was already on got switched off and on again (run 031559)."""
         rows = self.read(tag)
-        if "Speed" in self.tabs_seen(rows):
-            return {"already_on": True, "tabs": self.tabs_seen(rows)}
-        note = {"already_on": False, "tabs_before": self.tabs_seen(rows), "attempts": []}
-        boxes = None
+        tabs = self.tabs_seen(rows)
+        box, boxes = self.advanced_box(rows)
+        value = box["value"] if box is not None else None
+        if value == 1 or "Speed" in tabs:  # either reading says on: the box is not pressed then
+            return {"already_on": True, "by": "ax value" if value == 1 else "tab band",
+                    "value": value, "tabs": tabs}
+        note = {"already_on": False, "tabs_before": tabs, "value_before": value, "attempts": [],
+                "checkboxes": [{k: v for k, v in b.items() if k != "element"} for b in boxes]}
         for attempt in ("ax", "box", "label", "left"):
-            taken, box = None, None
+            taken = None
             if attempt in ("ax", "box"):
-                # The Advanced box carries no AX title/help: it is the AXCheckBox
-                # painted at the right end of its OCR label (A2 map: 673,689).
-                if boxes is None:
-                    boxes = self.checkboxes()
-                    note["checkboxes"] = [{k: v for k, v in b.items() if k != "element"} for b in boxes]
-                text = next((r for r in rows if norm(r["text"]) == "advanced"), None)
-                right = text["x"] + text["w"] if text else None
-                near = [b for b in boxes if right is not None and abs(b["y"] - text["y"]) <= 12
-                        and -6 <= b["x"] - right <= 40]
-                named = next((b for b in boxes if "advanced" in b["words"].lower()), None)
-                box = (min(near, key=lambda b: abs(b["x"] - right)) if near else None) or named
                 if box is None:
                     note["attempts"].append({"how": attempt, "skipped": "no AX checkbox at the Advanced label"})
                     continue
@@ -1641,9 +1650,39 @@ def op_scroll_page(panel, ns):
             "evidence": report}
 
 
+def op_advanced_check(panel, ns):
+    """A check that saves nothing: ensure_advanced three times in one session. The first call
+    switches the box on; the second and the third must find it on without an attempt. The third
+    reads with the tab band made unreadable (tabs_seen gives nothing), which is run 031559's
+    misread at its worst. The box must still read 1 at the end. Whether the band's OCR shows
+    Speed as its own token is recorded, not required: with the box on, Vision glues it into
+    'Quality Strength Speed Support Multimaterial' and tabs_seen reads only 'Others' (034019)."""
+    first = panel.ensure_advanced("advanced-check-1")
+    calls = [first, panel.ensure_advanced("advanced-check-2")]
+    panel.tabs_seen = lambda rows: []
+    try:
+        calls.append(panel.ensure_advanced("advanced-check-3"))
+    finally:
+        panel.__dict__.pop("tabs_seen", None)
+    rows = panel.read("advanced-check-after")
+    tabs, (box, _) = panel.tabs_seen(rows), panel.advanced_box(rows)
+    value = box["value"] if box is not None else None
+    rest = calls[1:]
+    # A press would leave its poll shots ('advanced-check-2-ax-0', ...): calls 2 and 3 own one read each.
+    own = sorted(s for s in panel.shots if s.startswith(("advanced-check-2", "advanced-check-3")))
+    ok = (not first["already_on"] and bool(first.get("turned_on_by"))
+          and all(c["already_on"] and not c.get("attempts") for c in rest) and value == 1
+          and own == ["advanced-check-2", "advanced-check-3"])
+    return {"ok": ok,
+            "readback": {"first": {k: first.get(k) for k in ("already_on", "turned_on_by", "speed_seen")},
+                         "second": calls[1], "third": calls[2], "value_after": value, "tabs_after": tabs,
+                         "shots_of_calls_2_and_3": own, "dirty": panel.dirty, "ok": ok},
+            "evidence": {"calls": calls}}
+
+
 OPS = {"switch_tab": op_switch_tab, "find_row": op_find_row, "set_float": op_set_float,
        "set_checkbox": op_set_checkbox, "pick_combo": op_pick_combo, "scroll_page": op_scroll_page,
-       "scenario": op_scenario}
+       "advanced_check": op_advanced_check, "scenario": op_scenario}
 
 
 # --- Aqua-session worker ---
@@ -1865,6 +1904,7 @@ def parser():
     scroll.add_argument("--group", default="Special mode")
     scroll.add_argument("--label", default="Print sequence")
     sub.add_parser("scenario").add_argument("--name", required=True, choices=sorted(SCENARIOS))
+    sub.add_parser("advanced_check")
     for case in sub.choices.values():
         case.add_argument("--fuse", type=int, default=240)
     root.add_argument("--worker", metavar="JSON", help=argparse.SUPPRESS)
