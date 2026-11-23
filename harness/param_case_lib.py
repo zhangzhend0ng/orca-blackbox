@@ -456,7 +456,7 @@ def settle_dialog(ui, known, answer=None):
             index = (want == "no") != first_is_no
             hit, how = (buttons[int(index)][2], buttons[int(index)][3]), "position"
     if hit is not None:
-        (x0, y0, x1, y1), how = hit
+        (x0, y0, x1, y1), _button = hit
         print("[param case] answering %r by %s: click (%d,%d)" % (
             answer, how, (x0 + x1) // 2, (y0 + y1) // 2), flush=True)
         winutil.real_click_screen((x0 + x1) // 2, (y0 + y1) // 2)
