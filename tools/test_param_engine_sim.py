@@ -545,6 +545,7 @@ else:
 #     ui.edit answers with the readback. Before this the whole function was
 #     never executed by any test.
 REAL_FIND_PHRASE = pcl._find_phrase_row
+REAL_FIND_ANY = getattr(pcl, "_find_phrase_row_any", None)   # r4.1: all candidates in one scan
 REAL_CANVAS = pcl._canvas_hwnd
 REAL_ROW_SEQ = getattr(pp, "find_option_row_seq", None)
 
@@ -614,6 +615,11 @@ def _raises(fn, *args, **kwargs):
 
 
 def _with_float_env(edits, y_row):
+    # r4.1: uia_set_float searches all label candidates in ONE scan and gets
+    # (y, matched) back; older trees call _find_phrase_row and get y.
+    if REAL_FIND_ANY is not None:
+        pcl._find_phrase_row_any = lambda app, label, group=None: (
+            y_row, label if isinstance(label, str) else label[0])
     pcl._find_phrase_row = lambda app, label, group=None: y_row
     pcl._canvas_hwnd = lambda ui: 55
     sys.modules["win32gui"] = _FakeWin32gui(dict(edits))
@@ -658,6 +664,8 @@ try:
           isinstance(msg, str) and msg.startswith("param_uia_field_disabled"), "got %r" % (msg,))
 finally:
     pcl._find_phrase_row, pcl._canvas_hwnd = REAL_FIND_PHRASE, REAL_CANVAS
+    if REAL_FIND_ANY is not None:
+        pcl._find_phrase_row_any = REAL_FIND_ANY
     if _fake_before is None:
         sys.modules.pop("win32gui", None)
     else:
@@ -683,6 +691,34 @@ finally:
     pp.ocr_band, pp.wheel_viewport = _pp_ocr, page.wheel
 check("_find_phrase_row: a group without a title returns None without scanning",
       y is None, "got %r" % (y,))
+
+# 16b. All label candidates are looked for in ONE scan. The per-candidate
+#      scans this replaces paged the whole page, both directions, for every
+#      candidate that is not on the page (line_width_all run 4149046c: three
+#      atlas labels, ten minutes, then the plain ones were found at once).
+if REAL_FIND_ANY is not None:
+    _wheels16 = []
+    _s16 = (pp.ocr_band, pp.wheel_viewport, pp.options_viewport, pp.group_span, pp.on_title_line,
+            pp.scroll_group_into_view, pp.focus_off_edit, pp.scroll_signature)
+    pp.ocr_band = lambda session, y0=None, y1=None, psm=3: [
+        ("Outer", 30, 900, 40, 12), ("wall", 78, 900, 34, 12), ("120", 260, 900, 30, 12)]
+    pp.wheel_viewport = lambda *_a, **_k: _wheels16.append(1)
+    pp.options_viewport = lambda session: ((0, 700, 420, 1000), 1)
+    pp.group_span = lambda session, sub: None
+    pp.on_title_line = lambda session, y, tol=3: False
+    pp.scroll_group_into_view = lambda session, sub, timeout_s=420.0: (0, 0, 0)
+    pp.focus_off_edit = lambda session, why="": None
+    pp.scroll_signature = lambda session: (("T", 900),)
+    try:
+        res = REAL_FIND_ANY(None, ["Outer wall line width", "Outer wall"], "Line width")
+    finally:
+        (pp.ocr_band, pp.wheel_viewport, pp.options_viewport, pp.group_span, pp.on_title_line,
+         pp.scroll_group_into_view, pp.focus_off_edit, pp.scroll_signature) = _s16
+    check("_find_phrase_row_any: ['Outer wall line width', 'Outer wall'] resolves to 'Outer wall' "
+          "without one wheel",
+          res == (906, "Outer wall") and not _wheels16, "got %r wheels=%d" % (res, len(_wheels16)))
+else:
+    print("N/A  _find_phrase_row_any (absent on this tree)")
 
 # 17. find_option_row_seq scans like find_option_row, in the value column.
 #     Until r4 it looked at the start view and 5 notches down: a value deeper

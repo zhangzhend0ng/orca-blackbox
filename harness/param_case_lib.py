@@ -135,8 +135,8 @@ def _row_label_at(labels, field):
     return best_title if best_title is not None and best_gap <= 300 else None
 
 
-def _find_phrase_row(app, phrase, group_substr=None):
-    """Row y of a painted label that may span several OCR words.
+def _find_phrase_row_any(app, phrase, group_substr=None):
+    """(row y, matched candidate) of a painted label that may span several OCR words.
 
     pp.find_option_row only matches a substring inside ONE word (why
     'density' works and 'Wall loops' never did); join adjacent words and
@@ -161,12 +161,22 @@ def _find_phrase_row(app, phrase, group_substr=None):
         # missing group is a wrong op, not a reason to look everywhere.
         print("[param-phrase] group %r has no title on this page -> not "
               "looking for %r" % (group_substr, phrase), flush=True)
-        return None
-    anchored = phrase.startswith("^")
-    phrase = phrase[1:] if anchored else phrase
-    want = phrase.lower().split()
+        return None, None
+    # `phrase` may be a str or a list of candidates. All candidates are
+    # looked for in ONE scan, in the given order. Until r4 every candidate
+    # got a scan of its own, so a candidate that is not on the page (the
+    # atlas label 'Outer wall line width') cost a whole-page search in both
+    # directions before the plain one was even tried: line_width_all run
+    # 4149046c spent ten minutes on three such candidates.
+    names = [phrase] if isinstance(phrase, str) else [p for p in phrase if p]
+    cands = []
+    for name in names:
+        anchored = name.startswith("^")
+        text = name[1:] if anchored else name
+        cands.append((name, anchored, text, text.lower().split()))
 
-    def hit(i, words):
+    def hit(i, words, cand):
+        _name, anchored, text, want = cand
         w, x, y, ww, hh = words[i]
         if anchored and not pp.leftmost_on_line(words, i):
             return False
@@ -179,10 +189,11 @@ def _find_phrase_row(app, phrase, group_substr=None):
         if not w.lower().startswith(want[0]):
             return False
         tail = " ".join(t for t, *_ in words[i:i + len(want)]).lower()
-        return tail.startswith(phrase.lower())
+        return tail.startswith(text.lower())
 
-    stall = pp._StallGuard(app, "phrase %r%s" % (phrase, " in %r" % group_substr if group_substr else ""))
-    found = None
+    what = names[0] if len(names) == 1 else names
+    stall = pp._StallGuard(app, "phrase %r%s" % (what, " in %r" % group_substr if group_substr else ""))
+    found = matched = None
     words = []
     for direction in (-120, 120):
         stall.reset()
@@ -192,7 +203,7 @@ def _find_phrase_row(app, phrase, group_substr=None):
         for _ in range(pp.SCAN_NOTCHES):
             if time.monotonic() - started > pp.SCAN_SECONDS:
                 print("[param-phrase] %ss cap reached scanning %s for %r" % (
-                    pp.SCAN_SECONDS, way, phrase), flush=True)
+                    pp.SCAN_SECONDS, way, what), flush=True)
                 break
             # Re-read every step: the span is in client coordinates and the
             # page moves under it. Frozen at the start it rejected the
@@ -205,15 +216,21 @@ def _find_phrase_row(app, phrase, group_substr=None):
             band = " ".join(w for w, *_ in words)[:120]
             if band != last_band:
                 print("[param-phrase] %r%s %s band: %r" % (
-                    phrase, " in %r" % group_substr if group_substr else "", way, band), flush=True)
+                    what, " in %r" % group_substr if group_substr else "", way, band), flush=True)
                 last_band = band
             for i in range(len(words)):
-                if hit(i, words) and (span is None or span[0] <= words[i][2] < span[1]):
-                    found = words[i][2] + words[i][4] // 2
+                if span is not None and not (span[0] <= words[i][2] < span[1]):
+                    continue
+                for cand in cands:          # the first candidate in the op's order wins
+                    if hit(i, words, cand):
+                        found = words[i][2] + words[i][4] // 2
+                        matched = cand[0]
+                        break
+                if found is not None:
                     break
             if found is not None:
                 print("[param-phrase] %r found %s at y=%r span=%r" % (
-                    phrase, way, found, span), flush=True)
+                    matched, way, found, span), flush=True)
                 break
             vp = pp.options_viewport(app)
             if vp:
@@ -224,9 +241,14 @@ def _find_phrase_row(app, phrase, group_substr=None):
         if found is not None:
             break
     if found is None:
-        print("[param-phrase] not found: " + phrase + " | last band: " +
-              " ".join(w for w, *_ in words)[:160], flush=True)
-    return found
+        print("[param-phrase] not found: %r | last band: %s" % (
+            what, " ".join(w for w, *_ in words)[:160]), flush=True)
+    return found, matched
+
+
+def _find_phrase_row(app, phrase, group_substr=None):
+    """Row y for `phrase` (a str); see _find_phrase_row_any."""
+    return _find_phrase_row_any(app, phrase, group_substr)[0]
 
 
 def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, below=False):
@@ -238,9 +260,13 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
     from win32gui import EnumChildWindows, IsWindowVisible, IsWindowEnabled
 
     wu, app = ui.wu, ui.app
-    y_row = _find_phrase_row(app, label_substr, group_substr)
+    # `label_substr` may be a list of candidates: they are searched in ONE
+    # scan (_find_phrase_row_any). From here on it is the label that matched.
+    y_row, matched = _find_phrase_row_any(app, label_substr, group_substr)
     if y_row is None:
+        label_substr = (label_substr if isinstance(label_substr, str) else label_substr[0])
         raise ProtocolError("param_row:" + label_substr)
+    label_substr = matched
     left, top, right, bottom = wu.window_rect(_canvas_hwnd(ui))
     origin_x, origin_y = wu.client_to_screen(app.hwnd, 0, 0)
     matches = []
@@ -371,18 +397,12 @@ def run_ops(ui, ops):
         ui.main_input()
         kind = op["op"]
         if kind == "float":
-            labels = op["label"] if isinstance(op["label"], (tuple, list)) else (op["label"],)
-            last = None
-            for candidate in labels:
-                try:
-                    uia_set_float(ui, candidate, str(op["value"]), group_substr=op.get("group"),
-                                  field_index=op.get("field"), below=bool(op.get("below")))
-                    last = None
-                    break
-                except ProtocolError as exc:
-                    last = exc
-            if last is not None:
-                raise last
+            # All label candidates in ONE scan, first match in the op's
+            # order (_find_phrase_row_any). The per-candidate loop this
+            # replaces paid a whole-page search for every candidate that is
+            # not on the page.
+            uia_set_float(ui, labels, str(op["value"]), group_substr=op.get("group"),
+                          field_index=op.get("field"), below=bool(op.get("below")))
             pp.neutralize_focus(app)
         elif kind == "checkbox":
             ok = pp.set_option_checkbox(app, op["label"], op["value"], group_substr=op.get("group"))
@@ -657,10 +677,13 @@ def _census_pages_full(ui):
 
 # Also run the wheel / focus / Print-sequence probes of the first censuses.
 CENSUS_FULL = False
-# Short names of the combo ops to probe; empty = every one (about 28s per
-# popup). The x_ rows are probe-only rows listed in census_param_pages.
-CENSUS_PICK = ("x_support_base", "x_support_iface", "x_support_pattern", "x_draft_shield",
-               "filament_features", "support_basic", "tree_support", "skirt")
+# Also dump every line of every page (see census_param_pages); ~4 minutes.
+CENSUS_ROWS_ALL = True
+# Short names of the combo ops whose popup is opened and listed (about 28s
+# per popup); empty = none. The x_ rows are probe-only rows listed in
+# census_param_pages. The 2026-11-23 popups are recorded in
+# tools/param_ui_popups_2.4.0.json.
+CENSUS_PICK = ()
 #        = ("support_basic", "tree_support", "skirt", "x_support_base", "x_support_iface")
 
 
@@ -677,6 +700,7 @@ def census_param_pages(ui):
     phase. Refresh with: scenario uia_param_census (about 5 minutes)."""
     import ctypes
     import ctypes.wintypes as wt
+    import json
     import time
     import numpy as np
     from win32gui import EnumChildWindows, IsWindowVisible
@@ -728,9 +752,9 @@ def census_param_pages(ui):
         ("x_draft_shield", "Others", "rowcombo", "Draft shield", "?", "Skirt"),
     ]
     combos.sort(key=lambda c: (list(hints).index(c[1]) if c[1] in hints else 99, c[0]))
-    if CENSUS_PICK:
-        # A full sweep is ~28s per popup; pick what the question needs.
-        combos = [c for c in combos if c[0] in CENSUS_PICK]
+    # A full sweep is ~28s per popup: only the names in CENSUS_PICK are
+    # opened (none by default).
+    combos = [c for c in combos if c[0] in CENSUS_PICK]
     shots = []
     support_enabled = False
     current_tab = None
@@ -891,6 +915,36 @@ def census_param_pages(ui):
             say("popups sheet saved: %d popups, %dx%d" % (len(shots), width, height))
         except Exception as exc:
             say("popups sheet failed: %s: %s" % (type(exc).__name__, exc))
+    if CENSUS_ROWS_ALL:
+        # Every line of every page, top to bottom, two notches per step
+        # (120px, a third of the visible band, so no row can be skipped).
+        # This is the offline fixture the ops are checked against: the
+        # source atlas is not the build, and queue20 spent 10+ minutes per
+        # scenario on labels that a page of real text rules out at once.
+        # Parse the 'ROWDUMP <tab> <view> <json>' lines of the worker log
+        # with tools/rows_from_census.py.
+        for tab, hint in hints.items():
+            try:
+                ui.main_input()
+                pp.click_tab(app, tab, hint)
+                ui.pause(1.0)
+                last = None
+                for view in range(90):
+                    words = pp.ocr_band(app, psm=3)
+                    lines = {}
+                    for t, x, yw, _ww, _hh in words:
+                        key = next((k for k in lines if abs(k - yw) <= 10), yw)
+                        lines.setdefault(key, []).append((x, t))
+                    row = ["%d:%s" % (k, " ".join(t for _x, t in sorted(v)))
+                           for k, v in sorted(lines.items())]
+                    say("ROWDUMP %s %d %s" % (tab, view, json.dumps(row, ensure_ascii=True)))
+                    sig = tuple(r.split(":", 1)[1] for r in row)
+                    if sig == last:
+                        break
+                    last = sig
+                    pp.wheel_viewport(app, pp.options_viewport(app), 2, delta=-120)
+            except Exception as exc:
+                say("ROWDUMP %s failed: %s: %s" % (tab, type(exc).__name__, exc))
     if CENSUS_FULL:
         _census_pages_full(ui)
     raise ProtocolError("param_census_done")

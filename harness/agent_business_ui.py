@@ -185,12 +185,28 @@ class BusinessUI:
             return main if main and "Export G-code file" in main[0] else None
         return self.wait(selected, 5)
 
+    def _refusal_text(self):
+        """Text of the red error toast the app shows bottom-right when it
+        refuses to slice (client coords 1480..1920 x 860..1032 on the
+        maximized frame). Diagnostic only: on 2026-11-23 three queue runs
+        died with a bare slice_button_unavailable and the reason - 'Line
+        width too small', 'Organic support tree tip diameter ...' - had to
+        be read from screenshots by hand."""
+        try:
+            from . import process_panel as pp
+            from . import mix_dialog_util as mdu
+            img = pp.capture_bgr(self.app)
+            toast = img[860:1032, 1480:1920]
+            return " ".join(w for w, *_ in mdu.ocr_words_img(toast, scale=2))[:240]
+        except Exception as exc:  # never mask the original failure
+            return "(toast not read: %s)" % type(exc).__name__
+
     def slice(self):
         self.main_input()
         self.export_mode()
         _, button = self.eu.find_slice_buttons(self.app.hwnd)
         if not button or not self.owned(button[2]) or not self.wu.user32.IsWindowEnabled(button[2]):
-            raise ProtocolError("slice_button_unavailable")
+            raise ProtocolError("slice_button_unavailable: " + self._refusal_text())
         self.click_rect(button[1])  # One click only: re-clicking can cancel slicing.
         self.pause(0.5)
         def done():
