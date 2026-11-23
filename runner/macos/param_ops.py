@@ -59,7 +59,8 @@ LANDMARKS = {"Quality": ("layer height",), "Strength": ("wall loops", "walls"),
              "Multimaterial": ("tower", "ooze", "wipe", "flush"),
              "Others": ("skirt", "special", "sequence", "g-code", "spiral")}
 PANEL_WIDTH = 470  # left settings column, px at scale 1.0
-TITLE_X = 26       # group titles start left of this offset, row labels right of it
+TITLE_X = 26       # a row label starts right of this offset (group titles are told by their fold glyph)
+GLYPH_X, GLYPH_W = 5, 18  # the fold glyph's strip at the column's left edge, px
 VALUE_X = 253      # value column: numbers, and the faint square of a bool row
 LEVELS = ("exact", "prefix", "substring")  # how well a row's text fits a label candidate, best first
 SCROLL_STEPS = 24  # page-scrollbar presses that all of one locate_row's scroll chains share
@@ -354,6 +355,8 @@ class Panel:
         self.scroll_down_buttons = None  # page scrollbar buttons that page down, widest step first
         self.bar_cache = None  # (element, kids) of the page scrollbar, asked for its parts directly
         self.full = False  # the window was given the screen's full height in this process
+        self.last_shot = None  # the shot the last reading came from (group_titles reads its glyph strip)
+        self.glyphs = (None, [])  # (shot, y ranges of its fold glyphs), read once per shot
 
     def geometry(self):
         point = self.desktop.position(self.window)
@@ -459,6 +462,7 @@ class Panel:
         png = capture(tag)
         require(png is not None, f"Screen capture failed for {tag}")
         self.shots[tag] = png.name
+        self.last_shot = png
         try:
             point, size = self.geometry()
             crop_png(png, OUT / f"{tag}.panel.png", (point.x, point.y, PANEL_WIDTH, size.y))
@@ -520,6 +524,32 @@ class Panel:
                 text.append(key)
         return text
 
+    def glyph_lines(self, png):
+        """Screen y ranges (at least 3 px tall) of the fold glyphs in the column's left strip of
+        shot `png`; read once per shot."""
+        if self.glyphs[0] != png:
+            point, size = self.geometry()  # the viewport only: the frame below it is dark too
+            self.glyphs = (png, [run for run in self.ink_runs(
+                png, (point.x + GLYPH_X, point.y + VIEW_TOP, GLYPH_W, size.y - VIEW_TOP - 3), dark=150)
+                if run[1] - run[0] >= 2])
+        return self.glyphs[1]
+
+    def group_titles(self, page):
+        """Group-title tokens of a page reading, top to bottom. Not by where OCR starts the text:
+        a title whose fold glyph OCR does not read starts at x 26-30, where its own rows start
+        too (run 050208: 'Walls and surfaces' x 28 over its row 'Top surface flow ratio' x 26;
+        run 050552: 'Line width' x 26). By the glyph: a title's line carries its ink in the strip
+        at the column's left edge, a row's line carries none there. A reading without its shot
+        (the offline checks) keeps the tokens that start with their glyph."""
+        point = self.geometry()[0]
+        left = [r for r in page if norm(r["text"]) and r["x"] - point.x < VALUE_X - 60]
+        png = self.last_shot
+        if png is None or not Path(png).is_file():
+            return sorted((r for r in left if r["x"] - point.x <= 12), key=lambda r: r["y"])
+        runs = self.glyph_lines(png)
+        return sorted((r for r in left if any(r["y"] <= b and a <= r["y"] + r["h"] for a, b in runs)),
+                      key=lambda r: r["y"])
+
     def find_row(self, rows, group, label):
         """The row a label of `label` paints inside group `group` (None = whole page). `label`
         is one label or all the candidates of an op, judged against this one reading of the
@@ -529,7 +559,7 @@ class Panel:
         candidate that hit and what each of them matched."""
         point = self.geometry()[0]
         page = self.page_rows(rows)
-        titles = [r for r in page if r["x"] - point.x < TITLE_X]
+        titles = self.group_titles(page)
         start, end = -1e9, 1e9
         if group:
             wanted = norm(group)
@@ -712,7 +742,7 @@ class Panel:
         point = self.geometry()[0]
         done, folded = [], []
         for index in range(4):
-            titles = [t for t in self.read(f"{prefix}-fold-{index}") if t["x"] - point.x < 26]
+            titles = self.group_titles(self.page_rows(self.read(f"{prefix}-fold-{index}")))
             if any(norm(group) in norm(t["text"]) for t in titles):
                 break
             todo = [t for t in titles if t["text"] not in done]
@@ -723,7 +753,8 @@ class Panel:
             spot = (point.x + 10, title["y"] + title["h"] / 2)
             self.click(*spot)
             time.sleep(1.0)
-            after = [t["text"] for t in self.read(f"{prefix}-fold-{index}-after") if t["x"] - point.x < 26]
+            after = [t["text"] for t in self.group_titles(self.page_rows(
+                self.read(f"{prefix}-fold-{index}-after")))]
             folded.append({"title": title["text"], "click": [round(spot[0]), round(spot[1])], "titles_after": after})
         note.append({"folded": folded})
         rows, row, tag = attempt("page-folded", True)
@@ -941,7 +972,12 @@ class Panel:
         and the row are both inside it (step 2: AXPress on the page scrollbar reached the
         Others page's last group); stops where no down button moves the page any more. `budget`
         is a one-element list of the presses left to every chain of one locate_row call: this
-        chain takes at most that many and gives back what it does not use."""
+        chain takes at most that many and gives back what it does not use.
+        Not changed in step 10: it still stops where the title is on the page with room under
+        it and the row is not (run 051203, 'E5 Precision' y 849). Paging on does not find that
+        row: one press later the title is above the page and find_row, which needs the title,
+        refuses the row that is on it (050208 scroll-3: 'X-Y hole compensation' y 725, the only
+        title on the page 'C Ironing' y 943)."""
         trail = {"not_found": str(why)[:200], "buttons": self.find_scroll_buttons()}
         trail["to_top"] = self.scroll_top(self.scroll_up_button)
         trail["steps"] = []
@@ -952,11 +988,10 @@ class Panel:
                 rows = self.read(f"{tag}-{index}")  # look first: one step can empty this viewport
                 title, row, missing, titles = None, None, None, []
                 try:
-                    # The group title as find_row reads it (x < TITLE_X): the stricter fold-icon
-                    # test of title_of missed the Strength page's 'Walls' and paged it to the end.
-                    left = self.geometry()[0].x
-                    heads = [r for r in self.page_rows(rows)
-                             if r["x"] - left < TITLE_X and norm(r["text"])]
+                    # The group title as find_row reads it (by its fold glyph): the stricter
+                    # fold-icon test of title_of missed the Strength page's 'Walls' and paged it
+                    # to the end.
+                    heads = self.group_titles(self.page_rows(rows))
                     wanted = norm(group)
                     title = next((t for t in heads
                                   if wanted in norm(t["text"]) or norm(t["text"]) in wanted), None)

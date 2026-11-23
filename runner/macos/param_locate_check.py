@@ -6,7 +6,12 @@ A Panel is built without its constructor and its screen reads give canned OCR ro
 page as run 042843 read it (group title 'Travel speed', the row 'Travel' and '500 mm/s' as its
 own value token) and the same row read as one token 'Travel 500 mm/s'. The three candidates of
 uia_param_travel_speed are located together and each one alone; the reads and the find_row
-evaluations are counted. Exit status 1 when a check fails."""
+evaluations are counted. Step 10 replays saved readings of the step-9 runs (readings-step10.json
+over the panel shots it names, panel-relative px, the window at 0,0): group titles are told by
+their fold glyph, not by the x of their text (runs 050208 / 050552); scroll_to is replayed on run
+051203's scroll steps and on the page one press on - it is not changed, its stop is reproduced
+and the blocker of stopping on the row itself is named as such (NOT VERIFIED); the ops' time
+limits are checked as numbers. Exit status 1 when a check fails."""
 
 import json
 import sys
@@ -22,6 +27,27 @@ TRAVEL_PAGE = "own value token", "one token"
 
 class Point:
     x, y = 100.0, 50.0
+
+
+class Size:
+    y = 971  # the full-height window of the step-9 runs
+
+
+EVIDENCE = po.EVIDENCE
+READINGS = EVIDENCE / "readings-step10.json"
+
+
+def replay(name):
+    """A Panel over a saved reading: its rows and its panel shot (group_titles reads the fold
+    glyphs' strip from that shot). The reading is panel-relative, so the window sits at 0,0."""
+    rows = json.loads(READINGS.read_text())["readings"][name]
+    panel = fake_panel(rows)
+    panel.last_shot = EVIDENCE / "shots" / f"{name}.panel.png"
+    panel.geometry = lambda: (Point(), Size())
+    Point.x, Point.y = 0.0, 0.0
+    panel.glyphs, panel.deadline = (None, []), None
+    panel.scroll_to = lambda *args: po.Panel.scroll_to(panel, *args)
+    return panel
 
 
 def token(x, y, w, h, text):
@@ -59,6 +85,7 @@ def fake_panel(rows):
     panel.shots, panel.last_notes = {}, []
     panel.trial, panel.scroll_up_button, panel.scroll_down_buttons = None, None, None
     panel.bar_cache, panel.full = None, True
+    panel.last_shot, panel.glyphs, panel.deadline = None, (None, []), None
     panel.reads = []
     panel.read = lambda tag, full=False: (panel.reads.append(tag), rows)[1]
     panel.click_tab = lambda name, seen: [0, 0]
@@ -143,6 +170,37 @@ def main():
     out["locate"] = {"label": label, "find_row_evaluations": len(evaluations), "matched": matched}
     check("param_case.locate runs one chain for the op and names the candidate that hit",
           len(evaluations) == 1 and label == "Travel")
+    # --- step 10: the readings the step-9 runs saved ---
+    import tempfile
+    po.OUT = Path(tempfile.mkdtemp(prefix="orca-step10-check."))  # ink_runs' working crops
+    titles, rows_found = {}, []
+    panel = replay("case-050208-op0-find-page-full-scroll-4")
+    page, reading = panel.page_rows(panel.read("x")), panel.read("x")
+    titles["050208 scroll-4"] = [(t["text"], int(t["x"])) for t in panel.group_titles(page)]
+    row = plain(panel, reading, "Walls and surfaces", ["Top surface flow ratio", "Top surface flow"])
+    rows_found.append(("050208 scroll-4", row["text"], int(row["x"]), int(row["y"])))
+    left = [(r["text"], int(r["x"])) for r in json.loads(READINGS.read_text())
+            ["readings"]["case-050208-op0-find-page-full-scroll-4"] if r["x"] < 40 and r["y"] > 700]
+    panel = replay("case-050552-op1-find-page-full")
+    page, reading = panel.page_rows(panel.read("x")), panel.read("x")
+    titles["050552 page-full"] = [(t["text"], int(t["x"])) for t in panel.group_titles(page)]
+    row = plain(panel, reading, "Line width", ["Outer wall line width", "^Outer wall"])
+    rows_found.append(("050552 page-full", row["text"], int(row["x"]), int(row["y"])))
+
+    flow, width = titles["050208 scroll-4"], titles["050552 page-full"]
+    check("050208 scroll-4: 'Walls and surfaces' (text at x 28) is judged a group title",
+          [t for t, _ in flow] == ["Wall generator", "Walls and surfaces"])
+    check("050208 scroll-4: the row 'Top surface flow ratio' is found under it",
+          rows_found[0][1] == "Top surface flow ratio")
+    check("050552 page-full: 'Line width' (text at x 26) is judged a group title",
+          [t for t, _ in width] == ["L Layer height", "Line width"])
+    check("050552 page-full: the row 'Outer wall' is found under it by '^Outer wall'",
+          rows_found[1][1] == "Outer wall")
+    check("a plain row is not judged a title: 'Wall generator' the row (x 30, y 796) is left out while "
+          "its title (x 30, y 767) is taken - 2 titles among 8 left-column tokens",
+          len(flow) == 2 and len(left) == 8 and [t for t, _ in left].count("Wall generator") == 2)
+    out["step10_titles"] = {"titles": titles, "rows": rows_found, "left_column_050208_scroll-4": left}
+
     failed = [name for name, ok in checks if not ok]
     print(json.dumps({"ok": not failed, "checks": len(checks), "failed": failed, "out": out},
                      indent=1, ensure_ascii=False))
