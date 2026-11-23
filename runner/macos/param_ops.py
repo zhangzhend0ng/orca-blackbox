@@ -576,7 +576,7 @@ class Panel:
         point = self.geometry()[0]
         page = self.page_rows(rows)
         titles = self.group_titles(page)
-        start, end = -1e9, 1e9
+        start, end, by = -1e9, 1e9, "page"  # no group: the whole page (3117e51 left `by` unset here)
         if group:
             wanted = norm(group)
             hit = next((t for t in titles if norm(t["text"]) and (wanted in norm(t["text"])

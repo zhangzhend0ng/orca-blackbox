@@ -425,6 +425,16 @@ def main():
           "left edge (250) of the number the page paints elsewhere ('0.15'), where a readable number "
           "on this row would have been clicked",
           [round(gx), round(gy), own_by] == [253, 733, "column"] and columns == [250])
+    # step 12, the rerun of uia_param_wall_thin (run 074033): an op without a group crashed in
+    # find_row - `by` was set inside `if group:` only (3117e51); no case without a group had run on it
+    whole = fake_panel(seen_own)
+    whole_row = whole.find_row(seen_own, None, "X-Y hole compensation")
+    out["step12_no_group"] = {"row": whole_row["text"], "y": int(whole_row["y"]),
+                              "group_by": whole.last_match["group_by"]}
+    check("step 12: an op without a group (uia_param_wall_thin's 'Wall loops') is found on the whole page "
+          "and its match names group_by 'page' - run 074033 crashed here (UnboundLocalError: by)",
+          whole_row["text"] == "X-Y hole compensation" and int(whole_row["y"]) == 725
+          and whole.last_match["group_by"] == "page")
     check("step 12 guards: a page that paints no number at all falls back to VALUE_X (x 256, 'VALUE_X'); "
           "a row that paints its number is clicked 3 px right of it as before ('token', x 333)",
           [round(bare_cell[0]), round(bare_cell[1]), bare_cell[3]] == [256, 733, "VALUE_X"]

@@ -7032,6 +7032,11 @@
    "op": "case:uia_param_precision_comp",
    "stamp": "073835",
    "ok": true
+  },
+  {
+   "op": "case:uia_param_wall_thin",
+   "stamp": "074033",
+   "ok": false
   }
  ],
  "summary": {
@@ -7625,7 +7630,7 @@
   "case:uia_param_wall_thin": {
    "op": "case",
    "name": "uia_param_wall_thin",
-   "ok": true,
+   "ok": false,
    "sut": {
     "version": "2.4.1"
    },
@@ -7634,9 +7639,9 @@
    "entry": {
     "dialogs": []
    },
-   "status": "pass",
+   "status": "not passed",
    "readback": {
-    "status": "pass",
+    "status": "not passed",
     "scenario": "uia_param_wall_thin",
     "case_id": "param_266_wall_thin",
     "table": {
@@ -7644,24 +7649,14 @@
      "source_commit": "2733ef6",
      "sha256": "fb2f1d2313e8608cf37031656b2f71fe79531909dcd944fc8fda3f27f0aef05b"
     },
-    "keys": {
-     "wall_loops": {
-      "expected": "4",
-      "before": "2",
-      "status": "pass",
-      "saved": "4",
-      "compared": "decimal"
-     },
-     "detect_thin_wall": {
-      "expected": "1",
-      "before": "0",
-      "status": "pass",
-      "saved": "1",
-      "compared": "decimal"
+    "limits": {
+     "per_op": 150,
+     "case": 420,
+     "ops": {
+      "op0": 150
      }
     },
-    "title_after_save": "probe",
-    "ops_whose_readback_refused": []
+    "reason": "stopped at op 0 (float Wall loops): UnboundLocalError: local variable 'by' referenced before assignment"
    },
    "evidence": {
     "steps": [
@@ -7688,360 +7683,28 @@
         }
        ]
       },
-      "row": {
-       "tab": "Strength",
-       "group": null,
-       "label": "Wall loops",
-       "center": [
-        424,
-        843
-       ],
-       "window_local_center": [
-        64,
-        758
-       ],
-       "box": {
-        "x": 390,
-        "y": 835,
-        "w": 68,
-        "h": 16
-       },
-       "value_text": "2",
-       "screenshot": "find-page.png"
-      },
-      "label_candidates": [
-       "Wall loops"
-      ],
-      "candidates_not_found": [],
-      "notes": [
-       {
-        "tab_click": [
-         470,
-         777
-        ]
-       }
-      ],
-      "page_text": [
+      "error": "UnboundLocalError: local variable 'by' referenced before assignment",
+      "op_fuse": false,
+      "page_text_at_error": [
        "walls",
        "wall loops",
        "alternate extra wall",
        "2"
       ],
-      "readback": {
-       "tab": "Strength",
-       "label": "Wall loops",
-       "before": "2",
-       "ax_value": "4",
-       "painted": "4",
-       "title": "*probe",
-       "expected": "4"
-      },
-      "readback_ok": true,
-      "evidence": {
-       "parameter": "wall_loops",
-       "click": [
-        627,
-        841
-       ],
-       "notes": [
-        {
-         "tab_click": [
-          470,
-          777
-         ]
-        }
-       ],
-       "screenshots": {
-        "before": "op0-float-page.png",
-        "after": "op0-float-after.png"
-       },
-       "tab": {
-        "steps": [
-         {
-          "tab": "Strength",
-          "ok": true,
-          "click": [
-           470,
-           777
-          ],
-          "tabs_seen": [
-           "Others"
-          ],
-          "landmark": [
-           "wall loops",
-           "walls"
-          ],
-          "page_changed": true,
-          "page_text": [
-           "walls",
-           "wall loops",
-           "alternate extra wall",
-           "2"
-          ],
-          "verified_by": "landmark"
-         }
-        ],
-        "advanced": {
-         "already_on": false,
-         "tabs_before": [
-          "Others",
-          "Quality",
-          "Strength",
-          "Support",
-          "Multimaterial"
-         ],
-         "value_before": 0,
-         "attempts": [
-          {
-           "how": "ax",
-           "value_before": 0,
-           "box": [
-            673.0,
-            689.0
-           ],
-           "tabs_after": [
-            [
-             "Others"
-            ],
-            [
-             "Others"
-            ],
-            [
-             "Others"
-            ],
-            [
-             "Others"
-            ]
-           ],
-           "value_after": 1
-          }
-         ],
-         "checkboxes": [
-          {
-           "x": 453.0,
-           "y": 686.0,
-           "words": "",
-           "value": 0
-          },
-          {
-           "x": 673.0,
-           "y": 689.0,
-           "words": "",
-           "value": 0
-          }
-         ],
-         "turned_on_by": "ax",
-         "speed_seen": false
-        }
-       }
-      },
-      "seconds": 70.6
-     },
-     {
-      "index": 1,
-      "op": "checkbox",
-      "label": "Detect",
-      "group": null,
-      "value": true,
-      "at": 70.6,
-      "row": {
-       "tab": "Strength",
-       "group": null,
-       "label": "Detect thin walls",
-       "center": [
-        444,
-        898
-       ],
-       "window_local_center": [
-        84,
-        813
-       ],
-       "box": {
-        "x": 390,
-        "y": 891,
-        "w": 108,
-        "h": 14
-       },
-       "value_text": "",
-       "screenshot": "find-page-tall.png"
-      },
-      "label_candidates": [
-       "Detect"
-      ],
-      "candidates_not_found": [],
-      "notes": [
-       {
-        "tab_click": [
-         466,
-         776
-        ]
-       },
-       {
-        "standard_mode": "RuntimeError: Row 'Detect' not visible in group None; page reads: ['walls', 'wall loops', 'alternate extra wall']"
-       },
-       {
-        "advanced": {
-         "already_on": true,
-         "by": "ax value",
-         "value": 1,
-         "tabs": [
-          "Quality",
-          "Strength",
-          "Others"
-         ]
-        }
-       },
-       {
-        "tab_click": [
-         467,
-         776
-        ]
-       },
-       {
-        "advanced_mode": "RuntimeError: Row 'Detect' not visible in group None; page reads: ['walls', 'wall loops', 'alternate extra wall']"
-       },
-       {
-        "widened": {
-         "collapsed": [
-          {
-           "header": "(0 Filaments",
-           "click": [
-            424,
-            466
-           ]
-          },
-          {
-           "header": "(0 Filaments",
-           "click": [
-            424,
-            466
-           ]
-          }
-         ],
-         "process_header_y_after": 691.0
-        }
-       },
-       {
-        "tab_click": [
-         467,
-         776
-        ]
-       },
-       {
-        "wide_window": "RuntimeError: Row 'Detect' not visible in group None; page reads: ['walls', 'wall loops', 'alternate extra wall']"
-       },
-       {
-        "resized_to": [
-         1200.0,
-         916.0
-        ]
-       },
-       {
-        "tab_click": [
-         463,
-         776
-        ]
-       }
-      ],
-      "page_text": [
-       "walls",
-       "wall loops",
-       "alternate extra wall",
-       "detect thin walls",
-       "top bottom shells",
-       "top surface pattern",
-       "top shell layers",
-       "monotonic",
-       "3",
-       "layers"
-      ],
-      "readback": {
-       "tab": "Strength",
-       "label": "Detect thin walls",
-       "click": [
-        613,
-        898
-       ],
-       "pixels_changed_vs_before": 806
-      },
-      "readback_ok": true,
-      "evidence": {
-       "notes": [
-        {
-         "tab_click": [
-          463,
-          776
-         ]
-        }
-       ],
-       "page_text": [
-        "walls",
-        "wall loops",
-        "alternate extra wall",
-        "detect thin walls",
-        "top bottom shells",
-        "top surface pattern",
-        "top shell layers",
-        "monotonic",
-        "3",
-        "layers"
-       ],
-       "screenshots": {
-        "before": "op1-check-page.png",
-        "after": "op1-check-checked.png"
-       },
-       "tab": null
-      },
-      "seconds": 78.20000000000002
+      "seconds": 62.4
      }
     ],
     "notes": [
      {
       "tab_click": [
-       463,
-       776
+       470,
+       777
       ]
      }
     ],
     "other_changed_keys": {
-     "count": 35,
-     "keys": [
-      "bottom_color_penetration_layers",
-      "change_filament_gcode",
-      "different_settings_to_system",
-      "enable_tower_interface_cooldown_during_tower",
-      "enable_tower_interface_features",
-      "exclude_object",
-      "filament_adhesiveness_category",
-      "filament_flow_step_size",
-      "filament_flow_support",
-      "filament_grouping_mode",
-      "filament_tower_interface_pre_extrusion_dist",
-      "filament_tower_interface_pre_extrusion_length",
-      "filament_tower_interface_print_temp",
-      "filament_volume_type",
-      "filename_format",
-      "first_layer_travel_acceleration",
-      "first_layer_travel_jerk",
-      "machine_end_gcode",
-      "machine_start_gcode",
-      "max_bridge_length",
-      "nozzle_volume_type",
-      "prime_tower_enable_framework",
-      "print_settings_id",
-      "printer_flow_support",
-      "process_flow_support",
-      "project_schema_version",
-      "raft_first_layer_expansion",
-      "support_interface_min_area",
-      "support_transition_flow_ratio",
-      "support_transition_perimeter",
-      "support_transition_speed",
-      "top_color_penetration_layers",
-      "tree_support_branch_angle_organic",
-      "tree_support_transition_layers",
-      "version"
-     ]
+     "count": 0,
+     "keys": []
     }
    },
    "shots": {
@@ -8055,30 +7718,13 @@
     "op0-switch-strength-after": "op0-switch-strength-after.png",
     "op0-find-page-locate": "op0-find-page-locate.png",
     "op0-find-page": "op0-find-page.png",
-    "op0-float-page-locate": "op0-float-page-locate.png",
-    "op0-float-page": "op0-float-page.png",
-    "op0-float-after": "op0-float-after.png",
-    "op1-find-page-locate": "op1-find-page-locate.png",
-    "op1-find-page": "op1-find-page.png",
-    "op1-find-advanced": "op1-find-advanced.png",
-    "op1-find-page-adv-locate": "op1-find-page-adv-locate.png",
-    "op1-find-page-adv": "op1-find-page-adv.png",
-    "op1-find-widen-0": "op1-find-widen-0.png",
-    "op1-find-widen-1": "op1-find-widen-1.png",
-    "op1-find-widen-after": "op1-find-widen-after.png",
-    "op1-find-page-wide-locate": "op1-find-page-wide-locate.png",
-    "op1-find-page-wide": "op1-find-page-wide.png",
-    "op1-find-page-tall-locate": "op1-find-page-tall-locate.png",
-    "op1-find-page-tall": "op1-find-page-tall.png",
-    "op1-check-page-locate": "op1-check-page-locate.png",
-    "op1-check-page": "op1-check-page.png",
-    "op1-check-checked": "op1-check-checked.png"
+    "op0-error": "op0-error.png"
    },
    "notes": [
     {
      "tab_click": [
-      463,
-      776
+      470,
+      777
      ]
     }
    ],
@@ -8089,71 +7735,35 @@
     ],
     "size": [
      1200.0,
-     916.0
+     800.0
     ]
    },
    "orca_left": [],
-   "finished_at": 1795463999.0109792,
-   "seconds": 177.2,
+   "finished_at": 1795477233.594769,
+   "seconds": 88.4,
    "screenshots": {
-    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-entry.panel.png",
-    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-entry.png",
-    "op0-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-find-page-locate.panel.png",
-    "op0-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-find-page-locate.png",
-    "op0-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-find-page.panel.png",
-    "op0-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-find-page.png",
-    "op0-float-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-float-after.panel.png",
-    "op0-float-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-float-after.png",
-    "op0-float-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-float-page-locate.panel.png",
-    "op0-float-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-float-page-locate.png",
-    "op0-float-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-float-page.panel.png",
-    "op0-float-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-float-page.png",
-    "op0-switch-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-switch-advanced-ax-0.panel.png",
-    "op0-switch-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-switch-advanced-ax-0.png",
-    "op0-switch-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-switch-advanced-ax-1.panel.png",
-    "op0-switch-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-switch-advanced-ax-1.png",
-    "op0-switch-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-switch-advanced-ax-2.panel.png",
-    "op0-switch-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-switch-advanced-ax-2.png",
-    "op0-switch-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-switch-advanced-ax-3.panel.png",
-    "op0-switch-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-switch-advanced-ax-3.png",
-    "op0-switch-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-switch-advanced.panel.png",
-    "op0-switch-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-switch-advanced.png",
-    "op0-switch-strength-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-switch-strength-after.panel.png",
-    "op0-switch-strength-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-switch-strength-after.png",
-    "op0-switch-strength-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-switch-strength-before.panel.png",
-    "op0-switch-strength-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-switch-strength-before.png",
-    "op1-check-checked.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-check-checked.cell.png",
-    "op1-check-checked.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-check-checked.panel.png",
-    "op1-check-checked.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-check-checked.png",
-    "op1-check-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-check-page-locate.panel.png",
-    "op1-check-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-check-page-locate.png",
-    "op1-check-page.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-check-page.cell.png",
-    "op1-check-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-check-page.panel.png",
-    "op1-check-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-check-page.png",
-    "op1-find-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-advanced.panel.png",
-    "op1-find-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-advanced.png",
-    "op1-find-page-adv-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-page-adv-locate.panel.png",
-    "op1-find-page-adv-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-page-adv-locate.png",
-    "op1-find-page-adv.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-page-adv.panel.png",
-    "op1-find-page-adv.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-page-adv.png",
-    "op1-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-page-locate.panel.png",
-    "op1-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-page-locate.png",
-    "op1-find-page-tall-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-page-tall-locate.panel.png",
-    "op1-find-page-tall-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-page-tall-locate.png",
-    "op1-find-page-tall.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-page-tall.panel.png",
-    "op1-find-page-tall.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-page-tall.png",
-    "op1-find-page-wide-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-page-wide-locate.panel.png",
-    "op1-find-page-wide-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-page-wide-locate.png",
-    "op1-find-page-wide.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-page-wide.panel.png",
-    "op1-find-page-wide.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-page-wide.png",
-    "op1-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-page.panel.png",
-    "op1-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-page.png",
-    "op1-find-widen-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-widen-0.panel.png",
-    "op1-find-widen-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-widen-0.png",
-    "op1-find-widen-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-widen-1.panel.png",
-    "op1-find-widen-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-widen-1.png",
-    "op1-find-widen-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-widen-after.panel.png",
-    "op1-find-widen-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-widen-after.png"
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-074033-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-074033/case-074033-entry.png",
+    "op0-error.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-074033-op0-error.panel.png",
+    "op0-error.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-074033/case-074033-op0-error.png",
+    "op0-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-074033-op0-find-page-locate.panel.png",
+    "op0-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-074033/case-074033-op0-find-page-locate.png",
+    "op0-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-074033-op0-find-page.panel.png",
+    "op0-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-074033/case-074033-op0-find-page.png",
+    "op0-switch-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-074033-op0-switch-advanced-ax-0.panel.png",
+    "op0-switch-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-074033/case-074033-op0-switch-advanced-ax-0.png",
+    "op0-switch-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-074033-op0-switch-advanced-ax-1.panel.png",
+    "op0-switch-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-074033/case-074033-op0-switch-advanced-ax-1.png",
+    "op0-switch-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-074033-op0-switch-advanced-ax-2.panel.png",
+    "op0-switch-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-074033/case-074033-op0-switch-advanced-ax-2.png",
+    "op0-switch-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-074033-op0-switch-advanced-ax-3.panel.png",
+    "op0-switch-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-074033/case-074033-op0-switch-advanced-ax-3.png",
+    "op0-switch-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-074033-op0-switch-advanced.panel.png",
+    "op0-switch-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-074033/case-074033-op0-switch-advanced.png",
+    "op0-switch-strength-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-074033-op0-switch-strength-after.panel.png",
+    "op0-switch-strength-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-074033/case-074033-op0-switch-strength-after.png",
+    "op0-switch-strength-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-074033-op0-switch-strength-before.panel.png",
+    "op0-switch-strength-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-074033/case-074033-op0-switch-strength-before.png"
    }
   },
   "case:uia_param_layer_pair": {
@@ -16093,6 +15703,540 @@
     "op0-switch-quality-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063651/case-063651-op0-switch-quality-after.png",
     "op0-switch-quality-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-063651-op0-switch-quality-before.panel.png",
     "op0-switch-quality-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-063651/case-063651-op0-switch-quality-before.png"
+   }
+  },
+  {
+   "op": "case",
+   "name": "uia_param_wall_thin",
+   "ok": true,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "entry": {
+    "dialogs": []
+   },
+   "status": "pass",
+   "readback": {
+    "status": "pass",
+    "scenario": "uia_param_wall_thin",
+    "case_id": "param_266_wall_thin",
+    "table": {
+     "path": "runner/macos/param_cases.json",
+     "source_commit": "2733ef6",
+     "sha256": "fb2f1d2313e8608cf37031656b2f71fe79531909dcd944fc8fda3f27f0aef05b"
+    },
+    "keys": {
+     "wall_loops": {
+      "expected": "4",
+      "before": "2",
+      "status": "pass",
+      "saved": "4",
+      "compared": "decimal"
+     },
+     "detect_thin_wall": {
+      "expected": "1",
+      "before": "0",
+      "status": "pass",
+      "saved": "1",
+      "compared": "decimal"
+     }
+    },
+    "title_after_save": "probe",
+    "ops_whose_readback_refused": []
+   },
+   "evidence": {
+    "steps": [
+     {
+      "index": 0,
+      "op": "float",
+      "label": "Wall loops",
+      "group": null,
+      "value": "4",
+      "at": 0.0,
+      "tab": {
+       "name": "Strength",
+       "hint": "loops",
+       "readback": [
+        {
+         "tab": "Strength",
+         "ok": true,
+         "page_text": [
+          "walls",
+          "wall loops",
+          "alternate extra wall",
+          "2"
+         ]
+        }
+       ]
+      },
+      "row": {
+       "tab": "Strength",
+       "group": null,
+       "label": "Wall loops",
+       "center": [
+        424,
+        843
+       ],
+       "window_local_center": [
+        64,
+        758
+       ],
+       "box": {
+        "x": 390,
+        "y": 835,
+        "w": 68,
+        "h": 16
+       },
+       "value_text": "2",
+       "screenshot": "find-page.png"
+      },
+      "label_candidates": [
+       "Wall loops"
+      ],
+      "candidates_not_found": [],
+      "notes": [
+       {
+        "tab_click": [
+         470,
+         777
+        ]
+       }
+      ],
+      "page_text": [
+       "walls",
+       "wall loops",
+       "alternate extra wall",
+       "2"
+      ],
+      "readback": {
+       "tab": "Strength",
+       "label": "Wall loops",
+       "before": "2",
+       "ax_value": "4",
+       "painted": "4",
+       "title": "*probe",
+       "expected": "4"
+      },
+      "readback_ok": true,
+      "evidence": {
+       "parameter": "wall_loops",
+       "click": [
+        627,
+        841
+       ],
+       "notes": [
+        {
+         "tab_click": [
+          470,
+          777
+         ]
+        }
+       ],
+       "screenshots": {
+        "before": "op0-float-page.png",
+        "after": "op0-float-after.png"
+       },
+       "tab": {
+        "steps": [
+         {
+          "tab": "Strength",
+          "ok": true,
+          "click": [
+           470,
+           777
+          ],
+          "tabs_seen": [
+           "Others"
+          ],
+          "landmark": [
+           "wall loops",
+           "walls"
+          ],
+          "page_changed": true,
+          "page_text": [
+           "walls",
+           "wall loops",
+           "alternate extra wall",
+           "2"
+          ],
+          "verified_by": "landmark"
+         }
+        ],
+        "advanced": {
+         "already_on": false,
+         "tabs_before": [
+          "Others",
+          "Quality",
+          "Strength",
+          "Support",
+          "Multimaterial"
+         ],
+         "value_before": 0,
+         "attempts": [
+          {
+           "how": "ax",
+           "value_before": 0,
+           "box": [
+            673.0,
+            689.0
+           ],
+           "tabs_after": [
+            [
+             "Others"
+            ],
+            [
+             "Others"
+            ],
+            [
+             "Others"
+            ],
+            [
+             "Others"
+            ]
+           ],
+           "value_after": 1
+          }
+         ],
+         "checkboxes": [
+          {
+           "x": 453.0,
+           "y": 686.0,
+           "words": "",
+           "value": 0
+          },
+          {
+           "x": 673.0,
+           "y": 689.0,
+           "words": "",
+           "value": 0
+          }
+         ],
+         "turned_on_by": "ax",
+         "speed_seen": false
+        }
+       }
+      },
+      "seconds": 70.6
+     },
+     {
+      "index": 1,
+      "op": "checkbox",
+      "label": "Detect",
+      "group": null,
+      "value": true,
+      "at": 70.6,
+      "row": {
+       "tab": "Strength",
+       "group": null,
+       "label": "Detect thin walls",
+       "center": [
+        444,
+        898
+       ],
+       "window_local_center": [
+        84,
+        813
+       ],
+       "box": {
+        "x": 390,
+        "y": 891,
+        "w": 108,
+        "h": 14
+       },
+       "value_text": "",
+       "screenshot": "find-page-tall.png"
+      },
+      "label_candidates": [
+       "Detect"
+      ],
+      "candidates_not_found": [],
+      "notes": [
+       {
+        "tab_click": [
+         466,
+         776
+        ]
+       },
+       {
+        "standard_mode": "RuntimeError: Row 'Detect' not visible in group None; page reads: ['walls', 'wall loops', 'alternate extra wall']"
+       },
+       {
+        "advanced": {
+         "already_on": true,
+         "by": "ax value",
+         "value": 1,
+         "tabs": [
+          "Quality",
+          "Strength",
+          "Others"
+         ]
+        }
+       },
+       {
+        "tab_click": [
+         467,
+         776
+        ]
+       },
+       {
+        "advanced_mode": "RuntimeError: Row 'Detect' not visible in group None; page reads: ['walls', 'wall loops', 'alternate extra wall']"
+       },
+       {
+        "widened": {
+         "collapsed": [
+          {
+           "header": "(0 Filaments",
+           "click": [
+            424,
+            466
+           ]
+          },
+          {
+           "header": "(0 Filaments",
+           "click": [
+            424,
+            466
+           ]
+          }
+         ],
+         "process_header_y_after": 691.0
+        }
+       },
+       {
+        "tab_click": [
+         467,
+         776
+        ]
+       },
+       {
+        "wide_window": "RuntimeError: Row 'Detect' not visible in group None; page reads: ['walls', 'wall loops', 'alternate extra wall']"
+       },
+       {
+        "resized_to": [
+         1200.0,
+         916.0
+        ]
+       },
+       {
+        "tab_click": [
+         463,
+         776
+        ]
+       }
+      ],
+      "page_text": [
+       "walls",
+       "wall loops",
+       "alternate extra wall",
+       "detect thin walls",
+       "top bottom shells",
+       "top surface pattern",
+       "top shell layers",
+       "monotonic",
+       "3",
+       "layers"
+      ],
+      "readback": {
+       "tab": "Strength",
+       "label": "Detect thin walls",
+       "click": [
+        613,
+        898
+       ],
+       "pixels_changed_vs_before": 806
+      },
+      "readback_ok": true,
+      "evidence": {
+       "notes": [
+        {
+         "tab_click": [
+          463,
+          776
+         ]
+        }
+       ],
+       "page_text": [
+        "walls",
+        "wall loops",
+        "alternate extra wall",
+        "detect thin walls",
+        "top bottom shells",
+        "top surface pattern",
+        "top shell layers",
+        "monotonic",
+        "3",
+        "layers"
+       ],
+       "screenshots": {
+        "before": "op1-check-page.png",
+        "after": "op1-check-checked.png"
+       },
+       "tab": null
+      },
+      "seconds": 78.20000000000002
+     }
+    ],
+    "notes": [
+     {
+      "tab_click": [
+       463,
+       776
+      ]
+     }
+    ],
+    "other_changed_keys": {
+     "count": 35,
+     "keys": [
+      "bottom_color_penetration_layers",
+      "change_filament_gcode",
+      "different_settings_to_system",
+      "enable_tower_interface_cooldown_during_tower",
+      "enable_tower_interface_features",
+      "exclude_object",
+      "filament_adhesiveness_category",
+      "filament_flow_step_size",
+      "filament_flow_support",
+      "filament_grouping_mode",
+      "filament_tower_interface_pre_extrusion_dist",
+      "filament_tower_interface_pre_extrusion_length",
+      "filament_tower_interface_print_temp",
+      "filament_volume_type",
+      "filename_format",
+      "first_layer_travel_acceleration",
+      "first_layer_travel_jerk",
+      "machine_end_gcode",
+      "machine_start_gcode",
+      "max_bridge_length",
+      "nozzle_volume_type",
+      "prime_tower_enable_framework",
+      "print_settings_id",
+      "printer_flow_support",
+      "process_flow_support",
+      "project_schema_version",
+      "raft_first_layer_expansion",
+      "support_interface_min_area",
+      "support_transition_flow_ratio",
+      "support_transition_perimeter",
+      "support_transition_speed",
+      "top_color_penetration_layers",
+      "tree_support_branch_angle_organic",
+      "tree_support_transition_layers",
+      "version"
+     ]
+    }
+   },
+   "shots": {
+    "entry": "entry.png",
+    "op0-switch-advanced": "op0-switch-advanced.png",
+    "op0-switch-advanced-ax-0": "op0-switch-advanced-ax-0.png",
+    "op0-switch-advanced-ax-1": "op0-switch-advanced-ax-1.png",
+    "op0-switch-advanced-ax-2": "op0-switch-advanced-ax-2.png",
+    "op0-switch-advanced-ax-3": "op0-switch-advanced-ax-3.png",
+    "op0-switch-strength-before": "op0-switch-strength-before.png",
+    "op0-switch-strength-after": "op0-switch-strength-after.png",
+    "op0-find-page-locate": "op0-find-page-locate.png",
+    "op0-find-page": "op0-find-page.png",
+    "op0-float-page-locate": "op0-float-page-locate.png",
+    "op0-float-page": "op0-float-page.png",
+    "op0-float-after": "op0-float-after.png",
+    "op1-find-page-locate": "op1-find-page-locate.png",
+    "op1-find-page": "op1-find-page.png",
+    "op1-find-advanced": "op1-find-advanced.png",
+    "op1-find-page-adv-locate": "op1-find-page-adv-locate.png",
+    "op1-find-page-adv": "op1-find-page-adv.png",
+    "op1-find-widen-0": "op1-find-widen-0.png",
+    "op1-find-widen-1": "op1-find-widen-1.png",
+    "op1-find-widen-after": "op1-find-widen-after.png",
+    "op1-find-page-wide-locate": "op1-find-page-wide-locate.png",
+    "op1-find-page-wide": "op1-find-page-wide.png",
+    "op1-find-page-tall-locate": "op1-find-page-tall-locate.png",
+    "op1-find-page-tall": "op1-find-page-tall.png",
+    "op1-check-page-locate": "op1-check-page-locate.png",
+    "op1-check-page": "op1-check-page.png",
+    "op1-check-checked": "op1-check-checked.png"
+   },
+   "notes": [
+    {
+     "tab_click": [
+      463,
+      776
+     ]
+    }
+   ],
+   "geometry": {
+    "origin": [
+     360.0,
+     85.0
+    ],
+    "size": [
+     1200.0,
+     916.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795463999.0109792,
+   "seconds": 177.2,
+   "screenshots": {
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-entry.png",
+    "op0-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-find-page-locate.panel.png",
+    "op0-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-find-page-locate.png",
+    "op0-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-find-page.panel.png",
+    "op0-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-find-page.png",
+    "op0-float-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-float-after.panel.png",
+    "op0-float-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-float-after.png",
+    "op0-float-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-float-page-locate.panel.png",
+    "op0-float-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-float-page-locate.png",
+    "op0-float-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-float-page.panel.png",
+    "op0-float-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-float-page.png",
+    "op0-switch-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-switch-advanced-ax-0.panel.png",
+    "op0-switch-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-switch-advanced-ax-0.png",
+    "op0-switch-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-switch-advanced-ax-1.panel.png",
+    "op0-switch-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-switch-advanced-ax-1.png",
+    "op0-switch-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-switch-advanced-ax-2.panel.png",
+    "op0-switch-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-switch-advanced-ax-2.png",
+    "op0-switch-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-switch-advanced-ax-3.panel.png",
+    "op0-switch-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-switch-advanced-ax-3.png",
+    "op0-switch-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-switch-advanced.panel.png",
+    "op0-switch-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-switch-advanced.png",
+    "op0-switch-strength-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-switch-strength-after.panel.png",
+    "op0-switch-strength-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-switch-strength-after.png",
+    "op0-switch-strength-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op0-switch-strength-before.panel.png",
+    "op0-switch-strength-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op0-switch-strength-before.png",
+    "op1-check-checked.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-check-checked.cell.png",
+    "op1-check-checked.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-check-checked.panel.png",
+    "op1-check-checked.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-check-checked.png",
+    "op1-check-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-check-page-locate.panel.png",
+    "op1-check-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-check-page-locate.png",
+    "op1-check-page.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-check-page.cell.png",
+    "op1-check-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-check-page.panel.png",
+    "op1-check-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-check-page.png",
+    "op1-find-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-advanced.panel.png",
+    "op1-find-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-advanced.png",
+    "op1-find-page-adv-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-page-adv-locate.panel.png",
+    "op1-find-page-adv-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-page-adv-locate.png",
+    "op1-find-page-adv.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-page-adv.panel.png",
+    "op1-find-page-adv.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-page-adv.png",
+    "op1-find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-page-locate.panel.png",
+    "op1-find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-page-locate.png",
+    "op1-find-page-tall-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-page-tall-locate.panel.png",
+    "op1-find-page-tall-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-page-tall-locate.png",
+    "op1-find-page-tall.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-page-tall.panel.png",
+    "op1-find-page-tall.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-page-tall.png",
+    "op1-find-page-wide-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-page-wide-locate.panel.png",
+    "op1-find-page-wide-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-page-wide-locate.png",
+    "op1-find-page-wide.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-page-wide.panel.png",
+    "op1-find-page-wide.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-page-wide.png",
+    "op1-find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-page.panel.png",
+    "op1-find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-page.png",
+    "op1-find-widen-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-widen-0.panel.png",
+    "op1-find-widen-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-widen-0.png",
+    "op1-find-widen-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-widen-1.panel.png",
+    "op1-find-widen-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-widen-1.png",
+    "op1-find-widen-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/case-035959-op1-find-widen-after.panel.png",
+    "op1-find-widen-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/case-035959/case-035959-op1-find-widen-after.png"
    }
   }
  ]
