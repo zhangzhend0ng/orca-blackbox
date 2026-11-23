@@ -820,6 +820,9 @@ def edit_project(ui, scenario, canvas, *, mix_census=False):
         assign_filament_slot2(ui)
     elif scenario == "uia_param_layer_pair":
         edit_param_layer_pair(ui)
+    elif scenario == "uia_param_census":
+        from .param_case_lib import census_param_pages
+        census_param_pages(ui)
     elif scenario.startswith("uia_param_"):
         edit_param_cases(ui, scenario)
     else:

@@ -71,7 +71,10 @@ SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *PAIR_CASES, 
     "uia_param_support_ironing", "uia_param_support_interface",
     "uia_param_tree_support", "uia_param_filament_features",
     "uia_param_flush_options", "uia_param_material_advanced",
-    "uia_param_gcode_output", "uia_param_exclude_objects")
+    "uia_param_gcode_output", "uia_param_exclude_objects",
+    # Probe (2026-11-23): dumps the titled panel windows, wheel/focus and
+    # popup geometry the param engine relies on; ends before the save phase.
+    "uia_param_census")
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
 UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
@@ -154,6 +157,7 @@ SCENARIOS = {
     "uia_param_accelerations": ("Speed", None),
     "uia_param_skirt": ("Others", None),
     "uia_param_brim": ("Others", None),
+    "uia_param_census": ("Quality", None),  # probe: switches tabs itself
     # Feishu #276-279/#292-294: the starting page each case's ops first edit
     # lives on (#276 begins on Quality, the speed row closes the sequence).
     "uia_param_speed_limits": ("Quality", None),
