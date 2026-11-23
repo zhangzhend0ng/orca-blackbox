@@ -364,6 +364,8 @@ class Panel:
         self.last_shot = None  # the shot the last reading came from (group_titles reads its glyph strip)
         self.glyphs = (None, [])  # (shot, y ranges of its fold glyphs), read once per shot
         self.deadline = None  # monotonic time after which read raises OpFuse (one op's limit)
+        self.entered = None  # step 11: norm(group) whose title is above the viewport, see scroll_to
+        self.tab_open = None  # the page tab click_tab opened last
 
     def geometry(self):
         point = self.desktop.position(self.window)
@@ -566,7 +568,10 @@ class Panel:
         page. A candidate hits a row whose text is the candidate, else starts with it (its
         value and unit follow: 'Travel 500 mm/s' for 'Travel'), else - unless it carries '^' -
         has it anywhere; exact beats prefix beats substring. self.last_match names the
-        candidate that hit and what each of them matched."""
+        candidate that hit and what each of them matched, and `group_by` how the group was
+        told: 'title' (on the page), or 'entered' (step 11: a scroll chain went through the
+        title and it is above the page - the rows from the viewport's top down to the first
+        title on the page are its group's; Panel.entered holds that, scroll_to sets it)."""
         point = self.geometry()[0]
         page = self.page_rows(rows)
         titles = self.group_titles(page)
@@ -575,10 +580,15 @@ class Panel:
             wanted = norm(group)
             hit = next((t for t in titles if norm(t["text"]) and (wanted in norm(t["text"])
                                                                  or norm(t["text"]) in wanted)), None)
-            require(hit, f"Group title {group!r} not visible; titles seen: {[t['text'] for t in titles]}")
-            start = hit["y"]
-            following = next((t for t in titles if t["y"] > hit["y"] + 5), None)
-            end = following["y"] if following else 1e9
+            if hit is None and self.entered == wanted:
+                end = titles[0]["y"] if titles else 1e9
+                by = "entered"
+            else:
+                require(hit, f"Group title {group!r} not visible; titles seen: {[t['text'] for t in titles]}")
+                start = hit["y"]
+                following = next((t for t in titles if t["y"] > hit["y"] + 5), None)
+                end = following["y"] if following else 1e9
+                by = "title"
         inside = [r for r in page if start < r["y"] < end and r["x"] - point.x >= TITLE_X]
         best, seen = [], []
         for index, cand in enumerate([label] if isinstance(label, str) else label):
@@ -596,7 +606,8 @@ class Panel:
         require(best, f"Row {label!r} not visible in group {group!r}; page reads: {self.page_text(rows)}")
         (level, _, row), index = min(best, key=lambda b: (b[0][0], b[1]))
         self.last_match = {"label": ([label] if isinstance(label, str) else label)[index],
-                           "level": LEVELS[level], "row": row["text"], "candidates": seen}
+                           "level": LEVELS[level], "row": row["text"], "candidates": seen,
+                           "group_by": by}
         return row
 
     def line_values(self, rows, row):
@@ -610,6 +621,11 @@ class Panel:
         self.click(tab["x"] + tab["w"] / 2, tab["y"] + tab["h"] / 2)
         time.sleep(1.0)
         self.bar_cache, self.scroll_down_buttons, self.scroll_up_button = None, None, None  # another page
+        # Step 11: another tab is another page, no group is entered on it. The tab that is
+        # already open leaves the page where it is (run 062702: set_float's own locate read the row right after its tab click, no scroll shot between float-page and float-after), so what was entered stays.
+        if self.tab_open != name:
+            self.entered = None
+        self.tab_open = name
         return [round(tab["x"] + tab["w"] / 2), round(tab["y"] + tab["h"] / 2)]
 
     # -- Advanced mode (the Speed tab and the thin-wall row are Advanced-only) --
@@ -983,20 +999,24 @@ class Panel:
         Others page's last group); stops where no down button moves the page any more. `budget`
         is a one-element list of the presses left to every chain of one locate_row call: this
         chain takes at most that many and gives back what it does not use.
-        Not changed in step 10: it still stops where the title is on the page with room under
-        it and the row is not (run 051203, 'E5 Precision' y 849). Paging on does not find that
-        row: one press later the title is above the page and find_row, which needs the title,
-        refuses the row that is on it (050208 scroll-3: 'X-Y hole compensation' y 725, the only
-        title on the page 'C Ironing' y 943)."""
+        Step 11 (its own change): a title that is on the page with no title after it and no
+        wanted row under it is not a stop any more - the group goes on below the page. Run
+        051203 stopped there ('E5 Precision' y 849); one press on the row was ('X-Y hole
+        compensation' y 725, 050208 scroll-3) with the title above the page. The chain pages on;
+        from the page the title has left, the rows down to the first title on the page are its
+        group's (Panel.entered, read by find_row). It stops at the row, where a title that
+        follows the group is on the page with no wanted row above it, or where the page cannot
+        move (the end of the page)."""
         trail = {"not_found": str(why)[:200], "buttons": self.find_scroll_buttons()}
         trail["to_top"] = self.scroll_top(self.scroll_up_button)
         trail["steps"] = []
         x, y, w, h = self.viewport()
-        moved = 1
+        moved, entered = 1, False  # entered: the title was read on a page, no title after it
         try:
             for index in range(SCROLL_STEPS if budget is None else budget[0]):
                 rows = self.read(f"{tag}-{index}")  # look first: one step can empty this viewport
-                title, row, missing, titles = None, None, None, []
+                title, row, missing, titles, heads = None, None, None, [], []
+                self.entered = None  # each page says for itself whether a group is entered
                 try:
                     # The group title as find_row reads it (by its fold glyph): the stricter
                     # fold-icon test of title_of missed the Strength page's 'Walls' and paged it
@@ -1006,6 +1026,10 @@ class Panel:
                     title = next((t for t in heads
                                   if wanted in norm(t["text"]) or norm(t["text"]) in wanted), None)
                     titles = [t["text"] for t in heads]
+                    if title is not None:
+                        entered = not any(t["y"] > title["y"] + 5 for t in heads)
+                    elif entered:
+                        self.entered = wanted  # the title is above the page: find_row goes on in its group
                     row = self.find_row(rows, group, label)
                 except RuntimeError as error:  # no tab band, no group title, or no such row
                     missing = error
@@ -1013,13 +1037,18 @@ class Panel:
                 trail["steps"].append(step)
                 if row and row["y"] + row["h"] <= y + h - 2:
                     step["row_y"] = round(row["y"], 1)
+                    if title is None:
+                        step["row_by"] = "group entered: its title is above the page"
+                        trail["row_by_group_entered"] = True
                     return trail
-                # The group is on screen with room for a row under its title: the row is not on
-                # this page (an Advanced-only one in standard mode), so scrolling cannot find it.
-                if title and (row or title["y"] + title["h"] <= y + h - 40) and (row is None
-                                                                               or not moved):
-                    raise missing if row is None else RuntimeError(
-                        f"Row {label!r} touches the viewport's lower edge in group {group!r}")
+                # The group ended here and the row is not in it: the title that follows it is on
+                # the page (under the title itself, or first on a page the title has left) and
+                # no row above it is the wanted one.
+                following = [t["text"] for t in heads if t["y"] > (title["y"] if title else -1e9) + 5]
+                if row is None and following and (title is not None or entered):
+                    raise missing
+                if row is not None and not moved:
+                    raise RuntimeError(f"Row {label!r} touches the viewport's lower edge in group {group!r}")
                 if not moved:
                     step["end_of_page"] = True
                     break

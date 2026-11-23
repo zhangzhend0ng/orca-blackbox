@@ -9,11 +9,15 @@ uia_param_travel_speed are located together and each one alone; the reads and th
 evaluations are counted. Step 10 replays saved readings of the step-9 runs (readings-step10.json
 over the panel shots it names, panel-relative px, the window at 0,0): group titles are told by
 their fold glyph, not by the x of their text (runs 050208 / 050552); scroll_to is replayed on run
-051203's scroll steps and on the page one press on - it is not changed, its stop is reproduced
-and the blocker of stopping on the row itself is named as such (NOT VERIFIED); the ops' time
-limits are checked as numbers. Exit status 1 when a check fails."""
+051203's scroll steps and on the page one press on. Step 11: the chain of decision 2 is replayed
+on the same pages - it goes on past the page run 051203 stopped at and takes the row on the next
+one as a row of the group whose title is above the page; op0's locate is replayed whole over
+those pages (its find_row and both locates of the op - the edit is not replayed: the saved
+reading of that page has no value token on the row); a reading without the chain's state still
+refuses the row; the ops' time limits are checked as numbers. Exit status 1 when a check fails."""
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -86,6 +90,7 @@ def fake_panel(rows):
     panel.trial, panel.scroll_up_button, panel.scroll_down_buttons = None, None, None
     panel.bar_cache, panel.full = None, True
     panel.last_shot, panel.glyphs, panel.deadline = None, (None, []), None
+    panel.entered, panel.tab_open = None, None  # step 11
     panel.reads = []
     panel.read = lambda tag, full=False: (panel.reads.append(tag), rows)[1]
     panel.click_tab = lambda name, seen: [0, 0]
@@ -226,9 +231,9 @@ def main():
     panel.find_scroll_buttons = lambda: {"down": [0], "up": 1}
     panel.scroll_top = lambda button, limit=30: {"presses": 0}
     panel.press_scroll = press
-    stop = None
+    stop, trail = None, None
     try:
-        panel.scroll_to("Precision", hole, "replay", "replay")
+        trail = panel.scroll_to("Precision", hole, "replay", "replay")
     except RuntimeError as error:
         stop = po.brief(error, 400)
     stopped = replay("case-051203-op0-find-page-full-scroll-2")
@@ -242,19 +247,141 @@ def main():
         after.find_row(seen[3], "Precision", hole)
     except RuntimeError as error:
         refused = po.brief(error, 200)
-    out["step10_scroll"] = {"stop": stop, "presses": len(presses), "titles_at_the_stop": at_stop,
-                            "page_one_press_on": {"titles": on_after, "wanted_row": wanted,
-                                                  "find_row": refused},
-                            "stop_on_the_row_itself": "NOT VERIFIED"}
-    check("051203 replay: scroll_to stops where run 051203 stopped, after 2 presses, with the title "
-          "'E5 Precision' on the page at y 849",
-          len(presses) == 2 and at_stop == [("E5 Precision", 849)] and stop is not None)
+    last = (trail or {}).get("steps", [{}])[-1]
+    taken, edit = None, None
+    if trail is not None:  # locate_row reads the page again after its chain and judges it once more
+        panel.last_shot = shots[3]
+        row = panel.find_row(seen[3], "Precision", hole)
+        taken = {"row": row["text"], "y": int(row["y"]), "group_by": panel.last_match["group_by"],
+                 "candidate": panel.last_match["label"], "level": panel.last_match["level"]}
+
+    # --- step 11, decision 2: the chain goes on and the row is the entered group's ---
     check("the page one press on (050208 scroll-3) shows the wanted row 'X-Y hole compensation' at "
-          "y 725 with no 'Precision' title on it (only 'C Ironing' y 943) and find_row refuses it: "
-          "the blocker of 'stop on the row itself' (NOT VERIFIED - rows of a group whose title "
-          "left the page have no attribution)",
-          wanted == [("X-Y hole compensation", 725)] and on_after == [("C Ironing", 943)]
-          and refused is not None and "Precision" in refused)
+          "y 725 with no 'Precision' title on it (only 'C Ironing' y 943)",
+          wanted == [("X-Y hole compensation", 725)] and on_after == [("C Ironing", 943)])
+    check("a reading without the chain's state still refuses that row: find_row needs the group's "
+          "title and it is not on the page (step 10's refusal, kept)",
+          refused is not None and "Precision" in refused and "not visible" in refused)
+    check("step 11, 051203 replay: the chain does not stop where run 051203 stopped (the page with "
+          "'E5 Precision' y 849, the last title on it, no wanted row); it presses on once more",
+          at_stop == [("E5 Precision", 849)] and stop is None and len(presses) == 3)
+    check("step 11: the row is taken on the next page ('X-Y hole compensation' y 725) as a row of the "
+          "group entered - its title above the page - and the page read again after the chain gives "
+          "the same row by the candidate 'X-Y hole compensation' (exact)",
+          bool(trail) and trail.get("row_by_group_entered") is True and last.get("row_y") == 725
+          and last.get("titles") == ["C Ironing"]
+          and taken == {"row": "X-Y hole compensation", "y": 725, "group_by": "entered",
+                        "candidate": "X-Y hole compensation", "level": "exact"})
+
+    # op0's locate, whole, over the same pages: locate_row, its chain, the page read again, and
+    # the locate set_float does itself (the tab that is already open keeps the page and the state)
+    op0, current = panels[1], [0]
+    knob[0], presses[:] = 0, []
+    op0.knob_at, op0.scroll_top, op0.press_scroll = (
+        lambda: 40 * knob[0], lambda button, limit=30: {"presses": 0}, press)
+
+    def find_buttons():  # the real one forgets nothing; a tab click does (click_tab), as on the GUI
+        op0.scroll_down_buttons, op0.scroll_up_button = [0], 1
+        return {"down": [0], "up": 1}
+
+    op0.find_scroll_buttons = find_buttons
+    op0.click_tab = lambda name, seen_rows: po.Panel.click_tab(op0, name, seen_rows)
+
+    def locate_read(tag, full=False):
+        op0.reads.append(tag)
+        step = re.search(r"-scroll-(\d+)$", tag)
+        current[0] = min(int(step.group(1)), 3) if step else current[0]
+        op0.last_shot = shots[current[0]]
+        return seen[current[0]]
+
+    op0.read = locate_read
+    label, found, matched = pc.locate(op0, {"label": hole, "group": "Precision"}, "Quality")
+    first = {"label": label, "y": int(found["readback"]["box"]["y"]), "presses": len(presses),
+             "pages_read": len(found["evidence"]["notes"][-1]["scrolled"]["steps"]) if found["evidence"]["notes"] else 0,
+             "group_by": found["readback"]["match"]["group_by"],
+             "chain": [(list(x)[0], bool(x.get("scrolled", {}).get("row_by_group_entered")))
+                       for x in found["evidence"]["notes"] if "scrolled" in x]}
+    before = len(op0.reads)
+    rows2, row2, notes2, tag2 = op0.locate_row("Quality", "Precision", label, "float")
+    second = {"y": int(row2["y"]), "scroll_reads": sum("-scroll-" in t for t in op0.reads[before:]),
+              "tag": tag2, "group_by": op0.last_match["group_by"]}
+    try:
+        po.op_set_float(op0, {"tab": "Quality", "group": "Precision", "label": label, "value": "-0.1"})
+    except RuntimeError as error:
+        edit = po.brief(error, 120)
+
+    # guards of the state: another group, another tab
+    guards = {}
+    other = replay("case-050208-op0-find-page-full-scroll-3")
+    other.entered = "line width"
+    try:
+        other.find_row(seen[3], "Precision", hole)
+        guards["another_group_entered"] = "row taken"
+    except RuntimeError as error:
+        guards["another_group_entered"] = po.brief(error, 60)
+    other.entered, other.tab_open = "precision", "Speed"
+    po.Panel.click_tab(other, "Quality", seen[3])
+    guards["other_tab_to_quality"] = other.entered
+    po.Panel.click_tab(other, "Quality", seen[3])
+    guards["quality_again"] = other.entered
+    other.entered = "precision"  # a group entered while Quality is the open tab
+    po.Panel.click_tab(other, "Quality", seen[3])
+    guards["quality_once_more"] = other.entered
+    po.Panel.click_tab(other, "Strength", seen[3])
+    guards["quality_to_strength"] = other.entered
+    try:
+        other.find_row(seen[3], "Precision", hole)
+        guards["after_the_tab_change"] = "row taken"
+    except RuntimeError as error:
+        guards["after_the_tab_change"] = po.brief(error, 60)
+
+    # 050208 and 050552 through scroll_to: found at once under their titles, nothing entered
+    kept = {}
+    for name, group, labels in (("case-050208-op0-find-page-full-scroll-4", "Walls and surfaces",
+                                 ["Top surface flow ratio", "Top surface flow"]),
+                                ("case-050552-op1-find-page-full", "Line width",
+                                 ["Outer wall line width", "^Outer wall"])):
+        one, pressed_one = replay(name), []
+        one.knob_at, one.find_scroll_buttons, one.scroll_top = (lambda: 0), (lambda: {"down": [0], "up": 1}), (
+            lambda button, limit=30: {"presses": 0})
+        one.press_scroll = lambda index, times=1, pause=0.45: pressed_one.append(index)
+        theirs = one.scroll_to(group, labels, "kept", "kept")
+        kept[name] = {"row_y": theirs["steps"][-1].get("row_y"), "pages_read": len(theirs["steps"]),
+                      "presses": len(pressed_one), "by_group_entered": theirs.get("row_by_group_entered", False),
+                      "match": {k: one.last_match[k] for k in ("label", "level", "row", "group_by")}}
+    out["step11_chain"] = {"stop": stop, "presses": len(presses), "titles_at_the_stop": at_stop,
+                           "trail": trail, "taken_after_the_chain": taken, "op0_find": first,
+                           "op0_set_float_locate": second, "op0_edit_offline": edit, "guards": guards}
+    out["step11_kept"] = kept
+    check("step 11, op0 whole: param_case.locate runs one chain (4 pages read: 051203's three and "
+          "the page one press on; 3 presses) and names 'X-Y hole compensation' at y 725",
+          label == "X-Y hole compensation" and first["y"] == 725 and first["presses"] == 3
+          and first["pages_read"] == 4 and first["group_by"] == "entered"
+          and first["chain"] == [("scrolled", True)])
+    check("step 11, op0 whole: the locate set_float does itself reads the row on the page as it is, "
+          "no chain, after a click on the tab that is already open",
+          second == {"y": 725, "scroll_reads": 0, "tag": "float-page", "group_by": "entered"})
+    check("step 11, op0 whole: the edit is NOT replayed - the saved reading of that page has no value "
+          "token on the row (the real page is the GUI run's to judge)",
+          edit is not None and edit.startswith("RuntimeError: No numeric value token"))
+    check("step 11 guards: a group other than the wanted one entered, or another tab opened, leaves "
+          "the row refused; a click on the tab that is already open keeps the state",
+          guards["another_group_entered"].startswith("RuntimeError: Group title")
+          and guards["other_tab_to_quality"] is None and guards["quality_again"] is None
+          and guards["quality_once_more"] == "precision" and guards["quality_to_strength"] is None
+          and guards["after_the_tab_change"].startswith("RuntimeError: Group title"))
+    check("050208 scroll-4 replayed through scroll_to: the row 'Top surface flow ratio' y 945 is found "
+          "at once under its title, one page read, no press, nothing by an entered group (unchanged)",
+          kept["case-050208-op0-find-page-full-scroll-4"] == {
+              "row_y": 945, "pages_read": 1, "presses": 0, "by_group_entered": False,
+              "match": {"label": "Top surface flow ratio", "level": "exact",
+                        "row": "Top surface flow ratio", "group_by": "title"}})
+    check("050552 page-full replayed through scroll_to: the row 'Outer wall' y 897 is found at once "
+          "under 'Line width' by '^Outer wall' (the row text is exactly 'Outer wall': exact), one page "
+          "read, no press (unchanged)",
+          kept["case-050552-op1-find-page-full"] == {
+              "row_y": 897, "pages_read": 1, "presses": 0, "by_group_entered": False,
+              "match": {"label": "^Outer wall", "level": "exact", "row": "Outer wall", "group_by": "title"}})
 
     # the op limits (step 10): each op gets min(OP_FUSE, the case's time left before the save)
     now = 1_000_000.0
