@@ -19,6 +19,7 @@
 3. **提交**：阶段性成果及时 commit+push（客机 09-03 起 git clone 跟踪 origin，未推送的改动到不了客机）；状态如实——红可以提交，**禁止把未验证写成 GREEN**。
 4. **收尾三步**：`runner/hv_harvest.ps1` 拉结果 → commit+push → `tools/feishu_writeback.py`（仅 GREEN/已覆盖项，宿主 lark-cli，**禁止把扫码/授权 URL 甩给用户**）。
 5. **边界**：上游源码 `C:\coil\Projects\SnapmakerOrca` 只读，禁止修改；任务范围外的事不做。
+6. **第二条实体线（物理机 fa706g3，2026-11-23 起）**：用途是在客机之外并行跑参数族用例，不是回归证据来源的变更。约束：(a) 必须用与客机**同一份 2.4.0 构建**和**同一版 Snapmaker 预设**（宿主资源与客机相差 325 个预设文件，第一次跑就因 `change_filament_gcode` 不同被判「改了无关设置」）；(b) 放行开关是 `ORCA_BB_ALLOW_TESTBOX=1`（`host_guard.allow_testbox`，与 dev 用的 `ORCA_BB_ALLOW_HOST` 分开），每个 run 写 `execution_host.json`，结果只能计 SHADOW；(c) GUI 只能经**计划任务**进交互会话（`glm_line`），SSH 会话里直跑 GUI 会崩；(d) 它执行的 HEAD 在其 GUI 批运行期间不得改变——同步只在批与批之间做。宿主入口脚本不在仓库内（`C:\coil\vm_setup\fa_line\`），细节见[运行记录](docs/runs/glm-flash-expansion-2026-11-21.md)。
 
 v3 运行骨架入口见 [架构设计](docs/V3_RUNTIME_ARCHITECTURE.md) 和 [使用与边界](docs/V3_FOUNDATION.md)。当前 `python tools/v3_session.py smoke` 仅验证无 GUI 的 synthetic 完整调用链，不能作为产品回归通过证据。
 

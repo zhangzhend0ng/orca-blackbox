@@ -391,3 +391,140 @@ batch2 四例与两个老卡点的全部证据就绪；引擎与注册链完好�
 **queue17（补丁前，10 场景）**：0 SHADOW。带证据的失败 5 个（filament_features、seam_wipe、overhang_curl、accelerations、brim），skirt 执行完成但验证 target mismatch，tree_support 败在保存工具栏，其余因客机桌面被占而未跑成。
 
 **r3 补丁首版的事故（如实记录）**：ae44283 入主线并同步客机后，验证队列的第一个场景（run b4d1c596）就以 `NameError: name 'uia_set_float' is not defined` 失败——替换脚本在整体替换 `_find_phrase_row` 时把它后面的 `def uia_set_float(...)` 函数头一并吃掉了，原函数体变成上一个函数尾部永远执行不到的代码。语法合法，所以编译通过；离线测试只调搜索逻辑、不调 `uia_set_float`，所以全绿。已停队列止损（损失 2 个 run 槽），补回函数头，并加了两道护栏：替换脚本自带「补丁前后顶层定义清单比对，任何原有定义消失即中止」；离线测试加「入口函数存在且参数符合预期」。修正后的脚本产出与修复后的文件逐文件一致；原版副本上扩展后的测试 8 项变红。该测试已入库为 `tools/test_param_engine_sim.py`（23 项，改引擎后必跑）。
+
+## 续三：queue18 的账、普查探针与 r3c（2026-11-23 17:45 起，GLM 5.4 总控）
+
+**结论（截至 21:10，queue20 在跑）：queue18（r3b）10 个场景 1 过 9 败、queue19（r3c.1）10 个场景 3 过 7 败，两次都在确认失败是引擎级之后手动停掉；本节新增 SHADOW 5 条——#263 bridge（55e8a417）、#270 first_speeds（f96dbc0b）、#292 by_object（b6bc43ae）、#274 accelerations（43897d4d）、#256 seam_wipe（6b5ea183），均独立核实（business/path 两项 pass、重开保存件逐值等于 pilot 期望、G-code 已导出）。参数族闭环 14/44（32%），GREEN 仍为 0。**
+
+**queue18（引擎 024733e，每个场景一次，业务失败不重试）**
+
+| 场景 | run | 结果 | 失败签名 |
+|---|---|---|---|
+| bridge (#263) | 55e8a417 | **SHADOW** | bridge_flow 1 / density 100% / angle 0 / 68 层 / 27.2，其余设置保持 |
+| by_object (#292) | 6640e4a9 | NON_GREEN | pilot_target_setting_mismatch（下拉选项未选中） |
+| feature_speeds (#271) | af5292e5 | NON_GREEN | param_uia_field:^Top surface:0 |
+| accelerations (#274) | 5c90c7a6 | NON_GREEN | param_row:Outer wall acceleration |
+| seam_wipe (#256) | 5aa4826e | NON_GREEN | param_row:^Wipe speed |
+| speed_limits (#276) | fc5b643c | NON_GREEN | param_uia_field:layer height:0（升级前通过过的场景，回归） |
+| filament_features (#284) | 6b399e48 | NON_GREEN | AttributeError: 'list' object has no attribute 'startswith' |
+| brim (#291) | f323be97 | NON_GREEN | param_combo_target:Outer only（弹窗 OCR 为空） |
+| overhang_speeds (#264) | f775cd31 | NON_GREEN | param_checkbox:Detect overhang |
+| overhang_bridge (#272) | ec02cd86 | NON_GREEN | param_row:Overhang speed |
+
+在 speed_limits 回归出现时停的队列：第 9 个之后才停，比该停的时机多烧了约 5 个场景。
+
+**普查探针 `uia_param_census`（54fa243；run c101c0f4、e80c899c；原始输出 `docs/runs/evidence/param-ui-census-2.4.0-2026-11-23/`）**——日志解释不了的失败不再靠推理，一个 run 把引擎依赖的事实量出来：
+- 工作区 `(0,0,1920,1032)`，最大化窗口自报到 y=1039，选项视口 `(1,718,421,1031)`，Process 行 y=614。
+- **滚轮一格 = 60px（两行）**，上下行皆然。焦点在复选框 Button 上时滚轮照常（连滚 8 格）。
+- **单位标签（`mm/s`、`mm/s or %`…）也是带文本的 wxWindowNR 窗口**，宽 120、x=203；真实组标题宽 393、高 18、x=13。两者都是选项视口的后代窗口（`IsChild` 为真）。
+- **下拉弹窗开在控件正下方，不避让任务栏**：`Print sequence` 在 y 961–987 时弹窗为 993–1049，`By object` 的点击点 `(304,1035)` 经 `WindowFromPoint` 解析到 `Shell_TrayWnd (0,1032,1920,1080)`。
+- **ESC 关不掉选项弹窗**；其后的第一次点击只是把它关掉。
+- 六个页签的真实组标题（已存为夹具 `harness/param_ui_titles_2.4.0.json`）。它与源码图谱不一致：图谱写 `Initial layer speed`、`Tree supports`，页面是 `First layer speed`、分支角度在 `Advanced` 下——**图谱来自宿主源码树，不是客机构建**。
+
+**被推翻的推理（如实记录）**：(a)「复选框后焦点在 Button 上锁住滚轮」——错，是我写的卡死检测用 OCR 词 y 集合做签名，等高行下页面在动也判「没变」，9 格后误报页底；(b)「`Other layers speed` 标题找不到」——标题一直在，是它滚到 Process 行以上后被 `ly > py` 滤掉，而找不到的分支只往下滚；(c)「加速度组第二行找不到是跨度静态」——主因是单位标签被当成下一个标题，组跨度塌缩成约 10px。
+
+**r3c（485843b + 0a7687d）**：标题集按宽度/x/高度/文本重写并保留视口后代；组跨度每步重读；标题行不当成行（`on_title_line`）；卡死检测改用标题窗口 y + OCR 文本；弹窗打开前停靠（`park_for_popup`，留 220px）、点击前验 `popup_hit_clickable`、关闭要验证、打不开补点一次；下拉结果先读 ComboBox 窗口文本；无组扫描预算 110 格/90 秒；rowcombo 接受列表标签；灰字段报 `param_uia_field_disabled`。ops 重标定 4 处（first_speeds / tree_support / overhang_speeds / ironing_top），校验器改以普查夹具判组名（在旧 ops 上报 4 处）。
+
+**离线测试 `tools/test_param_engine_sim.py`**：48 项，新树全绿；同一份测试在 r3b 树（54fa243）上 16 项变红，其中 9 项是行为检查。第一次跑新检查时 7 项红，逐条核对全是测试自身的错（调到前面检查留下的桩、假页面滚轮方向写反而老检查靠第二方向碰巧通过、期望值算错、假句柄撞号）。
+
+**验证顺序**：离线测试 → 普查探针（e80c899c：IsChild 属实、停靠生效）→ 一个最便宜的真实场景 by_object（b6bc43ae，SHADOW：停靠 4 格 → 弹窗 813–869 → 窗口文本 `By object`；business/path 两项 pass，保存件 `print_sequence='by object'`）→ queue19。
+
+**queue19（r3c.1 = 0a7687d）10 个场景 3 过 7 败**，第 9 个之后停（又一次多烧了几个）：
+
+| 场景 | run | 结果 | 失败签名 → 定性 |
+|---|---|---|---|
+| feature_speeds (#271) | b1103170 | NON_GREEN | 6 个字段里 5 个对，`small_perimeter_speed` 存成 `50` 而期望 `50%`——ops 值写错 |
+| accelerations (#274) | 43897d4d | **SHADOW** | 6 个值全对 |
+| seam_wipe (#256) | 6b5ea183 | **SHADOW** | 5 个值全对 |
+| speed_limits (#276) | 1e944276 | NON_GREEN | `layer height:0`：OCR 是客户区坐标、窗口矩形差 7px（最大化窗口的不可见边框），标题行排除差 1px 没生效 |
+| filament_features (#284) | f27ba25c | NON_GREEN | 停靠多滚 1 格把行推出视口顶；且 ops 指向的行本身不对 |
+| brim (#291) | 5a73aee3 | NON_GREEN | 同上；且目标文案 `Outer only` 不在弹窗里 |
+| overhang_speeds (#264) | 90881c68 | NON_GREEN | 复选框走 `find_option_row`，只在单个 OCR 词里匹配，两词标签 `Detect overhang` 永远不中 |
+| overhang_bridge (#272) | 7f9beea4 | NON_GREEN | 编辑阶段无报错，但四个字段只有最后一个落值（`overhang_3_4_speed=10`）——待查 |
+| overhang_curl (#265) | c8225950 | NON_GREEN | 两行式标签的复选框居中在整行，距匹配行 15px > 容差 14 |
+| fuzzy (#295) | 03c8d0ca | NON_GREEN | 目标文案 `All external walls` 不在弹窗里（实为 `All walls`） |
+
+**弹窗普查**（`uia_param_census` 改为逐个打开全部下拉 ops 的弹窗：run 67690ed4、f1c5433b、40989dec、c814315c）：
+- 真实弹窗行文本：Brim type = Mouse ear / Painted / **Outer brim only** / Inner brim only / Outer and inner brim / No-brim；Fuzzy skin = None / Contour / Contour and hole / **All walls**；挤出机 = Default / **1 PETG** / 2 PLA / 3 PLA / 4 PLA / 5 PLA；Interface pattern = **Rectilinear** / Concentric / Rectilinear Interlaced / Grid；Ironing type、Seam position、Wall generator、Gap fill、Top/Bottom surface pattern、Print sequence 的目标都在列表里。
+- 真实行名：Support 页 `Filament for Supports` 组是 `Support/raft base` / `Support/raft interface`，`Advanced` 组有 `Interface pattern`；Multimaterial 的 `Filament for Features` 只有 Walls / Infill / Solid infill / Wipe tower——**没有支撑行**。
+- **`WindowFromPoint` 不返回禁用窗口**：支撑未启用时 `Tree`、`Default` 底下是 393×270 的行容器；Draft shield 在 skirt loops 为 0 时同理。ops 里先勾 Enable 的顺序是对的，是普查孤立探测才撞上。
+- 弹窗 OCR 默认 psm 3 会整行漏读（`1 PETG`、`5 PLA`），psm 6 才读全。
+- 自绘值的弹窗空间不够时会向上翻转（fuzzy：弹窗在点击点上方）；ComboBox 式的弹窗（Print sequence）不翻转、直接开到任务栏下——两种弹窗行为不同。
+
+**被推翻的推理（续）**：「Support 页点了没弹窗是 7px 坐标」——不是，是窗口禁用；「filament 行在 Multimaterial 页」——那组没有支撑行。
+
+**r3d / r3d.1 / r3e（76e77d5、398ba7b、804a88f）**：OCR 与窗口矩形比较一律经 `client_origin`（标题行、组跨度、复选框、值定位）；停靠不再多滚一格；两词复选框标签走短语匹配；弹窗 OCR psm 6；值定位解析到行容器即报「该行是灰的」；两行式标签的控件在匹配行上下 15px 的窄带里找唯一一个；日志行缓冲（此前未 flush 的行乱序落盘，日志先后不可信）；ops 重标：brim、fuzzy 目标文案，feature_speeds `50%`，#279/#284/#287 改为 Support 页「启用支撑 → Support/raft base → PETG」（pilot 记入 `enable_support=1` 偏差），#281 改为 `Interface pattern → Rectilinear`。离线测试 49 项（r3c 树上 5 项红）。
+
+**fa706g3 静态审查**：第一次派整批 diff（约 700 行），40 分钟预算用完没有产出；缩到弹窗相关的 4 个函数后闭环，报 3 处确定性缺陷全部采纳（屏幕外重开弹窗后 `cx/cy` 过期、重开失败后仍用已关闭弹窗的句柄、盲点循环只更新矩形不更新句柄），另指出「页面任意一行含目标文本就算成功」的校验是假阳性来源，已改为按目标值做词序定位。它对两行式标签的几何分析（控件居中于整行）与 overhang_curl 的实测一致。
+
+## 续四：queue20、fa 第二条线、r4–r5.9（2026-11-23 21:08 – 24 日 01:35，GLM 5.4 总控）
+
+**结论（截至 02:05，引擎 `3789b0b`）：参数族闭环 SHADOW 39/44（88.6%），GREEN 仍为 0。相对「续三」的 14 条新增 25 条：queue20 在 r3e 上 10 过；r5 之后 VM 再过 5 条（#258 #264 #272 #278 #293），fa706g3 第二条实体线过 10 条（#279–#287、#295）。未清 5 条都有定性，没有一条处在「不知道为什么」。** 口径以保存件为准：39 个场景各有至少一个 `release_verdict=SHADOW` 的收割 run，核对脚本逐个重开 3mf 比对 pilot 期望值（VM 29 + fa 10；fa 的 10 条另经 fa 上的 agent 用独立脚本复核，53 个键 0 不一致）。
+
+**queue20（r3e = `804a88f`，26 个场景：11 过、15 败；line_width_all 跑了两次，共 27 个 run，业务失败不重试）**
+
+| 结果 | 场景（run） |
+|---|---|
+| **SHADOW ×11** | brim #291（1e4dec5d）、speed_limits #276（32dff095）、overhang_curl #265（7dc4cabd）、feature_speeds #271（2aa82922）、skirt #290（282e8a85）、surface_flow #262（a7504d39）、infill_structure #269（540a8807）、jerk #275（4641e238）、wall_generator #260（7e59e22a）、single_wall_avoid #261（3727296c）、precision_comp #257（ecdef7a4） |
+| NON_GREEN ×15（16 个 run） | 支撑类 5 个（support_filament a2d4a0f0、filament_features dad3c3c2、support_interface 30a605d1、material_advanced 6897a472、support_ironing 001573f1）与 spiral_vase f4a37c84、tree_support b82b416f、ooze_prevention fb7cb075、flush_options 0f98dac9、prime_tower eac5e090、raft 32d30aba：UI 操作阶段即抛协议错误；fuzzy 1193a356（目标文案不在弹窗里）；overhang_speeds 50798c59（四个值落进同一个框）；arc_resolution 0fe51b33（`gcode_actual_layer_step_mismatch`）；line_width_all 4149046c / e0905644 |
+
+15 个失败里 13 个的签名是引擎或标签级，不是场景级（另两个是 #258 的判据与 #255 的夹具）。按「第二个引擎级证据就停」的纪律本应更早停；实际跑完了全部——换来的是一张完整的失败分布表，下一节按它逐类处理。
+
+**fa706g3 第二条实体线**（用户明令「fa 那边直接做，不用那么小心」）：2.4.0 构建原位替换（2.3.5 留作 `Release_235_bak`）；资源从宿主拷贝后仍差 **325 个 Snapmaker 预设文件**（经 PS Direct 从客机拉回、哈希核对后补齐——第一次跑就因 `change_filament_gcode` 不同被判「改了无关设置」）；7 处「真实执行必须在 Hyper-V 客机」闸门改为显式放行 `ORCA_BB_ALLOW_TESTBOX=1`（与 dev 用的 `ORCA_BB_ALLOW_HOST` 分开，每个 run 写 `execution_host.json`，只计 SHADOW）；GUI 只经计划任务 `glm_line` 进交互会话（SSH 直跑会崩）；宿主入口 `C:\coil\vm_setup\fa_line\fa_run.py <场景>`，结果拉回本工作树的 `artifacts/windows_mcp_harvest/<run>/`。纪律见 README 第 6 条。fa 的检出与客机同步到同一提交后才跑（fa 上独立复跑离线测试与校验器：86/0、0 问题）。
+
+**r4 / r4.1 / r4.2（`68537ab`、`9f0922c`、`6e12606`）**：两份 fa 静态审查与 queue20 的落实——全部标签候选一次扫描；编辑数不对即报 `survey_and_raise`；切片被拒时读红色提示条原文进错误；普查转储每页每一行（`ROWDUMP`），`tools/rows_from_census.py` 拼成行夹具 `tools/param_ui_rows_2.4.0.json`。**r4.1 自己引入一个回归**（浮点分支用了只在 rowcombo 分支定义的变量，NameError），r4.2 修并补了「rowcombo 之后再跟 float」的顺序测试。r4.2 加的 rowcombo 回读在提交版本里每次都抛 NameError（引用了没导入的模块），到 r5 才真正生效。Mac 的 5 个 commit（B1–B5）以 format-patch 搬回合并（`aedc4bf`）。
+
+**queue21（`aedc4bf`，8 个场景 0 过——预期，跑的是修前引擎；每个都查到了原因）**
+
+| 场景 | run | 失败签名 → 定性 |
+|---|---|---|
+| overhang_speeds #264 / overhang_bridge #272 | 210446b4 / d42cd1ed | `param_uia_field:Overhang speed:1<=field1` → 这一行是**一个标签、五个数值框纵向堆叠**（间距 27px，标签居中）；field i 应是自上而下第 i 个框 |
+| raft #278 | be0664ae | `param_row:layer density` → 首层密度/扩展是 **Support 组**的行（`First layer density` / `First layer expansion`），Raft 组只有 `Raft layers` 与 `Raft contact Z distance` |
+| flush_options #286 | 59ff697f | `param_checkbox:this` → `Flush into this object` **在全局配置里不画**（ConfigManipulation.cpp:886） |
+| prime_tower #283 | aa451776 | `param_row:Stabilization cone apex angle` → 该行**只在 Wall type = Cone 时存在**（ConfigManipulation.cpp:858） |
+| spiral_vase #293 | 49723134 | `main_window_modal_blocked` → 勾选后应用弹**自己的 Yes/No 对话框**；旧代码等的 `wait_popup` 只认下拉弹窗 |
+| tree_support #282 | 1f23038c | `param_row:Tree support branch angle` → `Tree supports` 是**条件组**，Style 离开 Default 后才出现；限定在 Advanced 组的扫描在下一条带里 OCR 到了这一行却仍报找不到 |
+| arc_resolution #258 | 56846c08 | 四个配置值全对；`gcode_actual_layer_step_mismatch` → 见下「层网格」 |
+
+**r5 – r5.9（`6751f18`、`399f977`、`7410d45`、`b88f6ee`、`9e4b971`、`e931fa4`、`3789b0b`）**——每条都有 run 证据；离线测试 `tools/test_param_engine_sim.py` 从 59 项到 97 项（r5 的 86 项在 aedc4bf 上 8 项红，r5.5 的 88 项在 7410d45 上 2 项红；之后各版的红证只对新检查逐条做过）：
+
+- 值控件按**枚举**找（该点下最小的带文本子窗口），禁用与否看 `IsWindowEnabled`。r3d.1 的尺寸判据在 fa 上把一个启用的 254×39 下拉框判成禁用（744a5451）。
+- `field` 行按纵向堆叠取第 i 个框（210446b4 截图）。
+- rowcombo 回读读**值**而不是标签行：值窗口文本 + 值区 OCR + 去色块后的 OCR 三路（fa 4ec54abd：带挤出机色块时整值区 OCR 为空，去色块后读到 `PETG`，而同样的裁切把普通值读成 `Yefault`）；并**锚定在点击的那一行**（fa e9071eba：刚改过的行是橙字加青色焦点框，整行被 OCR 丢掉，词组扫描落到下一行 `Fuzzy skin generator mode ~ Displacement`）。判定只看值（`on` 在 `ironing` 里面）。
+- 勾选后的模态按**效果**找（主窗口被禁用——正是下一道 guard 会撞上的事实）。这个框是 **wx 自绘对话框**：类名 `#32770`，但 Yes/No 是 `wxWindowNR` 自绘按钮、另有一个 `htmlWindow`（d8cec0d4 首次打印子窗口）。此前三版分别按「Button 子窗口」「原生任务对话框 TDM_CLICK_BUTTON」「WM_COMMAND / 真实 Enter」去答，全部无效——客机还刻意让应用不进前台，真实按键根本到不了。现在：有带文本的 Button/wxWindowNR 子窗口就点它；原生任务对话框的梯子（TDM_CLICK_BUTTON → WM_COMMAND → 投递 Enter → 前台时的真实 Enter）留在后面。
+- 负数：数值框会丢弃**孤立的 `-`**，`-100` 进去出来是 `100`（fa d134da1b，被 r4 起带符号的回读抓到；r4 之前同样的编辑会「通过」）；数字后再在行首补负号同样被丢，字段被提交成 +100（fa 9d2369fb）。改成打完数字后用控件自己的 Down 键一步步走到目标值（fa 0eb5a417）。
+- ops 重标：raft（首层两行在 Support 组）、tree_support（`Tree supports` 条件组）、prime_tower（Wall type→Cone 设顶角→切回 Rib）、flush_options（去 `this`）、spiral_vase（答 Yes）、first_speeds（旧 op 一直靠「把组标题当行 + below」碰巧通过，r3 起引擎跳过标题行会回归；改为先按值锚定）。
+- raft 的第二次失败（5a4728b6）：四个值都落了，**应用拒绝切片**——切片按钮灰着，红色提示条「Jump to tree support」：筏板不与**树状**支撑类型（夹具默认）同时生成。Type 在支撑未启用时是灰的，所以先启用支撑再把 Type 切到 Normal（#279 的配方），`enable_support` / `support_type` 记入 pilot 偏差。
+- 校验器：条件行、N/A 用例、未普查的弹窗目标各成一张带证据的表（按 op 的首个标签键入，不按序号——raft 加了两个 op 后序号键悄悄失配），其余不匹配仍是问题；`tools/check_ops_red_proof.py` 证明七类坏输入各会翻红。41 个场景 0 问题 12 条备注。
+
+**r5 之后两条线按场景分跑，不重复跑同一场景**
+
+| 线 | 场景 | run | 结果 |
+|---|---|---|---|
+| VM | overhang_speeds #264 | aff4e62e | **SHADOW** |
+| fa | fuzzy #295 | 6b8fa2d9 | **SHADOW** |
+| VM | overhang_bridge #272 | cfd5b08f | **SHADOW** |
+| VM | first_speeds #270（回归） | db7c08f3 | **SHADOW**（r5 无回归） |
+| fa | prime_tower #283 | 2bacb634 | **SHADOW**（保存件 `wall_type=rib`、`cone_angle=15`） |
+| fa | tree_support #282 | e946ad14 | **SHADOW** |
+| fa | flush_options #286 | f0175fa7 | **SHADOW**（记偏差：`flush_into_objects` 保持 0） |
+| fa | ooze_prevention #285 | 9d2369fb → 0eb5a417 | NON_GREEN（负号）→ r5.6 后 **SHADOW** |
+| VM | raft #278 | 5a4728b6 → f5d76e39 | NON_GREEN（树状支撑拒绝切片）→ r5.6 后 **SHADOW** |
+| VM | spiral_vase #293 | eab35b9a / 4d9731ec / 9ef272d0 / d8cec0d4 → 680d5426 | 四次 NON_GREEN → r5.9 后 **SHADOW**（记偏差：`wall_loops=1`、`top_shell_layers=0`、`sparse_infill_density=0%` 是应用自己改的） |
+| VM | arc_resolution #258 | 55cc30bd | **SHADOW**（r5.6 判据修正后） |
+| fa 队列 2（r5.1） | support_filament #279 / filament_features #284 / support_interface #281 / support_ironing #280 / material_advanced #287 | 0c8f604e / b9d0efa5 / 83cce033 / 51380cfe / d9df6fdb | **SHADOW ×5** |
+
+**层网格（#258 带出的事实）**：夹具立方体是 **27.0 mm** 高（网格 −13.5…13.5）。非精确 Z 时切片器按 0.4 网格打 68 层、顶层打在 **Z 27.2**（网格上取整）——其它用例的「68 × 0.4 / 27.2」判据量的是这个上取整，不是模型高度。开精确 Z 后网格**正好收在模型高度**：63 步 0.4 + 5 步 0.36，最后 Z 27.0（56846c08 逐层实测）。`analyze_gcode` 要求等步距，所以 #258 不挂等步距判据，只证四个配置值 + 设置保持。
+
+**被推翻的推理（续二，如实记录）**：(a)「回读用整带 OCR 即可」——刚改过的行会整行被丢；(b)「复选框后的弹窗 `wait_popup` 等得到」——它只认下拉弹窗；(c)「负号可以直接打进数值框」「数字后再补负号就行」——两次都被丢；(d)「这个框是没有 Button 子窗口的原生消息框」——连推三版（WM_COMMAND、真实 Enter、TDM_CLICK_BUTTON）各烧一个 run，第四次把子窗口类名打印出来才发现是 wx 自绘按钮；**日志里缺的事实先打印，再改代码**；(e)「27.2 是 68×0.4 的模型高度」——模型 27.0；(f)「两行式标签：标签一行、数值框在下一行」——Speed 页首行是组标题与首行同名造成的错觉，overhang 才是真的纵向堆叠；(g)「Max bridge length 在页面上没有行」——支撑启用后它在 Support 页的 Advanced 组，#263 失败是因为它在 Quality 页的桥接组里没有。
+
+**未清 5 条（定性）**：
+- **#255 line_width_all**：七个字段全部编辑成功，应用拒绝切片——「Line width too small」（run e0905644）：U1 的 0.8 喷嘴预设不接受顶面线宽 0.40。用例值与夹具机型冲突；要么给该用例换 0.4 喷嘴预设，要么记偏差改顶面线宽。
+- **#294 timelapse**：`toggle_line("timelapse_type", is_BBL_Printer)`，只有拓岩机型有这一行，U1 上不适用。
+- **#296 gcode_output**：`gcode_add_line_number` 是 `comDevelop`，只在应用的 develop 模式显示。可做，差两步：把 `user_mode=develop` 按场景送进客机 worker 的 profile 播种（`profile.seed_profile` 已支持 `conf_extra` / `ORCA_BB_CONF_EXTRA`，`agent_guest.py:62` 的调用没传），再在 develop 模式下普查一次 Others 页的行文本。
+- **#288 / #289**：混色面板（`mixed_filament_*`），不在工艺参数页。
+
+**两个靶机 agent（本段）**：
+- **Mac**：第一步 B1–B5（4/5 原语）已合并（`aedc4bf`）。第二步的 60 分钟预算用完、没有回复，但成果留在 Mac 工作区；第三步（28 分钟、小步提交）接着做，4 个提交已搬回合并（`6cc9cdb`…`3a9ced7`）：`scroll_page` 已证（拖/点页面滚动条、窗口最大化；折叠图标与带光标滚轮无效）；`locate_row` 先滚动再定位；**`pick_combo` 在 macOS Orca 2.4.1 上已证**（Others / Special mode / Print sequence → By object，run 014004，行读回 `~ By object`；指针点击与 Down+Return 两次输入谁完成了选择尚未分离）；最小场景「Layer height 0.4→0.2」从保存的 3mf 读回 `layer_height='0.2'`。未证：「Detect thin walls」场景两次超时（Advanced 模式下 Strength 页滚过头后没认出 `Walls` 标题；修正已写、未验证、未提交），「Print sequence」场景未跑。Mac 口径，不计入 44 条。
+- **fa706g3**：弹窗审查 3 处、行定位审查 D1–D8 均已采纳；对 r5 的定向审查 30 分钟预算用完没有回复（靶机日志显示它一直在工作到被取消）。随后它用自己写的脚本（`C:\coil\glm_line\verify_fa_shadows.py`：ast 静态解析 pilot、不导入仓库代码、在临时副本上注入 4 类问题验证会报）**独立复核 fa 线 10 条：53 个键 0 不一致**。
+- 两次「预算用完没有回复」都是任务大于预算（第 28 条老坑），不是驱动问题；提示词要带 `TEAMMATE_LOOP_OK` 并要求小步提交——第三步照做后产物齐全。

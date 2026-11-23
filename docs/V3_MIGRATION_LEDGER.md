@@ -266,3 +266,22 @@
 - **ops 校准**：#256/#263/#270/#271/#274/#276/#284/#291/#292 九条的组名或标签已按实证改正（含一处我自己的误改：#292 锚点）。
 - **Mac 轨道壁环数 2→3**（run 306d3efe）：记为 Mac 口径 SHADOW，带保留项（判据为差分判据，52 项负对照经宿主独立重跑复现；GUI 导出未测；SUT 2.4.1/macOS），不计入 44 条。
 - **标签普查**：fa706g3 上 2.3.5 的五页完整 + Others 部分，证据 `docs/runs/evidence/fa706g3-label-census-2026-11-23/`，校准口径。
+
+### 2026-11-23 晚进度（queue18 → 普查探针 → r3c…r3e → queue20）
+
+- **参数族闭环 14 条 SHADOW（14/44）**：#254=95cd45f5、#256=6b5ea183、#257=8ff22123、#259=073f086f、#263=55e8a417、#266=05dd9020、#267=f324120d、#268=f307ef1f、#270=f96dbc0b、#273=3c1ab0d1、#274=43897d4d、#277=91678bcb、#292=b6bc43ae、#297=01163442。**GREEN 仍为 0**（均为 Windows 冻结构建上的 SHADOW，release_eligible=false）。
+- **queue18（r3b）1 过 9 败、queue19（r3c.1）3 过 7 败**，都在确认失败是引擎级之后手动停掉。逐场景签名与定性见运行记录「续三」。
+- **普查探针 `uia_param_census`（新场景，不进保存阶段）**：第一版量出引擎依赖的事实（单位标签窗口混进标题集、滚轮一格 60px、弹窗开到任务栏下、ESC 关不掉弹窗、图谱≠构建）；第二版逐个打开全部下拉 ops 的弹窗，给出真实行文本与真实行名（`Outer brim only`、`All walls`、`1 PETG`…；`Support/raft base`；`Interface pattern`），并量出 `WindowFromPoint` 不返回禁用窗口、弹窗 OCR 需 psm 6。
+- **r3c / r3d / r3e（485843b…804a88f）**：标题集、组跨度、卡死检测、弹窗停靠与可点校验、窗口文本校验、扫描预算；客户区坐标对齐（7px）；两词复选框标签；两行式标签控件；日志行缓冲。ops 重标 10 处（含 #279/#284/#287 改走 Support 页并记入 `enable_support=1` 偏差）。离线测试 49 项（前一版树上 5–16 项红）；校验器以 `harness/param_ui_titles_2.4.0.json` 判组名。
+- **fa706g3 静态审查**（缩到 4 个函数后闭环）3 处确定性缺陷已采纳。
+- **queue20**（r3e，27 个场景 11 过）：参数族累计 24 条 SHADOW。逐场景签名见运行记录「续三」「续四」。
+
+### 2026-11-24 凌晨进度（fa 第二条线 → r4/r5 → queue21/22/23）
+
+- **参数族闭环 39 条 SHADOW（39/44，88.6%）；GREEN 仍为 0。** 口径：39 个场景各有至少一个 `release_verdict=SHADOW` 的收割 run，核对脚本逐个重开保存的 3mf 比对 pilot 期望值。VM 客机 29 条，fa706g3 物理机 10 条（#279–#287、#295）。
+- **fa706g3 成为第二条实体线**（README 纪律第 6 条）：同一份 2.4.0 构建与同版预设（补齐 325 个 Snapmaker 预设文件）；显式放行 `ORCA_BB_ALLOW_TESTBOX=1`，每个 run 写 `execution_host.json`；GUI 只经计划任务。两线按场景分跑，不重复跑同一场景。
+- **引擎 r4–r5.9**（`68537ab`…`3789b0b`）：值控件枚举、纵向堆叠字段、按值回读并锚定点击行、wx 自绘对话框按子窗口点击、负数用 Down 键走到位、标签候选一次扫描、切片拒绝原文入错。离线测试 59 → 97 项；校验器 41 个场景 0 问题，七类坏输入红证。ops 重标 6 处 + queue21 定性 8 个。
+- **记入 pilot 的偏差**：#278（`raft_expansion` 无行；`enable_support=1`、`support_type=normal`——筏板不与树状支撑同生成）、#286（`flush_into_objects` 仅对象配置有行）、#293（`wall_loops=1`、`top_shell_layers=0`、`sparse_infill_density=0%` 由应用自己的 Yes 改）、#258（精确 Z 下网格为 63×0.4+5×0.36、顶 27.0，不挂等步距判据）、#285（`preheat_steps` 无行）。
+- **未清 5 条**：#255（0.8 喷嘴预设拒绝顶面线宽 0.40，用例与夹具冲突）、#294（仅 BBL 机型有 Timelapse 行）、#296（需按场景播种 develop 模式——入口未接）、#288/#289（混色面板）。详见运行记录「续四」。
+- **Mac 轨道**：参数页原语 5/5 已证并合并（`aedc4bf`、`6cc9cdb`…`3a9ced7`）——`scroll_page`（滚动条 / 最大化）、`pick_combo`（Print sequence → By object，归因未分离）；最小场景「Layer height 0.4→0.2」从保存的 3mf 读回。未证：「Detect thin walls」场景（两次超时）、「Print sequence」场景（未跑）。Mac 口径，不计入 44 条。
+- **fa 线 10 条的独立复核**：fa 上的 agent 用自己写的脚本读保存件比对 pilot，53 个键 0 不一致（`C:\coil\glm_line\verify_fa_shadows.py`）。
