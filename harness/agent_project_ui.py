@@ -49,14 +49,23 @@ class ProjectUI(BusinessUI):
     def _save_command(self):
         self._project_command("save project as")
 
+    def _save_failure_shot(self, name):
+        """Window capture at the moment a project command failed: the log
+        cannot show what the screen looked like."""
+        try:
+            from PIL import Image
+            from . import process_panel as pp
+            Image.fromarray(pp.capture_bgr(self.app)[:, :, ::-1]).save(self.artifacts / name)
+            print("[project] failure screenshot: %s" % (self.artifacts / name), flush=True)
+        except Exception as exc:
+            print("[project] failure screenshot failed: %s" % type(exc).__name__, flush=True)
+
     def _project_command(self, label):
         if label not in {"save project as", "open project"}:
             raise ProtocolError("project_command_scope")
         toolbar = self.tb._topbar(self.app.hwnd)
         if not toolbar or not self.owned(toolbar[2]):
-            # 2026-11-23: three runs lost the topbar right after param ops
-            # (timelapse/surface_flow/infill_structure, queue12) - a leftover
-            # dropdown or transient repaint hides it. Post ESC and retry.
+            # One retry: a leftover dropdown or a transient repaint.
             import ctypes
             u32 = ctypes.windll.user32
             u32.PostMessageW(self.app.hwnd, 0x100, 0x1B, 0)
@@ -64,6 +73,7 @@ class ProjectUI(BusinessUI):
             self.pause(0.8)
             toolbar = self.tb._topbar(self.app.hwnd)
         if not toolbar or not self.owned(toolbar[2]):
+            self._save_failure_shot("save_failure.png")
             raise ProtocolError("file_toolbar_missing")
         rect = toolbar[1]
         x, y = rect[0] + 20, (rect[1] + rect[3]) // 2

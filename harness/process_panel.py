@@ -527,14 +527,24 @@ def popup_line_hits(words, target):
     return out
 
 
+class _GUITHREADINFO(ctypes.Structure):
+    """Declared by hand: ctypes.wintypes has no GUITHREADINFO on the guest's
+    Python 3.11 (run 7834c486: AttributeError the first time the stall guard
+    tried to reset the focus - the offline tests had stubbed the reset)."""
+    _fields_ = [("cbSize", ctypes.wintypes.DWORD), ("flags", ctypes.wintypes.DWORD),
+                ("hwndActive", ctypes.wintypes.HWND), ("hwndFocus", ctypes.wintypes.HWND),
+                ("hwndCapture", ctypes.wintypes.HWND), ("hwndMenuOwner", ctypes.wintypes.HWND),
+                ("hwndMoveSize", ctypes.wintypes.HWND), ("hwndCaret", ctypes.wintypes.HWND),
+                ("rcCaret", ctypes.wintypes.RECT)]
+
+
 def focus_info(session):
     """(hwnd, class) holding KEYBOARD focus in the app's GUI thread, or
     (None, None). GetFocus() only reports the caller's own thread."""
-    import ctypes.wintypes
     tid = user32.GetWindowThreadProcessId(session.hwnd, None)
-    gti = ctypes.wintypes.GUITHREADINFO()
+    gti = _GUITHREADINFO()
     gti.cbSize = ctypes.sizeof(gti)
-    if not tid or not user32.GetGUIThreadInfo(tid, ctypes.byref(gti)) or not gti.hwndFocus:
+    if not tid or not user32.GetGUIThreadInfo(ctypes.c_uint(tid), ctypes.byref(gti)) or not gti.hwndFocus:
         return None, None
     return gti.hwndFocus, winutil.window_class(gti.hwndFocus)
 

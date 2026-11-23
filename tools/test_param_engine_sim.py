@@ -173,7 +173,11 @@ check("dead wheel + absent label -> None, and far fewer than 38 wheels",
 # testing anything.
 page = Page([("x", 700)], {})
 install(page)
-_real = (pp.group_title, pp.time.sleep, pp.frect)
+_real = (pp.group_title, pp.time.sleep, pp.frect, pp.neutralize_focus)
+# The unpatched engine calls neutralize_focus straight from
+# scroll_group_into_view; with a fake session it would raise before the
+# later sections ever run - stub it so the RED proof reaches them too.
+pp.neutralize_focus = lambda session: True
 pp.time.sleep = lambda s: None
 pp.frect = lambda session: (0, 0, 0, 0)
 pp.group_title = lambda session, sub: None
@@ -190,7 +194,7 @@ try:
     hit2 = REAL_SGIV(None, "Seam", timeout_s=3.0)
     wheels_present = page.wheels - wheels_missing
 finally:
-    pp.group_title, pp.time.sleep, pp.frect = _real
+    pp.group_title, pp.time.sleep, pp.frect, pp.neutralize_focus = _real
 check("scroll_group_into_view: missing title -> None after exactly 16 bursts",
       hit is None and wheels_missing == 16, "hit=%r wheels=%d" % (hit, wheels_missing))
 check("scroll_group_into_view: existing title in band -> returned, no wheel",
@@ -207,15 +211,68 @@ install(page)
 wheels_before = page.wheels
 pp.time.sleep = lambda s: None
 pp.frect = lambda session: (0, 0, 0, 0)
+pp.neutralize_focus = lambda session: True  # again: the base engine reaches it from here
 pp.group_title = lambda session, sub: ((0, 0, 400, 690), 99) if sub == "Initial layer" else None
 pp.view_band = lambda session: BAND
 try:
     hit3 = REAL_SGIV(None, "Initial layer", timeout_s=60.0)
     wheels_top = page.wheels - wheels_before
 finally:
-    pp.group_title, pp.time.sleep, pp.frect = _real
+    pp.group_title, pp.time.sleep, pp.frect, pp.neutralize_focus = _real
 check("scroll_group_into_view: first group's title stuck above the band -> accepted quickly",
       hit3 == ((0, 0, 400, 690), 99) and 0 < wheels_top <= 8, "hit3=%r wheels=%d" % (hit3, wheels_top))
+
+# 7. focus_info is a REAL Win32 call - nothing here is stubbed. Python 3.11
+#    has no ctypes.wintypes.GUITHREADINFO: run 7834c486 died on that the
+#    first time the stall guard reset the focus, and the previous revision
+#    of this test had stubbed the reset, so it stayed green.
+import ctypes  # noqa: E402
+import types  # noqa: E402
+if hasattr(pp, "_GUITHREADINFO"):
+    check("GUITHREADINFO struct is 72 bytes on 64-bit", ctypes.sizeof(pp._GUITHREADINFO) == 72,
+          "got %d" % ctypes.sizeof(pp._GUITHREADINFO))
+    try:
+        info = pp.focus_info(types.SimpleNamespace(hwnd=pp.user32.GetForegroundWindow(), pid=0))
+        ok, detail = isinstance(info, tuple) and len(info) == 2, "foreground -> %r" % (info,)
+    except Exception as exc:  # the guest raised exactly this way
+        ok, detail = False, "raised %s: %s" % (type(exc).__name__, exc)
+    check("focus_info makes the real GetGUIThreadInfo call without raising", ok, detail)
+else:
+    print("N/A  focus_info (absent on this tree)")
+
+# 8. topbar_util._topbar must ignore descendants scrolled ABOVE the frame.
+#    _children() enumerates every descendant; rows that moved above the
+#    options viewport keep windows above the frame, and taking the global
+#    minimum of all tops made the toolbar "vanish" - the whole
+#    file_toolbar_missing family (every case whose edit sits deep down a
+#    page: run 33d875d3, and before it bridge / jerk / tree supports).
+from harness import topbar_util as tb  # noqa: E402
+FRAME = (100, 200, 1400, 1100)
+TOOLBAR = ("", (100, 200, 1400, 232), 111, "BBLTopbar")
+TABS = ("", (100, 240, 900, 275), 222, "wxWindowNR")
+ROWS_ABOVE = [("", (120, 200 - 500 + 30 * i, 400, 200 - 500 + 30 * i + 24), 900 + i, "Edit")
+              for i in range(8)]
+_real_children, _real_rect = tb._children, tb.user32.GetWindowRect
+
+
+def _topbar_with(children):
+    tb._children = lambda parent, _c=children: list(_c)
+
+    def _rect(_h, rc):
+        rc._obj.left, rc._obj.top, rc._obj.right, rc._obj.bottom = FRAME
+        return 1
+
+    tb.user32.GetWindowRect = _rect
+    try:
+        return tb._topbar(1)
+    finally:
+        tb._children, tb.user32.GetWindowRect = _real_children, _real_rect
+
+
+hit = _topbar_with([TOOLBAR, TABS])
+check("_topbar: page at top -> toolbar found", hit == TOOLBAR[:3], "got %r" % (hit,))
+hit = _topbar_with(ROWS_ABOVE + [TOOLBAR, TABS])
+check("_topbar: rows scrolled above the frame -> toolbar still found", hit == TOOLBAR[:3], "got %r" % (hit,))
 
 failed = [n for n, ok in results if not ok]
 print("\n%d checks, %d failed" % (len(results), len(failed)))

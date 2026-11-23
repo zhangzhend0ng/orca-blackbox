@@ -63,13 +63,24 @@ class MENUITEMINFO(ctypes.Structure):
 # ---------------------------------------------------------------------------
 
 def _topbar(hwnd: int):
-    """The BBLTopbar child: topmost full-width band of the frame (h ~30)."""
-    tops = sorted({r[1] for _, r, _, _ in _children(hwnd)})
-    top_y = tops[0] if tops else 0
+    """The BBLTopbar child: the topmost full-width band of the frame (h ~30).
+
+    Only candidates INSIDE the frame count. _children() enumerates every
+    descendant, and once the options panel has been scrolled down the rows
+    that moved above the viewport keep windows whose top lies above the
+    frame. Taking the global minimum of all tops therefore pointed at such
+    a row and the toolbar "vanished" - which is what file_toolbar_missing
+    after a param edit was (bridge / jerk / tree supports / surface flow,
+    i.e. every case whose edit sits deep down a page; runs 33d875d3,
+    be75f8b8, 13613ac7's siblings)."""
+    frc = wt.RECT()
+    user32.GetWindowRect(hwnd, ctypes.byref(frc))
+    best = None
     for text, rect, ch, cls in _children(hwnd):
-        if rect[1] == top_y and (rect[3] - rect[1]) <= 40 and (rect[2] - rect[0]) > 500:
-            return text, rect, ch
-    return None
+        if (rect[3] - rect[1]) <= 40 and (rect[2] - rect[0]) > 500 and rect[1] >= frc.top:
+            if best is None or rect[1] < best[1][1]:
+                best = (text, rect, ch)
+    return best
 
 
 def _children(parent: int):
