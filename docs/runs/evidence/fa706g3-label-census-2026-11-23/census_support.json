@@ -1,0 +1,2114 @@
+{
+ "tab": "Support",
+ "version": "2.3.5-nightly",
+ "build": "01.10.01.50",
+ "captured": "2026-11-23 16:17",
+ "channel": "zcode_gui_task session-1 worker: real SendInput wheel (1 notch/step, >=550ms settle), PrintWindow capture, pytesseract eng psm=6 scale=3; E2 driver: per-frame partial flush, movement judged by row displacement, page reset by tab rebuild",
+ "psm": 6,
+ "complete": true,
+ "stop_reason": "bottom confirmed: stops [780, 780] agree within 60px",
+ "stopped_at": {
+  "walk": 2,
+  "offset": 780,
+  "kind": "static",
+  "viewport_rows": [
+   [
+    "Bottom interface layers ~2 layers",
+    722
+   ],
+   [
+    "Interface pattern ~ Default",
+    751
+   ],
+   [
+    "Top interface spacing 0.5",
+    782
+   ],
+   [
+    "mm",
+    788
+   ],
+   [
+    "Bottom interface spacing 0.5 mm",
+    812
+   ],
+   [
+    "Normal support expansion 0",
+    842
+   ],
+   [
+    "mm",
+    848
+   ],
+   [
+    "Support/object xy distance 0.35 mm",
+    872
+   ],
+   [
+    "first layer",
+    901
+   ],
+   [
+    "02 om",
+    911
+   ],
+   [
+    "Don't support bridges",
+    949
+   ],
+   [
+    "Independent support layer",
+    980
+   ],
+   [
+    "height",
+    998
+   ]
+  ],
+  "walk_stops": [
+   780,
+   780
+  ]
+ },
+ "walks": 2,
+ "wheel_steps": 76,
+ "scroll_px_per_notch": 60,
+ "row_y_space": "page-absolute px reconstructed from frame displacement; viewport y = row y - offset of the frame it was read in",
+ "rows": [
+  {
+   "text": "IJ Support",
+   "y": 723
+  },
+  {
+   "text": "Enable support",
+   "y": 758
+  },
+  {
+   "text": "Type “",
+   "y": 785
+  },
+  {
+   "text": "~ Tree (auto)",
+   "y": 793
+  },
+  {
+   "text": "Style Default (Grid...",
+   "y": 818
+  },
+  {
+   "text": "~",
+   "y": 823
+  },
+  {
+   "text": "Threshold angle 40 7",
+   "y": 848
+  },
+  {
+   "text": "Threshold overlap",
+   "y": 878
+  },
+  {
+   "text": "‘",
+   "y": 904
+  },
+  {
+   "text": "First layer density 90 %",
+   "y": 908
+  },
+  {
+   "text": "First layer expansion 2",
+   "y": 938
+  },
+  {
+   "text": "mm",
+   "y": 944
+  },
+  {
+   "text": "On build plate only",
+   "y": 968
+  },
+  {
+   "text": "Remove small overhangs |",
+   "y": 998
+  },
+  {
+   "text": "¥",
+   "y": 1028
+  },
+  {
+   "text": "oa] Raft",
+   "y": 1029
+  },
+  {
+   "text": "Raft layers 0 layers",
+   "y": 1063
+  },
+  {
+   "text": "¥",
+   "y": 1088
+  },
+  {
+   "text": "Filament for Supports",
+   "y": 1098
+  },
+  {
+   "text": "Support/raft base Default",
+   "y": 1129
+  },
+  {
+   "text": "~",
+   "y": 1135
+  },
+  {
+   "text": "A",
+   "y": 1144
+  },
+  {
+   "text": "v",
+   "y": 1148
+  },
+  {
+   "text": "Support/raft interface ~ Default",
+   "y": 1159
+  },
+  {
+   "text": "—\\ Support ironing",
+   "y": 1191
+  },
+  {
+   "text": "Ironing Support Interface",
+   "y": 1226
+  },
+  {
+   "text": "ty Advanced",
+   "y": 1258
+  },
+  {
+   "text": "Advanced A",
+   "y": 1260
+  },
+  {
+   "text": "Top # distance 02 mm",
+   "y": 1292
+  },
+  {
+   "text": "Bottom Z distance 0.2",
+   "y": 1322
+  },
+  {
+   "text": "mm “",
+   "y": 1328
+  },
+  {
+   "text": "Support wall loops ~ 0",
+   "y": 1352
+  },
+  {
+   "text": "Base pattern Default “",
+   "y": 1382
+  },
+  {
+   "text": "Base pattern spacing 25 mm",
+   "y": 1412
+  },
+  {
+   "text": "Pattern angle 0 “",
+   "y": 1442
+  },
+  {
+   "text": "“",
+   "y": 1448
+  },
+  {
+   "text": "Top interface layers ~ 2 layers",
+   "y": 1472
+  },
+  {
+   "text": "Bottom interface layers ~2 layers",
+   "y": 1502
+  },
+  {
+   "text": "Interface pattern ~ Default",
+   "y": 1531
+  },
+  {
+   "text": "Top interface spacing 0.5",
+   "y": 1562
+  },
+  {
+   "text": "mm",
+   "y": 1568
+  },
+  {
+   "text": "Bottom interface spacing 0.5 mm",
+   "y": 1592
+  },
+  {
+   "text": "Normal support expansion 0",
+   "y": 1622
+  },
+  {
+   "text": "mm",
+   "y": 1628
+  },
+  {
+   "text": "Support/object xy distance 0.35 mm",
+   "y": 1652
+  },
+  {
+   "text": "Support/object first layer",
+   "y": 1682
+  },
+  {
+   "text": "02 om",
+   "y": 1691
+  },
+  {
+   "text": "Don't support bridges",
+   "y": 1729
+  },
+  {
+   "text": "v",
+   "y": 1748
+  },
+  {
+   "text": "Independent support layer",
+   "y": 1760
+  },
+  {
+   "text": "height",
+   "y": 1778
+  }
+ ],
+ "row_count": 51,
+ "frames": [
+  {
+   "step": 0,
+   "walk": 1,
+   "offset": 0,
+   "lines": [
+    [
+     "IJ Support",
+     723
+    ],
+    [
+     "Enable support",
+     758
+    ],
+    [
+     "Type",
+     785
+    ],
+    [
+     "~ Tree (auto)",
+     793
+    ],
+    [
+     "Style Default (Grid...",
+     818
+    ],
+    [
+     "~",
+     823
+    ],
+    [
+     "Threshold angle 40 7",
+     848
+    ],
+    [
+     "Threshold overlap",
+     878
+    ],
+    [
+     "First layer density 90 %",
+     908
+    ],
+    [
+     "First layer expansion 2",
+     938
+    ],
+    [
+     "mm",
+     944
+    ],
+    [
+     "On build plate only",
+     968
+    ],
+    [
+     "Remove small overhangs |",
+     998
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 1,
+   "walk": 1,
+   "offset": 60,
+   "lines": [
+    [
+     "Type “",
+     725
+    ],
+    [
+     "~ Tree (auto)",
+     733
+    ],
+    [
+     "Style Default (Grid...",
+     758
+    ],
+    [
+     "~",
+     763
+    ],
+    [
+     "Threshold angle 40 7",
+     788
+    ],
+    [
+     "Threshold overlap",
+     818
+    ],
+    [
+     "First layer density 90 %",
+     848
+    ],
+    [
+     "First layer expansion 2",
+     878
+    ],
+    [
+     "mm",
+     884
+    ],
+    [
+     "On build plate only",
+     908
+    ],
+    [
+     "Remove small overhangs |",
+     938
+    ],
+    [
+     "om Raft",
+     969
+    ],
+    [
+     "Raft layers 0 layers",
+     1003
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 2,
+   "walk": 1,
+   "offset": 120,
+   "lines": [
+    [
+     "Threshold angle 40 7",
+     728
+    ],
+    [
+     "Threshold overlap",
+     758
+    ],
+    [
+     "First layer density 90 %",
+     788
+    ],
+    [
+     "First layer expansion 2",
+     818
+    ],
+    [
+     "mm",
+     824
+    ],
+    [
+     "On build plate only",
+     848
+    ],
+    [
+     "Remove small overhangs |",
+     878
+    ],
+    [
+     "om Raft",
+     909
+    ],
+    [
+     "Raft layers 0 layers",
+     943
+    ],
+    [
+     "for",
+     977
+    ],
+    [
+     "Filament Supports",
+     978
+    ],
+    [
+     "Support/raft base Default",
+     1009
+    ],
+    [
+     "~",
+     1015
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 3,
+   "walk": 1,
+   "offset": 180,
+   "lines": [
+    [
+     "‘",
+     724
+    ],
+    [
+     "First layer density 90 %",
+     728
+    ],
+    [
+     "First layer expansion 2",
+     758
+    ],
+    [
+     "mm",
+     764
+    ],
+    [
+     "On build plate only",
+     788
+    ],
+    [
+     "Remove small overhangs |",
+     818
+    ],
+    [
+     "om Raft",
+     849
+    ],
+    [
+     "aft ayers",
+     883
+    ],
+    [
+     "Filament for Supports",
+     918
+    ],
+    [
+     "Support/raft base Default",
+     949
+    ],
+    [
+     "~",
+     955
+    ],
+    [
+     "Support/raft interface ~ Default",
+     979
+    ],
+    [
+     "—\\ Support ironing",
+     1011
+    ]
+   ]
+  },
+  {
+   "step": 4,
+   "walk": 1,
+   "offset": 240,
+   "lines": [
+    [
+     "On build plate only",
+     728
+    ],
+    [
+     "Remove small overhangs |",
+     758
+    ],
+    [
+     "om Raft",
+     789
+    ],
+    [
+     "Raft layers 0 layers",
+     823
+    ],
+    [
+     "for",
+     857
+    ],
+    [
+     "Filament Supports",
+     858
+    ],
+    [
+     "Support/raft base Default",
+     889
+    ],
+    [
+     "~",
+     895
+    ],
+    [
+     "Support/raft interface ~ Default",
+     919
+    ],
+    [
+     "—\\",
+     951
+    ],
+    [
+     "Support ironing",
+     954
+    ],
+    [
+     "Ironing Support Interface",
+     986
+    ],
+    [
+     "ty Advanced",
+     1018
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 5,
+   "walk": 1,
+   "offset": 300,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "oa] Raft",
+     729
+    ],
+    [
+     "Raft layers 0 layers",
+     763
+    ],
+    [
+     "Filament for Supports",
+     798
+    ],
+    [
+     "Support/raft base Default",
+     829
+    ],
+    [
+     "~",
+     835
+    ],
+    [
+     "Support/raft interface ~ Default",
+     859
+    ],
+    [
+     "—\\ Support ironing",
+     891
+    ],
+    [
+     "Ironing Support Interface",
+     926
+    ],
+    [
+     "Advanced",
+     960
+    ],
+    [
+     "Top # distance 02 mm",
+     992
+    ],
+    [
+     "Bottom Z distance 0.2",
+     1022
+    ],
+    [
+     "mm “",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 6,
+   "walk": 1,
+   "offset": 360,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "for",
+     737
+    ],
+    [
+     "Filament Supports",
+     738
+    ],
+    [
+     "Support/raft base Default",
+     769
+    ],
+    [
+     "~",
+     775
+    ],
+    [
+     "Support/raft interface ~ Default",
+     799
+    ],
+    [
+     "—\\",
+     831
+    ],
+    [
+     "Support ironing",
+     834
+    ],
+    [
+     "Ironing Support Interface",
+     866
+    ],
+    [
+     "Advanced",
+     900
+    ],
+    [
+     "Top # distance 02 mm",
+     932
+    ],
+    [
+     "Bottom Z distance 0.2",
+     962
+    ],
+    [
+     "mm",
+     968
+    ],
+    [
+     "~",
+     990
+    ],
+    [
+     "Support wall loops 0",
+     992
+    ],
+    [
+     "Base pattern Default",
+     1022
+    ],
+    [
+     "~",
+     1027
+    ]
+   ]
+  },
+  {
+   "step": 7,
+   "walk": 1,
+   "offset": 420,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Support/raft interface ~ Default",
+     739
+    ],
+    [
+     "—\\ Support ironing",
+     771
+    ],
+    [
+     "Ironing Support Interface",
+     806
+    ],
+    [
+     "Advanced",
+     840
+    ],
+    [
+     "Top # distance 02 mm",
+     872
+    ],
+    [
+     "Bottom Z distance 0.2",
+     902
+    ],
+    [
+     "mm",
+     908
+    ],
+    [
+     "Support wall loops ~ 0",
+     932
+    ],
+    [
+     "Base pattern Default",
+     962
+    ],
+    [
+     "~",
+     967
+    ],
+    [
+     "Base pattern spacing 25 mm",
+     992
+    ],
+    [
+     "Pattern angle 0",
+     1022
+    ],
+    [
+     "“",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 8,
+   "walk": 1,
+   "offset": 480,
+   "lines": [
+    [
+     "Ironing Support Interface",
+     746
+    ],
+    [
+     "Advanced",
+     780
+    ],
+    [
+     "Top # distance 02 mm",
+     812
+    ],
+    [
+     "Bottom Z distance 0.2",
+     842
+    ],
+    [
+     "mm",
+     848
+    ],
+    [
+     "Support wall loops",
+     872
+    ],
+    [
+     "Base pattern Default",
+     902
+    ],
+    [
+     "~",
+     907
+    ],
+    [
+     "Base pattern spacing 25 mm",
+     932
+    ],
+    [
+     "Pattern angle 0",
+     962
+    ],
+    [
+     "Top interface layers ~ 2 layers",
+     992
+    ],
+    [
+     "Bottom interface layers 2 layers",
+     1022
+    ],
+    [
+     "~ v",
+     1027
+    ]
+   ]
+  },
+  {
+   "step": 9,
+   "walk": 1,
+   "offset": 540,
+   "lines": [
+    [
+     "Advanced A",
+     720
+    ],
+    [
+     "Top # distance 02 mm",
+     752
+    ],
+    [
+     "Bottom Z distance 0.2",
+     782
+    ],
+    [
+     "mm",
+     788
+    ],
+    [
+     "Support wall loops ~ 0",
+     812
+    ],
+    [
+     "Base pattern Default",
+     842
+    ],
+    [
+     "~",
+     847
+    ],
+    [
+     "Base pattern spacing 25 mm",
+     872
+    ],
+    [
+     "Pattern angle 0",
+     902
+    ],
+    [
+     "Top interface layers ~ 2 layers",
+     932
+    ],
+    [
+     "Bottom interface layers layers",
+     962
+    ],
+    [
+     "=",
+     967
+    ],
+    [
+     "Interface pattern ~ Default",
+     991
+    ],
+    [
+     "Top interface spacing 0.5",
+     1022
+    ],
+    [
+     "mm",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 10,
+   "walk": 1,
+   "offset": 600,
+   "lines": [
+    [
+     "Bottom Z distance 0.2",
+     722
+    ],
+    [
+     "mm",
+     728
+    ],
+    [
+     "~",
+     750
+    ],
+    [
+     "Support wall loops 0",
+     752
+    ],
+    [
+     "Base pattern Default",
+     782
+    ],
+    [
+     "~",
+     787
+    ],
+    [
+     "Base pattern spacing 25 mm",
+     812
+    ],
+    [
+     "Pattern angle 0",
+     842
+    ],
+    [
+     "Top interface layers ~2 layers",
+     872
+    ],
+    [
+     "Bottom interface layers 2 layers",
+     902
+    ],
+    [
+     "~",
+     907
+    ],
+    [
+     "Interface pattern ~ Default",
+     931
+    ],
+    [
+     "Top interface spacing 0.5",
+     962
+    ],
+    [
+     "mm",
+     968
+    ],
+    [
+     "Bottom interface spacing 0.5 mm",
+     992
+    ],
+    [
+     "Normal support expansion 0",
+     1022
+    ],
+    [
+     "mm",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 11,
+   "walk": 1,
+   "offset": 660,
+   "lines": [
+    [
+     "Base pattern Default “",
+     722
+    ],
+    [
+     "~",
+     727
+    ],
+    [
+     "Base pattern spacing 25 mm",
+     752
+    ],
+    [
+     "Pattern angle 0",
+     782
+    ],
+    [
+     "Top interface layers ~2 layers",
+     812
+    ],
+    [
+     "Bottom interface layers 2 layers",
+     842
+    ],
+    [
+     "~",
+     847
+    ],
+    [
+     "Interface pattern ~ Default",
+     871
+    ],
+    [
+     "Top interface spacing 0.5",
+     902
+    ],
+    [
+     "mm",
+     908
+    ],
+    [
+     "Bottom interface spacing 0.5 mm",
+     932
+    ],
+    [
+     "Normal support expansion 0",
+     962
+    ],
+    [
+     "mm",
+     968
+    ],
+    [
+     "Support/object xy distance 0.35 mm",
+     992
+    ],
+    [
+     "Support/object first layer",
+     1022
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 12,
+   "walk": 1,
+   "offset": 720,
+   "lines": [
+    [
+     "Pattern angle 0 “",
+     722
+    ],
+    [
+     "Top interface layers ~2 layers",
+     752
+    ],
+    [
+     "Bottom interface layers 2 layers",
+     782
+    ],
+    [
+     "~",
+     787
+    ],
+    [
+     "Interface pattern ~ Default",
+     811
+    ],
+    [
+     "Top interface spacing 0.5",
+     842
+    ],
+    [
+     "mm",
+     848
+    ],
+    [
+     "Bottom interface spacing 0.5 mm",
+     872
+    ],
+    [
+     "Normal support expansion 0",
+     902
+    ],
+    [
+     "mm",
+     908
+    ],
+    [
+     "Support/object xy distance 0.35 mm",
+     932
+    ],
+    [
+     "first layer",
+     961
+    ],
+    [
+     "02 om",
+     971
+    ],
+    [
+     "Don't support bridges",
+     1009
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 13,
+   "walk": 1,
+   "offset": 780,
+   "lines": [
+    [
+     "Bottom interface layers ~2 layers",
+     722
+    ],
+    [
+     "Interface pattern ~ Default",
+     751
+    ],
+    [
+     "Top interface spacing 0.5",
+     782
+    ],
+    [
+     "mm",
+     788
+    ],
+    [
+     "Bottom interface spacing 0.5 mm",
+     812
+    ],
+    [
+     "Normal support expansion 0",
+     842
+    ],
+    [
+     "mm",
+     848
+    ],
+    [
+     "Support/object xy distance 0.35 mm",
+     872
+    ],
+    [
+     "first layer",
+     901
+    ],
+    [
+     "02 om",
+     911
+    ],
+    [
+     "Don't support bridges",
+     949
+    ],
+    [
+     "Independent support layer",
+     980
+    ],
+    [
+     "height",
+     998
+    ]
+   ]
+  },
+  {
+   "step": 14,
+   "walk": 2,
+   "offset": 0,
+   "lines": [
+    [
+     "IJ Support",
+     723
+    ],
+    [
+     "Enable support",
+     758
+    ],
+    [
+     "Type",
+     785
+    ],
+    [
+     "~ Tree (auto)",
+     793
+    ],
+    [
+     "Style Default (Grid...",
+     818
+    ],
+    [
+     "~",
+     823
+    ],
+    [
+     "Threshold angle 40 7",
+     848
+    ],
+    [
+     "Threshold overlap",
+     878
+    ],
+    [
+     "First layer density 90 %",
+     908
+    ],
+    [
+     "First layer expansion 2",
+     938
+    ],
+    [
+     "mm",
+     944
+    ],
+    [
+     "On build plate only",
+     968
+    ],
+    [
+     "Remove small overhangs |",
+     998
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 15,
+   "walk": 2,
+   "offset": 60,
+   "lines": [
+    [
+     "Type “",
+     725
+    ],
+    [
+     "~ Tree (auto)",
+     733
+    ],
+    [
+     "Style Default (Grid...",
+     758
+    ],
+    [
+     "~",
+     763
+    ],
+    [
+     "Threshold angle 40 7",
+     788
+    ],
+    [
+     "Threshold overlap",
+     818
+    ],
+    [
+     "First layer density 90 %",
+     848
+    ],
+    [
+     "First layer expansion 2",
+     878
+    ],
+    [
+     "mm",
+     884
+    ],
+    [
+     "On build plate only",
+     908
+    ],
+    [
+     "Remove small overhangs |",
+     938
+    ],
+    [
+     "om Raft",
+     969
+    ],
+    [
+     "Raft layers 0 layers",
+     1003
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 16,
+   "walk": 2,
+   "offset": 120,
+   "lines": [
+    [
+     "Threshold angle 40 7",
+     728
+    ],
+    [
+     "Threshold overlap",
+     758
+    ],
+    [
+     "First layer density 90 %",
+     788
+    ],
+    [
+     "First layer expansion 2",
+     818
+    ],
+    [
+     "mm",
+     824
+    ],
+    [
+     "On build plate only",
+     848
+    ],
+    [
+     "Remove small overhangs |",
+     878
+    ],
+    [
+     "om Raft",
+     909
+    ],
+    [
+     "Raft layers 0 layers",
+     943
+    ],
+    [
+     "for",
+     977
+    ],
+    [
+     "Filament Supports",
+     978
+    ],
+    [
+     "Support/raft base Default",
+     1009
+    ],
+    [
+     "~",
+     1015
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 17,
+   "walk": 2,
+   "offset": 180,
+   "lines": [
+    [
+     "‘",
+     724
+    ],
+    [
+     "First layer density 90 %",
+     728
+    ],
+    [
+     "First layer expansion 2",
+     758
+    ],
+    [
+     "mm",
+     764
+    ],
+    [
+     "On build plate only",
+     788
+    ],
+    [
+     "Remove small overhangs |",
+     818
+    ],
+    [
+     "om Raft",
+     849
+    ],
+    [
+     "aft ayers",
+     883
+    ],
+    [
+     "Filament for Supports",
+     918
+    ],
+    [
+     "Support/raft base Default",
+     949
+    ],
+    [
+     "~",
+     955
+    ],
+    [
+     "Support/raft interface ~ Default",
+     979
+    ],
+    [
+     "—\\ Support ironing",
+     1011
+    ]
+   ]
+  },
+  {
+   "step": 18,
+   "walk": 2,
+   "offset": 240,
+   "lines": [
+    [
+     "On build plate only",
+     728
+    ],
+    [
+     "Remove small overhangs |",
+     758
+    ],
+    [
+     "om Raft",
+     789
+    ],
+    [
+     "Raft layers 0 layers",
+     823
+    ],
+    [
+     "for",
+     857
+    ],
+    [
+     "Filament Supports",
+     858
+    ],
+    [
+     "Support/raft base Default",
+     889
+    ],
+    [
+     "~",
+     895
+    ],
+    [
+     "Support/raft interface ~ Default",
+     919
+    ],
+    [
+     "—\\",
+     951
+    ],
+    [
+     "Support ironing",
+     954
+    ],
+    [
+     "Ironing Support Interface",
+     986
+    ],
+    [
+     "ty Advanced",
+     1018
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 19,
+   "walk": 2,
+   "offset": 300,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "oa] Raft",
+     729
+    ],
+    [
+     "Raft layers 0 layers",
+     763
+    ],
+    [
+     "Filament for Supports",
+     798
+    ],
+    [
+     "Support/raft base Default",
+     829
+    ],
+    [
+     "~",
+     835
+    ],
+    [
+     "Support/raft interface ~ Default",
+     859
+    ],
+    [
+     "—\\ Support ironing",
+     891
+    ],
+    [
+     "Ironing Support Interface",
+     926
+    ],
+    [
+     "Advanced",
+     960
+    ],
+    [
+     "Top # distance 02 mm",
+     992
+    ],
+    [
+     "Bottom Z distance 0.2",
+     1022
+    ],
+    [
+     "mm “",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 20,
+   "walk": 2,
+   "offset": 360,
+   "lines": [
+    [
+     "°",
+     724
+    ],
+    [
+     "for",
+     737
+    ],
+    [
+     "Filament Supports",
+     738
+    ],
+    [
+     "Support/raft base Default",
+     769
+    ],
+    [
+     "~",
+     775
+    ],
+    [
+     "Support/raft interface ~ Default",
+     799
+    ],
+    [
+     "—\\",
+     831
+    ],
+    [
+     "Support ironing",
+     834
+    ],
+    [
+     "Ironing Support Interface",
+     866
+    ],
+    [
+     "Advanced",
+     900
+    ],
+    [
+     "Top # distance 02 mm",
+     932
+    ],
+    [
+     "Bottom Z distance 0.2",
+     962
+    ],
+    [
+     "mm",
+     968
+    ],
+    [
+     "~",
+     990
+    ],
+    [
+     "Support wall loops 0",
+     992
+    ],
+    [
+     "Base pattern Default",
+     1022
+    ],
+    [
+     "~",
+     1027
+    ]
+   ]
+  },
+  {
+   "step": 21,
+   "walk": 2,
+   "offset": 420,
+   "lines": [
+    [
+     "A",
+     724
+    ],
+    [
+     "Support/raft interface ~ Default",
+     739
+    ],
+    [
+     "—\\ Support ironing",
+     771
+    ],
+    [
+     "Ironing Support Interface",
+     806
+    ],
+    [
+     "Advanced",
+     840
+    ],
+    [
+     "Top # distance 02 mm",
+     872
+    ],
+    [
+     "Bottom Z distance 0.2",
+     902
+    ],
+    [
+     "mm",
+     908
+    ],
+    [
+     "Support wall loops ~ 0",
+     932
+    ],
+    [
+     "Base pattern Default",
+     962
+    ],
+    [
+     "~",
+     967
+    ],
+    [
+     "Base pattern spacing 25 mm",
+     992
+    ],
+    [
+     "Pattern angle 0",
+     1022
+    ],
+    [
+     "“",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 22,
+   "walk": 2,
+   "offset": 480,
+   "lines": [
+    [
+     "Ironing Support Interface",
+     746
+    ],
+    [
+     "Advanced",
+     780
+    ],
+    [
+     "Top # distance 02 mm",
+     812
+    ],
+    [
+     "Bottom Z distance 0.2",
+     842
+    ],
+    [
+     "mm",
+     848
+    ],
+    [
+     "Support wall loops",
+     872
+    ],
+    [
+     "Base pattern Default",
+     902
+    ],
+    [
+     "~",
+     907
+    ],
+    [
+     "Base pattern spacing 25 mm",
+     932
+    ],
+    [
+     "Pattern angle 0",
+     962
+    ],
+    [
+     "Top interface layers ~ 2 layers",
+     992
+    ],
+    [
+     "Bottom interface layers 2 layers",
+     1022
+    ],
+    [
+     "~ v",
+     1027
+    ]
+   ]
+  },
+  {
+   "step": 23,
+   "walk": 2,
+   "offset": 540,
+   "lines": [
+    [
+     "Advanced A",
+     720
+    ],
+    [
+     "Top # distance 02 mm",
+     752
+    ],
+    [
+     "Bottom Z distance 0.2",
+     782
+    ],
+    [
+     "mm",
+     788
+    ],
+    [
+     "Support wall loops ~ 0",
+     812
+    ],
+    [
+     "Base pattern Default",
+     842
+    ],
+    [
+     "~",
+     847
+    ],
+    [
+     "Base pattern spacing 25 mm",
+     872
+    ],
+    [
+     "Pattern angle 0",
+     902
+    ],
+    [
+     "Top interface layers ~ 2 layers",
+     932
+    ],
+    [
+     "Bottom interface layers layers",
+     962
+    ],
+    [
+     "=",
+     967
+    ],
+    [
+     "Interface pattern ~ Default",
+     991
+    ],
+    [
+     "Top interface spacing 0.5",
+     1022
+    ],
+    [
+     "mm",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 24,
+   "walk": 2,
+   "offset": 600,
+   "lines": [
+    [
+     "Bottom Z distance 0.2",
+     722
+    ],
+    [
+     "mm",
+     728
+    ],
+    [
+     "~",
+     750
+    ],
+    [
+     "Support wall loops 0",
+     752
+    ],
+    [
+     "Base pattern Default",
+     782
+    ],
+    [
+     "~",
+     787
+    ],
+    [
+     "Base pattern spacing 25 mm",
+     812
+    ],
+    [
+     "Pattern angle 0",
+     842
+    ],
+    [
+     "Top interface layers ~2 layers",
+     872
+    ],
+    [
+     "Bottom interface layers 2 layers",
+     902
+    ],
+    [
+     "~",
+     907
+    ],
+    [
+     "Interface pattern ~ Default",
+     931
+    ],
+    [
+     "Top interface spacing 0.5",
+     962
+    ],
+    [
+     "mm",
+     968
+    ],
+    [
+     "Bottom interface spacing 0.5 mm",
+     992
+    ],
+    [
+     "Normal support expansion 0",
+     1022
+    ],
+    [
+     "mm",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 25,
+   "walk": 2,
+   "offset": 660,
+   "lines": [
+    [
+     "Base pattern Default “",
+     722
+    ],
+    [
+     "~",
+     727
+    ],
+    [
+     "Base pattern spacing 25 mm",
+     752
+    ],
+    [
+     "Pattern angle 0",
+     782
+    ],
+    [
+     "Top interface layers ~2 layers",
+     812
+    ],
+    [
+     "Bottom interface layers 2 layers",
+     842
+    ],
+    [
+     "~",
+     847
+    ],
+    [
+     "Interface pattern ~ Default",
+     871
+    ],
+    [
+     "Top interface spacing 0.5",
+     902
+    ],
+    [
+     "mm",
+     908
+    ],
+    [
+     "Bottom interface spacing 0.5 mm",
+     932
+    ],
+    [
+     "Normal support expansion 0",
+     962
+    ],
+    [
+     "mm",
+     968
+    ],
+    [
+     "Support/object xy distance 0.35 mm",
+     992
+    ],
+    [
+     "Support/object first layer",
+     1022
+    ],
+    [
+     "¥",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 26,
+   "walk": 2,
+   "offset": 720,
+   "lines": [
+    [
+     "Pattern angle 0 “",
+     722
+    ],
+    [
+     "Top interface layers ~2 layers",
+     752
+    ],
+    [
+     "Bottom interface layers 2 layers",
+     782
+    ],
+    [
+     "~",
+     787
+    ],
+    [
+     "Interface pattern ~ Default",
+     811
+    ],
+    [
+     "Top interface spacing 0.5",
+     842
+    ],
+    [
+     "mm",
+     848
+    ],
+    [
+     "Bottom interface spacing 0.5 mm",
+     872
+    ],
+    [
+     "Normal support expansion 0",
+     902
+    ],
+    [
+     "mm",
+     908
+    ],
+    [
+     "Support/object xy distance 0.35 mm",
+     932
+    ],
+    [
+     "first layer",
+     961
+    ],
+    [
+     "02 om",
+     971
+    ],
+    [
+     "Don't support bridges",
+     1009
+    ],
+    [
+     "v",
+     1028
+    ]
+   ]
+  },
+  {
+   "step": 27,
+   "walk": 2,
+   "offset": 780,
+   "lines": [
+    [
+     "Bottom interface layers ~2 layers",
+     722
+    ],
+    [
+     "Interface pattern ~ Default",
+     751
+    ],
+    [
+     "Top interface spacing 0.5",
+     782
+    ],
+    [
+     "mm",
+     788
+    ],
+    [
+     "Bottom interface spacing 0.5 mm",
+     812
+    ],
+    [
+     "Normal support expansion 0",
+     842
+    ],
+    [
+     "mm",
+     848
+    ],
+    [
+     "Support/object xy distance 0.35 mm",
+     872
+    ],
+    [
+     "first layer",
+     901
+    ],
+    [
+     "02 om",
+     911
+    ],
+    [
+     "Don't support bridges",
+     949
+    ],
+    [
+     "Independent support layer",
+     980
+    ],
+    [
+     "height",
+     998
+    ]
+   ]
+  }
+ ],
+ "shots": [
+  "census_support_top.png",
+  "census_support_mid.png",
+  "census_support_bottom.png"
+ ],
+ "frame_shots": "C:\\coil\\fa706_diag\\out\\census_support_f*.png (sidebar crop scale 2, one per OCR'd frame)",
+ "frame_shots_count": 78,
+ "frame_jitters": 20,
+ "notes": [
+  "walk1: top after 15 up-rolls (2 static): ['IJ Support', 'Enable support', 'Type']",
+  "walk1: stop at offset=780px (primary pt (300, 880))",
+  "walk2: top after 15 up-rolls (2 static): ['IJ Support', 'Enable support', 'Type']",
+  "walk2: stop at offset=780px (primary pt (300, 880))",
+  "bottom confirmed: stops [780, 780] agree within 60px"
+ ],
+ "raw": "OCR text preserved verbatim (misreads included) per task E spec"
+}
