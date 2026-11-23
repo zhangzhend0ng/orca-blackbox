@@ -159,7 +159,7 @@ def prove_project(ui, root, run_id, contract_sha256, guard, sut_sha, stopped, ol
 
 def worker(run_id, actor="codex", scenario="base"):
     from harness import host_guard
-    from harness.agent_protocol import valid_run_id, write_json_once
+    from harness.agent_protocol import valid_run_id, write_json_once, base_scenario
     from harness.agent_project_ui import ProjectUI
     from harness.agent_guest import _encode_capture
     from harness.native_save_session import native_contract, NATIVE_SUT_SHA256
@@ -228,7 +228,8 @@ def worker(run_id, actor="codex", scenario="base"):
         else:
             fixture = native_fixture(scenario)
         from harness.native_script_baseline import SCENARIO_CONF
-        conf_extra = SCENARIO_CONF.get(scenario)
+        # A `_std02` scenario needs the app conf of its base scenario.
+        conf_extra = SCENARIO_CONF.get(base_scenario(scenario))
         if conf_extra:
             # part of the run's conditions: say so in the report
             report["app_conf_extra"] = conf_extra
@@ -398,7 +399,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--run-id", required=True)
     p.add_argument("--actor", choices=("codex", "zcode", "script"), default="codex")
-    from harness.native_matrix import SCENARIOS
-    p.add_argument("--scenario", choices=tuple(SCENARIOS), default="base")
+    from harness.native_matrix import scenario_names
+    p.add_argument("--scenario", choices=scenario_names(), default="base")
     a = p.parse_args()
     raise SystemExit(worker(a.run_id, a.actor, a.scenario))

@@ -138,9 +138,10 @@ def main():
     p.add_argument("--probe-mix-waits", action="store_true", help="Measure the mixing replay with readiness checks replacing fixed sleeps.")
     p.add_argument("--probe-mix-boot", action="store_true", help="Include readiness-based startup dialog scanning in the mixing waits probe.")
     p.add_argument("--actor", choices=("codex", "zcode", "script"), default="codex")
-    from harness.native_matrix import BOUND_MODEL_MOVE, FIXTURE_SCENARIOS, RECORDED_SCENARIOS, REPLAY_SOURCES, SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_LAYER_SCENARIO, UIA_MIX_RECIPES, UIA_REPLAY_MIX
+    from harness.native_matrix import BOUND_MODEL_MOVE, FIXTURE_SCENARIOS, RECORDED_SCENARIOS, REPLAY_SOURCES, UIA_HYBRID_SCENARIOS, UIA_LAYER_SCENARIO, UIA_MIX_RECIPES, UIA_REPLAY_MIX, scenario_names
     from harness.native_pairwise import CONFIG_CASES, OPERATIONS, PAIR_CASES
-    p.add_argument("--scenario", choices=tuple(s for s in SCENARIOS if s not in {"canvas_probe", "authority_probe"}))
+    # scenario_names: the registered scenarios and their `_std02` twins.
+    p.add_argument("--scenario", choices=tuple(s for s in scenario_names() if s not in {"canvas_probe", "authority_probe"}))
     args = p.parse_args()
     args.probe_mix_waits |= args.probe_mix_boot
     if args.scenario is None:
@@ -179,6 +180,12 @@ def main():
         recording_scenarios += ("uia_replay_layer", "uia_replay_enums")
     if args.model is not None:
         sources += ("harness/model_move_pilot.py", "fixtures/agent_layer_cube.3mf")
+    from harness.agent_protocol import STD_FIXTURE
+    from harness.native_matrix import on_std_fixture
+    if on_std_fixture(args.scenario):
+        # The run opens this fixture: its bytes belong to the sources like the
+        # cube's do (tracked and unmodified against HEAD, checked below).
+        sources += (STD_FIXTURE,)
     for scenario in recording_scenarios:
         if scenario not in REPLAY_SOURCES:
             continue

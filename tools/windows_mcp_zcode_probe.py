@@ -68,8 +68,8 @@ def model_io_summary(root, scenario="base"):
 def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-id", required=True)
-    from harness.native_matrix import SCENARIOS, scenario_spec, completed_progress
-    parser.add_argument("--scenario", choices=tuple(s for s in SCENARIOS if s not in {"canvas_probe", "authority_probe"}), default="base")
+    from harness.native_matrix import scenario_names, scenario_spec, completed_progress
+    parser.add_argument("--scenario", choices=tuple(s for s in scenario_names() if s not in {"canvas_probe", "authority_probe"}), default="base")
     parser.add_argument("--goal-only", action="store_true", help="Omit the guided UI route in a UIA exploration.")
     args = parser.parse_args(argv)
     if args.goal_only and args.scenario not in UIA_HYBRID_SCENARIOS:

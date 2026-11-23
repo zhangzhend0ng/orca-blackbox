@@ -14,6 +14,31 @@ LAYER_CASE = "m3d_param_reslice"
 PROJECT_CASE = "m3g_export_3mf"
 LAYER_FIXTURE = "fixtures/agent_layer_cube.3mf"
 LAYER_FIXTURE_SHA256 = "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef"
+# The Feishu process cases' precondition ("U1 0.4mm喷嘴、PLA耗材和0.20mm标准工艺预设"):
+# the same cube on the U1 0.4 nozzle, 0.20mm Standard, PLA. Built and pinned by
+# tools/build_feishu_std_fixture.py; nothing else may write it.
+STD_FIXTURE = "fixtures/feishu_std_cube.3mf"
+STD_FIXTURE_SHA256 = "0690071f9501bac804d17c025015f2fe2bed4ce48b90e2f28946e307c56c1a0b"
+# A scenario named `<base>_std02` is `<base>` on STD_FIXTURE: the same tab spec, ops,
+# pilot and dispatch, another fixture (native_pilots.native_fixture). The full name
+# stays in scope.json and the report, so those runs keep apart from the cube's.
+STD_SUFFIX = "_std02"
+# The save-only baseline on that fixture - a scenario of its own, not a `_std02` twin.
+STD_SCENARIO = "uia_param_std_save_only"
+# The filament-choice popups paint "<n> <filament type>": Default / 1 PETG / 2 PLA /
+# 3 PLA / 4 PLA / 5 PLA on the cube (census 67690ed4 / c814315c, the 'Support/raft
+# base' popup in tools/param_ui_popups_2.4.0.json). 'PETG' names the cube's extruder 1;
+# every filament of STD_FIXTURE is PLA, so the same extruder is the row "1 PLA" there.
+# A preset name matches no row (the rows carry the type, not the preset), and 'PLA'
+# alone is every row: the first one the OCR reads would be clicked.
+STD_TARGETS = {"PETG": "1 PLA"}
+
+
+def base_scenario(name):
+    """The scenario a `_std02` name runs as: the name without the suffix."""
+    if type(name) is str and name.endswith(STD_SUFFIX) and len(name) > len(STD_SUFFIX):
+        return name[:-len(STD_SUFFIX)]
+    return name
 
 
 def agent_profile(case_id: str) -> dict:

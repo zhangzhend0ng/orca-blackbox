@@ -1,8 +1,9 @@
 """Finite business experiments; never a model-selected verifier or import path."""
 from importlib import import_module
+from .agent_protocol import STD_SCENARIO, base_scenario
 from .native_matrix import (CANVAS_REPLACE_SCENARIO, SCALE_SCENARIOS, UIA_CANVAS_SCENARIO,
     UIA_DISTURBANCE_SCENARIO, UIA_MIX_RECIPES, UIA_MIX_SCENARIOS, UIA_MOVE_LAYER,
-    UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS, UIA_Y_SCENARIOS)
+    UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS, UIA_Y_SCENARIOS, on_std_fixture, std_base)
 
 PILOTS = {
     "pilot_strength": "pilot_strength",
@@ -92,38 +93,55 @@ TRIALS = {
     # mixing_util, the Add-Mix dialog contract), not process-panel ops -
     # no param modules fabricated for them (2026-11-23, fa706 B4).
 }
+# Save-only controls, not Feishu cases: param_closure_list / param_oracle_surface /
+# export_param_cases / rejudge_shadows count and export TRIALS, and the closure
+# number (40 of 44 on 2026-11-24) is quoted from there. One module holds both cases
+# (its CASES, one per scenario): what a save with no edit changes, on the cube and on
+# the precondition fixture.
+CONTROLS = {
+    "uia_param_save_only": "pilot_param_save_only",
+    STD_SCENARIO: "pilot_param_save_only",
+}
 
 
 def native_fixture(scenario):
     if scenario in UIA_MIX_SCENARIOS:
         from .pilot_mix_recipes import FIXTURE, FIXTURE_SHA256
         return FIXTURE, FIXTURE_SHA256
-    from .agent_protocol import LAYER_FIXTURE, LAYER_FIXTURE_SHA256
+    from .agent_protocol import LAYER_FIXTURE, LAYER_FIXTURE_SHA256, STD_FIXTURE, STD_FIXTURE_SHA256
+    if on_std_fixture(scenario):
+        return STD_FIXTURE, STD_FIXTURE_SHA256
     return LAYER_FIXTURE, LAYER_FIXTURE_SHA256
 
 
 def require_pilot_ready(scenario):
     from .native_matrix import SCENARIOS
-    if type(scenario) is not str or scenario not in SCENARIOS:
+    base = std_base(scenario)
+    if base not in SCENARIOS:
         raise ValueError("native_scenario_not_registered")
-    if scenario in PILOT_BLOCKS:
-        raise RuntimeError("native_pilot_capability_blocked:"+PILOT_BLOCKS[scenario])
+    if base in PILOT_BLOCKS:
+        raise RuntimeError("native_pilot_capability_blocked:"+PILOT_BLOCKS[base])
 
 
 def pilot_module(scenario):
-    if type(scenario) is not str or scenario not in {**PILOTS, **TRIALS}:
+    # A `_std02` scenario runs its base's pilot: only the fixture differs.
+    base = std_base(scenario)
+    if type(scenario) is not str or base not in {**PILOTS, **TRIALS, **CONTROLS}:
         raise ValueError("native_pilot_not_registered")
-    module = {**PILOTS, **TRIALS}[scenario]
+    module = {**PILOTS, **TRIALS, **CONTROLS}[base]
     if module in {"bottom", "move_y", "combo", "quality_enums", "move_layer"}:
         return import_module(".pilot_uia_goals", __package__).GOALS[module]
-    return import_module("."+module, __package__)
+    loaded = import_module("."+module, __package__)
+    # A module that holds one case per scenario names them in CASES.
+    cases = getattr(loaded, "CASES", None)
+    return cases[base] if type(cases) is dict and base in cases else loaded
 
 
 def business_goal(scenario):
-    if scenario in {**PILOTS, **TRIALS}:
+    if base_scenario(scenario) in {**PILOTS, **TRIALS, **CONTROLS}:
         return pilot_module(scenario).GOAL
     from .native_matrix import SCENARIOS
-    if scenario not in SCENARIOS:
+    if base_scenario(scenario) not in SCENARIOS:
         raise ValueError("native_scenario_not_registered")
     return ("Set regular Layer height to 0.24 mm, preserve First layer height 0.40 mm "
             "and the cube model. Do not change other settings.")

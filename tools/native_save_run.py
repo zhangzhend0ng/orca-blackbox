@@ -9,8 +9,8 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--run-id", required=True)
     p.add_argument("--actor", choices=("codex", "zcode", "script"), default="codex")
-    from harness.native_matrix import SCENARIOS
-    p.add_argument("--scenario", choices=tuple(SCENARIOS), default="base")
+    from harness.native_matrix import scenario_names
+    p.add_argument("--scenario", choices=scenario_names(), default="base")
     args = p.parse_args()
     from harness.native_save_session import run_native_save
     result = run_native_save(args.run_id, args.actor, args.scenario)

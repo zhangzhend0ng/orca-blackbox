@@ -14,11 +14,12 @@ import xml.etree.ElementTree as ET
 from decimal import DecimalException
 from functools import partial
 
-from .agent_protocol import LAYER_FIXTURE_SHA256, valid_run_id, write_json_once
+from .agent_protocol import LAYER_FIXTURE_SHA256, base_scenario, valid_run_id, write_json_once
 from .native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENARIOS
 from .native_matrix import (BOUND_MODEL_MOVE, CANVAS_REPLACE_SCENARIO, CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS,
     FIXTURE_SCENARIOS, GENERALIZATION, RECORDED_SCENARIOS, REPLAY_SOURCES, SCRIPT_SCENARIOS, UIA_CANVAS_SCENARIO, UIA_HYBRID_SCENARIOS,
-    UIA_MIX_RECIPES, UIA_MOVE_LAYER, UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS, UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO)
+    UIA_MIX_RECIPES, UIA_MOVE_LAYER, UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS, UIA_REPLAY_SCENARIO, UIA_SAVE_SCENARIO,
+    scenario_names, std_twins)
 from .run_contract import validate_contract
 from .native_pairwise import PAIR_CASES, verify_pair
 from .run_verdict import CheckResult, contract_digest
@@ -118,13 +119,15 @@ def native_contract(actor="codex", scenario="base"):
         data["steps"].insert(0, {"id": "setup", "goal": "Trusted initial condition: "+scenario})
         if scenario == "safety_timeout":
             data["limits"]["timeout_s"] = 120
-        from .native_pilots import PILOTS, TRIALS, pilot_module
+        from .native_pilots import CONTROLS, PILOTS, TRIALS, pilot_module
         if scenario == UIA_SAVE_SCENARIO:
             data["case_id"] = "uia_save_as"
             data["contract_version"] = "native-uia-save-zcode-1"
             data["steps"][1]["goal"] = ("Locate Save As controls by UIA properties, set and read back the exact assigned path "
                                        "using ValuePattern and invoke Save using InvokePattern. Preserve the project unchanged.")
-        elif scenario in {**PILOTS, **TRIALS}:
+        elif base_scenario(scenario) in {**PILOTS, **TRIALS, **CONTROLS}:
+            # A `_std02` scenario binds its base's case and goal; the contract version
+            # and the run keep the full name.
             pilot = pilot_module(scenario)
             data["case_id"] = pilot.CASE_ID
             data["contract_version"] = "native-pilot-zcode-1-"+scenario
@@ -162,11 +165,12 @@ def native_contract(actor="codex", scenario="base"):
 
 
 def native_spec(digest):
-    from .native_matrix import SCENARIOS
     from .native_uia_replay import recipe_path
-    for actor, scenarios in (("codex", ("base",)), ("zcode", (s for s in SCENARIOS
-                               if s not in RECORDED_SCENARIOS and s not in FIXTURE_SCENARIOS and s != BOUND_MODEL_MOVE)),
-                             ("script", SCRIPT_SCENARIOS)):
+    # A `_std02` contract names its full scenario; it is found like any other.
+    for actor, scenarios in (("codex", ("base",)),
+                             ("zcode", (s for s in scenario_names() if s not in RECORDED_SCENARIOS
+                                        and s not in FIXTURE_SCENARIOS and s != BOUND_MODEL_MOVE)),
+                             ("script", (*SCRIPT_SCENARIOS, *std_twins(SCRIPT_SCENARIOS)))):
         for scenario in scenarios:
             if scenario in REPLAY_SOURCES and not recipe_path(scenario).is_file():
                 continue
@@ -283,7 +287,7 @@ def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, can
              "native_script_initial_setup")
     gcode = read("exports/0001.gcode", 64*1024*1024)
     _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
-    from .native_pilots import TRIALS
+    from .native_pilots import CONTROLS, TRIALS
     if scenario == BOUND_MODEL_MOVE:
         from .model_move_pilot import canonical, digest, verify_move
         _require(proof.get("reopened_pid", 0) > 0 and proof["reopened_pid"] != proof["old_pid"]
@@ -294,7 +298,7 @@ def verify_script_business(snapshot, scenario, read, proof, fixture, frozen, can
         _require(type(proof.get("reopened_pid")) is int and proof["reopened_pid"] > 0
                  and proof["reopened_pid"] != proof["old_pid"], "pair_independent_reopen")
         detail = json.dumps(verify_pair(scenario, frozen, fixture, gcode, cancelled=cancelled), sort_keys=True)
-    elif source_scenario in TRIALS:
+    elif base_scenario(source_scenario) in {**TRIALS, **CONTROLS}:
         detail = json.dumps(verify_business(source_scenario, frozen, fixture, gcode, cancelled=cancelled), sort_keys=True)
     elif source_scenario == UIA_SAVE_SCENARIO:
         _require(type(setup.get("dialog_hwnd")) is int and setup["dialog_hwnd"] > 0
@@ -441,10 +445,10 @@ def verify_saved(snapshot, *, cancelled=lambda: False, batch_process=None, plan_
                 allow_refresh=True, strict_crop_lifetime=True, named_crops_only=True)
         gcode = read("exports/0001.gcode", 64*1024*1024)
         _require(hashlib.sha256(gcode).hexdigest() == proof["gcode_sha256"], "native_gcode_binding")
-        from .native_pilots import PILOTS, TRIALS, verify_business
+        from .native_pilots import CONTROLS, PILOTS, TRIALS, verify_business
         if scenario == UIA_SAVE_SCENARIO:
             detail = verify_unchanged_saved(frozen, fixture, gcode, cancelled) + "; " + json.dumps(uia_summary, sort_keys=True)
-        elif scenario in {**PILOTS, **TRIALS}:
+        elif base_scenario(scenario) in {**PILOTS, **TRIALS, **CONTROLS}:
             _require(host.get("contract_sha256") == contract_digest(snapshot.contract)
                      and host.get("scenario") == scenario, "native_pilot_host_contract")
             business = verify_business(scenario, frozen, fixture, gcode, cancelled=cancelled)
