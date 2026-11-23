@@ -25,6 +25,7 @@ import plistlib
 import re
 import shutil
 import signal
+import struct
 import subprocess
 import sys
 import tempfile
@@ -55,6 +56,7 @@ LANDMARKS = {"Quality": ("layer height",), "Strength": ("wall loops", "walls"),
              "Others": ("skirt", "special", "sequence", "g-code", "spiral")}
 PANEL_WIDTH = 470  # left settings column, px at scale 1.0
 TITLE_X = 26       # group titles start left of this offset, row labels right of it
+VALUE_X = 253      # value column: numbers, and the faint square of a bool row
 IEND = b"IEND\xaeB\x60\x82"
 MAKE_MOUSE = ax.selector(b"mouseEventWithType:location:modifierFlags:timestamp:"
                          b"windowNumber:context:eventNumber:clickCount:pressure:")
@@ -287,7 +289,7 @@ def cf_scalar(desktop, value):
 class Panel:
     def __init__(self, desktop, pid, root, window):
         self.desktop, self.pid, self.root, self.window = desktop, pid, root, window
-        self.shots = {}
+        self.shots, self.last_notes = {}, []
 
     def geometry(self):
         point = self.desktop.position(self.window)
@@ -540,7 +542,7 @@ class Panel:
     def locate_row(self, tab, group, label, prefix):
         """Open `tab` and find the row; fall back to Advanced mode and a taller
         window. Returns (rows, row, notes, tag of the page shot)."""
-        note = []
+        note = self.last_notes = []
 
         def attempt(tag):
             rows = self.read(f"{prefix}-{tag}-locate")
@@ -719,19 +721,24 @@ def op_set_checkbox(panel, ns):
     for turn in ("check", "uncheck"):
         if turn == "uncheck":  # re-address: the first save may re-layout the page
             row = panel.find_row(panel.read("check-before-uncheck"), group, label)
-        want_dirty = turn == "check"
+        # A bool row paints a faint checkbox square in the value column (x 606..620
+        # at window x 360, run 230815 pixel scan), not beside its label.
         gy = row["y"] + row["h"] / 2
-        spots = [("label", row["x"] + row["w"] / 2)] + ([("left", row["x"] - 11)] if want_dirty else [])
+        spots = [("cell", panel.geometry()[0].x + VALUE_X), ("label", row["x"] + row["w"] / 2),
+                 ("left", row["x"] - 11)]
         for how, gx in spots:
             name = f"check-{turn}-{how}"
             panel.click(gx, gy)
             time.sleep(0.9)
             panel.shot(name)
+            changed = pixel_diff(checkbox_strip(panel, row, name), base)
             attempt = {"turn": turn, "how": how, "click": [round(gx), round(gy)], "title": panel.title,
-                       "dirty": panel.dirty, "pixels_changed_vs_before": pixel_diff(checkbox_strip(panel, row, name), base),
+                       "dirty": panel.dirty, "pixels_changed_vs_before": changed,
                        "screenshot": name + ".png"}
             attempts.append(attempt)
-            if panel.dirty == want_dirty:
+            # Either click leaves the project dirty: the first edit, then the edit
+            # against the saved checked state. The pixels tell the two apart.
+            if panel.dirty and (changed > 8 if turn == "check" else changed <= 8):
                 outcome[turn] = attempt
                 break
         require(turn in outcome, f"Checkbox did not {turn}: {json.dumps(attempts)[-900:]}")
@@ -806,6 +813,38 @@ OPS = {"switch_tab": op_switch_tab, "find_row": op_find_row, "set_float": op_set
 
 # --- Aqua-session worker ---
 
+def dismiss_dialogs(panel):
+    """Press 'Got It' on any exception dialog Orca raised over its home page
+    (run pick_combo-231341 painted 'Error Code: 0002 1330 0000 0001 / Foreign
+    Object Detected' and no project window), then raise the project window."""
+    pressed = []
+    for _ in range(3):
+        found = []
+        for window in panel.desktop.children(panel.root, "AXWindows"):
+            if "Exception" not in panel.desktop.text(window, "AXTitle"):
+                continue
+            for element in panel.desktop.descendants(window):
+                if (panel.desktop.text(element, "AXRole") == "AXButton"
+                        and panel.desktop.text(element, "AXTitle") in ("Got It", "OK")):
+                    found.append(element)
+        if not found:
+            break
+        for element in found:
+            item = {"button": panel.desktop.text(element, "AXTitle"),
+                    "at": list(panel.desktop.position(element))[:2]}
+            try:
+                panel.desktop.act(panel.pid, element, "AXPress")
+            except Exception as error:
+                item["error"] = brief(error, 200)
+            pressed.append(item)
+        time.sleep(1.0)
+    try:
+        panel.desktop.act(panel.pid, panel.window, "AXRaise")
+    except Exception as error:
+        pressed.append({"raise_error": brief(error, 200)})
+    return pressed
+
+
 def run_worker(ns):
     OUT.mkdir(exist_ok=True)
     console_uid = os.stat("/dev/console").st_uid
@@ -823,9 +862,28 @@ def run_worker(ns):
         require(ax.set_timeout(root, 2) == 0, "Cannot set AX timeout")
         window = wait_window(desktop, root, PROJECT.stem)
         panel = Panel(desktop, pid, root, window)
-        wait_for(lambda: panel.tab_band(panel.read("entry")), "Process tab band did not paint", 40)
-        result.update(OPS[ns["op"]](panel, ns))
-        result["shots"] = panel.shots
+        entry = {"dialogs": None}
+
+        def entry_band():
+            if entry["dialogs"] is None:
+                entry["dialogs"] = dismiss_dialogs(panel)
+            rows = panel.read("entry")
+            entry["rows"] = brief([(r["x"], r["y"], r["text"]) for r in rows], 1500)
+            return panel.tab_band(rows)
+
+        try:
+            wait_for(entry_band, "tab band absent", 40)
+        except TimeoutError:
+            raise RuntimeError(f"Process tab band did not paint; entry: {brief(entry, 1600)}") from None
+        result["entry"] = {"dialogs": entry["dialogs"]}
+        try:
+            result.update(OPS[ns["op"]](panel, ns))
+        except Exception:
+            result["evidence"] = {"error": traceback.format_exc()[-1800:]}
+        finally:  # keep the addressing trail and frames when an operation fails
+            result["shots"] = dict(panel.shots)
+            result["notes"] = panel.last_notes
+            result["ok"] = bool(result["ok"]) and "error" not in result["evidence"]
         point, size = panel.geometry()
         result["geometry"] = {"origin": [point.x, point.y], "size": [size.x, size.y]}
     return result

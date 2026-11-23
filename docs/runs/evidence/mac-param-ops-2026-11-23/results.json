@@ -471,6 +471,391 @@
     "float-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_float-230350-float-page.panel.png",
     "float-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_float-230350/set_float-230350-float-page.png"
    }
+  },
+  "set_checkbox": {
+   "op": "set_checkbox",
+   "ok": true,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "entry": {
+    "dialogs": []
+   },
+   "readback": {
+    "tab": "Strength",
+    "label": "Detect thin walls",
+    "checked": {
+     "key": "detect_thin_wall",
+     "value": "1",
+     "title_after_save": "probe"
+    },
+    "unchecked": {
+     "key": "detect_thin_wall",
+     "value": "0",
+     "title_after_save": "probe"
+    },
+    "title_when_checked": "*probe",
+    "title_when_unchecked": "*probe"
+   },
+   "evidence": {
+    "notes": [
+     {
+      "tab_click": [
+       479,
+       777
+      ]
+     },
+     {
+      "standard_mode": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', '2', 'top bottom shells']"
+     },
+     {
+      "advanced": {
+       "already_on": false,
+       "tabs_before": [
+        "Quality",
+        "Strength",
+        "Support",
+        "Multimaterial",
+        "Others"
+       ],
+       "attempts": [
+        {
+         "how": "ax",
+         "value_before": 0,
+         "box": [
+          673.0,
+          689.0
+         ],
+         "tabs_after": [
+          [
+           "Others"
+          ],
+          [
+           "Others"
+          ],
+          [
+           "Others"
+          ],
+          [
+           "Others"
+          ]
+         ],
+         "value_after": 1
+        }
+       ],
+       "checkboxes": [
+        {
+         "x": 453.0,
+         "y": 686.0,
+         "words": "",
+         "value": 0
+        },
+        {
+         "x": 673.0,
+         "y": 689.0,
+         "words": "",
+         "value": 0
+        }
+       ],
+       "turned_on_by": "ax",
+       "speed_seen": false
+      }
+     },
+     {
+      "tab_click": [
+       470,
+       777
+      ]
+     },
+     {
+      "advanced_mode": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', 'alternate extra wall', '2']"
+     },
+     {
+      "widened": {
+       "collapsed": [
+        {
+         "header": "(0 Filaments",
+         "click": [
+          424,
+          466
+         ]
+        },
+        {
+         "header": "(0 Filaments",
+         "click": [
+          424,
+          466
+         ]
+        }
+       ],
+       "process_header_y_after": 690.0
+      }
+     },
+     {
+      "tab_click": [
+       470,
+       777
+      ]
+     },
+     {
+      "wide_window": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', 'alternate extra wall', '2']"
+     },
+     {
+      "resized_to": [
+       1200.0,
+       916.0
+      ]
+     },
+     {
+      "tab_click": [
+       458,
+       777
+      ]
+     }
+    ],
+    "attempts": [
+     {
+      "turn": "check",
+      "how": "cell",
+      "click": [
+       613,
+       898
+      ],
+      "title": "*probe",
+      "dirty": true,
+      "pixels_changed_vs_before": 806,
+      "screenshot": "check-check-cell.png"
+     },
+     {
+      "turn": "uncheck",
+      "how": "cell",
+      "click": [
+       613,
+       898
+      ],
+      "title": "*probe",
+      "dirty": true,
+      "pixels_changed_vs_before": 0,
+      "screenshot": "check-uncheck-cell.png"
+     }
+    ],
+    "screenshots": {
+     "before": "check-page-tall.png",
+     "after_check": "check-check-cell.png",
+     "after_uncheck": "check-uncheck-cell.png"
+    }
+   },
+   "shots": {
+    "entry": "entry.png",
+    "check-page-locate": "check-page-locate.png",
+    "check-page": "check-page.png",
+    "check-advanced": "check-advanced.png",
+    "check-advanced-ax-0": "check-advanced-ax-0.png",
+    "check-advanced-ax-1": "check-advanced-ax-1.png",
+    "check-advanced-ax-2": "check-advanced-ax-2.png",
+    "check-advanced-ax-3": "check-advanced-ax-3.png",
+    "check-page-adv-locate": "check-page-adv-locate.png",
+    "check-page-adv": "check-page-adv.png",
+    "check-widen-0": "check-widen-0.png",
+    "check-widen-1": "check-widen-1.png",
+    "check-widen-after": "check-widen-after.png",
+    "check-page-wide-locate": "check-page-wide-locate.png",
+    "check-page-wide": "check-page-wide.png",
+    "check-page-tall-locate": "check-page-tall-locate.png",
+    "check-page-tall": "check-page-tall.png",
+    "check-check-cell": "check-check-cell.png",
+    "check-before-uncheck": "check-before-uncheck.png",
+    "check-uncheck-cell": "check-uncheck-cell.png"
+   },
+   "notes": [
+    {
+     "tab_click": [
+      479,
+      777
+     ]
+    },
+    {
+     "standard_mode": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', '2', 'top bottom shells']"
+    },
+    {
+     "advanced": {
+      "already_on": false,
+      "tabs_before": [
+       "Quality",
+       "Strength",
+       "Support",
+       "Multimaterial",
+       "Others"
+      ],
+      "attempts": [
+       {
+        "how": "ax",
+        "value_before": 0,
+        "box": [
+         673.0,
+         689.0
+        ],
+        "tabs_after": [
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ]
+        ],
+        "value_after": 1
+       }
+      ],
+      "checkboxes": [
+       {
+        "x": 453.0,
+        "y": 686.0,
+        "words": "",
+        "value": 0
+       },
+       {
+        "x": 673.0,
+        "y": 689.0,
+        "words": "",
+        "value": 0
+       }
+      ],
+      "turned_on_by": "ax",
+      "speed_seen": false
+     }
+    },
+    {
+     "tab_click": [
+      470,
+      777
+     ]
+    },
+    {
+     "advanced_mode": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', 'alternate extra wall', '2']"
+    },
+    {
+     "widened": {
+      "collapsed": [
+       {
+        "header": "(0 Filaments",
+        "click": [
+         424,
+         466
+        ]
+       },
+       {
+        "header": "(0 Filaments",
+        "click": [
+         424,
+         466
+        ]
+       }
+      ],
+      "process_header_y_after": 690.0
+     }
+    },
+    {
+     "tab_click": [
+      470,
+      777
+     ]
+    },
+    {
+     "wide_window": "RuntimeError: Row 'Detect thin walls' not visible in group 'Walls'; page reads: ['walls', 'wall loops', 'alternate extra wall', '2']"
+    },
+    {
+     "resized_to": [
+      1200.0,
+      916.0
+     ]
+    },
+    {
+     "tab_click": [
+      458,
+      777
+     ]
+    }
+   ],
+   "geometry": {
+    "origin": [
+     360.0,
+     85.0
+    ],
+    "size": [
+     1200.0,
+     916.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795447164.8030632,
+   "seconds": 124.1,
+   "screenshots": {
+    "check-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-advanced-ax-0.panel.png",
+    "check-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-advanced-ax-0.png",
+    "check-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-advanced-ax-1.panel.png",
+    "check-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-advanced-ax-1.png",
+    "check-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-advanced-ax-2.panel.png",
+    "check-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-advanced-ax-2.png",
+    "check-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-advanced-ax-3.panel.png",
+    "check-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-advanced-ax-3.png",
+    "check-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-advanced.panel.png",
+    "check-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-advanced.png",
+    "check-before-uncheck.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-before-uncheck.panel.png",
+    "check-before-uncheck.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-before-uncheck.png",
+    "check-check-cell.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-check-cell.cell.png",
+    "check-check-cell.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-check-cell.panel.png",
+    "check-check-cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-check-cell.png",
+    "check-page-adv-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-page-adv-locate.panel.png",
+    "check-page-adv-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page-adv-locate.png",
+    "check-page-adv.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-page-adv.panel.png",
+    "check-page-adv.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page-adv.png",
+    "check-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-page-locate.panel.png",
+    "check-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page-locate.png",
+    "check-page-tall-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-page-tall-locate.panel.png",
+    "check-page-tall-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page-tall-locate.png",
+    "check-page-tall.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page-tall.cell.png",
+    "check-page-tall.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-page-tall.panel.png",
+    "check-page-tall.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page-tall.png",
+    "check-page-wide-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-page-wide-locate.panel.png",
+    "check-page-wide-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page-wide-locate.png",
+    "check-page-wide.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-page-wide.panel.png",
+    "check-page-wide.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page-wide.png",
+    "check-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-page.panel.png",
+    "check-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-page.png",
+    "check-uncheck-cell.cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-uncheck-cell.cell.png",
+    "check-uncheck-cell.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-uncheck-cell.panel.png",
+    "check-uncheck-cell.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-uncheck-cell.png",
+    "check-widen-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-widen-0.panel.png",
+    "check-widen-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-widen-0.png",
+    "check-widen-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-widen-1.panel.png",
+    "check-widen-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-widen-1.png",
+    "check-widen-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-check-widen-after.panel.png",
+    "check-widen-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-check-widen-after.png",
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_checkbox-231924-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_checkbox-231924/set_checkbox-231924-entry.png"
+   }
+  },
+  "pick_combo": {
+   "op": "pick_combo",
+   "ok": false,
+   "evidence": {
+    "error": "Traceback (most recent call last):\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.yx2sgq1b/param_ops.py\", line 847, in worker_main\n    result = run_worker(ns)\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.yx2sgq1b/param_ops.py\", line 832, in run_worker\n    wait_for(lambda: panel.tab_band(panel.read(\"entry\")), \"Process tab band did not paint\", 40)\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.yx2sgq1b/param_ops.py\", line 78, in wait_for\n    raise TimeoutError(message)\nTimeoutError: Process tab band did not paint\n"
+   },
+   "orca_left": [],
+   "finished_at": 1795446821.555796,
+   "seconds": 68.3,
+   "screenshots": {
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-231341-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-231341/pick_combo-231341-entry.png"
+   }
   }
  },
  "attempts": [
@@ -497,6 +882,31 @@
   {
    "op": "set_float",
    "stamp": "230350",
+   "ok": true
+  },
+  {
+   "op": "set_checkbox",
+   "stamp": "230606",
+   "ok": false
+  },
+  {
+   "op": "set_checkbox",
+   "stamp": "230815",
+   "ok": false
+  },
+  {
+   "op": "set_checkbox",
+   "stamp": "231233",
+   "ok": false
+  },
+  {
+   "op": "pick_combo",
+   "stamp": "231341",
+   "ok": false
+  },
+  {
+   "op": "set_checkbox",
+   "stamp": "231924",
    "ok": true
   }
  ]
