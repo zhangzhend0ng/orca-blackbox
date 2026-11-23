@@ -14,7 +14,10 @@ on the same pages - it goes on past the page run 051203 stopped at and takes the
 one as a row of the group whose title is above the page; op0's locate is replayed whole over
 those pages (its find_row and both locates of the op - the edit is not replayed: the saved
 reading of that page has no value token on the row); a reading without the chain's state still
-refuses the row; the ops' time limits are checked as numbers. Exit status 1 when a check fails."""
+refuses the row; the ops' time limits are checked as numbers. Step 12: set_float's
+value cell is taken by the row's label on run 063651's own page reading - its row 'X-Y hole
+compensation' carries 'mm' and no number - and by a page that paints no number at all; the edit
+itself (the AX tree) is the GUI run's to judge. Exit status 1 when a check fails."""
 
 import json
 import re
@@ -305,6 +308,13 @@ def main():
     rows2, row2, notes2, tag2 = op0.locate_row("Quality", "Precision", label, "float")
     second = {"y": int(row2["y"]), "scroll_reads": sum("-scroll-" in t for t in op0.reads[before:]),
               "tag": tag2, "group_by": op0.last_match["group_by"]}
+    clicks = []
+    op0.click = lambda gx, gy, guard=True: clicks.append([round(gx), round(gy)])
+
+    class NoDesktop:  # the AX tree is not replayed offline: the GUI run's to read
+        def descendants(self, window):
+            raise RuntimeError("offline: no AX tree")
+    op0.desktop = NoDesktop()
     try:
         po.op_set_float(op0, {"tab": "Quality", "group": "Precision", "label": label, "value": "-0.1"})
     except RuntimeError as error:
@@ -361,9 +371,11 @@ def main():
     check("step 11, op0 whole: the locate set_float does itself reads the row on the page as it is, "
           "no chain, after a click on the tab that is already open",
           second == {"y": 725, "scroll_reads": 0, "tag": "float-page", "group_by": "entered"})
-    check("step 11, op0 whole: the edit is NOT replayed - the saved reading of that page has no value "
-          "token on the row (the real page is the GUI run's to judge)",
-          edit is not None and edit.startswith("RuntimeError: No numeric value token"))
+    out["step12_op0"] = {"clicks": clicks, "stopped": edit}  # the first: the tab, already open
+    check("step 12, op0 whole: the op no longer refuses the row that paints no number - it clicks the "
+          "value cell on the row's line at the page's value column and stops only where the AX tree "
+          "begins (not replayed offline)",
+          clicks[-1:] == [[253, 733]] and edit == "RuntimeError: offline: no AX tree")
     check("step 11 guards: a group other than the wanted one entered, or another tab opened, leaves "
           "the row refused; a click on the tab that is already open keeps the state",
           guards["another_group_entered"].startswith("RuntimeError: Group title")
@@ -383,6 +395,40 @@ def main():
               "row_y": 897, "pages_read": 1, "presses": 0, "by_group_entered": False,
               "match": {"label": "^Outer wall", "level": "exact", "row": "Outer wall", "group_by": "title"}})
 
+    # --- step 12: the value cell by the row's label, where the row paints no number ---
+    own = replay("case-063651-op0-float-page")
+    own.entered = po.norm("Precision")  # the state run 063651 was in (its chain had gone through the title)
+    seen_own = own.read("x")
+    own_row = own.find_row(seen_own, "Precision", hole)
+    gx, gy, own_numbered, own_by = po.float_cell(own, seen_own, own_row)
+    own_line = [(t["text"], int(t["x"])) for t in own.line_values(seen_own, own_row)]
+    columns = sorted({int(t["x"]) for r in own.page_rows(seen_own) for t in po.numbered(own.line_values(seen_own, r))
+                      if t["x"] >= po.VALUE_X - 20})
+    bare_rows = [r for r in seen_own if r["text"] != "0.15"]  # the page paints no number at all
+    bare = fake_panel(bare_rows)
+    bare.entered = po.norm("Precision")
+    bare_row = bare.find_row(bare_rows, "Precision", hole)
+    bare_cell = po.float_cell(bare, bare_rows, bare_row)
+    painted = fake_panel(quality_page())
+    painted_rows = quality_page()  # the row 'Layer height' (y 136) and its value '0.2' (x 330)
+    painted_cell = po.float_cell(painted, painted_rows, painted_rows[2])
+    out["step12_value_cell"] = {"run_063651": {"row": [own_row["text"], int(own_row["y"])], "line": own_line,
+                                               "click": [round(gx), round(gy)], "by": own_by,
+                                               "number_columns": columns},
+                                "no_number_on_the_page": [round(bare_cell[0]), round(bare_cell[1]), bare_cell[3]],
+                                "number_on_the_row": [round(painted_cell[0]), painted_cell[3]]}
+    check("step 12, run 063651's own page: the row 'X-Y hole compensation' (y 725) is found by its label "
+          "in the group entered and its line carries only 'mm' - no numbered token",
+          own_row["text"] == "X-Y hole compensation" and int(own_row["y"]) == 725 and own_line == [("mm", 336)]
+          and own_numbered == [] and own.last_match["group_by"] == "entered")
+    check("step 12: that row's value cell is clicked on its line (y 733 = 725 + 16 / 2) at x 253 - the "
+          "left edge (250) of the number the page paints elsewhere ('0.15'), where a readable number "
+          "on this row would have been clicked",
+          [round(gx), round(gy), own_by] == [253, 733, "column"] and columns == [250])
+    check("step 12 guards: a page that paints no number at all falls back to VALUE_X (x 256, 'VALUE_X'); "
+          "a row that paints its number is clicked 3 px right of it as before ('token', x 333)",
+          [round(bare_cell[0]), round(bare_cell[1]), bare_cell[3]] == [256, 733, "VALUE_X"]
+          and [round(painted_cell[0]), painted_cell[3]] == [333, "token"])
     # the op limits (step 10): each op gets min(OP_FUSE, the case's time left before the save)
     now = 1_000_000.0
     at = (50, 160, 270, 381)

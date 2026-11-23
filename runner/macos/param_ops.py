@@ -37,6 +37,7 @@ import traceback
 import uuid
 import zipfile
 import zlib
+from decimal import Decimal, InvalidOperation
 
 import accessibility as ax
 
@@ -1207,14 +1208,33 @@ def op_find_row(panel, ns):
             "evidence": {"notes": note, "page_text": panel.page_text(rows)[:20]}}
 
 
+def numbered(tokens):
+    return [t for t in tokens if any(ch.isdigit() for ch in t["text"])]
+
+
+def float_cell(panel, rows, row):
+    """Where the value cell of `row` is clicked: (gx, gy, the numbered tokens of its line, how x was
+    taken). By the row's label, never by a digit: a row whose value is 0 paints no number the OCR
+    reads (run 063651: 'X-Y hole compensation' y 725 carries 'mm' only). With a numbered token the
+    click is 3 px right of the first one's left edge, as before. Without one it is that same spot of
+    the value column: the left edge of the numbers the page's other rows paint ('column'), or VALUE_X
+    where the page paints none. The row's line gives y."""
+    numbered_row = numbered(panel.line_values(rows, row))
+    point = panel.geometry()[0]
+    if numbered_row:
+        x, by = numbered_row[0]["x"] + 3, "token"
+    else:
+        left = [t["x"] - point.x for r in panel.page_rows(rows) for t in numbered(panel.line_values(rows, r))
+                if VALUE_X - 20 <= t["x"] - point.x]
+        x, by = point.x + min(left, default=VALUE_X) + 3, ("column" if left else "VALUE_X")
+    return x, row["y"] + row["h"] / 2, numbered_row, by
+
+
 def op_set_float(panel, ns):
     value = ns["value"]
     rows, row, note, tag = panel.locate_row(ns["tab"], ns.get("group"), ns["label"], "float")
-    numbered = [t for t in panel.line_values(rows, row) if any(ch.isdigit() for ch in t["text"])]
-    require(numbered, f"No numeric value token on the row: {row}")
-    before_text = " ".join(t["text"] for t in numbered)
-    token = numbered[0]
-    gx, gy = token["x"] + 3, token["y"] + token["h"] / 2
+    gx, gy, numbered_row, by = float_cell(panel, rows, row)
+    before_text = " ".join(t["text"] for t in numbered_row)
     panel.click(gx, gy)
     time.sleep(0.8)
 
@@ -1237,6 +1257,14 @@ def op_set_float(panel, ns):
     found = wait_for(editor, "Value-cell editor (AXTextField) did not materialize after the cell click")
     field = found[1]
     help_text = panel.desktop.text(field, "AXHelp") or ""
+    # The value of a row that paints no number is read from the control, not the page: the editor's
+    # AXValue before the write (a number, or the cell clicked is not a value cell).
+    ax_before = panel.desktop.text(field, "AXValue") or ""
+    if not numbered_row:
+        try:
+            Decimal(ax_before.strip())
+        except InvalidOperation:
+            raise RuntimeError(f"Value cell's AXValue is not a number: {ax_before!r} (row {row})")
     panel.desktop.act(panel.pid, field, "AXFocused", ax.true_value)
     panel.desktop.act(panel.pid, field, "AXValue", panel.desktop.string(value))
     panel.desktop.act(panel.pid, field, "AXConfirm")
@@ -1244,11 +1272,12 @@ def op_set_float(panel, ns):
     ax_value = panel.desktop.text(field, "AXValue")
     rows = panel.read("float-after")
     again = panel.find_row(rows, ns.get("group"), ns["label"])
-    painted = " ".join(t["text"] for t in panel.line_values(rows, again) if any(ch.isdigit() for ch in t["text"]))
+    painted = " ".join(t["text"] for t in numbered(panel.line_values(rows, again)))
     ok = ax_value == value and digits_of(painted) == digits_of(value) and panel.dirty
     return {"ok": ok,
             "readback": {"tab": ns["tab"], "label": again["text"], "before": before_text, "ax_value": ax_value,
-                         "painted": painted, "title": panel.title, "expected": value},
+                         "painted": painted, "title": panel.title, "expected": value,
+                         "ax_before": ax_before, "value_cell": by},
             "evidence": {"parameter": help_text.split("parameter name")[-1].strip(" :\t\n"),
                          "click": [round(gx), round(gy)], "notes": note,
                          "screenshots": {"before": tag + ".png", "after": "float-after.png"}}}
