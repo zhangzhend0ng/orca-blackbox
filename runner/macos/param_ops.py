@@ -6,7 +6,8 @@ Subcommands, each printing ONE JSON line (ok, readback, screenshot paths):
                                        OCR a row label inside a group, return screen coords
   set_float     --tab T [--group G] --label L --value V
   set_checkbox  --tab T [--group G] --label L
-  pick_combo    --tab T [--group G] --label L --target X
+  pick_combo    --tab T [--group G] --label L --target X [--take all|pointer|keys]
+                                       --take keeps one input of the pick (attribution runs)
   scroll_page   --tab T --group G        how the page reaches a group below the fold (step 2)
   scenario      --name N                 one edit + Save Project + 3mf key check (step 2)
 
@@ -1182,10 +1183,20 @@ def op_set_checkbox(panel, ns):
                                          "after_uncheck": outcome["uncheck"]["screenshot"]}}}
 
 
+def painted_is(painted, target):
+    """True when the row's painted words are exactly `target`, or that preceded by one short
+    token - the dropdown glyph OCR glues in front of the value. title_key cannot judge it: it
+    also strips a value's own short word (run 021750 painted 'v By object' and was refused)."""
+    words, want = norm(painted).split(" "), norm(target)
+    return " ".join(words) == want or (len(words[0]) <= 2 and " ".join(words[1:]) == want)
+
+
 def op_pick_combo(panel, ns):
     """Open the row's choice list and pick `target`; proven only when the row then paints
     exactly the target. The entry is taken by a pointer click on its text, failing that by its
-    AX element, failing that by Down + Return keys while the list is open."""
+    AX element, failing that by Down + Return keys while the list is open. `--take pointer`
+    keeps the pointer click alone, `--take keys` the Down + Return keys alone: each run then
+    says whether that one input completed the pick."""
     target = ns["target"]
     rows, row, note, tag = panel.locate_row(ns["tab"], ns.get("group"), ns["label"], "combo")
     tokens = panel.line_values(rows, row)
@@ -1236,6 +1247,9 @@ def op_pick_combo(panel, ns):
                                   panel.desktop.act(panel.pid, element, "AXPress")))
             takes.append(("open-down-return-keys", lambda: [post_keys(panel.pid, code, 1)
                                                             for code in (125, 36)]))
+        if ns.get("take", "all") != "all":  # attribution run: one input only
+            only = {"pointer": ("pointer",), "keys": ("open-down-return-keys",)}[ns["take"]]
+            takes = [(name, act) for name, act in takes if name in only]
         for take, act in takes:
             try:
                 act()
@@ -1246,9 +1260,9 @@ def op_pick_combo(panel, ns):
             attempt = {"how": take, "painted_after": painted_now(shot), "title": panel.title,
                        "screenshot_after": shot + ".png"}
             plan.setdefault("takes", []).append(attempt)
-            # The judged value: the row's painted words, less the dropdown glyph OCR glues in
-            # front of them ('~ By object', 'v By object').
-            if title_key(attempt["painted_after"]) == norm(target):
+            # The judged value: the row's painted words, less ONE dropdown glyph OCR glues in
+            # front of them ('~ By object', 'v By object'); anything else is a miss.
+            if painted_is(attempt["painted_after"], target):
                 chosen = attempt
                 break
         if chosen:
@@ -1836,14 +1850,15 @@ def parser():
     cases = {"find_row": ("Strength", "Walls", "Wall loops", ()),
              "set_float": ("Quality", "Layer height", "Layer height", (("--value", "0.2"),)),
              "set_checkbox": ("Strength", "Walls", "Detect thin walls", (("--key", "detect_thin_wall"),)),
-             "pick_combo": ("Others", "Special mode", "Print sequence", (("--target", "By object"),))}
+             "pick_combo": ("Others", "Special mode", "Print sequence",
+                            (("--target", "By object"), ("--take", "all", "all", "pointer", "keys")))}
     for name, (tab, group, label, extra) in cases.items():
         case = sub.add_parser(name)
         case.add_argument("--tab", default=tab)
         case.add_argument("--group", default=group)
         case.add_argument("--label", default=label)
-        for flag, default in extra:
-            case.add_argument(flag, default=default)
+        for flag, default, *choices in extra:
+            case.add_argument(flag, default=default, choices=choices or None)
     scroll = sub.add_parser("scroll_page")
     scroll.add_argument("--tab", default="Others")
     scroll.add_argument("--group", default="Special mode")
