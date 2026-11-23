@@ -56,7 +56,13 @@
 
 **⚠️ mDNS 组播风暴事故**（2026-11-23）：旧版广播器因无退避+宽泛匹配在生产网发送 23k pps（77Mbps），致同事 PC CPU0 DPC 77%。已完全重写（`mdns_safe.py`）：30s 间隔、10/min 硬上限、精确匹配、预检、21 项离线单测全过后才部署。修复后 2 包/分钟。
 
-## Phase 1 实测进展（2026-11-23 深夜，Mac 侧，九小时计划第 1.5h）
+## Phase 1.5 进展（2026-11-23 下午，SHADOW）
+
+- ✅ **虚拟固件 API 通道补齐**（orca-virtual-u1 b1b063a）：`<sn>/request → <sn>/response`（u1-moonraker spec/mqtt.py 权威格式，api_qos=1）。补齐前 CLI 对 `printer.objects.list/subscribe` 全部 -32006 超时、web UI 设备页数据永远不就绪；补齐后 CLI cache 出现独立 `extruder` 对象（temperature/target/power/can_extrude）。
+- ✅ **`test_l2.py` 7/7 PASS**（温度/进度/文件名/故障/层号/离线/在线）：cache 级断言（= web UI 数据层消费的精确状态）；场景 7 含 broker 重启 → 自动重配对 → node-WS `action.device.connect`（**port=7125 必须显式**，CLI 存储端口陈旧为 53526）全链自动恢复。
+- ⚠️ **L2 UI 渲染层（canvas 文本）断言未达**：CLI web UI（Flutter CanvasKit）在本自动化环境**悬停可用、点击死**（CDP Input / agent-browser / OS SendInput / 语义节点点击全灭；Chrome+Edge 双浏览器对照；无 JS 异常、RPC 全应答）。另有三定律：页面 hidden（遮挡/副屏）→ 冻结渲染+忽略输入+语义树衰减，需 `Page.setWebLifecycleState('active')` + `setFocusEmulationEnabled(true)` 或启动标志 `--disable-backgrounding-occluded-windows --disable-features=CalculateNativeWinOcclusion`；语义树靠 `flt-semantics-placeholder` 点击（懒创建、reload 后重做）；断言备用通道 = Windows OCR（`ocr_words.ps1` 带词坐标）。工具已沉淀在 orca-virtual-u1 `tools/`（ocr_words.ps1 / ui_sem.sh / ws_watch.js / exc_watch.js）。破局路线见 orca-virtual-u1 `NEXT_SESSION_PROMPT.md`（用户手点一次导航 / Mac 侧开浏览器 / 接受数据链结论直进 L3）。
+
+
 
 - ✅ **手写纯 stdlib MQTT v5 broker**（`C:\coil\Projects\orca-virtual-u1\virtual_u1_mqtt.py`→Mac `~/sc_probe/`）：CONNECT/CONNACK（v3/v5 属性字节）、SUBSCRIBE/SUBACK（v5 varint 属性跳越）、PUBLISH QoS0/1（v5 属性+retain）、PUBACK、PING/ pong，全部对 dart_mqtt v5 客户端实测可达。
 - ✅ **CLI 的 MQTT RPC 全貌捕获**：CLI 连上即 SUBSCRIBE 四话题（`12345678/config/response`、`<sn>/status`、`<sn>/notification`、`12345678/config/notification`），随即向 `12345678/config/request` PUBLISH `{"jsonrpc":"2.0","id":<snowflake>,"method":"server.client_manager.confirm_lan_status","params":{"clientid":"SnapmakerOrca-<uuid>"}}`（载荷带 `\x02\x00` 二字节内框前缀）。
