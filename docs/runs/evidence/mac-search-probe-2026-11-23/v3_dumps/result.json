@@ -1,0 +1,229 @@
+{
+ "ok": true,
+ "entry": {
+  "pid": 99862,
+  "version": "2.4.1",
+  "origin": [
+   360.0,
+   85.0
+  ]
+ },
+ "advanced_press": null,
+ "tree_press": null,
+ "baseline": {
+  "rows": 17,
+  "counts": {
+   "AXRows": null,
+   "AXVisibleRows": null,
+   "AXColumns": null
+  }
+ },
+ "filter_field": {
+  "state": "phaseA_located",
+  "role": "AXTextField",
+  "title": "",
+  "desc": "",
+  "help": "",
+  "ident": "",
+  "placeholder": "Search plate, object and part.",
+  "value": "",
+  "role_desc": "text field",
+  "value_num": null,
+  "x": 387.0,
+  "y": 718.0,
+  "w": 381.0,
+  "h": 18.0,
+  "key": null
+ },
+ "phase_a_typed": {
+  "value": "wall",
+  "snap": {
+   "diff": {
+    "baseline_rows": 17,
+    "rows_now": 17,
+    "added": 5,
+    "removed": 5
+   },
+   "wall_rows": 0,
+   "popups": [
+    {
+     "file": "popup_tree_keycode_0.json",
+     "subrole": "AXUnknown",
+     "elements": 1,
+     "x": 361.0,
+     "y": 742.0,
+     "w": 412.0,
+     "h": 452.0
+    }
+   ],
+   "windows": [
+    {
+     "subrole": "AXUnknown",
+     "title": "",
+     "role": "AXWindow"
+    },
+    {
+     "subrole": "AXStandardWindow",
+     "title": "probe",
+     "role": "AXWindow"
+    }
+   ]
+  },
+  "full": {
+   "elements": 76,
+   "wall_rows": 0
+  }
+ },
+ "phase_a_return": {
+  "snap": {
+   "diff": {
+    "baseline_rows": 17,
+    "rows_now": 17,
+    "added": 5,
+    "removed": 5
+   },
+   "wall_rows": 0,
+   "popups": [
+    {
+     "file": "popup_tree_return_0.json",
+     "subrole": "AXUnknown",
+     "elements": 1,
+     "x": 361.0,
+     "y": 742.0,
+     "w": 412.0,
+     "h": 452.0
+    }
+   ],
+   "app_focused": {
+    "role": "AXTextField",
+    "placeholder": "Search plate, object and part.",
+    "value": "wall",
+    "help": "",
+    "spot": [
+     387.0,
+     718.0
+    ]
+   }
+  },
+  "full": {
+   "elements": 76,
+   "wall_rows": 0
+  }
+ },
+ "phase_a_down_return": {
+  "snap": {
+   "diff": {
+    "baseline_rows": 17,
+    "rows_now": 17,
+    "added": 5,
+    "removed": 5
+   },
+   "wall_rows": 0,
+   "popups": [
+    {
+     "file": "popup_tree_down_return_0.json",
+     "subrole": "AXUnknown",
+     "elements": 1,
+     "x": 361.0,
+     "y": 742.0,
+     "w": 412.0,
+     "h": 452.0
+    }
+   ],
+   "app_focused": {
+    "role": "AXTextField",
+    "placeholder": "Search plate, object and part.",
+    "value": "wall",
+    "help": "",
+    "spot": [
+     387.0,
+     718.0
+    ]
+   }
+  },
+  "full": {
+   "elements": 76,
+   "wall_rows": 0
+  }
+ },
+ "materialized_wall_rows": 0,
+ "flat_press": null,
+ "opener_press": null,
+ "preset_field_flat": {
+  "state": "phaseB_located",
+  "role": "AXTextField",
+  "title": "",
+  "desc": "",
+  "help": "",
+  "ident": "",
+  "placeholder": "Search in preset...",
+  "value": "",
+  "role_desc": "text field",
+  "value_num": null,
+  "x": 401.0,
+  "y": 728.0,
+  "w": 355.0,
+  "h": 19.0,
+  "key": null
+ },
+ "phase_b": {
+  "typed": {
+   "focus": {
+    "field_axfocused": false,
+    "app_focused": {
+     "role": "AXWindow",
+     "placeholder": "",
+     "value": "",
+     "help": "",
+     "spot": [
+      360.0,
+      85.0
+     ]
+    }
+   },
+   "actions": {
+    "action": "click",
+    "target": "phaseB_box",
+    "click_local": [
+     218.5,
+     652.5
+    ]
+   }
+  },
+  "field_value": "",
+  "snap": {
+   "diff": {
+    "baseline_rows": 45,
+    "rows_now": 45,
+    "added": 0,
+    "removed": 0
+   },
+   "wall_rows": 0,
+   "popups": [
+    {
+     "file": "popup_flat_after_0.json",
+     "subrole": "AXUnknown",
+     "elements": 1,
+     "x": 361.0,
+     "y": 742.0,
+     "w": 412.0,
+     "h": 452.0
+    }
+   ],
+   "windows": [
+    {
+     "subrole": "AXUnknown",
+     "title": "",
+     "role": "AXWindow"
+    },
+    {
+     "subrole": "AXStandardWindow",
+     "title": "probe",
+     "role": "AXWindow"
+    }
+   ]
+  }
+ },
+ "finished_at": 1795408448.264009,
+ "orca_left": []
+}

@@ -1,0 +1,247 @@
+{
+ "version": "2.4.1",
+ "baseline": {
+  "rows": 17,
+  "counts": {
+   "AXRows": null,
+   "AXVisibleRows": null,
+   "AXColumns": null
+  }
+ },
+ "phase_a_tree_filter": {
+  "typed": {
+   "focus": {
+    "field_axfocused": true,
+    "app_focused": {
+     "role": "AXTextField",
+     "placeholder": "Search plate, object and part.",
+     "value": "",
+     "help": "",
+     "spot": [
+      387.0,
+      718.0
+     ]
+    }
+   },
+   "actions": {
+    "action": "click",
+    "target": "phaseA_box",
+    "click_local": [
+     217.5,
+     642.0
+    ]
+   }
+  },
+  "field_value": "wall",
+  "snap_keycode": {
+   "diff": {
+    "baseline_rows": 17,
+    "rows_now": 17,
+    "added": 5,
+    "removed": 5
+   },
+   "wall_rows": 0,
+   "popups": [
+    {
+     "file": "popup_tree_keycode_0.json",
+     "subrole": "AXUnknown",
+     "elements": 1,
+     "x": 361.0,
+     "y": 742.0,
+     "w": 412.0,
+     "h": 452.0
+    }
+   ],
+   "windows": [
+    {
+     "subrole": "AXUnknown",
+     "title": "",
+     "role": "AXWindow"
+    },
+    {
+     "subrole": "AXStandardWindow",
+     "title": "probe",
+     "role": "AXWindow"
+    }
+   ]
+  },
+  "full_keycode": {
+   "elements": 76,
+   "wall_rows": 0
+  },
+  "snap_return": {
+   "diff": {
+    "baseline_rows": 17,
+    "rows_now": 17,
+    "added": 5,
+    "removed": 5
+   },
+   "wall_rows": 0,
+   "popups": [
+    {
+     "file": "popup_tree_return_0.json",
+     "subrole": "AXUnknown",
+     "elements": 1,
+     "x": 361.0,
+     "y": 742.0,
+     "w": 412.0,
+     "h": 452.0
+    }
+   ],
+   "app_focused": {
+    "role": "AXTextField",
+    "placeholder": "Search plate, object and part.",
+    "value": "wall",
+    "help": "",
+    "spot": [
+     387.0,
+     718.0
+    ]
+   }
+  },
+  "full_return": {
+   "elements": 76,
+   "wall_rows": 0
+  },
+  "snap_down_return": {
+   "diff": {
+    "baseline_rows": 17,
+    "rows_now": 17,
+    "added": 5,
+    "removed": 5
+   },
+   "wall_rows": 0,
+   "popups": [
+    {
+     "file": "popup_tree_down_return_0.json",
+     "subrole": "AXUnknown",
+     "elements": 1,
+     "x": 361.0,
+     "y": 742.0,
+     "w": 412.0,
+     "h": 452.0
+    }
+   ],
+   "app_focused": {
+    "role": "AXTextField",
+    "placeholder": "Search plate, object and part.",
+    "value": "wall",
+    "help": "",
+    "spot": [
+     387.0,
+     718.0
+    ]
+   }
+  },
+  "full_down_return": {
+   "elements": 76,
+   "wall_rows": 0
+  },
+  "final_field_value": "wall"
+ },
+ "phase_b_preset_box": {
+  "typed": {
+   "focus": {
+    "field_axfocused": false,
+    "app_focused": {
+     "role": "AXWindow",
+     "placeholder": "",
+     "value": "",
+     "help": "",
+     "spot": [
+      360.0,
+      85.0
+     ]
+    }
+   },
+   "actions": {
+    "action": "click",
+    "target": "phaseB_box",
+    "click_local": [
+     218.5,
+     652.5
+    ]
+   }
+  },
+  "field_value": "",
+  "snap": {
+   "diff": {
+    "baseline_rows": 45,
+    "rows_now": 45,
+    "added": 0,
+    "removed": 0
+   },
+   "wall_rows": 0,
+   "popups": [
+    {
+     "file": "popup_flat_after_0.json",
+     "subrole": "AXUnknown",
+     "elements": 1,
+     "x": 361.0,
+     "y": 742.0,
+     "w": 412.0,
+     "h": 452.0
+    }
+   ],
+   "windows": [
+    {
+     "subrole": "AXUnknown",
+     "title": "",
+     "role": "AXWindow"
+    },
+    {
+     "subrole": "AXStandardWindow",
+     "title": "probe",
+     "role": "AXWindow"
+    }
+   ]
+  }
+ },
+ "actions": [
+  {
+   "action": "boot",
+   "version": "2.4.1",
+   "pid": 99862,
+   "origin": [
+    360.0,
+    85.0
+   ]
+  },
+  {
+   "action": "AXPress",
+   "target": "advanced_checkbox",
+   "at": [
+    673,
+    689
+   ],
+   "error": null
+  },
+  {
+   "action": "AXPress",
+   "target": "view_checkbox",
+   "at": [
+    453,
+    686
+   ],
+   "error": null
+  },
+  {
+   "action": "AXPress",
+   "target": "search_opener",
+   "help": "Search in preset",
+   "tooltip_matches": 1
+  }
+ ],
+ "meta": {
+  "captured_at": "2026-11-23T12:34:08",
+  "window_origin": [
+   360.0,
+   85.0
+  ],
+  "notes": [
+   "phase A: the outline page's own filter field ('Search plate, object and part.') with click-focus, per-char keycode 'wall', then Return and Down+Return commit channels; full-window dumps after every step",
+   "phase B: the flat page preset box ('Search in preset...') re-tested with the same clean click-focus + keycode method",
+   "read-only apart from the guarded value_write_probe (typed 3 then restored the original string)"
+  ]
+ }
+}

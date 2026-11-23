@@ -1,0 +1,173 @@
+{
+ "ok": true,
+ "entry": {
+  "pid": 98396,
+  "version": "2.4.1",
+  "origin": [
+   360.0,
+   85.0
+  ]
+ },
+ "advanced_press": null,
+ "tree_press": null,
+ "baseline": {
+  "rows": 17,
+  "counts": {
+   "AXRows": null,
+   "AXVisibleRows": null,
+   "AXColumns": null
+  }
+ },
+ "filter_field": {
+  "state": "round1_located",
+  "role": "AXTextField",
+  "title": "",
+  "desc": "",
+  "help": "",
+  "ident": "",
+  "placeholder": "Search plate, object and part.",
+  "value": "",
+  "role_desc": "text field",
+  "value_num": null,
+  "x": 387.0,
+  "y": 718.0,
+  "w": 381.0,
+  "h": 18.0,
+  "key": null
+ },
+ "tree_keycode": {
+  "diff": {
+   "baseline_rows": 17,
+   "rows_now": 17,
+   "added": 5,
+   "removed": 5
+  },
+  "outline_counts": {
+   "AXRows": null,
+   "AXVisibleRows": null,
+   "AXColumns": null
+  },
+  "popups": [
+   {
+    "file": "popup_tree_keycode_0.json",
+    "subrole": "AXUnknown",
+    "elements": 1
+   }
+  ],
+  "wall_rows": 0,
+  "windows": [
+   {
+    "subrole": "AXUnknown",
+    "title": "",
+    "role": "AXWindow"
+   },
+   {
+    "subrole": "AXStandardWindow",
+    "title": "probe",
+    "role": "AXWindow"
+   }
+  ],
+  "field_value": "wall",
+  "focus": {
+   "field_axfocused": true,
+   "app_focused": {
+    "role": "AXTextField",
+    "placeholder": "Search plate, object and part.",
+    "value": "",
+    "help": "",
+    "spot": [
+     387.0,
+     718.0
+    ]
+   }
+  },
+  "actions": {
+   "action": "click",
+   "target": "tree_keycode",
+   "method": "keycode",
+   "click_local": [
+    217.5,
+    642.0
+   ]
+  }
+ },
+ "tree_clears": [
+  {
+   "method": "escape",
+   "value_after": "wall"
+  },
+  {
+   "method": "cmd_a_backspace",
+   "value_after": "wall"
+  }
+ ],
+ "tree_unicode": {
+  "diff": {
+   "baseline_rows": 17,
+   "rows_now": 17,
+   "added": 4,
+   "removed": 4
+  },
+  "outline_counts": {
+   "AXRows": null,
+   "AXVisibleRows": null,
+   "AXColumns": null
+  },
+  "popups": [],
+  "wall_rows": 0,
+  "windows": [
+   {
+    "subrole": "AXStandardWindow",
+    "title": "probe",
+    "role": "AXWindow"
+   }
+  ],
+  "field_value": "",
+  "focus": {
+   "field_axfocused": false,
+   "app_focused": {
+    "role": "AXOutline",
+    "placeholder": "",
+    "value": "",
+    "help": "",
+    "spot": [
+     360.0,
+     741.0
+    ]
+   }
+  },
+  "actions": {
+   "action": "click",
+   "target": "tree_unicode",
+   "method": "unicode",
+   "click_local": [
+    217.5,
+    642.0
+   ]
+  }
+ },
+ "flat_press": null,
+ "opener_press": null,
+ "preset_field_flat": {
+  "state": "round2_flat",
+  "role": "AXTextField",
+  "title": "",
+  "desc": "",
+  "help": "",
+  "ident": "",
+  "placeholder": "Search in preset...",
+  "value": "",
+  "role_desc": "text field",
+  "value_num": null,
+  "x": 401.0,
+  "y": 728.0,
+  "w": 355.0,
+  "h": 19.0,
+  "key": null
+ },
+ "outline_press_2": null,
+ "preset_field_outline": null,
+ "materialized_wall_rows": 0,
+ "finished_at": 1795408230.809982,
+ "orca_left": []
+}

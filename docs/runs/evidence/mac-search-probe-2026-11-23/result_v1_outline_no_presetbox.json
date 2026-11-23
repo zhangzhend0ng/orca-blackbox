@@ -1,0 +1,25 @@
+{
+ "ok": false,
+ "entry": {
+  "pid": 97308,
+  "version": "2.4.1",
+  "origin": [
+   360.0,
+   85.0
+  ]
+ },
+ "advanced_press": null,
+ "tree_press": null,
+ "baseline": {
+  "rows": 15,
+  "counts": {
+   "AXRows": null,
+   "AXVisibleRows": null,
+   "AXColumns": null
+  }
+ },
+ "search_field": null,
+ "outcome": "search field not exposed on the outline page",
+ "finished_at": 1795408078.242996,
+ "orca_left": []
+}
