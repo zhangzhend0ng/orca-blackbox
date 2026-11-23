@@ -635,6 +635,7 @@ CENSUS_FULL = False
 # popup). The x_ rows are probe-only rows listed in census_param_pages.
 CENSUS_PICK = ("x_support_base", "x_support_iface", "x_support_pattern", "x_draft_shield",
                "filament_features", "support_basic", "tree_support", "skirt")
+#        = ("support_basic", "tree_support", "skirt", "x_support_base", "x_support_iface")
 
 
 def census_param_pages(ui):
@@ -705,6 +706,7 @@ def census_param_pages(ui):
         # A full sweep is ~28s per popup; pick what the question needs.
         combos = [c for c in combos if c[0] in CENSUS_PICK]
     shots = []
+    support_enabled = False
     current_tab = None
     for scenario, tab, kind, locate, target, group in combos:
         try:
@@ -714,6 +716,12 @@ def census_param_pages(ui):
                 ui.pause(1.0)
                 current_tab = tab
                 say("TAB %s clicked=%s titles=%s" % (tab, clicked, titled()))
+            if scenario.startswith("x_support") and not support_enabled:
+                # the support rows are greyed until support is on: a click
+                # on a greyed value opens nothing (census 40989dec)
+                say("   enable support -> %r" % (pp.set_option_checkbox(
+                    app, "Enable", True, group_substr="Support")[0],))
+                support_enabled = True
             if group:
                 pp.scroll_group_into_view(app, group)
             if kind == "rowcombo":
@@ -745,6 +753,9 @@ def census_param_pages(ui):
                 seq = (tuple(locate.lower().split()) if isinstance(locate, str)
                        else tuple(locate))
                 r, h, _cur = pp.find_option_combo_seq(app, seq, group)
+                word, yrow = pp.find_option_row_seq(app, seq, group)
+                say("      locate %r: word=%r y=%r -> hwnd class=%s rect=%r text=%r" % (
+                    seq, word, yrow, cls(h), r, _cur))
                 if not r:
                     say("POPUP %-18s %s %r target=%r: VALUE NOT FOUND" % (scenario, tab, locate, target))
                     continue
