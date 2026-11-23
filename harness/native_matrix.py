@@ -78,7 +78,11 @@ SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *PAIR_CASES, 
     # Probe (2026-11-24): the same dump with the app in DEVELOP mode
     # (SCENARIO_CONF seeds user_mode=develop) - the comDevelop rows, e.g.
     # 'Add line number' of #296, exist only there.
-    "uia_param_census_develop")
+    "uia_param_census_develop",
+    # Probe (2026-11-24): the sidebar's Color Mixing panel, the Add Mix
+    # dialog's four tabs and an entry's Options menu - do the mixed-filament
+    # project settings of #288/#289 have any control on this build?
+    "uia_param_mix_census")
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
 UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
@@ -163,6 +167,7 @@ SCENARIOS = {
     "uia_param_brim": ("Others", None),
     "uia_param_census": ("Quality", None),  # probe: switches tabs itself
     "uia_param_census_develop": ("Quality", None),  # probe, develop mode
+    "uia_param_mix_census": ("Quality", None),      # probe: the mix dialog
     # Feishu #276-279/#292-294: the starting page each case's ops first edit
     # lives on (#276 begins on Quality, the speed row closes the sequence).
     "uia_param_speed_limits": ("Quality", None),

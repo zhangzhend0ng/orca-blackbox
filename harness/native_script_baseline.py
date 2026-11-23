@@ -973,6 +973,9 @@ def edit_project(ui, scenario, canvas, *, mix_census=False):
     elif scenario in ("uia_param_census", "uia_param_census_develop"):
         from .param_case_lib import census_param_pages
         census_param_pages(ui)
+    elif scenario == "uia_param_mix_census":
+        from .param_mix_census import census_mix_dialog
+        census_mix_dialog(ui)
     elif scenario.startswith("uia_param_"):
         edit_param_cases(ui, scenario)
     else:
