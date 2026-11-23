@@ -319,3 +319,23 @@ batch2 四例与两个老卡点的全部证据就绪；引擎与注册链完好�
 - Mac A2 闭环（5c503ca，blocked 精确归因）：wall_loops 控件在硬虚拟化 outline 未物化区、该页所有滚动通道失效、Mac build 预设行无 edit 图标；修正两处上轮误判（AXValue/AXHelp 可读、扁平页滚动箭头有效）；解锁三路径=屏幕录制 TCC/Automation TCC/上游 AX 补全。
 - queue9 其余留证：speed_limits/raft/support_filament/by_object/spiral_vase/timelapse 六族 band 证据归档待校准；first_speeds 三度被陈旧租约楔（unlock 前置未覆盖其场景，租约释放根因仍未修——下一批首项）。
 - 验证器/引擎七项修复全部入主线（a9bcb6f→…→073f086f 前共 5 提交），#259 收敛链本身即引擎硬化史。
+
+
+## 九小时续航会话（2026-11-23 00:25–08:10，GLM 总控）
+
+**SHADOW 净增 +4：#257 精度补偿（8ff22123）、#273 空驶速度（3c1ab0d1）、#297 排除对象（01163442）** + 早段 #259。补充+参数族累计闭环 **8 条**（#254/#257/#259/#266/#267/#268/#273/#277/#297 计 9——含 fa 作者链 3 条：#277/#257/#273 + fa B4 1 条 #297）。
+
+**引擎级修复（根因三连）**：
+1. **双向滚动**（b7c11f8）：编辑提交后面板重建、滚动落点随机（983bab81 从页底起搜）——短语搜索改「下 12 轮 + 回上 26 轮」。line_width 因此全链至 save、by_object 因此通过 combo。
+2. **租约陈旧接管**（99b5d6d）：锁内写 PID、获取冲突验活接管——异常路径不释放锁的楔子根因之一。
+3. **combo 元组解包**：run_ops 不再静默吞 set_combo_by_popup 失败（#259 六轮收敛链首环）。
+
+**fa706g3 四批全闭环（B1-B4）**：**累计 authored 29 条 + 2 条混色族归因**（mixed_filament_* 无参数页行，需 mix 引擎链）——飞书 44 条参数族全部入库或归因。作者链首验通过率 4/29 首跑 SHADOW（#277/#257/#273/#297），其余留 band 证据分层校准中。
+
+**Mac A2/B2 闭环**：面板寻址 blocked 精确归因（硬虚拟化 outline+滚动全灭+Mac build 无预设 edit 图标；AXHelp 可读/滚动箭头有效两误判修正）；写回工单 216 行对账（可立即写回 6 行 SHADOW 口径、待首跑 21+、维持 189）。
+
+**queue14 终态（23 场景 40 run）**：1 SHADOW + 22 留证。失败分类：参数行/标签族 9、checkbox 状态回读 5、file_toolbar_missing 3（ESC 重试已加未验证）、楔 3、slice_button_unavailable 2、模态 1。skirt/timelapse/arc_resolution 执行完成但验证未过（终层校准）。
+
+**楔子（宿主侧 launch 链）未根除**：本窗口发生率 ~25%（租约修复前 ~40%）；签名=hv_go 全输出而 launch_done 未写、客机无 run 目录。已缓解：900→620s 看门狗+即时重试（queue14 起 rc=124 也重试）。根因候选：提权子进程在 hv_go 返回后、写 launch_done 前被外部终止——下一窗口用 Sysmon/ETW 跟踪。
+
+**下一批**：①终层校准（layer density 二词变体、clearance 行、checkbox 回读、slice_button）；②楔子 ETW 根因；③P0-3 签核转正+写回工单执行（6 行）；④Mac TCC 人工决策。
