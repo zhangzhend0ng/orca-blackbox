@@ -3,74 +3,435 @@
  "ops": {
   "find_row": {
    "op": "find_row",
+   "name": null,
    "ok": true,
    "sut": {
     "version": "2.4.1"
    },
    "console_uid": 501,
    "test_uid": 502,
+   "entry": {
+    "dialogs": []
+   },
    "readback": {
-    "tab": "Strength",
-    "group": "Walls",
-    "label": "Wall loops",
+    "tab": "Speed",
+    "group": "Travel speed",
+    "label": "Travel",
     "center": [
-     424,
-     843
+     409,
+     783
     ],
     "window_local_center": [
-     64,
-     758
+     49,
+     753
     ],
     "box": {
      "x": 390,
-     "y": 835,
-     "w": 68,
-     "h": 16
+     "y": 777,
+     "w": 38,
+     "h": 12
     },
-    "value_text": "^ 2",
-    "screenshot": "find-page.png"
+    "value_text": "500 mm/s",
+    "screenshot": "find-page-full.png"
    },
    "evidence": {
     "notes": [
      {
+      "standard_mode": "RuntimeError: Speed tab label not found by OCR; tabs seen: ['Others', 'Quality', 'Strength', 'Support', 'Multimaterial']"
+     },
+     {
+      "advanced": {
+       "already_on": false,
+       "tabs_before": [
+        "Others",
+        "Quality",
+        "Strength",
+        "Support",
+        "Multimaterial"
+       ],
+       "value_before": 0,
+       "attempts": [
+        {
+         "how": "ax",
+         "value_before": 0,
+         "box": [
+          673.0,
+          689.0
+         ],
+         "tabs_after": [
+          [
+           "Others"
+          ],
+          [
+           "Others"
+          ],
+          [
+           "Others"
+          ],
+          [
+           "Others"
+          ]
+         ],
+         "value_after": 1
+        }
+       ],
+       "checkboxes": [
+        {
+         "x": 453.0,
+         "y": 686.0,
+         "words": "",
+         "value": 0
+        },
+        {
+         "x": 673.0,
+         "y": 689.0,
+         "words": "",
+         "value": 0
+        }
+       ],
+       "turned_on_by": "ax",
+       "speed_seen": false
+      }
+     },
+     {
       "tab_click": [
-       479,
+       528,
        777
       ]
+     },
+     {
+      "advanced_mode": "RuntimeError: Group title 'Travel speed' not visible; titles seen: []"
+     },
+     {
+      "maximized": {
+       "visible": [
+        0.0,
+        30.0,
+        1920.0,
+        972.0
+       ],
+       "frame": [
+        360.0,
+        30.0,
+        1200.0,
+        971.0
+       ]
+      }
+     },
+     {
+      "tab_click": [
+       528,
+       722
+      ]
+     },
+     {
+      "scrolled": {
+       "not_found": "RuntimeError: Group title 'Travel speed' not visible; titles seen: []",
+       "buttons": {
+        "down": [
+         2,
+         0
+        ],
+        "up": 1,
+        "knob_dy": {
+         "0": [
+          4.0,
+          4.0
+         ],
+         "1": [
+          -4.0,
+          -4.0
+         ],
+         "2": [
+          41.0,
+          41.0
+         ],
+         "3": [
+          -41.0,
+          -41.0
+         ]
+        }
+       },
+       "to_top": {
+        "button": 1,
+        "presses": 1,
+        "knob_at": [
+         3.0,
+         3.0
+        ]
+       },
+       "steps": [
+        {
+         "step": 0,
+         "knob_dy": 1,
+         "titles": []
+        },
+        {
+         "step": 1,
+         "knob_dy": 41.0,
+         "titles": [
+          "Ta Overhang speed"
+         ]
+        },
+        {
+         "step": 2,
+         "knob_dy": 40.0,
+         "titles": [
+          "Fo Travel speed"
+         ]
+        },
+        {
+         "step": 3,
+         "knob_dy": 41.0,
+         "titles": [
+          "Fo Travel speed",
+          "g Acceleration"
+         ],
+         "row_y": 777.0
+        }
+       ],
+       "left": 20
+      }
      }
     ],
     "page_text": [
-     "walls",
-     "wall loops",
-     "2",
-     "top bottom shells"
+     "fo travel speed",
+     "travel",
+     "500",
+     "mm s",
+     "g acceleration",
+     "normal printing",
+     "outer wall",
+     "inner wall",
+     "bridge",
+     "sparse infill",
+     "internal solid infill",
+     "10000",
+     "5000",
+     "50 mm s or",
+     "100 mm s or"
     ]
    },
    "shots": {
     "entry": "entry.png",
     "find-page-locate": "find-page-locate.png",
-    "find-page": "find-page.png"
+    "find-advanced": "find-advanced.png",
+    "find-advanced-ax-0": "find-advanced-ax-0.png",
+    "find-advanced-ax-1": "find-advanced-ax-1.png",
+    "find-advanced-ax-2": "find-advanced-ax-2.png",
+    "find-advanced-ax-3": "find-advanced-ax-3.png",
+    "find-page-adv-locate": "find-page-adv-locate.png",
+    "find-page-adv": "find-page-adv.png",
+    "find-page-full-locate": "find-page-full-locate.png",
+    "find-page-full": "find-page-full.png",
+    "find-page-full-scroll-0": "find-page-full-scroll-0.png",
+    "find-page-full-scroll-1": "find-page-full-scroll-1.png",
+    "find-page-full-scroll-2": "find-page-full-scroll-2.png",
+    "find-page-full-scroll-3": "find-page-full-scroll-3.png"
    },
+   "notes": [
+    {
+     "standard_mode": "RuntimeError: Speed tab label not found by OCR; tabs seen: ['Others', 'Quality', 'Strength', 'Support', 'Multimaterial']"
+    },
+    {
+     "advanced": {
+      "already_on": false,
+      "tabs_before": [
+       "Others",
+       "Quality",
+       "Strength",
+       "Support",
+       "Multimaterial"
+      ],
+      "value_before": 0,
+      "attempts": [
+       {
+        "how": "ax",
+        "value_before": 0,
+        "box": [
+         673.0,
+         689.0
+        ],
+        "tabs_after": [
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ],
+         [
+          "Others"
+         ]
+        ],
+        "value_after": 1
+       }
+      ],
+      "checkboxes": [
+       {
+        "x": 453.0,
+        "y": 686.0,
+        "words": "",
+        "value": 0
+       },
+       {
+        "x": 673.0,
+        "y": 689.0,
+        "words": "",
+        "value": 0
+       }
+      ],
+      "turned_on_by": "ax",
+      "speed_seen": false
+     }
+    },
+    {
+     "tab_click": [
+      528,
+      777
+     ]
+    },
+    {
+     "advanced_mode": "RuntimeError: Group title 'Travel speed' not visible; titles seen: []"
+    },
+    {
+     "maximized": {
+      "visible": [
+       0.0,
+       30.0,
+       1920.0,
+       972.0
+      ],
+      "frame": [
+       360.0,
+       30.0,
+       1200.0,
+       971.0
+      ]
+     }
+    },
+    {
+     "tab_click": [
+      528,
+      722
+     ]
+    },
+    {
+     "scrolled": {
+      "not_found": "RuntimeError: Group title 'Travel speed' not visible; titles seen: []",
+      "buttons": {
+       "down": [
+        2,
+        0
+       ],
+       "up": 1,
+       "knob_dy": {
+        "0": [
+         4.0,
+         4.0
+        ],
+        "1": [
+         -4.0,
+         -4.0
+        ],
+        "2": [
+         41.0,
+         41.0
+        ],
+        "3": [
+         -41.0,
+         -41.0
+        ]
+       }
+      },
+      "to_top": {
+       "button": 1,
+       "presses": 1,
+       "knob_at": [
+        3.0,
+        3.0
+       ]
+      },
+      "steps": [
+       {
+        "step": 0,
+        "knob_dy": 1,
+        "titles": []
+       },
+       {
+        "step": 1,
+        "knob_dy": 41.0,
+        "titles": [
+         "Ta Overhang speed"
+        ]
+       },
+       {
+        "step": 2,
+        "knob_dy": 40.0,
+        "titles": [
+         "Fo Travel speed"
+        ]
+       },
+       {
+        "step": 3,
+        "knob_dy": 41.0,
+        "titles": [
+         "Fo Travel speed",
+         "g Acceleration"
+        ],
+        "row_y": 777.0
+       }
+      ],
+      "left": 20
+     }
+    }
+   ],
    "geometry": {
     "origin": [
      360.0,
-     85.0
+     30.0
     ],
     "size": [
      1200.0,
-     800.0
+     971.0
     ]
    },
    "orca_left": [],
-   "finished_at": 1795445685.8344262,
-   "seconds": 31.3,
+   "finished_at": 1795465722.946688,
+   "seconds": 115.5,
    "screenshots": {
-    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-225446-entry.panel.png",
-    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-225446/find_row-225446-entry.png",
-    "find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-225446-find-page-locate.panel.png",
-    "find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-225446/find_row-225446-find-page-locate.png",
-    "find-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-225446-find-page.panel.png",
-    "find-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-225446/find_row-225446-find-page.png"
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-042843-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-042843/find_row-042843-entry.png",
+    "find-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-042843-find-advanced-ax-0.panel.png",
+    "find-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-042843/find_row-042843-find-advanced-ax-0.png",
+    "find-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-042843-find-advanced-ax-1.panel.png",
+    "find-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-042843/find_row-042843-find-advanced-ax-1.png",
+    "find-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-042843-find-advanced-ax-2.panel.png",
+    "find-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-042843/find_row-042843-find-advanced-ax-2.png",
+    "find-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-042843-find-advanced-ax-3.panel.png",
+    "find-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-042843/find_row-042843-find-advanced-ax-3.png",
+    "find-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-042843-find-advanced.panel.png",
+    "find-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-042843/find_row-042843-find-advanced.png",
+    "find-page-adv-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-042843-find-page-adv-locate.panel.png",
+    "find-page-adv-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-042843/find_row-042843-find-page-adv-locate.png",
+    "find-page-adv.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-042843-find-page-adv.panel.png",
+    "find-page-adv.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-042843/find_row-042843-find-page-adv.png",
+    "find-page-full-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-042843-find-page-full-locate.panel.png",
+    "find-page-full-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-042843/find_row-042843-find-page-full-locate.png",
+    "find-page-full-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-042843-find-page-full-scroll-0.panel.png",
+    "find-page-full-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-042843/find_row-042843-find-page-full-scroll-0.png",
+    "find-page-full-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-042843-find-page-full-scroll-1.panel.png",
+    "find-page-full-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-042843/find_row-042843-find-page-full-scroll-1.png",
+    "find-page-full-scroll-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-042843-find-page-full-scroll-2.panel.png",
+    "find-page-full-scroll-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-042843/find_row-042843-find-page-full-scroll-2.png",
+    "find-page-full-scroll-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-042843-find-page-full-scroll-3.panel.png",
+    "find-page-full-scroll-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-042843/find_row-042843-find-page-full-scroll-3.png",
+    "find-page-full.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-042843-find-page-full.panel.png",
+    "find-page-full.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-042843/find_row-042843-find-page-full.png",
+    "find-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/find_row-042843-find-page-locate.panel.png",
+    "find-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/find_row-042843/find_row-042843-find-page-locate.png"
    }
   },
   "switch_tab": {
@@ -6576,6 +6937,16 @@
    "op": "case:uia_param_surface_flow",
    "stamp": "041357",
    "ok": false
+  },
+  {
+   "op": "find_row",
+   "stamp": "042350",
+   "ok": false
+  },
+  {
+   "op": "find_row",
+   "stamp": "042843",
+   "ok": true
   }
  ],
  "summary": {

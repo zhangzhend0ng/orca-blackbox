@@ -61,6 +61,7 @@ LANDMARKS = {"Quality": ("layer height",), "Strength": ("wall loops", "walls"),
 PANEL_WIDTH = 470  # left settings column, px at scale 1.0
 TITLE_X = 26       # group titles start left of this offset, row labels right of it
 VALUE_X = 253      # value column: numbers, and the faint square of a bool row
+SCROLL_STEPS = 24  # page-scrollbar presses that all of one locate_row's scroll chains share
 VIEW_TOP = 712     # options viewport starts here (window-relative px): tab band + gap
 VIEW_RIGHT = 406   # viewport right edge (window-relative); the 15 px strip beyond is not page
 IEND = b"IEND\xaeB\x60\x82"
@@ -350,6 +351,8 @@ class Panel:
         self.shots, self.last_notes = {}, []
         self.trial, self.scroll_up_button = None, None  # the scroll probe's working state
         self.scroll_down_buttons = None  # page scrollbar buttons that page down, widest step first
+        self.bar_cache = None  # (element, kids) of the page scrollbar, asked for its parts directly
+        self.full = False  # the window was given the screen's full height in this process
 
     def geometry(self):
         point = self.desktop.position(self.window)
@@ -547,6 +550,7 @@ class Panel:
         require(tab, f"{name} tab label not found by OCR; tabs seen: {self.tabs_seen(rows)}")
         self.click(tab["x"] + tab["w"] / 2, tab["y"] + tab["h"] / 2)
         time.sleep(1.0)
+        self.bar_cache, self.scroll_down_buttons, self.scroll_up_button = None, None, None  # another page
         return [round(tab["x"] + tab["w"] / 2), round(tab["y"] + tab["h"] / 2)]
 
     # -- Advanced mode (the Speed tab and the thin-wall row are Advanced-only) --
@@ -635,52 +639,57 @@ class Panel:
         raise RuntimeError(f"Advanced mode did not switch on: {json.dumps(note)[:700]}")
 
     def locate_row(self, tab, group, label, prefix):
-        """Open `tab` and find the row; page the viewport down to a group below the fold; fall
-        back to Advanced mode and a taller window. Returns (rows, row, notes, tag of the page shot)."""
+        """Open `tab` and find the row. A row whose group title is on the page in neither mode is
+        brought into view by taller windows first (a taller window carries the groups below the
+        fold into the viewport); the scroll chains come after them and share SCROLL_STEPS presses.
+        Returns (rows, row, notes, tag of the page shot)."""
         note = self.last_notes = []
+        left = [SCROLL_STEPS]  # scroll presses left to all the chains of this call together
 
-        def attempt(tag):
+        def attempt(tag, scroll=False):
             rows = self.read(f"{prefix}-{tag}-locate")
             note.append({"tab_click": self.click_tab(tab, rows)})
             rows = self.read(f"{prefix}-{tag}")
             try:
                 return rows, self.find_row(rows, group, label), f"{prefix}-{tag}"
             except RuntimeError as error:
-                if not group:
+                if not group or not scroll or left[0] <= 0:
                     raise
                 why = brief(error)
-            note.append({"scrolled": self.scroll_to(group, label, f"{prefix}-{tag}-scroll", why)})
+            note.append({"scrolled": self.scroll_to(group, label, f"{prefix}-{tag}-scroll", why, left)})
             rows = self.read(f"{prefix}-{tag}")
             return rows, self.find_row(rows, group, label), f"{prefix}-{tag}"
 
+        # Runs 040643 / 041357: a scroll chain ahead of the resize steps spent a one-op case's
+        # fuse (20 + 20 and 24 + 17 steps) and the window was never made taller. The chains are
+        # not run on the small window; a taller window comes first, once per process (probe
+        # 042350: the Process header keeps its place through widen and the 916 px resize, and
+        # the full-height window shows every row the 916 px one does).
         try:
             rows, row, tag = attempt("page")
             return rows, row, note, tag
         except RuntimeError as error:
             note.append({"standard_mode": brief(error)})
-        note.append({"advanced": self.ensure_advanced(f"{prefix}-advanced")})
+        advanced = self.ensure_advanced(f"{prefix}-advanced")
+        note.append({"advanced": advanced})
+        if not advanced.get("already_on"):  # the same page otherwise: run 042350 read it twice
+            try:
+                rows, row, tag = attempt("page-adv")
+                return rows, row, note, tag
+            except RuntimeError as error:
+                note.append({"advanced_mode": brief(error)})
+        if not self.full:
+            areas, grown = self.maximize()
+            self.full = True
+            note.append({"maximized": {"visible": areas["visible"], "frame": [grown[0].x, grown[0].y,
+                                                                             grown[1].x, grown[1].y]}})
         try:
-            rows, row, tag = attempt("page-adv")
+            rows, row, tag = attempt("page-full", True)
             return rows, row, note, tag
         except RuntimeError as error:
-            note.append({"advanced_mode": brief(error)})
-        note.append({"widened": self.widen(f"{prefix}-widen")})
-        try:
-            rows, row, tag = attempt("page-wide")
-            return rows, row, note, tag
-        except RuntimeError as error:
-            note.append({"wide_window": brief(error)})
-        point, size = self.geometry()
-        grown = self.resize(size.x, min(960, 1080 - point.y - 15))
-        note.append({"resized_to": [grown[1].x, grown[1].y]})
-        try:
-            rows, row, tag = attempt("page-tall")
-            return rows, row, note, tag
-        except RuntimeError as error:
-            note.append({"tall_window": brief(error)})
-        # The page does not scroll from injected input (A2): fold the group
-        # headers that are on screen so the groups below them move up, stopping
-        # as soon as the wanted group title is on screen.
+            note.append({"full_window": brief(error)})
+        # Last resort: fold the group headers that are on screen so the groups below them move
+        # up, stopping as soon as the wanted group title is on screen.
         point = self.geometry()[0]
         done, folded = [], []
         for index in range(4):
@@ -698,7 +707,7 @@ class Panel:
             after = [t["text"] for t in self.read(f"{prefix}-fold-{index}-after") if t["x"] - point.x < 26]
             folded.append({"title": title["text"], "click": [round(spot[0]), round(spot[1])], "titles_after": after})
         note.append({"folded": folded})
-        rows, row, tag = attempt("page-folded")
+        rows, row, tag = attempt("page-folded", True)
         return rows, row, note, tag
 
     def widen(self, tag):
@@ -908,51 +917,61 @@ class Panel:
         self.scroll_up_button = min(ups)
         return {"down": self.scroll_down_buttons, "up": self.scroll_up_button, "knob_dy": marks}
 
-    def scroll_to(self, group, label, tag, why):
+    def scroll_to(self, group, label, tag, why, budget=None):
         """Page the options viewport down one scrollbar step at a time until the group title
         and the row are both inside it (step 2: AXPress on the page scrollbar reached the
-        Others page's last group); stops where no down button moves the page any more."""
+        Others page's last group); stops where no down button moves the page any more. `budget`
+        is a one-element list of the presses left to every chain of one locate_row call: this
+        chain takes at most that many and gives back what it does not use."""
         trail = {"not_found": str(why)[:200], "buttons": self.find_scroll_buttons()}
         trail["to_top"] = self.scroll_top(self.scroll_up_button)
         trail["steps"] = []
         x, y, w, h = self.viewport()
         moved = 1
-        for index in range(24):
-            rows = self.read(f"{tag}-{index}")  # look first: one page step empties this small viewport
-            title, row, missing, titles = None, None, None, []
-            try:
-                # The group title as find_row reads it (x < TITLE_X): the stricter fold-icon
-                # test of title_of missed the Strength page's 'Walls' and paged it to the end.
-                left = self.geometry()[0].x
-                heads = [r for r in self.page_rows(rows) if r["x"] - left < TITLE_X and norm(r["text"])]
-                wanted = norm(group)
-                title = next((t for t in heads if wanted in norm(t["text"]) or norm(t["text"]) in wanted), None)
-                titles = [t["text"] for t in heads]
-                row = self.find_row(rows, group, label)
-            except RuntimeError as error:  # no tab band, no group title, or no such row
-                missing = error
-            step = {"step": index, "knob_dy": moved, "titles": titles}
-            trail["steps"].append(step)
-            if row and row["y"] + row["h"] <= y + h - 2:
-                step["row_y"] = round(row["y"], 1)
-                return trail
-            # The group is on screen with room for a row under its title: the row is not on
-            # this page (an Advanced-only one in standard mode), so scrolling cannot find it.
-            if title and (row or title["y"] + title["h"] <= y + h - 40) and (row is None or not moved):
-                raise missing if row is None else RuntimeError(
-                    f"Row {label!r} touches the viewport's lower edge in group {group!r}")
-            if not moved:
-                step["end_of_page"] = True
-                break
-            knob = self.knob_at()
-            for button in self.scroll_down_buttons:
-                before = self.knob_at()
-                self.press_scroll(button, 1)
-                if self.knob_at() != before:
+        try:
+            for index in range(SCROLL_STEPS if budget is None else budget[0]):
+                rows = self.read(f"{tag}-{index}")  # look first: one step can empty this viewport
+                title, row, missing, titles = None, None, None, []
+                try:
+                    # The group title as find_row reads it (x < TITLE_X): the stricter fold-icon
+                    # test of title_of missed the Strength page's 'Walls' and paged it to the end.
+                    left = self.geometry()[0].x
+                    heads = [r for r in self.page_rows(rows)
+                             if r["x"] - left < TITLE_X and norm(r["text"])]
+                    wanted = norm(group)
+                    title = next((t for t in heads
+                                  if wanted in norm(t["text"]) or norm(t["text"]) in wanted), None)
+                    titles = [t["text"] for t in heads]
+                    row = self.find_row(rows, group, label)
+                except RuntimeError as error:  # no tab band, no group title, or no such row
+                    missing = error
+                step = {"step": index, "knob_dy": moved, "titles": titles}
+                trail["steps"].append(step)
+                if row and row["y"] + row["h"] <= y + h - 2:
+                    step["row_y"] = round(row["y"], 1)
+                    return trail
+                # The group is on screen with room for a row under its title: the row is not on
+                # this page (an Advanced-only one in standard mode), so scrolling cannot find it.
+                if title and (row or title["y"] + title["h"] <= y + h - 40) and (row is None
+                                                                               or not moved):
+                    raise missing if row is None else RuntimeError(
+                        f"Row {label!r} touches the viewport's lower edge in group {group!r}")
+                if not moved:
+                    step["end_of_page"] = True
                     break
-            moved = self.knob_at() - knob
-        raise RuntimeError(f"{group!r} / {label!r} not on the page after scrolling to its end: "
-                           f"{json.dumps(trail)[-600:]}")
+                knob = self.knob_at()
+                for button in self.scroll_down_buttons:
+                    before = self.knob_at()
+                    self.press_scroll(button, 1)
+                    if self.knob_at() != before:
+                        break
+                moved = self.knob_at() - knob
+            raise RuntimeError(f"{group!r} / {label!r} not on the page after scrolling to its end: "
+                               f"{json.dumps(trail)[-600:]}")
+        finally:
+            if budget is not None:  # found, at the end of the page or out of presses alike
+                budget[0] -= len(trail["steps"])
+                trail["left"] = budget[0]
 
     def ax_named(self, wanted):
         """AX elements of this app - any of its windows, a popup list is its own - whose title,
@@ -986,7 +1005,18 @@ class Panel:
         return found
 
     def scrollbars(self):
-        """AXScrollBar elements of the window: {element, box, kids: [{element, role, box}]}."""
+        """AXScrollBar elements of the window: {element, box, kids: [{element, role, box}]}.
+        A walk of the whole window is thousands of AX calls (seconds), and one scroll step
+        asks for the page scrollbar four to eight times: once found, that scrollbar is asked
+        for its parts alone until a tab click forgets it (the next page owns another one)."""
+        if self.bar_cache is not None:
+            element, kids = self.bar_cache
+            box = self.desktop.box(element)  # None once the element is gone
+            if box and self.desktop.text(element, "AXRole") == "AXScrollBar":
+                return [{"element": element, "box": box, "kids": [
+                    {"element": kid["element"], "role": kid["role"], "box": self.desktop.box(kid["element"])}
+                    for kid in kids]}]
+            self.bar_cache = None
         found = []
         for element in self.desktop.descendants(self.window):
             if self.desktop.text(element, "AXRole") != "AXScrollBar":
@@ -997,6 +1027,10 @@ class Panel:
             kids = [{"element": child, "role": self.desktop.text(child, "AXRole"), "box": self.desktop.box(child)}
                     for child in self.desktop.children(element)]
             found.append({"element": element, "box": box, "kids": kids})
+        point = self.geometry()[0]
+        page = next((bar for bar in found if point.x <= bar["box"][0] <= point.x + PANEL_WIDTH
+                     and bar["box"][1] >= point.y + VIEW_TOP - 30), None)
+        self.bar_cache = None if page is None else (page["element"], page["kids"])
         return found
 
     def focused(self):
