@@ -249,7 +249,7 @@
     "sparse_infill_speed": "200",
     "top_surface_speed": "120",
     "small_perimeter_threshold": "10",
-    "small_perimeter_speed": "50%"
+    "small_perimeter_speed": "50"
    },
    "ops": [
     {
@@ -290,7 +290,7 @@
     {
      "op": "float",
      "label": "^Small perimeters",
-     "value": "50%",
+     "value": "50",
      "group": "Other layers speed"
     }
    ],
@@ -348,7 +348,7 @@
    "values": {
     "initial_layer_speed": "30",
     "initial_layer_infill_speed": "40",
-    "initial_layer_travel_speed": "150%"
+    "initial_layer_travel_speed": "150"
    },
    "ops": [
     {
@@ -371,7 +371,7 @@
     {
      "op": "float",
      "label": "^Initial layer travel",
-     "value": "150%",
+     "value": "150",
      "group": "First layer speed"
     }
    ],

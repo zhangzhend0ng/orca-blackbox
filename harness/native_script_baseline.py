@@ -292,7 +292,13 @@ PARAM_OPS = {        "uia_param_ironing_top": [
              "group": "First layer speed"},
             {"op": "float", "label": "^First layer infill", "value": "40",
              "group": "First layer speed"},
-            {"op": "float", "label": "^Initial layer travel", "value": "150%",
+            # The Feishu row sets the first-layer travel speed to 150 mm/s
+            # (its expected F~9000); until 2026-11-24 the op typed "150%" -
+            # 150% of the preset's 500 mm/s, F45000 in run 376e80a1 on the
+            # precondition fixture - and the pilot asked for the same wrong
+            # value, so "values written" passed while the row's own number
+            # could never appear.
+            {"op": "float", "label": "^Initial layer travel", "value": "150",
              "group": "First layer speed"},
         ],
         # 2026-11-23: the group is spelled 'First layer speed' on the 2.4.0
@@ -314,9 +320,12 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             {"op": "float", "label": ["^Small perimeters threshold", "threshold"], "value": "10",
              "group": "Other layers speed"},
             # The speed row's unit is 'mm/s or %': a bare 50 is 50 mm/s. The
-            # case wants 50% (pilot VALUES '50%'); run b1103170 stored '50'
-            # and died at verification with the other five values right.
-            {"op": "float", "label": "^Small perimeters", "value": "50%", "group": "Other layers speed"},
+            # Feishu row writes small_perimeter_speed = 50 and expects
+            # "周长<10mm的loop使用50mm/s". Run b1103170 stored '50' - the right
+            # value - and "died at verification" only because the pilot's
+            # VALUES had been changed to '50%' to match what the engine typed;
+            # both are the row's number again since 2026-11-24.
+            {"op": "float", "label": "^Small perimeters", "value": "50", "group": "Other layers speed"},
         ],
         "uia_param_fuzzy": [
             # atlas + band 244ae35e: the fuzzy rows are on the Others page
