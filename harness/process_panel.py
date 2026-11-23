@@ -453,7 +453,10 @@ def neutralize_focus(session):
     return False
 
 
-def row_checkboxes(session, y_client, y_tol=12, x_lo=200, x_hi=330):
+def row_checkboxes(session, y_client, y_tol=12, x_lo=200, x_hi=420):
+    # x_hi 330->420 (2026-11-23): long labels ('Slow down for curled
+    # perimeters') push the row's checkbox past 330 - run b4dfede6 found the
+    # row but zero boxes in the window; 420 stays left of the canvas.
     """Empty-text ~18px Buttons (option checkboxes) on an option row band;
     candidates that horizontally overlap a same-band Edit are spin/undo
     artifacts and dropped."""

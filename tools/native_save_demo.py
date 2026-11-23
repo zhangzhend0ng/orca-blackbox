@@ -244,8 +244,14 @@ def main():
                       for vendor, info in sut["installed_vendors"].items())
             + "){throw 'config_guest_build_or_preset_digest_changed'}\n"
         )
-    script.write_text("$ErrorActionPreference='Stop'\ntry {\n"
+    script.write_text("$ErrorActionPreference='Stop'\n"
+        # 2026-11-23 wedge instrument: stage markers tell exactly where the
+        # elevated child dies when launch_done never appears (wedge: hv_go
+        # output complete, no receipt, no guest run dir).
+        "function Mark([string]$s){[IO.File]::AppendAllText('"+str(root / "launch.stages").replace(chr(92),chr(92)*2)+"', $s+' '+([DateTime]::Now.ToString('HH:mm:ss.fff'))+[Environment]::NewLine)}\n"
+        "Mark 'start'\ntry {\n"
         "$env:ORCA_BB_GUEST_SANDBOX="+quoted(r"C:\coil\orca-blackbox-v3-r1")+"\n. "+quoted(REPO / "runner/_common.ps1")+"\n"
+        "Mark 'pre-state-check'\n"
         "$state=Invoke-Command -VMName $vm -Credential $cred -ScriptBlock {param($sb,$git) "
         "@{head=(& $git -C $sb rev-parse HEAD);dirty=@(& $git -C $sb status --porcelain);"
         r"runtime=(Test-Path 'C:\coil\tools\windows-mcp-0.8.9\python.exe')} } -ArgumentList $guestSandbox,$guestGit"+"\n"
@@ -253,12 +259,16 @@ def main():
         + (" -or -not $state.runtime" if args.actor != "script" or args.scenario in RECORDED_SCENARIOS or fixture_cases or args.inspect_mix_controls
            else "") + "){throw 'demo_guest_sync_or_runtime_required'}\n"
         +sut_check+capture_request+
+        "Mark 'pre-hvgo'\n"
         "& "+quoted(REPO / "runner/hv_go.ps1")+" -NoSync -WindowsMcpProbe -NativeSave -ProbeRunId "+quoted(run_id)
         +" -NativeActor "+args.actor+" -NativeScenario "+args.scenario
         +(" -ProbeMixWaits" if args.probe_mix_waits else "")+" *> "+quoted(root / "launch.log")+"\n"
+        "Mark 'post-hvgo'\n"
         "$r=@{ok=$true;head="+quoted(head)+(";sut=$sut" if sut_check else "")+"}\n"
-        "}catch{$r=@{ok=$false;error_type=$_.Exception.GetType().Name;message=$_.Exception.Message}}\n"
-        "$r|ConvertTo-Json -Depth 6|Set-Content "+quoted(launch_done)+" -Encoding UTF8\n", encoding="utf-8")
+        "}catch{Mark 'catch'\n$r=@{ok=$false;error_type=$_.Exception.GetType().Name;message=$_.Exception.Message}}\n"
+        "Mark 'pre-receipt'\n"
+        "$r|ConvertTo-Json -Depth 6|Set-Content "+quoted(launch_done)+" -Encoding UTF8\n"
+        "Mark 'done'\n", encoding="utf-8")
     print(json.dumps({"run_id": run_id, "source_sha": head, "phase": "launching"}), flush=True)
     detached(script, launch_done, 180)
     error, code = None, 1

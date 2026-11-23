@@ -285,7 +285,11 @@ def run_ops(ui, ops):
             pp.neutralize_focus(app)
         elif kind == "checkbox":
             ok = pp.set_option_checkbox(app, op["label"], op["value"], group_substr=op.get("group"))
-            if ok is not True and not (isinstance(ok, tuple) and ok[0] is True):
+            # set_option_checkbox returns (now_on, rect); for want=False a
+            # SUCCESSFUL uncheck returns ok[0]=False - the old `is True` check
+            # rejected every unchecked-success (seam_wipe 'Role' att0 did
+            # 0.21->0.06 then raised, run 7cb0e911).
+            if not (isinstance(ok, tuple) and ok[0] == op["value"]):
                 raise ProtocolError("param_checkbox:" + op["label"])
             # 2026-11-23: enabling some options (Spiral vase, run c6584b3e)
             # pops an informational modal that trips the next guard
