@@ -1541,6 +1541,37 @@ if "enter" in inspect.signature(_abu24.BusinessUI.edit).parameters:
 else:
     print("N/A  text field commit (absent on this tree)")
 
+# 29. A tick that brings up a modal at once counts as done. fa run 6da8ec2c
+#     (Spiral vase): the tick took effect and the app asked its question
+#     before the frame read back - a modal owns the main window, every
+#     further click is blocked and the box never paints as checked, so four
+#     attempts read 0.00 and the op was reported failed; on the guest the
+#     same tick read 0.88 by timing luck (run 680d5426).
+if hasattr(pp, "set_option_checkbox"):
+    _state29 = {"modal": False, "clicks": 0}
+    _saved29 = (pp.find_option_checkbox, pp.checked_state, pp.real_click, pp.user32, pp.winutil)
+    try:
+        RECT29 = ((100, 800, 118, 818), 5)
+        pp.find_option_checkbox = lambda session, label, group=None: [RECT29]
+        pp.checked_state = lambda session, rect: 0.0          # never paints as checked
+        pp.real_click = lambda rect: _state29.update(clicks=_state29["clicks"] + 1, modal=True)
+        pp.user32 = types.SimpleNamespace(IsWindowEnabled=lambda h: not _state29["modal"])
+        got = pp.set_option_checkbox(types.SimpleNamespace(hwnd=1), "Spiral", True, "Special mode")
+        check("checkbox: a tick after which the main window is owned by a modal is taken as done "
+              "(the state is the opposite of before)",
+              got == (True, RECT29[0]) and _state29["clicks"] == 1, "%r clicks %d" % (got, _state29["clicks"]))
+        _state29.update(modal=False, clicks=0)
+        pp.real_click = lambda rect: _state29.update(clicks=_state29["clicks"] + 1)   # nothing happens
+        pp.winutil = types.SimpleNamespace(user32=pp.user32, SetCursorPos=lambda x, y: None,
+                                           msg_click_screen=lambda x, y, root=None: None)
+        got = pp.set_option_checkbox(types.SimpleNamespace(hwnd=1), "Nope", True, None, tries=2)
+        check("checkbox: without a modal a tick that changes nothing is still a failure",
+              got == (None, None), "%r" % (got,))
+    finally:
+        pp.find_option_checkbox, pp.checked_state, pp.real_click, pp.user32, pp.winutil = _saved29
+else:
+    print("N/A  checkbox modal (absent on this tree)")
+
 failed = [n for n, ok in results if not ok]
 print("\n%d checks, %d failed" % (len(results), len(failed)))
 sys.exit(1 if failed else 0)

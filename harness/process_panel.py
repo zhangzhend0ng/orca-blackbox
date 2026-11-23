@@ -1747,5 +1747,18 @@ def set_option_checkbox(session, label_substr, want_checked,
             now_on = after > CHECKED_FRACTION
             if now_on == want_checked:
                 return now_on, rect
+            if not user32.IsWindowEnabled(session.hwnd):
+                # The tick took effect and the app asked something at once:
+                # a modal owns the main window, every further click is
+                # blocked and the frame no longer paints the box as checked
+                # (fa run 6da8ec2c, Spiral vase: label already orange, box
+                # 0.00 four times; on the guest the same tick read 0.88 by
+                # timing luck, run 680d5426). The state is the opposite of
+                # what it was; run_ops settles the box next and the saved
+                # project is the proof.
+                toggled = not (before > CHECKED_FRACTION)
+                print(f"[panel] checkbox {label_substr!r}: modal after the tick "
+                      f"-> taken as {toggled}", flush=True)
+                return toggled, rect
         time.sleep(0.8)
     return None, None
