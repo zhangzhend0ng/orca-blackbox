@@ -405,6 +405,72 @@
     "switch-support-before.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/switch_tab-230246-switch-support-before.panel.png",
     "switch-support-before.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/switch_tab-230246/switch_tab-230246-switch-support-before.png"
    }
+  },
+  "set_float": {
+   "op": "set_float",
+   "ok": true,
+   "sut": {
+    "version": "2.4.1"
+   },
+   "console_uid": 501,
+   "test_uid": 502,
+   "readback": {
+    "tab": "Quality",
+    "label": "Layer height",
+    "before": "0.4",
+    "ax_value": "0.2",
+    "painted": "0.2",
+    "title": "*probe",
+    "expected": "0.2"
+   },
+   "evidence": {
+    "parameter": "layer_height",
+    "click": [
+     615,
+     841
+    ],
+    "notes": [
+     {
+      "tab_click": [
+       402,
+       778
+      ]
+     }
+    ],
+    "screenshots": {
+     "before": "float-page.png",
+     "after": "float-after.png"
+    }
+   },
+   "shots": {
+    "entry": "entry.png",
+    "float-page-locate": "float-page-locate.png",
+    "float-page": "float-page.png",
+    "float-after": "float-after.png"
+   },
+   "geometry": {
+    "origin": [
+     360.0,
+     85.0
+    ],
+    "size": [
+     1200.0,
+     800.0
+    ]
+   },
+   "orca_left": [],
+   "finished_at": 1795446230.7074828,
+   "seconds": 38.0,
+   "screenshots": {
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_float-230350-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_float-230350/set_float-230350-entry.png",
+    "float-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_float-230350-float-after.panel.png",
+    "float-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_float-230350/set_float-230350-float-after.png",
+    "float-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_float-230350-float-page-locate.panel.png",
+    "float-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_float-230350/set_float-230350-float-page-locate.png",
+    "float-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/set_float-230350-float-page.panel.png",
+    "float-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/set_float-230350/set_float-230350-float-page.png"
+   }
   }
  },
  "attempts": [
@@ -426,6 +492,11 @@
   {
    "op": "switch_tab",
    "stamp": "230246",
+   "ok": true
+  },
+  {
+   "op": "set_float",
+   "stamp": "230350",
    "ok": true
   }
  ]
