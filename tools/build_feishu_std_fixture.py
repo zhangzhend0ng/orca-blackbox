@@ -37,6 +37,7 @@ import hashlib
 import io
 import json
 from pathlib import Path
+import re
 import sys
 import zipfile
 
@@ -147,13 +148,28 @@ def unescape(text):
     return "".join(out)
 
 
+DECIMAL_TEXT = re.compile(r"^-?\d+\.\d+$")
+
+
+def app_number(text):
+    """The app's spelling of a decimal number: no trailing zeros, no trailing '.0'.
+    A preset JSON writes top_shell_thickness as "1.0"; the project config the app
+    saves says "1" - the first save-only baseline on this fixture (VM 7b8a4e73)
+    failed the preserved-settings rule on exactly that key ("1.0" -> "1")."""
+    if isinstance(text, str) and DECIMAL_TEXT.match(text):
+        return "%.15g" % float(text)
+    return text
+
+
 def flatten(links, follow=True):
-    """The chain's settings, the child over the parent. follow=False reads the leaf alone."""
+    """The chain's settings, the child over the parent. follow=False reads the leaf
+    alone. Numbers are spelled the way the app writes them (app_number)."""
     values = {}
     for _path, layer in (reversed(links) if follow else links[:1]):
         values.update(layer)
-    plain = lambda value: unescape(value) if isinstance(value, str) else (
-        [unescape(entry) if isinstance(entry, str) else entry for entry in value] if isinstance(value, list) else value)
+    plain = lambda value: app_number(unescape(value)) if isinstance(value, str) else (
+        [app_number(unescape(entry)) if isinstance(entry, str) else entry for entry in value]
+        if isinstance(value, list) else value)
     return {key: plain(value) for key, value in values.items() if key not in PRESET_META}
 
 
