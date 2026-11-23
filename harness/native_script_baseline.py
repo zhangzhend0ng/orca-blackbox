@@ -236,32 +236,49 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             {"op": "rowcombo", "label": "Top surface pattern", "target": "Concentric"},
             {"op": "rowcombo", "label": "Bottom surface pattern", "target": "Rectilinear"},
         ],
+        # 2026-11-23 atlas + 2.3.5 census: the group is 'Bridging' (the wrong
+        # title made every op wheel for 420s, run eacfc6ff); the density row
+        # is 'External bridge density'; 'Max bridge length' has no row on
+        # the page (like raft_expansion) - op and value dropped.
         "uia_param_bridge": [
-            {"tab": "Quality", "tab_hint": "height", "op": "float", "label": "Bridge flow", "value": "1",
-             "group": "Bridge"},
-            {"op": "float", "label": "Bridge density", "value": "100", "group": "Bridge"},
-            {"op": "checkbox", "label": "Thick", "value": True, "group": "Bridge"},
-            {"op": "float", "label": "Max bridge length", "value": "30", "group": "Bridge"},
+            {"tab": "Quality", "tab_hint": "height", "op": "float",
+             "label": ["^Bridge flow", "flow"], "value": "1", "group": "Bridging"},
+            {"op": "float", "label": ["External bridge density", "density"], "value": "100",
+             "group": "Bridging"},
+            {"op": "checkbox", "label": "Thick", "value": True, "group": "Bridging"},
         ],
         "uia_param_first_speeds": [
             # Band evidence (run 5edba086): the Speed page rows read
             # "First layer speed / First layer infill / Initial layer travel";
             # travel is a coFloatsOrPercent stored with '%' (preset "80%").
+            # The first row of the Speed page is two-line: label 'First layer
+            # speed', its Edit ~34px lower (run 0b7886bc: row_y=730, Edit
+            # cy=764) - hence "below". The group 'Initial layer speed' is the
+            # page's FIRST group: at the page top its title rests above the
+            # visible band, so scroll_group_into_view could never satisfy its
+            # in-band test and wheeled for 2 x 420s per failed op - the real
+            # reason every #270 run looked wedged.
             {"tab": "Speed", "tab_hint": "speed", "op": "float",
-             "label": ["First layer speed", "Initial layer speed"], "value": "30",
+             "label": ["^First layer speed"], "value": "30",
+             "group": "Initial layer", "below": True},
+            {"op": "float", "label": "^First layer infill", "value": "40",
              "group": "Initial layer"},
-            {"op": "float", "label": ["First layer infill", "Initial layer infill"], "value": "40",
-             "group": "Initial layer"},
-            {"op": "float", "label": ["Initial layer travel", "First layer travel"], "value": "150%",
+            {"op": "float", "label": "^Initial layer travel", "value": "150%",
              "group": "Initial layer"},
         ],
+        # 2026-11-23: rows anchored to the line start and confined to the
+        # 'Other layers speed' group - the same labels exist in the
+        # Acceleration and Jerk groups (census + screenshot f0e683fb); the
+        # threshold row is 'Small perimeters threshold' (plural).
         "uia_param_feature_speeds": [
-            {"tab": "Speed", "tab_hint": "speed", "op": "float", "label": "Outer wall", "value": "100"},
-            {"op": "float", "label": "Inner wall", "value": "150"},
-            {"op": "float", "label": ["Sparse infill", "Infill"], "value": "200"},
-            {"op": "float", "label": "Top surface", "value": "120"},
-            {"op": "float", "label": ["Small perimeter threshold", "Small perimeter linewidth"], "value": "10"},
-            {"op": "float", "label": ["Small perimeter speed", "Small perimeter"], "value": "50"},
+            {"tab": "Speed", "tab_hint": "speed", "op": "float", "label": "^Outer wall",
+             "value": "100", "group": "Other layers speed"},
+            {"op": "float", "label": "^Inner wall", "value": "150", "group": "Other layers speed"},
+            {"op": "float", "label": "^Sparse infill", "value": "200", "group": "Other layers speed"},
+            {"op": "float", "label": "^Top surface", "value": "120", "group": "Other layers speed"},
+            {"op": "float", "label": ["^Small perimeters threshold", "threshold"], "value": "10",
+             "group": "Other layers speed"},
+            {"op": "float", "label": "^Small perimeters", "value": "50", "group": "Other layers speed"},
         ],
         "uia_param_fuzzy": [
             # atlas + band 244ae35e: the fuzzy rows are on the Others page
@@ -303,9 +320,12 @@ PARAM_OPS = {        "uia_param_ironing_top": [
              "group": "Acceleration"},
             {"op": "float", "label": ["Sparse infill", "Sparse infill acceleration"], "value": "5000",
              "group": "Acceleration"},
-            {"op": "float", "label": ["Initial layer", "Initial layer acceleration"], "value": "500",
+            # The Acceleration group paints 'First layer' (census: 'First
+            # layer 500'), and its 'Travel' row is the 9th row - beyond the
+            # first screen after the group title (run f149c3da).
+            {"op": "float", "label": ["^First layer", "^Initial layer"], "value": "500",
              "group": "Acceleration"},
-            {"op": "float", "label": ["Travel", "Travel acceleration"], "value": "8000",
+            {"op": "float", "label": "^Travel", "value": "8000",
              "group": "Acceleration"},
         ],
         "uia_param_skirt": [
@@ -321,10 +341,11 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             # Brim-width Edit renders DISABLED under auto_brim (runs
             # c84c9bd9/a97ed9b7: param_uia_field 0 matches); pick the type
             # first so the row edits enable.
-            {"tab": "Others", "op": "rowcombo", "label": "Brim type", "target": "Outer only",
+            {"tab": "Others", "op": "rowcombo", "label": "^Brim type", "target": "Outer only",
              "group": "Brim"},
-            {"op": "float", "label": "Brim width", "value": "5", "group": "Brim"},
-            {"op": "float", "label": "Brim object gap", "value": "0.2", "group": "Brim"},
+            {"op": "float", "label": "^Brim width", "value": "5", "group": "Brim"},
+            # The row paints 'Brim-object gap' (hyphen; screenshot f0e683fb).
+            {"op": "float", "label": "gap", "value": "0.2", "group": "Brim"},
         ],
         # Feishu #276 (snapshot line 195): the table's filament/machine-scope
         # keys (filament_max_volumetric_speed, machine_max_speed_x) are not
@@ -332,10 +353,11 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         "uia_param_speed_limits": [
             {"tab": "Quality", "tab_hint": "height", "op": "float",
              "label": ["Layer height", "layer height"], "value": "0.2"},
-            {"op": "float", "label": ["Outer wall line width", "Outer wall"], "value": "0.42",
-             "group": "Advanced"},
+            {"op": "float", "label": ["Outer wall line width", "^Outer wall"], "value": "0.42",
+             "group": "Line width"},
             {"tab": "Speed", "tab_hint": "speed", "op": "float",
-             "label": ["Outer wall speed", "Outer wall"], "value": "700"},
+             "label": ["Outer wall speed", "^Outer wall"], "value": "700",
+             "group": "Other layers speed"},
         ],
         # Feishu #277 (line 196): enable/threshold/type; the two '0' flags are
         # already at target in the fixture config - no ops for them.
@@ -374,9 +396,11 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         ],
         # Feishu #292 (line 211): clearance rows appear once by-object is set.
         "uia_param_by_object": [
-            # Band 244ae35e: the row is 'Print sequence' with painted value
-            # 'Intra-layer order' (not 'By layer' as the table assumed).
-            {"tab": "Others", "op": "combo", "current": "Intra-layer",
+            # 2026-11-23 screenshot f0e683fb: 'Print sequence' paints
+            # 'By Layer'; 'Intra-layer order' is the NEXT row (an earlier
+            # OCR band had glued the two rows together). The value is two
+            # words, so the anchor is a word SEQUENCE.
+            {"tab": "Others", "op": "combo", "current": ("By", "Layer"),
              "target": "By object", "group": "Special mode"},
             # 2026-11-23 atlas: the extruder-clearance rows live on the
             # PRINTER settings page (Basic information) - unreachable from
@@ -426,7 +450,9 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         "uia_param_seam_wipe": [
             {"tab": "Quality", "tab_hint": "height", "op": "checkbox", "label": "Role",
              "value": False, "group": "Seam"},
-            {"op": "float", "label": "Wipe speed", "value": "50", "group": "Seam"},
+            # '^': plain 'Wipe speed' resolved inside the previous row's
+            # 'Role based wipe speed' (checkbox, run 13613ac7).
+            {"op": "float", "label": "^Wipe speed", "value": "50", "group": "Seam"},
             {"op": "checkbox", "label": "Role", "value": True, "group": "Seam"},
             {"op": "checkbox", "label": "loops", "value": True, "group": "Seam"},
         ],
@@ -650,9 +676,13 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         # 'Filament for Features') and support_interface_filament already
         # 0 - assertion-only; the single op is the proven #279 support
         # body rowcombo.
+        # 2026-11-23 atlas: wipe_tower_filament is the 'Wipe tower' row of
+        # MULTIMATERIAL / 'Filament for Features'. On the Support tab the
+        # word 'filament' only hit the group TITLE 'Filament for Supports'
+        # (no combo there - run be75f8b8: param_combo_popup).
         "uia_param_filament_features": [
-            {"tab": "Support", "tab_hint": "support", "op": "rowcombo",
-             "label": "filament", "target": "1", "group": "Support"},
+            {"tab": "Multimaterial", "op": "rowcombo",
+             "label": ["^Wipe tower", "tower"], "target": "1", "group": "Filament for Features"},
         ],
         # Feishu #286 (line 205): flush_into_support already 1 - no op.
         # 'objects' containment hits the infill row (group's first row,
@@ -699,6 +729,20 @@ PARAM_OPS = {        "uia_param_ironing_top": [
 }
 
 
+def _save_failure_shot(ui, scenario):
+    """Screenshot of the sidebar at the moment a param case failed. The OCR
+    band text in the log is ambiguous (run f0e683fb: 'Print sequence
+    Intra-layer order' read as one value was two rows), the picture is not.
+    Saved under the run's artifacts root and picked up by hv_harvest."""
+    try:
+        from PIL import Image
+        from . import process_panel as pp
+        Image.fromarray(pp.capture_bgr(ui.app)[:, :, ::-1]).save(ui.artifacts / "param_failure.png")
+        print("[param] failure screenshot: %s" % (ui.artifacts / "param_failure.png"), flush=True)
+    except Exception as exc:
+        print("[param] failure screenshot failed: %s" % type(exc).__name__, flush=True)
+
+
 def edit_param_cases(ui, scenario):
     """Feishu 常用工艺参数 supplement cases (declarative process-panel ops)."""
     from .param_case_lib import run_ops
@@ -711,6 +755,7 @@ def edit_param_cases(ui, scenario):
     except Exception:
         import traceback
         traceback.print_exc()
+        _save_failure_shot(ui, scenario)
         raise
 
 

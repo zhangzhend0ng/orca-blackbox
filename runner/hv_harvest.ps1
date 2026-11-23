@@ -181,7 +181,7 @@ elseif ($WindowsMcpRunId) {
     }
     # Never harvest the run's authentication token or config/profile files.
     $names=@('process.json','worker.json','worker.log','server.log','ready.json')
-    if($nativeSave){$names=@('canvas_diagnostic.json','setup.json','control_cancel.json','process.json','proof.json','native_worker.json','native_worker.log','native_trace.ndjson','host_done.json','scope.json','server.log','ready.json','initial.png','agent_final.png','proof_final.png','projects/0001.3mf','proof/0001.3mf','exports/0001.gcode')}
+    if($nativeSave){$names=@('canvas_diagnostic.json','setup.json','control_cancel.json','process.json','proof.json','native_worker.json','native_worker.log','native_trace.ndjson','host_done.json','scope.json','server.log','ready.json','initial.png','agent_final.png','param_failure.png','proof_final.png','projects/0001.3mf','proof/0001.3mf','exports/0001.gcode')}
     if($nativeSave){
       $names+=@('canvas_setup.json','authority_abort.json','authority_probe.json','desktop_video.json','desktop.mp4','mix_controls.ndjson',
                 'fixture_suite.json','fixture_case.json','input/fixture.3mf','initial_state.3mf','resolved_plan.json',

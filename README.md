@@ -24,7 +24,7 @@ v3 运行骨架入口见 [架构设计](docs/V3_RUNTIME_ARCHITECTURE.md) 和 [�
 
 原生 Codex + Windows-MCP 的编辑保存业务 demo 见 [冻结路线与验收](docs/V3_NATIVE_SAVE_DEMO.md)，宿主入口 `python -B tools/native_save_demo.py`。AI 自主保存后，由停止输入后的可信阶段独立重开、切片导出，统一复用 run_once；已完成一次真实客机 SHADOW，首轮收尾失败保留，见 [两轮运行记录](docs/runs/native-save-2026-11-17.md)，不能计发布 GREEN。
 
-Mac 后台工程编辑用例从原始立方体切片开始，以新名字编辑并保存副本，再用独立进程重开切片。入口为 [macos_project_copy.py](runner/macos_project_copy.py)。Windows 和 Mac 的候选运行用[构建报告工具](tools/gui_build_report.py)汇总。[跨平台回归安排](docs/V3_PLAN.md#9-跨平台-gui-回归安排) · [本轮命令和实机证据](docs/runs/gui-layer-candidate-2026-11-20.md)。walls 目标（壁环数 2→3）已在该入口取得首次 SHADOW：屏录+OCR 通道解锁自绘 Strength 页签与行寻址，保存期配置迁移噪声以异键编辑对照实验证后由差分判据收敛（run 306d3efe，仅计 SHADOW）；[运行记录](docs/runs/mac-author-walls-2026-11-23.md)
+Mac 后台工程编辑用例从原始立方体切片开始，以新名字编辑并保存副本，再用独立进程重开切片。入口为 [macos_project_copy.py](runner/macos_project_copy.py)。Windows 和 Mac 的候选运行用[构建报告工具](tools/gui_build_report.py)汇总。[跨平台回归安排](docs/V3_PLAN.md#9-跨平台-gui-回归安排) · [本轮命令和实机证据](docs/runs/gui-layer-candidate-2026-11-20.md)。walls 目标（壁环数 2→3）已在该入口取得首次 SHADOW（**Mac 口径**：macOS / Orca 2.4.1，仅计 SHADOW，不计入 Windows 参数族）：屏录+OCR 通道解锁自绘 Strength 页签与行寻址；判据是差分判据 `verify_walls_differential`（Windows 轨道判据会拒绝 2.4.1 保存期的配置迁移噪声），该判据经 52 项负对照验证——基线自身、只改别的键、壁环数 3 并夹带无关改动、壁环数 4 全部被拒，宿主在 Mac 上独立重跑复现（run 306d3efe）。保留项：界面读回是「读到期望值才落账」的闸门而非测量；GUI 导出 G-code 未测；[运行记录](docs/runs/mac-author-walls-2026-11-23.md) · [负对照证据](docs/runs/evidence/mac-walls-a6-negative-controls-2026-11-23/README.md)
 
 当前指定的 **ZCode / Snapmaker glm-5.3-flash** 路线入口为 `python -B tools/native_save_demo.py --actor zcode`；[接口与边界](docs/V3_ZCODE_ACTOR.md)。已通过一次真实客机编辑保存、新profile重开及112层G-code独立验证；五个开发失败run保留，详见[运行记录](docs/runs/zcode-snapmaker-2026-11-17.md)。使用现有公司供应商配置，仅计SHADOW，不进入发布GREEN。
 

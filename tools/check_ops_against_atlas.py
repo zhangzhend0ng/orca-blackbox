@@ -28,11 +28,14 @@ def label_matches(variant, label):
     """Engine semantics: single word -> substring; multi-word -> the label's
     word sequence must have some word starting the variant's first word and
     the joined tail must start with the variant."""
-    want = variant.lower().split()
+    # A leading '^' anchors the label to the start of its row (engine
+    # semantics, _find_phrase_row): only the row's first word may start it.
+    anchored = variant.startswith("^")
+    want = variant.lstrip("^").lower().split()
     words = label.lower().split()
     if len(want) == 1:
-        return any(want[0] in w for w in words)
-    for i in range(len(words)):
+        return (want[0] in words[0]) if anchored else any(want[0] in w for w in words)
+    for i in range(0 if anchored else len(words), len(words)):
         if words[i].startswith(want[0]):
             if " ".join(words[i:i + len(want)]).startswith(" ".join(want)):
                 return True
@@ -129,6 +132,25 @@ def main():
             if key not in ROWS:
                 problems.append(f"pilot {cid}: VALUES key {key!r} NOT a config def "
                                 f"(key-name error, precedent infill_wall_overlap)")
+    # op 'group' must be a real group title on that page: a missing title
+    # made scroll_group_into_view wheel until its 420s timeout (#263 'Bridge'
+    # vs 'Bridging', #276 'Advanced' on Quality). A combo 'current' given as
+    # a multi-word STRING can never be inside one OCR word - it must be a
+    # word-sequence tuple.
+    for scenario, ops in sorted(PARAM_OPS.items()):
+        tab = None
+        for i, op in enumerate(ops):
+            tab = op.get("tab") or tab
+            group = op.get("group")
+            if group and tab:
+                titles = [g.get("title") for g in ATLAS["pages"].get(tab, [])]
+                if not any(group.lower() in (t or "").lower() for t in titles):
+                    problems.append(f"{scenario} op[{i}] group {group!r}: no such group title on "
+                                    f"tab {tab!r} (titles: {titles})")
+            current = op.get("current")
+            if op.get("op") == "combo" and isinstance(current, str) and " " in current.strip():
+                problems.append(f"{scenario} op[{i}] combo current {current!r}: a multi-word string "
+                                f"never matches one OCR word - use a tuple")
     print(f"checked {len(PARAM_OPS)} scenarios")
     if problems:
         print(f"{len(problems)} label problems:")

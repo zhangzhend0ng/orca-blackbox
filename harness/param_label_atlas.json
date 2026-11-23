@@ -19,26 +19,26 @@
     "Filament",
     "Cooling",
     "Advanced",
-    "Multimaterial",
-    "Dependencies",
+    "Multimaterial#2",
+    "Dependencies#2",
     "Notes",
     "Basic information",
     "Machine G-code",
-    "Notes",
-    "Dependencies",
+    "Notes#2",
+    "Dependencies#3",
     "General",
-    "Dependencies",
+    "Dependencies#4",
     "Motion ability",
     "Material",
-    "Dependencies",
+    "Dependencies#5",
     "Material printing profile",
     "Layers and perimeters",
     "Supports",
     "Pad",
     "Hollowing",
-    "Advanced",
+    "Advanced#2",
     "Output options",
-    "Dependencies"
+    "Dependencies#6"
    ]
   }
  },
@@ -964,9 +964,12 @@
    "label": "Condition",
    "advanced": true,
    "tabs": [
-    "Dependencies"
+    "Dependencies",
+    "Dependencies#2",
+    "Dependencies#5",
+    "Dependencies#6"
    ],
-   "tab": "Dependencies",
+   "tab": "Dependencies#6",
    "group": "Profile dependencies"
   },
   "compatible_prints": {
@@ -979,9 +982,10 @@
    "label": "Condition",
    "advanced": true,
    "tabs": [
-    "Dependencies"
+    "Dependencies#2",
+    "Dependencies#5"
    ],
-   "tab": "Dependencies",
+   "tab": "Dependencies#5",
    "group": "Profile dependencies"
   },
   "compatible_machine_expression_group": {
@@ -1843,9 +1847,9 @@
    "label": "Loading speed",
    "advanced": true,
    "tabs": [
-    "Multimaterial"
+    "Multimaterial#2"
    ],
-   "tab": "Multimaterial",
+   "tab": "Multimaterial#2",
    "group": "Tool change parameters with single extruder MM printers",
    "label_path": "semm"
   },
@@ -1854,9 +1858,9 @@
    "label": "Loading speed at the start",
    "advanced": true,
    "tabs": [
-    "Multimaterial"
+    "Multimaterial#2"
    ],
-   "tab": "Multimaterial",
+   "tab": "Multimaterial#2",
    "group": "Tool change parameters with single extruder MM printers",
    "label_path": "semm"
   },
@@ -1865,9 +1869,9 @@
    "label": "Unloading speed",
    "advanced": true,
    "tabs": [
-    "Multimaterial"
+    "Multimaterial#2"
    ],
-   "tab": "Multimaterial",
+   "tab": "Multimaterial#2",
    "group": "Tool change parameters with single extruder MM printers",
    "label_path": "semm"
   },
@@ -1876,9 +1880,9 @@
    "label": "Unloading speed at the start",
    "advanced": true,
    "tabs": [
-    "Multimaterial"
+    "Multimaterial#2"
    ],
-   "tab": "Multimaterial",
+   "tab": "Multimaterial#2",
    "group": "Tool change parameters with single extruder MM printers",
    "label_path": "semm"
   },
@@ -1887,9 +1891,9 @@
    "label": "Delay after unloading",
    "advanced": true,
    "tabs": [
-    "Multimaterial"
+    "Multimaterial#2"
    ],
-   "tab": "Multimaterial",
+   "tab": "Multimaterial#2",
    "group": "Tool change parameters with single extruder MM printers",
    "label_path": "semm"
   },
@@ -1898,9 +1902,9 @@
    "label": "Number of cooling moves",
    "advanced": true,
    "tabs": [
-    "Multimaterial"
+    "Multimaterial#2"
    ],
-   "tab": "Multimaterial",
+   "tab": "Multimaterial#2",
    "group": "Tool change parameters with single extruder MM printers",
    "label_path": "semm"
   },
@@ -1909,9 +1913,9 @@
    "label": "Stamping loading speed",
    "advanced": true,
    "tabs": [
-    "Multimaterial"
+    "Multimaterial#2"
    ],
-   "tab": "Multimaterial",
+   "tab": "Multimaterial#2",
    "group": "Tool change parameters with single extruder MM printers"
   },
   "filament_stamping_distance": {
@@ -1919,9 +1923,9 @@
    "label": "Stamping distance measured from the center of the cooling tube",
    "advanced": true,
    "tabs": [
-    "Multimaterial"
+    "Multimaterial#2"
    ],
-   "tab": "Multimaterial",
+   "tab": "Multimaterial#2",
    "group": "Tool change parameters with single extruder MM printers"
   },
   "filament_tower_interface_pre_extrusion_dist": {
@@ -1965,9 +1969,9 @@
    "label": "Speed of the first cooling move",
    "advanced": true,
    "tabs": [
-    "Multimaterial"
+    "Multimaterial#2"
    ],
-   "tab": "Multimaterial",
+   "tab": "Multimaterial#2",
    "group": "Tool change parameters with single extruder MM printers",
    "label_path": "semm"
   },
@@ -1976,9 +1980,9 @@
    "label": "Minimal purge on wipe tower",
    "advanced": true,
    "tabs": [
-    "Multimaterial"
+    "Multimaterial#2"
    ],
-   "tab": "Multimaterial",
+   "tab": "Multimaterial#2",
    "group": "Wipe tower parameters"
   },
   "filament_cooling_final_speed": {
@@ -1986,9 +1990,9 @@
    "label": "Speed of the last cooling move",
    "advanced": true,
    "tabs": [
-    "Multimaterial"
+    "Multimaterial#2"
    ],
-   "tab": "Multimaterial",
+   "tab": "Multimaterial#2",
    "group": "Tool change parameters with single extruder MM printers",
    "label_path": "semm"
   },
@@ -2002,9 +2006,9 @@
    "label": "Enable ramming for multi-tool setups",
    "advanced": true,
    "tabs": [
-    "Multimaterial"
+    "Multimaterial#2"
    ],
-   "tab": "Multimaterial",
+   "tab": "Multimaterial#2",
    "group": "Tool change parameters with multi extruder MM printers"
   },
   "filament_multitool_ramming_volume": {
@@ -2012,9 +2016,9 @@
    "label": "Multi-tool ramming volume",
    "advanced": true,
    "tabs": [
-    "Multimaterial"
+    "Multimaterial#2"
    ],
-   "tab": "Multimaterial",
+   "tab": "Multimaterial#2",
    "group": "Tool change parameters with multi extruder MM printers"
   },
   "filament_multitool_ramming_flow": {
@@ -2022,9 +2026,9 @@
    "label": "Multi-tool ramming flow",
    "advanced": true,
    "tabs": [
-    "Multimaterial"
+    "Multimaterial#2"
    ],
-   "tab": "Multimaterial",
+   "tab": "Multimaterial#2",
    "group": "Tool change parameters with multi extruder MM printers"
   },
   "filament_density": {
@@ -4310,9 +4314,9 @@
    "label": "Printer notes",
    "advanced": true,
    "tabs": [
-    "Notes"
+    "Notes#2"
    ],
-   "tab": "Notes",
+   "tab": "Notes#2",
    "group": "Notes"
   },
   "printer_variant": {
@@ -5192,9 +5196,9 @@
    "advanced": true,
    "tabs": [
     "Quality",
-    "Advanced"
+    "Advanced#2"
    ],
-   "tab": "Advanced",
+   "tab": "Advanced#2",
    "group": "Slicing",
    "label_path": "quality_settings_precision#slice-gap-closing-radius"
   },
@@ -5215,9 +5219,9 @@
    "advanced": true,
    "tabs": [
     "Others",
-    "Advanced"
+    "Advanced#2"
    ],
-   "tab": "Advanced",
+   "tab": "Advanced#2",
    "group": "Slicing",
    "label_path": "others_settings_special_mode#slicing-mode"
   },
@@ -9139,72 +9143,211 @@
   ],
   "Multimaterial": [
    {
-    "title": "Wipe tower parameters",
+    "title": "Prime tower",
     "rows": [
      {
-      "key": "filament_minimal_purge_on_wipe_tower",
-      "label_path": null
+      "key": "enable_prime_tower",
+      "label_path": "multimaterial_settings_prime_tower"
+     },
+     {
+      "key": "prime_tower_width",
+      "label_path": "multimaterial_settings_prime_tower#width"
+     },
+     {
+      "key": "prime_volume",
+      "label_path": "multimaterial_settings_prime_tower"
+     },
+     {
+      "key": "prime_tower_brim_width",
+      "label_path": "multimaterial_settings_prime_tower#brim-width"
+     },
+     {
+      "key": "prime_tower_brim_chamfer",
+      "label_path": "multimaterial_settings_prime_tower#brim-chamfer"
+     },
+     {
+      "key": "prime_tower_brim_chamfer_max_width",
+      "label_path": "multimaterial_settings_prime_tower#brim-chamfer-max-width"
+     },
+     {
+      "key": "wipe_tower_bridging",
+      "label_path": "multimaterial_settings_prime_tower#maximal-bridging-distance"
+     },
+     {
+      "key": "wipe_tower_extra_spacing",
+      "label_path": "multimaterial_settings_prime_tower#wipe-tower-purge-lines-spacing"
+     },
+     {
+      "key": "wipe_tower_extra_flow",
+      "label_path": "multimaterial_settings_prime_tower#extra-flow-for-purge"
+     },
+     {
+      "key": "wipe_tower_max_purge_speed",
+      "label_path": "multimaterial_settings_prime_tower#maximum-wipe-tower-print-speed"
+     },
+     {
+      "key": "wipe_tower_wall_type",
+      "label_path": "multimaterial_settings_prime_tower#wall-type"
+     },
+     {
+      "key": "wipe_tower_cone_angle",
+      "label_path": "multimaterial_settings_prime_tower#stabilization-cone-apex-angle"
+     },
+     {
+      "key": "wipe_tower_extra_rib_length",
+      "label_path": "multimaterial_settings_prime_tower#extra-rib-length"
+     },
+     {
+      "key": "wipe_tower_rib_width",
+      "label_path": "multimaterial_settings_prime_tower#rib-width"
+     },
+     {
+      "key": "wipe_tower_fillet_wall",
+      "label_path": "multimaterial_settings_prime_tower#fillet-wall"
+     },
+     {
+      "key": "wipe_tower_no_sparse_layers",
+      "label_path": "multimaterial_settings_prime_tower#no-sparse-layers"
+     },
+     {
+      "key": "wipe_tower_wall_gap",
+      "label_path": "multimaterial_settings_prime_tower#wall-gap"
+     },
+     {
+      "key": "prime_tower_enable_framework",
+      "label_path": "multimaterial_settings_prime_tower"
+     },
+     {
+      "key": "enable_tower_interface_features",
+      "label_path": "multimaterial_settings_prime_tower"
+     },
+     {
+      "key": "enable_tower_interface_cooldown_during_tower",
+      "label_path": "multimaterial_settings_prime_tower"
+     },
+     {
+      "key": "single_extruder_multi_material_priming",
+      "label_path": "multimaterial_settings_prime_tower"
      }
     ]
    },
    {
-    "title": "Tool change parameters with single extruder MM printers",
+    "title": "Filament for Features",
     "rows": [
      {
-      "key": "filament_loading_speed_start",
-      "label_path": "semm"
+      "key": "wall_filament",
+      "label_path": "multimaterial_settings_filament_for_features#walls"
      },
      {
-      "key": "filament_loading_speed",
-      "label_path": "semm"
+      "key": "sparse_infill_filament",
+      "label_path": "multimaterial_settings_filament_for_features#infill"
      },
      {
-      "key": "filament_unloading_speed_start",
-      "label_path": "semm"
+      "key": "solid_infill_filament",
+      "label_path": "multimaterial_settings_filament_for_features#solid-infill"
      },
      {
-      "key": "filament_unloading_speed",
-      "label_path": "semm"
-     },
-     {
-      "key": "filament_toolchange_delay",
-      "label_path": "semm"
-     },
-     {
-      "key": "filament_cooling_moves",
-      "label_path": "semm"
-     },
-     {
-      "key": "filament_cooling_initial_speed",
-      "label_path": "semm"
-     },
-     {
-      "key": "filament_cooling_final_speed",
-      "label_path": "semm"
-     },
-     {
-      "key": "filament_stamping_loading_speed",
-      "label_path": null
-     },
-     {
-      "key": "filament_stamping_distance",
-      "label_path": null
+      "key": "wipe_tower_filament",
+      "label_path": "multimaterial_settings_filament_for_features#wipe-tower"
      }
     ]
    },
    {
-    "title": "Tool change parameters with multi extruder MM printers",
+    "title": "Ooze prevention",
     "rows": [
      {
-      "key": "filament_multitool_ramming",
+      "key": "ooze_prevention",
+      "label_path": "multimaterial_settings_ooze_prevention"
+     },
+     {
+      "key": "standby_temperature_delta",
+      "label_path": "multimaterial_settings_ooze_prevention#temperature-variation"
+     },
+     {
+      "key": "preheat_time",
+      "label_path": "multimaterial_settings_ooze_prevention#preheat-time"
+     },
+     {
+      "key": "preheat_steps",
+      "label_path": "multimaterial_settings_ooze_prevention#preheat-steps"
+     },
+     {
+      "key": "delta_temperature",
+      "label_path": "multimaterial_settings_ooze_prevention#delta-temperature"
+     }
+    ]
+   },
+   {
+    "title": "Flush options",
+    "rows": [
+     {
+      "key": "flush_into_infill",
+      "label_path": "multimaterial_settings_flush_options#flush-into-objects-infill"
+     },
+     {
+      "key": "flush_into_objects",
+      "label_path": "multimaterial_settings_flush_options"
+     },
+     {
+      "key": "flush_into_support",
+      "label_path": "multimaterial_settings_flush_options#flush-into-objects-support"
+     }
+    ]
+   },
+   {
+    "title": "Advanced",
+    "rows": [
+     {
+      "key": "interlocking_beam",
+      "label_path": "multimaterial_settings_advanced#interlocking-beam"
+     },
+     {
+      "key": "interface_shells",
+      "label_path": "multimaterial_settings_advanced#interface-shells"
+     },
+     {
+      "key": "mmu_segmented_region_max_width",
+      "label_path": "multimaterial_settings_advanced#maximum-width-of-segmented-region"
+     },
+     {
+      "key": "mmu_segmented_region_interlocking_depth",
+      "label_path": "multimaterial_settings_advanced#interlocking-depth-of-segmented-region"
+     },
+     {
+      "key": "interlocking_beam_width",
+      "label_path": "multimaterial_settings_advanced#interlocking-beam-width"
+     },
+     {
+      "key": "interlocking_orientation",
+      "label_path": "multimaterial_settings_advanced#interlocking-direction"
+     },
+     {
+      "key": "interlocking_beam_layer_count",
+      "label_path": "multimaterial_settings_advanced#interlocking-beam-layers"
+     },
+     {
+      "key": "interlocking_depth",
+      "label_path": "multimaterial_settings_advanced#interlocking-depth"
+     },
+     {
+      "key": "interlocking_boundary_avoidance",
+      "label_path": "multimaterial_settings_advanced#interlocking-boundary-avoidance"
+     }
+    ]
+   },
+   {
+    "title": "Color Mixing (Experimental)",
+    "rows": [
+     {
+      "key": "dithering_local_z_mode",
       "label_path": null
      },
      {
-      "key": "filament_multitool_ramming_volume",
+      "key": "dithering_local_z_whole_objects",
       "label_path": null
      },
      {
-      "key": "filament_multitool_ramming_flow",
+      "key": "dithering_local_z_infill",
       "label_path": null
      }
     ]
@@ -9817,14 +9960,112 @@
   ],
   "Advanced": [
    {
-    "title": "Slicing",
+    "title": "Filament start G-code",
     "rows": [
      {
-      "key": "slice_closing_radius",
+      "key": "filament_start_gcode",
+      "label_path": null
+     }
+    ]
+   },
+   {
+    "title": "Filament end G-code",
+    "rows": [
+     {
+      "key": "filament_end_gcode",
+      "label_path": null
+     }
+    ]
+   }
+  ],
+  "Multimaterial#2": [
+   {
+    "title": "Wipe tower parameters",
+    "rows": [
+     {
+      "key": "filament_minimal_purge_on_wipe_tower",
+      "label_path": null
+     }
+    ]
+   },
+   {
+    "title": "Tool change parameters with single extruder MM printers",
+    "rows": [
+     {
+      "key": "filament_loading_speed_start",
+      "label_path": "semm"
+     },
+     {
+      "key": "filament_loading_speed",
+      "label_path": "semm"
+     },
+     {
+      "key": "filament_unloading_speed_start",
+      "label_path": "semm"
+     },
+     {
+      "key": "filament_unloading_speed",
+      "label_path": "semm"
+     },
+     {
+      "key": "filament_toolchange_delay",
+      "label_path": "semm"
+     },
+     {
+      "key": "filament_cooling_moves",
+      "label_path": "semm"
+     },
+     {
+      "key": "filament_cooling_initial_speed",
+      "label_path": "semm"
+     },
+     {
+      "key": "filament_cooling_final_speed",
+      "label_path": "semm"
+     },
+     {
+      "key": "filament_stamping_loading_speed",
       "label_path": null
      },
      {
-      "key": "slicing_mode",
+      "key": "filament_stamping_distance",
+      "label_path": null
+     }
+    ]
+   },
+   {
+    "title": "Tool change parameters with multi extruder MM printers",
+    "rows": [
+     {
+      "key": "filament_multitool_ramming",
+      "label_path": null
+     },
+     {
+      "key": "filament_multitool_ramming_volume",
+      "label_path": null
+     },
+     {
+      "key": "filament_multitool_ramming_flow",
+      "label_path": null
+     }
+    ]
+   }
+  ],
+  "Dependencies#2": [
+   {
+    "title": "Compatible printers",
+    "rows": [
+     {
+      "key": "compatible_printers_condition",
+      "label_path": null
+     }
+    ]
+   },
+   {
+    "title": "Compatible process profiles",
+    "rows": [
+     {
+      "key": "compatible_prints_condition",
       "label_path": null
      }
     ]
@@ -9835,7 +10076,7 @@
     "title": "Notes",
     "rows": [
      {
-      "key": "printer_notes",
+      "key": "filament_notes",
       "label_path": null
      }
     ]
@@ -10105,6 +10346,18 @@
     ]
    }
   ],
+  "Notes#2": [
+   {
+    "title": "Notes",
+    "rows": [
+     {
+      "key": "printer_notes",
+      "label_path": null
+     }
+    ]
+   }
+  ],
+  "Dependencies#3": [],
   "General": [
    {
     "title": "Size and coordinates",
@@ -10208,6 +10461,7 @@
     ]
    }
   ],
+  "Dependencies#4": [],
   "Motion ability": [
    {
     "title": "Advanced",
@@ -10364,6 +10618,21 @@
      },
      {
       "key": "initial_exposure_time",
+      "label_path": null
+     }
+    ]
+   }
+  ],
+  "Dependencies#5": [
+   {
+    "title": "Profile dependencies",
+    "rows": [
+     {
+      "key": "compatible_printers_condition",
+      "label_path": null
+     },
+     {
+      "key": "compatible_prints_condition",
       "label_path": null
      }
     ]
@@ -10580,12 +10849,38 @@
     ]
    }
   ],
+  "Advanced#2": [
+   {
+    "title": "Slicing",
+    "rows": [
+     {
+      "key": "slice_closing_radius",
+      "label_path": null
+     },
+     {
+      "key": "slicing_mode",
+      "label_path": null
+     }
+    ]
+   }
+  ],
   "Output options": [
    {
     "title": "Output file",
     "rows": [
      {
       "key": "filename_format",
+      "label_path": null
+     }
+    ]
+   }
+  ],
+  "Dependencies#6": [
+   {
+    "title": "Profile dependencies",
+    "rows": [
+     {
+      "key": "compatible_printers_condition",
       "label_path": null
      }
     ]

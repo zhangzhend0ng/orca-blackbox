@@ -339,3 +339,53 @@ batch2 四例与两个老卡点的全部证据就绪；引擎与注册链完好�
 **楔子（宿主侧 launch 链）未根除**：本窗口发生率 ~25%（租约修复前 ~40%）；签名=hv_go 全输出而 launch_done 未写、客机无 run 目录。已缓解：900→620s 看门狗+即时重试（queue14 起 rc=124 也重试）。根因候选：提权子进程在 hv_go 返回后、写 launch_done 前被外部终止——下一窗口用 Sysmon/ETW 跟踪。
 
 **下一批**：①终层校准（layer density 二词变体、clearance 行、checkbox 回读、slice_button）；②楔子 ETW 根因；③P0-3 签核转正+写回工单执行（6 行）；④Mac TCC 人工决策。
+
+
+## 续二：模型切换、Mac 负对照、引擎根因批（2026-11-23 15:15–17:45，GLM 5.4 总控）
+
+**参数族闭环数不变：9/44（Windows 冻结构建 SHADOW）。本节没有新增 Windows SHADOW。**
+
+**模型**：两台靶机的 `new-provider` 登记 `glm-5.4` 并设为默认；`teammate_loop2.py` 改为钉死并核验模型（建会话回执 / 应答消息 / 请求三者一致才执行，默认不回退）。靶机 bundle 0.17.3 对 5.4 只有 `disabled/enabled` 两档，且显式指定的档位不会保存到会话上（回合一开始即 `Reasoning level is required`），所以走「不带模型建会话 + 核验会话模型」。fa 普查 E2/E3 与 Mac A6 三个真实任务均由 glm-5.4 完成。
+
+**fa 标签普查**（fa706g3，Orca 2.3.5-nightly，校准口径，非回归证据；`docs/runs/evidence/fa706g3-label-census-2026-11-23/`）：
+
+| 页 | 行数 | 其中标签样 | complete |
+|---|---:|---:|---|
+| Quality | 102 | 74 | （首轮，无此字段） |
+| Strength | 61 | 46 | （首轮，无此字段） |
+| Speed | 79 | 65 | true（两轮停在 1240/1240px） |
+| Support | 51 | 39 | true（780/780） |
+| Multimaterial | 61 | 42 | true（880/880） |
+| Others | 66 | 54 | **false**（15 分钟页预算在第二轮 1320px 处用完；尾部 y>1800 两轮坐标差约 100px，有重复行） |
+
+普查直接回答的事实：
+- **Others 页没有 `Add line number` 行**。G-code 输出组整组是 Reduce infill retraction / Verbose G-code / Label objects / Exclude objects / Filename format；对 163 张帧裁图做不带过滤的离线重读，`line number` 零命中。VM 2.4.0 的全页扫描同样没找到。**#296 的行号操作不在工艺参数页**，属用例范围问题。
+- **Others 页没有 `Timelapse` 行**（同法零命中）。#294 延时摄影不属工艺参数页。
+- `Flush into this object` 在 2.3.5 不存在（2.4.0 源码有，版本差异）；支撑冲刷行的真实行名是 `Flush into objects' support`。
+- 新种子配置启动后页签只有五个、没有 Speed，点一次 Advanced 才出现六个；切页签不回页顶（滚动位置跨页签共享）；Others 页大片区域吞滚轮。
+
+**Mac 壁环数 2→3（run 306d3efe）——记为 Mac 口径 SHADOW，带保留项，不计入 44 条**：
+- 判据是 agent 自写的差分判据 `verify_walls_differential`：原 Windows 轨道判据拒绝了 2.4.1 保存期的配置迁移噪声（新增 24 键、46 个向量迁移、预设改名、模板 G-code 刷新）。共享的 `harness/pilot_common.py` 未被改动。
+- A6 负对照 52 项：45 项必须项里只有真实 run（A）与由基线重建的正确配置（X4）通过，43 项拒绝；B（基线自身）/ D（只改别的键）/ E（壁环数 3 并夹带 5 个无关改动）/ F（壁环数 4）全部拒绝。宿主在 Mac 上独立重跑该脚本，52 项判定、错误码与输入哈希逐项一致。
+- 保留项（A6 自列，照录）：界面读回 2/3/3 是「读到期望值才落账」的闸门，不是测量，数值的独立佐证来自保存件与 G-code 回显；G-code 取自切片器打开的盘面文件，GUI「导出 G-code」未测；只证明了这一个判据函数，其后的宿主检查没在构造件上执行；首跑 ffe0c6e4 的 NON_GREEN 不改写。SUT 为 macOS / Orca 2.4.1。
+
+**引擎根因批**（`C:\coil\vm_setup\fleet_prompts\apply_calibration_r3.py`，31 处断言式替换，任何锚点对不上即整体中止；离线模拟测试 `test_calibration_r3_sim.py`：真实工作树 15/15 通过，原版 8 项变红）：
+1. **滚轮焦点死锁**：按短语/按行找行的两个扫描循环此前盲滚 12+26 格、没有卡住检测（只有 `scroll_group_into_view` 带自愈）。键盘焦点落在数值框时 wx 让该控件吃掉滚轮，面板不动，于是组标题进视野后第一屏之外的行永远够不到（99a53a80、f149c3da）。加 `_StallGuard`（带内容连续 3 步不变即清焦点，两次无效判页底）与 `focus_off_edit`（`GetGUIThreadInfo` 查焦点，必要时附着输入队列 `SetFocus` 到面板）。
+2. **行首锚定 `^`**：`Wipe speed` 此前落在上一行 `Role based wipe speed`（复选框行，13613ac7），`Travel` 落在 `Initial layer travel`。
+3. **组内限定 `group_span`**：同一页上 `Outer wall` / `Travel` 各有三处（速度、加速度、抖动组；2.4.0 截图 f0e683fb）。
+4. **两行式行**：标签一行、数值框在下一行约 34px 处（Overhang speed e4a08beb；Speed 页首行 0b7886bc）。只有声明了 `field` 或 `"below": true` 的行才向下一行找，避免灰掉的行误填到下一行。
+5. **页首组标题定位无解**：`scroll_group_into_view` 对进不了可视带的标题一直滚到 420 秒超时，每个操作调用两次共 840 秒——这是 **#270 first_speeds 每次「卡死」的真因**（`Initial layer speed` 是 Speed 页的第一个组，页在顶时标题贴在可视带上沿之上）。改为 6 步不动即接受。
+6. **组名不存在**：#263 写的 `Bridge`（实为 `Bridging`）、#276 在 Quality 页写的 `Advanced`（实为 `Line width`），此前同样空滚 420 秒（eacfc6ff 的时间账吻合）；改为 16 轮后放弃并明确报错。
+7. **弹窗多词目标**：点击与事后校验都只在单个 OCR 词里找，`By Object` / `Outer only` 这类目标在两处永远不成立；改为按行拼接匹配。
+8. **失败点截图** `param_failure.png` 随收割带回：OCR 带文本有歧义时，看图一次定案。
+
+**ops 校准**（依据：源码图谱 + 2.3.5 普查 + 2.4.0 截图）：#263（Bridging / External bridge density / 删除页面上不存在的 Max bridge length）、#276、#292（`Print sequence` 的值是 `By Layer`；中午改成 `Intra-layer` 是把相邻两行的 OCR 粘连误读成一个值，已更正）、#291（`Brim-object gap`）、#271（`Small perimeters threshold`，组限定）、#274（`First layer` / `^Travel`）、#284（`wipe_tower_filament` 在 Multimaterial 页 `Filament for Features` 组，此前写在 Support 页，`filament` 一词只命中了组标题）、#256（`^Wipe speed`）、#270（首行两行式）。
+
+**工具**：图谱挖掘修正了重复页名（Tab.cpp 里工艺设置与打印机设置各有一个 `Multimaterial` 页，此前后者覆盖前者，害我一度误报「15 个操作的组名不存在」，核实后是 5 个）；ops 校验器新增组名校验与多词 combo 锚点校验，并按引擎语义理解 `^`。
+
+**运行鉴别更正**：
+- queue15 的 25 连快败是另一会话在同一条分支上提交导致客机与宿主提交失配，不是楔。
+- 「没有收割结果」的 run 多数是启动成功而宿主侧等待进程先死，客机照常跑完：e86ca34f、c43dafc2、f8706b6f、0b7886bc 已手动收割，均为 NON_GREEN。f8706b6f 那次是我在队列运行期间用了 relay 单槽通道所致。
+- 加分段标记之后没有一例复现为启动阶段真楔。
+
+**queue17（补丁前，10 场景）**：0 SHADOW。带证据的失败 5 个（filament_features、seam_wipe、overhang_curl、accelerations、brim），skirt 执行完成但验证 target mismatch，tree_support 败在保存工具栏，其余因客机桌面被占而未跑成。

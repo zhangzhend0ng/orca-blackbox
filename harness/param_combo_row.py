@@ -71,12 +71,17 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
         return "".join(ch for ch in word.lower() if ch.isalpha())
 
     clicked = False
+
+    def _click_target(words_):
+        # Line-level match: a two-word target is never inside one OCR word.
+        for cx_, cy_, _line in pp.popup_line_hits(words_, target):
+            winutil.msg_click_screen(pr[0] + cx_, pr[1] + cy_)
+            return True
+        return False
+
     for page in range(8):
-        for t, x, y, ww, hh in words:
-            if target.lower() in t.lower() or _soft(t).endswith(_soft(target)):
-                winutil.msg_click_screen(pr[0] + x + ww // 2, pr[1] + y + hh // 2)
-                clicked = True
-                break
+        if _click_target(words):
+            clicked = True
         if clicked:
             break
         # 2026-11-22 fa706g3 hands-on diagnosis (fa706g3-gui-diag-2026-11-22):
@@ -103,11 +108,8 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
         w, hgt, bgra = winutil.capture_window(ph)
         img = np.frombuffer(bgra, np.uint8).reshape(hgt, w, 4)[:, :, :3]
         words = mdu.ocr_words_img(img, scale=3)
-        for t, x, y, ww, hh in words:
-            if target.lower() in t.lower() or _soft(t).endswith(_soft(target)):
-                winutil.msg_click_screen(pr[0] + x + ww // 2, pr[1] + y + hh // 2)
-                clicked = True
-                break
+        if _click_target(words):
+            clicked = True
         if clicked:
             break
         if page == 1:

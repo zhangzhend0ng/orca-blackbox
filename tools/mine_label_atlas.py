@@ -61,7 +61,8 @@ def mine_printconfig(src_text):
 
 
 def mine_tab(src_text, atlas):
-    pages = {}          # page title -> {groups: [{title, rows:[keys]}]}
+    pages = {}          # page title -> [{title, rows:[keys]}]
+    seen_titles = {}
     page_order = []
     # split by page creation; keep only the print-settings tab build (the
     # big one with add_options_page)
@@ -71,6 +72,14 @@ def mine_tab(src_text, atlas):
         if not title_m:
             continue
         page = title_m.group(1)
+        # Tab.cpp builds several settings tabs and page titles repeat
+        # ('Multimaterial' is on both the print and the printer tab). Keying
+        # by title alone let the later page overwrite the earlier one and hid
+        # the print tab's Flush options / Ooze prevention / Advanced groups
+        # (2026-11-23, a false "group not found" report) - number repeats.
+        seen_titles[page] = seen_titles.get(page, 0) + 1
+        if seen_titles[page] > 1:
+            page = "%s#%d" % (page, seen_titles[page])
         pages[page] = []
         page_order.append(page)
         # groups inside this page: new_optgroup titles + subsequent appends

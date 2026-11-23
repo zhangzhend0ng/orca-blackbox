@@ -139,38 +139,65 @@ def _find_phrase_row(app, phrase, group_substr=None):
 
     pp.find_option_row only matches a substring inside ONE word (why
     'density' works and 'Wall loops' never did); join adjacent words and
-    match the phrase, falling back to single-word containment."""
+    match the phrase, falling back to single-word containment.
+
+    A leading '^' anchors the phrase to the START of its row: 'Wipe speed'
+    otherwise resolves inside the previous row's 'Role based wipe speed' (a
+    checkbox row - run 13613ac7) and 'Travel' inside 'Initial layer travel'
+    (run f149c3da). With `group_substr` a hit outside that group's band is
+    skipped, so 'Outer wall' of the Acceleration group cannot resolve to the
+    same label of the speed or jerk group (run f0e683fb screenshot). The scan
+    is down first, then back up past the start position (an edit commit
+    rebuilds the panel and the scroll lands anywhere, run 983bab81), and it
+    resets the keyboard focus whenever the wheel stops moving the panel."""
     from . import process_panel as pp
     import time
 
     if group_substr:
         pp.scroll_group_into_view(app, group_substr)
+    anchored = phrase.startswith("^")
+    phrase = phrase[1:] if anchored else phrase
     want = phrase.lower().split()
-    # 2026-11-22: 6 single-notch wheels never reach deep groups; the fa706g3
-    # pathology forbids multi-notch steps (they reset to top).
-    # 2026-11-23: an edit commit REBUILDS the panel and the scroll can land
-    # anywhere (run 983bab81: search started at the page bottom after an
-    # edit) - scan down first, then back up past the start position.
+    span = pp.group_span(app, group_substr) if group_substr else None
+
+    def hit(i, words):
+        w, x, y, ww, hh = words[i]
+        if anchored and not pp.leftmost_on_line(words, i):
+            return False
+        if len(want) == 1:
+            return want[0] in w.lower()
+        if not w.lower().startswith(want[0]):
+            return False
+        tail = " ".join(t for t, *_ in words[i:i + len(want)]).lower()
+        return tail.startswith(phrase.lower())
+
+    stall = pp._StallGuard(app, "phrase %r%s" % (phrase, " in %r" % group_substr if group_substr else ""))
+    found = None
     for direction in (-120, 120):
+        stall.reset()
         for _ in range(12 if direction == -120 else 26):
             words = pp.ocr_band(app, psm=3)
-            for i, (w, x, y, ww, hh) in enumerate(words):
-                if len(want) == 1 and want[0] in w.lower():
-                    return y + hh // 2
-                if len(want) > 1 and w.lower().startswith(want[0]):
-                    tail = " ".join(t for t, *_ in words[i:i + len(want)]).lower()
-                    if tail.startswith(phrase.lower()):
-                        return y + hh // 2
+            for i in range(len(words)):
+                if hit(i, words) and (span is None or span[0] <= words[i][2] < span[1]):
+                    found = words[i][2] + words[i][4] // 2
+                    break
+            if found is not None:
+                break
             vp = pp.options_viewport(app)
             if vp:
+                if stall.step(words):
+                    break
                 pp.wheel_viewport(app, vp, 1, delta=direction)
             time.sleep(0.4)
-    print("[param-phrase] not found: " + phrase + " | last band: " +
-          " ".join(w for w, *_ in words)[:160], flush=True)
-    return None
+        if found is not None:
+            break
+    if found is None:
+        print("[param-phrase] not found: " + phrase + " | last band: " +
+              " ".join(w for w, *_ in words)[:160], flush=True)
+    return found
 
 
-def uia_set_float(ui, label_substr, value, group_substr=None, field_index=0):
+
     """Set a sidebar float Edit: OCR locates the painted row (OG_CustomCtrl
     draws row labels without HWNDs - only group headers are windows, the
     f5acdb1a census), then the visible Edit whose row-y matches is driven
@@ -194,17 +221,29 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=0):
         cy = (b[1] + b[3]) // 2 - origin_y
         # the parameter sidebar sits LEFT of the canvas (calibration run
         # 6bc47e55: row_y 762 vs Edit cy 764 at x 267, canvas_left 426).
-        if abs(cy - y_row) <= 14 and 0 <= (b[0] + b[2]) // 2 < left:
+        if y_lo <= cy <= y_hi and 0 <= (b[0] + b[2]) // 2 < left:
             matches.append((handle, list(b)))
         return True
 
+    y_lo, y_hi = y_row - 14, y_row + 14
     EnumChildWindows(app.hwnd, collect, None)
+    if not matches and (field_index is not None or below):
+        # A two-line row paints its label on one line and its Edit(s) on the
+        # next, ~34px lower: 'Overhang speed' with five band Edits (run
+        # e4a08beb: row_y=978, nothing within 14px) and the first row of the
+        # Speed page (run 0b7886bc: row_y=730, Edit at 764). Only rows that
+        # declare it (a field index, or "below": true) get this second pass:
+        # for an ordinary row a disabled Edit must NOT fall through to the
+        # next row's field. The window stops at +50 so the row after next
+        # line (at +64) is out of reach.
+        y_lo, y_hi = y_row + 15, y_row + 50
+        EnumChildWindows(app.hwnd, collect, None)
     # 2026-11-22 #264: the five overhang degree-band speeds render as ONE
     # labelled row with five inline Edits (Tab.cpp: Line{L("Overhang speed")}
     # ...append_option x5); select left-to-right by field_index instead of
     # failing on the multi-match.
     matches.sort(key=lambda m: m[1][0])
-    if len(matches) > 1 and 0 <= field_index < len(matches):
+    if len(matches) > 1 and field_index is not None and 0 <= field_index < len(matches):
         print(f"[param-uia] row '{label_substr}' has {len(matches)} edits; "
               f"driving field[{field_index}]", flush=True)
         handle, bounds = matches[field_index]
@@ -275,7 +314,7 @@ def run_ops(ui, ops):
             for candidate in labels:
                 try:
                     uia_set_float(ui, candidate, str(op["value"]), group_substr=op.get("group"),
-                                  field_index=op.get("field", 0))
+                                  field_index=op.get("field"), below=bool(op.get("below")))
                     last = None
                     break
                 except ProtocolError as exc:

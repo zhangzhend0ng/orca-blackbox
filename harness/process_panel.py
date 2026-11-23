@@ -406,6 +406,7 @@ def scroll_group_into_view(session, substr, timeout_s=420.0):
     f = frect(session)
     last_y = None
     stuck = 0
+    missing = 0
     while time.monotonic() < deadline:
         hit = group_title(session, substr)
         vp = options_viewport(session)
@@ -413,6 +414,7 @@ def scroll_group_into_view(session, substr, timeout_s=420.0):
             time.sleep(0.5)
             continue
         if hit:
+            missing = 0
             ty1 = hit[0][3] - f[1]
             y0, y1 = view_band(session)
             if y0 + 2 <= ty1 <= y1 - 24:
@@ -421,18 +423,181 @@ def scroll_group_into_view(session, substr, timeout_s=420.0):
                            delta=-120 if ty1 > y1 - 24 else 120)
             if last_y == ty1:
                 stuck += 1
-                if stuck >= 3:
-                    print(f"[panel] wheel stuck at ty1={ty1} -> neutralize "
-                          f"focus")
-                    neutralize_focus(session)
-                    stuck = 0
+                if stuck == 3:
+                    print(f"[panel] wheel stuck at ty1={ty1}")
+                    focus_off_edit(session, why="scroll_group(%r)" % substr)
+                elif stuck >= 6:
+                    # The title cannot move any further: it is the FIRST
+                    # group of a page sitting at the top (its title rests
+                    # above the visible band, so the in-band test can never
+                    # pass) or the last group at the bottom. Wheeling on only
+                    # burned the deadline - twice per op, 840s, which is what
+                    # made #270 first_speeds look wedged on every run
+                    # (0b7886bc and every earlier attempt).
+                    print(f"[panel] scroll_group({substr!r}): title does not move "
+                          f"at ty1={ty1} -> accepting it", flush=True)
+                    return hit
             else:
                 stuck = 0
             last_y = ty1
         else:
+            # Title rects exist even when scrolled out of view, so "not
+            # found" means the page has no such group. It used to wheel until
+            # the 420s deadline, which is what a run with a wrong op 'group'
+            # looked like (#263 asked for 'Bridge', real title 'Bridging':
+            # run eacfc6ff = one such loop + the scan).
+            missing += 1
+            if missing > 16:
+                print(f"[panel] scroll_group({substr!r}): no such group title "
+                      f"on this page after {missing * 4} notches -> giving up",
+                      flush=True)
+                return None
             wheel_viewport(session, vp, 4, delta=-120)
         time.sleep(0.12)
     return None
+
+
+def group_titles(session):
+    """Every options-group title on the current page as (text, rect, hwnd),
+    top to bottom - the group_title() filter minus the substring. The rects
+    track the scroll offset even when a title is scrolled out of view."""
+    py = process_row_y(session)
+    if py is None:
+        return []
+    out = []
+    for t, c, r, h, lx, ly in kids(session):
+        if c == "wxWindowNR" and t.strip() and user32.IsWindowVisible(h) \
+                and (r[2] - r[0]) > 100 and lx < 424 and ly > py:
+            out.append((t.strip(), r, h))
+    out.sort(key=lambda item: item[1][1])
+    return out
+
+
+def group_span(session, substr):
+    """(y_top, y_bottom) client band that belongs to ONE options group: from
+    just below its title to the next group's title. Lets a label search stay
+    inside the group it asked for - 'Outer wall' and 'Travel' exist in three
+    groups of the Speed page (2.4.0 screenshot, run f0e683fb) and a row label
+    can be spelled exactly like its group title ('Overhang speed').
+    None when there is no such title."""
+    titles = group_titles(session)
+    f = frect(session)
+    for i, (t, r, _h) in enumerate(titles):
+        if substr.lower() in t.lower():
+            top = r[3] - f[1]
+            bottom = titles[i + 1][1][1] - f[1] if i + 1 < len(titles) else top + 4000
+            return (top, bottom)
+    return None
+
+
+def leftmost_on_line(words, i, tol=10):
+    """True when words[i] is the first (left-most) word of its OCR line."""
+    _w, x, y, _ww, _hh = words[i]
+    for j, (_t, xj, yj, _wj, _hj) in enumerate(words):
+        if j != i and abs(yj - y) < tol and xj < x - 8:
+            return False
+    return True
+
+
+def popup_line_hits(words, target):
+    """Popup rows whose LINE text contains `target` (case-insensitive), as
+    [(cx, cy, line_text)] top to bottom. OCR yields one word per tuple, so a
+    multi-word target ('By Object', 'Outer only') can never be found inside
+    a single word - both the click and the after-check silently failed for
+    every such target (runs 244ae35e, f0e683fb). Words are grouped into
+    lines by y."""
+    rows = {}
+    for t, x, y, ww, hh in words:
+        key = y
+        for k in rows:
+            if abs(k - y) <= 10:
+                key = k
+                break
+        rows.setdefault(key, []).append((x, y, ww, hh, t))
+    out = []
+    for _k, parts in rows.items():
+        parts.sort()
+        text = " ".join(p[4] for p in parts)
+        if target.lower() in text.lower():
+            x0 = min(p[0] for p in parts)
+            x1 = max(p[0] + p[2] for p in parts)
+            yc = sum(p[1] + p[3] // 2 for p in parts) // len(parts)
+            out.append(((x0 + x1) // 2, yc, text))
+    out.sort(key=lambda hit: hit[1])
+    return out
+
+
+def focus_info(session):
+    """(hwnd, class) holding KEYBOARD focus in the app's GUI thread, or
+    (None, None). GetFocus() only reports the caller's own thread."""
+    import ctypes.wintypes
+    tid = user32.GetWindowThreadProcessId(session.hwnd, None)
+    gti = ctypes.wintypes.GUITHREADINFO()
+    gti.cbSize = ctypes.sizeof(gti)
+    if not tid or not user32.GetGUIThreadInfo(tid, ctypes.byref(gti)) or not gti.hwndFocus:
+        return None, None
+    return gti.hwndFocus, winutil.window_class(gti.hwndFocus)
+
+
+def focus_off_edit(session, why=""):
+    """Move keyboard focus off an option Edit/ComboBox back onto the options
+    panel so the wheel scrolls it again (wx lets the focused child consume
+    the wheel). neutralize_focus() goes first for continuity, but a Static
+    cannot take focus, so if an Edit/ComboBox still holds it the panel gets
+    the focus through an attached input queue. Focus before/after is logged
+    as evidence."""
+    before = focus_info(session)[1]
+    neutralize_focus(session)
+    after = focus_info(session)[1]
+    if after in ("Edit", "ComboBox") or after is None:
+        vp = options_viewport(session)
+        if vp:
+            import ctypes
+            ours = ctypes.windll.kernel32.GetCurrentThreadId()
+            theirs = user32.GetWindowThreadProcessId(session.hwnd, None)
+            attached = user32.AttachThreadInput(ours, theirs, True) if theirs else False
+            user32.SetFocus(ctypes.c_void_p(vp[1]))
+            if attached:
+                user32.AttachThreadInput(ours, theirs, False)
+            time.sleep(0.3)
+            after = focus_info(session)[1]
+    print(f"[panel] focus reset ({why}): {before} -> {after}", flush=True)
+
+
+class _StallGuard:
+    """Detects a wheel that no longer moves the options panel and revives it.
+
+    While keyboard focus sits in one of the panel's Edit/ComboBox children
+    the panel ignores the wheel (runs 99a53a80 / f149c3da, 2026-11-23: the
+    group had just been scrolled into view, then 12+26 blind notches changed
+    nothing, so any label beyond the first screen after the group title
+    could never be reached). scroll_group_into_view() always had this
+    self-heal; the label scans did not. step(words) returns True when the
+    caller should stop scanning in this direction: two focus resets later
+    the band still did not move, i.e. the page end."""
+
+    def __init__(self, session, what):
+        self.session, self.what = session, what
+        self.reset()
+
+    def reset(self):
+        self.last, self.stalls, self.revives = None, 0, 0
+
+    def step(self, words):
+        sig = tuple(sorted({int(y) // 6 for _w, _x, y, *_r in words}))
+        if sig != self.last:
+            self.last, self.stalls = sig, 0
+            return False
+        self.stalls += 1
+        if self.stalls % 3:
+            return False
+        if self.revives >= 2:
+            print(f"[panel] {self.what}: band unchanged after {self.stalls} "
+                  f"wheels and {self.revives} focus resets -> end of page", flush=True)
+            return True
+        self.revives += 1
+        focus_off_edit(self.session, why=self.what)
+        return False
 
 
 def neutralize_focus(session):
@@ -789,16 +954,25 @@ def find_option_row(session, label_substr, group_substr=None,
     # multi-notch steps reset to top (fa706g3 pathology).
     # 2026-11-23: an edit commit rebuilds the panel and the scroll lands
     # anywhere (run 983bab81) - scan down first, then back up.
+    # 2026-11-23: stall guard + focus reset while scanning (_StallGuard), and
+    # with a group requested the hit must lie inside that group's band.
+    span = group_span(session, group_substr) if group_substr else None
+    stall = _StallGuard(session, "find_option_row(%r)" % label_substr)
     for direction in (-120, 120):
+      stall.reset()
       for _ in range(12 if direction == -120 else 26):
         words = ocr_band(session, psm=psm)
         print(f"[panel] find_option_row({label_substr!r}) band: "
               f"{' '.join(w for w, *_ in words)[:120]!r}")
         for w, x, y, ww, hh in words:
             if label_substr.lower() in w.lower():
+                if span and not (span[0] <= y < span[1]):
+                    continue  # the same word in a neighbouring group
                 return (x, y, x + ww, y + hh), y + hh // 2
         vp = options_viewport(session)
         if vp:
+            if stall.step(words):
+                break
             wheel_viewport(session, vp, 1, delta=direction)
         time.sleep(0.4)
     return None, None
@@ -1126,12 +1300,10 @@ def set_combo_by_popup(session, locate, target_substr, log="[panel]",
         print(f"{log} popup rows: "
               f"{' | '.join(t for t, *_ in words)[:140]!r}")
         clicked = False
-        for t_w, x, y, w_w, w_h in words:
-            if target_substr.lower() in t_w.lower():
-                winutil.msg_click_screen(pr[0] + x + w_w // 2,
-                                         pr[1] + y + w_h // 2)
-                clicked = True
-                break
+        for cx_, cy_, _line in popup_line_hits(words, target_substr):
+            winutil.msg_click_screen(pr[0] + cx_, pr[1] + cy_)
+            clicked = True
+            break
         if not clicked:
             # blind fallback: 28px row pitch; verify by re-locating the
             # combo by its new value after each click, reopen when missed
@@ -1157,6 +1329,10 @@ def set_combo_by_popup(session, locate, target_substr, log="[panel]",
                 pr = popup2[2]
         time.sleep(1.5)
     ok = find_option_combo(session, target_substr, psm=psm)[1] is not None
+    if not ok and " " in target_substr.strip():
+        # find_option_row matches inside ONE OCR word; re-check a multi-word
+        # target against whole painted lines (popup_line_hits).
+        ok = bool(popup_line_hits(ocr_band(session, psm=psm), target_substr))
     if not ok and verify_seq:
         if group_substr:
             scroll_group_into_view(session, group_substr)
