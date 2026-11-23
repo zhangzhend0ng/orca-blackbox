@@ -1259,6 +1259,34 @@ if hasattr(nsb, "SCENARIO_CONF"):
 else:
     print("N/A  SCENARIO_CONF (absent on this tree)")
 
+# 26. The Advanced switch is never touched in develop mode. Every click of
+#     it saves mode 'advanced' or 'simple' (ParamsPanel.cpp save_mode) and
+#     takes the app out of develop mode - fa run 17d2db91 was seeded
+#     user_mode=develop and its conf read 'advanced' after the census.
+if hasattr(pp, "ADVANCED_SWITCH"):
+    _sw26, _on26, _clicks26 = pp.ADVANCED_SWITCH, pp.advanced_on, []
+    _rc26, _asw26 = pp.real_click, pp.advanced_switch
+    try:
+        pp.advanced_on = lambda session: (0.9, 0.1)        # reads as OFF
+        pp.advanced_switch = lambda session: ((0, 0, 40, 20), 5)
+        pp.real_click = lambda rect: _clicks26.append(rect)
+        pp.ADVANCED_SWITCH = True
+        pp.ensure_advanced(None, want=True)
+        check("ensure_advanced: a switch that reads OFF is flipped in a normal run", len(_clicks26) == 1,
+              "%r" % (_clicks26,))
+        _clicks26.clear()
+        pp.ADVANCED_SWITCH = False
+        check("ensure_advanced: in develop mode the switch is left alone and the page counts as advanced",
+              pp.ensure_advanced(None, want=True) is True and not _clicks26, "%r" % (_clicks26,))
+    finally:
+        pp.ADVANCED_SWITCH, pp.advanced_on, pp.real_click, pp.advanced_switch = _sw26, _on26, _rc26, _asw26
+    src26 = (_Path(nsb.__file__).resolve().parent.parent / "tools" / "native_save_guest.py").read_text(encoding="utf-8")
+    check("the worker turns the switch off for a scenario seeded with user_mode=develop",
+          'process_panel.ADVANCED_SWITCH = False' in src26
+          and '(conf_extra or {}).get("user_mode") == "develop"' in src26)
+else:
+    print("N/A  ADVANCED_SWITCH (absent on this tree)")
+
 failed = [n for n, ok in results if not ok]
 print("\n%d checks, %d failed" % (len(results), len(failed)))
 sys.exit(1 if failed else 0)

@@ -242,9 +242,23 @@ def advanced_on(session):
     return chroma(sub[:, :mid]), chroma(sub[:, mid:])
 
 
+# The Advanced switch is the page's own control and EVERY click saves the
+# mode as advanced or simple (ParamsPanel.cpp:555-569 save_mode) - the app
+# has no 'already on' short cut. In develop mode the knob does not paint as
+# ON, so the reading below says off and the click would work - and take the
+# app out of develop mode: fa run 17d2db91 was seeded user_mode=develop and
+# its conf read 'advanced' after the census. A scenario that runs the app in
+# develop mode (native_script_baseline.SCENARIO_CONF) sets this False from
+# the worker; ensure_advanced then leaves the switch alone.
+ADVANCED_SWITCH = True
+
+
 def ensure_advanced(session, want=True, timeout_s=30.0):
     """Flip the Advanced switch only when its state differs from `want`.
-    Returns True when the knob reading agrees with `want` afterwards."""
+    Returns True when the knob reading agrees with `want` afterwards - or,
+    untouched, when the switch must not be used (ADVANCED_SWITCH False)."""
+    if not ADVANCED_SWITCH:
+        return True
     st = advanced_on(session)
     if st is None:
         return False

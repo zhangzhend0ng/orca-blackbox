@@ -222,6 +222,11 @@ def worker(run_id, actor="codex", scenario="base"):
         if conf_extra:
             # part of the run's conditions: say so in the report
             report["app_conf_extra"] = conf_extra
+        if (conf_extra or {}).get("user_mode") == "develop":
+            # every click of the Advanced switch saves mode 'advanced' or
+            # 'simple' and would take the app out of develop mode
+            from harness import process_panel
+            process_panel.ADVANCED_SWITCH = False
         ui = ProjectUI(root, guard, fixture=fixture, ready_on_open=ready_on_open, probe_boot=probe_boot,
                        conf_extra=conf_extra)
         if probe_boot:
