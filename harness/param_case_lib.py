@@ -4,21 +4,43 @@ Each case = a values dict (config keys the case may change, with target
 values) plus G-code expectations the existing analyzers can prove. This
 library builds verify_business implementations from such specs and keeps
 the change-scope registry the settings-preservation check admits."""
+import hashlib
 from decimal import Decimal
 import re
 
 from .agent_layer_verify import analyze_gcode
-from .agent_protocol import ProtocolError
+from .agent_protocol import LAYER_FIXTURE_SHA256, STD_FIXTURE_SHA256, ProtocolError
 from .agent_verify import _require
 from .pilot_common import _register_param_change_scope, inspect_preserved_settings
 from .project_3mf import _archive, _json
+
+# The layer schedule a case asserts (68 x 0.4 / 27.2) was measured on the cube: it
+# belongs to the fixture, not to the case. sha256 of the fixture bytes -> what
+# verify_business does with the G-code's layers on a project saved from it.
+#   True  the fixture the schedules were pinned on: assert the case's schedule
+#   None  no schedule pinned yet: record the measured layers, assert nothing
+# STD_FIXTURE_SHA256 is None pending measurement by uia_param_std_save_only. (Its
+# preset says a 0.25 first layer and 0.20 after: 135 layers / 27.05 is a prediction,
+# not a pin.) A fixture outside this table is refused: no run is judged on a schedule
+# nobody pinned.
+SCHEDULE_BY_FIXTURE = {LAYER_FIXTURE_SHA256: True, STD_FIXTURE_SHA256: None}
+
+
+def schedule_for(fixture, schedule):
+    """The schedule to assert for a project saved from `fixture`: `schedule` on the
+    fixture it was pinned on, None (record only) where none is pinned yet."""
+    digest = hashlib.sha256(fixture).hexdigest()
+    _require(digest in SCHEDULE_BY_FIXTURE, "param_fixture_unregistered")
+    return schedule if SCHEDULE_BY_FIXTURE[digest] else None
 
 
 def make_verify(case_id, values, *, schedule=None, ironing=None, cancelled_guard=True):
     """Build verify_business(project, fixture, gcode) for a parameter case.
 
     schedule: dict(layer_count=..., last_z=...) when the case leaves object
-    geometry unchanged (the standard cube keeps 68 x 0.4 / 27.2).
+    geometry unchanged (the standard cube keeps 68 x 0.4 / 27.2). It is asserted
+    on the cube only (SCHEDULE_BY_FIXTURE); on a fixture without a pin the layers
+    are recorded in the result and nothing is asserted about them.
     ironing: dict(speed_comment=..., min_moves=...) to require ironing
     moves and the configured speed via analyze_gcode's ironing inspection.
     """
@@ -40,12 +62,13 @@ def make_verify(case_id, values, *, schedule=None, ironing=None, cancelled_guard
                      "param_value:" + key)
             result[key] = got
         if schedule or ironing:
+            pinned = schedule_for(fixture, schedule) if schedule else None
             layers = analyze_gcode(gcode, layer_height=str(actual.get("layer_height", "0.4")),
                                    first_layer_height=str(actual.get("initial_layer_print_height", "0.4")),
                                    inspect_ironing=bool(ironing), cancelled=cancelled)
-            if schedule:
-                _require(layers["layer_count"] == schedule["layer_count"], "param_layer_count")
-                _require(Decimal(layers["last_z"]) == Decimal(schedule["last_z"]), "param_last_z")
+            if pinned:
+                _require(layers["layer_count"] == pinned["layer_count"], "param_layer_count")
+                _require(Decimal(layers["last_z"]) == Decimal(pinned["last_z"]), "param_last_z")
             if ironing:
                 # 2026-11-23 run 4380d8ff: analyze_gcode reports the count
                 # under 'ironing_xy_e_moves' (agent_layer_verify.py:193);
@@ -56,6 +79,9 @@ def make_verify(case_id, values, *, schedule=None, ironing=None, cancelled_guard
             result["layer_count"] = layers["layer_count"]
             result["last_z"] = layers["last_z"]
             result["gcode_sha256"] = layers["sha256"]
+            if schedule and not pinned:
+                result["first_z"] = layers["first_z"]       # measured, for the pending pin
+                result["schedule_asserted"] = False
         return result
 
     return verify_business
