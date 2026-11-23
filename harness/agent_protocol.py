@@ -14,6 +14,11 @@ LAYER_CASE = "m3d_param_reslice"
 PROJECT_CASE = "m3g_export_3mf"
 LAYER_FIXTURE = "fixtures/agent_layer_cube.3mf"
 LAYER_FIXTURE_SHA256 = "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef"
+# The Feishu process cases' precondition ("U1 0.4mm喷嘴、PLA耗材和0.20mm标准工艺预设"):
+# the same cube on the U1 0.4 nozzle, 0.20mm Standard, PLA. Built and pinned by
+# tools/build_feishu_std_fixture.py; nothing else may write it.
+STD_FIXTURE = "fixtures/feishu_std_cube.3mf"
+STD_FIXTURE_SHA256 = "0690071f9501bac804d17c025015f2fe2bed4ce48b90e2f28946e307c56c1a0b"
 
 
 def agent_profile(case_id: str) -> dict:
