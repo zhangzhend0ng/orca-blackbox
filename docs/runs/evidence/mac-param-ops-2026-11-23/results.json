@@ -845,7 +845,7 @@
   },
   "pick_combo": {
    "op": "pick_combo",
-   "ok": false,
+   "ok": true,
    "sut": {
     "version": "2.4.1"
    },
@@ -854,37 +854,168 @@
    "entry": {
     "dialogs": []
    },
+   "readback": {
+    "tab": "Others",
+    "label": "Print sequence",
+    "before": "~ By layer",
+    "after": "~ By object",
+    "expected": "By object",
+    "click": [
+     620,
+     866
+    ],
+    "entry_click": [
+     662,
+     923
+    ],
+    "taken_by": "open-down-return-keys"
+   },
    "evidence": {
-    "error": "Traceback (most recent call last):\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.m_mbx3u0/param_ops.py\", line 905, in run_worker\n    result.update(OPS[ns[\"op\"]](panel, ns))\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.m_mbx3u0/param_ops.py\", line 786, in op_pick_combo\n    rows, row, note, tag = panel.locate_row(ns[\"tab\"], ns.get(\"group\"), ns[\"label\"], \"combo\")\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.m_mbx3u0/param_ops.py\", line 598, in locate_row\n    rows, row, tag = attempt(\"page-folded\")\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.m_mbx3u0/param_ops.py\", line 551, in attempt\n    return rows, self.find_row(rows, group, label), f\"{prefix}-{tag}\"\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.m_mbx3u0/param_ops.py\", line 443, in find_row\n    require(hit, f\"Group title {group!r} not visible; titles seen: {[t['text'] for t in titles]}\")\n  File \"/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-param-ops.m_mbx3u0/param_ops.py\", line 68, in require\n    raise RuntimeError(message)\nRuntimeError: Group title 'Special mode' not visible; titles seen: ['→ Skirt']\n"
+    "notes": [
+     {
+      "tab_click": [
+       740,
+       776
+      ]
+     },
+     {
+      "scrolled": {
+       "not_found": "RuntimeError: Group title 'Special mode' not visible; titles seen: ['~ Skirt']",
+       "buttons": {
+        "down": [
+         2,
+         0
+        ],
+        "up": 1,
+        "knob_dy": {
+         "0": [
+          3.0,
+          3.0
+         ],
+         "1": [
+          -3.0,
+          -3.0
+         ],
+         "2": [
+          12.0,
+          12.0
+         ],
+         "3": [
+          -12.0,
+          -12.0
+         ]
+        }
+       },
+       "to_top": {
+        "button": 1,
+        "presses": 1,
+        "knob_at": [
+         3.0,
+         3.0
+        ]
+       },
+       "steps": [
+        {
+         "step": 0,
+         "knob_dy": 12.0,
+         "titles": []
+        },
+        {
+         "step": 1,
+         "knob_dy": 13.0,
+         "titles": [
+          "EK Special mode"
+         ],
+         "row_y": 859.0
+        }
+       ]
+      }
+     }
+    ],
+    "attempts": [
+     {
+      "how": "cell",
+      "click": [
+       620,
+       866
+      ],
+      "focused": {
+       "role": "AXWindow",
+       "box": [
+        360.0,
+        85.0,
+        1200.0,
+        800.0
+       ],
+       "help": ""
+      },
+      "popup_entries_seen": [
+       "By layer",
+       "By object"
+      ],
+      "entry_box": {
+       "x": 628,
+       "y": 913,
+       "w": 67,
+       "h": 20
+      },
+      "entry_click": [
+       662,
+       923
+      ],
+      "windows": [
+       [
+        "AXUnknown",
+        "",
+        [
+         606,
+         884,
+         120,
+         52
+        ]
+       ],
+       [
+        "AXStandardWindow",
+        "probe",
+        [
+         360,
+         85,
+         1200,
+         800
+        ]
+       ]
+      ],
+      "takes": [
+       {
+        "how": "pointer",
+        "painted_after": "v By object",
+        "title": "*probe",
+        "screenshot_after": "combo-0-cell-pointer-after.png"
+       },
+       {
+        "how": "open-down-return-keys",
+        "painted_after": "~ By object",
+        "title": "*probe",
+        "screenshot_after": "combo-0-cell-open-down-return-keys-after.png"
+       }
+      ]
+     }
+    ],
+    "screenshots": {
+     "before": "combo-page.png",
+     "popup": "combo-0-cell-popup.png",
+     "after": "combo-0-cell-open-down-return-keys-after.png"
+    }
    },
    "shots": {
     "entry": "entry.png",
     "combo-page-locate": "combo-page-locate.png",
     "combo-page": "combo-page.png",
-    "combo-advanced": "combo-advanced.png",
-    "combo-advanced-ax-0": "combo-advanced-ax-0.png",
-    "combo-advanced-ax-1": "combo-advanced-ax-1.png",
-    "combo-advanced-ax-2": "combo-advanced-ax-2.png",
-    "combo-advanced-ax-3": "combo-advanced-ax-3.png",
-    "combo-page-adv-locate": "combo-page-adv-locate.png",
-    "combo-page-adv": "combo-page-adv.png",
-    "combo-widen-0": "combo-widen-0.png",
-    "combo-widen-1": "combo-widen-1.png",
-    "combo-widen-after": "combo-widen-after.png",
-    "combo-page-wide-locate": "combo-page-wide-locate.png",
-    "combo-page-wide": "combo-page-wide.png",
-    "combo-page-tall-locate": "combo-page-tall-locate.png",
-    "combo-page-tall": "combo-page-tall.png",
-    "combo-fold-0": "combo-fold-0.png",
-    "combo-fold-0-after": "combo-fold-0-after.png",
-    "combo-fold-1": "combo-fold-1.png",
-    "combo-fold-1-after": "combo-fold-1-after.png",
-    "combo-fold-2": "combo-fold-2.png",
-    "combo-fold-2-after": "combo-fold-2-after.png",
-    "combo-fold-3": "combo-fold-3.png",
-    "combo-fold-3-after": "combo-fold-3-after.png",
-    "combo-page-folded-locate": "combo-page-folded-locate.png",
-    "combo-page-folded": "combo-page-folded.png"
+    "combo-page-scroll-0": "combo-page-scroll-0.png",
+    "combo-page-scroll-1": "combo-page-scroll-1.png",
+    "combo-0-cell-popup": "combo-0-cell-popup.png",
+    "combo-0-cell-pointer-after": "combo-0-cell-pointer-after.png",
+    "combo-0-cell-open-down-return-keys-after": "combo-0-cell-open-down-return-keys-after.png"
    },
    "notes": [
     {
@@ -894,204 +1025,57 @@
      ]
     },
     {
-     "standard_mode": "RuntimeError: Group title 'Special mode' not visible; titles seen: ['~ Skirt']"
-    },
-    {
-     "advanced": {
-      "already_on": false,
-      "tabs_before": [
-       "Quality",
-       "Strength",
-       "Support",
-       "Multimaterial",
-       "Others"
-      ],
-      "attempts": [
-       {
-        "how": "ax",
-        "value_before": 0,
-        "box": [
-         673.0,
-         689.0
+     "scrolled": {
+      "not_found": "RuntimeError: Group title 'Special mode' not visible; titles seen: ['~ Skirt']",
+      "buttons": {
+       "down": [
+        2,
+        0
+       ],
+       "up": 1,
+       "knob_dy": {
+        "0": [
+         3.0,
+         3.0
         ],
-        "tabs_after": [
-         [
-          "Others"
-         ],
-         [
-          "Others"
-         ],
-         [
-          "Others"
-         ],
-         [
-          "Others"
-         ]
+        "1": [
+         -3.0,
+         -3.0
         ],
-        "value_after": 1
-       }
-      ],
-      "checkboxes": [
-       {
-        "x": 453.0,
-        "y": 686.0,
-        "words": "",
-        "value": 0
-       },
-       {
-        "x": 673.0,
-        "y": 689.0,
-        "words": "",
-        "value": 0
-       }
-      ],
-      "turned_on_by": "ax",
-      "speed_seen": false
-     }
-    },
-    {
-     "tab_click": [
-      749,
-      776
-     ]
-    },
-    {
-     "advanced_mode": "RuntimeError: Group title 'Special mode' not visible; titles seen: ['L Skirt']"
-    },
-    {
-     "widened": {
-      "collapsed": [
-       {
-        "header": "(0 Filaments",
-        "click": [
-         424,
-         466
-        ]
-       },
-       {
-        "header": "(0 Filaments",
-        "click": [
-         424,
-         466
+        "2": [
+         12.0,
+         12.0
+        ],
+        "3": [
+         -12.0,
+         -12.0
         ]
        }
-      ],
-      "process_header_y_after": 690.0
+      },
+      "to_top": {
+       "button": 1,
+       "presses": 1,
+       "knob_at": [
+        3.0,
+        3.0
+       ]
+      },
+      "steps": [
+       {
+        "step": 0,
+        "knob_dy": 12.0,
+        "titles": []
+       },
+       {
+        "step": 1,
+        "knob_dy": 13.0,
+        "titles": [
+         "EK Special mode"
+        ],
+        "row_y": 859.0
+       }
+      ]
      }
-    },
-    {
-     "tab_click": [
-      749,
-      776
-     ]
-    },
-    {
-     "wide_window": "RuntimeError: Group title 'Special mode' not visible; titles seen: ['L Skirt']"
-    },
-    {
-     "resized_to": [
-      1200.0,
-      916.0
-     ]
-    },
-    {
-     "tab_click": [
-      749,
-      777
-     ]
-    },
-    {
-     "tall_window": "RuntimeError: Group title 'Special mode' not visible; titles seen: ['→ Skirt']"
-    },
-    {
-     "folded": [
-      {
-       "title": "° Printer",
-       "click": [
-        370,
-        183
-       ],
-       "titles_after": [
-        "° Printer",
-        "Bed type",
-        "Nozzle 1",
-        "Diameter",
-        "(0 Filaments",
-        "3 ~ Snapmaker PLA... © 4 ~ Snapmaker PLA Silk @",
-        "5",
-        "• Color Mixing",
-        "6",
-        "Quality Strength Speed Support Multimaterial",
-        "→ Skirt"
-       ]
-      },
-      {
-       "title": "Bed type",
-       "click": [
-        370,
-        300
-       ],
-       "titles_after": [
-        "° Printer",
-        "Bed type",
-        "Nozzle 1",
-        "Diameter",
-        "(0 Filaments",
-        "3 ~ Snapmaker PLA... © 4 ~ Snapmaker PLA Silk @",
-        "5",
-        "• Color Mixing",
-        "6",
-        "Quality Strength Speed Support Multimaterial",
-        "→ Skirt"
-       ]
-      },
-      {
-       "title": "Nozzle 1",
-       "click": [
-        370,
-        341
-       ],
-       "titles_after": [
-        "° Printer",
-        "Bed type",
-        "Nozzle 1",
-        "Diameter",
-        "(0 Filaments",
-        "3 ~ Snapmaker PLA... © 4 ~ Snapmaker PLA Silk @",
-        "5",
-        "• Color Mixing",
-        "6",
-        "Quality Strength Speed Support Multimaterial",
-        "→ Skirt"
-       ]
-      },
-      {
-       "title": "Diameter",
-       "click": [
-        370,
-        380
-       ],
-       "titles_after": [
-        "° Printer",
-        "Bed type",
-        "Nozzle 1",
-        "Diameter",
-        "(0 Filaments",
-        "3 ~ Snapmaker PLA... © 4 ~ Snapmaker PLA Silk @",
-        "5",
-        "• Color Mixing",
-        "6",
-        "Quality Strength Speed Support Multimaterial",
-        "→ Skirt"
-       ]
-      }
-     ]
-    },
-    {
-     "tab_click": [
-      749,
-      777
-     ]
     }
    ],
    "geometry": {
@@ -1101,67 +1085,29 @@
     ],
     "size": [
      1200.0,
-     916.0
+     800.0
     ]
    },
    "orca_left": [],
-   "finished_at": 1795447543.409794,
-   "seconds": 154.5,
+   "finished_at": 1795455604.6721358,
+   "seconds": 73.4,
    "screenshots": {
-    "combo-advanced-ax-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-advanced-ax-0.panel.png",
-    "combo-advanced-ax-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-advanced-ax-0.png",
-    "combo-advanced-ax-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-advanced-ax-1.panel.png",
-    "combo-advanced-ax-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-advanced-ax-1.png",
-    "combo-advanced-ax-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-advanced-ax-2.panel.png",
-    "combo-advanced-ax-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-advanced-ax-2.png",
-    "combo-advanced-ax-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-advanced-ax-3.panel.png",
-    "combo-advanced-ax-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-advanced-ax-3.png",
-    "combo-advanced.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-advanced.panel.png",
-    "combo-advanced.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-advanced.png",
-    "combo-fold-0-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-fold-0-after.panel.png",
-    "combo-fold-0-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-fold-0-after.png",
-    "combo-fold-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-fold-0.panel.png",
-    "combo-fold-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-fold-0.png",
-    "combo-fold-1-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-fold-1-after.panel.png",
-    "combo-fold-1-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-fold-1-after.png",
-    "combo-fold-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-fold-1.panel.png",
-    "combo-fold-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-fold-1.png",
-    "combo-fold-2-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-fold-2-after.panel.png",
-    "combo-fold-2-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-fold-2-after.png",
-    "combo-fold-2.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-fold-2.panel.png",
-    "combo-fold-2.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-fold-2.png",
-    "combo-fold-3-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-fold-3-after.panel.png",
-    "combo-fold-3-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-fold-3-after.png",
-    "combo-fold-3.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-fold-3.panel.png",
-    "combo-fold-3.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-fold-3.png",
-    "combo-page-adv-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-adv-locate.panel.png",
-    "combo-page-adv-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-adv-locate.png",
-    "combo-page-adv.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-adv.panel.png",
-    "combo-page-adv.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-adv.png",
-    "combo-page-folded-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-folded-locate.panel.png",
-    "combo-page-folded-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-folded-locate.png",
-    "combo-page-folded.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-folded.panel.png",
-    "combo-page-folded.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-folded.png",
-    "combo-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-locate.panel.png",
-    "combo-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-locate.png",
-    "combo-page-tall-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-tall-locate.panel.png",
-    "combo-page-tall-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-tall-locate.png",
-    "combo-page-tall.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-tall.panel.png",
-    "combo-page-tall.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-tall.png",
-    "combo-page-wide-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-wide-locate.panel.png",
-    "combo-page-wide-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-wide-locate.png",
-    "combo-page-wide.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page-wide.panel.png",
-    "combo-page-wide.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page-wide.png",
-    "combo-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-page.panel.png",
-    "combo-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-page.png",
-    "combo-widen-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-widen-0.panel.png",
-    "combo-widen-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-widen-0.png",
-    "combo-widen-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-widen-1.panel.png",
-    "combo-widen-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-widen-1.png",
-    "combo-widen-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-combo-widen-after.panel.png",
-    "combo-widen-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-combo-widen-after.png",
-    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-232543-entry.panel.png",
-    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-232543/pick_combo-232543-entry.png"
+    "combo-0-cell-open-down-return-keys-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014004-combo-0-cell-open-down-return-keys-after.panel.png",
+    "combo-0-cell-open-down-return-keys-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014004/pick_combo-014004-combo-0-cell-open-down-return-keys-after.png",
+    "combo-0-cell-pointer-after.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014004-combo-0-cell-pointer-after.panel.png",
+    "combo-0-cell-pointer-after.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014004/pick_combo-014004-combo-0-cell-pointer-after.png",
+    "combo-0-cell-popup.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014004-combo-0-cell-popup.panel.png",
+    "combo-0-cell-popup.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014004/pick_combo-014004-combo-0-cell-popup.png",
+    "combo-page-locate.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014004-combo-page-locate.panel.png",
+    "combo-page-locate.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014004/pick_combo-014004-combo-page-locate.png",
+    "combo-page-scroll-0.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014004-combo-page-scroll-0.panel.png",
+    "combo-page-scroll-0.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014004/pick_combo-014004-combo-page-scroll-0.png",
+    "combo-page-scroll-1.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014004-combo-page-scroll-1.panel.png",
+    "combo-page-scroll-1.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014004/pick_combo-014004-combo-page-scroll-1.png",
+    "combo-page.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014004-combo-page.panel.png",
+    "combo-page.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014004/pick_combo-014004-combo-page.png",
+    "entry.panel.png": "docs/runs/evidence/mac-param-ops-2026-11-23/shots/pick_combo-014004-entry.panel.png",
+    "entry.png": "/Users/coilwin/orca-blackbox/artifacts/mac_param_ops/2026-11-23/pick_combo-014004/pick_combo-014004-entry.png"
    }
   },
   "scroll_page": {
@@ -4857,6 +4803,16 @@
   {
    "op": "scroll_page",
    "stamp": "012119",
+   "ok": true
+  },
+  {
+   "op": "pick_combo",
+   "stamp": "013839",
+   "ok": false
+  },
+  {
+   "op": "pick_combo",
+   "stamp": "014004",
    "ok": true
   }
  ],

@@ -347,6 +347,7 @@ class Panel:
         self.desktop, self.pid, self.root, self.window = desktop, pid, root, window
         self.shots, self.last_notes = {}, []
         self.trial, self.scroll_up_button = None, None  # the scroll probe's working state
+        self.scroll_down_buttons = None  # page scrollbar buttons that page down, widest step first
 
     def geometry(self):
         point = self.desktop.position(self.window)
@@ -614,13 +615,21 @@ class Panel:
         raise RuntimeError(f"Advanced mode did not switch on: {json.dumps(note)[:700]}")
 
     def locate_row(self, tab, group, label, prefix):
-        """Open `tab` and find the row; fall back to Advanced mode and a taller
-        window. Returns (rows, row, notes, tag of the page shot)."""
+        """Open `tab` and find the row; page the viewport down to a group below the fold; fall
+        back to Advanced mode and a taller window. Returns (rows, row, notes, tag of the page shot)."""
         note = self.last_notes = []
 
         def attempt(tag):
             rows = self.read(f"{prefix}-{tag}-locate")
             note.append({"tab_click": self.click_tab(tab, rows)})
+            rows = self.read(f"{prefix}-{tag}")
+            try:
+                return rows, self.find_row(rows, group, label), f"{prefix}-{tag}"
+            except RuntimeError as error:
+                if not group:
+                    raise
+                why = brief(error)
+            note.append({"scrolled": self.scroll_to(group, label, f"{prefix}-{tag}-scroll", why)})
             rows = self.read(f"{prefix}-{tag}")
             return rows, self.find_row(rows, group, label), f"{prefix}-{tag}"
 
@@ -857,6 +866,78 @@ class Panel:
                 break
         return {"button": button, "presses": len(seen) - 1, "knob_at": seen}
 
+    def find_scroll_buttons(self):
+        """Which of the page scrollbar's pressable buttons page down / up (their AX order is
+        not fixed): press each once and read the knob, AX only. Two passes, since an up button
+        moves nothing while the page is at its top."""
+        if self.scroll_down_buttons and self.scroll_up_button is not None:
+            return {"down": self.scroll_down_buttons, "up": self.scroll_up_button}
+        downs, ups, marks = {}, set(), {}
+        for _ in range(2):
+            for index in range(len(self.scrollbar()["buttons"])):
+                before = self.knob_at()
+                self.press_scroll(index, 1)
+                moved = self.knob_at() - before
+                marks.setdefault(index, []).append(moved)
+                if moved > 0:
+                    downs[index] = max(moved, downs.get(index, 0))
+                elif moved < 0:
+                    ups.add(index)
+        require(downs and ups, f"The page scrollbar shows no up/down button: knob marks {marks}")
+        self.scroll_down_buttons = sorted(downs, key=downs.get, reverse=True)  # page step, then line step
+        self.scroll_up_button = min(ups)
+        return {"down": self.scroll_down_buttons, "up": self.scroll_up_button, "knob_dy": marks}
+
+    def scroll_to(self, group, label, tag, why):
+        """Page the options viewport down one scrollbar step at a time until the group title
+        and the row are both inside it (step 2: AXPress on the page scrollbar reached the
+        Others page's last group); stops where no down button moves the page any more."""
+        trail = {"not_found": str(why)[:200], "buttons": self.find_scroll_buttons()}
+        trail["to_top"] = self.scroll_top(self.scroll_up_button)
+        trail["steps"] = []
+        x, y, w, h = self.viewport()
+        for index in range(24):
+            knob = self.knob_at()
+            for button in self.scroll_down_buttons:
+                before = self.knob_at()
+                self.press_scroll(button, 1)
+                if self.knob_at() != before:
+                    break
+            moved = self.knob_at() - knob
+            rows = self.read(f"{tag}-{index}")
+            try:
+                titles = [t["text"] for t in self.page_titles(rows)]
+                row = self.find_row(rows, group, label)
+            except RuntimeError:
+                titles, row = [], None
+            step = {"step": index, "knob_dy": moved, "titles": titles}
+            trail["steps"].append(step)
+            if row and row["y"] + row["h"] <= y + h - 2:
+                step["row_y"] = round(row["y"], 1)
+                return trail
+            if not moved:
+                step["end_of_page"] = True
+                break
+        raise RuntimeError(f"{group!r} / {label!r} not on the page after scrolling to its end: "
+                           f"{json.dumps(trail)[-600:]}")
+
+    def ax_named(self, wanted):
+        """AX elements of this app - any of its windows, a popup list is its own - whose title,
+        value or description reads `wanted`."""
+        found = []
+        for window in self.desktop.children(self.root, "AXWindows"):
+            for element in self.desktop.descendants(window):
+                if any(norm(self.desktop.text(element, key)) == norm(wanted)
+                       for key in ("AXTitle", "AXValue", "AXDescription")):
+                    found.append(element)
+        return found
+
+    def windows(self):
+        """[subrole, title, box] of every window the app has on screen."""
+        return [[self.desktop.text(window, "AXSubrole"), self.desktop.text(window, "AXTitle")[:40],
+                 [round(v) for v in box] if (box := self.desktop.box(window)) else None]
+                for window in self.desktop.children(self.root, "AXWindows")]
+
     def controls_in(self, rect):
         """AX elements positioned inside a screen rect: role, box, texts, actions."""
         x, y, w, h = rect
@@ -1080,6 +1161,9 @@ def op_set_checkbox(panel, ns):
 
 
 def op_pick_combo(panel, ns):
+    """Open the row's choice list and pick `target`; proven only when the row then paints
+    exactly the target. The entry is taken by a pointer click on its text, failing that by its
+    AX element, failing that by Down + Return keys while the list is open."""
     target = ns["target"]
     rows, row, note, tag = panel.locate_row(ns["tab"], ns.get("group"), ns["label"], "combo")
     tokens = panel.line_values(rows, row)
@@ -1087,11 +1171,22 @@ def op_pick_combo(panel, ns):
     token = tokens[0]
     painted_before = " ".join(t["text"] for t in tokens)
     cy = token["y"] + token["h"] / 2
-    plans = [("cell", token["x"] + min(8, token["w"] / 2), cy, 1),
-             ("cell-again", token["x"] + min(8, token["w"] / 2), cy, 1),
-             ("cell-double", token["x"] + min(8, token["w"] / 2), cy, 2),
-             ("right-edge", token["x"] + token["w"] + 16, cy, 1)]
-    attempts, chosen = [], None
+    left = token["x"] + min(8, token["w"] / 2)
+    plans = [("cell", left, cy, 1), ("cell-again", left, cy, 1), ("cell-double", left, cy, 2),
+             ("right-edge", token["x"] + token["w"] + 16, cy, 1),
+             ("cell-right", panel.geometry()[0].x + VIEW_RIGHT - 12, cy, 1)]
+    off_row = lambda r: abs(r["y"] - row["y"]) > 12  # the row's own painted value is no list entry
+
+    def painted_now(shot):
+        """What the row paints in capture `shot` (a note when the row itself is lost)."""
+        try:
+            current = panel.read(shot)
+            return " ".join(t["text"] for t in panel.line_values(
+                current, panel.find_row(current, ns.get("group"), ns["label"])))
+        except RuntimeError as error:
+            return f"<row lost: {brief(error, 160)}>"
+
+    attempts, chosen, plan = [], None, None
     for index, (how, gx, gy, clicks) in enumerate(plans):
         name = f"combo-{index}-{how}"
         for _ in range(clicks):
@@ -1099,34 +1194,48 @@ def op_pick_combo(panel, ns):
             time.sleep(0.12)
         time.sleep(0.9)
         popup_rows = panel.read(f"{name}-popup", full=True)
-        popup = [r for r in popup_rows if norm(r["text"]) == norm(target)]
-        attempt = {"how": how, "click": [round(gx), round(gy)],
-                   "popup_entries_seen": sorted({r["text"] for r in popup_rows
-                                                 if r["y"] > row["y"] - 5 and norm(r["text"]) in
-                                                 ("by layer", "by object")})}
-        attempts.append(attempt)
-        if not popup:
-            continue
-        entry = popup[0]
-        attempt["clicked_entry"] = [round(entry["x"] + entry["w"] / 2), round(entry["y"] + entry["h"] / 2)]
-        panel.click(entry["x"] + entry["w"] / 2, entry["y"] + entry["h"] / 2, guard=False)
-        time.sleep(0.9)
-        after = panel.read(f"{name}-after")
-        try:
-            again = panel.find_row(after, ns.get("group"), ns["label"])
-            painted = " ".join(t["text"] for t in panel.line_values(after, again))
-        except RuntimeError as error:
-            painted = f"<row lost: {brief(error, 160)}>"
-        attempt.update({"painted_after": painted, "title": panel.title,
-                        "screenshot_after": f"{name}-after.png", "screenshot_popup": f"{name}-popup.png"})
-        if norm(painted) == norm(target):
-            chosen = attempt
-        break
+        entry = next((r for r in popup_rows if off_row(r) and norm(target) in norm(r["text"])), None)
+        plan = {"how": how, "click": [round(gx), round(gy)], "focused": panel.focused(),
+                "popup_entries_seen": sorted({r["text"] for r in popup_rows
+                                              if off_row(r) and norm(r["text"]) in ("by layer", "by object")})}
+        attempts.append(plan)
+        if entry is None:  # no list on screen: a closed read-only combo may still take an arrow key
+            takes = [("closed-down-key", lambda: post_keys(panel.pid, 125, 1))]
+        else:
+            spot = (entry["x"] + entry["w"] / 2, entry["y"] + entry["h"] / 2)
+            plan["entry_box"] = {k: round(entry[k]) for k in ("x", "y", "w", "h")}
+            plan["entry_click"] = [round(spot[0]), round(spot[1])]
+            plan["windows"] = panel.windows()
+            takes = [("pointer", lambda: panel.click(*spot, guard=False))]
+            for order, element in enumerate(e for e in panel.ax_named(target)
+                                             if (box := panel.desktop.box(e)) and off_row({"y": box[1]})):
+                if "AXPress" in panel.desktop.actions(element):
+                    takes.append((f"ax-press-{order}", lambda element=element:
+                                  panel.desktop.act(panel.pid, element, "AXPress")))
+            takes.append(("open-down-return-keys", lambda: [post_keys(panel.pid, code, 1)
+                                                            for code in (125, 36)]))
+        for take, act in takes:
+            try:
+                act()
+            except Exception as error:
+                plan[f"{take}_error"] = brief(error, 200)
+            time.sleep(0.9)
+            shot = f"{name}-{take}-after"
+            attempt = {"how": take, "painted_after": painted_now(shot), "title": panel.title,
+                       "screenshot_after": shot + ".png"}
+            plan.setdefault("takes", []).append(attempt)
+            if norm(attempt["painted_after"]) == norm(target):
+                chosen = attempt
+                break
+        if chosen:
+            break
     return {"ok": chosen is not None,
             "readback": {"tab": ns["tab"], "label": row["text"], "before": painted_before,
-                         "after": chosen["painted_after"] if chosen else None, "expected": target},
+                         "after": chosen["painted_after"] if chosen else None, "expected": target,
+                         "click": plan["click"], "entry_click": plan.get("entry_click"),
+                         "taken_by": chosen["how"] if chosen else None},
             "evidence": {"notes": note, "attempts": attempts,
-                         "screenshots": {"before": tag + ".png", "popup": "combo-0-cell-popup.png",
+                         "screenshots": {"before": tag + ".png", "popup": f"combo-0-cell-popup.png",
                                          "after": chosen["screenshot_after"] if chosen else None}}}
 
 
