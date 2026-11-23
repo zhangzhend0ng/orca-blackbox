@@ -91,11 +91,13 @@ def bind_native_canvas(ui, scope, root, sut_sha):
 def prove_project(ui, root, run_id, contract_sha256, guard, sut_sha, stopped, old, closed, *,
                   saved_sha=None, probe_boot=False, probe_waits=False, report=None, conf_extra=None):
     """Reopen the saved project in a fresh process and slice/export it. The
-    reopen runs under the SAME app config as the edit session (`conf_extra`):
-    fa run 6c091f2e (#296, develop mode for the edit only) exported a
-    G-code without line numbers although the project said
-    gcode_add_line_number=1 - the slicer reads the value from the config
-    of the session that exports."""
+    reopen runs under the SAME app conf as the edit session (`conf_extra`),
+    so the proof session does not differ from the edit session in anything
+    but the project. (It did differ for #296 - develop mode for the edit
+    only - and fa run 6c091f2e exported a G-code without line numbers;
+    with both sessions in develop mode, fa run 908ca2d, the file still has
+    none: the mode of the session is not what the missing numbers hung
+    on.)"""
     from harness.agent_guest import _WindowsUI, _encode_capture
     from harness.agent_protocol import write_json_once
     from harness.perf_monitor import launch_phase
