@@ -1,9 +1,11 @@
 """Data-only authority policy; no coordinates or business action sequence."""
 from __future__ import annotations
 
+import ctypes
 import math
 import re
 from copy import deepcopy
+from ctypes import wintypes
 from .agent_protocol import MAINTENANCE_TRIALS
 from .native_diagnostic_recovery import COMMIT_SCENARIO
 from .native_matrix import (CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, SAVE_CLEAR_SCENARIOS, POPUP_BIND_SCENARIOS,
@@ -25,15 +27,25 @@ CANVAS_NUMBER = r"(?:[1-9][0-9]{0,2}(?:\.[0-9]{1,4})?|0\.(?=[0-9]{0,3}[1-9])[0-9
 NATIVE_EDIT_OBSERVATION_SCENARIOS = frozenset(MAINTENANCE_TRIALS)
 
 
-def visible_native_edits(wu, gui, children, focused, pid):
+class _GuiThreadInfo(ctypes.Structure):
+    _fields_ = [("cbSize", wintypes.DWORD), ("flags", wintypes.DWORD),
+                ("hwndActive", wintypes.HWND), ("hwndFocus", wintypes.HWND),
+                ("hwndCapture", wintypes.HWND), ("hwndMenuOwner", wintypes.HWND),
+                ("hwndMoveSize", wintypes.HWND), ("hwndCaret", wintypes.HWND),
+                ("rcCaret", wintypes.RECT)]
+
+
+def visible_native_edits(wu, children, focused, pid):
     """Return bounded, hit-tested Edit geometry without reading window text."""
+    gui = wu.user32
     fields = []
     for hwnd in children:
+        handle = wintypes.HWND(hwnd)
         if (wu._window_pid(hwnd) != pid or wu.window_class(hwnd) != "Edit"
-                or not gui.IsWindowVisible(hwnd) or not gui.IsWindowEnabled(hwnd)):
+                or not gui.IsWindowVisible(handle) or not gui.IsWindowEnabled(handle)):
             continue
-        style = gui.GetWindowLong(hwnd, -16)  # GWL_STYLE
-        if style & (0x20 | 0x800):  # ES_PASSWORD | ES_READONLY
+        style = gui.GetWindowLongW(handle, -16)  # GWL_STYLE
+        if not style or style & (0x20 | 0x800):  # invalid HWND, ES_PASSWORD or ES_READONLY
             continue
         left, top, right, bottom = wu.window_rect(hwnd)
         x1, y1, x2, y2 = max(0, left), max(0, top), min(1920, right), min(1080, bottom)
@@ -381,17 +393,25 @@ class InputGuard:
         self.last_window["click_finished_monotonic_ns"] = finished_ns
 
     def observe_native_edits(self):
-        from .native_process_viewport import _children
-        from .process_panel import focus_hwnd
-        import win32gui
-        from pywintypes import error as Win32Error
-
         try:
             wu, foreground = self.owned_foreground()
-            focused = focus_hwnd(foreground)
-            result = visible_native_edits(wu, win32gui, _children(foreground), focused, self.scope["app_pid"])
+            gui = wu.user32
+            foreground_handle = wintypes.HWND(foreground)
+            thread_id = gui.GetWindowThreadProcessId(foreground_handle, None)
+            info = _GuiThreadInfo(cbSize=ctypes.sizeof(_GuiThreadInfo))
+            if not thread_id or not gui.GetGUIThreadInfo(wintypes.DWORD(thread_id), ctypes.byref(info)):
+                return {"unavailable": True}
+            children = []
+
+            @wu.WNDENUMPROC
+            def collect(hwnd, _lparam):
+                children.append(hwnd)
+                return True
+
+            gui.EnumChildWindows(foreground_handle, collect, 0)
+            result = visible_native_edits(wu, children, info.hwndFocus, self.scope["app_pid"])
             _, current = self.owned_foreground()
-        except (ValueError, OSError, Win32Error):
+        except (ValueError, OSError):
             # A transient redraw can invalidate a child between enumeration and query.
             return {"unavailable": True}
         return result if current == foreground else {"unavailable": True}
