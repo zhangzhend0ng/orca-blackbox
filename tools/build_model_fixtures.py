@@ -24,6 +24,10 @@ here (cube, cylinder, sphere) get the closed-shell checks of the other module.
     feishu_std_cubes2     two 20 mm cubes, extruders 1 and 3, centres 40 mm apart
     feishu_std_sphere     generated sphere, diameter 20 mm, extruder 1
     feishu_std_cylinder   the shapes plate's cylinder, d20 x 20 mm, extruder 1
+    feishu_std_text       文字浮雕, a stand-in: the word ORCA in a 5 x 7 DOT-MATRIX font, one 1 x 1 x 2 mm
+                         box per dot on a 64 x 16 x 2 mm plate. It is NOT made with the slicer's Text
+                         tool and does not reproduce its font, its embossing or its mesh; it only puts
+                         1 mm wide walls on the plate for the thin-wall rows.
 
 Deterministic: two runs write the same bytes. Not done here: the thumbnails are
 the template's (the cube); whether the application loads the files as intended
@@ -257,6 +261,41 @@ def cube(edge: float) -> bf.Shape:
     return bf.Shape("立方体", None, (design,), bf.box_mesh(design.box))
 
 
+FONT_5X7 = {
+    "O": ("01110", "10001", "10001", "10001", "10001", "10001", "01110"),
+    "R": ("11110", "10001", "10001", "11110", "10100", "10010", "10001"),
+    "C": ("01110", "10001", "10000", "10000", "10000", "10001", "01110"),
+    "A": ("01110", "10001", "10001", "11111", "10001", "10001", "10001"),
+}
+
+
+def text_relief(word: str, plate: tuple[float, float, float], pitch: float) -> bf.Shape:
+    """A dot-matrix STAND-IN for the slicer's Text tool, not made by it: `word` in a 5 x 7 font on a base plate.
+
+    The plate is `plate` (x, y, height) mm, centred on x = y = 0 with its bottom at z = 0. Every lit dot is
+    its own closed 1 x 1 mm box, 2 mm tall, standing on the plate (z from the plate's height to +2); the
+    letters are 5 mm wide with `pitch` mm from one letter's left edge to the next's, and the word is centred.
+    Every box is a separate shell of the one object.
+    """
+    width = (len(word) - 1) * pitch + 5
+    left = -width / 2
+    boxes = [bf.box_design((-plate[0] / 2, plate[0] / 2, -plate[1] / 2, plate[1] / 2, 0, plate[2]))]
+    for letter, character in enumerate(word):
+        glyph = FONT_5X7.get(character)
+        bf.need(glyph is not None and len(glyph) == 7 and all(len(row) == 5 for row in glyph),
+                f"text relief: no 5 x 7 glyph for {character!r}")
+        for row, line in enumerate(glyph):          # type: ignore[union-attr]
+            for column, lit in enumerate(line):
+                if lit == "1":
+                    x0 = left + letter * pitch + column
+                    y1 = 3.5 - row                   # rows count from the top; the glyph is 7 mm tall, centred on y = 0
+                    boxes.append(bf.box_design((x0, x0 + 1, y1 - 1, y1, plate[2], plate[2] + 2)))
+    bf.need(all(-plate[0] / 2 <= d.box[0] and d.box[1] <= plate[0] / 2
+                and -plate[1] / 2 <= d.box[2] and d.box[3] <= plate[1] / 2 for d in boxes[1:]),
+            "text relief: a dot leaves the base plate")
+    return bf.Shape("文字浮雕", None, tuple(boxes), bf.join(*(bf.box_mesh(d.box) for d in boxes)))
+
+
 # ---------------------------------------------------------------- fixtures
 
 @dataclass(frozen=True)
@@ -287,6 +326,7 @@ def specs(models: Path) -> dict[str, list[Item]]:
     out["feishu_std_cubes2"] = [Item(cube(20), "1", (CENTRE[0] - 20, CENTRE[1])), Item(replace(cube(20), name="立方体2"), "3", (CENTRE[0] + 20, CENTRE[1]))]
     out["feishu_std_sphere"] = [Item(sphere(64, 32, 10.0), "1", CENTRE)]
     out["feishu_std_cylinder"] = [Item(bf.shapes()[1], "1", CENTRE)]
+    out["feishu_std_text"] = [Item(text_relief("ORCA", (64.0, 16.0, 2.0), 6.0), "1", CENTRE)]
     for stem, file_name in (("bunny", "Stanford_Bunny.3mf"), ("hell", "Orca_stringhell.3mf")):
         model = source_of(models / file_name)
         out[f"feishu_std_{stem}"] = [Item(replace(imported, name=model.name), "1", CENTRE, model)]
@@ -294,7 +334,8 @@ def specs(models: Path) -> dict[str, list[Item]]:
     out["feishu_std_tolerance"] = [Item(replace(imported, name=tolerance.name), "1", CENTRE, tolerance)]
     return dict(sorted(out.items(), key=lambda entry: ["feishu_std_boat", "feishu_std_boat2", "feishu_std_fdmt", "feishu_std_fdmt2",
                                                         "feishu_std_cubes2", "feishu_std_sphere", "feishu_std_cylinder",
-                                                        "feishu_std_bunny", "feishu_std_hell", "feishu_std_tolerance"].index(entry[0])))
+                                                        "feishu_std_bunny", "feishu_std_hell", "feishu_std_tolerance",
+                                                        "feishu_std_text"].index(entry[0])))
 
 
 def place(template: bf.Template, items: Sequence[Item]) -> list[bf.Placed]:
@@ -462,7 +503,14 @@ def validate(output: bytes, template: bf.Template, items: Sequence[Item], object
             vertices = [tuple(round(float(value) * bf.MICRO) for value in vertex) for vertex in VERTEX.findall(vertex_block)]
             triangles = [tuple(int(value) for value in triangle) for triangle in TRIANGLE.findall(triangle_block)]
             bf.require(all(0 <= min(triangle) and max(triangle) < len(vertices) for triangle in triangles), f"{placed.member}: triangle index")
-            bf.check_mesh(item.shape.name, vertices, triangles, item.shape, say)   # type: ignore[arg-type]
+            counted: list[str] = []
+            shells = bf.check_mesh(item.shape.name, vertices, triangles, item.shape, counted.append)   # type: ignore[arg-type]
+            if shells > 3:   # one line per box would be noise: the object line carries the totals
+                say(f"  {shells} closed boxes as separate shells of one object, each checked closed, oriented, positive "
+                    f"and within 1e-6 of its design volume and box: " + "; ".join(line.strip() for line in counted if line.strip().startswith("object:")))
+            else:
+                for line in counted:
+                    say(line)
         floats = [(float(x), float(y), float(z)) for x, y, z in VERTEX.findall(vertex_block)]
         box = on_plate(floats, component_transform, (built.get("transform") or "").split())
         centre = ((box[0] + box[3]) / 2, (box[1] + box[4]) / 2)
