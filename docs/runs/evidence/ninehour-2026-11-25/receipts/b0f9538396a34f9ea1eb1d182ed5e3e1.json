@@ -1,0 +1,88 @@
+{
+  "schema": "ninehour_receipt/1",
+  "run_dir": "C:\\coil\\Projects\\SnapmakerOrca\\external\\orca-blackbox\\artifacts\\windows_mcp_harvest\\b0f9538396a34f9ea1eb1d182ed5e3e1",
+  "identity": {
+    "run_id": "b0f9538396a34f9ea1eb1d182ed5e3e1",
+    "source_commit": "d5fc2fad9ed919467e096a3a7d4c2ec746d6c7e0",
+    "scenario": "uia_param_single_wall_avoid",
+    "goal": null,
+    "machine": "guest",
+    "machine_inferred": "guest",
+    "label": "regress-final",
+    "execution_host": null
+  },
+  "verdicts": {
+    "release_verdict": "SHADOW",
+    "verified_pass": true,
+    "cleanup_confirmed": true,
+    "execution_status": "completed",
+    "mode": "script_shadow",
+    "comparison": null,
+    "comparison_source": "summary.json",
+    "paired_offline_at": null,
+    "verdict": null,
+    "failure_stage": null,
+    "error": null,
+    "guest_phases": null,
+    "wall_loops_gcode_echo": null
+  },
+  "seconds": {
+    "guest": 165.3551464,
+    "host_wall": 192.92199999990407,
+    "harvest": 2.0,
+    "script_action": 61.031,
+    "mac_wall": null
+  },
+  "stages": {
+    "list": [],
+    "stage_sum_ok": null,
+    "ok0": [],
+    "parents": [],
+    "tags": []
+  },
+  "artifacts": {
+    "proof_run_id": "b0f9538396a34f9ea1eb1d182ed5e3e1",
+    "project_sha256": "1d8371379b7358d8f9ba3306bc21e7b0a4d3d56b2023f8c9eec05b6f6bf66b9c",
+    "project_sha256_recomputed": "1d8371379b7358d8f9ba3306bc21e7b0a4d3d56b2023f8c9eec05b6f6bf66b9c",
+    "gcode_sha256": "7adcf6b5a650721068f7aacc5fab17f1d5684666467ed1819fc150ab32e19754",
+    "gcode_sha256_recomputed": "7adcf6b5a650721068f7aacc5fab17f1d5684666467ed1819fc150ab32e19754",
+    "artifact_hashes_match": true,
+    "teardown_active_processes": 0
+  },
+  "missing": [
+    "native_save_demo/b0f9538396a34f9ea1eb1d182ed5e3e1/summary.json#comparison"
+  ],
+  "malformed": [],
+  "warnings": [],
+  "sources": {
+    "run_dir": "command line",
+    "identity.machine": "inferred: native_save_demo/b0f9538396a34f9ea1eb1d182ed5e3e1/summary.json exists",
+    "identity.machine_inferred": "inferred: native_save_demo/b0f9538396a34f9ea1eb1d182ed5e3e1/summary.json exists",
+    "identity.run_id": "directory name",
+    "verdicts.release_verdict": "result.json#release_verdict",
+    "verdicts.execution_status": "result.json#execution_status",
+    "verdicts.mode": "result.json#mode",
+    "verdicts.verified_pass": "result.json#verified_pass",
+    "verdicts.cleanup_confirmed": "result.json#cleanup_confirmed",
+    "seconds.guest": "process.json#finished_at_ns - started_at_ns",
+    "seconds.script_action": "native_worker.json#script_action_elapsed_ns",
+    "stages.list": "native_worker.log#stage lines, line per stage",
+    "stages.ok0": "native_worker.log#stage lines logged with ok=0",
+    "stages.parents": "native_worker.log#stages that wrap the locate./edit_readback. stage of the same field",
+    "stages.tags": "native_worker.log#tag per stage line",
+    "artifacts.proof_run_id": "proof.json#run_id",
+    "artifacts.project_sha256": "proof.json#project_sha256",
+    "artifacts.gcode_sha256": "proof.json#gcode_sha256",
+    "artifacts.project_sha256_recomputed": "proof/0001.3mf#sha256",
+    "artifacts.gcode_sha256_recomputed": "exports/0001.gcode#sha256",
+    "artifacts.artifact_hashes_match": "proof.json#project_sha256,gcode_sha256 compared with proof/0001.3mf#sha256 and exports/0001.gcode#sha256",
+    "artifacts.teardown_active_processes": "teardown.json#active_processes",
+    "verdicts.comparison": "native_save_demo/b0f9538396a34f9ea1eb1d182ed5e3e1/summary.json#comparison",
+    "verdicts.comparison_source": "native_save_demo/b0f9538396a34f9ea1eb1d182ed5e3e1/summary.json#comparison",
+    "seconds.host_wall": "native_save_demo/b0f9538396a34f9ea1eb1d182ed5e3e1/summary.json#host_wall_seconds",
+    "seconds.harvest": "native_save_demo/b0f9538396a34f9ea1eb1d182ed5e3e1/summary.json#harvest_seconds",
+    "identity.scenario": "native_save_demo/b0f9538396a34f9ea1eb1d182ed5e3e1/summary.json#scenario",
+    "identity.source_commit": "native_save_demo/b0f9538396a34f9ea1eb1d182ed5e3e1/summary.json#source_sha",
+    "identity.label": "docs\\runs\\evidence\\ninehour-2026-11-25\\ledger.jsonl:65#label"
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "schema": "ninehour_receipt/1",
+  "run_dir": "C:\\coil\\Projects\\SnapmakerOrca\\external\\orca-blackbox\\artifacts\\windows_mcp_harvest\\b7778cd5650c40f6bcf11ed71db1bc3d",
+  "identity": {
+    "run_id": "b7778cd5650c40f6bcf11ed71db1bc3d",
+    "source_commit": "d5fc2fad9ed919467e096a3a7d4c2ec746d6c7e0",
+    "scenario": "compare_265_quality",
+    "goal": null,
+    "machine": "guest",
+    "machine_inferred": "guest",
+    "label": "final-265-q-1",
+    "execution_host": null
+  },
+  "verdicts": {
+    "release_verdict": "SHADOW",
+    "verified_pass": true,
+    "cleanup_confirmed": true,
+    "execution_status": "completed",
+    "mode": "script_shadow",
+    "comparison": {
+      "status": "paired",
+      "business_status": "SHADOW",
+      "unmet_expectations": [
+        "overhang_80pct",
+        "overhang_10pct_transition",
+        "ordinary_surface_feed"
+      ],
+      "reason": null
+    },
+    "comparison_source": "summary.json",
+    "paired_offline_at": null,
+    "verdict": null,
+    "failure_stage": null,
+    "error": null,
+    "guest_phases": null,
+    "wall_loops_gcode_echo": null
+  },
+  "seconds": {
+    "guest": 160.1799927,
+    "host_wall": 184.78099999995902,
+    "harvest": 2.0,
+    "script_action": 43.109,
+    "mac_wall": null
+  },
+  "stages": {
+    "list": [],
+    "stage_sum_ok": null,
+    "ok0": [],
+    "parents": [],
+    "tags": []
+  },
+  "artifacts": {
+    "proof_run_id": "b7778cd5650c40f6bcf11ed71db1bc3d",
+    "project_sha256": "bd1792063f6ca5a58fc10e289ad3d642dde716f6a7ebe03ab9a7b261cb17b472",
+    "project_sha256_recomputed": "bd1792063f6ca5a58fc10e289ad3d642dde716f6a7ebe03ab9a7b261cb17b472",
+    "gcode_sha256": "d091a195c45454ba2703e15884dd004f6a47df3e47bb41230617ca3d0055c652",
+    "gcode_sha256_recomputed": "d091a195c45454ba2703e15884dd004f6a47df3e47bb41230617ca3d0055c652",
+    "artifact_hashes_match": true,
+    "teardown_active_processes": 0
+  },
+  "missing": [],
+  "malformed": [],
+  "warnings": [],
+  "sources": {
+    "run_dir": "command line",
+    "identity.machine": "inferred: native_save_demo/b7778cd5650c40f6bcf11ed71db1bc3d/summary.json exists",
+    "identity.machine_inferred": "inferred: native_save_demo/b7778cd5650c40f6bcf11ed71db1bc3d/summary.json exists",
+    "identity.run_id": "directory name",
+    "verdicts.release_verdict": "result.json#release_verdict",
+    "verdicts.execution_status": "result.json#execution_status",
+    "verdicts.mode": "result.json#mode",
+    "verdicts.verified_pass": "result.json#verified_pass",
+    "verdicts.cleanup_confirmed": "result.json#cleanup_confirmed",
+    "seconds.guest": "process.json#finished_at_ns - started_at_ns",
+    "seconds.script_action": "native_worker.json#script_action_elapsed_ns",
+    "stages.list": "native_worker.log#stage lines, line per stage",
+    "stages.ok0": "native_worker.log#stage lines logged with ok=0",
+    "stages.parents": "native_worker.log#stages that wrap the locate./edit_readback. stage of the same field",
+    "stages.tags": "native_worker.log#tag per stage line",
+    "artifacts.proof_run_id": "proof.json#run_id",
+    "artifacts.project_sha256": "proof.json#project_sha256",
+    "artifacts.gcode_sha256": "proof.json#gcode_sha256",
+    "artifacts.project_sha256_recomputed": "proof/0001.3mf#sha256",
+    "artifacts.gcode_sha256_recomputed": "exports/0001.gcode#sha256",
+    "artifacts.artifact_hashes_match": "proof.json#project_sha256,gcode_sha256 compared with proof/0001.3mf#sha256 and exports/0001.gcode#sha256",
+    "artifacts.teardown_active_processes": "teardown.json#active_processes",
+    "verdicts.comparison.status": "native_save_demo/b7778cd5650c40f6bcf11ed71db1bc3d/summary.json#comparison.status",
+    "verdicts.comparison.business_status": "native_save_demo/b7778cd5650c40f6bcf11ed71db1bc3d/summary.json#comparison.business_status",
+    "verdicts.comparison.unmet_expectations": "native_save_demo/b7778cd5650c40f6bcf11ed71db1bc3d/summary.json#comparison.unmet_expectations",
+    "verdicts.comparison.reason": "native_save_demo/b7778cd5650c40f6bcf11ed71db1bc3d/summary.json#comparison.reason",
+    "verdicts.comparison_source": "native_save_demo/b7778cd5650c40f6bcf11ed71db1bc3d/summary.json#comparison",
+    "seconds.host_wall": "native_save_demo/b7778cd5650c40f6bcf11ed71db1bc3d/summary.json#host_wall_seconds",
+    "seconds.harvest": "native_save_demo/b7778cd5650c40f6bcf11ed71db1bc3d/summary.json#harvest_seconds",
+    "identity.scenario": "native_save_demo/b7778cd5650c40f6bcf11ed71db1bc3d/summary.json#scenario",
+    "identity.source_commit": "native_save_demo/b7778cd5650c40f6bcf11ed71db1bc3d/summary.json#source_sha",
+    "identity.label": "docs\\runs\\evidence\\ninehour-2026-11-25\\ledger.jsonl:57#label"
+  }
+}

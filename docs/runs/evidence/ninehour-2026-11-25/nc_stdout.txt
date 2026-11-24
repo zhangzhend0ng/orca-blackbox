@@ -1,0 +1,211 @@
+judged ec032d7c (compare_276_quality): 19 controls
+judged eebdf238 (compare_276_quality): 19 controls
+judged 5359abca (compare_276_strength): 19 controls
+judged 7484bd43 (uia_param_overhang_speeds): 20 controls
+judged b697f7c2 (uia_param_overhang_speeds_fdmt): 20 controls
+judged 8e207463 (uia_param_overhang_speeds): 17 controls
+judged 19d61032 (uia_param_overhang_speeds): 17 controls
+======================================================================================================================================================
+ROW 264 cube  runs 7484bd43 8e207463 19d61032  (A = ACCEPTED, R = REJECTED; 'business' is the judge behind result.json's checks.business)
+--- control 1: untouched saved project and export (must be accepted)   [expected: ACCEPTED]
+      business   ACCEPTED x3
+      full verifier ACCEPTED [7484bd43] | not-run [8e207463,19d61032]
+--- control 2: one target wrong by one step: overhang_3_4_speed 20 -> 25   [expected: REJECTED]
+      business   REJECTED: pilot_target_setting_mismatch [7484bd43,8e207463,19d61032]
+      full verifier REJECTED: pilot_target_setting_mismatch [7484bd43] | not-run [8e207463,19d61032]
+--- control 2b: one target wrong by one step: overhang_1_4_speed 40 -> 45   [expected: REJECTED]
+      business   REJECTED: pilot_target_setting_mismatch [7484bd43,8e207463,19d61032]
+      full verifier REJECTED: pilot_target_setting_mismatch [7484bd43] | not-run [8e207463,19d61032]
+--- control 2c: enable_overhang_speed switched off: 1 -> 0   [expected: REJECTED]
+      business   REJECTED: pilot_target_setting_mismatch [7484bd43,8e207463,19d61032]
+      full verifier REJECTED: pilot_target_setting_mismatch [7484bd43] | not-run [8e207463,19d61032]
+--- control 3: one target left at the fixture default: overhang_2_4_speed 30 -> 50   [expected: REJECTED]
+      business   REJECTED: pilot_target_setting_mismatch [7484bd43,8e207463,19d61032]
+      full verifier REJECTED: pilot_target_setting_mismatch [7484bd43] | not-run [8e207463,19d61032]
+--- control 3b: one target unset: overhang_3_4_speed removed from the config   [expected: REJECTED]
+      business   REJECTED: pilot_config_missing [7484bd43,8e207463,19d61032]
+      full verifier REJECTED: pilot_config_missing [7484bd43] | not-run [8e207463,19d61032]
+--- control 4a: targets correct + unrelated top_surface_speed 150 -> 160   [expected: REJECTED]
+      business   REJECTED: pilot_unrelated_setting_changed:top_surface_speed [7484bd43,8e207463,19d61032]
+      full verifier REJECTED: pilot_unrelated_setting_changed:top_surface_speed [7484bd43] | not-run [8e207463,19d61032]
+--- control 4b: targets correct + unrelated retraction_length slot 1 1.5 -> 1.9   [expected: REJECTED]
+      business   REJECTED: pilot_unrelated_setting_changed:retraction_length [7484bd43,8e207463,19d61032]
+      full verifier REJECTED: pilot_unrelated_setting_changed:retraction_length [7484bd43] | not-run [8e207463,19d61032]
+--- control 4c: targets correct + unrelated wall_loops 2 -> 3   [expected: REJECTED]
+      business   REJECTED: pilot_unrelated_setting_changed:wall_loops [7484bd43,8e207463,19d61032]
+      full verifier REJECTED: pilot_unrelated_setting_changed:wall_loops [7484bd43] | not-run [8e207463,19d61032]
+--- control 5: the input fixture presented as the saved result (nothing edited)   [expected: REJECTED]
+      business   REJECTED: pilot_target_setting_mismatch [7484bd43,8e207463,19d61032]
+      full verifier REJECTED: pilot_target_setting_mismatch [7484bd43] | not-run [8e207463,19d61032]
+--- control 6: targets correct, G-code replaced by the default-parameter export of the same fixture G-code 245d51e2   [expected: REJECTED]
+      business   ACCEPTED x3
+      full verifier ACCEPTED [7484bd43] | not-run [8e207463,19d61032]
+--- control 6b: targets correct, G-code replaced by an export of ANOTHER model (b697f7c2)   [expected: REJECTED]
+      business   REJECTED: gcode_layer_height_mismatch [7484bd43,8e207463,19d61032]
+      full verifier REJECTED: gcode_layer_height_mismatch [7484bd43] | not-run [8e207463,19d61032]
+--- control 6c: targets correct, G-code truncated to its first 2000 bytes   [expected: REJECTED]
+      business   REJECTED: gcode_layer_height_mismatch [7484bd43,8e207463,19d61032]
+      full verifier REJECTED: gcode_layer_height_mismatch [7484bd43] | not-run [8e207463,19d61032]
+--- control 6d: targets correct, G-code config block rewritten to the fixture defaults of the target keys, moves untouched   [expected: REJECTED]
+      business   ACCEPTED x3
+      full verifier ACCEPTED [7484bd43] | not-run [8e207463,19d61032]
+--- control 6e: targets correct, G-code = moves of the default export 245d51e2 with this run's config block   [expected: REJECTED]
+      business   ACCEPTED x3
+      full verifier ACCEPTED [7484bd43] | not-run [8e207463,19d61032]
+--- control 7a: dirty list without the target keys (their values correct)   [expected: ACCEPTED (values are right; the dirty list is app-maintained metadata)]
+      business   ACCEPTED x3
+      full verifier ACCEPTED [7484bd43] | not-run [8e207463,19d61032]
+--- control 7b: dirty list with an unrelated key added (its value unchanged)   [expected: REJECTED]
+      business   REJECTED: pilot_dirty_manifest_out_of_scope [7484bd43,8e207463,19d61032]
+      full verifier REJECTED: pilot_dirty_manifest_out_of_scope [7484bd43] | not-run [8e207463,19d61032]
+--- control m1: project untouched; manifest.json case_id / executor / contract_sha256 / metadata altered (run_id and started_at_ns kept)   [expected: REJECTED if the verifier reads the manifest]
+      business   ACCEPTED [7484bd43] | not-run [8e207463,19d61032]
+      full verifier ACCEPTED [7484bd43] | not-run [8e207463,19d61032]
+--- control m2: project untouched; manifest.json started_at_ns moved 1 h later than the run   [expected: REJECTED]
+      business   ACCEPTED [7484bd43] | not-run [8e207463,19d61032]
+      full verifier REJECTED: artifact_identity_size_or_freshness [7484bd43] | not-run [8e207463,19d61032]
+--- control m3: project untouched; scope.json scenario renamed   [expected: REJECTED]
+      business   ACCEPTED [7484bd43] | not-run [8e207463,19d61032]
+      full verifier REJECTED: native_script_identity [7484bd43] | not-run [8e207463,19d61032]
+======================================================================================================================================================
+ROW 264 fdmt  runs b697f7c2  (A = ACCEPTED, R = REJECTED; 'business' is the judge behind result.json's checks.business)
+--- control 1: untouched saved project and export (must be accepted)   [expected: ACCEPTED]
+      business   ACCEPTED x1
+      full verifier ACCEPTED x1
+--- control 2: one target wrong by one step: overhang_3_4_speed 20 -> 25   [expected: REJECTED]
+      business   REJECTED: pilot_target_setting_mismatch [b697f7c2]
+      full verifier REJECTED: pilot_target_setting_mismatch [b697f7c2]
+--- control 2b: one target wrong by one step: overhang_1_4_speed 40 -> 45   [expected: REJECTED]
+      business   REJECTED: pilot_target_setting_mismatch [b697f7c2]
+      full verifier REJECTED: pilot_target_setting_mismatch [b697f7c2]
+--- control 2c: enable_overhang_speed switched off: 1 -> 0   [expected: REJECTED]
+      business   REJECTED: pilot_target_setting_mismatch [b697f7c2]
+      full verifier REJECTED: pilot_target_setting_mismatch [b697f7c2]
+--- control 3: one target left at the fixture default: overhang_2_4_speed 30 -> 50   [expected: REJECTED]
+      business   REJECTED: pilot_target_setting_mismatch [b697f7c2]
+      full verifier REJECTED: pilot_target_setting_mismatch [b697f7c2]
+--- control 3b: one target unset: overhang_3_4_speed removed from the config   [expected: REJECTED]
+      business   REJECTED: pilot_config_missing [b697f7c2]
+      full verifier REJECTED: pilot_config_missing [b697f7c2]
+--- control 4a: targets correct + unrelated top_surface_speed 200 -> 210   [expected: REJECTED]
+      business   REJECTED: pilot_unrelated_setting_changed:top_surface_speed [b697f7c2]
+      full verifier REJECTED: pilot_unrelated_setting_changed:top_surface_speed [b697f7c2]
+--- control 4b: targets correct + unrelated retraction_length slot 1 1.5 -> 1.9   [expected: REJECTED]
+      business   REJECTED: pilot_unrelated_setting_changed:retraction_length [b697f7c2]
+      full verifier REJECTED: pilot_unrelated_setting_changed:retraction_length [b697f7c2]
+--- control 4c: targets correct + unrelated wall_loops 2 -> 3   [expected: REJECTED]
+      business   REJECTED: pilot_unrelated_setting_changed:wall_loops [b697f7c2]
+      full verifier REJECTED: pilot_unrelated_setting_changed:wall_loops [b697f7c2]
+--- control 5: the input fixture presented as the saved result (nothing edited)   [expected: REJECTED]
+      business   REJECTED: pilot_target_setting_mismatch [b697f7c2]
+      full verifier REJECTED: pilot_target_setting_mismatch [b697f7c2]
+--- control 6: targets correct, G-code replaced by the default-parameter export of the same fixture G-code 0cccce4a   [expected: REJECTED]
+      business   ACCEPTED x1
+      full verifier ACCEPTED x1
+--- control 6b: targets correct, G-code replaced by an export of ANOTHER model (7484bd43)   [expected: REJECTED]
+      business   ACCEPTED x1
+      full verifier ACCEPTED x1
+--- control 6c: targets correct, G-code truncated to its first 2000 bytes   [expected: REJECTED]
+      business   ACCEPTED x1
+      full verifier ACCEPTED x1
+--- control 6d: targets correct, G-code config block rewritten to the fixture defaults of the target keys, moves untouched   [expected: REJECTED]
+      business   ACCEPTED x1
+      full verifier ACCEPTED x1
+--- control 6e: targets correct, G-code = moves of the default export 0cccce4a with this run's config block   [expected: REJECTED]
+      business   ACCEPTED x1
+      full verifier ACCEPTED x1
+--- control 7a: dirty list without the target keys (their values correct)   [expected: ACCEPTED (values are right; the dirty list is app-maintained metadata)]
+      business   ACCEPTED x1
+      full verifier ACCEPTED x1
+--- control 7b: dirty list with an unrelated key added (its value unchanged)   [expected: REJECTED]
+      business   REJECTED: pilot_dirty_manifest_out_of_scope [b697f7c2]
+      full verifier REJECTED: pilot_dirty_manifest_out_of_scope [b697f7c2]
+--- control m1: project untouched; manifest.json case_id / executor / contract_sha256 / metadata altered (run_id and started_at_ns kept)   [expected: REJECTED if the verifier reads the manifest]
+      business   ACCEPTED x1
+      full verifier ACCEPTED x1
+--- control m2: project untouched; manifest.json started_at_ns moved 1 h later than the run   [expected: REJECTED]
+      business   ACCEPTED x1
+      full verifier REJECTED: artifact_identity_size_or_freshness [b697f7c2]
+--- control m3: project untouched; scope.json scenario renamed   [expected: REJECTED]
+      business   ACCEPTED x1
+      full verifier REJECTED: native_script_identity [b697f7c2]
+======================================================================================================================================================
+ROW 276  runs ec032d7c eebdf238 5359abca  (A = ACCEPTED, R = REJECTED; 'business' is the judge behind result.json's checks.business)
+--- control 1: untouched saved project and export (must be accepted)   [expected: ACCEPTED]
+      business   ACCEPTED x3
+      paired     ACCEPTED x3(SHADOW)(SHADOW)(SHADOW)
+      full verifier ACCEPTED x3
+--- control 2: one target wrong by one step: filament_max_volumetric_speed slot 1: 15 -> 20   [expected: REJECTED]
+      business   REJECTED: param_slot_value_or_preservation:filament_max_volumetric_speed [ec032d7c,eebdf238,5359abca]
+      paired     REJECTED: param_slot_value_or_preservation:filament_max_volumetric_speed [ec032d7c,eebdf238,5359abca]
+      full verifier REJECTED: param_slot_value_or_preservation:filament_max_volumetric_speed [ec032d7c,eebdf238,5359abca]
+--- control 2b: one target wrong by one step: outer_wall_speed 700 -> 750   [expected: REJECTED]
+      business   REJECTED: pilot_target_setting_mismatch [ec032d7c,eebdf238,5359abca]
+      paired     REJECTED: pilot_target_setting_mismatch [ec032d7c,eebdf238,5359abca]
+      full verifier REJECTED: pilot_target_setting_mismatch [ec032d7c,eebdf238,5359abca]
+--- control 3: one target left at the fixture default: outer_wall_speed -> 200   [expected: REJECTED]
+      business   REJECTED: pilot_target_setting_mismatch [ec032d7c,eebdf238,5359abca]
+      paired     REJECTED: pilot_target_setting_mismatch [ec032d7c,eebdf238,5359abca]
+      full verifier REJECTED: pilot_target_setting_mismatch [ec032d7c,eebdf238,5359abca]
+--- control 3b: one target left at the fixture default: filament_max_volumetric_speed slot 1 -> 12   [expected: REJECTED]
+      business   REJECTED: param_slot_value_or_preservation:filament_max_volumetric_speed [ec032d7c,eebdf238,5359abca]
+      paired     REJECTED: param_slot_value_or_preservation:filament_max_volumetric_speed [ec032d7c,eebdf238,5359abca]
+      full verifier REJECTED: param_slot_value_or_preservation:filament_max_volumetric_speed [ec032d7c,eebdf238,5359abca]
+--- control 4a: targets correct + unrelated top_surface_speed 200 -> 210   [expected: REJECTED]
+      business   REJECTED: pilot_unrelated_setting_changed:top_surface_speed [ec032d7c,eebdf238,5359abca]
+      paired     REJECTED: pilot_unrelated_setting_changed:top_surface_speed [ec032d7c,eebdf238,5359abca]
+      full verifier REJECTED: pilot_unrelated_setting_changed:top_surface_speed [ec032d7c,eebdf238,5359abca]
+--- control 4b: targets correct + unrelated retraction_length slot 1 1.5 -> 1.9   [expected: REJECTED]
+      business   REJECTED: pilot_unrelated_setting_changed:retraction_length [ec032d7c,eebdf238,5359abca]
+      paired     REJECTED: pilot_unrelated_setting_changed:retraction_length [ec032d7c,eebdf238,5359abca]
+      full verifier REJECTED: pilot_unrelated_setting_changed:retraction_length [ec032d7c,eebdf238,5359abca]
+--- control 4c: targets correct + unrelated wall_loops 2 -> 3   [expected: REJECTED]
+      business   REJECTED: pilot_unrelated_setting_changed:wall_loops [ec032d7c,eebdf238,5359abca]
+      paired     REJECTED: pilot_unrelated_setting_changed:wall_loops [ec032d7c,eebdf238,5359abca]
+      full verifier REJECTED: pilot_unrelated_setting_changed:wall_loops [ec032d7c,eebdf238,5359abca]
+--- control 5: the input fixture presented as the saved result (nothing edited)   [expected: REJECTED]
+      business   REJECTED: param_slot_value_or_preservation:filament_max_volumetric_speed [ec032d7c,eebdf238,5359abca]
+      paired     REJECTED: param_slot_value_or_preservation:filament_max_volumetric_speed [ec032d7c,eebdf238,5359abca]
+      full verifier REJECTED: param_slot_value_or_preservation:filament_max_volumetric_speed [ec032d7c,eebdf238,5359abca]
+--- control 6: targets correct, G-code replaced by the fixed baseline G-code e9aa6f88   [expected: REJECTED]
+      business   REJECTED: comparison_export_key:outer_wall_speed [ec032d7c,eebdf238,5359abca]
+      paired     REJECTED: comparison_export_key:outer_wall_speed [ec032d7c,eebdf238,5359abca]
+      full verifier REJECTED: comparison_export_key:outer_wall_speed [ec032d7c,eebdf238,5359abca]
+--- control 6b: targets correct, G-code replaced by an export of ANOTHER model (7484bd43)   [expected: REJECTED]
+      business   REJECTED: comparison_export_key:outer_wall_speed [ec032d7c,eebdf238,5359abca]
+      paired     REJECTED: comparison_export_key:outer_wall_speed [ec032d7c,eebdf238,5359abca]
+      full verifier REJECTED: comparison_export_key:outer_wall_speed [ec032d7c,eebdf238,5359abca]
+--- control 6c: targets correct, G-code truncated to its first 2000 bytes   [expected: REJECTED]
+      business   REJECTED: comparison_export_config_block [ec032d7c,eebdf238,5359abca]
+      paired     REJECTED: comparison_export_config_block [ec032d7c,eebdf238,5359abca]
+      full verifier REJECTED: comparison_export_config_block [ec032d7c,eebdf238,5359abca]
+--- control 6d: targets correct, G-code config block rewritten to the fixture defaults of the target keys, moves untouched   [expected: REJECTED]
+      business   REJECTED: comparison_export_key:outer_wall_speed [ec032d7c,eebdf238,5359abca]
+      paired     REJECTED: comparison_export_key:outer_wall_speed [ec032d7c,eebdf238,5359abca]
+      full verifier REJECTED: comparison_export_key:outer_wall_speed [ec032d7c,eebdf238,5359abca]
+--- control 6e: targets correct, G-code = moves of the default export e9aa6f88 with this run's config block   [expected: REJECTED]
+      business   ACCEPTED x3
+      paired     REJECTED: comparison_outer_wall_volumetric_cap [ec032d7c,eebdf238,5359abca]
+      full verifier ACCEPTED x3
+--- control 7a: dirty list without the target keys (their values correct)   [expected: ACCEPTED (values are right; the dirty list is app-maintained metadata)]
+      business   ACCEPTED x3
+      paired     ACCEPTED x3(SHADOW)(SHADOW)(SHADOW)
+      full verifier ACCEPTED x3
+--- control 7b: dirty list with an unrelated key added (its value unchanged)   [expected: REJECTED]
+      business   REJECTED: pilot_dirty_manifest_out_of_scope [ec032d7c,eebdf238,5359abca]
+      paired     REJECTED: pilot_dirty_manifest_out_of_scope [ec032d7c,eebdf238,5359abca]
+      full verifier REJECTED: pilot_dirty_manifest_out_of_scope [ec032d7c,eebdf238,5359abca]
+--- control m1: project untouched; manifest.json case_id / executor / contract_sha256 / metadata altered (run_id and started_at_ns kept)   [expected: REJECTED if the verifier reads the manifest]
+      business   ACCEPTED x3
+      paired     ACCEPTED x3(SHADOW)(SHADOW)(SHADOW)
+      full verifier ACCEPTED x3
+--- control m2: project untouched; manifest.json started_at_ns moved 1 h later than the run   [expected: REJECTED]
+      business   ACCEPTED x3
+      paired     ACCEPTED x3(SHADOW)(SHADOW)(SHADOW)
+      full verifier REJECTED: native_phase_order [ec032d7c,eebdf238,5359abca]
+--- control m3: project untouched; scope.json scenario renamed   [expected: REJECTED]
+      business   ACCEPTED x3
+      paired     ACCEPTED x3(SHADOW)(SHADOW)(SHADOW)
+      full verifier REJECTED: native_script_identity [ec032d7c,eebdf238,5359abca]
+======================================================================================================================================================
+accepted where rejection was expected: 41 entry(ies); written to C:\coil\vm_setup\ninehour_1125\recompute\negative_controls.json (384247 bytes) in 33.7 s

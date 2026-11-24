@@ -1,0 +1,219 @@
+{
+  "schema": "ninehour_receipt/1",
+  "run_dir": "C:\\coil\\Projects\\SnapmakerOrca\\external\\orca-blackbox\\artifacts\\windows_mcp_harvest\\82f5390801584c9f99db3e57decf906c",
+  "identity": {
+    "run_id": "82f5390801584c9f99db3e57decf906c",
+    "source_commit": "636a733",
+    "scenario": "compare_276_quality",
+    "goal": null,
+    "machine": "fa706g3",
+    "machine_inferred": "fa706g3",
+    "label": "base-fa-1",
+    "execution_host": {
+      "hyper_v_guest": false,
+      "machine": "DESKTOP-FA706G3",
+      "flag": "ORCA_BB_ALLOW_TESTBOX"
+    }
+  },
+  "verdicts": {
+    "release_verdict": "SHADOW",
+    "verified_pass": true,
+    "cleanup_confirmed": true,
+    "execution_status": "completed",
+    "mode": "script_shadow",
+    "comparison": null,
+    "comparison_source": null,
+    "paired_offline_at": null,
+    "verdict": null,
+    "failure_stage": null,
+    "error": null,
+    "guest_phases": null,
+    "wall_loops_gcode_echo": null
+  },
+  "seconds": {
+    "guest": 183.6758085,
+    "host_wall": null,
+    "harvest": null,
+    "script_action": 73.859,
+    "mac_wall": null
+  },
+  "stages": {
+    "list": [
+      {
+        "stage": "printer.open",
+        "ok": 1,
+        "seconds": 2.1166,
+        "line": 16
+      },
+      {
+        "stage": "printer.page",
+        "ok": 1,
+        "seconds": 1.5334,
+        "line": 18
+      },
+      {
+        "stage": "printer.x_limit",
+        "ok": 1,
+        "seconds": 0.2206,
+        "line": 20
+      },
+      {
+        "stage": "printer.close",
+        "ok": 1,
+        "seconds": 0.1466,
+        "line": 21
+      },
+      {
+        "stage": "filament.open",
+        "ok": 1,
+        "seconds": 2.0045,
+        "line": 26
+      },
+      {
+        "stage": "filament.page",
+        "ok": 1,
+        "seconds": 1.5361,
+        "line": 28
+      },
+      {
+        "stage": "filament.flow_limit",
+        "ok": 1,
+        "seconds": 4.9878,
+        "line": 30
+      },
+      {
+        "stage": "filament.close",
+        "ok": 1,
+        "seconds": 0.1424,
+        "line": 31
+      },
+      {
+        "stage": "tab.Quality",
+        "ok": 1,
+        "seconds": 9.5573,
+        "line": 33
+      },
+      {
+        "stage": "locate.Layer height",
+        "ok": 1,
+        "seconds": 0.4011,
+        "line": 36
+      },
+      {
+        "stage": "edit_readback.Layer height",
+        "ok": 1,
+        "seconds": 6.0162,
+        "line": 37
+      },
+      {
+        "stage": "field.Layer height",
+        "ok": 1,
+        "seconds": 6.4334,
+        "line": 38
+      },
+      {
+        "stage": "locate.Outer wall line width",
+        "ok": 1,
+        "seconds": 0.4594,
+        "line": 41
+      },
+      {
+        "stage": "edit_readback.Outer wall line width",
+        "ok": 1,
+        "seconds": 6.0446,
+        "line": 42
+      },
+      {
+        "stage": "field.Outer wall line width",
+        "ok": 1,
+        "seconds": 6.5185,
+        "line": 43
+      },
+      {
+        "stage": "tab.Speed",
+        "ok": 1,
+        "seconds": 9.5536,
+        "line": 45
+      },
+      {
+        "stage": "locate.Outer wall speed",
+        "ok": 1,
+        "seconds": 0.3447,
+        "line": 48
+      },
+      {
+        "stage": "edit_readback.Outer wall speed",
+        "ok": 1,
+        "seconds": 6.0651,
+        "line": 49
+      },
+      {
+        "stage": "field.Outer wall speed",
+        "ok": 1,
+        "seconds": 6.4239,
+        "line": 50
+      },
+      {
+        "stage": "save",
+        "ok": 1,
+        "seconds": 7.5806,
+        "line": 53
+      }
+    ],
+    "stage_sum_ok": 58.7106,
+    "ok0": [],
+    "parents": [
+      "field.Layer height",
+      "field.Outer wall line width",
+      "field.Outer wall speed"
+    ],
+    "tags": [
+      "flow276"
+    ]
+  },
+  "artifacts": {
+    "proof_run_id": "82f5390801584c9f99db3e57decf906c",
+    "project_sha256": "ec8b4c14cbd08c61a52995b65701f0fa18ffa95a8b5a122abe384b01af80b4d8",
+    "project_sha256_recomputed": "ec8b4c14cbd08c61a52995b65701f0fa18ffa95a8b5a122abe384b01af80b4d8",
+    "gcode_sha256": "02a20e48a8b30afd87a3bc64aff0ae23833f9e6e78ee987d33f4f335a61976e8",
+    "gcode_sha256_recomputed": "02a20e48a8b30afd87a3bc64aff0ae23833f9e6e78ee987d33f4f335a61976e8",
+    "artifact_hashes_match": true,
+    "teardown_active_processes": null
+  },
+  "missing": [
+    "teardown.json"
+  ],
+  "malformed": [],
+  "warnings": [],
+  "sources": {
+    "run_dir": "command line",
+    "identity.machine": "inferred: native_run.log exists",
+    "identity.machine_inferred": "inferred: native_run.log exists",
+    "identity.run_id": "directory name",
+    "verdicts.release_verdict": "result.json#release_verdict",
+    "verdicts.execution_status": "result.json#execution_status",
+    "verdicts.mode": "result.json#mode",
+    "verdicts.verified_pass": "result.json#verified_pass",
+    "verdicts.cleanup_confirmed": "result.json#cleanup_confirmed",
+    "seconds.guest": "process.json#finished_at_ns - started_at_ns",
+    "seconds.script_action": "native_worker.json#script_action_elapsed_ns",
+    "stages.list": "native_worker.log#stage lines, line per stage",
+    "stages.ok0": "native_worker.log#stage lines logged with ok=0",
+    "stages.parents": "native_worker.log#stages that wrap the locate./edit_readback. stage of the same field",
+    "stages.tags": "native_worker.log#tag per stage line",
+    "stages.stage_sum_ok": "native_worker.log#seconds of the ok=1 stage lines that are not parents",
+    "artifacts.proof_run_id": "proof.json#run_id",
+    "artifacts.project_sha256": "proof.json#project_sha256",
+    "artifacts.gcode_sha256": "proof.json#gcode_sha256",
+    "artifacts.project_sha256_recomputed": "proof/0001.3mf#sha256",
+    "artifacts.gcode_sha256_recomputed": "exports/0001.gcode#sha256",
+    "artifacts.artifact_hashes_match": "proof.json#project_sha256,gcode_sha256 compared with proof/0001.3mf#sha256 and exports/0001.gcode#sha256",
+    "artifacts.teardown_active_processes": "teardown.json#active_processes",
+    "identity.execution_host.hyper_v_guest": "execution_host.json#hyper_v_guest",
+    "identity.execution_host.machine": "execution_host.json#machine",
+    "identity.execution_host.flag": "execution_host.json#flag",
+    "identity.scenario": "native_worker.json#scenario",
+    "identity.source_commit": "docs\\runs\\evidence\\ninehour-2026-11-25\\ledger.jsonl:20#commit",
+    "identity.label": "docs\\runs\\evidence\\ninehour-2026-11-25\\ledger.jsonl:20#label"
+  }
+}

@@ -1,0 +1,61 @@
+ninehour_receipts: wrote 69 receipt(s) to docs\runs\evidence\ninehour-2026-11-25\receipts
+ninehour_receipts: 8e207463: missing teardown.json
+ninehour_receipts: 7484bd43: missing native_save_demo/7484bd43c9114b5b8f8d098a6ac978e3/summary.json#comparison
+ninehour_receipts: b697f7c2: missing native_save_demo/b697f7c24c6c49849c05b22c2a8ed1a3/summary.json#comparison
+ninehour_receipts: 6da67943: comparison read from summary.offline-pairing.json (paired offline at 2026-11-25 02:09:35)
+ninehour_receipts: 930aa957: missing native_save_demo/930aa95769bc40a8b54c8cf28a977a2f/summary.json#comparison
+ninehour_receipts: d318815e: missing native_save_demo/d318815e3b1e4f60b4941cd9d53971d2/summary.json#comparison
+ninehour_receipts: 344785de: missing native_save_demo/344785dece8a4f579ba1bebdaec02dff/summary.json#comparison
+ninehour_receipts: 76b85931: missing teardown.json, docs\runs\evidence\ninehour-2026-11-25\ledger.jsonl:11#commit
+ninehour_receipts: 778bbfa2: missing native_save_demo/778bbfa2fe1e4abebd036af47d2c28fa/summary.json#comparison
+ninehour_receipts: e9089ec1: missing native_save_demo/e9089ec1cf50478c8ba10f1cd38e37ad/summary.json#comparison
+ninehour_receipts: c087687c: missing teardown.json, docs\runs\evidence\ninehour-2026-11-25\ledger.jsonl:14#commit
+ninehour_receipts: 9f8f1169: missing native_save_demo/9f8f116964c14853a88d3140277e2302/summary.json#comparison
+ninehour_receipts: 4cc00ac9: missing teardown.json, docs\runs\evidence\ninehour-2026-11-25\ledger.jsonl:16#commit
+ninehour_receipts: 819d192b: missing native_save_demo/819d192b35764f18939e6ac3c28db25a/summary.json#comparison
+ninehour_receipts: 51f5d2b0: missing teardown.json, docs\runs\evidence\ninehour-2026-11-25\ledger.jsonl:18#commit
+ninehour_receipts: 82f53908: missing teardown.json
+ninehour_receipts: 194e79b5: missing teardown.json
+ninehour_receipts: 3fe3ff18: missing teardown.json
+ninehour_receipts: ec032d7c: comparison read from summary.offline-pairing.json (paired offline at 2026-11-25 01:57:02)
+ninehour_receipts: 19d61032: missing teardown.json, execution_host.json
+ninehour_receipts: 0a337de9: missing teardown.json
+ninehour_receipts: eefe9d78: missing native_worker.json#script_action_elapsed_ns, proof.json, proof/0001.3mf, exports/0001.gcode
+ninehour_receipts: d2358953: missing teardown.json
+ninehour_receipts: 83a295d9: missing teardown.json
+ninehour_receipts: 2053992c: missing native_worker.json#script_action_elapsed_ns, proof.json, proof/0001.3mf, exports/0001.gcode
+ninehour_receipts: c7029cc0: missing teardown.json
+ninehour_receipts: 9c04338f: missing native_save_demo/9c04338f4cf041cda51511370cdeb580/summary.json#comparison
+ninehour_receipts: bed005d7: missing teardown.json
+ninehour_receipts: 032905f0: missing native_save_demo/032905f09fc74df0ac99e5e7d81e33c0/summary.json#comparison
+ninehour_receipts: b7ce6d2b: missing native_save_demo/b7ce6d2b045f455bb2a28f48958b7e8c/summary.json#comparison
+ninehour_receipts: 173f72ec: missing native_save_demo/173f72ec453c4fcc8d2bd0966356e3ae/summary.json#comparison
+ninehour_receipts: 2910969d: missing native_save_demo/2910969d2fb24466b5d49050350e2e03/summary.json#comparison
+ninehour_receipts: e15b8b93: missing native_save_demo/e15b8b93be8f440bbd39ebce4051c87f/summary.json#comparison
+ninehour_receipts: d03f10c8: missing teardown.json
+ninehour_receipts: 95422bb0: missing native_save_demo/95422bb0640e4f5d86dba39e68f2905e/summary.json#comparison
+ninehour_receipts: 9d2adda0: missing teardown.json
+ninehour_receipts: f37f49fd: missing native_save_demo/f37f49fd5d31467d86b6e4bdca5ef5ca/summary.json#comparison
+ninehour_receipts: e9167b36: missing teardown.json
+ninehour_receipts: 9ff32b28: missing native_save_demo/9ff32b2838fa466c873180e07d9fdd90/summary.json#comparison
+ninehour_receipts: 5a6d113d: missing teardown.json
+ninehour_receipts: b97452a8: missing native_save_demo/b97452a8e2c2412dbdbc0b26a75f0441/summary.json#comparison
+ninehour_receipts: 8352f74d: missing teardown.json
+ninehour_receipts: 925fe20f: missing teardown.json
+ninehour_receipts: afc73d60: missing teardown.json
+ninehour_receipts: c7c8a547: missing teardown.json
+ninehour_receipts: cfaa8a0d: missing native_save_demo/cfaa8a0d3aa94d929028838c8dc71310/summary.json#comparison
+ninehour_receipts: 9e687519: missing teardown.json
+ninehour_receipts: ee33d983: missing native_save_demo/ee33d983b0c04517ab418bc3f1e85c3d/summary.json#comparison
+ninehour_receipts: ac15b9ca: missing teardown.json
+ninehour_receipts: 8ef072a9: missing native_save_demo/8ef072a97c2042b597b567014922f6ac/summary.json#comparison
+ninehour_receipts: 62a3cd01: missing proof.json, proof/0001.3mf, exports/0001.gcode, teardown.json
+ninehour_receipts: b0f95383: missing native_save_demo/b0f9538396a34f9ea1eb1d182ed5e3e1/summary.json#comparison
+ninehour_receipts: 74f17375: missing teardown.json
+ninehour_receipts: d58abb24: missing native_save_demo/d58abb248fb14ddf9e3baed84c90ba13/summary.json#comparison
+ninehour_receipts: 47d68052: missing teardown.json
+ninehour_receipts: 3f5f22d7: missing native_save_demo/3f5f22d753684e6797dbc3808b8ed039/summary.json#comparison
+ninehour_receipts: cad6b010: missing teardown.json
+ninehour_receipts: da86773c: missing native_save_demo/da86773c154c4f7698da7eb2f2509cd1/summary.json#comparison
+ninehour_receipts: 0b51fb83: missing native_save_demo/0b51fb837ff44727951931dc769bb61b/summary.json#comparison
+ninehour_receipts: 69 receipt(s); the table rounds seconds to 3 decimals and shows 7 characters of the commit - exact values, and the file behind every field, are in the JSON receipts; '-' = not available; a Mac row shows its Mac wall under 'host s'; '(offline)' marks a comparison paired on the host after the run

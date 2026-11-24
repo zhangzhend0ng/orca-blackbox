@@ -1,0 +1,16 @@
+rc=0 started=01:48:09 out=/Users/coilwin/orca-blackbox/artifacts/ninehour-1125/probe-c9032223cef14735b4f60f8cfd2be0a6
+ok=False stage=baseline.launch finished=01:48:09
+error tail: rsions/3.9/lib/python3.9/contextlib.py", line 117, in __enter__
+    return next(self.gen)
+  File "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.aAgYlg9U/project_copy.py", line 152, in open_copy
+    window = wait_for(main_window, "Named project window did not open", 40)
+  File "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.aAgYlg9U/project_copy.py", line 74, in wait_for
+    raise TimeoutError(message)
+TimeoutError: Named project window did not open
+
+remote_evidence: /private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.aAgYlg9U
+[probe] phase=baseline pid=62170 alive=True t=1795542482
+[probe] app windows=1
+[probe]   win ('AXApplication', '', 'Snapmaker Orca') children=2
+[probe] windows ERR TypeError("'generator' object is not subscriptable")
+[probe] shot=True size=1466513

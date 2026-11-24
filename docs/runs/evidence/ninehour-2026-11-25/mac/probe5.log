@@ -1,0 +1,10 @@
+rc=0 started=02:13:58 out=/Users/coilwin/orca-blackbox/artifacts/ninehour-1125/probe-baafff4f300941b292edd3446054f85b
+ok=False stage=supervisor finished=02:13:58
+error tail: Traceback (most recent call last):
+  File "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.C8boqEwv/project_copy.py", line 582, in supervise
+    wait_for(result_file.is_file, "Mac worker timed out", 510)
+  File "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.C8boqEwv/project_copy.py", line 74, in wait_for
+    raise TimeoutError(message)
+TimeoutError: Mac worker timed out
+
+remote_evidence: /private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.C8boqEwv

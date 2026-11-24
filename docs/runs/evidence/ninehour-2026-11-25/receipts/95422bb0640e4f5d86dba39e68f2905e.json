@@ -1,0 +1,199 @@
+{
+  "schema": "ninehour_receipt/1",
+  "run_dir": "C:\\coil\\Projects\\SnapmakerOrca\\external\\orca-blackbox\\artifacts\\windows_mcp_harvest\\95422bb0640e4f5d86dba39e68f2905e",
+  "identity": {
+    "run_id": "95422bb0640e4f5d86dba39e68f2905e",
+    "source_commit": "d5fc2fad9ed919467e096a3a7d4c2ec746d6c7e0",
+    "scenario": "uia_param_overhang_speeds",
+    "goal": null,
+    "machine": "guest",
+    "machine_inferred": "guest",
+    "label": "cand-k2-cube-1",
+    "execution_host": null
+  },
+  "verdicts": {
+    "release_verdict": "SHADOW",
+    "verified_pass": true,
+    "cleanup_confirmed": true,
+    "execution_status": "completed",
+    "mode": "script_shadow",
+    "comparison": null,
+    "comparison_source": "summary.json",
+    "paired_offline_at": null,
+    "verdict": null,
+    "failure_stage": null,
+    "error": null,
+    "guest_phases": null,
+    "wall_loops_gcode_echo": null
+  },
+  "seconds": {
+    "guest": 187.3499542,
+    "host_wall": 213.34399999992456,
+    "harvest": 2.0,
+    "script_action": 82.094,
+    "mac_wall": null
+  },
+  "stages": {
+    "list": [
+      {
+        "stage": "tab.Quality",
+        "ok": 1,
+        "seconds": 9.7862,
+        "line": 12
+      },
+      {
+        "stage": "checkbox.Detect overhang",
+        "ok": 1,
+        "seconds": 7.9366,
+        "line": 17
+      },
+      {
+        "stage": "tab.Speed",
+        "ok": 1,
+        "seconds": 9.5731,
+        "line": 19
+      },
+      {
+        "stage": "checkbox.Slow down",
+        "ok": 1,
+        "seconds": 6.0934,
+        "line": 24
+      },
+      {
+        "stage": "locate.Overhang speed[0]",
+        "ok": 1,
+        "seconds": 5.1335,
+        "line": 30
+      },
+      {
+        "stage": "edit_readback.Overhang speed[0]",
+        "ok": 1,
+        "seconds": 1.155,
+        "line": 32
+      },
+      {
+        "stage": "field.Overhang speed[0]",
+        "ok": 1,
+        "seconds": 6.3064,
+        "line": 33
+      },
+      {
+        "stage": "locate.Overhang speed[1]",
+        "ok": 1,
+        "seconds": 0.5377,
+        "line": 36
+      },
+      {
+        "stage": "edit_readback.Overhang speed[1]",
+        "ok": 1,
+        "seconds": 1.1718,
+        "line": 38
+      },
+      {
+        "stage": "field.Overhang speed[1]",
+        "ok": 1,
+        "seconds": 1.7226,
+        "line": 39
+      },
+      {
+        "stage": "locate.Overhang speed[2]",
+        "ok": 1,
+        "seconds": 0.5731,
+        "line": 42
+      },
+      {
+        "stage": "edit_readback.Overhang speed[2]",
+        "ok": 1,
+        "seconds": 1.1475,
+        "line": 44
+      },
+      {
+        "stage": "field.Overhang speed[2]",
+        "ok": 1,
+        "seconds": 1.7335,
+        "line": 45
+      },
+      {
+        "stage": "locate.Overhang speed[3]",
+        "ok": 1,
+        "seconds": 0.5892,
+        "line": 48
+      },
+      {
+        "stage": "edit_readback.Overhang speed[3]",
+        "ok": 1,
+        "seconds": 1.1621,
+        "line": 50
+      },
+      {
+        "stage": "field.Overhang speed[3]",
+        "ok": 1,
+        "seconds": 1.764,
+        "line": 51
+      },
+      {
+        "stage": "save",
+        "ok": 1,
+        "seconds": 7.6526,
+        "line": 54
+      }
+    ],
+    "stage_sum_ok": 52.5118,
+    "ok0": [],
+    "parents": [
+      "field.Overhang speed[0]",
+      "field.Overhang speed[1]",
+      "field.Overhang speed[2]",
+      "field.Overhang speed[3]"
+    ],
+    "tags": [
+      "flow264"
+    ]
+  },
+  "artifacts": {
+    "proof_run_id": "95422bb0640e4f5d86dba39e68f2905e",
+    "project_sha256": "c7d745bd6358cc8c1247b86c221a965485b1657d161203a626aeff5456362f44",
+    "project_sha256_recomputed": "c7d745bd6358cc8c1247b86c221a965485b1657d161203a626aeff5456362f44",
+    "gcode_sha256": "3f5817df574368ed39b93a9130455a09f66c7a4ea2ab4ebf97815beb95179d28",
+    "gcode_sha256_recomputed": "3f5817df574368ed39b93a9130455a09f66c7a4ea2ab4ebf97815beb95179d28",
+    "artifact_hashes_match": true,
+    "teardown_active_processes": 0
+  },
+  "missing": [
+    "native_save_demo/95422bb0640e4f5d86dba39e68f2905e/summary.json#comparison"
+  ],
+  "malformed": [],
+  "warnings": [],
+  "sources": {
+    "run_dir": "command line",
+    "identity.machine": "inferred: native_save_demo/95422bb0640e4f5d86dba39e68f2905e/summary.json exists",
+    "identity.machine_inferred": "inferred: native_save_demo/95422bb0640e4f5d86dba39e68f2905e/summary.json exists",
+    "identity.run_id": "directory name",
+    "verdicts.release_verdict": "result.json#release_verdict",
+    "verdicts.execution_status": "result.json#execution_status",
+    "verdicts.mode": "result.json#mode",
+    "verdicts.verified_pass": "result.json#verified_pass",
+    "verdicts.cleanup_confirmed": "result.json#cleanup_confirmed",
+    "seconds.guest": "process.json#finished_at_ns - started_at_ns",
+    "seconds.script_action": "native_worker.json#script_action_elapsed_ns",
+    "stages.list": "native_worker.log#stage lines, line per stage",
+    "stages.ok0": "native_worker.log#stage lines logged with ok=0",
+    "stages.parents": "native_worker.log#stages that wrap the locate./edit_readback. stage of the same field",
+    "stages.tags": "native_worker.log#tag per stage line",
+    "stages.stage_sum_ok": "native_worker.log#seconds of the ok=1 stage lines that are not parents",
+    "artifacts.proof_run_id": "proof.json#run_id",
+    "artifacts.project_sha256": "proof.json#project_sha256",
+    "artifacts.gcode_sha256": "proof.json#gcode_sha256",
+    "artifacts.project_sha256_recomputed": "proof/0001.3mf#sha256",
+    "artifacts.gcode_sha256_recomputed": "exports/0001.gcode#sha256",
+    "artifacts.artifact_hashes_match": "proof.json#project_sha256,gcode_sha256 compared with proof/0001.3mf#sha256 and exports/0001.gcode#sha256",
+    "artifacts.teardown_active_processes": "teardown.json#active_processes",
+    "verdicts.comparison": "native_save_demo/95422bb0640e4f5d86dba39e68f2905e/summary.json#comparison",
+    "verdicts.comparison_source": "native_save_demo/95422bb0640e4f5d86dba39e68f2905e/summary.json#comparison",
+    "seconds.host_wall": "native_save_demo/95422bb0640e4f5d86dba39e68f2905e/summary.json#host_wall_seconds",
+    "seconds.harvest": "native_save_demo/95422bb0640e4f5d86dba39e68f2905e/summary.json#harvest_seconds",
+    "identity.scenario": "native_save_demo/95422bb0640e4f5d86dba39e68f2905e/summary.json#scenario",
+    "identity.source_commit": "native_save_demo/95422bb0640e4f5d86dba39e68f2905e/summary.json#source_sha",
+    "identity.label": "docs\\runs\\evidence\\ninehour-2026-11-25\\ledger.jsonl:43#label"
+  }
+}
