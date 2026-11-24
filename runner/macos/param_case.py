@@ -35,7 +35,7 @@ import time
 import param_ops as po
 
 TABLE = po.WORK / "param_cases.json"
-SOURCE_COMMIT = "f32b359"  # origin codex/glm-dev-20261124, tools/param_cases_export.json (step 13: 270 / 271 in mm/s)
+SOURCE_COMMIT = "f371b47"  # origin codex/glm-dev-20261124, tools/param_cases_export.json (step 13: 270 / 271 in mm/s)
 # The keys each op may carry besides `op` (tab / tab_hint: switch to that page first); any
 # other key is a form this version does not run.
 ROW_KEYS = {"tab", "tab_hint", "label", "group"}
