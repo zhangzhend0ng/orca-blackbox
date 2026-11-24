@@ -340,9 +340,10 @@ def worker(run_id, actor="codex", scenario="base"):
                         if edit_receipt is not None:
                             report["edit_receipt"] = edit_receipt
                         report["script_steps"].append("edit")
-                    if scenario.startswith("compare_276_"):
-                        from harness.native_preset_script import timed_flow_step
-                        timed_flow_step("save", ui.save_project, prepared_dialog=setup.get("dialog_hwnd"))
+                    from harness.native_preset_script import flow_step_measure
+                    timer = flow_step_measure(scenario)
+                    if timer:
+                        timer("save", ui.save_project, prepared_dialog=setup.get("dialog_hwnd"))
                     else:
                         ui.save_project(prepared_dialog=setup.get("dialog_hwnd"))
                     report["script_steps"].append("save")

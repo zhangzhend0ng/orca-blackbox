@@ -7,17 +7,38 @@ from types import SimpleNamespace
 from .agent_protocol import FIXTURE_SUFFIXES, ProtocolError
 
 
-def timed_flow_step(name, action, *args, **kwargs):
-    """Write elapsed times to the #276 worker log, including failed steps."""
-    started = time.perf_counter()
-    ok = False
-    try:
-        result = action(*args, **kwargs)
-        ok = True
-        return result
-    finally:
-        elapsed = time.perf_counter() - started
-        print(f"[flow276] {name} ok={int(ok)} seconds={elapsed:.4f}", flush=True)
+def flow_step_timer(prefix):
+    """A `measure` for run_ops and the save stage: one `<prefix> <name>
+    ok=<0|1> seconds=<float>` line per stage in the worker log, failed steps
+    included."""
+    def measure(name, action, *args, **kwargs):
+        started = time.perf_counter()
+        ok = False
+        try:
+            result = action(*args, **kwargs)
+            ok = True
+            return result
+        finally:
+            elapsed = time.perf_counter() - started
+            print(f"{prefix} {name} ok={int(ok)} seconds={elapsed:.4f}", flush=True)
+    return measure
+
+
+timed_flow_step = flow_step_timer("[flow276]")
+
+# Scenarios whose worker log carries per-stage times under their own tag. The
+# #276 trials are recognised by name (flow_step_measure); every later one is
+# listed HERE and nowhere else, because edit_param_cases and the worker's save
+# stage both ask flow_step_measure: a scenario cannot be timed on one side only.
+TIMED_FLOWS = {"uia_param_overhang_speeds": "[flow264]"}
+
+
+def flow_step_measure(scenario):
+    """The stage timer `scenario` runs under, or None when its stages are not timed."""
+    if scenario.startswith("compare_276_"):
+        return timed_flow_step
+    prefix = TIMED_FLOWS.get(scenario)
+    return None if prefix is None else flow_step_timer(prefix)
 
 
 def _center(rect):

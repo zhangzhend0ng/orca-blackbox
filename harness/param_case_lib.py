@@ -314,6 +314,14 @@ def _is_multiline(wu, handle, value=None):
 EDIT_ROOM = 12   # px of work area an Edit needs below it before it is driven
 
 
+def _stage_label(label, field_index):
+    """A float op's label in the stage times. A declared field index tells the
+    same-labelled Edits of one row apart ('Overhang speed[2]', #264: four
+    fields, one label, and a parked one locates twice); an ordinary row is its
+    label, as before."""
+    return label if field_index is None else f"{label}[{field_index}]"
+
+
 def _park_field(ui, bounds):
     """Notches the options page was wheeled DOWN so the Edit at screen
     `bounds` has EDIT_ROOM px of work area below it (0 = it already had, or
@@ -353,7 +361,7 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
     wu, app = ui.wu, ui.app
     # `label_substr` may be a list of candidates: they are searched in ONE
     # scan (_find_phrase_row_any). From here on it is the label that matched.
-    field_name = label_substr if isinstance(label_substr, str) else label_substr[0]
+    field_name = _stage_label(label_substr if isinstance(label_substr, str) else label_substr[0], field_index)
     if measure:
         y_row, matched = measure("locate." + field_name, _find_phrase_row_any, app, label_substr, group_substr)
     else:
@@ -725,7 +733,8 @@ def run_ops(ui, ops, *, prepare_advanced=None, measure=None):
             labels = op["label"] if isinstance(op["label"], (tuple, list)) else (op["label"],)
             options = dict(group_substr=op.get("group"), field_index=op.get("field"), below=bool(op.get("below")))
             if measure:
-                measure("field." + labels[0], uia_set_float, ui, labels, str(op["value"]), **options, measure=measure)
+                measure("field." + _stage_label(labels[0], options["field_index"]), uia_set_float, ui, labels,
+                        str(op["value"]), **options, measure=measure)
             else:
                 uia_set_float(ui, labels, str(op["value"]), **options)
             pp.neutralize_focus(app)
@@ -734,7 +743,11 @@ def run_ops(ui, ops, *, prepare_advanced=None, measure=None):
             # pops a modal that trips the next guard
             # (main_window_modal_blocked) - see settle_dialog.
             known_dialogs = pp.top_dialog_set(app)
-            ok = pp.set_option_checkbox(app, op["label"], op["value"], group_substr=op.get("group"))
+            # Only the locate-and-click call is a timed stage; the dialog
+            # settle and the re-read below stay outside it.
+            box_args = (app, op["label"], op["value"])
+            ok = (measure("checkbox." + op["label"], pp.set_option_checkbox, *box_args, group_substr=op.get("group"))
+                  if measure else pp.set_option_checkbox(*box_args, group_substr=op.get("group")))
             # set_option_checkbox returns (now_on, rect); for want=False a
             # SUCCESSFUL uncheck returns ok[0]=False - the old `is True` check
             # rejected every unchecked-success (seam_wipe 'Role' att0 did
