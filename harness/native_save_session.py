@@ -472,6 +472,13 @@ def verify_saved(snapshot, *, cancelled=lambda: False, batch_process=None, plan_
     except (OSError, ValueError, TypeError, KeyError, AttributeError, RecursionError,
             struct.error, DecimalException, ET.ParseError, zipfile.BadZipFile,
             zipfile.LargeZipFile, zlib.error, EOFError, NotImplementedError) as exc:
+        if not isinstance(exc, _InvalidEvidence):
+            # The detail stays the fixed phrase (a verdict carries no arbitrary
+            # exception text); the log says what it was. 2026-11-24: a control
+            # whose result overflowed the 4096-character check detail took
+            # twelve minutes to find behind this mask (run baa3168).
+            print("[verify] masked exception -> native_evidence_unavailable: %s: %s"
+                  % (type(exc).__name__, str(exc)[:200]), file=sys.stderr, flush=True)
         detail = str(exc) if isinstance(exc, _InvalidEvidence) else "native_evidence_unavailable"
         return VerificationOutcome({"path": CheckResult("unknown", detail, tuple(refs)),
                                     "business": CheckResult("unknown", detail, tuple(refs))}, False, False,
