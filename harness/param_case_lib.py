@@ -675,7 +675,7 @@ def settle_dialog(ui, known, answer=None, expect=None):
     return dlg, body
 
 
-def run_ops(ui, ops):
+def run_ops(ui, ops, *, prepare_advanced=None):
     """Execute a list of process-panel operations on the running app.
 
     op forms:
@@ -690,7 +690,10 @@ def run_ops(ui, ops):
     ui.main_input()
     # Without Advanced the parameter pages show summary rows only - no
     # individual float Edits (m5c precedent; runs d536b165/4fb3929a).
-    pp.ensure_advanced(app, want=True)
+    if prepare_advanced is None:
+        pp.ensure_advanced(app, want=True)
+    else:
+        prepare_advanced(ui)
     current_tab = None
     for op in ops:
         tab = op.get("tab") or current_tab

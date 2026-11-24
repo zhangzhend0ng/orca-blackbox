@@ -80,6 +80,55 @@ def test_preset_page_targets_observed_horizontal_tab(name, bounds, point):
     assert preset.page_bottom == bounds[3]
 
 
+@pytest.mark.parametrize("scenario", ["compare_265_quality", "compare_276_strength"])
+def test_script_process_ops_reenable_advanced_after_closing_preset(monkeypatch, scenario):
+    from harness import native_script_baseline, param_case_lib, process_panel
+    from harness.native_preset_script import PresetUI
+
+    # d9b5833e came back from Material settings with the Process switch
+    # off and the Speed tab hidden. Exercise the full op handoff using
+    # the measured switch geometry and a Speed tab that only appears on.
+    advanced = False
+    app = SimpleNamespace(hwnd=1, pid=2)
+    ui = SimpleNamespace(app=app, wu=SimpleNamespace(window_class=lambda hwnd: "Button"),
+                         main_input=lambda: None, pause=lambda seconds: None,
+                         wait=lambda predicate, timeout: predicate(),
+                         named_child=lambda name: (name, (), 10) if name == "Speed" and advanced else None)
+
+    def click_switch(self, point, scope, exact):
+        nonlocal advanced
+        assert (point, scope, exact) == ((327, 617), 3, 3)
+        advanced = True
+
+    monkeypatch.setattr(PresetUI, "_children", lambda self: [
+        ("Process", "Static", (28, 609, 82, 625), 4),
+        ("", "Button", (314, 606, 341, 628), 3),
+    ])
+    monkeypatch.setattr(PresetUI, "_words", lambda self, rect: [("Advanced", 254, 611, 53, 11)])
+    monkeypatch.setattr(PresetUI, "_onscreen", lambda self, hwnd, point: True)
+    monkeypatch.setattr(PresetUI, "_click", click_switch)
+    monkeypatch.setattr(PresetUI, "_trace", lambda *args, **kwargs: None)
+    monkeypatch.setattr(native_script_baseline, "_save_failure_shot", lambda *args: None)
+    monkeypatch.setattr(process_panel, "client_origin", lambda session: (0, 0))
+    monkeypatch.setattr(process_panel, "ensure_advanced",
+                        lambda *args, **kwargs: pytest.fail("legacy switch not needed for a matched trial"))
+    clicked = []
+    def click_speed(app, name, word):
+        assert advanced, "Speed is hidden when Advanced is off"
+        clicked.append(name)
+        return True
+
+    monkeypatch.setattr(process_panel, "click_tab", click_speed)
+    monkeypatch.setattr(process_panel, "top_dialog_set", lambda app: set())
+    monkeypatch.setattr(process_panel, "set_option_checkbox", lambda *args, **kwargs: (True, None))
+    monkeypatch.setattr(param_case_lib, "settle_dialog", lambda *args: (None, None))
+    monkeypatch.setattr(native_script_baseline, "scenario_ops", lambda scenario: [
+        {"tab": "Speed", "tab_hint": "speed", "op": "checkbox", "label": "curled", "value": True},
+    ])
+    native_script_baseline.edit_param_cases(ui, scenario)
+    assert clicked == ["Speed"]
+
+
 def test_machine_limit_number_is_read_only():
     from harness.native_preset_script import PresetUI
 

@@ -995,7 +995,12 @@ def edit_param_cases(ui, scenario):
     if ops is None:
         raise ProtocolError("param_case_ops:" + scenario)
     try:
-        run_ops(ui, ops)
+        if scenario in MAINTENANCE_TRIALS:
+            from .native_preset_script import ensure_process_advanced
+
+            run_ops(ui, ops, prepare_advanced=ensure_process_advanced)
+        else:
+            run_ops(ui, ops)
     except Exception:
         import traceback
         traceback.print_exc()

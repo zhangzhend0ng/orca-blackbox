@@ -186,7 +186,7 @@ def main():
     from harness.agent_protocol import suffixed_fixture
     if args.scenario in MAINTENANCE_TRIALS:
         sources += ("harness/agent_protocol.py", "harness/native_preset_script.py",
-                    "harness/param_comparison.py", "harness/pilot_param_265_overhang_curl.py",
+                    "harness/param_case_lib.py", "harness/param_comparison.py", "harness/pilot_param_265_overhang_curl.py",
                     "harness/pilot_param_276_speed_limits.py")
     other_fixture = suffixed_fixture(args.scenario)
     if args.scenario in MAINTENANCE_TRIALS and other_fixture is None:

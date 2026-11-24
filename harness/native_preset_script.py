@@ -446,6 +446,12 @@ def _capture_failed_preset(preset):
         print("[native-script] preset diagnostic failed: " + type(error).__name__, flush=True)
 
 
+def ensure_process_advanced(ui):
+    # Closing preset settings can restore the Process panel to Simple.
+    # The known switch brings back the Speed tab before the process ops.
+    PresetUI(ui)._advanced()
+
+
 def edit_cooling(ui):
     preset = PresetUI(ui)
     try:
