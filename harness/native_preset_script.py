@@ -36,8 +36,6 @@ def _normalize(text):
 
 
 class PresetUI:
-    share_lookup_frame = False
-
     def __init__(self, ui):
         from . import mix_dialog_util, mixing_util, process_panel, topbar_util
 
@@ -75,33 +73,19 @@ class PresetUI:
         self.wu.real_click_screen(*point)
         self.ui.pause(0.7)
 
-    def _capture(self):
+    def _words(self, rect=None):
         self.ui.guard()
         dialog = SimpleNamespace(hwnd=self.hwnd, pid=self.ui.app.pid)
         image = self.pp.capture_bgr(dialog)
         ox, oy = self.pp.client_origin(dialog)
-        return image, ox, oy
-
-    def _words(self, rect=None, *, frame=None, text_cache=None):
-        if frame is None:
-            image, ox, oy = self._capture()
-        else:
-            self.ui.guard()
-            image, ox, oy = frame
         if rect is not None:
             l, t, r, b = rect
             if not (0 <= l-ox < r-ox <= image.shape[1] and 0 <= t-oy < b-oy <= image.shape[0]):
                 return []
             image = image[t-oy:b-oy, l-ox:r-ox]
             ox, oy = l, t
-        key = (image.shape, image.tobytes()) if text_cache is not None else None
-        if text_cache is not None and key in text_cache:
-            words = text_cache[key]
-        else:
-            words = self.ocr.ocr_words_img(image, psm=6)
-            if text_cache is not None:
-                text_cache[key] = words
-        return [(text, x+ox, y+oy, w, h) for text, x, y, w, h in words]
+        return [(text, x+ox, y+oy, w, h)
+                for text, x, y, w, h in self.ocr.ocr_words_img(image, psm=6)]
 
     def _preset_combo(self, identity, *, slot_one=False, trace=False):
         crops = self._children()
@@ -133,21 +117,10 @@ class PresetUI:
         observed = []
         # A preset may gain the app's embedded-project suffix.
         allowed = {identity, identity + "(fixture.3mf)", identity + " (fixture.3mf)"}
-        frame = None
-        cache = {}
-        reads = 0
         for text, rect, hwnd in candidates:
             seen = text.strip()
             if seen not in allowed and (not seen or not main):
-                if self.share_lookup_frame:
-                    if frame is None:
-                        frame = self._capture()
-                        dpi = self.wu.get_dpi_for_window(self.hwnd)
-                    words = self._words(rect, frame=frame, text_cache=cache)
-                    reads += 1
-                else:
-                    words = self._words(rect)
-                painted = " ".join(word[0] for word in words).lstrip("vV⌄˅ ")
+                painted = " ".join(word[0] for word in self._words(rect)).lstrip("vV⌄˅ ")
                 if painted in allowed or not seen:
                     seen = painted
             matched = seen in allowed or (slot_one and re.fullmatch(r"Generic PLA @U1(?:\.{2,}|…)", seen))
@@ -157,16 +130,6 @@ class PresetUI:
             # contribute class and geometry, without exposing their text.
             display = seen if matched else "expected prefix" if seen.startswith(identity.split(" @")[0]) else "other"
             observed.append((self.wu.window_class(hwnd), rect, display))
-        if frame is not None:
-            # No clicks or scrolls within this lookup. Discard its picture on
-            # relayout; the caller polls again with new evidence.
-            session = SimpleNamespace(hwnd=self.hwnd, pid=self.ui.app.pid)
-            if (not self.ui.owned(self.hwnd) or self.pp.client_origin(session) != frame[1:]
-                    or self.wu.get_dpi_for_window(self.hwnd) != dpi
-                    or self.wu.window_rect(self.hwnd) != (left, top, right, _bottom)
-                    or any(not self.ui.owned(h) or self.wu.window_rect(h) != r for _, r, h in candidates)):
-                return None
-            print(f"[flow276] lookup_frame candidates={len(candidates)} crops={reads} ocr={len(cache)}", flush=True)
         if trace:
             observed.sort(key=lambda c: c[2] == "other")
             self._trace("slot1" if slot_one else "main_preset" if main else "dialog_preset_bar", observed)
@@ -519,7 +482,6 @@ def edit_cooling(ui):
 
 def edit_speed_limits(ui):
     preset = PresetUI(ui)
-    preset.share_lookup_frame = True
     try:
         timed_flow_step("printer.open", preset.open, filament=False)
         timed_flow_step("printer.page", preset.page, "Motion ability")
