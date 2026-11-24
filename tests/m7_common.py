@@ -156,6 +156,12 @@ def select_model(session, tries=3):
     if rot_x is None:
         print(f"{LOG} rotate slot not found — toolbar unreadable?")
         return False
+    return any(tip and "select" not in tip.lower()
+               for tip in selection_tooltips(session, rot_x, tries))
+
+
+def selection_tooltips(session, rot_x, tries=3):
+    """Yield the Rotate tooltip after each attempted object selection."""
     for _attempt in range(tries):
         cands = model_candidates(session)
         print(f"{LOG} select candidates: {cands}")
@@ -167,10 +173,8 @@ def select_model(session, tries=3):
             time.sleep(1.2)
             tip = tooltip_text(session, rot_x, BAR_Y)
             print(f"{LOG} rotate tooltip after click @({cx},{cy + 22}): {tip!r}")
-            if tip and "select" not in tip.lower():
-                return True
+            yield tip
         time.sleep(1.0)
-    return False
 
 
 def find_centroids(session, limit=5, min_area=400, kernel=5):
