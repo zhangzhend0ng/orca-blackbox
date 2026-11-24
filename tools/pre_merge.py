@@ -5,8 +5,8 @@ offline check in one command, one line each, exit 1 when any failed.
 
 Runs, in this order: the engine suite (tools/test_param_engine_sim.py), the
 unit tests, the ops-vs-atlas checker, the ops red proofs. Each check's output
-goes to a file under the system temp dir (orca-bb-pre_merge-<time>/); only
-its own last line is printed here. A failed check's output is scanned for
+goes to a file under the system temp dir (orca-bb-pre_merge-<unique>/); only
+a passing check prints its last line. A failed check's output is scanned for
 secret-shaped strings before anything else happens to it (a failing pytest
 once dumped the environment, tokens included - 2026-11-24): the COUNT is
 printed, never the content, and the file is deleted when the count is not
@@ -27,6 +27,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 
 ROOT = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else ".")
@@ -63,9 +64,8 @@ def last_lines(path, n=3):
 
 
 def main():
-    out_dir = os.path.join(os.environ.get("TEMP") or os.path.dirname(ROOT), "orca-bb-pre_merge-" + time.strftime("%H%M%S"))
+    out_dir = tempfile.mkdtemp(prefix="orca-bb-pre_merge-", dir=os.environ.get("TEMP") or os.path.dirname(ROOT))
     basetemp = os.path.join(out_dir, "pytest")
-    os.makedirs(out_dir, exist_ok=True)
     failed = 0
     for index, (name, command, must_contain) in enumerate(CHECKS, 1):
         command = [part.replace("<basetemp>", basetemp) for part in command]
@@ -74,17 +74,24 @@ def main():
         with open(path, "wb") as stream:
             code = subprocess.call(command, cwd=ROOT, stdout=stream, stderr=subprocess.STDOUT)
         seconds = time.monotonic() - started
+        ok = code == 0
         tail = last_lines(path)
-        ok = code == 0 and all(any(need in line for line in tail) for need in must_contain)
-        line = "%-15s %s  %5.1f s  %s" % (name, "PASS" if ok else "FAIL", seconds, tail[-1][:90] if tail else "")
+        ok = ok and all(any(need in item for item in tail) for need in must_contain)
+        line = "%-15s %s  %5.1f s  %s" % (name, "PASS" if ok else "FAIL", seconds,
+                                         tail[-1][:90] if ok and tail else "")
         if not ok:
             failed += 1
             if any("No space left on device" in item for item in tail):
                 line += "  | THE DISK IS FULL - not a code verdict"
             hits = secret_count(path)
-            if hits:
-                os.remove(path)
-                line += "  | output held %d secret-shaped string(s): deleted, nothing printed" % hits
+            if hits != 0:
+                reason = "scan unsafe" if hits < 0 else f"{hits} secret-shaped string(s)"
+                try:
+                    os.remove(path)
+                    action = "log removed"
+                except OSError:
+                    action = "log removal failed"
+                line += f"  | {action}; output not printed ({reason})"
             else:
                 line += "  | log: " + path
         print(line, flush=True)

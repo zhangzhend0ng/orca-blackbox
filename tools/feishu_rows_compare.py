@@ -11,7 +11,9 @@ each fact is printed "baseline -> run", so a change the row caused stands out
 printed is chosen by the row's own wording (speeds, support, bridge, layers,
 fan, tool, skirt, brim, ironing, width / E); --all prints every fact.
 
-It does not judge: it puts the row's expected results next to the numbers.
+The default report puts each expectation next to the numbers.
+--check-expectations tests specific measurable effects for rows 258, 262,
+273 and 277; it exits nonzero on missing evidence or a failed check.
 The harvest is looked up under ORCA_BB_HARVEST, else under
 <repo-root>/artifacts/windows_mcp_harvest. Read-only."""
 import glob
@@ -130,6 +132,29 @@ def main():
     show_all = "--all" in sys.argv
     wanted = set(sys.argv[sys.argv.index("--ids") + 1].split(",")) if "--ids" in sys.argv else None
     out = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+    if "--check-expectations" in sys.argv:
+        from feishu_expect_checks import compare
+        supported = {258, 262, 273, 277}
+        selected = {int(n) for n in wanted} if wanted else supported
+        if not selected <= supported:
+            out.write("Supported rows: 258, 262, 273, 277\n")
+            return 2
+        passed = set()
+        for suffix, items in row_plan(root).items():
+            for number, scenario in items:
+                if number not in selected:
+                    continue
+                case = latest(scenario + suffix)
+                base = latest(BASELINES[suffix][0])
+                ok, detail = compare(number, base, case, FIXTURE_SUFFIXES[suffix][1])
+                status = {None: "UNAVAILABLE", False: "FAIL", True: "PASS"}[ok]
+                case_id = os.path.basename(os.path.normpath(case)) if case else "-"
+                base_id = os.path.basename(os.path.normpath(base)) if base else "-"
+                out.write(f"#{number} {status} {detail} (run {case_id}, baseline {base_id})\n")
+                if ok:
+                    passed.add(number)
+        out.flush()
+        return 0 if passed == selected else 1
     rows = feishu_rows(root)
     tally = {"shadow": 0, "non_green": [], "no_run": [], "no_fixture": [], "no_scenario": []}
     for suffix, items in row_plan(root).items():
@@ -220,7 +245,7 @@ def main():
                 top = lambda table: "/".join("%s x%d" % kv for kv in sorted(table.items(), key=lambda kv: -kv[1])[:8])
                 parts.append("SET_VELOCITY_LIMIT ACCEL (mm/s^2 x lines) %s -> %s" % (top(b["accel"]), top(f["accel"])))
             if keys & {"jerk"} and not show_all:
-                parts.append("jerk: not in a Klipper-flavour export (no command carries it)")
+                parts.append("jerk: see SQUARE_CORNER_VELOCITY in the Klipper export")
             for part in parts:
                 out.write("     " + part[:420] + "\n")
             out.write("     飞书预期: " + expected.replace("\n", " / ")[:230] + "\n")
@@ -233,4 +258,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

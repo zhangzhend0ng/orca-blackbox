@@ -551,13 +551,13 @@
   {
    "scenario": "uia_param_infill_structure",
    "case_id": "param_269_infill_structure",
-   "goal": "Enable infill combination, set minimum sparse infill threshold to 10 mm2, external bridge infill direction to 45 deg and vertical shell thickness to critical-only, keeping narrow internal solid infill detection on. Preserve the cube geometry, its placement, material assignment and every other setting.",
+   "goal": "Enable infill combination, set minimum sparse infill threshold to 10 mm2, external bridge infill direction to 45 deg and preserve vertical shell thickness at All, keeping narrow internal solid infill detection on. Preserve the cube geometry, its placement, material assignment and every other setting.",
    "values": {
     "infill_combination": "1",
     "minimum_sparse_infill_area": "10",
     "bridge_angle": "45",
     "detect_narrow_internal_solid_infill": "1",
-    "ensure_vertical_shell_thickness": "ensure_critical_only"
+    "ensure_vertical_shell_thickness": "ensure_all"
    },
    "ops": [
     {
@@ -586,17 +586,10 @@
      ],
      "value": "45",
      "group": "Advanced"
-    },
-    {
-     "op": "combo",
-     "current": "All",
-     "target": "Critical",
-     "group": "Advanced"
     }
    ],
    "kinds": [
     "checkbox",
-    "combo",
     "float"
    ],
    "field_ops": 0,
@@ -959,6 +952,12 @@
      "value": "10",
      "group": "Overhang",
      "field": 3
+    },
+    {
+     "op": "float",
+     "label": "External",
+     "value": "30",
+     "group": "Overhang"
     }
    ],
    "kinds": [

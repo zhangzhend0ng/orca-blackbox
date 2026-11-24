@@ -716,10 +716,8 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         ],
         # Feishu #269 (line 188): internal_bridge_support_thickness is in
         # the loader ignore list (PrintConfig.cpp:7281) - not writable.
-        # The combination checkbox precedes its max-layer sub-row, so the
-        # first 'combination' word anchors the bool; the enum combo runs
-        # LAST (a commit rebuilds the page) with the fork's slot-1 label
-        # Critical Only (popup word 'Critical').
+        # The fixtures already select All for vertical shell thickness.
+        # The saved-project verifier checks that it stays selected.
         "uia_param_infill_structure": [
             {"tab": "Strength", "tab_hint": "loops", "op": "checkbox",
              "label": "combination", "value": True, "group": "Advanced"},
@@ -729,8 +727,6 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             {"op": "float", "label": ["External bridge infill direction",
                                       "External bridge infill",
                                       "External bridge"], "value": "45",
-             "group": "Advanced"},
-            {"op": "combo", "current": "All", "target": "Critical",
              "group": "Advanced"},
         ],
         # Feishu #275 (line 194): infill_jerk already at target - no op.

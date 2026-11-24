@@ -1,6 +1,7 @@
 """The values a Feishu row's steps name, next to the values its case carries.
 
     python tools/feishu_vs_table.py <repo-root> [--ids 265,276]
+    python tools/feishu_vs_table.py <repo-root> [--ids 265,276] --json
 
 "Values written" is judged against the case table (tools/param_cases_export.
 json): the pilot reads back the keys the table lists and no others. So a row
@@ -15,11 +16,14 @@ import json
 import os
 import re
 import sys
+import argparse
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
-root = sys.argv[1]
-sys.path.insert(0, os.path.join(root, "tools"))
-from feishu_model_fixtures import feishu_rows, row_plan  # noqa: E402
+def status_for(scenario, missing):
+    if not scenario:
+        return "no_scenario"
+    if missing:
+        return "missing"
+    return "all_step_keys_listed"
 
 
 def step_keys(steps):
@@ -37,11 +41,20 @@ def step_keys(steps):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("root")
+    parser.add_argument("--ids")
+    parser.add_argument("--json", action="store_true", dest="json_output")
+    args = parser.parse_args()
+    root = args.root
+    sys.path.insert(0, os.path.join(root, "tools"))
+    from feishu_model_fixtures import feishu_rows, row_plan
     cases = json.load(io.open(os.path.join(root, "tools/param_cases_export.json"), encoding="utf-8"))["cases"]
     by_scenario = {case["scenario"]: case for case in cases}
-    wanted = set(sys.argv[sys.argv.index("--ids") + 1].split(",")) if "--ids" in sys.argv else None
+    wanted = set(args.ids.split(",")) if args.ids else None
     rows, plan = feishu_rows(root), row_plan(root)
     lacking, extra, rows_lacking = [], [], []
+    report = []
     for _suffix, items in plan.items():
         for number, scenario in items:
             if wanted and str(number) not in wanted:
@@ -51,17 +64,26 @@ def main():
             table = set(values) if isinstance(values, dict) else set()
             missing = [key for key in keys if key not in table]
             more = sorted(table - set(keys))
+            report.append({"case_id": number, "scenario": scenario,
+                           "status": status_for(scenario, missing),
+                           "step_keys": keys, "missing_keys": missing,
+                           "extra_table_keys": more})
             if not scenario:
                 continue                      # no scenario: nothing was ever going to be written
             lacking += missing
             extra += more
             rows_lacking += [number] if missing else []
-            if missing or more:
+            if not args.json_output and (missing or more):
                 print("#%d %s" % (number, scenario))
                 if missing:
                     print("     step keys the table does not carry: %s" % " ".join(missing))
                 if more:
                     print("     table keys the steps do not name:   %s" % " ".join(more))
+    if args.json_output:
+        print(json.dumps({"rows": report, "tally": {
+            "rows_missing": len(rows_lacking), "missing_keys": len(lacking),
+            "extra_table_keys": len(extra)}}, ensure_ascii=False, indent=2))
+        return 0
     print("\nTALLY: %d rows name step keys the table lacks (%d keys in all); %d table keys are not step keys" % (
         len(rows_lacking), len(lacking), len(extra)))
     if rows_lacking:
@@ -71,4 +93,5 @@ def main():
 
 
 if __name__ == "__main__":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
     raise SystemExit(main())

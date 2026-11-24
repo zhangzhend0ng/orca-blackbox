@@ -28,6 +28,11 @@
 
 宿主侧现成命令（不在仓库内，`C:\coil\vm_setup\`）：`stop_queues.ps1` 先不带参数列出宿主侧的循环与派活进程、带 `-Stop` 才结束；`sync_all.py` 一条命令走完「空闲检查 → dev 快进到主线 → 推送 → 客机 → fa」，任一步发现那条线不空闲就停在那里。合并前的离线检查用仓内的 `python tools/pre_merge.py`（引擎套件、单测、操作表校验、红证）。某条线空着而主线被卡住时，按 `backlog.txt` 跑还没覆盖的副本或第二样本——这部分单独记账，不计入闭环数。
 
+11 月 24 日 GLM 扩样的接收依据见[31 个 Script 场景同版本复跑](docs/runs/glm-flash-expansion-2026-11-21.md)、[飞书 44 行逐项对照](docs/runs/evidence/feishu-expect-vs-gcode-2026-11-24/own-models-verdicts.md)和[89 个旧用例的迁移初稿](docs/runs/p0-3-signoff-draft-2026-11-22.md)。飞书参数行可用以下命令在仓库根目录复核：
+
+- `python tools/feishu_vs_table.py . --json` 按行列出步骤里出现而用例表缺少的键。
+- `python tools/feishu_rows_compare.py . --check-expectations` 比较指定模型的最近一次基线和用例导出件。当前核对 #258 的挤出圆弧、#262 的顶底面单位长度挤出量、#273 的非首层最高频空驶进给及 #277 的支撑主体和界面挤出。缺少收割件或判定失败时返回非零。通过仅计对应的可观测项。
+
 v3 运行骨架入口见 [架构设计](docs/V3_RUNTIME_ARCHITECTURE.md) 和 [使用与边界](docs/V3_FOUNDATION.md)。当前 `python tools/v3_session.py smoke` 仅验证无 GUI 的 synthetic 完整调用链，不能作为产品回归通过证据。
 
 原生 Codex + Windows-MCP 的编辑保存业务 demo 见 [冻结路线与验收](docs/V3_NATIVE_SAVE_DEMO.md)，宿主入口 `python -B tools/native_save_demo.py`。AI 自主保存后，由停止输入后的可信阶段独立重开、切片导出，统一复用 run_once；已完成一次真实客机 SHADOW，首轮收尾失败保留，见 [两轮运行记录](docs/runs/native-save-2026-11-17.md)，不能计发布 GREEN。
