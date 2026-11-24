@@ -1,0 +1,451 @@
+{
+  "machine": "win11-test",
+  "human_minutes": null,
+  "authors": {
+    "rotate": {
+      "model": "glm-5.4",
+      "request_id": "msg_20261125010638cf5aa34f0aa3493e",
+      "usage": {
+        "input_tokens": 114,
+        "output_tokens": 479,
+        "cache_read_input_tokens": 0,
+        "server_tool_use": {
+          "web_search_requests": 0
+        },
+        "service_tier": "standard"
+      }
+    },
+    "flow": {
+      "model": "glm-5.4",
+      "request_id": "msg_2026112501073072a6ee40e80e4128",
+      "usage": {
+        "input_tokens": 1615,
+        "output_tokens": 1175,
+        "cache_read_input_tokens": 0,
+        "server_tool_use": {
+          "web_search_requests": 0
+        },
+        "service_tier": "standard"
+      }
+    }
+  },
+  "rotate": {
+    "baseline": {
+      "head": "34f9306160df022db6b9c2f1c0f8a2acaa026d09",
+      "launch_s": 17.814035,
+      "to_done_s": 167.0702728,
+      "all_s": 168.4314666,
+      "guest": {
+        "task_started_utc": "2026-11-24T17:04:46.0000000Z",
+        "log_done_utc": "2026-11-24T17:07:13.8782366Z",
+        "guest_suite_to_log_s": 147.87823659999998,
+        "summary": "SUMMARY: PASS=1 FAIL=0",
+        "fixture": "EA00678017A7B6D7D65A4280B8F80C2D441493FD15998A924C66998AC946CCF0",
+        "project_new": true,
+        "apps": 0
+      },
+      "project_sha256": "96ab9ffac4dfbbb0beae6164369f2f5d7f2fffb014c30a1562333bb1a8c9f331",
+      "matrix": [
+        0.707106781,
+        0.707106781,
+        0.0,
+        -0.707106781,
+        0.707106781,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        135.5,
+        136.0,
+        13.5
+      ],
+      "geometry": [
+        "228d8dd6fee9c319856af670d76ca84920de03af9da53f97f9b9be0833597bb0"
+      ],
+      "signed_z45": true,
+      "unchanged_geometry": true,
+      "stages": null
+    },
+    "fast": {
+      "head": "d2556eee2e896785328ee000b575bf8f8377bb40",
+      "launch_s": 17.695884,
+      "to_done_s": 95.3804188,
+      "all_s": 96.6911712,
+      "guest": {
+        "task_started_utc": "2026-11-24T17:08:35.0000000Z",
+        "log_done_utc": "2026-11-24T17:09:49.1212028Z",
+        "guest_suite_to_log_s": 74.12120279999999,
+        "summary": "SUMMARY: PASS=1 FAIL=0",
+        "fixture": "EA00678017A7B6D7D65A4280B8F80C2D441493FD15998A924C66998AC946CCF0",
+        "project_new": true,
+        "apps": 0
+      },
+      "project_sha256": "737f0919f5ff197b8fbdf8c2b3a3bc97beb8ad9c620c9f8e93a002c1c305f7f7",
+      "matrix": [
+        0.707106781,
+        0.707106781,
+        0.0,
+        -0.707106781,
+        0.707106781,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        135.5,
+        136.0,
+        13.5
+      ],
+      "geometry": [
+        "228d8dd6fee9c319856af670d76ca84920de03af9da53f97f9b9be0833597bb0"
+      ],
+      "signed_z45": true,
+      "unchanged_geometry": true,
+      "stages": {
+        "locator": "hint",
+        "seconds": {
+          "boot": 49.042,
+          "arrival": 2.745,
+          "select_and_locate": 2.96,
+          "open_and_locate_field": 4.824,
+          "edit_and_readback": 3.869,
+          "save": 8.405,
+          "verify": 0.002,
+          "close": 1.001
+        },
+        "wall_s": 72.849
+      }
+    },
+    "fixture": {
+      "project_sha256": "ea00678017a7b6d7d65a4280b8f80c2d441493fd15998a924c66998ac946ccf0",
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        135.5,
+        136.0,
+        13.5
+      ],
+      "geometry": [
+        "228d8dd6fee9c319856af670d76ca84920de03af9da53f97f9b9be0833597bb0"
+      ]
+    }
+  },
+  "flow": {
+    "control": {
+      "id": "5d54785fed534090a70f122853de440a",
+      "commit": "a340dc025a6d3a2265bc725e4b9ea122f00baef8",
+      "setup": "bfb71dfbff673a916218623dc1724b0673f9d67a2af6491b2f5cf2d0e91604dc",
+      "paired": {
+        "status": "paired",
+        "comparison_checked": true,
+        "business_status": "SHADOW",
+        "unmet_expectations": [
+          "outer_wall_near_178_mm_s",
+          "machine_x_limit_intervention"
+        ],
+        "detail": {
+          "row": "276",
+          "target_filament_slot": 1,
+          "target_values": {
+            "outer_wall_speed": "700",
+            "layer_height": "0.2",
+            "outer_wall_line_width": "0.42",
+            "filament_max_volumetric_speed": "15",
+            "machine_max_speed_x": "500"
+          },
+          "other_settings_preserved": true,
+          "scene_preserved": true,
+          "layer_count": 135,
+          "gcode_sha256": "68fe4256fae1368405566a3a4384d1ef1411a96357e55263633e8103cbcdd13b",
+          "pair_status": "checked",
+          "baseline_outer_wall_peak_mm_s": 162.365,
+          "outer_wall_peak_mm_s": 202.956,
+          "outer_wall_peak_mm3_s": 15.0,
+          "near_feishu_178_mm_s": false,
+          "x_limit_effect": "not_exercised_by_flow_limited_outer_walls",
+          "baseline_run": "e9aa6f88eca940b385bfe531703f644e",
+          "baseline_gcode_sha256": "ce990af357454e04a4ab6057e2126cd3183cf1ebb087d63525b7673464bbcf65"
+        }
+      },
+      "script_s": 76.25,
+      "host_s": 222.907,
+      "harvest_s": 2.016,
+      "guest_s": 194.35,
+      "cleanup": true,
+      "stages": [
+        {
+          "step": "printer.open",
+          "ok": true,
+          "seconds": 2.435
+        },
+        {
+          "step": "printer.page",
+          "ok": true,
+          "seconds": 1.5914
+        },
+        {
+          "step": "printer.x_limit",
+          "ok": true,
+          "seconds": 0.3077
+        },
+        {
+          "step": "printer.close",
+          "ok": true,
+          "seconds": 0.2275
+        },
+        {
+          "step": "filament.open",
+          "ok": true,
+          "seconds": 2.3989
+        },
+        {
+          "step": "filament.page",
+          "ok": true,
+          "seconds": 1.5971
+        },
+        {
+          "step": "filament.flow_limit",
+          "ok": true,
+          "seconds": 5.3399
+        },
+        {
+          "step": "filament.close",
+          "ok": true,
+          "seconds": 0.2572
+        },
+        {
+          "step": "tab.Quality",
+          "ok": true,
+          "seconds": 9.6059
+        },
+        {
+          "step": "locate.Layer height",
+          "ok": true,
+          "seconds": 0.4213
+        },
+        {
+          "step": "edit_readback.Layer height",
+          "ok": true,
+          "seconds": 6.0874
+        },
+        {
+          "step": "field.Layer height",
+          "ok": true,
+          "seconds": 6.5348
+        },
+        {
+          "step": "locate.Outer wall line width",
+          "ok": true,
+          "seconds": 0.5689
+        },
+        {
+          "step": "edit_readback.Outer wall line width",
+          "ok": true,
+          "seconds": 6.0972
+        },
+        {
+          "step": "field.Outer wall line width",
+          "ok": true,
+          "seconds": 6.6777
+        },
+        {
+          "step": "tab.Speed",
+          "ok": true,
+          "seconds": 9.5775
+        },
+        {
+          "step": "locate.Outer wall speed",
+          "ok": true,
+          "seconds": 0.3736
+        },
+        {
+          "step": "edit_readback.Outer wall speed",
+          "ok": true,
+          "seconds": 6.1355
+        },
+        {
+          "step": "field.Outer wall speed",
+          "ok": true,
+          "seconds": 6.5209
+        },
+        {
+          "step": "save",
+          "ok": true,
+          "seconds": 7.6347
+        }
+      ],
+      "sut": "5c48644d7da18b50636ceeee4ef9fd2eaf6d4e8ac05bd88752f40e3717fc47bf",
+      "reopen_s": 50.675,
+      "project": "78159c145419bb7259001359ccbe6c98b1bf7ab81b659101121f9c153de8c26b",
+      "gcode": "68fe4256fae1368405566a3a4384d1ef1411a96357e55263633e8103cbcdd13b",
+      "wall_path_digest": "3d8395f5500cd3522d64f2879f4e18660504ae411f1ee84dc9702865f2a5eca9",
+      "non_first_outer_moves": 536,
+      "layer_grid_digest": "ff79f16da5d462dc29192ec41dc6ffeb6feaad2d8bcdcc0b7f45491ecc3197fb"
+    },
+    "candidate": {
+      "id": "2d1ad107c8e944b2b3f6d27d8a50fb28",
+      "commit": "a4a87748404132e81e5545c47b51c17d7be46cf5",
+      "setup": "bfb71dfbff673a916218623dc1724b0673f9d67a2af6491b2f5cf2d0e91604dc",
+      "paired": {
+        "status": "paired",
+        "comparison_checked": true,
+        "business_status": "SHADOW",
+        "unmet_expectations": [
+          "outer_wall_near_178_mm_s",
+          "machine_x_limit_intervention"
+        ],
+        "detail": {
+          "row": "276",
+          "target_filament_slot": 1,
+          "target_values": {
+            "outer_wall_speed": "700",
+            "layer_height": "0.2",
+            "outer_wall_line_width": "0.42",
+            "filament_max_volumetric_speed": "15",
+            "machine_max_speed_x": "500"
+          },
+          "other_settings_preserved": true,
+          "scene_preserved": true,
+          "layer_count": 135,
+          "gcode_sha256": "4f9922bf0aa74f9d740a503e50302b13c74fcbfdf0a5582e782a53710152b827",
+          "pair_status": "checked",
+          "baseline_outer_wall_peak_mm_s": 162.365,
+          "outer_wall_peak_mm_s": 202.956,
+          "outer_wall_peak_mm3_s": 15.0,
+          "near_feishu_178_mm_s": false,
+          "x_limit_effect": "not_exercised_by_flow_limited_outer_walls",
+          "baseline_run": "e9aa6f88eca940b385bfe531703f644e",
+          "baseline_gcode_sha256": "ce990af357454e04a4ab6057e2126cd3183cf1ebb087d63525b7673464bbcf65"
+        }
+      },
+      "script_s": 75.984,
+      "host_s": 218.641,
+      "harvest_s": 2.0,
+      "guest_s": 191.342,
+      "cleanup": true,
+      "stages": [
+        {
+          "step": "printer.open",
+          "ok": true,
+          "seconds": 2.3131
+        },
+        {
+          "step": "printer.page",
+          "ok": true,
+          "seconds": 1.6034
+        },
+        {
+          "step": "printer.x_limit",
+          "ok": true,
+          "seconds": 0.3208
+        },
+        {
+          "step": "printer.close",
+          "ok": true,
+          "seconds": 0.2449
+        },
+        {
+          "step": "filament.open",
+          "ok": true,
+          "seconds": 2.1619
+        },
+        {
+          "step": "filament.page",
+          "ok": true,
+          "seconds": 1.5977
+        },
+        {
+          "step": "filament.flow_limit",
+          "ok": true,
+          "seconds": 5.3454
+        },
+        {
+          "step": "filament.close",
+          "ok": true,
+          "seconds": 0.2638
+        },
+        {
+          "step": "tab.Quality",
+          "ok": true,
+          "seconds": 9.6128
+        },
+        {
+          "step": "locate.Layer height",
+          "ok": true,
+          "seconds": 0.4022
+        },
+        {
+          "step": "edit_readback.Layer height",
+          "ok": true,
+          "seconds": 6.0836
+        },
+        {
+          "step": "field.Layer height",
+          "ok": true,
+          "seconds": 6.5002
+        },
+        {
+          "step": "locate.Outer wall line width",
+          "ok": true,
+          "seconds": 0.575
+        },
+        {
+          "step": "edit_readback.Outer wall line width",
+          "ok": true,
+          "seconds": 6.1036
+        },
+        {
+          "step": "field.Outer wall line width",
+          "ok": true,
+          "seconds": 6.6909
+        },
+        {
+          "step": "tab.Speed",
+          "ok": true,
+          "seconds": 9.6087
+        },
+        {
+          "step": "locate.Outer wall speed",
+          "ok": true,
+          "seconds": 0.3993
+        },
+        {
+          "step": "edit_readback.Outer wall speed",
+          "ok": true,
+          "seconds": 6.1128
+        },
+        {
+          "step": "field.Outer wall speed",
+          "ok": true,
+          "seconds": 6.5236
+        },
+        {
+          "step": "save",
+          "ok": true,
+          "seconds": 7.6849
+        }
+      ],
+      "sut": "5c48644d7da18b50636ceeee4ef9fd2eaf6d4e8ac05bd88752f40e3717fc47bf",
+      "reopen_s": 50.742,
+      "project": "254badfb2579e010815287915f4f6fcee00e1dc51616c9e2bff8765c2a37b5bf",
+      "gcode": "4f9922bf0aa74f9d740a503e50302b13c74fcbfdf0a5582e782a53710152b827",
+      "wall_path_digest": "3d8395f5500cd3522d64f2879f4e18660504ae411f1ee84dc9702865f2a5eca9",
+      "non_first_outer_moves": 536,
+      "layer_grid_digest": "ff79f16da5d462dc29192ec41dc6ffeb6feaad2d8bcdcc0b7f45491ecc3197fb"
+    }
+  },
+  "source": "captured GUI runs; author metadata from two separate GLM 5.4 calls",
+  "flow_equalities": {
+    "sut": true,
+    "setup": true,
+    "wall_path_digest": true,
+    "layer_grid_digest": true,
+    "non_first_outer_moves": true
+  }
+}
