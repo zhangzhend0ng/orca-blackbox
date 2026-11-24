@@ -326,7 +326,13 @@ def worker(run_id, actor="codex", scenario="base"):
                         mix_census = census.is_file()
                         if mix_census:
                             census.unlink()
-                        edit_project(ui, scenario, ui.app.hwnd if binding is None else binding.hwnd, mix_census=mix_census)
+                        # A script that keeps a receipt of its edit (the #254 layer
+                        # pair: what the two fields read on entry) hands it back
+                        # here; the others return None and the report is as before.
+                        edit_receipt = edit_project(ui, scenario, ui.app.hwnd if binding is None else binding.hwnd,
+                                                    mix_census=mix_census)
+                        if edit_receipt is not None:
+                            report["edit_receipt"] = edit_receipt
                         report["script_steps"].append("edit")
                     ui.save_project(prepared_dialog=setup.get("dialog_hwnd"))
                     report["script_steps"].append("save")

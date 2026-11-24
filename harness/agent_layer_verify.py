@@ -184,8 +184,11 @@ def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", ca
     _require(abs(z_layers[0] - first) <= _TOL, "gcode_first_actual_layer_mismatch")
     _require(all(abs(b - a - wanted) <= _TOL for a, b in zip(z_layers, z_layers[1:])), "gcode_actual_layer_step_mismatch")
     # The last planar layer can differ from the physical top by one layer of rounding.
-    _require(expected_height_mm - wanted <= z_layers[-1] <= expected_height_mm + wanted,
-             "gcode_fixture_height_mismatch")
+    # expected_height_mm=None: the caller does not know the object's height (it
+    # measures the layers to pin one) - the Z schedule above is still required.
+    if expected_height_mm is not None:
+        _require(expected_height_mm - wanted <= z_layers[-1] <= expected_height_mm + wanted,
+                 "gcode_fixture_height_mismatch")
     result = {"layer_height": str(wanted), "first_layer_height": str(first),
             "layer_count": len(z_layers), "first_z": str(z_layers[0]), "last_z": str(z_layers[-1]),
             "positive_xy_e_moves": moves, "object_tools": sorted(object_tools), "sha256": hashlib.sha256(raw).hexdigest()}
