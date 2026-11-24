@@ -237,8 +237,12 @@ def specs(models: Path) -> dict[str, list[Item]]:
     out["feishu_std_cubes2"] = [Item(cube(20), "1", (CENTRE[0] - 20, CENTRE[1])), Item(replace(cube(20), name="立方体2"), "3", (CENTRE[0] + 20, CENTRE[1]))]
     out["feishu_std_sphere"] = [Item(sphere(64, 32, 10.0), "1", CENTRE)]
     out["feishu_std_cylinder"] = [Item(bf.shapes()[1], "1", CENTRE)]
+    for stem, file_name in (("bunny", "Stanford_Bunny.3mf"), ("hell", "Orca_stringhell.3mf")):
+        model = source_of(models / file_name)
+        out[f"feishu_std_{stem}"] = [Item(replace(imported, name=model.name), "1", CENTRE, model)]
     return dict(sorted(out.items(), key=lambda entry: ["feishu_std_boat", "feishu_std_boat2", "feishu_std_fdmt", "feishu_std_fdmt2",
-                                                        "feishu_std_cubes2", "feishu_std_sphere", "feishu_std_cylinder"].index(entry[0])))
+                                                        "feishu_std_cubes2", "feishu_std_sphere", "feishu_std_cylinder",
+                                                        "feishu_std_bunny", "feishu_std_hell"].index(entry[0])))
 
 
 def place(template: bf.Template, items: Sequence[Item]) -> list[bf.Placed]:
@@ -298,8 +302,16 @@ def assemble(template: bf.Template, objects: Sequence[bf.Placed], documents: dic
 def build(template: bf.Template, items: Sequence[Item]) -> tuple[bytes, list[bf.Placed]]:
     objects = place(template, items)
     mesh = bf.Doc(template.contents[template.mesh_member], template.mesh_member)
+    model = bf.model_document(bf.Doc(template.contents[MODEL_MEMBER], MODEL_MEMBER), objects)
+    for placed, item in zip(objects, items):
+        # a source mesh that sits off the origin inside its object keeps that component transform
+        component = " ".join(item.source.component) if item.source is not None else bf.IDENTITY_TRANSFORM
+        if component != bf.IDENTITY_TRANSFORM:
+            old = f'objectid="{placed.volume_id}" p:UUID="{placed.component_uuid}" transform="{bf.IDENTITY_TRANSFORM}"/>'
+            bf.need(model.count(old) == 1, f"the component line of object {placed.object_id} was not found once")
+            model = model.replace(old, old[: -len(f'transform="{bf.IDENTITY_TRANSFORM}"/>')] + f'transform="{component}"/>')
     documents = {
-        MODEL_MEMBER: bf.model_document(bf.Doc(template.contents[MODEL_MEMBER], MODEL_MEMBER), objects),
+        MODEL_MEMBER: model,
         RELS_MEMBER: bf.rels_document(bf.Doc(template.contents[RELS_MEMBER], RELS_MEMBER), objects),
         SETTINGS_MEMBER: bf.settings_document(bf.Doc(template.contents[SETTINGS_MEMBER], SETTINGS_MEMBER), objects),
     }
