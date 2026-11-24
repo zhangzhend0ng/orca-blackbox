@@ -1,0 +1,52 @@
+{
+  "run_id": "a476f6fea47c49609ff30ddc1a41bcb9",
+  "source_sha": "534ed67a5595079833ceb9affc115b354884464f",
+  "actor": "script",
+  "scenario": "uia_param_infill_structure_fdmt",
+  "actor_exit": 0,
+  "actor_error": null,
+  "result": {
+    "checks": {
+      "business": {
+        "detail": "{\"bridge_angle\": \"45\", \"case_id\": \"param_269_infill_structure\", \"detect_narrow_internal_solid_infill\": \"1\", \"ensure_vertical_shell_thickness\": \"ensure_all\", \"infill_combination\": \"1\", \"minimum_sparse_infill_area\": \"10\", \"other_settings_preserved\": true, \"schedule_error\": \"gcode_fixture_height_mismatch\"}",
+        "evidence": [
+          "artifact:proof.json",
+          "artifact:process.json",
+          "artifact:native_worker.json",
+          "artifact:proof/0001.3mf:sha256:ae70e90743d86dd2aca4f388807b536ef856ee43f03bd7956892f8c5ea81d889",
+          "artifact:exports/0001.gcode:sha256:be7626072d36e5f6d35978da913d7dcd52edc32a3778a83c74c2631b4c487781"
+        ],
+        "status": "pass"
+      },
+      "path": {
+        "detail": "Script GUI save and fresh-profile reslice",
+        "evidence": [
+          "artifact:proof.json",
+          "artifact:process.json",
+          "artifact:native_worker.json",
+          "artifact:proof/0001.3mf:sha256:ae70e90743d86dd2aca4f388807b536ef856ee43f03bd7956892f8c5ea81d889",
+          "artifact:exports/0001.gcode:sha256:be7626072d36e5f6d35978da913d7dcd52edc32a3778a83c74c2631b4c487781"
+        ],
+        "status": "pass"
+      },
+      "visual": {
+        "detail": "not checked",
+        "evidence": [],
+        "status": "unknown"
+      }
+    },
+    "cleanup_confirmed": true,
+    "execution_status": "completed",
+    "gui_execution_requested": true,
+    "mode": "script_shadow",
+    "reasons": [],
+    "recovery_used": false,
+    "release_eligible": false,
+    "release_verdict": "SHADOW",
+    "runtime_status": "completed",
+    "verified_pass": true
+  },
+  "release_eligible": false,
+  "host_wall_seconds": 234.4529999999795,
+  "harvest_seconds": 2.0
+}
