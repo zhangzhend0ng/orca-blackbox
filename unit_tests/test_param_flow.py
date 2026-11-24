@@ -1,5 +1,6 @@
 """The process-panel flows of #276 and #264: their per-stage times, the registry
-behind those, and the #276 readiness wait that replaces the fixed wait after Enter.
+behind those, and the readiness wait that replaces the fixed wait after Enter
+(the #276 trials, the two #264 scenarios).
 
 Fake Win32 boundaries only: nothing here launches an application."""
 from pathlib import Path
@@ -13,7 +14,7 @@ from harness import agent_business_ui as module
 from harness import mixing_util
 from harness import native_matrix as nm
 from harness import native_preset_script as nps
-from harness.native_preset_script import (TIMED_FLOWS, ensure_process_advanced, flow_step_measure,
+from harness.native_preset_script import (TIMED_FLOWS, WAITS_264, ensure_process_advanced, flow_step_measure,
                                           timed_flow_step, waits_flow_commit)
 from harness import native_script_baseline as nsb
 from harness import param_case_lib as pcl
@@ -304,11 +305,14 @@ def test_the_registry_names_registered_scenarios_and_times_every_276_trial():
     # a timed name is a registered scenario, or the twin of one on another fixture
     assert set(TIMED_FLOWS) <= set(nm.SCENARIOS) | set(nm.std_twins(nm.SCENARIOS))
     assert all((flow_step_measure(name) is not None) == name.startswith("compare_276_") for name in MAINTENANCE_TRIALS)
+    # a #264 scenario that waits is timed: its stage lines are what the wait's cost is read from
+    assert WAITS_264 <= set(TIMED_FLOWS)
 
 
 @pytest.mark.parametrize("scenario,prepared,prefix,waits", [
-    ("uia_param_overhang_speeds", False, "[flow264]", False),
-    ("uia_param_overhang_speeds_fdmt", False, "[flow264]", False),
+    ("uia_param_overhang_speeds", False, "[flow264]", True),
+    ("uia_param_overhang_speeds_fdmt", False, "[flow264]", True),
+    ("uia_param_overhang_speeds_std02", False, None, False),
     ("uia_param_accelerations", False, None, False),
     ("compare_276_quality", True, "[flow276]", True),
     ("compare_276_strength", True, "[flow276]", True),
@@ -342,11 +346,13 @@ def test_worker_times_the_save_stage_through_the_same_registry():
     assert 'startswith("compare_276_")' not in source      # the one copy of that rule is flow_step_measure
 
 
-# ---- the readiness wait that replaces edit's fixed 6 s for the #276 fields ----
+# ---- the readiness wait that replaces edit's fixed 6 s: the #276 fields, the #264 boxes ----
 
 CAP, POLL = module.FLOW_COMMIT_CAP_S, module.FLOW_COMMIT_POLL_S
 NOT_STABLE = "[param-uia] flow_commit_not_stable ok=0 value={!r}"
 LAYER, OVERHANG = "Layer height", "Overhang speed"
+BOTH_264 = ["uia_param_overhang_speeds", "uia_param_overhang_speeds_fdmt"]
+BOXES_264 = ["40", "30", "20", "10"]
 
 
 class FakeApp:
@@ -430,8 +436,12 @@ def texts(business):
     return [business.page.edits[h][1] for h in business.page.row_edits[LAYER]]
 
 
+def box_texts(business):
+    return [business.page.edits[h][1] for h in business.page.row_edits[OVERHANG]]
+
+
 def never_wait(self, target, wanted):
-    pytest.fail("the readiness wait was used outside the #276 flow")
+    pytest.fail("the readiness wait was used outside the #276 trials and the two #264 scenarios")
 
 
 def test_a_field_that_holds_its_value_on_a_still_page_ends_the_wait_after_three_polls(business):
@@ -515,10 +525,14 @@ def test_a_box_wheeled_into_view_still_waits_for_its_committed_value(business):
 
 @pytest.mark.parametrize("scenario,waits", [
     ("compare_276_quality", True), ("compare_276_strength", True),
+    ("uia_param_overhang_speeds", True), ("uia_param_overhang_speeds_fdmt", True),
     ("compare_265_quality", False), ("compare_265_strength", False),
-    ("uia_param_overhang_speeds", False), ("uia_param_speed_limits", False), ("uia_param_speed_limits_std02", False),
+    ("uia_param_speed_limits", False), ("uia_param_speed_limits_std02", False),
+    # other twins of the row do not wait with it
+    ("uia_param_overhang_speeds_std02", False), ("uia_param_overhang_speeds_shapes", False),
+    ("uia_param_accelerations", False), ("uia_param_accelerations_fdmt", False),
 ])
-def test_only_the_276_trials_wait_for_the_committed_value(scenario, waits):
+def test_only_the_276_trials_and_the_two_264_names_wait_for_the_committed_value(scenario, waits):
     assert waits_flow_commit(scenario) is waits
 
 
@@ -557,14 +571,128 @@ def test_with_the_flag_every_float_op_gets_the_ui_own_wait(world):
     assert edits == [{"wait_commit": spy}] * 4
 
 
-def test_the_264_flow_keeps_the_fixed_wait_and_never_reaches_the_readiness_wait(business, monkeypatch, capsys):
-    monkeypatch.setattr(module.BusinessUI, "wait_flow_commit", never_wait)
-    nsb.edit_param_cases(business.ui, "uia_param_overhang_speeds")
-    assert [business.page.edits[h][1] for h in business.page.row_edits[OVERHANG]] == ["40", "30", "20", "10"]
-    # one fixed wait per field; the last two pauses are run_ops's own (after
-    # the last op, then its final settle) and are not the edit's wait
-    assert business.asked[:-2].count(6) == 4 and business.asked[-2:] == [1.0, 6]
+def edit_param_cases_stops_at_run_ops(monkeypatch):
+    """edit_param_cases for real, run_ops a recorder of the options it was
+    given. A failing edit_param_cases screenshots the sidebar: never from here."""
+    monkeypatch.setattr(nsb, "_save_failure_shot", lambda *args: None)
+    seen = []
+    monkeypatch.setattr(pcl, "run_ops", lambda ui, ops, **options: seen.append(options))
+    return seen
+
+
+@pytest.mark.parametrize("scenario", BOTH_264, ids=["cube", "fdmt"])
+def test_both_264_names_get_the_flag_from_edit_param_cases(monkeypatch, scenario):
+    seen = edit_param_cases_stops_at_run_ops(monkeypatch)
+    nsb.edit_param_cases(object(), scenario)
+    assert [set(options) for options in seen] == [{"measure", "ready_commit"}]
+    assert seen[0]["ready_commit"] is True
+
+
+def test_edit_param_cases_passes_the_flag_exactly_where_waits_flow_commit_says(monkeypatch):
+    """Every name a command line may take, with its own ops from the real table:
+    the flag reaches run_ops for the #276 trials and the two #264 names, and
+    reaches nothing else that has ops."""
+    seen = edit_param_cases_stops_at_run_ops(monkeypatch)
+    flagged = set()
+    for scenario in dict.fromkeys((*nm.scenario_names(), *MAINTENANCE_TRIALS)):
+        if nsb.scenario_ops(scenario) is None:
+            continue
+        seen.clear()
+        nsb.edit_param_cases(object(), scenario)
+        assert len(seen) == 1, scenario
+        # the flag, and nothing else, is what the two #264 names gained
+        assert ("ready_commit" in seen[0]) is waits_flow_commit(scenario), scenario
+        assert set(seen[0]) - {"ready_commit"} == (
+            ({"prepare_advanced"} if scenario in MAINTENANCE_TRIALS else set())
+            | ({"measure"} if flow_step_measure(scenario) else set())), scenario
+        if "ready_commit" in seen[0]:
+            assert seen[0]["ready_commit"] is True
+            flagged.add(scenario)
+    assert flagged == {name for name in MAINTENANCE_TRIALS if name.startswith("compare_276_")} | set(BOTH_264)
+
+
+# Before the first box is driven, run_ops has paused four times for 1 s: the
+# two tab switches and the two checkbox ops (a page pause each).
+FIRST_BOX = 4 * 1.0
+
+
+@pytest.mark.parametrize("scenario", BOTH_264, ids=["cube", "fdmt"])
+def test_both_264_flows_wait_for_the_committed_value_of_each_box_and_never_for_the_fixed_six_seconds(business, scenario,
+                                                                                                    capsys):
+    real, waits = business.ui.wait_flow_commit, []
+    business.ui.wait_flow_commit = lambda target, wanted: (waits.append((target, wanted)), real(target, wanted))[1]
+    nsb.edit_param_cases(business.ui, scenario)
+    assert box_texts(business) == BOXES_264
+    assert waits == list(zip(business.page.row_edits[OVERHANG], BOXES_264))     # once per box, its handle and its value
+    # the pauses asked for, in order: 1 s per tab switch and after every op,
+    # two 0.5 s polls per box on a still page, the wheeled third box its 1 s
+    # first, and run_ops's final 6 s
+    assert business.asked == [1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 1.0, 0.5, 0.5, 1.0,
+                              1.0, 0.5, 0.5, 1.0, 0.5, 0.5, 1.0, 6]
+    # 4 s of page pauses + four boxes x 2 s + the wheel's 1 s + the final 6 s; with
+    # the fixed wait the same run took 39 s (four boxes x 7 s)
+    assert business.now[0] == pytest.approx(19)
     assert "flow_commit" not in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("scenario", BOTH_264, ids=["cube", "fdmt"])
+def test_a_264_run_on_pages_that_never_settle_costs_what_the_fixed_wait_cost_and_still_passes(business, scenario, capsys):
+    pcl.run_ops(business.ui, nsb.scenario_ops(scenario))             # as before the flag: the fixed 6 s per box
+    fixed = sum(business.asked)
+    business.page.reset()
+    business.now[0], business.asked[:] = 0.0, []
+    business.app.churning = True
+    nsb.edit_param_cases(business.ui, scenario)
+    assert box_texts(business) == BOXES_264
+    assert sum(business.asked) == pytest.approx(fixed) and business.asked[-2:] == [1.0, 6]
+    out = capsys.readouterr().out
+    # said once per box, with the value that was wanted; nothing raised
+    assert [line for line in out.splitlines() if "flow_commit" in line] == [NOT_STABLE.format(value) for value in BOXES_264]
+    assert parse_stages(out) == [(name, "1") for name in STAGES_264]
+
+
+@pytest.mark.parametrize("scenario", [
+    "uia_param_accelerations", "uia_param_jerk", "uia_param_speed_limits", "uia_param_first_speeds_fdmt",
+], ids=["accelerations", "jerk", "speed_limits", "first_speeds_fdmt"])
+def test_other_param_scenarios_keep_the_fixed_wait_through_their_own_ops(business, monkeypatch, scenario, capsys):
+    monkeypatch.setattr(module.BusinessUI, "wait_flow_commit", never_wait)
+    # the scenario's own ops on the fake page: every label sits on its single-Edit row
+    monkeypatch.setattr(pcl, "_find_phrase_row_any", lambda app, phrase, group_substr=None: (
+        business.page.row_y(LAYER), phrase if isinstance(phrase, str) else phrase[0]))
+    ops = nsb.scenario_ops(scenario)
+    assert all(op["op"] == "float" for op in ops)                 # floats only: nothing here needs another fake
+    nsb.edit_param_cases(business.ui, scenario)
+    # every edit's wait is the fixed 6 s, then run_ops's 1 s after the op (and
+    # its 1 s after a tab switch first); its final 6 s
+    expected = []
+    for op in ops:
+        expected += [1.0] * ("tab" in op) + [6, 1.0]
+    assert business.asked == expected + [6]
+    assert texts(business) == [ops[-1]["value"]] and "flow_commit" not in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("damage", ["ends-on-another-value", "click-lands-on-the-next-box"])
+def test_under_the_readiness_wait_the_264_readback_stays_the_gate(business, capsys, damage):
+    page, boxes = business.page, business.page.row_edits[OVERHANG]
+    if damage == "ends-on-another-value":
+        def clamp():                      # the application takes the second band to its own maximum while rebuilding
+            business.app.version = 1
+            page.edits[boxes[1]][1] = "35"
+
+        second = FIRST_BOX + 2 * POLL + 1.0           # the first box's 1 s wait, then the 1 s after its op
+        business.app.at(second + 0.6, clamp)          # inside the second box's wait
+        refused, now, said = "param_uia_readback:Overhang speed:'35'$", second + CAP, [NOT_STABLE.format("30")]
+        left = ["40", "35", "", ""]                   # the wait ran to its cap for the wanted 30, and was not the gate
+    else:
+        real = business.ui.wu.deepest_child_at
+        below = dict(zip(boxes, boxes[1:]))
+        business.ui.wu.deepest_child_at = lambda root, x, y: below.get(real(root, x, y), real(root, x, y))
+        refused, now, said = "param_uia_readback:Overhang speed:'40'$", FIRST_BOX + 2 * POLL, []
+        left = ["", "40", "", ""]                     # typed into the box below the one the row lookup named
+    with pytest.raises(ProtocolError, match=refused):
+        nsb.edit_param_cases(business.ui, "uia_param_overhang_speeds")
+    assert box_texts(business) == left and business.now[0] == pytest.approx(now)
+    assert [line for line in capsys.readouterr().out.splitlines() if "flow_commit" in line] == said
 
 
 @pytest.mark.parametrize("scenario,asked,timed", [

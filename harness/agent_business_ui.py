@@ -157,8 +157,8 @@ class BusinessUI:
         there, not a commit (fa run a9cce05e: the filename format was saved
         with a trailing '\\n'). `wait_commit` (the ui's own callable
         `(target, text)`, BusinessUI.wait_flow_commit) replaces the fixed 6 s
-        wait after Enter; only the #276 process-panel float fields pass one
-        (uia_set_float, ready_commit)."""
+        wait after Enter; only the #276 trials' and the #264 scenarios'
+        process-panel float fields pass one (uia_set_float, ready_commit)."""
         window, _ = self.main_input()
         if not 0 <= x < window["width"] or not 0 <= y < window["height"]:
             raise ProtocolError("edit_outside_client")

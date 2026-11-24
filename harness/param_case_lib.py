@@ -504,8 +504,9 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
                 or after.replace("\r\n", "\n") != str(value)):
             raise ProtocolError("param_uia_readback:" + label_substr + ":" + repr(after)[:60])
         return
-    # ready_commit (the #276 flow, run_ops): the ui waits for the committed
-    # value to settle instead of edit's fixed 6 s. Nothing else passes it.
+    # ready_commit (the #276 trials and the two #264 scenarios, run_ops): the
+    # ui waits for the committed value to settle instead of edit's fixed 6 s.
+    # Nothing else passes it.
     edit_options = {"wait_commit": ui.wait_flow_commit} if ready_commit else {}
     receipt = (measure("edit_readback." + field_name, ui.edit, x, y, str(value), **edit_options) if measure
                else ui.edit(x, y, str(value), **edit_options))
@@ -701,8 +702,9 @@ def run_ops(ui, ops, *, prepare_advanced=None, measure=None, ready_commit=False)
       {"op": "checkbox","label": ..., "value": True, ["group": ...]}
       {"op": "combo",   "current": ..., "target": ..., ["group": ...]}
 
-    `ready_commit` (the #276 flow) makes every float op wait for its committed
-    value to settle instead of the fixed 6 s after Enter.
+    `ready_commit` (the #276 trials and the two #264 scenarios) makes every
+    float op wait for its committed value to settle instead of the fixed 6 s
+    after Enter.
     """
     from . import process_panel as pp
 

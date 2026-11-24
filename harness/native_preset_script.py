@@ -26,8 +26,8 @@ def flow_step_timer(prefix):
 
 timed_flow_step = flow_step_timer("[flow276]")
 
-# The #276 maintenance trials (compare_276_quality / compare_276_strength):
-# the one flow that is timed and waits for its committed values to settle.
+# The #276 maintenance trials (compare_276_quality / compare_276_strength),
+# recognised by name: timed, and waiting for their committed values to settle.
 ROW_276 = "compare_276_"
 
 # Scenarios whose worker log carries per-stage times under their own tag. The
@@ -38,6 +38,12 @@ ROW_276 = "compare_276_"
 # `_fdmt`) under the one tag: the same stages, read by the same reader.
 TIMED_FLOWS = {"uia_param_overhang_speeds": "[flow264]",
                "uia_param_overhang_speeds_fdmt": "[flow264]"}
+
+# The #264 scenarios whose float fields wait for the committed value to settle
+# as well (waits_flow_commit): the cube's and the Feishu row's own model. Named
+# one by one, like the tag: being timed (TIMED_FLOWS) does not make a scenario
+# wait, and neither does being another twin of the row.
+WAITS_264 = frozenset({"uia_param_overhang_speeds", "uia_param_overhang_speeds_fdmt"})
 
 
 def flow_step_measure(scenario):
@@ -51,8 +57,9 @@ def flow_step_measure(scenario):
 def waits_flow_commit(scenario):
     """True for the scenarios whose process-panel float fields wait for the
     committed value to settle (BusinessUI.wait_flow_commit) instead of the
-    fixed 6 s after Enter: the #276 trials only."""
-    return scenario.startswith(ROW_276)
+    fixed 6 s after Enter: the #276 trials and the two #264 scenarios. Every
+    other param scenario keeps the fixed wait."""
+    return scenario.startswith(ROW_276) or scenario in WAITS_264
 
 
 def _center(rect):

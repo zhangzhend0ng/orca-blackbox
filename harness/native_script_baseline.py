@@ -998,20 +998,21 @@ def edit_param_cases(ui, scenario):
         from .native_preset_script import flow_step_measure, waits_flow_commit
 
         measure = flow_step_measure(scenario)
+        # The 276 flow and the two #264 scenarios wait for each committed
+        # value to settle; 265 and every other param scenario keep the fixed
+        # wait after Enter.
+        flow = {"ready_commit": True} if waits_flow_commit(scenario) else {}
         if scenario in MAINTENANCE_TRIALS:
             from .native_preset_script import ensure_process_advanced
 
-            # The 276 flow waits for each committed value to settle; 265
-            # keeps the fixed wait after Enter.
-            flow = {"ready_commit": True} if waits_flow_commit(scenario) else {}
             if measure:
                 run_ops(ui, ops, prepare_advanced=ensure_process_advanced, measure=measure, **flow)
             else:
                 run_ops(ui, ops, prepare_advanced=ensure_process_advanced, **flow)
         elif measure:
-            run_ops(ui, ops, measure=measure)
+            run_ops(ui, ops, measure=measure, **flow)
         else:
-            run_ops(ui, ops)
+            run_ops(ui, ops, **flow)
     except Exception:
         import traceback
         traceback.print_exc()
