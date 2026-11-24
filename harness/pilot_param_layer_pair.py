@@ -13,7 +13,7 @@ from decimal import Decimal
 from .agent_layer_verify import analyze_gcode
 from .agent_verify import _require
 from .pilot_common import LAYER_PAIR, inspect_preserved_settings
-from .project_3mf import _archive, _json
+from .project_3mf import _settings
 
 CASE_ID = "param_layer_pair_254"
 GOAL = ("Set regular layer height to 0.20 mm and initial layer print height to 0.25 mm. "
@@ -27,8 +27,7 @@ EXPECTED_LAST_Z = "27.05"
 
 
 def verify_business(project: bytes, fixture: bytes, gcode: bytes, *, cancelled=lambda: False) -> dict:
-    actual, original = (_json(a["Metadata/project_settings.config"])
-                        for a in (_archive(project, cancelled), _archive(fixture, cancelled)))
+    actual, original = _settings(project, cancelled), _settings(fixture, cancelled)
     inspect_preserved_settings(actual, original, allowed_changes=LAYER_PAIR, cancelled=cancelled)
     _require(actual.get("layer_height") == "0.2", "layer_pair_regular_value")
     _require(actual.get("initial_layer_print_height") == "0.25", "layer_pair_initial_value")

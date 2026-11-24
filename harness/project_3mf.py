@@ -37,7 +37,18 @@ def _xml(raw, *, allow_colour_paint=False):
     return root
 
 
-def _archive(raw, cancelled, *, member_limit=16 * 1024 * 1024):
+SETTINGS_MEMBER = "Metadata/project_settings.config"
+
+
+def _archive(raw, cancelled, *, member_limit=16 * 1024 * 1024, members=None):
+    """Every member of a project 3MF as bytes, once the container is checked.
+
+    `members`: when given, only these members are decompressed; name, encryption
+    and compression type are still checked for all of them. A project that
+    carries a large mesh is read for its settings without loading the mesh: the
+    3DBenchy fixture's mesh member is 18 MB of XML, over the 16 MB a member may
+    have (2026-11-24, VM run e3422b44: the app opened, sliced and saved it, the
+    verifier refused it as project_zip_member)."""
     _require(type(raw) is bytes and 1 <= len(raw) <= 16 * 1024 * 1024, "project_zip_size")
     files, names, total = {}, set(), 0
     with zipfile.ZipFile(io.BytesIO(raw)) as archive:
@@ -51,8 +62,10 @@ def _archive(raw, cancelled, *, member_limit=16 * 1024 * 1024):
                      and not any(ord(x) < 32 for x in name) and name.casefold() not in names, "project_zip_path")
             names.add(name.casefold())
             _require(not stat.S_ISLNK(item.external_attr >> 16) and not item.flag_bits & 1
-                     and item.compress_type in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED)
-                     and 0 <= item.file_size <= member_limit, "project_zip_member")
+                     and item.compress_type in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED), "project_zip_member")
+            if members is not None and name not in members:
+                continue          # not decompressed, so its size is not this reader's business
+            _require(0 <= item.file_size <= member_limit, "project_zip_member")
             total += item.file_size
             _require(total <= 64 * 1024 * 1024, "project_zip_total")
             with archive.open(item) as source:
@@ -72,6 +85,11 @@ def _archive(raw, cancelled, *, member_limit=16 * 1024 * 1024):
                 _require(link.get("TargetMode") != "External" and ":" not in target and "\\" not in target
                          and ".." not in target.split("/"), "project_external_reference")
     return files
+
+
+def _settings(raw, cancelled):
+    """The project's settings without loading its meshes (see _archive)."""
+    return _json(_archive(raw, cancelled, members={SETTINGS_MEMBER})[SETTINGS_MEMBER])
 
 
 def _apply(matrix, point):

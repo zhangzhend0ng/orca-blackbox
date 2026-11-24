@@ -1842,6 +1842,22 @@ for _sfx in [s for s in _ap31.FIXTURE_SUFFIXES if s not in (_SUFFIX31, _ap31.SHA
           and _base + _SUFFIX31 not in _names31,
           "failing: %r" % (_br[:6],))
 
+# The settings are read without loading the meshes (VM run e3422b44: the app opened,
+# sliced and saved the 3DBenchy fixture; the verifier refused it because its mesh member
+# is 18 MB, over the 16 MB a member may have). The member rule itself does not move.
+from harness.project_3mf import _archive as _archive31, _settings as _settings31  # noqa: E402
+from harness.script_verify import _InvalidEvidence as _Invalid31  # noqa: E402
+_boat31 = (_Path(root) / "fixtures/feishu_std_boat.3mf").read_bytes()
+try:
+    _archive31(_boat31, lambda: False)
+    _boat_whole31 = "accepted"
+except _Invalid31 as _exc31:
+    _boat_whole31 = str(_exc31)
+check("project_3mf: a project whose mesh member is over 16 MB (the 3DBenchy fixture) is still refused "
+      "when read as a whole, and is read for its settings alone",
+      _boat_whole31 == "project_zip_member" and _settings31(_boat31, lambda: False).get("layer_height") == "0.2",
+      "whole: %r" % (_boat_whole31,))
+
 _baseline31 = _BASELINE31
 _controls31 = (_np31.native_fixture("uia_param_save_only") == _CUBE31
                and _np31.native_fixture(_baseline31) == _STD31

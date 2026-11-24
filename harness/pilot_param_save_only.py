@@ -46,7 +46,7 @@ from tools.gcode_feature_speeds import feature_speeds
 from .agent_layer_verify import analyze_gcode
 from .agent_protocol import BASELINES
 from .param_case_lib import make_verify
-from .project_3mf import _archive, _json
+from .project_3mf import _settings
 
 VALUES = {}
 GOAL = ("Save the loaded project without changing any setting. Preserve the models' geometry, "
@@ -67,8 +67,7 @@ def _config_changes(project, fixture, cancelled):
     project configs, raw comparison: a key added by the save or rewritten in form
     counts. The whole list is recomputed offline from the two 3MFs (the proof and
     input/fixture.3mf of the run); the result carries what fits in a check's detail."""
-    saved, original = (_json(archive["Metadata/project_settings.config"])
-                       for archive in (_archive(project, cancelled), (_archive(fixture, cancelled))))
+    saved, original = _settings(project, cancelled), _settings(fixture, cancelled)
     changed = sorted(key for key in set(saved) | set(original) if saved.get(key) != original.get(key))
     return {"count": len(changed),
             "keys": " ".join(changed)[:KEYS_CHARS],
@@ -108,7 +107,7 @@ def _control(case_id):
 
     def verify_business(project: bytes, fixture: bytes, gcode: bytes, *, cancelled=lambda: False) -> dict:
         result = preserved(project, fixture, gcode, cancelled=cancelled)
-        settings = _json(_archive(project, cancelled)["Metadata/project_settings.config"])
+        settings = _settings(project, cancelled)
         text = gcode.decode("utf-8", errors="replace")
         result.update(_layers(gcode, settings))
         result["layer_change_lines"] = sum(1 for line in text.splitlines() if line.startswith(";LAYER_CHANGE"))

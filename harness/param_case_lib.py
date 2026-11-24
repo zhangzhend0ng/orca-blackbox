@@ -13,7 +13,7 @@ from .agent_protocol import (FIXTURE_SUFFIXES, LAYER_FIXTURE_SHA256, SHAPES_FIXT
                              STD_FIXTURE_SHA256, ProtocolError)
 from .agent_verify import _require
 from .pilot_common import _register_param_change_scope, inspect_preserved_settings
-from .project_3mf import _archive, _json
+from .project_3mf import _settings
 
 # The layer schedule a case asserts (68 x 0.4 / 27.2) was measured on the cube: it
 # belongs to the fixture, not to the case. sha256 of the fixture bytes -> what
@@ -53,8 +53,9 @@ def make_verify(case_id, values, *, schedule=None, ironing=None, cancelled_guard
     _register_param_change_scope(values)
 
     def verify_business(project: bytes, fixture: bytes, gcode: bytes, *, cancelled=lambda: False) -> dict:
-        actual, original = (_json(a["Metadata/project_settings.config"])
-                            for a in (_archive(project, cancelled), _archive(fixture, cancelled)))
+        # the settings only: a project that carries a large mesh (the model
+        # fixtures) is not loaded for its mesh (project_3mf._settings)
+        actual, original = _settings(project, cancelled), _settings(fixture, cancelled)
         inspect_preserved_settings(actual, original, allowed_changes=values, cancelled=cancelled)
         result = {"case_id": case_id, "other_settings_preserved": True}
         for key, want in values.items():
