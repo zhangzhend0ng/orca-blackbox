@@ -18,7 +18,7 @@ import win32gui
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT), str(ROOT / "tests")]
 from m8a_fit_view import cap, m7, m8, winutil
-from m3_common import add_common_args, boot_session
+from m3_common import add_common_args, boot_session, ensure_gl_ready
 from harness import launcher, profile, shot_archive
 
 FIXTURE = ROOT / "fixtures/feishu_std_cube.3mf"
@@ -101,21 +101,25 @@ def boot_when_ready(args, row):
         archive = shot_archive.start_archiver(session, Path(sys.argv[0]).stem)
         shot_archive.hook_stdout_tee(archive)
         m7.ensure_maximized(session)
+        ensure_gl_ready(session)
         deadline = time.monotonic() + 20
         last_box = None
         while time.monotonic() < deadline:
-            # GW_ENABLEDPOPUP returns the owner itself when no enabled popup exists.
-            if win32gui.IsWindowEnabled(session.hwnd) and win32gui.GetWindow(session.hwnd, 6) == session.hwnd:
+            modal = any(pid == session.pid and hwnd != session.hwnd and winutil.window_class(hwnd) == "#32770"
+                        for hwnd, pid in winutil.enum_windows())
+            if win32gui.IsWindowEnabled(session.hwnd) and not modal:
                 try:
                     found = cube(cap(session), viewport(session))
                 except ValueError:
                     found = None
+                row["boot_last_state"] = "cube_visible" if found else "awaiting_cube"
                 if found and found["bbox"] == last_box:
                     row["boot_target"] = last_box
                     winutil.demote_window(session.hwnd)
                     return session
                 last_box = found["bbox"] if found else None
             else:
+                row["boot_last_state"] = "modal_or_disabled"
                 last_box = None
                 launcher.sweep_boot_blockers(session.pid, session.hwnd, budget_s=.25, dismiss_wizard=True)
             time.sleep(.15)
