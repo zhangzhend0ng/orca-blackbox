@@ -596,12 +596,15 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         # the field row itself - re-anchored per op to the values the
         # previous edit just painted (fixture paints 0 50 25 5).
         # overhang_totally_speed does not exist in this fork; the enable flag
-        # already sits at the table target. Bridge speed did too - on the cube
-        # (30) - so there was no op for it; the precondition fixture's preset
-        # says 50 and its twin ended pilot_target_setting_mismatch with the four
-        # overhang values right (run 26f9fb35, 2026-11-24). The row is 'Bridge'
-        # right under the overhang stack, still in the 'Overhang speed' group
-        # (the Edit the stack search must not take for a fifth field).
+        # already sits at the table target. Bridge speed does too on the cube
+        # (30), so there is no op for it; the precondition fixture's preset
+        # says 50 and its twin ends pilot_target_setting_mismatch with the
+        # four overhang values right (run 26f9fb35, 2026-11-24). An op
+        # anchored '^Bridge' in this group was tried the same day and
+        # withdrawn: it wrote its 30 into the NEIGHBOURING field
+        # (internal_bridge_speed "100%" -> "30", run cf6ac769) - the row has
+        # an External and an Internal box around its label line, and which
+        # one the line's y selects has not been established. Open.
         # 2026-11-23: rows anchored to the row label only. The value-bearing
         # phrases ('Overhang speed 0', ... 'Overhang speed 40 30 20') never
         # matched what OCR made of the painted field row (overhang_bridge run
@@ -617,7 +620,6 @@ PARAM_OPS = {        "uia_param_ironing_top": [
              "group": "Overhang", "field": 2},
             {"op": "float", "label": "Overhang speed",
              "value": "10", "group": "Overhang", "field": 3},
-            {"op": "float", "label": "^Bridge", "value": "30", "group": "Overhang"},
         ],
         # Feishu #273 (line 192): the row paints just 'Travel' + the
         # value while the group TITLE reads 'Travel speed' - a plain

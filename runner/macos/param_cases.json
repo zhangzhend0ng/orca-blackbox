@@ -959,12 +959,6 @@
      "value": "10",
      "group": "Overhang",
      "field": 3
-    },
-    {
-     "op": "float",
-     "label": "^Bridge",
-     "value": "30",
-     "group": "Overhang"
     }
    ],
    "kinds": [
