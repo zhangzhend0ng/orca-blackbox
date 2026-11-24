@@ -341,7 +341,8 @@ def _park_field(ui, bounds):
     return notches
 
 
-def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, below=False, _parked=0):
+def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, below=False, _parked=0,
+                  *, measure=None):
     """Set a sidebar float Edit: OCR locates the painted row (OG_CustomCtrl
     draws row labels without HWNDs - only group headers are windows, the
     f5acdb1a census), then the visible Edit whose row-y matches is driven
@@ -352,7 +353,11 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
     wu, app = ui.wu, ui.app
     # `label_substr` may be a list of candidates: they are searched in ONE
     # scan (_find_phrase_row_any). From here on it is the label that matched.
-    y_row, matched = _find_phrase_row_any(app, label_substr, group_substr)
+    field_name = label_substr if isinstance(label_substr, str) else label_substr[0]
+    if measure:
+        y_row, matched = measure("locate." + field_name, _find_phrase_row_any, app, label_substr, group_substr)
+    else:
+        y_row, matched = _find_phrase_row_any(app, label_substr, group_substr)
     if y_row is None:
         label_substr = (label_substr if isinstance(label_substr, str) else label_substr[0])
         raise ProtocolError("param_row:" + label_substr)
@@ -459,7 +464,7 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
     # locate the row again on the moved page (at most three times).
     if _parked < 3 and _park_field(ui, bounds):
         return uia_set_float(ui, label_substr, value, group_substr, field_index, below,
-                             _parked=_parked + 1)
+                             _parked=_parked + 1, measure=measure)
     x = (bounds[0] + bounds[2]) // 2 - origin_x
     y = (bounds[1] + bounds[3]) // 2 - origin_y
     from decimal import Decimal as _D, InvalidOperation as _Inv
@@ -491,7 +496,7 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
                 or after.replace("\r\n", "\n") != str(value)):
             raise ProtocolError("param_uia_readback:" + label_substr + ":" + repr(after)[:60])
         return
-    receipt = ui.edit(x, y, str(value))
+    receipt = measure("edit_readback." + field_name, ui.edit, x, y, str(value)) if measure else ui.edit(x, y, str(value))
     if (receipt["target_hwnd"] != handle
             or _num(receipt["after_text"]) != _num(value)):
         raise ProtocolError("param_uia_readback:" + label_substr + ":" + repr(receipt.get("after_text"))[:40])
@@ -675,7 +680,7 @@ def settle_dialog(ui, known, answer=None, expect=None):
     return dlg, body
 
 
-def run_ops(ui, ops, *, prepare_advanced=None):
+def run_ops(ui, ops, *, prepare_advanced=None, measure=None):
     """Execute a list of process-panel operations on the running app.
 
     op forms:
@@ -699,7 +704,9 @@ def run_ops(ui, ops, *, prepare_advanced=None):
         tab = op.get("tab") or current_tab
         if tab and tab != current_tab:
             ui.main_input()
-            if not pp.click_tab(app, tab, op.get("tab_hint", "")):
+            tab_args = (app, tab, op.get("tab_hint", ""))
+            clicked = measure("tab." + tab, pp.click_tab, *tab_args) if measure else pp.click_tab(*tab_args)
+            if not clicked:
                 raise ProtocolError("param_tab:" + tab)
             current_tab = tab
             ui.pause(1.0)
@@ -716,8 +723,11 @@ def run_ops(ui, ops, *, prepare_advanced=None):
             # run f4b87b67: 'point distance' searched for 'Fuzzy skin') and
             # any other float op died on a NameError.
             labels = op["label"] if isinstance(op["label"], (tuple, list)) else (op["label"],)
-            uia_set_float(ui, labels, str(op["value"]), group_substr=op.get("group"),
-                          field_index=op.get("field"), below=bool(op.get("below")))
+            options = dict(group_substr=op.get("group"), field_index=op.get("field"), below=bool(op.get("below")))
+            if measure:
+                measure("field." + labels[0], uia_set_float, ui, labels, str(op["value"]), **options, measure=measure)
+            else:
+                uia_set_float(ui, labels, str(op["value"]), **options)
             pp.neutralize_focus(app)
         elif kind == "checkbox":
             # 2026-11-23: enabling some options (Spiral vase, run c6584b3e)

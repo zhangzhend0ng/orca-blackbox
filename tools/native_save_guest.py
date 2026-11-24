@@ -340,7 +340,11 @@ def worker(run_id, actor="codex", scenario="base"):
                         if edit_receipt is not None:
                             report["edit_receipt"] = edit_receipt
                         report["script_steps"].append("edit")
-                    ui.save_project(prepared_dialog=setup.get("dialog_hwnd"))
+                    if scenario.startswith("compare_276_"):
+                        from harness.native_preset_script import timed_flow_step
+                        timed_flow_step("save", ui.save_project, prepared_dialog=setup.get("dialog_hwnd"))
+                    else:
+                        ui.save_project(prepared_dialog=setup.get("dialog_hwnd"))
                     report["script_steps"].append("save")
             finally:
                 report["script_action_elapsed_ns"] = time.monotonic_ns() - measured_start

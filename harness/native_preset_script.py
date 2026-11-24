@@ -1,9 +1,23 @@
 """Deterministic preset-editor actions for the FDMT and STD02 comparisons."""
 from decimal import Decimal, InvalidOperation
 import re
+import time
 from types import SimpleNamespace
 
 from .agent_protocol import FIXTURE_SUFFIXES, ProtocolError
+
+
+def timed_flow_step(name, action, *args, **kwargs):
+    """Write elapsed times to the #276 worker log, including failed steps."""
+    started = time.perf_counter()
+    ok = False
+    try:
+        result = action(*args, **kwargs)
+        ok = True
+        return result
+    finally:
+        elapsed = time.perf_counter() - started
+        print(f"[flow276] {name} ok={int(ok)} seconds={elapsed:.4f}", flush=True)
 
 
 def _center(rect):
@@ -469,14 +483,14 @@ def edit_cooling(ui):
 def edit_speed_limits(ui):
     preset = PresetUI(ui)
     try:
-        preset.open(filament=False)
-        preset.page("Motion ability")
-        preset.number("Maximum speed X", "500", "500", paired=True)
-        preset.close()
-        preset.open(filament=True)
-        preset.page("Filament")
-        preset.number("Max volumetric speed", "12", "15")
-        preset.close()
+        timed_flow_step("printer.open", preset.open, filament=False)
+        timed_flow_step("printer.page", preset.page, "Motion ability")
+        timed_flow_step("printer.x_limit", preset.number, "Maximum speed X", "500", "500", paired=True)
+        timed_flow_step("printer.close", preset.close)
+        timed_flow_step("filament.open", preset.open, filament=True)
+        timed_flow_step("filament.page", preset.page, "Filament")
+        timed_flow_step("filament.flow_limit", preset.number, "Max volumetric speed", "12", "15")
+        timed_flow_step("filament.close", preset.close)
     except Exception:
         _capture_failed_preset(preset)
         raise

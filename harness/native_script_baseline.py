@@ -996,9 +996,12 @@ def edit_param_cases(ui, scenario):
         raise ProtocolError("param_case_ops:" + scenario)
     try:
         if scenario in MAINTENANCE_TRIALS:
-            from .native_preset_script import ensure_process_advanced
+            from .native_preset_script import ensure_process_advanced, timed_flow_step
 
-            run_ops(ui, ops, prepare_advanced=ensure_process_advanced)
+            if scenario.startswith("compare_276_"):
+                run_ops(ui, ops, prepare_advanced=ensure_process_advanced, measure=timed_flow_step)
+            else:
+                run_ops(ui, ops, prepare_advanced=ensure_process_advanced)
         else:
             run_ops(ui, ops)
     except Exception:
