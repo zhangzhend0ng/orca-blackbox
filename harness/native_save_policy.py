@@ -4,6 +4,7 @@ from __future__ import annotations
 import math
 import re
 from copy import deepcopy
+from .agent_protocol import MAINTENANCE_TRIALS
 from .native_diagnostic_recovery import COMMIT_SCENARIO
 from .native_matrix import (CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, SAVE_CLEAR_SCENARIOS, POPUP_BIND_SCENARIOS,
     UIA_ENUM_SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_MIX_SCENARIOS, UIA_PROCESS_SCENARIOS, UIA_REPLAY_CANVAS, UIA_REPLAY_MIX, UIA_REPLAY_PROCESS, UIA_REPLAY_SAVE,
@@ -21,6 +22,29 @@ MIX_DIALOG, MIX_CHOICES = "wx_add_mix", "wx_mix_filaments"
 MIX_ROLES = ("ratio", "gradient", "filament1", "filament3", "confirm")
 EDIT_NUMBER = r"(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?"
 CANVAS_NUMBER = r"(?:[1-9][0-9]{0,2}(?:\.[0-9]{1,4})?|0\.(?=[0-9]{0,3}[1-9])[0-9]{1,4})"
+NATIVE_EDIT_OBSERVATION_SCENARIOS = frozenset(MAINTENANCE_TRIALS)
+
+
+def visible_native_edits(wu, gui, children, focused, pid):
+    """Return bounded, hit-tested Edit geometry without reading window text."""
+    fields = []
+    for hwnd in children:
+        if (wu._window_pid(hwnd) != pid or wu.window_class(hwnd) != "Edit"
+                or not gui.IsWindowVisible(hwnd) or not gui.IsWindowEnabled(hwnd)):
+            continue
+        style = gui.GetWindowLong(hwnd, -16)  # GWL_STYLE
+        if style & (0x20 | 0x800):  # ES_PASSWORD | ES_READONLY
+            continue
+        left, top, right, bottom = wu.window_rect(hwnd)
+        x1, y1, x2, y2 = max(0, left), max(0, top), min(1920, right), min(1080, bottom)
+        if not (x1 < x2 and y1 < y2):
+            continue
+        loc = [(x1 + x2) // 2, (y1 + y2) // 2]
+        if wu.window_from_screen_point(*loc) != hwnd:
+            continue  # clipped by a viewport or covered by another control
+        fields.append({"bounds": [x1, y1, x2, y2], "loc": loc, "focused": hwnd == focused})
+    fields.sort(key=lambda row: (row["bounds"][1], row["bounds"][0]))
+    return {"fields": fields[:48], "truncated": len(fields) > 48}
 
 
 def edit_number(scenario):
@@ -186,6 +210,10 @@ def scoped_tool_schemas(tools, output_path, scenario="base"):
         "Wait": "Wait for required integer duration in whole seconds from 0 to 5. Fractional durations and omitted duration are unavailable.",
         "ControlStatus": "Read/release the original global control lease. Its disabled state is expected in this dedicated --no-control guest; per-call owned-window/input authority is enforced separately. This tool cannot enable or reconfigure authority.",
     }
+    if scenario in NATIVE_EDIT_OBSERVATION_SCENARIOS:
+        descriptions["Snapshot"] += " Includes hit-tested writable native Edit bounds and focus when Orca owns the foreground."
+        descriptions["Screenshot"] += " Includes writable native Edit locations as text alongside the image. Match each Edit to its row using the field bounds."
+        descriptions["Type"] += " Match the field visually with its observed writable Edit and use that Edit's loc."
     if scenario == "canvas_trial":
         descriptions["Type"] = ("Type positive numeric text below 1000 (at most 4 decimals) into the explicitly bound canvas. Each numeric Type requires and consumes a successful Click at the same loc within 30 seconds. If another Type is necessary after inspecting the result, Click again first. Canvas Type requires clear=false, caret_position=idle and press_enter=false. Its own Click can alter selection. The exact assigned save path remains allowed only in native Save file as Edit, with normal Edit options. No other strings or paths.")
     elif scenario in CANVAS_REPLACE_SCENARIOS:
@@ -352,6 +380,22 @@ class InputGuard:
         self._last_click = (tuple(loc), finished_ns, target, clicks)
         self.last_window["click_finished_monotonic_ns"] = finished_ns
 
+    def observe_native_edits(self):
+        from .native_process_viewport import _children
+        from .process_panel import focus_hwnd
+        import win32gui
+        from pywintypes import error as Win32Error
+
+        try:
+            wu, foreground = self.owned_foreground()
+            focused = focus_hwnd(foreground)
+            result = visible_native_edits(wu, win32gui, _children(foreground), focused, self.scope["app_pid"])
+            _, current = self.owned_foreground()
+        except (ValueError, OSError, Win32Error):
+            # A transient redraw can invalidate a child between enumeration and query.
+            return {"unavailable": True}
+        return result if current == foreground else {"unavailable": True}
+
     def _canvas_destination(self, args):
         import time
         from .canvas_approval import resolve_approval
@@ -409,6 +453,8 @@ class InputGuard:
         self.arguments_validated = True
         self.check_revocation()
         if name not in INPUT_TOOLS:
+            if name in {"Snapshot", "Screenshot"} and self.scope.get("scenario") in NATIVE_EDIT_OBSERVATION_SCENARIOS:
+                return self.last_window
             return {}
         wu, foreground = self.owned_foreground()
         target = wu.window_from_screen_point(*args["loc"]) if "loc" in args else foreground

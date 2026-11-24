@@ -32,6 +32,13 @@ def authority_refusal(receipt, window):
             f"region_name={hint['region_name']} before a new Click."), result
 
 
+def with_native_edits(content, observation, text_block):
+    message = ("Scoped writable native Edit observation. Match bounds to the visible field row. "
+               "Each loc is a hit-tested absolute desktop pixel for that field. "
+               + json.dumps(observation, separators=(",", ":")))
+    return [text_block(type="text", text=message), *content]
+
+
 def load_scope(root, run_id):
     from harness.native_authority import validate_scope
 
@@ -54,7 +61,7 @@ def main():
     if not host_guard.real_execution_allowed():
         raise PermissionError("native server requires guest")
     root = REPO / "artifacts/v3" / args.run_id / "artifacts"
-    from harness.native_save_policy import InputGuard, native_tools
+    from harness.native_save_policy import InputGuard, NATIVE_EDIT_OBSERVATION_SCENARIOS, native_tools
     from fastmcp.server.middleware import Middleware
     from fastmcp.tools.base import ToolResult
     from mcp.types import TextContent
@@ -110,7 +117,21 @@ def main():
                         return ToolResult(content=[TextContent(type="text", text=value)],
                                           structured_content={"result": value})
                     if not hybrid or name != "Screenshot":
-                        return await call_next(context)
+                        payload = await call_next(context)
+                        if (scope["scenario"] in NATIVE_EDIT_OBSERVATION_SCENARIOS
+                                and name in {"Screenshot", "Snapshot"} and not payload.is_error):
+                            observed = guard.observe_native_edits()
+                            fields = observed.get("fields")
+                            guard.last_window["native_edit_observation"] = {
+                                "available": fields is not None,
+                                "field_count": len(fields or []),
+                                "focused_count": sum(row["focused"] for row in (fields or [])),
+                                "truncated": observed.get("truncated", False),
+                            }
+                            return payload.model_copy(update={
+                                "content": with_native_edits(payload.content, observed, TextContent),
+                            })
+                        return payload
                     region = guard.capture_region()
                     message = context.message.model_copy(update={"arguments": {"region": region}})
                     payload = await call_next(context.copy(message=message))

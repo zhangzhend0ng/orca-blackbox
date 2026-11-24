@@ -193,6 +193,7 @@ def main():
     p.add_argument("--goal-save", action="store_true")
     p.add_argument("--authority-log", type=Path)
     from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, GENERALIZATION, UIA_HYBRID_SCENARIOS, scenario_names
+    from harness.native_save_policy import NATIVE_EDIT_OBSERVATION_SCENARIOS
     p.add_argument("--scenario", choices=scenario_names(), default="base")
     args = p.parse_args()
     transport = GuestHTTP(args.guest_root, args.run_id, deadline=time.monotonic()+900, goal_save=args.goal_save)
@@ -227,7 +228,7 @@ def main():
         if method == "tools/call" and args.authority_log is not None:
             receipt = authority_receipt(response, request, args.run_id, calls)
             sidecar = {"request_id": request["id"], "authority": receipt}
-            if (args.scenario in CANVAS_REPLACE_SCENARIOS | set(GENERALIZATION) | UIA_HYBRID_SCENARIOS
+            if (args.scenario in CANVAS_REPLACE_SCENARIOS | set(GENERALIZATION) | UIA_HYBRID_SCENARIOS | NATIVE_EDIT_OBSERVATION_SCENARIOS
                     and receipt["decision"] == "completed"
                     and receipt["tool"] in {"Screenshot", "Snapshot"}):
                 size = (1920, 1080)
