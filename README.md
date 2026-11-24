@@ -39,7 +39,7 @@ v3 运行骨架入口见 [架构设计](docs/V3_RUNTIME_ARCHITECTURE.md) 和 [�
 
 Mac 后台工程编辑用例从原始立方体切片开始，以新名字编辑并保存副本，再用独立进程重开切片。入口为 [macos_project_copy.py](runner/macos_project_copy.py)。Windows 和 Mac 的候选运行用[构建报告工具](tools/gui_build_report.py)汇总。[跨平台回归安排](docs/V3_PLAN.md#9-跨平台-gui-回归安排) · [本轮命令和实机证据](docs/runs/gui-layer-candidate-2026-11-20.md)。walls 目标（壁环数 2→3）已在该入口取得首次 SHADOW（**Mac 口径**：macOS / Orca 2.4.1，仅计 SHADOW，不计入 Windows 参数族）：屏录+OCR 通道解锁自绘 Strength 页签与行寻址；判据是差分判据 `verify_walls_differential`（Windows 轨道判据会拒绝 2.4.1 保存期的配置迁移噪声），该判据经 52 项负对照验证——基线自身、只改别的键、壁环数 3 并夹带无关改动、壁环数 4 全部被拒，宿主在 Mac 上独立重跑复现（run 306d3efe）。保留项：界面读回是「读到期望值才落账」的闸门而非测量；GUI 导出 G-code 未测；[运行记录](docs/runs/mac-author-walls-2026-11-23.md) · [负对照证据](docs/runs/evidence/mac-walls-a6-negative-controls-2026-11-23/README.md)
 
-当前 **ZCode / Snapmaker glm-5.4** 路线入口为 `python -B tools/native_save_demo.py --actor zcode`，使用现有 Snapmaker 供应商配置。[接口与边界](docs/V3_ZCODE_ACTOR.md) 原生保存路线的客机编辑、保存、新 profile 重开及 112 层 G-code 证据来自 **glm-5.3-flash**，随原始收据保留。[历史运行记录](docs/runs/zcode-snapmaker-2026-11-17.md) 路线结果只在 SHADOW 范围内验收。
+当前 **ZCode / Snapmaker glm-5.4** 路线入口为 `python -B tools/native_save_demo.py --actor zcode`，使用现有 Snapmaker 供应商配置。[接口与边界](docs/V3_ZCODE_ACTOR.md) 原生保存路线的客机编辑、保存、新 profile 重开及 112 层 G-code 证据来自 **glm-5.3-flash**，随原始收据保留。[历史运行记录](docs/runs/zcode-snapmaker-2026-11-17.md) 路线结果只在 SHADOW 范围内验收。 GLM‑5.4 与 Script 在 #265、#276 两种初态上的实测结果见[维护对照记录](docs/runs/glm54-maintenance-265-276.md)。
 
 三业务线并行探索入口见[业务pilot](docs/V3_BUSINESS_PILOTS.md)（下文的「87 条」是 11-17 时点的登记册数；11-21 冻结为 89 条登记，见[台账](docs/V3_MIGRATION_LEDGER.md)）
 
