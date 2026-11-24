@@ -114,11 +114,12 @@ def detached(script, completed, seconds):
     raise TimeoutError("demo_management_timeout")
 
 
-def wait_script(run_id, *, require_suite_result=False):
+def wait_script(run_id, *, require_suite_result=False, scenario="base"):
     from runner.windows_mcp_bridge import GuestHTTP
 
     deadline = time.monotonic() + 940
-    control = GuestHTTP(r"C:\coil\orca-blackbox-v3-r1", run_id, deadline=deadline, channel="control", goal_save=True)
+    control = GuestHTTP(r"C:\coil\orca-blackbox-v3-r1", run_id, deadline=deadline, channel="control",
+                        goal_save=True, scenario=scenario)
     while time.monotonic() < deadline:
         result = control.remote({"op": "result", "require_suite_result": require_suite_result})
         if result.get("pending") is not True:
@@ -290,7 +291,7 @@ def main():
     error, code = None, 1
     try:
         if args.actor == "script":
-            code = wait_script(run_id, require_suite_result=plan is not None)
+            code = wait_script(run_id, require_suite_result=plan is not None, scenario=args.scenario)
         elif args.actor == "zcode":
             from tools.windows_mcp_zcode_probe import main as run_actor
             command = ["--run-id", run_id, "--scenario", args.scenario]

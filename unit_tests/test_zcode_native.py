@@ -128,6 +128,9 @@ rl.on('line',line=>{
  }
  if(q.method==='runtime/capabilities')result={};
  if(q.method==='session/create'){
+  if(q.params.mcpServers[0].timeoutMs!==Number(process.env.ZCODE_TEST_MCP_TIMEOUT)){
+   process.stdout.write(JSON.stringify({id:q.id,error:{code:-32602,message:'Incorrect MCP timeout'}})+'\n');return;
+  }
   if('model' in q.params||'thoughtLevel' in q.params){
    process.stdout.write(JSON.stringify({id:q.id,error:{code:-32602,message:'Create must use registered default preferences'}})+'\n');return;
   }
@@ -153,17 +156,23 @@ rl.on('close',()=>process.exit(0));
 """
 
 
-@pytest.mark.parametrize("fault", ["wrong_model","permission","tool_error","switch_model"])
-def test_protocol_client_stops_model_drift_and_denies_non_gui_permission(tmp_path, monkeypatch, fault):
+@pytest.mark.parametrize("fault, comparison", [("wrong_model", False), ("permission", False),
+                                                ("tool_error", False), ("switch_model", False), ("wrong_model", True)])
+def test_protocol_client_stops_model_drift_and_denies_non_gui_permission(tmp_path, monkeypatch, fault, comparison):
     node=shutil.which("node")
     if not node:pytest.skip("Node runtime unavailable")
     server=tmp_path/"fake.cjs";server.write_text(FAKE_SERVER)
     decision=tmp_path/"decision.json"
     monkeypatch.setenv("ZCODE_TEST_FAULT",fault)
     monkeypatch.setenv("ZCODE_TEST_DECISION",str(decision))
+    monkeypatch.setenv("ZCODE_TEST_MCP_TIMEOUT", "80000" if comparison else "60000")
     spec=tmp_path/"spec.json"
-    spec.write_text(json.dumps(dict(root=str(tmp_path),bundle=str(server),workspace=str(tmp_path),
-        run_id="a"*32,python="unused",bridge="unused",prompt="probe")))
+    config = dict(root=str(tmp_path),bundle=str(server),workspace=str(tmp_path),
+                  run_id="a"*32,python="unused",bridge="unused",prompt="probe")
+    if comparison:
+        config.update(scenario="compare_276_quality", authority_protocol="native-authority-1",
+                      authority_log=str(tmp_path / "authority.ndjson"))
+    spec.write_text(json.dumps(config))
     driver=Path(__file__).resolve().parents[1]/"tools/zcode_session_driver.mjs"
     result=subprocess.run([node,str(driver),str(spec)],capture_output=True,timeout=15)
     assert (tmp_path/"actor.json").exists(), result.stderr.decode(errors="replace")

@@ -1,4 +1,5 @@
 """Probe transport boundaries, independent of Windows/UI/network."""
+import base64
 import io
 import json
 from types import SimpleNamespace
@@ -98,3 +99,57 @@ def test_comparison_bridge_advertises_the_scoped_guest_toolset(monkeypatch, caps
 
     advertised = json.loads(capsys.readouterr().out)["result"]["tools"]
     assert {tool["name"] for tool in advertised} == native_tools(scenario)
+
+
+@pytest.mark.parametrize("scenario, operation, tool, deadline, succeeds", [
+    ("compare_276_quality", "ready", None, None, True),
+    ("compare_276_quality", "result", None, None, True),
+    ("compare_276_quality", "http", "Snapshot", None, True),
+    ("compare_276_strength", "http", "Screenshot", None, True),
+    ("compare_276_quality", "result", None, 50, False),
+    ("compare_276_quality", "http", "Click", None, False),
+    ("compare_276_quality", "http", "Type", None, False),
+    ("compare_276_quality", "http", "Shortcut", None, False),
+    ("compare_276_quality", "http", "ControlStatus", None, False),
+    ("compare_276_quality", "done", None, None, False),
+    ("compare_276_quality", "cancel", None, None, False),
+    ("base", "ready", None, None, False),
+    ("base", "http", "Snapshot", None, False),
+])
+def test_late_reply_for_comparison_observations_only(tmp_path, monkeypatch, scenario, operation,
+                                                     tool, deadline, succeeds):
+    from runner import agent_bridge, relay_run
+    from runner.windows_mcp_bridge import GuestHTTP
+
+    monkeypatch.setattr(agent_bridge, "REPO", tmp_path)
+    transport = GuestHTTP(r"C:\coil\orca-blackbox-v3-r1", "a" * 32, deadline=100,
+                          goal_save=True, scenario=scenario)
+    spec = {"op": operation}
+    if tool:
+        spec["body"] = json.dumps({"method": "tools/call", "params": {"name": tool}})
+    clock = 0
+    launches = []
+    response = transport.root / "0001.json"
+
+    def sleep(seconds):
+        nonlocal clock
+        clock += seconds
+        if clock >= 55 and not response.exists():
+            data = base64.b64encode(b'{"received":true}').decode()
+            response.write_text(json.dumps({"ok": True, "data_b64": data}))
+
+    def launch(command, timeout_s):
+        launches.append(command)
+        sleep(2)
+        return "123"
+
+    monkeypatch.setattr(agent_bridge, "time", SimpleNamespace(monotonic=lambda: clock, sleep=sleep))
+    monkeypatch.setattr(relay_run, "relay_transact", launch)
+    if succeeds:
+        assert transport.remote(spec, deadline=deadline) == {"received": True}
+        assert 55 <= clock < 55.2
+    else:
+        with pytest.raises(TimeoutError, match="ps_direct_ambiguous_stop"):
+            transport.remote(spec, deadline=deadline)
+        assert clock == pytest.approx(deadline or 47, abs=.11)
+    assert len(launches) == 1

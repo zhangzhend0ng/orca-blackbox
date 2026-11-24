@@ -88,7 +88,7 @@ def main(argv=None):
     sources = [provider, Path.home()/".zcode/cli/config.json", Path.home()/".zcode/v2/config.json"]
     hashes = {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in sources}
     control = GuestHTTP(r"C:\coil\orca-blackbox-v3-r1", args.run_id,
-                        deadline=time.monotonic()+1000, channel="control", goal_save=True)
+                        deadline=time.monotonic()+1000, channel="control", goal_save=True, scenario=args.scenario)
     report = {"run_id": args.run_id, "actor": "zcode", "error": None, "release_eligible": False,
               "native_tool_calls": [], "toolset_verified": False, "guard_checked": False, "scenario": args.scenario,
               "prompt_mode": "goal_only" if args.goal_only else "guided"}
@@ -352,7 +352,7 @@ def main(argv=None):
                 report["done"] = control.remote({"op": "done", "receipt": receipt})
             cutoff = min(control.deadline, time.monotonic()+240)
             while time.monotonic() < cutoff:
-                result = control.remote({"op": "result"})
+                result = control.remote({"op": "result"}, deadline=cutoff if control.comparison else None)
                 if result.get("pending") is not True:
                     report["guest_result"] = result
                     if result.get("verified_pass") is not True:

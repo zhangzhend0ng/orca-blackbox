@@ -142,9 +142,10 @@ class RelayMailbox:
         self.root.mkdir(parents=True, exist_ok=False)
         self.index = 0
 
-    def remote(self, spec: dict) -> dict:
+    def remote(self, spec: dict, *, reply_timeout_s: float = 45, deadline: float | None = None) -> dict:
         from runner.relay_run import relay_transact
-        if time.monotonic() >= self.deadline:
+        deadline = self.deadline if deadline is None else min(deadline, self.deadline)
+        if time.monotonic() >= deadline:
             raise TimeoutError("host_deadline")
         self.index += 1
         script = self.root / f"{self.index:04d}.ps1"
@@ -164,14 +165,17 @@ class RelayMailbox:
         command = ("Start-Process powershell.exe -WindowStyle Hidden -PassThru -ArgumentList "
                    + "@('-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',"
                    + quoted(script) + ") | Select-Object -ExpandProperty Id")
-        launched = relay_transact(command, timeout_s=min(15, max(1, self.deadline-time.monotonic())))
+        launch_budget = min(15, deadline - time.monotonic())
+        if launch_budget <= 0:
+            raise TimeoutError("host_deadline")
+        launched = relay_transact(command, timeout_s=launch_budget)
         if not launched or not launched.strip().isdigit():
             raise RuntimeError("relay_launch_unconfirmed")
         # 2026-11-22: 25s -> 45s. During guest app boot the control poll's
         # PS-Direct roundtrip can exceed 25s under VM CPU saturation; runs
         # e518328b/4bd1f91b were host-cancelled (ps_direct_*_stop) while the
         # guest suite was still alive and healthy. Deadline still caps total.
-        cutoff = min(self.deadline, time.monotonic() + 45)
+        cutoff = min(deadline, time.monotonic() + reply_timeout_s)
         while not output.exists():
             if time.monotonic() >= cutoff:
                 raise TimeoutError("ps_direct_ambiguous_stop")

@@ -16,6 +16,7 @@ import time
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 from runner.agent_bridge import RelayMailbox, decode_json
+from harness.agent_protocol import MAINTENANCE_TRIALS
 
 TOOLS = frozenset({"Snapshot", "Screenshot", "Click", "Wait", "ControlStatus"})
 ZCODE_INLINE_IMAGE_LIMIT = 200 * 1024
@@ -102,12 +103,21 @@ if($text.Length -gt 3800000){throw 'response_too_large'}
 class GuestHTTP(RelayMailbox):
     guest_io = GUEST_HTTP
 
-    def __init__(self, *args, goal_save=False, **kwargs):
+    def __init__(self, *args, goal_save=False, scenario="base", **kwargs):
         self.goal_save = goal_save
+        self.comparison = goal_save and scenario in MAINTENANCE_TRIALS
         super().__init__(*args, **kwargs)
 
-    def remote(self, spec):
-        return super().remote({**spec, "goal_save": self.goal_save})
+    def remote(self, spec, *, deadline=None):
+        read_only = spec["op"] in {"ready", "result"}
+        if self.comparison and spec["op"] == "http":
+            request = decode_json(spec["body"])
+            read_only = (request["method"] == "tools/call"
+                         and request["params"]["name"] in {"Screenshot", "Snapshot"})
+        # Scope longer waits to observations. Unconfirmed mutations still stop at 45s.
+        return super().remote({**spec, "goal_save": self.goal_save},
+                              reply_timeout_s=60 if self.comparison and read_only else 45,
+                              deadline=deadline)
 
 
 def validate_request(request, tool_calls, *, goal_save=False, scenario="base"):
@@ -196,7 +206,8 @@ def main():
     from harness.native_save_policy import NATIVE_EDIT_OBSERVATION_SCENARIOS
     p.add_argument("--scenario", choices=scenario_names(), default="base")
     args = p.parse_args()
-    transport = GuestHTTP(args.guest_root, args.run_id, deadline=time.monotonic()+900, goal_save=args.goal_save)
+    transport = GuestHTTP(args.guest_root, args.run_id, deadline=time.monotonic()+900,
+                          goal_save=args.goal_save, scenario=args.scenario)
     calls = 0
     terminal = False
     while True:
