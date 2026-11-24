@@ -350,7 +350,7 @@ def _park_field(ui, bounds):
 
 
 def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, below=False, _parked=0,
-                  *, measure=None):
+                  *, measure=None, ready_commit=False):
     """Set a sidebar float Edit: OCR locates the painted row (OG_CustomCtrl
     draws row labels without HWNDs - only group headers are windows, the
     f5acdb1a census), then the visible Edit whose row-y matches is driven
@@ -472,7 +472,7 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
     # locate the row again on the moved page (at most three times).
     if _parked < 3 and _park_field(ui, bounds):
         return uia_set_float(ui, label_substr, value, group_substr, field_index, below,
-                             _parked=_parked + 1, measure=measure)
+                             _parked=_parked + 1, measure=measure, ready_commit=ready_commit)
     x = (bounds[0] + bounds[2]) // 2 - origin_x
     y = (bounds[1] + bounds[3]) // 2 - origin_y
     from decimal import Decimal as _D, InvalidOperation as _Inv
@@ -504,7 +504,11 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
                 or after.replace("\r\n", "\n") != str(value)):
             raise ProtocolError("param_uia_readback:" + label_substr + ":" + repr(after)[:60])
         return
-    receipt = measure("edit_readback." + field_name, ui.edit, x, y, str(value)) if measure else ui.edit(x, y, str(value))
+    # ready_commit (the #276 flow, run_ops): the ui waits for the committed
+    # value to settle instead of edit's fixed 6 s. Nothing else passes it.
+    edit_options = {"wait_commit": ui.wait_flow_commit} if ready_commit else {}
+    receipt = (measure("edit_readback." + field_name, ui.edit, x, y, str(value), **edit_options) if measure
+               else ui.edit(x, y, str(value), **edit_options))
     if (receipt["target_hwnd"] != handle
             or _num(receipt["after_text"]) != _num(value)):
         raise ProtocolError("param_uia_readback:" + label_substr + ":" + repr(receipt.get("after_text"))[:40])
@@ -688,7 +692,7 @@ def settle_dialog(ui, known, answer=None, expect=None):
     return dlg, body
 
 
-def run_ops(ui, ops, *, prepare_advanced=None, measure=None):
+def run_ops(ui, ops, *, prepare_advanced=None, measure=None, ready_commit=False):
     """Execute a list of process-panel operations on the running app.
 
     op forms:
@@ -696,6 +700,9 @@ def run_ops(ui, ops, *, prepare_advanced=None, measure=None):
       {"op": "float",   "label": ..., "value": ...}  (UIA, label-paired)
       {"op": "checkbox","label": ..., "value": True, ["group": ...]}
       {"op": "combo",   "current": ..., "target": ..., ["group": ...]}
+
+    `ready_commit` (the #276 flow) makes every float op wait for its committed
+    value to settle instead of the fixed 6 s after Enter.
     """
     from . import process_panel as pp
 
@@ -732,6 +739,8 @@ def run_ops(ui, ops, *, prepare_advanced=None, measure=None):
             # any other float op died on a NameError.
             labels = op["label"] if isinstance(op["label"], (tuple, list)) else (op["label"],)
             options = dict(group_substr=op.get("group"), field_index=op.get("field"), below=bool(op.get("below")))
+            if ready_commit:
+                options["ready_commit"] = True
             if measure:
                 measure("field." + _stage_label(labels[0], options["field_index"]), uia_set_float, ui, labels,
                         str(op["value"]), **options, measure=measure)

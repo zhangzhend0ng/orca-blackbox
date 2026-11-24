@@ -995,16 +995,19 @@ def edit_param_cases(ui, scenario):
     if ops is None:
         raise ProtocolError("param_case_ops:" + scenario)
     try:
-        from .native_preset_script import flow_step_measure
+        from .native_preset_script import flow_step_measure, waits_flow_commit
 
         measure = flow_step_measure(scenario)
         if scenario in MAINTENANCE_TRIALS:
             from .native_preset_script import ensure_process_advanced
 
+            # The 276 flow waits for each committed value to settle; 265
+            # keeps the fixed wait after Enter.
+            flow = {"ready_commit": True} if waits_flow_commit(scenario) else {}
             if measure:
-                run_ops(ui, ops, prepare_advanced=ensure_process_advanced, measure=measure)
+                run_ops(ui, ops, prepare_advanced=ensure_process_advanced, measure=measure, **flow)
             else:
-                run_ops(ui, ops, prepare_advanced=ensure_process_advanced)
+                run_ops(ui, ops, prepare_advanced=ensure_process_advanced, **flow)
         elif measure:
             run_ops(ui, ops, measure=measure)
         else:

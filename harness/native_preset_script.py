@@ -26,6 +26,10 @@ def flow_step_timer(prefix):
 
 timed_flow_step = flow_step_timer("[flow276]")
 
+# The #276 maintenance trials (compare_276_quality / compare_276_strength):
+# the one flow that is timed and waits for its committed values to settle.
+ROW_276 = "compare_276_"
+
 # Scenarios whose worker log carries per-stage times under their own tag. The
 # #276 trials are recognised by name (flow_step_measure); every later one is
 # listed HERE and nowhere else, because edit_param_cases and the worker's save
@@ -35,10 +39,17 @@ TIMED_FLOWS = {"uia_param_overhang_speeds": "[flow264]"}
 
 def flow_step_measure(scenario):
     """The stage timer `scenario` runs under, or None when its stages are not timed."""
-    if scenario.startswith("compare_276_"):
+    if scenario.startswith(ROW_276):
         return timed_flow_step
     prefix = TIMED_FLOWS.get(scenario)
     return None if prefix is None else flow_step_timer(prefix)
+
+
+def waits_flow_commit(scenario):
+    """True for the scenarios whose process-panel float fields wait for the
+    committed value to settle (BusinessUI.wait_flow_commit) instead of the
+    fixed 6 s after Enter: the #276 trials only."""
+    return scenario.startswith(ROW_276)
 
 
 def _center(rect):

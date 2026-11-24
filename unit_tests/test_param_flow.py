@@ -1,4 +1,5 @@
-"""Per-stage times of run_ops, and the one registry that decides which scenarios get them.
+"""The process-panel flows of #276 and #264: their per-stage times, the registry
+behind those, and the #276 readiness wait that replaces the fixed wait after Enter.
 
 Fake Win32 boundaries only: nothing here launches an application."""
 from pathlib import Path
@@ -8,9 +9,12 @@ from types import SimpleNamespace
 
 import pytest
 
+from harness import agent_business_ui as module
+from harness import mixing_util
 from harness import native_matrix as nm
+from harness import native_preset_script as nps
 from harness.native_preset_script import (TIMED_FLOWS, ensure_process_advanced, flow_step_measure,
-                                          timed_flow_step)
+                                          timed_flow_step, waits_flow_commit)
 from harness import native_script_baseline as nsb
 from harness import param_case_lib as pcl
 from harness import process_panel as pp
@@ -142,6 +146,8 @@ def world(monkeypatch):
     monkeypatch.setattr(pp, "find_option_checkbox", lambda app, label, group=None: (
         calls.append(("find_option_checkbox", app, label, group)) or knobs.found))
     monkeypatch.setattr(pp, "checked_state", lambda app, rect: calls.append(("checked_state", app, rect)) or knobs.paint)
+    # a failing edit_param_cases screenshots the sidebar for real: never from a test
+    monkeypatch.setattr(nsb, "_save_failure_shot", lambda *args: None)
     return SimpleNamespace(calls=calls, ui=ui, page=page, knobs=knobs)
 
 
@@ -153,11 +159,14 @@ def recording_measure(calls):
     return measure
 
 
+def parse_stages(text):
+    """(name, ok) of every stage line in `text`, in print order: a span is
+    written when it closes, so children come before their parent."""
+    return [line.groups()[:2] for line in filter(None, map(STAGE_LINE.fullmatch, text.splitlines()))]
+
+
 def stage_lines(capsys):
-    """(name, ok) of every stage line in the captured output, in print order:
-    a span is written when it closes, so children come before their parent."""
-    return [line.groups()[:2] for line in filter(None, map(STAGE_LINE.fullmatch,
-                                                           capsys.readouterr().out.splitlines()))]
+    return parse_stages(capsys.readouterr().out)
 
 
 def two_runs(world, ops, error=None):
@@ -189,21 +198,25 @@ def test_timing_changes_no_call_or_pause_of_run_ops(world, scenario, edits, paus
     assert [call for call in timed if call[0] != "measure"] == plain
 
 
+# fa706g3 run 19d61032: the third box is wheeled into view and its row located
+# again; the four boxes share one label.
+STAGES_264 = [
+    "tab.Quality", "checkbox.Detect overhang", "tab.Speed", "checkbox.Slow down",
+    "locate.Overhang speed[0]", "edit_readback.Overhang speed[0]", "field.Overhang speed[0]",
+    "locate.Overhang speed[1]", "edit_readback.Overhang speed[1]", "field.Overhang speed[1]",
+    "locate.Overhang speed[2]", "locate.Overhang speed[2]",
+    "edit_readback.Overhang speed[2]", "field.Overhang speed[2]",
+    "locate.Overhang speed[3]", "edit_readback.Overhang speed[3]", "field.Overhang speed[3]"]
+# The names of the #276 baseline (guest run ec032d7c), unchanged.
+STAGES_276 = [
+    "tab.Quality", "locate.Layer height", "edit_readback.Layer height", "field.Layer height",
+    "locate.Outer wall line width", "edit_readback.Outer wall line width", "field.Outer wall line width",
+    "tab.Speed", "locate.Outer wall speed", "edit_readback.Outer wall speed", "field.Outer wall speed"]
+
+
 @pytest.mark.parametrize("scenario,stages", [
-    # fa706g3 run 19d61032: the third box is wheeled into view and its row
-    # located again; the four boxes share one label.
-    ("uia_param_overhang_speeds", [
-        "tab.Quality", "checkbox.Detect overhang", "tab.Speed", "checkbox.Slow down",
-        "locate.Overhang speed[0]", "edit_readback.Overhang speed[0]", "field.Overhang speed[0]",
-        "locate.Overhang speed[1]", "edit_readback.Overhang speed[1]", "field.Overhang speed[1]",
-        "locate.Overhang speed[2]", "locate.Overhang speed[2]",
-        "edit_readback.Overhang speed[2]", "field.Overhang speed[2]",
-        "locate.Overhang speed[3]", "edit_readback.Overhang speed[3]", "field.Overhang speed[3]"]),
-    # The names of the #276 baseline (guest run ec032d7c), unchanged.
-    ("compare_276_quality", [
-        "tab.Quality", "locate.Layer height", "edit_readback.Layer height", "field.Layer height",
-        "locate.Outer wall line width", "edit_readback.Outer wall line width", "field.Outer wall line width",
-        "tab.Speed", "locate.Outer wall speed", "edit_readback.Outer wall speed", "field.Outer wall speed"]),
+    ("uia_param_overhang_speeds", STAGES_264),
+    ("compare_276_quality", STAGES_276),
 ], ids=["264", "276"])
 def test_stage_names_separate_parents_children_and_same_labelled_fields(world, scenario, stages, capsys):
     pcl.run_ops(world.ui, nsb.scenario_ops(scenario), measure=timed_flow_step)
@@ -280,13 +293,15 @@ def test_the_registry_names_registered_scenarios_and_times_every_276_trial():
     assert all((flow_step_measure(name) is not None) == name.startswith("compare_276_") for name in MAINTENANCE_TRIALS)
 
 
-@pytest.mark.parametrize("scenario,prepared,prefix", [
-    ("uia_param_overhang_speeds", False, "[flow264]"),
-    ("uia_param_accelerations", False, None),
-    ("compare_276_quality", True, "[flow276]"),
-    ("compare_265_quality", True, None),
+@pytest.mark.parametrize("scenario,prepared,prefix,waits", [
+    ("uia_param_overhang_speeds", False, "[flow264]", False),
+    ("uia_param_accelerations", False, None, False),
+    ("compare_276_quality", True, "[flow276]", True),
+    ("compare_276_strength", True, "[flow276]", True),
+    ("compare_265_quality", True, None, False),
 ])
-def test_edit_param_cases_passes_the_registered_timer_to_run_ops(monkeypatch, scenario, prepared, prefix, capsys):
+def test_edit_param_cases_passes_the_registered_timer_to_run_ops(monkeypatch, scenario, prepared, prefix, waits,
+                                                                 capsys):
     seen = []
     ops = [{"op": "float", "label": "Layer height", "value": "0.2"}]
     monkeypatch.setattr(nsb, "scenario_ops", lambda scenario: ops)
@@ -294,7 +309,10 @@ def test_edit_param_cases_passes_the_registered_timer_to_run_ops(monkeypatch, sc
     nsb.edit_param_cases(object(), scenario)
     [(ui, got, options)] = seen
     assert got is ops
-    assert options.keys() == ({"prepare_advanced"} if prepared else set()) | ({"measure"} if prefix else set())
+    assert options.keys() == (({"prepare_advanced"} if prepared else set()) | ({"measure"} if prefix else set())
+                              | ({"ready_commit"} if waits else set()))
+    if waits:
+        assert options["ready_commit"] is True
     if prefix:
         assert options["measure"]("probe", lambda: None) is None
         assert capsys.readouterr().out.startswith(prefix + " probe ok=1 seconds=")
@@ -308,3 +326,268 @@ def test_worker_times_the_save_stage_through_the_same_registry():
                      r'if timer:\s+timer\("save", ui\.save_project, prepared_dialog=setup\.get\("dialog_hwnd"\)\)\s+'
                      r'else:\s+ui\.save_project\(prepared_dialog=setup\.get\("dialog_hwnd"\)\)', source)
     assert 'startswith("compare_276_")' not in source      # the one copy of that rule is flow_step_measure
+
+
+# ---- the readiness wait that replaces edit's fixed 6 s for the #276 fields ----
+
+CAP, POLL = module.FLOW_COMMIT_CAP_S, module.FLOW_COMMIT_POLL_S
+NOT_STABLE = "[param-uia] flow_commit_not_stable ok=0 value={!r}"
+LAYER, OVERHANG = "Layer height", "Overhang speed"
+
+
+class FakeApp:
+    """What the application does after Enter, on the fake clock: the windows
+    it keeps, the control tree it shows (it grows with `version`), and the
+    changes a test schedules with at(when, action). Fidelity gap: nothing
+    happens by itself - no rebuild, no repaint - only what a test schedules;
+    `churning` rebuilds the tree on every tick."""
+
+    def __init__(self, page):
+        self.page, self.events, self.version, self.churning = page, [], 0, False
+        self.alive, self.disabled = {11, *page.edits}, set()
+
+    @property
+    def tree(self):
+        return [("row %d" % index, "Edit", (250, 900 + 30 * index, 330, 920 + 30 * index), 500 + index)
+                for index in range(self.version + 1)]
+
+    def at(self, when, action):
+        self.events.append([when, action])
+
+    def tick(self, now):
+        for event in self.events:
+            if event[0] is not None and event[0] <= now:
+                event[0] = None
+                event[1]()
+        if self.churning:
+            self.version += 1
+
+
+@pytest.fixture
+def business(world, monkeypatch):
+    """A real BusinessUI on the fake page: edit(), pause(), owned() and the
+    readiness wait are the driver's own. Its clock is a counter that sleeps
+    advance, so no test waits for real: `now` is that counter, `asked` every
+    pause the ui requested, `app.at(when, action)` what the application does."""
+    ui = module.BusinessUI.__new__(module.BusinessUI)
+    page, now, asked = world.page, [0.0], []
+    app = FakeApp(page)
+    ui.app = world.ui.app
+    ui.guard = lambda: None
+    ui.identity = lambda: ({"width": 1920, "height": 1200}, None)     # the #264 stack reaches y 1166
+
+    def edit_at(_root, x, y):
+        return next(h for h, (rect, _text) in page.edits.items() if h in app.alive
+                    and rect[0] <= x < rect[2] and rect[1] <= y < rect[3])
+
+    def type_text(hwnd, text):       # as an Edit takes WM_SETTEXT; Enter is the application's to answer
+        if text != "\r":
+            page.edits[hwnd][1] = text
+
+    def advance(seconds):
+        now[0] += seconds
+        app.tick(now[0])
+
+    def pause(seconds):
+        asked.append(seconds)
+        module.BusinessUI.pause(ui, seconds)
+
+    ui.wu = SimpleNamespace(
+        client_to_screen=lambda hwnd, x, y: (x, y), deepest_child_at=edit_at,
+        window_class=lambda hwnd: "Edit" if hwnd in page.edits else "wxGLCanvas",
+        window_rect=lambda hwnd: tuple(page.edits[hwnd][0]) if hwnd in page.edits else (CANVAS_LEFT, 0, 1900, 1031),
+        _window_pid=lambda hwnd: ui.app.pid,
+        user32=SimpleNamespace(IsWindow=lambda h: h in app.alive, IsWindowVisible=lambda h: True,
+                               IsChild=lambda root, h: True,
+                               IsWindowEnabled=lambda h: h in app.alive and h not in app.disabled),
+        edit_text=lambda h: page.edits[h][1], msg_click_screen=lambda *args: None,
+        _send_msg=lambda *args: None, msg_text=type_text)
+    monkeypatch.setattr(module, "time", SimpleNamespace(monotonic=lambda: now[0], sleep=advance))
+    monkeypatch.setattr(mixing_util, "children", lambda hwnd: app.tree)
+    ui.pause = pause
+    return SimpleNamespace(ui=ui, app=app, page=page, now=now, asked=asked)
+
+
+def settle_edit(business, text="0.42"):
+    return business.ui.edit(EDIT_X, ROW_Y, text, wait_commit=business.ui.wait_flow_commit)
+
+
+def texts(business):
+    return [business.page.edits[h][1] for h in business.page.row_edits[LAYER]]
+
+
+def never_wait(self, target, wanted):
+    pytest.fail("the readiness wait was used outside the #276 flow")
+
+
+def test_a_field_that_holds_its_value_on_a_still_page_ends_the_wait_after_three_polls(business):
+    assert settle_edit(business)["after_text"] == "0.42"
+    assert business.now[0] == pytest.approx(2 * POLL)
+    assert business.asked == [0.5, 0.5]              # the fixed pause(6) is never asked for
+
+
+def test_a_value_showing_while_the_page_is_still_rebuilding_is_not_taken_as_done(business):
+    app = business.app
+    app.at(0.3, lambda: setattr(app, "version", 1))       # the rebuild moves controls ...
+    app.at(1.1, lambda: setattr(app, "version", 2))       # ... twice; the field shows its value throughout
+    settle_edit(business)
+    assert business.now[0] == pytest.approx(2.5)          # three still polls after the last move, not after Enter
+
+
+def test_a_page_that_never_settles_waits_exactly_what_the_fixed_wait_took_and_does_not_raise(business, capsys):
+    business.app.churning = True
+    assert settle_edit(business)["after_text"] == "0.42"
+    capped, asked = business.now[0], list(business.asked)
+    assert capped == pytest.approx(CAP) and max(asked) == POLL
+    assert capsys.readouterr().out.splitlines() == [NOT_STABLE.format("0.42")]     # said once, not raised
+    business.now[0], business.asked[:] = 0.0, []
+    business.ui.edit(EDIT_X, ROW_Y, "0.42")                # what it replaces, on the same clock
+    assert business.asked == [6] and business.now[0] == pytest.approx(capped)
+    assert capsys.readouterr().out == ""
+
+
+def test_a_field_that_shows_its_value_while_greyed_out_is_not_taken_as_ready(business, capsys):
+    layer = business.page.row_edits[LAYER][0]
+    business.app.at(0.3, lambda: business.app.disabled.add(layer))
+    pcl.uia_set_float(business.ui, LAYER, "0.42", ready_commit=True)       # the value is right: the readback passes
+    assert texts(business) == ["0.42"]
+    assert business.now[0] == pytest.approx(CAP)
+    assert capsys.readouterr().out.splitlines() == [NOT_STABLE.format("0.42")]
+
+
+def test_a_target_replaced_mid_wait_is_still_reported_as_edit_target_disappeared(business, capsys):
+    page, app, old = business.page, business.app, business.page.row_edits[LAYER][0]
+
+    def replace():                       # the rebuilt page gets a new Edit where the old one was
+        app.alive.remove(old)
+        page.edits[900] = [list(page.edits[old][0]), "0.42"]
+        app.alive.add(900)
+
+    app.at(0.6, replace)
+    with pytest.raises(ProtocolError, match="^edit_target_disappeared$"):
+        pcl.uia_set_float(business.ui, LAYER, "0.42", ready_commit=True)
+    assert business.now[0] == pytest.approx(CAP)           # after the wait, as the fixed wait did
+    assert capsys.readouterr().out == ""                   # and with no new signature
+
+
+def test_a_field_that_ends_on_another_value_is_rejected_by_the_readback(business, capsys):
+    app, layer = business.app, business.page.row_edits[LAYER][0]
+
+    def clamp():                         # the application takes 0.42 down to its own maximum while rebuilding
+        app.version = 1
+        business.page.edits[layer][1] = "0.5"
+
+    app.at(0.3, clamp)
+    with pytest.raises(ProtocolError, match=r"param_uia_readback:Layer height:'0\.5'$"):
+        pcl.uia_set_float(business.ui, LAYER, "0.42", ready_commit=True)
+    assert business.now[0] == pytest.approx(CAP)
+    assert capsys.readouterr().out.splitlines() == [NOT_STABLE.format("0.42")]
+
+
+def test_the_276_field_passes_as_soon_as_the_page_stops_without_the_fixed_wait(business, capsys):
+    business.app.at(0.3, lambda: setattr(business.app, "version", 1))       # one rebuild pass
+    pcl.uia_set_float(business.ui, LAYER, "0.42", ready_commit=True)
+    assert texts(business) == ["0.42"]
+    assert business.now[0] == pytest.approx(1.5) and business.asked == [0.5, 0.5, 0.5]
+    assert capsys.readouterr().out == ""
+
+
+def test_a_box_wheeled_into_view_still_waits_for_its_committed_value(business):
+    boxes = business.page.row_edits[OVERHANG]
+    pcl.uia_set_float(business.ui, OVERHANG, "10", "Overhang", field_index=2, ready_commit=True)
+    assert business.page.edits[boxes[2]][1] == "10"
+    assert business.asked == [1.0, 0.5, 0.5]              # the page settles after its wheel, never 6 s
+
+
+@pytest.mark.parametrize("scenario,waits", [
+    ("compare_276_quality", True), ("compare_276_strength", True),
+    ("compare_265_quality", False), ("compare_265_strength", False),
+    ("uia_param_overhang_speeds", False), ("uia_param_speed_limits", False), ("uia_param_speed_limits_std02", False),
+])
+def test_only_the_276_trials_wait_for_the_committed_value(scenario, waits):
+    assert waits_flow_commit(scenario) is waits
+
+
+def test_edit_without_a_hook_keeps_the_fixed_six_second_wait(business, monkeypatch):
+    monkeypatch.setattr(module.BusinessUI, "wait_flow_commit", never_wait)
+    assert business.ui.edit(EDIT_X, ROW_Y, "0.42")["after_text"] == "0.42"
+    assert business.asked == [6] and business.now[0] == pytest.approx(6)
+
+
+def test_edit_hands_the_hook_the_target_and_the_text(business):
+    seen = []
+    receipt = business.ui.edit(EDIT_X, ROW_Y, "0.42", wait_commit=lambda target, text: seen.append((target, text)))
+    assert seen == [(business.page.row_edits[LAYER][0], "0.42")]
+    assert business.asked == [] and receipt["committed"] is True
+
+
+def test_without_the_flag_nothing_passes_the_hook_down(world, monkeypatch):
+    real_float, real_edit, floats, edits = pcl.uia_set_float, world.ui.edit, [], []
+    monkeypatch.setattr(pcl, "uia_set_float",
+                        lambda *args, **options: (floats.append(options), real_float(*args, **options))[1])
+    world.ui.edit = lambda x, y, text, **options: (edits.append(options), real_edit(x, y, text))[1]
+    pcl.run_ops(world.ui, nsb.scenario_ops("uia_param_overhang_speeds"))
+    # four ops from run_ops, none flagged (the parked box re-enters with the
+    # flag at its default), and edit() is never offered the hook
+    top = [options for options in floats if "_parked" not in options]
+    assert len(top) == 4 and all("ready_commit" not in options for options in top)
+    assert not any(options.get("ready_commit") for options in floats) and edits == [{}] * 4
+
+
+def test_with_the_flag_every_float_op_gets_the_ui_own_wait(world):
+    spy = world.ui.wait_flow_commit = lambda target, wanted: None
+    real_edit, edits = world.ui.edit, []
+    world.ui.edit = lambda x, y, text, **options: (edits.append(options), real_edit(x, y, text))[1]
+    ops = nsb.scenario_ops("uia_param_overhang_speeds")
+    pcl.run_ops(world.ui, ops, measure=recording_measure(world.calls), ready_commit=True)
+    assert edits == [{"wait_commit": spy}] * 4
+
+
+def test_the_264_flow_keeps_the_fixed_wait_and_never_reaches_the_readiness_wait(business, monkeypatch, capsys):
+    monkeypatch.setattr(module.BusinessUI, "wait_flow_commit", never_wait)
+    nsb.edit_param_cases(business.ui, "uia_param_overhang_speeds")
+    assert [business.page.edits[h][1] for h in business.page.row_edits[OVERHANG]] == ["40", "30", "20", "10"]
+    # one fixed wait per field; the last two pauses are run_ops's own (after
+    # the last op, then its final settle) and are not the edit's wait
+    assert business.asked[:-2].count(6) == 4 and business.asked[-2:] == [1.0, 6]
+    assert "flow_commit" not in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("scenario,asked,timed", [
+    # the edit's wait(es), run_ops's pause after the op, run_ops's final settle
+    ("compare_265_quality", [6, 1.0, 6], False),
+    ("compare_276_quality", [0.5, 0.5, 1.0, 6], True),
+], ids=["265", "276"])
+def test_in_the_matched_trials_only_276_gives_up_the_fixed_wait(business, monkeypatch, scenario, asked, timed,
+                                                                capsys):
+    monkeypatch.setattr(nsb, "scenario_ops", lambda scenario: [{"op": "float", "label": LAYER, "value": "0.2"}])
+    monkeypatch.setattr(nps, "ensure_process_advanced", lambda ui: None)
+    nsb.edit_param_cases(business.ui, scenario)
+    assert business.asked == asked and texts(business) == ["0.2"]
+    assert ("edit_readback.Layer height" in capsys.readouterr().out) is timed
+
+
+def test_a_276_run_whose_pages_settle_spends_a_second_per_field_instead_of_six(business, monkeypatch, capsys):
+    monkeypatch.setattr(nps, "ensure_process_advanced", lambda ui: None)
+    nsb.edit_param_cases(business.ui, "compare_276_quality")
+    page = business.page
+    assert [page.edits[page.row_edits[label][0]][1]
+            for label in (LAYER, "Outer wall line width", "Outer wall speed")] == ["0.2", "0.42", "700"]
+    assert business.asked[:-2].count(0.5) == 6 and 6 not in business.asked[:-2]   # a second per field
+    out = capsys.readouterr().out
+    assert parse_stages(out) == [(name, "1") for name in STAGES_276] and "flow_commit" not in out
+
+
+def test_a_276_run_on_pages_that_never_settle_still_passes_and_says_so_per_field(business, monkeypatch, capsys):
+    business.app.churning = True
+    monkeypatch.setattr(nps, "ensure_process_advanced", lambda ui: None)
+    nsb.edit_param_cases(business.ui, "compare_276_quality")
+    page = business.page
+    assert [page.edits[page.row_edits[label][0]][1]
+            for label in (LAYER, "Outer wall line width", "Outer wall speed")] == ["0.2", "0.42", "700"]
+    # three capped waits, five 1 s pauses, run_ops's final 6 s
+    assert sum(business.asked) == pytest.approx(3 * CAP + 5 + 6)
+    out = capsys.readouterr().out
+    assert [line for line in out.splitlines() if "flow_commit" in line] == [NOT_STABLE.format(value)
+                                                                            for value in ("0.2", "0.42", "700")]
+    assert parse_stages(out) == [(name, "1") for name in STAGES_276]

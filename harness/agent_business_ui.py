@@ -12,6 +12,11 @@ from .agent_protocol import EXPORT_STABLE_WAIT_S, LAYER_FIXTURE, LAYER_FIXTURE_S
 from .perf_monitor import finish_session
 
 GW_OWNER = 4  # winuser.h: 2 is GW_HWNDNEXT (Z order), not window ownership.
+# What a committed Edit is given to settle when the caller asks for it
+# (BusinessUI.wait_flow_commit) in place of edit's fixed pause(6).
+FLOW_COMMIT_CAP_S = 6        # the fixed wait it replaces: never longer
+FLOW_COMMIT_POLL_S = 0.5
+FLOW_COMMIT_POLLS = 3        # polls in a row that must agree
 
 
 def _discard_choice(caption, children, *, close_requested=False):
@@ -144,13 +149,16 @@ class BusinessUI:
         self.wu.msg_click_screen((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2,
                                  target_root)
 
-    def edit(self, x, y, text, *, enter=True):
+    def edit(self, x, y, text, *, enter=True, wait_commit=None):
         """Type `text` into the Edit at client (x, y) and commit it with
         Enter. `enter=False` leaves the text UNCOMMITTED and the focus in
         the field: a caller driving a multi-line field commits it another
         way (uia_set_float moves the focus off it) - Enter is a newline
         there, not a commit (fa run a9cce05e: the filename format was saved
-        with a trailing '\\n')."""
+        with a trailing '\\n'). `wait_commit` (the ui's own callable
+        `(target, text)`, BusinessUI.wait_flow_commit) replaces the fixed 6 s
+        wait after Enter; only the #276 process-panel float fields pass one
+        (uia_set_float, ready_commit)."""
         window, _ = self.main_input()
         if not 0 <= x < window["width"] or not 0 <= y < window["height"]:
             raise ProtocolError("edit_outside_client")
@@ -199,11 +207,48 @@ class BusinessUI:
         self.guard()
         # Leaving focus commits the GUI field. Never patch slicer configuration.
         self.wu._send_msg(target, 0x0008, 0, 0)
-        self.pause(6)  # parameter rebuild is asynchronous (PITFALLS m5b).
+        if wait_commit is None:
+            self.pause(6)  # parameter rebuild is asynchronous (PITFALLS m5b).
+        else:
+            wait_commit(target, text)
         if not self.owned(target):
             raise ProtocolError("edit_target_disappeared")
         return {"target_hwnd": target, "control_class": "Edit", "before_text": before,
                 "after_text": self.wu.edit_text(target), "committed": True}
+
+    def wait_flow_commit(self, target, wanted):
+        """Waits until the committed Edit `target` has taken `wanted` for
+        good: the field shows the value AND the window's control tree reads
+        the same on FLOW_COMMIT_POLLS polls in a row. Enter only STARTS the
+        parameter rebuild (PITFALLS m5b), so a value that already shows on a
+        page still being rebuilt is not done.
+
+        Returns True once settled, False at FLOW_COMMIT_CAP_S - the same 6 s
+        the fixed wait takes, so nothing can wait longer than before. A page
+        that does not settle is left as the fixed wait left it: no raise, one
+        ok=0 line, and the caller's readback stays the gate. A target that
+        was lost or replaced is not ready either; edit raises
+        edit_target_disappeared for it as before."""
+        from . import mixing_util
+        value = _field_value(wanted)
+        deadline = time.monotonic() + FLOW_COMMIT_CAP_S
+        tree, settled = None, 0
+        while True:
+            holds = (value is not None and self.owned(target)
+                     and self.wu.user32.IsWindowEnabled(target)
+                     and _field_value(self.wu.edit_text(target)) == value)
+            now = mixing_util.children(self.app.hwnd)
+            settled = settled + 1 if holds and now == tree else int(holds)
+            tree = now
+            if settled >= FLOW_COMMIT_POLLS:
+                return True
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            self.pause(min(FLOW_COMMIT_POLL_S, remaining))
+        if self.owned(target):
+            print(f"[param-uia] flow_commit_not_stable ok=0 value={wanted!r}", flush=True)
+        return False
 
     def _spin_down_to(self, target, text):
         """Walk the spin edit down to the negative `text` with its own Down
