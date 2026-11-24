@@ -75,3 +75,26 @@ def test_uia_bridge_does_not_relay_queued_input_after_guest_fatal(tmp_path, monk
     assert sent == requests[:1]
     assert json.loads(capsys.readouterr().out)["id"] == 1
     assert json.loads(log.read_text())["authority"]["decision"] == "fatal"
+
+
+def test_comparison_bridge_advertises_the_scoped_guest_toolset(monkeypatch, capsys):
+    from harness.native_save_policy import native_tools
+    from runner import windows_mcp_bridge as bridge
+
+    scenario = "compare_265_quality"
+    request = dict(jsonrpc="2.0", id=1, method="tools/list")
+    tools = [{"name": name, "inputSchema": {"type": "object"}} for name in sorted(native_tools(scenario))]
+
+    def relay(spec):
+        assert json.loads(spec["body"]) == request
+        return dict(status=200, body=json.dumps(dict(jsonrpc="2.0", id=1, result=dict(tools=tools))))
+
+    monkeypatch.setattr(bridge, "GuestHTTP", lambda *args, **kwargs: SimpleNamespace(remote=relay))
+    monkeypatch.setattr(bridge.sys, "argv", ["windows_mcp_bridge", "--run-id", "a" * 32, "--goal-save",
+                                             "--scenario", scenario])
+    monkeypatch.setattr(bridge.sys, "stdin", SimpleNamespace(buffer=io.BytesIO(json.dumps(request).encode())))
+
+    bridge.main()
+
+    advertised = json.loads(capsys.readouterr().out)["result"]["tools"]
+    assert {tool["name"] for tool in advertised} == native_tools(scenario)

@@ -192,8 +192,8 @@ def main():
     p.add_argument("--guest-root", default=r"C:\coil\orca-blackbox-v3-r1")
     p.add_argument("--goal-save", action="store_true")
     p.add_argument("--authority-log", type=Path)
-    from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, GENERALIZATION, SCENARIOS, UIA_HYBRID_SCENARIOS
-    p.add_argument("--scenario", choices=tuple(SCENARIOS), default="base")
+    from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, GENERALIZATION, UIA_HYBRID_SCENARIOS, scenario_names
+    p.add_argument("--scenario", choices=scenario_names(), default="base")
     args = p.parse_args()
     transport = GuestHTTP(args.guest_root, args.run_id, deadline=time.monotonic()+900, goal_save=args.goal_save)
     calls = 0

@@ -1,5 +1,6 @@
 """Deterministic preset-editor actions for the FDMT and STD02 comparisons."""
 from decimal import Decimal, InvalidOperation
+import re
 from types import SimpleNamespace
 
 from .agent_protocol import ProtocolError
@@ -32,6 +33,19 @@ class PresetUI:
     def _children(self):
         return [c for c in self.mix.children(self.hwnd) if self.ui.owned(c[3])]
 
+    def _wait(self, predicate, seconds, stage):
+        try:
+            return self.ui.wait(predicate, seconds)
+        except ProtocolError as error:
+            if str(error) != "gui_wait_timeout":
+                raise
+            raise ProtocolError("script_preset_timeout:" + stage) from error
+
+    def _trace(self, stage, candidates=()):
+        print("[native-script] preset %s hwnd=%#x class=%s rect=%r candidates=%r" % (
+            stage, self.hwnd, self.wu.window_class(self.hwnd),
+            self.wu.window_rect(self.hwnd), list(candidates)[:8]), flush=True)
+
     def _onscreen(self, hwnd, point):
         hit = self.wu.window_from_screen_point(*point)
         return bool(hit and (hit == hwnd or self.wu.user32.IsChild(hwnd, hit)))
@@ -59,12 +73,15 @@ class PresetUI:
         return [(text, x+ox, y+oy, w, h)
                 for text, x, y, w, h in self.ocr.ocr_words_img(image, psm=6)]
 
-    def _preset_combo(self, identity, *, slot_one=False):
+    def _preset_combo(self, identity, *, slot_one=False, trace=False):
         crops = self._children()
+        main = self.hwnd == self.ui.app.hwnd
+        sidebar_right = self.wu.window_rect(self.hwnd)[0] + 435
         candidates = [
             (text, rect, hwnd) for text, cls, rect, hwnd in crops
             if cls.startswith("wxWindow") and 85 <= rect[2] - rect[0] <= 420
             and 19 <= rect[3] - rect[1] <= 46 and self._onscreen(hwnd, _center(rect))
+            and (not main or rect[2] <= sidebar_right)
             and (not slot_one or any(
                 label.strip() == "1" and 0 <= rect[0] - badge[2] <= 18
                 and abs(_center(badge)[1] - _center(rect)[1]) <= 6
@@ -72,26 +89,67 @@ class PresetUI:
                 for label, _cls, badge, badge_hwnd in crops))
         ]
         found = []
+        observed = []
+        # A preset may gain the app's embedded-project suffix.
+        allowed = {identity, identity + "(fixture.3mf)", identity + " (fixture.3mf)"}
         for text, rect, hwnd in candidates:
-            # A preset may gain the app's embedded-project suffix.
-            allowed = {identity, identity + "(fixture.3mf)", identity + " (fixture.3mf)"}
-            if text.strip() in allowed:
+            seen = text.strip()
+            if not seen:
+                seen = " ".join(word[0] for word in self._words(rect)).lstrip("vV⌄˅ ")
+            matched = seen in allowed or (slot_one and re.fullmatch(r"Generic PLA @U1(?:\.{2,}|…)", seen))
+            if matched:
                 found.append((rect, hwnd))
-                continue
-            if text.strip():
-                continue
-            painted = " ".join(word[0] for word in self._words(rect))
-            if painted in allowed:
-                found.append((rect, hwnd))
+            # Only fixture preset candidates are named. Other controls
+            # contribute class and geometry, without exposing their text.
+            display = seen if matched else "expected prefix" if seen.startswith(identity.split(" @")[0]) else "other"
+            observed.append((self.wu.window_class(hwnd), rect, display))
+        if trace:
+            self._trace("slot1" if slot_one else "preset", observed)
         return _unique(found, identity)
+
+    def _advanced(self):
+        if self.ui.named_child("Speed"):
+            return
+        session = SimpleNamespace(hwnd=self.hwnd, pid=self.ui.app.pid)
+        ox, oy = self.pp.client_origin(session)
+        labels = [r for t, c, r, _h in self._children()
+                  if c == "Static" and t.strip() == "Process" and 0 <= r[0] - ox <= 50]
+        process = _unique(labels, "process_title")
+        if process is None:
+            raise ProtocolError("script_preset_process_title_missing")
+        y = _center(process)[1]
+        words = self._words((ox + 215, y - 14, ox + 355, y + 14))
+        label = _unique([(x, t, w, h) for word, x, t, w, h in words
+                         if word.casefold() == "advanced"], "advanced_label")
+        if label is None:
+            self._trace("advanced_label_missing", [process])
+            raise ProtocolError("script_preset_advanced_label_missing")
+        x, top, width, height = label
+        # The Script run's Process header renders the 24x16 switch
+        # immediately to the right of the Advanced label.
+        controls = [
+            (r, h) for text, _cls, r, h in self._children()
+            if not text.strip() and 0 <= r[0] - (x + width) <= 18
+            and 16 <= r[2] - r[0] <= 33 and 10 <= r[3] - r[1] <= 23
+            and abs(_center(r)[1] - (top + height // 2)) <= 6
+            and self._onscreen(h, _center(r))
+        ]
+        self._trace("advanced_switch", [(self.wu.window_class(h), r) for r, h in controls])
+        switch = _unique(controls, "advanced_switch")
+        if switch is None:
+            raise ProtocolError("script_preset_advanced_switch_missing")
+        bounds, hwnd = switch
+        self._click(_center(bounds), hwnd, exact=hwnd)
+        self._wait(lambda: self.ui.named_child("Speed"), 8, "advanced_speed_tab")
 
     def open(self, *, filament):
         self.ui.main_input()
-        if not self.pp.ensure_advanced(self.ui.app, want=True):
-            raise ProtocolError("script_preset_advanced_unverified")
+        self._advanced()
         title, preset = (("Material settings", "Generic PLA @U1 0.4 nozzle") if filament
                          else ("Printer settings", "Snapmaker U1 (0.4 nozzle)"))
-        rect, combo = self.ui.wait(lambda: self._preset_combo(preset, slot_one=filament), 12)
+        combo_candidate = self._preset_combo(preset, slot_one=filament, trace=True)
+        rect, combo = combo_candidate or self._wait(lambda: self._preset_combo(preset, slot_one=filament),
+                                                    12, "slot1_combo" if filament else "printer_combo")
         before = {h for _c, _t, _r, h in self.mix.toplevel(self.ui.app.pid)}
         if filament:
             parent = self.wu.user32.GetParent(combo)
@@ -107,6 +165,7 @@ class PresetUI:
             if action is None:
                 raise ProtocolError("script_preset_slot1_action_missing")
             bounds, button = action
+            self._trace("slot1_action", [(self.wu.window_class(button), bounds)])
             prior_menus = {m[4] for m in self.menu._enum_menu_windows(self.ui.app.pid)}
             self._click(_center(bounds), button)
             self._edit_menu(prior_menus, bounds)
@@ -121,9 +180,10 @@ class PresetUI:
                             if h not in before and c == "#32770" and t == title
                             and self.wu.user32.GetWindow(h, 4) == self.ui.app.hwnd], title)
 
-        self.hwnd = self.ui.wait(dialog, 10)
+        self.hwnd = self._wait(dialog, 10, title)
         # Recheck the editing preset displayed by the dialog before changing it.
-        self.ui.wait(lambda: self._preset_combo(preset), 10)
+        if self._preset_combo(preset, trace=True) is None:
+            self._wait(lambda: self._preset_combo(preset), 10, "dialog_preset")
 
     def _edit_menu(self, before, bounds):
         def menu():
@@ -131,7 +191,7 @@ class PresetUI:
                             if m[4] not in before and abs(m[0]-bounds[0]) <= 32
                             and abs(m[1]-bounds[3]) <= 48], "slot1_menu")
 
-        popup = self.ui.wait(menu, 5)
+        popup = self._wait(menu, 5, "slot1_menu")
         popup_hwnd = popup[4]
         hmenu = self.menu.menu_hmenu(popup_hwnd)
         items = self.menu.menu_items(hmenu)
@@ -162,7 +222,8 @@ class PresetUI:
         ox, oy = self.pp.client_origin(session)
         height, width = self.pp.capture_bgr(session).shape[:2]
         pane = (ox, oy, ox + width // 3, oy + height)
-        point = self.ui.wait(lambda: self._line(name, rect=pane), 12)
+        point = self._wait(lambda: self._line(name, rect=pane), 12, "page:" + name)
+        self._trace("page:" + name, [point])
         self._click(point, self.hwnd)
         self.ui.pause(0.8)
 
@@ -246,12 +307,12 @@ class PresetUI:
                                   (c.startswith("wxWindow") or c == "ComboBox"))
         before = {h for _c, _t, _r, h in self.mix.toplevel(self.ui.app.pid)}
         self._click(_center(bounds), field)
-        popup = self.ui.wait(lambda: _unique([
+        popup = self._wait(lambda: _unique([
             h for c, _t, rect, h in self.mix.toplevel(self.ui.app.pid)
             if h not in before and c.startswith(("wxWindow", "ComboLBox"))
             and abs(rect[0] - bounds[0]) <= 12
             and min(abs(rect[1]-bounds[3]), abs(rect[3]-bounds[1])) <= 12
-        ], "threshold_popup"), 6)
+        ], "threshold_popup"), 6, "threshold_popup")
         popup_rect = self.wu.window_rect(popup)
         hit = _unique([(x, y) for x, y, text in
                        self.pp.popup_line_hits(self.ocr.ocr_words(popup), "10%")
