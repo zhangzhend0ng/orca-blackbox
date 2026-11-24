@@ -434,16 +434,19 @@ def uia_set_float(ui, label_substr, value, group_substr=None, field_index=None, 
         print(f"[param-uia] row_y={y_row} canvas_left={left} edits=" + "".join(seen)[:600], flush=True)
         raise ProtocolError(what)
 
-    # 2026-11-22 #264: the five overhang degree-band speeds render as ONE
-    # labelled row with five inline Edits (Tab.cpp: Line{L("Overhang speed")}
-    # ...append_option x5); select left-to-right by field_index.
+    # 2026-11-22 #264: the overhang degree-band speeds render as ONE labelled
+    # row with inline Edits - FOUR in this build (2.4.0, Tab.cpp:
+    # Line{L("Overhang speed")} ... append_option x4); select top to bottom
+    # by field_index.
     if field_index is not None:
         # A `field` row is ONE label with its Edits stacked VERTICALLY
-        # around it: VM run 210446b4 shows 'Overhang speed' with five
-        # boxes at a 27px pitch, the label centred on the block, so field
-        # 0 is the second box ABOVE the label line. Every earlier version
-        # looked only below the label and typed all four values into the
-        # third box. Field i is the i-th Edit from the top of the block.
+        # around it: VM run 210446b4 shows 'Overhang speed' as four boxes
+        # at a 27px pitch, the label centred on the block, so field 0 is
+        # the second box ABOVE the label line (the fifth Edit that run
+        # counted, 67px under the label, is the Bridge row's). Every
+        # earlier version looked only below the label and typed all four
+        # values into the third box. Field i is the i-th Edit from the top
+        # of the block.
         matches = []
         y_lo, y_hi = y_row - 60, y_row + 60
         EnumChildWindows(app.hwnd, collect, None)
@@ -1226,10 +1229,10 @@ def census_param_pages(ui):
                 pp.wheel_viewport(app, pp.options_viewport(app), 2, delta=-120)
         except Exception as exc:
             say("ROWS %s %r failed: %s: %s" % (tab, group, type(exc).__name__, exc))
-    # The 'Overhang speed' row paints ONE label over five inline fields
+    # The 'Overhang speed' row paints ONE label over four stacked fields
     # (#264 / #272). In runs 7f9beea4 and 50798c59 every op typed into the
     # SAME Edit (only overhang_3_4_speed changed, holding the last value):
-    # the engine found one enabled Edit there, not five. Dump the row.
+    # the engine found one enabled Edit there, not four. Dump the row.
     try:
         ui.main_input()
         pp.click_tab(app, "Speed", "speed")

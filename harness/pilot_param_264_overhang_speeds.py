@@ -10,7 +10,8 @@ GOAL = ("Enable detect overhang wall and slow down for overhang, then set the fi
 VALUES = {"detect_overhang_wall": "1", "enable_overhang_speed": "1",
           "overhang_1_4_speed": "40", "overhang_2_4_speed": "30",
           "overhang_3_4_speed": "20", "overhang_4_4_speed": "10"}
-# Recorded deviation (2026-11-23): the 2.4.0 project config has no
-# overhang_totally_speed key (run 50798c59: absent in the saved file), so
-# the fifth band value is not asserted. The ops keep the five fields.
+# Recorded deviation (2026-11-23): the Feishu row asks for five band speeds,
+# but 2.4.0 has no fifth "Overhang speed" box and no overhang_totally_speed
+# key (both arrived with 2.4.1; run 50798c59's saved file showed the key
+# absent), so the fifth value (5) has no control and is not asserted.
 verify_business = make_verify(CASE_ID, VALUES, schedule={"layer_count": 68, "last_z": "27.2"})

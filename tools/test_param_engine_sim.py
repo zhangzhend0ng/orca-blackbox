@@ -818,8 +818,9 @@ check("checker: an unanchored multi-word label matches its row",
 # From the first two-line run (2026-11-23 23:44, fa706g3 + guest in parallel).
 
 # 19. A `field` row is ONE label with its Edits stacked vertically around it
-#     (VM run 210446b4: 'Overhang speed', five boxes at a 27px pitch, the
-#     label centred on the block). Field i is the i-th Edit from the top.
+#     (VM run 210446b4: 'Overhang speed', four boxes at a 27px pitch, the
+#     label centred on the block; the stack below ends with the next row's
+#     Edit). Field i is the i-th Edit from the top.
 REAL_FIELD_UI = pcl.uia_set_float
 _fake_before19 = sys.modules.get("win32gui")
 try:

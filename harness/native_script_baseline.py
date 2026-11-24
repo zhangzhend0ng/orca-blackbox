@@ -396,8 +396,11 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             {"op": "float", "label": "overlap", "value": "15"},
             {"op": "rowcombo", "label": "Gap fill", "target": "Everywhere"},
         ],
-        # Feishu #264: detect checkbox lives on Quality; the five band speeds
-        # are one "Overhang speed" row with five inline Edits (field 0..4).
+        # Feishu #264: detect checkbox lives on Quality; the band speeds are
+        # one "Overhang speed" row with FOUR inline Edits (field 0..3) in
+        # this build. The Feishu row asks for five (40/30/20/10/5): its fifth
+        # value has no control in 2.4.0, which has neither a fifth box nor
+        # overhang_totally_speed (2.4.1 added both).
         # 2026-11-23 (census c101c0f4): 'Detect overhang walls' is the first
         # row of the Quality page's LAST group, 'Overhangs' (y 2560 of a page
         # that starts at 730) - 55 rows below the top. Without its group the
@@ -411,9 +414,10 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             {"op": "float", "label": "Overhang speed", "value": "30", "group": "Overhang", "field": 1},
             {"op": "float", "label": "Overhang speed", "value": "20", "group": "Overhang", "field": 2},
             {"op": "float", "label": "Overhang speed", "value": "10", "group": "Overhang", "field": 3},
-            # 2026-11-23 run 50798c59: the 2.4.0 project config has no
-            # overhang_totally_speed key, so the fifth field is left alone
-            # (the pilot records the deviation).
+            # 2026-11-23 run 50798c59, an older script with a fifth op: every
+            # op typed into the third box (it ended on the row's "5") and the
+            # saved file had no overhang_totally_speed key. This build has no
+            # fifth box to fill (the pilot records the deviation).
         ],
         "uia_param_accelerations": [
             {"tab": "Speed", "tab_hint": "speed", "op": "float",
