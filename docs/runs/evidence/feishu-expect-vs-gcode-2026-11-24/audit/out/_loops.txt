@@ -1,0 +1,112 @@
+========================================================================================== 
+#256 seam / wipe  run fd0abb31  base 818ecfc6
+  config seam_position                  run aligned | base aligned
+  config seam_gap                       run 15% | base 15%
+  config wipe_on_loops                  run 1 | base 0
+  config wipe_speed                     run 50 | base 80%
+  config role_based_wipe_speed          run 1 | base 1
+  config wipe_distance                  run 2,2,2,2 | base 2,2,2,2
+  config wipe_before_external_loop      run 0 | base 0
+  config staggered_inner_seams          run 0 | base 0
+  config seam_slope_type                run none | base none
+  config outer_wall_speed               run 200 | base 200
+  config note: wipe_speed written as absolute 50 while role_based=1 run None | base None
+  markers with WIPE/SEAM in run: {'WIPE_START': 202, 'WIPE_END': 202} | base: {'WIPE_START': 202, 'WIPE_END': 202}
+  [run] moves inside WIPE_START..END: 797; kinds {3: 797}; feeds {'9742': 419, '9024': 361, '3000': 5, '9619': 4, '9661': 3}; E sum -78.28; total XY len 389.5 mm
+  [base] moves inside WIPE_START..END: 797; kinds {3: 797}; feeds {'9742': 419, '9024': 361, '3000': 5, '9619': 4, '9661': 3}; E sum -78.28; total XY len 398.8 mm
+  outer-wall feed histogram identical to base: False (run {'1832': 2327, '1829': 2315, '1833': 1556, '1828': 1171})
+  paths Outer wall     segments 9746 vs 9746, only-in-run 0, only-in-base 0
+  paths Inner wall     segments 9554 vs 9554, only-in-run 0, only-in-base 0
+  paths Sparse infill  segments 4024 vs 4024, only-in-run 0, only-in-base 0
+  paths Top surface    segments 51 vs 51, only-in-run 0, only-in-base 0
+  paths Bottom surface segments 91 vs 91, only-in-run 0, only-in-base 0
+  outer-wall loop start (seam) on layers 1..40: x 144.52..144.71 y 136.25..136.28 (spread x 0.190 y 0.030); first 6: [(1, 144.52, 136.25), (2, 144.71, 136.28), (3, 144.71, 136.28), (4, 144.71, 136.28), (5, 144.71, 136.28), (6, 144.71, 136.28)]
+  loops found on layers 1..40: 40; seam gap (end minus start): min 0.0593 median 0.0603 max 0.0603 ; 15% of 0.42 = 0.0630, 15% of 0.5 = 0.0750
+  (base) seam gap: min 0.0593 median 0.0603 max 0.0603
+  outer-wall loops > 20 mm per layer (layers 1..40): {1: 40}
+  raw sample around first WIPE_START:
+     G1 X144.579 Y134.372 E.02838
+     G1 X144.6 Y135 E.02856
+     G1 X144.579 Y135.628 E.02856
+     G1 X144.524 Y136.193 E.02583
+     G1 X144.444 Y136.284
+     G1 E-.3 F1800
+     ;WIPE_START
+     G1 F3000
+     G1 X144.415 Y136.873 E-.41279
+     G1 X144.272 Y137.488 E-.37937
+     G1 X144.09 Y138.086 E-.3745
+     G1 X144.071 Y138.138 E-.03334
+     ;WIPE_END
+     G1 X141.299 Y131.026 Z.65 F30000
+========================================================================================== 
+#260 Arachne  run 433b83c4  base 78f01bb0
+  config wall_generator                 run arachne | base classic
+  config min_bead_width                 run 85% | base 85%
+  config min_feature_size               run 25% | base 25%
+  config wall_distribution_count        run 3 | base 1
+  config wall_transition_angle          run 10 | base 10
+  config wall_transition_length         run 100% | base 100%
+  config wall_transition_filter_deviation run 25% | base 25%
+  config wall_loops                     run 2 | base 2
+  config detect_thin_wall               run 0 | base 0
+  [run] wall moves with a ;WIDTH: comment: 1617 of 1617; width min 0.383 median 0.521 max 0.641; moves with width < 0.10: 0; == 0: 0
+       outer-wall chains on layers 2,5,10,15,19: 33 (closed 33, open 0)
+       walls on layers 2,5,10,15,19: {'Outer wall': 33, 'Inner wall': 21, 'moves': 361, 'len': 1090.1}
+       Sparse infill blocks 3 moves 82 len 691.9
+       Top surface   blocks 1 moves 145 len 2568.2
+       outer-wall bbox x 103.21..166.79 y 127.21..142.79
+  [base] wall moves with a ;WIDTH: comment: 868 of 868; width min 0.420 median 0.420 max 0.500; moves with width < 0.10: 0; == 0: 0
+       outer-wall chains on layers 2,5,10,15,19: 33 (closed 33, open 0)
+       walls on layers 2,5,10,15,19: {'Outer wall': 33, 'Inner wall': 4, 'moves': 188, 'len': 1075.3999999999999}
+       Gap infill    blocks 101 moves 336 len 568.7
+       Sparse infill blocks 3 moves 82 len 691.8
+       Top surface   blocks 1 moves 160 len 2551.5
+       outer-wall bbox x 103.21..166.79 y 127.21..142.79
+========================================================================================== 
+#261 one wall / avoid crossing  run bdf3dd93  base 5994d5e6
+  config only_one_wall_top              run 1 | base 1
+  config min_width_top_surface          run 200% | base 200%
+  config only_one_wall_first_layer      run 1 | base 0
+  config reduce_crossing_wall           run 1 | base 0
+  config max_travel_detour_distance     run 2 | base 0
+  config wall_loops                     run 2 | base 2
+  [run] inner-wall moves on layer 1: 0 | layers with any inner wall: 226 of 240 | inner-wall moves on top-surface layers (38 layers): 3624 of 20508 (17.7%), len 5824
+       inner-wall chains per layer 225..240: {225: 2, 226: 2, 227: 2, 228: 2, 229: 2, 230: 2, 231: 2, 232: 2, 233: 2, 234: 2, 235: 2, 236: 2, 237: 2, 238: 2, 239: 2, 240: 0}
+  [base] inner-wall moves on layer 1: 374 | layers with any inner wall: 227 of 240 | inner-wall moves on top-surface layers (38 layers): 3624 of 20882 (17.4%), len 5824
+       inner-wall chains per layer 225..240: {225: 2, 226: 2, 227: 2, 228: 2, 229: 2, 230: 2, 231: 2, 232: 2, 233: 2, 234: 2, 235: 2, 236: 2, 237: 2, 238: 2, 239: 2, 240: 0}
+========================================================================================== 
+#266 wall loops / thin wall  run 1ffdefee  base 5994d5e6
+  [run] (layer, outer-wall chains, inner-wall chains) for mid layers: [(150, 4, 4), (160, 6, 14), (170, 1, 1), (180, 4, 3), (190, 2, 6), (200, 3, 1), (210, 2, 0)]
+       wall moves with ;WIDTH: 65524; width<0.40: 9 (min 0.186); distinct widths 9; most common [('0.450', 35843), ('0.420', 28352), ('0.500', 1320), ('0.206', 2), ('0.221', 2)]
+       moves with width < 0.36 (single-line thin walls): 9; sample (layer, width, len) [(61, 0.206, 0.17), (61, 0.206, 0.37), (61, 0.221, 0.11), (61, 0.221, 0.07), (61, 0.186, 0.1), (90, 0.33, 0.96), (90, 0.33, 0.18), (90, 0.289, 0.18), (90, 0.338, 1.18)]
+       wall chains > 2 mm (layers>=2): closed 1919, open 159
+       outer-wall bbox x 105.21..164.79 y 119.71..150.29
+       layers with outer wall: 240; with inner wall: 227; layers with gap infill: 188; total len outer 32777 inner 55589
+  [base] (layer, outer-wall chains, inner-wall chains) for mid layers: [(150, 4, 4), (160, 6, 7), (170, 1, 1), (180, 4, 2), (190, 2, 2), (200, 3, 1), (210, 2, 0)]
+       wall moves with ;WIDTH: 50155; width<0.40: 0 (min 0.420); distinct widths 3; most common [('0.420', 28702), ('0.450', 20508), ('0.500', 945)]
+       moves with width < 0.36 (single-line thin walls): 0; sample (layer, width, len) []
+       wall chains > 2 mm (layers>=2): closed 1345, open 143
+       outer-wall bbox x 105.21..164.79 y 119.71..150.29
+       layers with outer wall: 240; with inner wall: 227; layers with gap infill: 182; total len outer 32784 inner 30433
+========================================================================================== 
+#295 fuzzy skin  run d3191da6  base 71c5f8fc
+  config fuzzy_skin                     run external | base none
+  config fuzzy_skin_point_distance      run 0.6 | base 0.3
+  config fuzzy_skin_thickness           run 0.3 | base 0.2
+  config outer_wall_speed               run 200 | base 200
+  [run] Outer wall    moves 8803; segment length min 0.007 median 0.588 p90 0.757 max 1.885
+  [run] Overhang wall moves 553; segment length min 0.002 median 0.298 p90 0.705 max 1.436
+  [run] Inner wall    moves 6255; segment length min 0.003 median 0.787 p90 0.917 max 1.054
+  [base] Outer wall    moves 6068; segment length min 0.001 median 0.837 p90 0.956 max 1.099
+  [base] Overhang wall moves 325; segment length min 0.026 median 0.388 p90 0.436 max 0.465
+  [base] Inner wall    moves 6228; segment length min 0.003 median 0.793 p90 0.917 max 1.054
+  distance of run outer-wall vertices from the baseline outer wall (layers 2..100 step 5): max 0.300, p99 0.298, median 0.150; share <= 0.31: 100.0%
+  paths Inner wall           segments 6287 vs 6260, only-in-run 291, only-in-base 264
+  paths Sparse infill        segments 2900 vs 2900, only-in-run 0, only-in-base 0
+  paths Top surface          segments 29 vs 29, only-in-run 0, only-in-base 0
+  paths Internal solid infill segments 4407 vs 4407, only-in-run 0, only-in-base 0
+  paths Internal Bridge      segments 34 vs 34, only-in-run 0, only-in-base 0
+  paths Bridge               segments 35 vs 35, only-in-run 0, only-in-base 0
+  paths Bottom surface       segments 12 vs 12, only-in-run 0, only-in-base 0
+  paths Brim                 segments 292 vs 292, only-in-run 0, only-in-base 0

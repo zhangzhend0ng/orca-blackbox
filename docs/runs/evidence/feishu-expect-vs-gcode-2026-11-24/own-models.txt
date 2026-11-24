@@ -1,4 +1,5 @@
-#254 uia_param_layer_pair_sphere NON_GREEN ProtocolError:script_layer_fields_not_as_expected run None (baseline 71c5f8fc)
+#254 uia_param_layer_pair_sphere SHADOW  run 345b87c6 (baseline 71c5f8fc)
+     layers 100->100 first Z 0.25->0.25 last Z 20.05->20.05
      飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 首层Z=0.25mm，第2层起按0.20mm递增。 / 3. 层数、总高度和后续层Z步进与默认基准一致。
 #295 uia_param_fuzzy_sphere SHADOW  run d3191da6 (baseline 71c5f8fc)
      OW 1200/1826/1824->1200/1872/1865; IW 1200/1826/1824->1200/1872/1855; SI 1200/1826/1824->1200/1816/1872; Solid 1200/1574/1494->1200/1410/1597 | unchanged: Top Br
@@ -120,9 +121,9 @@
      tools of feature - -> -
      direction Br 0d 70%->45d 53% | IBr 135d 32%->135d 32% | SI 45d 16%->45d 17%
      飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 相邻填充层合并，小区域不生成稀疏填充。 / 3. 内部桥接有支撑，桥接线45°，狭窄区转实心且垂直壳体完整。
-#272 uia_param_overhang_bridge_fdmt NON_GREEN  run 94a82cda (baseline 0cccce4a)
-     OW 9741.893/1200/1080->9741.893/1200/1860; IW 9023.957/1200/5737->9023.957/1200/1800; SI 9023.957/5911/5874->9023.957/6440/6390; Br 3000/960->3000/1800/1740 | unchanged: Top Solid
-     direction Br 0d 70%->0d 77% | IBr 135d 32%->135d 32% | SI 45d 16%->45d 16%
+#272 uia_param_overhang_bridge_fdmt SHADOW  run 4d66f300 (baseline 0cccce4a)
+     OW 9741.893/1200/1080->9741.893/1200/1860; IW 9023.957/1200/5737->9023.957/1200/2100; SI 9023.957/5911/5874->9023.957/6870/6808; Br 3000/960->1800/780 | unchanged: Top Solid
+     direction unchanged (Br 0d 70%, IBr 135d 32%, SI 45d 16%)
      飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 各悬垂档F≈2400/1800/1200/600/300。 / 3. 桥接F≈1800，非悬垂区F不变。
 #277 uia_param_support_basic_fdmt SHADOW  run 06c69298 (baseline 0cccce4a)
      blocks Sup 0->549 SupIf 0->476 Br 16->16 IBr 28->28 OvW 146->146
@@ -150,8 +151,6 @@
      travel first F3000 x14 F30000 x13 F600 x10 F18000 x1->F18000 x14 F3000 x14 F600 x10 F1800 x1 | other F30000 x1330 F600 x990 F7200 x249 F1800 x199->F18000 x1350 F600 x990 F7200 x249 F1800 x199
      wipe moves 706->702
      飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 所有非首层空驶F≈18000。 / 3. 挤出路径F和刀路不受影响。
-#292 uia_param_by_object_cubes2 NON_GREEN ProtocolError:slice_button_unavailable: Print By O run None (baseline cd540456)
-     飞书预期: 1. 非法或冲突配置被明确拒绝/纠正，不静默输出G-code；合法场景切片成功。 / 2. 间距充足时按对象逐个打印，工具头避让生效。 / 3. 间距不足时报告碰撞风险并阻止输出G-code。
 #296 uia_param_gcode_output_cubes2 SHADOW  run a3160612 (baseline cd540456)
      arcs 0->0 | EXCLUDE_OBJECT 0->0 | numbered 0->0 | widths 9->11 kinds
      飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. G-code包含注释、行号和对象标签，文件名匹配格式。 / 3. 非注释运动指令和刀路与默认基准完全一致。
@@ -160,11 +159,21 @@
      tools of feature Tower=T0,T2 -> Tower=T0,T2
      arcs 0->0 | EXCLUDE_OBJECT 0->402 | numbered 0->0 | widths 9->11 kinds
      飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 被排除对象无打印路径，保留对象路径完整。 / 3. 填充区回抽次数减少，外墙和支撑回抽不变。
-#279 uia_param_support_filament_fdmt2 NON_GREEN ProtocolError:param_combo_target:1 PLA: run None (baseline 9226796a)
+#279 uia_param_support_filament_fdmt2 SHADOW  run 740c18e9 (baseline 9226796a)
+     blocks Sup 0->597 SupIf 0->609 Br 32->32 IBr 56->56 Tower 921->921 OvW 292->292
+     tools of feature Tower=T0,T2 -> Sup=T0 SupIf=T0,T2 Tower=T0,T2
+     support Z 0.25..49.25 on 246 layers
      飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 支撑主体使用工具1，接触面使用工具0。 / 3. 模型本体工具号不变，切换工具时擦料塔和回抽完整。
-#284 uia_param_filament_features_fdmt2 NON_GREEN ProtocolError:param_combo_target:1 PLA: run None (baseline 9226796a)
+#284 uia_param_filament_features_fdmt2 SHADOW  run 690dd8da (baseline 9226796a)
+     blocks Sup 0->597 SupIf 0->609 Br 32->32 IBr 56->56 Tower 921->921 OvW 292->292
+     tools of feature Tower=T0,T2 -> Sup=T0 SupIf=T0,T2 Tower=T0,T2
+     support Z 0.25..49.25 on 246 layers
      飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 擦料塔使用工具0，支撑主体工具1，接触面工具0。 / 3. 模型本体工具号不变，换料顺序和擦料塔路径完整。
-#287 uia_param_material_advanced_fdmt2 NON_GREEN ProtocolError:param_combo_target:1 PLA: run None (baseline 9226796a)
+#287 uia_param_material_advanced_fdmt2 SHADOW  run 00ddc9a6 (baseline 9226796a)
+     layers 460->460 first Z 0.25->0.25 last Z 92.05->92.05
+     blocks Sup 0->597 SupIf 0->609 Br 32->32 IBr 56->56 Tower 921->921 OvW 292->292
+     tools of feature Tower=T0,T2 -> Sup=T0 SupIf=T0,T2 Tower=T0,T2
+     support Z 0.25..49.25 on 246 layers
      飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 支撑接触面生成2层界面外壳。 / 3. 主体工具1和界面工具0映射正确，模型外壳不变。
 #282 uia_param_tree_support_bunny SHADOW  run c4eb7a29 (baseline bfada110)
      layers 592->592 first Z 0.25->0.25 last Z 118.45->118.45
@@ -188,7 +197,13 @@
      blocks 
      tools of feature - -> -
      飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 非活动工具进入待机温度，活动工具温度不变。 / 3. 换料前按2步、每步15s预热，换回后恢复打印温度。
+#292 uia_param_by_object_cubesfar SHADOW  run 48d8b815 (baseline e3b631a9)
+     blocks IBr 2->2 Tower 201->0
+     tool changes 103->4 | E by tool {'0': 2512.652, '2': 2696.51}->{'0': 1229.578, '2': 1214.578}
+     tools of feature Tower=T0,T2 -> -
+     arcs 0->0 | EXCLUDE_OBJECT 0->0 | numbered 0->0 | widths 11->10 kinds
+     飞书预期: 1. 非法或冲突配置被明确拒绝/纠正，不静默输出G-code；合法场景切片成功。 / 2. 间距充足时按对象逐个打印，工具头避让生效。 / 3. 间距不足时报告碰撞风险并阻止输出G-code。
 
-TALLY of 44 rows on their own models: SHADOW 35 | NON_GREEN 7 | not run 0 | no fixture 0 | no scenario 2
-   non_green    #254(ProtocolError:script_layer) #294() #272() #292(ProtocolError:slice_button) #279(ProtocolError:param_combo_) #284(ProtocolError:param_combo_) #287(ProtocolError:param_combo_)
+TALLY of 44 rows on their own models: SHADOW 41 | NON_GREEN 1 | not run 0 | no fixture 0 | no scenario 2
+   non_green    #294()
    no_scenario  #288 #289

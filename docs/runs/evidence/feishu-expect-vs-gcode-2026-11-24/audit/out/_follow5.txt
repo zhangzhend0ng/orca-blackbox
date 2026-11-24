@@ -1,0 +1,202 @@
+================================================================================ 
+#275 jerk: SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY by the move that follows it  run 9f47af1f
+  L1 travel                  SQUARE_CORNER_VELOCITY x lines: 4 x1
+  travel                     SQUARE_CORNER_VELOCITY x lines: 9 x99
+  Inner wall                 SQUARE_CORNER_VELOCITY x lines: 6 x98
+  Outer wall                 SQUARE_CORNER_VELOCITY x lines: 5 x99 9 x99
+  config default_jerk             run 8 | base 0
+  config initial_layer_jerk       run 4 | base 9
+  config outer_wall_jerk          run 5 | base 9
+  config inner_wall_jerk          run 6 | base 9
+  config infill_jerk              run 9 | base 9
+  config travel_jerk              run 10 | base 12
+  config top_surface_jerk         run 9 | base 9
+  config solid_infill_jerk        run None | base None
+  config gap_fill_jerk            run None | base None
+  config bridge_jerk              run None | base None
+================================================================================ 
+#266 wall closure when overhang parts are counted as part of the wall
+  [run] outer-wall chains (with overhang parts), layers>=2: closed 736, open 4; open gaps: [9.83, 9.83, 9.83, 9.83]
+  [base] outer-wall chains (with overhang parts), layers>=2: closed 736, open 2; open gaps: [9.83, 9.83]
+================================================================================ 
+#283  run 9bc92f73  base 0c80c4a0
+  config enable_prime_tower             1 | base 1
+  config prime_tower_width              30 | base 30
+  config prime_volume                   40 | base 45
+  config prime_tower_brim_width         5 | base 5
+  config wipe_tower_wall_type           rib | base rib
+  config wipe_tower_no_sparse_layers    1 | base 0
+  config wipe_tower_cone_angle          15 | base 30
+  config wipe_tower_filament            0 | base 0
+  config flush_into_infill              0 | base 0
+  config flush_into_objects             0 | base 0
+  config flush_into_support             1 | base 1
+  config flush_multiplier               1 | base 1
+  config flush_volumes_matrix           0,280,280,280,280,280,0,280,280,280,280,280,0,280,280,280,280,280,0,28 | base 0,280,280,280,280,280,0,280,280,280,280,
+  config wiping_volumes_extruders       70,70,70,70,70,70,70,70,70,70 | base 70,70,70,70,70,70,70,70,70,70
+  config wipe_tower_x                   13 | base 13
+  config wipe_tower_y                   205 | base 205
+  config wipe_tower_bridging            10 | base 10
+  config wipe_tower_rib_width           8 | base 8
+  config wipe_tower_wall_gap            1 | base 1
+  config enable_support                 0 | base 0
+  config wipe_tower_retain               | base 
+  [run] tower per layer (layer, extent, length/E): [(2, 'w 34.51 h 35.11', 'len 1502 E 58.2'), (61, 'w 26.74 h 27.29', 'len 613 E 23.4'), (121, 'w 25.35 h 25.86', 'len 605 E 23.1'), (181, 'w 23.96 h 24.42', 'len 597 E 22.8'), (240, 'w 22.62 h 23.14', 'len 570 E 22.8')]
+       layer 1: tower bbox (np.float64(3.27), np.float64(41.23), np.float64(195.27), np.float64(233.83)) ; Brim block bbox (np.float64(91.44), np.float64(172.1), np.float64(137.04), np.float64(137.69)) ; brim moves 32
+       tower E summed by the tool that extruded it (mm of filament): {0: 2653.1, 2: 3128.7}
+       tool changes: 241; order of tools over time (first 9): [0, 2, 0, 2, 0, 2, 0, 2, 0]
+       tower E per tool-change segment (from, to) -> mean E per segment (mm, and mm3 at 2.405): {'None->0': '0.21 mm = 0.5 mm3 (n=1)', '0->2': '26.07 mm = 62.7 mm3 (n=120)', '2->0': '22.11 mm = 53.2 mm3 (n=120)'}
+       min distance tower <-> model walls per sampled layer: [67.15, 65.04, 81.67, 82.14, 87.91, 87.91]
+       sparse-infill blocks/moves/length: 388 / 9210 / 32539 ; internal solid infill moves 22902
+       tower feeds: {'5400': 91854, '3000': 4007, '1782': 714}
+  [base] tower per layer (layer, extent, length/E): [(2, 'w 35.51 h 36.30', 'len 1602 E 62.0'), (61, 'w 27.74 h 28.48', 'len 664 E 25.4'), (121, 'w 26.36 h 27.04', 'len 656 E 25.1'), (181, 'w 24.97 h 25.60', 'len 648 E 24.8'), (240, 'w 23.63 h 24.33', 'len 640 E 25.4')]
+       layer 1: tower bbox (np.float64(3.27), np.float64(42.23), np.float64(195.28), np.float64(235.02)) ; Brim block bbox (np.float64(91.44), np.float64(172.1), np.float64(137.04), np.float64(137.69)) ; brim moves 32
+       tower E summed by the tool that extruded it (mm of filament): {0: 2973.2, 2: 3369.2}
+       tool changes: 241; order of tools over time (first 9): [0, 2, 0, 2, 0, 2, 0, 2, 0]
+       tower E per tool-change segment (from, to) -> mean E per segment (mm, and mm3 at 2.405): {'None->0': '0.21 mm = 0.5 mm3 (n=1)', '0->2': '28.08 mm = 67.5 mm3 (n=120)', '2->0': '24.78 mm = 59.6 mm3 (n=120)'}
+       min distance tower <-> model walls per sampled layer: [66.62, 64.53, 81.0, 81.47, 87.26, 87.26]
+       sparse-infill blocks/moves/length: 388 / 9210 / 32539 ; internal solid infill moves 22902
+       tower feeds: {'5400': 92607, '3000': 3996, '1782': 717}
+  model geometry run vs base (segments only in run / only in base): {'Outer wall': '0/0', 'Inner wall': '0/0', 'Sparse infill': '0/0', 'Internal solid infill': '0/0', 'Top surface': '0/0', 'Bottom surface': '0/0'}
+================================================================================ 
+#286  run 9dbad28b  base 0c80c4a0
+  config enable_prime_tower             1 | base 1
+  config prime_tower_width              30 | base 30
+  config prime_volume                   40 | base 45
+  config prime_tower_brim_width         5 | base 5
+  config wipe_tower_wall_type           rib | base rib
+  config wipe_tower_no_sparse_layers    0 | base 0
+  config wipe_tower_cone_angle          30 | base 30
+  config wipe_tower_filament            0 | base 0
+  config flush_into_infill              1 | base 0
+  config flush_into_objects             0 | base 0
+  config flush_into_support             1 | base 1
+  config flush_multiplier               1 | base 1
+  config flush_volumes_matrix           0,280,280,280,280,280,0,280,280,280,280,280,0,280,280,280,280,280,0,28 | base 0,280,280,280,280,280,0,280,280,280,280,
+  config wiping_volumes_extruders       70,70,70,70,70,70,70,70,70,70 | base 70,70,70,70,70,70,70,70,70,70
+  config wipe_tower_x                   13 | base 13
+  config wipe_tower_y                   205 | base 205
+  config wipe_tower_bridging            10 | base 10
+  config wipe_tower_rib_width           8 | base 8
+  config wipe_tower_wall_gap            1 | base 1
+  config enable_support                 0 | base 0
+  config wipe_tower_retain               | base 
+  [run] tower per layer (layer, extent, length/E): [(2, 'w 34.51 h 35.11', 'len 1502 E 58.2'), (61, 'w 26.74 h 27.29', 'len 613 E 23.4'), (121, 'w 25.35 h 25.86', 'len 605 E 23.1'), (181, 'w 23.96 h 24.42', 'len 597 E 22.8'), (240, 'w 22.62 h 23.14', 'len 570 E 22.8')]
+       layer 1: tower bbox (np.float64(3.27), np.float64(41.23), np.float64(195.27), np.float64(233.83)) ; Brim block bbox (np.float64(91.44), np.float64(172.1), np.float64(137.04), np.float64(137.69)) ; brim moves 32
+       tower E summed by the tool that extruded it (mm of filament): {0: 2653.1, 2: 3128.7}
+       tool changes: 241; order of tools over time (first 9): [0, 2, 0, 2, 0, 2, 0, 2, 0]
+       tower E per tool-change segment (from, to) -> mean E per segment (mm, and mm3 at 2.405): {'None->0': '0.21 mm = 0.5 mm3 (n=1)', '0->2': '26.07 mm = 62.7 mm3 (n=120)', '2->0': '22.11 mm = 53.2 mm3 (n=120)'}
+       min distance tower <-> model walls per sampled layer: [67.15, 65.04, 81.67, 82.14, 87.91, 87.91]
+       sparse-infill blocks/moves/length: 207 / 9210 / 32539 ; internal solid infill moves 22901
+       tower feeds: {'5400': 91871, '3000': 3978, '1782': 717}
+  [base] tower per layer (layer, extent, length/E): [(2, 'w 35.51 h 36.30', 'len 1602 E 62.0'), (61, 'w 27.74 h 28.48', 'len 664 E 25.4'), (121, 'w 26.36 h 27.04', 'len 656 E 25.1'), (181, 'w 24.97 h 25.60', 'len 648 E 24.8'), (240, 'w 23.63 h 24.33', 'len 640 E 25.4')]
+       layer 1: tower bbox (np.float64(3.27), np.float64(42.23), np.float64(195.28), np.float64(235.02)) ; Brim block bbox (np.float64(91.44), np.float64(172.1), np.float64(137.04), np.float64(137.69)) ; brim moves 32
+       tower E summed by the tool that extruded it (mm of filament): {0: 2973.2, 2: 3369.2}
+       tool changes: 241; order of tools over time (first 9): [0, 2, 0, 2, 0, 2, 0, 2, 0]
+       tower E per tool-change segment (from, to) -> mean E per segment (mm, and mm3 at 2.405): {'None->0': '0.21 mm = 0.5 mm3 (n=1)', '0->2': '28.08 mm = 67.5 mm3 (n=120)', '2->0': '24.78 mm = 59.6 mm3 (n=120)'}
+       min distance tower <-> model walls per sampled layer: [66.62, 64.53, 81.0, 81.47, 87.26, 87.26]
+       sparse-infill blocks/moves/length: 388 / 9210 / 32539 ; internal solid infill moves 22902
+       tower feeds: {'5400': 92607, '3000': 3996, '1782': 717}
+  model geometry run vs base (segments only in run / only in base): {'Outer wall': '0/0', 'Inner wall': '0/0', 'Sparse infill': '0/0', 'Internal solid infill': '0/1', 'Top surface': '0/0', 'Bottom surface': '0/0'}
+================================================================================ 
+#290 skirt / draft shield  run c2b32dd2  base 5994d5e6
+  config skirt_loops                    3 | base 0
+  config skirt_height                   2 | base 1
+  config skirt_distance                 5 | base 2
+  config draft_shield                   enabled | base disabled
+  config skirt_speed                    50 | base 50
+  config brim_type                      auto_brim | base auto_brim
+  config brim_width                     5 | base 5
+  Skirt on layers 1..240 (240 layers of 240); skirt speed ['3000'] mm/min
+  layer 1: skirt loops 3 (closed [True, True, True]) lengths [191.6, 188.8, 186.0] ; min distance skirt to model walls 9.585
+  layer 2: skirt loops 3 (closed [True, True, True]) lengths [191.5, 188.7, 185.9] ; min distance skirt to model walls 9.423
+  layer 3: skirt loops 3 (closed [True, True, True]) lengths [191.5, 188.7, 185.9] ; min distance skirt to model walls 9.327
+  layer 4: skirt loops 3 (closed [True, True, True]) lengths [191.5, 188.7, 185.9] ; min distance skirt to model walls 9.236
+  layer 5: skirt loops 3 (closed [True, True, True]) lengths [191.5, 188.7, 185.9] ; min distance skirt to model walls 9.141
+  layer 100: skirt loops 3 (closed [True, True, True]) lengths [191.5, 188.7, 185.9] ; min distance skirt to model walls 5.401
+  layer 239: skirt loops 3 (closed [True, True, True]) lengths [191.5, 188.7, 185.9] ; min distance skirt to model walls 16.262
+  layer 240: skirt loops 3 (closed [True, True, True]) lengths [191.5, 188.7, 185.9] ; min distance skirt to model walls 16.392
+  layers with skirt and without: first 3 layers [True, True, True] ; top layers [True, True, True]
+  model paths run vs base: {'Outer wall': '0/0', 'Inner wall': '0/0', 'Sparse infill': '0/0', 'Internal solid infill': '0/0', 'Top surface': '0/0', 'Bottom surface': '0/0', 'Brim': '2/2'}
+================================================================================ 
+#291 brim  run ae7fc220  base 5994d5e6
+  config brim_width                     5 | base 5
+  config brim_type                      outer_only | base auto_brim
+  config brim_object_gap                0.2 | base 0.1
+  config brim_ears_detection_radius      | base 
+  config brim_ears_max_angle            125 | base 125
+  config brim_ears_detection_length     1 | base 1
+  [run] layer 1: Brim moves 771, chains 11 (closed 11), length 1118; brim bbox (np.float64(104.68), np.float64(152.59), np.float64(122.44), np.float64(147.56)) ; outer-wall bbox (np.float64(109.37), np.float64(147.75), np.float64(127.28), np.float64(142.72))
+       brim line ends to the outer-wall centreline: min 0.673 p5 0.823 median 3.053 max 4.849 ; successive distances [0.67, 0.69, 0.73, 0.76, 0.81, 0.82, 0.83, 0.84, 0.91, 0.92, 0.93, 0.98]
+       brim width per side (brim bbox - wall bbox)/2: x 4.70 / 4.84, y 4.84 / 4.84
+       brim points inside the outer-wall footprint (inside the largest loop only): 0 ; inside an inner loop only: 7 ; of 309 sampled
+  [base] layer 1: Brim moves 16, chains 1 (closed 1), length 2; brim bbox (np.float64(131.44), np.float64(132.1), np.float64(137.04), np.float64(137.69)) ; outer-wall bbox (np.float64(109.37), np.float64(147.75), np.float64(127.28), np.float64(142.72))
+       brim line ends to the outer-wall centreline: min 0.914 p5 0.918 median 0.955 max 1.061 ; successive distances [0.91, 0.92, 0.93, 0.98, 0.99, 1.0, 1.05, 1.06]
+       brim width per side (brim bbox - wall bbox)/2: x -22.07 / -15.65, y -9.76 / -5.03
+       brim points inside the outer-wall footprint (inside the largest loop only): 0 ; inside an inner loop only: 7 ; of 7 sampled
+================================================================================ 
+#296 gcode output  run a3160612 | #297 exclude objects  run 24f867a0 | #273 run d15b8c66 | base cd540456
+  #296 run a3160612
+  config gcode_comments                 1 | base 0
+  config gcode_add_line_number          1 | base 0
+  config gcode_label_objects            1 | base 1
+  config exclude_object                 0 | base 0
+  config filename_format                {input_filename_base}_{plate_name}.gcode | base {input_filename_base}_{filament_type[0]}
+  config reduce_infill_retraction       1 | base 1
+  config gcode_flavor                   klipper | base klipper
+  config time_lapse_gcode                | base 
+  config timelapse_type                 0 | base 0
+     N-numbered lines: 0 ; EXCLUDE_OBJECT lines: 0 ([]) ; comment lines inside the executable block: run 2682 base 2682
+     non-comment lines run 70371 base 70297, identical False ; first difference at 98: G1 Z.25 | M73 P0 R43
+     run dir: ['agent_final.png', 'contract.json', 'exports', 'initial.png', 'input', 'manifest.json', 'native_worker.json', 'native_worker.log', 'process.json', 'projects', 'proof', 'proof.json', 'proof_final.png', 'result.json'] ; exports: ['0001.gcode'] ; projects: ['0001.3mf']
+     file names in scope.json: ['C:\\\\coil\\\\orca-blackbox-v3-r1\\\\artifacts\\\\v3\\\\a316061213464a3faa2ec54bf79eb411\\\\artifacts\\\\projects\\\\0001.3mf']
+  #297 run 24f867a0
+  config gcode_comments                 0 | base 0
+  config gcode_add_line_number          0 | base 0
+  config gcode_label_objects            1 | base 1
+  config exclude_object                 1 | base 0
+  config filename_format                {input_filename_base}_{filament_type[0]}_{print_time}.gcode | base {input_filename_base}_{filament_type[0]}
+  config reduce_infill_retraction       1 | base 1
+  config gcode_flavor                   klipper | base klipper
+  config time_lapse_gcode                | base 
+  config timelapse_type                 0 | base 0
+     N-numbered lines: 0 ; EXCLUDE_OBJECT lines: 402 (['EXCLUDE_OBJECT_DEFINE', 'EXCLUDE_OBJECT_END', 'EXCLUDE_OBJECT_START']) ; comment lines inside the executable block: run 2682 base 2682
+     non-comment lines run 70773 base 70297, identical False ; first difference at 0: EXCLUDE_OBJECT_DEFINE NAME=立方体_id_0_copy_0 CENTER=115,135 PO | M73 P0 R44
+     run dir: ['agent_final.png', 'contract.json', 'exports', 'initial.png', 'input', 'manifest.json', 'native_worker.json', 'native_worker.log', 'process.json', 'projects', 'proof', 'proof.json', 'proof_final.png', 'result.json'] ; exports: ['0001.gcode'] ; projects: ['0001.3mf']
+     file names in scope.json: ['C:\\\\coil\\\\orca-blackbox-v3-r1\\\\artifacts\\\\v3\\\\24f867a0e0224be5aa47fc88f3e37fa2\\\\artifacts\\\\projects\\\\0001.3mf']
+  #273 run d15b8c66
+  config gcode_comments                 0 | base 0
+  config gcode_add_line_number          0 | base 0
+  config gcode_label_objects            1 | base 1
+  config exclude_object                 0 | base 0
+  config filename_format                {input_filename_base}_{filament_type[0]}_{print_time}.gcode | base {input_filename_base}_{filament_type[0]}
+  config reduce_infill_retraction       1 | base 1
+  config gcode_flavor                   klipper | base klipper
+  config time_lapse_gcode                | base 
+  config timelapse_type                 0 | base 0
+     N-numbered lines: 0 ; EXCLUDE_OBJECT lines: 0 ([]) ; comment lines inside the executable block: run 2682 base 2682
+     non-comment lines run 70273 base 70297, identical False ; first difference at 82: G1 F18000 | G1 F21000
+     run dir: ['agent_final.png', 'contract.json', 'exports', 'initial.png', 'input', 'manifest.json', 'native_worker.json', 'native_worker.log', 'process.json', 'projects', 'proof', 'proof.json', 'proof_final.png', 'result.json'] ; exports: ['0001.gcode'] ; projects: ['0001.3mf']
+     file names in scope.json: ['C:\\\\coil\\\\orca-blackbox-v3-r1\\\\artifacts\\\\v3\\\\d15b8c66081542268f19b717ff0d7dfd\\\\artifacts\\\\projects\\\\0001.3mf']
+-------------------------------------------------------------------------------- 
+#297 retracts by feature  run 24f867a0  base cd540456
+  [run] retracts by feature: {'Custom': 1, 'Outer wall': 198, 'Bottom surface': 2, 'Prime tower': 401, 'Internal solid infill': 12, 'Sparse infill': 182, 'Internal Bridge': 2, 'Top surface': 2}
+       retracts per 1000 extruding moves, sparse infill 47.1, walls 124.4
+  [base] retracts by feature: {'Custom': 1, 'Outer wall': 198, 'Bottom surface': 2, 'Prime tower': 401, 'Internal solid infill': 12, 'Sparse infill': 182, 'Internal Bridge': 2, 'Top surface': 2}
+       retracts per 1000 extruding moves, sparse infill 47.1, walls 124.4
+================================================================================ 
+NON_GREEN rows: result.json
+  #254 5be898f5 verdict NON_GREEN status failed verified_pass False | business: unknown not checked | worker error: ProtocolError:script_layer_fields_not_as_expected
+       reasons: ["execution_not_completed", "evidence_incomplete", "execution_noncompliant", "business_unknown", "path_unknown"]
+  #272 94a82cda verdict NON_GREEN status completed verified_pass False | business: unknown pilot_target_setting_mismatch | worker error: 
+       reasons: ["evidence_incomplete", "execution_noncompliant", "business_unknown", "path_unknown"]
+  #279 1f8a4309 verdict NON_GREEN status failed verified_pass False | business: unknown not checked | worker error: ProtocolError:param_combo_target:1 PLA:
+       reasons: ["execution_not_completed", "evidence_incomplete", "execution_noncompliant", "business_unknown", "path_unknown"]
+  #284 2866a2bb verdict NON_GREEN status failed verified_pass False | business: unknown not checked | worker error: ProtocolError:param_combo_target:1 PLA:
+       reasons: ["execution_not_completed", "evidence_incomplete", "execution_noncompliant", "business_unknown", "path_unknown"]
+  #287 d391a92e verdict NON_GREEN status failed verified_pass False | business: unknown not checked | worker error: ProtocolError:param_combo_target:1 PLA:
+       reasons: ["execution_not_completed", "evidence_incomplete", "execution_noncompliant", "business_unknown", "path_unknown"]
+  #292 875f6c33 verdict NON_GREEN status failed verified_pass False | business: unknown not checked | worker error: ProtocolError:slice_button_unavailable: Print By Object: We suggest using auto-arrange to avoid collisions when printing.
+       reasons: ["execution_not_completed", "evidence_incomplete", "execution_noncompliant", "business_unknown", "path_unknown"]
+  #294 150834d4 verdict NON_GREEN status completed verified_pass False | business: unknown pilot_target_setting_mismatch | worker error: 
+       reasons: ["evidence_incomplete", "execution_noncompliant", "business_unknown", "path_unknown"]

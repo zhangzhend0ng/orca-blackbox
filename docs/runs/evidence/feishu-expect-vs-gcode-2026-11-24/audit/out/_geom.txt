@@ -1,0 +1,85 @@
+#257 precision compensation  run 3f239cab  base 0d6777e0
+  config elefant_foot_compensation      0.15 | base 0.15
+  config elefant_foot_compensation_layers 1 | base 1
+  config xy_contour_compensation        0.1 | base 0
+  config xy_hole_compensation           -0.1 | base 0
+  config precise_outer_wall             1 | base 0
+  config xy_inner_hole_compensation     None | base None
+  config outer_wall_line_width          0.42 | base 0.42
+  config initial_layer_line_width       0.5 | base 0.5
+  [run] layer-1 outer-wall vertices to the layer-2 outer wall (same cross-section): distance median 0.4520 p90 0.4794 max 0.4800 | layer-3 to layer-2: median 0.0500
+       first-layer outer-wall width [0.5] ; 0.15 - (0.5-0.42)/2 = 0.110
+  [base] layer-1 outer-wall vertices to the layer-2 outer wall (same cross-section): distance median 0.4097 p90 0.4794 max 0.4800 | layer-3 to layer-2: median 0.0500
+       first-layer outer-wall width [0.5] ; 0.15 - (0.5-0.42)/2 = 0.110
+  run outer-wall vertices (layer 5) to the baseline outer wall: median 0.1000 p10 0.0994 p90 0.1085 max 0.1414 (n=126); base vertices to run wall median 0.1150 p90 0.1160
+  [run] layer-5 outer-wall bbox x 106.142..163.858 y 127.910..142.090 (w 57.716 h 14.180); wall loops 8; signed area of loops: positive 8 (sum 1050.5), negative 0 (sum 0.0)
+  [base] layer-5 outer-wall bbox x 106.242..163.758 y 128.010..141.990 (w 57.516 h 13.980); wall loops 8; signed area of loops: positive 8 (sum 1045.0), negative 0 (sum 0.0)
+  hole loops on layer 5: run 0 base 0 matched 0; hole area run/base for the first 8: []
+  Gap infill           blocks run 190 base 136
+  Bottom surface       blocks run 7 base 3
+  Internal solid infill blocks run 35 base 30
+  Sparse infill        blocks run 180 base 154
+  Top surface          blocks run 5 base 2
+
+#258 arcs / resolution  run dc0f42c3  base 0d6777e0
+  config enable_arc_fitting             1 | base 0
+  config precise_z_height               1 | base 0
+  config resolution                     0.012 | base 0.012
+  config slice_closing_radius           0.049 | base 0.049
+  config layer_height                   0.2 | base 0.2
+  config first_layer_height             0.250 | base 0.250
+  config arc_fitting_radius_limit       None | base None
+  G2/G3 moves: 300 (by feature {'Outer wall': 152, 'Inner wall': 26, 'Bottom surface': 2, 'Internal solid infill': 58, 'Sparse infill': 61, 'Internal Bridge': 1}); radius min 0.050 median 0.831 max 1437.665; distinct radii (0.01): 104
+  comment markers with ARC in run: {}
+  radial error of baseline polyline vertices against the fitted arcs (5 layers): n=77 median 0.0001 p90 0.0076 max 0.1436 ; share <= 0.012: 90.9%
+  [run] layers 32; first (z,h) (0.25, 0.25) (0.45, 0.2); last (6.21, 0.19) (6.4, 0.19); last Z 6.400; heights {'0.25': 1, '0.2': 25, '0.4': 1, '0.19': 5}
+       wall loops per layer (outer+inner) on layers 2,10,20: [15, 16, 16] ; OW+IW moves 5893
+  [base] layers 32; first (z,h) (0.25, 0.25) (0.45, 0.2); last (6.25, 0.2) (6.45, 0.2); last Z 6.450; heights {'0.25': 1, '0.2': 30, '0.4': 1}
+       wall loops per layer (outer+inner) on layers 2,10,20: [15, 16, 16] ; OW+IW moves 6425
+
+#278 raft  run 0c5eda6b  base 5994d5e6
+  config raft_layers                    3 | base 0
+  config raft_contact_distance          0.2 | base 0.1
+  config raft_expansion                 1.5 | base 1.5
+  config raft_first_layer_density       100% | base 90%
+  config raft_first_layer_expansion     5 | base 2
+  config raft_airgap                    None | base None
+  config support_type                   normal(auto) | base tree(auto)
+  config enable_support                 1 | base 0
+  config support_top_z_distance         0.2 | base 0.2
+  config support_bottom_z_distance      0.2 | base 0.2
+  config support_line_width             0.42 | base 0.42
+  config first_layer_height             0.250 | base 0.250
+  layer 1 z 0.25 h 0.25: Support 236 mv 6089 mm x 98.9..171.1 y 113.3..156.7
+  layer 2 z 0.55 h 0.3: Support in 139 mv 1157 mm x 105.7..152.8 y 123.0..147.0 | Support 60 mv 372 mm x 103.4..166.6 y 117.7..152.3 | Support in 139 mv 1157 mm x 105.7..152.8 y 123.0..147.0 | Support 60 mv 372 mm x 103.4..166.6 y 117.7..152.3
+  layer 3 z 0.85 h 0.3: Support in 127 mv 1070 mm x 106.2..152.3 y 123.5..146.5
+  layer 4 z 1.05 h 0.5: Support 447 mv 509 mm x 103.4..166.6 y 117.7..152.3
+  layer 5 z 1.25 h 0.2: Gap infill 73 mv 18 mm x 109.6..147.1 y 129.2..141.7 | Bottom sur 431 mv 664 mm x 109.9..147.3 y 127.8..142.2 | Gap infill 73 mv 18 mm x 109.6..147.1 y 129.2..141.7 | Bottom sur 431 mv 664 mm x 109.9..147.3 y 127.8..142.2 | Gap infill 73 mv 18 mm x 109.6..147.1 y 129.2..141.7 | Bottom sur 431 mv 664 mm x 109.9..147.3 y 127.8..142.2 | Gap infill 73 mv 18 mm x 109.6..147.1 y 129.2..141.7 | Bottom sur 431 mv 664 mm x 109.9..147.3 y 127.8..142.2 | Gap infill 73 mv 18 mm x 109.6..147.1 y 129.2..141.7 | Outer wall 542 mv 267 mm x 109.3..147.9 y 127.1..142.9 | Inner wall 416 mv 247 mm x 109.7..147.5 y 127.5..142.5 | Outer wall 542 mv 267 mm x 109.3..147.9 y 127.1..142.9 | Inner wall 416 mv 247 mm x 109.7..147.5 y 127.5..142.5 | Outer wall 542 mv 267 mm x 109.3..147.9 y 127.1..142.9 | Inner wall 416 mv 247 mm x 109.7..147.5 y 127.5..142.5 | Outer wall 542 mv 267 mm x 109.3..147.9 y 127.1..142.9 | Bottom sur 431 mv 664 mm x 109.9..147.3 y 127.8..142.2
+  layer 6 z 1.45 h 0.2: Support 53 mv 385 mm x 103.4..166.6 y 117.7..152.3 | Inner wall 58 mv 93 mm x 109.6..147.8 y 127.4..142.6 | Outer wall 72 mv 96 mm x 109.2..148.2 y 127.0..143.0 | Internal s 451 mv 467 mm x 110.0..147.3 y 127.7..142.4 | Bridge 168 mv 758 mm x 109.8..146.7 y 130.5..141.7 | Internal s 451 mv 467 mm x 110.0..147.3 y 127.7..142.4
+  layer 7 z 1.65 h 0.2: Support 55 mv 384 mm x 103.4..166.6 y 117.7..152.3 | Inner wall 58 mv 94 mm x 109.5..148.0 y 127.2..142.8 | Outer wall 72 mv 97 mm x 109.1..148.4 y 126.8..143.2 | Internal s 193 mv 1227 mm x 109.7..147.8 y 127.6..142.4 | Top surfac 15 mv 53 mm x 109.7..115.6 y 133.2..136.8 | Internal s 193 mv 1227 mm x 109.7..147.8 y 127.6..142.4
+  layer 8 z 1.85 h 0.2: Support 54 mv 385 mm x 103.4..166.6 y 117.7..152.3 | Inner wall 62 mv 106 mm x 109.4..148.3 y 127.1..142.9 | Outer wall 79 mv 109 mm x 109.1..148.6 y 126.7..143.3 | Sparse inf 215 mv 193 mm x 109.8..145.9 y 127.8..142.2 | Internal s 574 mv 316 mm x 109.9..147.8 y 127.4..142.6 | Sparse inf 215 mv 193 mm x 109.8..145.9 y 127.8..142.2 | Internal s 574 mv 316 mm x 109.9..147.8 y 127.4..142.6 | Sparse inf 215 mv 193 mm x 109.8..145.9 y 127.8..142.2 | Internal s 574 mv 316 mm x 109.9..147.8 y 127.4..142.6
+  model first-layer outer-wall bbox in the baseline: x 109.37..147.75 y 127.28..142.72
+  layer 1 Support: 236 moves, across-line spacing median 0.446 (n=133)
+  layer 2 Support: 60 moves, across-line spacing median 2.877 (n=47)
+  layer 3 Support interface: 127 moves, across-line spacing median 0.877 (n=89)
+  bed_shape 0.5x1,270.5x1,270.5x271,0.5x271 ; bbox of everything on layer 1: x 98.9..171.1 y 113.3..156.7
+
+#293 spiral vase  run 4efcad2b  base 818ecfc6
+  config spiral_mode                    1 | base 0
+  config seam_position                  nearest | base aligned
+  config wall_loops                     1 | base 2
+  config top_shell_layers               0 | base 5
+  config sparse_infill_density          0% | base 15%
+  config retract_when_changing_layer    0,0,0,0 | base 1,1,1,1
+  config spiral_mode_smooth             0 | base 0
+  config spiral_mode_max_xy_smoothing   200% | base 200%
+  config spiral_starting_flow_ratio     0 | base 0
+  config spiral_finishing_flow_ratio    0 | base 0
+  config outer_wall_speed               200 | base 200
+  layers: L1 z=0.25 h=0.25 ['Outer ', 'Bottom']; L2 z=0.45 h=0.2 ['Outer ', 'Intern']; L3 z=0.65 h=0.2 ['Outer ', 'Top su']; L4 z=0.85 h=0.2 ['Outer '] ... L99 z=19.85 h=0.200001 []; L100 z=20.05 h=0.199999 []; L101 z=20.05 h=0.199999 ['Custom']
+  extruding moves on layers >= 3: 9792; consecutive pairs with a Z change: 9452 (step median 0.00200, min 0.00100, max 0.00300); pairs without Z change: 339
+  Z range of those moves 0.650..20.050; monotonic non-decreasing: True
+  retract/prime (E-only) by layer: {(1, 'prime'): 2, (1, 'retract'): 2, (2, 'prime'): 1, (2, 'retract'): 1, (3, 'prime'): 3, (3, 'retract'): 3, (101, 'retract'): 1}
+  travel moves by layer: {0: 1, 1: 2, 2: 2, 3: 52, 4: 1, 101: 1}
+  features in run: {'Custom': 2, 'Outer wall': 4, 'Bottom surface': 1, 'Internal solid infill': 1, 'Top surface': 1}
+  comment markers: {'TYPE': 9, 'LAYER_CHANGE': 101, 'Z': 101, 'HEIGHT': 101}

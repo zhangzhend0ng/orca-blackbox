@@ -1,0 +1,90 @@
+harvest runs with scope+process: 686 of 719 dirs
+#254  uia_param_layer_pair_sphere
+     11-24 13:41 5be898f5 NON_GREEN  failed         gcode=False err=ProtocolError:script_layer_fields_not_as_expected
+#295  uia_param_fuzzy_sphere
+     11-24 13:42 d3191da6 SHADOW     completed      gcode=True err=
+#255  uia_param_line_width_all_std02
+     11-24 07:40 cd9a4f6a SHADOW     completed      gcode=True err=
+#259  uia_param_ironing_top_std02
+     11-24 08:13 fcfb01eb SHADOW     completed      gcode=True err=
+#267  uia_param_shells_pattern_std02
+     11-24 08:21 728e77c7 SHADOW     completed      gcode=True err=
+#268  uia_param_infill_combo_std02
+     11-24 08:13 d08d1fe8 SHADOW     completed      gcode=True err=
+#270  uia_param_first_speeds_std02
+     11-24 07:00 20ada792 NON_GREEN  completed      gcode=True err=
+     11-24 07:31 376e80a1 SHADOW     completed      gcode=True err=
+     11-24 08:43 c45355d9 SHADOW     completed      gcode=True err=
+#276  uia_param_speed_limits_std02
+     11-24 06:54 701c3445 NON_GREEN  completed      gcode=True err=
+     11-24 07:53 8902f8ae SHADOW     completed      gcode=True err=
+#256  uia_param_seam_wipe_cyl
+     11-24 13:11 fd0abb31 SHADOW     completed      gcode=True err=
+#275  uia_param_jerk_cyl
+     11-24 13:14 9f47af1f SHADOW     completed      gcode=True err=
+#293  uia_param_spiral_vase_cyl
+     11-24 13:19 4efcad2b SHADOW     completed      gcode=True err=
+#257  uia_param_precision_comp_tol
+     11-24 13:22 3f239cab SHADOW     completed      gcode=True err=
+#258  uia_param_arc_resolution_tol
+     11-24 13:26 dc0f42c3 SHADOW     completed      gcode=True err=
+#260  uia_param_wall_generator_text
+     11-24 13:30 433b83c4 SHADOW     completed      gcode=True err=
+#261  uia_param_single_wall_avoid_boat
+     11-24 12:50 bdf3dd93 SHADOW     completed      gcode=True err=
+#262  uia_param_surface_flow_boat
+     11-24 12:55 2779be8f SHADOW     completed      gcode=True err=
+#266  uia_param_wall_thin_boat
+     11-24 12:58 1ffdefee SHADOW     completed      gcode=True err=
+#271  uia_param_feature_speeds_boat
+     11-24 13:02 301dcb07 SHADOW     completed      gcode=True err=
+#274  uia_param_accelerations_boat
+     11-24 13:06 0b0d9c99 SHADOW     completed      gcode=True err=
+#278  uia_param_raft_boat
+     11-24 13:11 0c5eda6b SHADOW     completed      gcode=True err=
+#290  uia_param_skirt_boat
+     11-24 13:15 c2b32dd2 SHADOW     completed      gcode=True err=
+#291  uia_param_brim_boat
+     11-24 13:18 ae7fc220 SHADOW     completed      gcode=True err=
+#294  uia_param_timelapse_boat
+     11-24 13:22 150834d4 NON_GREEN  completed      gcode=True err=
+#263  uia_param_bridge_fdmt
+     11-24 12:17 4dc30e72 SHADOW     completed      gcode=True err=
+#264  uia_param_overhang_speeds_fdmt
+     11-24 12:21 cb8d8859 SHADOW     completed      gcode=True err=
+#265  uia_param_overhang_curl_fdmt
+     11-24 12:25 4b8da518 SHADOW     completed      gcode=True err=
+#269  uia_param_infill_structure_fdmt
+     11-24 12:29 3c6a8dc5 SHADOW     completed      gcode=True err=
+#272  uia_param_overhang_bridge_fdmt
+     11-24 12:33 94a82cda NON_GREEN  completed      gcode=True err=
+#277  uia_param_support_basic_fdmt
+     11-24 12:37 06c69298 SHADOW     completed      gcode=True err=
+#280  uia_param_support_ironing_fdmt
+     11-24 12:40 f366c4c9 SHADOW     completed      gcode=True err=
+#281  uia_param_support_interface_fdmt
+     11-24 12:44 99f34ea9 SHADOW     completed      gcode=True err=
+#273  uia_param_travel_speed_cubes2
+     11-24 13:27 d15b8c66 SHADOW     completed      gcode=True err=
+#292  uia_param_by_object_cubes2
+     11-24 13:30 875f6c33 NON_GREEN  failed         gcode=False err=ProtocolError:slice_button_unavailable: Print By Object: We suggest using auto-arrange to avoid collisions whe
+#296  uia_param_gcode_output_cubes2
+     11-24 13:33 a3160612 SHADOW     completed      gcode=True err=
+#297  uia_param_exclude_objects_cubes2
+     11-24 13:37 24f867a0 SHADOW     completed      gcode=True err=
+#279  uia_param_support_filament_fdmt2
+     11-24 13:02 1f8a4309 NON_GREEN  failed         gcode=False err=ProtocolError:param_combo_target:1 PLA:
+#284  uia_param_filament_features_fdmt2
+     11-24 13:05 2866a2bb NON_GREEN  failed         gcode=False err=ProtocolError:param_combo_target:1 PLA:
+#287  uia_param_material_advanced_fdmt2
+     11-24 13:08 d391a92e NON_GREEN  failed         gcode=False err=ProtocolError:param_combo_target:1 PLA:
+#282  uia_param_tree_support_bunny
+     11-24 13:33 c4eb7a29 SHADOW     completed      gcode=True err=
+#283  uia_param_prime_tower_boat2
+     11-24 13:41 9bc92f73 SHADOW     completed      gcode=True err=
+#286  uia_param_flush_options_boat2
+     11-24 13:45 9dbad28b SHADOW     completed      gcode=True err=
+#288  (no scenario)
+#289  (no scenario)
+#285  uia_param_ooze_prevention_hell
+     11-24 13:38 46fcf33b SHADOW     completed      gcode=True err=

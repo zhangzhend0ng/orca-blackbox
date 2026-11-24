@@ -1,0 +1,33 @@
+#281 support interface: Z gap and interface layers per column
+  top-interface layers: 6; sample points: 36
+  model above the top interface (gap = model bottom - interface top Z): {'no model above within 5 layers': 16, 'model 2 layer(s) above, gap 0.20': 12, 'model 1 layer(s) above, gap 0.00': 4, 'model 3 layer(s) above, gap 0.40': 2, 'model 1 layer(s) above, gap -0.00': 1, 'model 4 layer(s) above, gap 0.60': 1}
+  consecutive interface layers under the top, at the same XY: {'3': 20, '4': 16}
+  support still present directly above the top interface: {'L+1 has Support': 11, 'L+2 has Support': 11}
+
+#277 normal support: where it starts
+  support layers 1..249 (249 layers); model layers 460; support Z 0.25..49.85
+  layers where support appears with NO support at all on the layer below: []
+  layers with support segments > 2 mm away from any support of the layer below (count of such segments): [(7, 16), (22, 27), (37, 3), (43, 23), (48, 91), (51, 112), (52, 177), (55, 9), (57, 2), (67, 4), (72, 22), (77, 12), (82, 3), (92, 13)]
+  support body direction (layer 100, by length): 0:91% 90:8% 80:0% 70:0% ; interface layers: True
+  support body direction (layer 200, by length): 0:87% 90:8% 135:4% ; interface layers: True
+  overhang-wall segments (100%-overhang walls) with support within 1.2 mm on the 1-2 layers below: 410 of 452 (without: 42)
+
+#282 tree support: continuity, layer heights, width
+  support layers 1..503 (503); heights used on those layers: {'0.2': 501, '0.25': 1, '0.4': 1}
+  gaps in the support layer sequence (a support layer whose previous layer has none): []
+  support segments with support within 1.2 mm on the layer below (sampled layers): 26764 of 26769 = 100.0%
+  nearest branch-centre displacement between sampled layers (10 layers apart = 2.0 mm in Z): median 4.209, p95 17.621, max 21.453; tan(40)=0.839 per mm
+  support move lengths: median 0.272; ;WIDTH: values [('0.42', 183511), ('0.50', 994)]; support E/mm 0.03147
+  layer 60: no spacing
+  layer 150: 115 support moves; across-branch nearest distance median 11.605 p10 11.604 p90 11.616
+  layer 300: 339 support moves; across-branch nearest distance median 18.158 p10 18.156 p90 18.160
+  layer 450: no spacing
+  Bridge blocks 38; longest bridge move 4.5 mm (span > 30 mm would need support)
+
+#266 nested wall loops per outer loop (shapely)
+  [run] inner-wall loops by how many further inner-wall loops enclose them (0 = innermost): {0: 182, 1: 205, 2: 113, 3: 26, 4: 5, 5: 6, 6: 1} ; max 6 at (189, 409.8)
+  [base] inner-wall loops by how many further inner-wall loops enclose them (0 = innermost): {0: 178, 1: 107, 2: 12} ; max 2 at (27, 895.2)
+
+#261 same-island travel crossing
+  [run] (see follow3)
+  [base] (see follow3)

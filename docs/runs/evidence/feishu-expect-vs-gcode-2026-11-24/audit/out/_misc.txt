@@ -1,0 +1,144 @@
+C:\Users\snapmaker\AppData\Local\Programs\Python\Python311\Lib\site-packages\numpy\_core\fromnumeric.py:3824: RuntimeWarning: Mean of empty slice
+  return _methods._mean(a, axis=axis, dtype=dtype,
+C:\Users\snapmaker\AppData\Local\Programs\Python\Python311\Lib\site-packages\numpy\_core\_methods.py:142: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+#267 shells / patterns  run 728e77c7  base e9aa6f88
+  config top_shell_layers                 5 | base 5
+  config bottom_shell_layers              3 | base 3
+  config top_surface_pattern              concentric | base monotonicline
+  config bottom_surface_pattern           rectilinear | base monotonic
+  config internal_solid_infill_pattern    monotonic | base monotonic
+  config top_color_penetration_layers     None | base None
+  config bottom_color_penetration_layers  None | base None
+  config wall_loops                       2 | base 2
+  config sparse_infill_layers             None | base None
+  [run] Top surface          on layers [135]
+  [run] Internal solid infill on layers [2, 3, 130, 132, 133, 134]
+  [run] Bottom surface       on layers [1]
+     layer 131 Internal solid infill: chains 0 (closed 0), moves 0, directions (deg, share) , median move len nan
+     layer 132 Internal solid infill: chains 4 (closed 3), moves 189, directions (deg, share) 135:48% 0:25% 90:24% 120:1%, median move len 0.54
+     layer 133 Internal solid infill: chains 4 (closed 3), moves 189, directions (deg, share) 45:48% 0:25% 90:24% 150:1%, median move len 0.54
+     layer 134 Internal solid infill: chains 4 (closed 3), moves 189, directions (deg, share) 135:48% 0:25% 90:24% 120:1%, median move len 0.54
+     layer 135 Top surface: chains 35 (closed 35), moves 140, directions (deg, share) 90:50% 0:50%, median move len 13.19
+     layer 1 Bottom surface: chains 1, moves 153, directions 45:50% 0:25% 90:25%
+     layer 2/3 internal solid infill directions: ['135:48% 0:25% 90:24%', '45:48% 0:25% 90:24%']
+  [base] Top surface          on layers [135]
+  [base] Internal solid infill on layers [2, 3, 130, 132, 133, 134]
+  [base] Bottom surface       on layers [1]
+     layer 131 Internal solid infill: chains 0 (closed 0), moves 0, directions (deg, share) , median move len nan
+     layer 132 Internal solid infill: chains 4 (closed 3), moves 189, directions (deg, share) 135:48% 0:25% 90:24% 120:1%, median move len 0.54
+     layer 133 Internal solid infill: chains 4 (closed 3), moves 189, directions (deg, share) 45:48% 0:25% 90:24% 150:1%, median move len 0.54
+     layer 134 Internal solid infill: chains 4 (closed 3), moves 189, directions (deg, share) 135:48% 0:25% 90:24% 120:1%, median move len 0.54
+     layer 135 Top surface: chains 96 (closed 0), moves 96, directions (deg, share) 45:100%, median move len 18.99
+     layer 1 Bottom surface: chains 1, moves 153, directions 45:50% 0:25% 90:25%
+     layer 2/3 internal solid infill directions: ['135:48% 0:25% 90:24%', '45:48% 0:25% 90:24%']
+  bottom-surface move sequence identical run vs base: True; same multiset: True
+  first 4 bottom-surface moves run [(148.02, 124.388, 147.313, 123.681), (147.313, 123.681, 146.678, 123.681), (146.678, 123.681, 147.819, 124.822), (147.819, 124.822, 147.819, 125.457)] | base [(148.02, 124.388, 147.313, 123.681), (147.313, 123.681, 146.678, 123.681), (146.678, 123.681, 147.819, 124.822), (147.819, 124.822, 147.819, 125.457)]
+
+#269 infill structure  run 3c6a8dc5  base 0cccce4a
+  config infill_combination               1 | base 0
+  config infill_combination_max_layer_height 100% | base 100%
+  config minimum_sparse_infill_area       10 | base 15
+  config internal_bridge_support_thickness None | base None
+  config bridge_angle                     45 | base 0
+  config detect_narrow_internal_solid_infill 1 | base 1
+  config ensure_vertical_shell_thickness  ensure_critical_only | base ensure_all
+  config sparse_infill_density            15% | base 15%
+  config internal_bridge_support_all_locations None | base None
+  [run] sparse-infill length and E/mm per layer 300..316: [(300, 0, 0), (301, 0, 0), (302, 0, 0), (303, 0, 0), (304, 0, 0), (305, 0, 0), (306, 0, 0), (307, 0, 0), (308, 0, 0), (309, 0, 0), (310, 0, 0), (311, 0, 0), (312, 0, 0), (313, 0, 0), (314, 0, 0), (315, 0, 0), (316, 0, 0)]
+       sparse-infill chains by length (sampled layers): {'>=5mm': 70, '2-5mm': 3}
+       Bridge               blocks 43 layers 9, length 7620 mm, direction (by length) 45:95% 90:3% 0:1%
+       Internal Bridge      blocks 43 layers 33, length 16702 mm, direction (by length) 135:61% 45:29% 90:7%
+       Internal solid infill blocks 550 layers 148, length 80967 mm, direction (by length) 45:43% 135:31% 0:14%
+  [base] sparse-infill length and E/mm per layer 300..316: [(300, 0, 0), (301, 0, 0), (302, 0, 0), (303, 0, 0), (304, 0, 0), (305, 0, 0), (306, 0, 0), (307, 0, 0), (308, 0, 0), (309, 0, 0), (310, 0, 0), (311, 0, 0), (312, 0, 0), (313, 0, 0), (314, 0, 0), (315, 0, 0), (316, 0, 0)]
+       sparse-infill chains by length (sampled layers): {'>=5mm': 121}
+       Bridge               blocks 16 layers 9, length 7898 mm, direction (by length) 0:82% 90:18% 50:0%
+       Internal Bridge      blocks 28 layers 18, length 12766 mm, direction (by length) 135:65% 45:30% 90:3%
+       Internal solid infill blocks 611 layers 159, length 83575 mm, direction (by length) 45:38% 135:28% 0:21%
+
+#274 accelerations  run 0b0d9c99  base 5994d5e6
+  config default_acceleration             3000 | base 10000
+  config initial_layer_acceleration       500 | base 500
+  config outer_wall_acceleration          2000 | base 5000
+  config inner_wall_acceleration          4000 | base 10000
+  config sparse_infill_acceleration       5000 | base 100%
+  config travel_acceleration              8000 | base 10000
+  config top_surface_acceleration         2000 | base 2000
+  config bridge_acceleration              50% | base 50%
+  config internal_bridge_acceleration     None | base None
+  config internal_solid_infill_acceleration 100% | base 100%
+  config support_acceleration             None | base None
+  config support_interface_acceleration   None | base None
+  config machine_max_acceleration_x       20000,20000 | base 20000,20000
+  config machine_max_acceleration_y       20000,20000 | base 20000,20000
+  config machine_max_acceleration_z       500,200 | base 500,200
+  config machine_max_acceleration_e       5000,5000 | base 5000,5000
+  [run] Custom                   ACCEL (x lines): 500 x1
+  [run] Gap infill               ACCEL (x lines): 8000 x1069 3000 x636 4000 x339 5000 x53 2000 x38
+  [run] Inner wall               ACCEL (x lines): 8000 x700 2000 x654 4000 x44 1000 x20
+  [run] Outer wall               ACCEL (x lines): 8000 x739 3000 x505 4000 x149 1000 x82 2000 x56
+  [run] Internal solid infill    ACCEL (x lines): 8000 x940 3000 x677 4000 x118 5000 x103 2000 x26
+  [run] Bridge                   ACCEL (x lines): 8000 x33 1000 x20 3000 x13
+  [run] Top surface              ACCEL (x lines): 8000 x955 2000 x907 3000 x33 5000 x9 4000 x6
+  [run] Sparse infill            ACCEL (x lines): 8000 x221 3000 x135 4000 x43 5000 x27 2000 x12
+  [run] Overhang wall            ACCEL (x lines): 2000 x79 4000 x19 8000 x2
+  [run] Internal Bridge          ACCEL (x lines): 8000 x23 3000 x10 1000 x8 5000 x4 2000 x1
+  [base] Custom                   ACCEL (x lines): 500 x1
+  [base] Gap infill               ACCEL (x lines): 2000 x22 5000 x16 2500 x4 10000 x1
+  [base] Inner wall               ACCEL (x lines): 5000 x654 2500 x20
+  [base] Outer wall               ACCEL (x lines): 10000 x739 2500 x82 5000 x47 2000 x9
+  [base] Internal solid infill    ACCEL (x lines): 2000 x21 2500 x16 5000 x5
+  [base] Bridge                   ACCEL (x lines): 10000 x33 2500 x20
+  [base] Top surface              ACCEL (x lines): 10000 x955 2000 x901 5000 x6
+  [base] Overhang wall            ACCEL (x lines): 5000 x79 10000 x20
+  [base] Internal Bridge          ACCEL (x lines): 10000 x23 2500 x8 2000 x1
+  [base] Sparse infill            ACCEL (x lines): 5000 x10 2500 x4 2000 x2
+
+#275 jerk  run 9f47af1f  base 818ecfc6
+  config default_jerk                     8 | base 0
+  config initial_layer_jerk               4 | base 9
+  config outer_wall_jerk                  5 | base 9
+  config inner_wall_jerk                  6 | base 9
+  config infill_jerk                      9 | base 9
+  config travel_jerk                      10 | base 12
+  config top_surface_jerk                 9 | base 9
+  config bridge_jerk                      None | base None
+  config internal_bridge_jerk             None | base None
+  config internal_solid_infill_jerk       None | base None
+  config thick_bridges                    0 | base 0
+  config enable_arc_fitting               0 | base 0
+  config spiral_mode                      0 | base 0
+  command lines identical run vs base: False (run 1195 lines, base 996)
+  command words that could carry jerk (JERK/M204 J/SET_VELOCITY_LIMIT ... J): run ['G28 Z I140 J140']
+  motion identical (all S lists equal): False
+  differing S keys: [('ln', 26702, 26702)]
+  first differing lines outside 'key = value' (run | base): [(1, '; generated by Snapmaker Orca 2.4.0 on 2026-11-24 at 13:17:54', '; generated by Snapmaker Orca 2.4.0 on 2026-11-24 at 12:37:50'), (11, '; thumbnail begin 48x48 656', '; thumbnail begin 48x48 644'), (12, '; iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABsklEQVR4Ae2VTUsCURSG7x8IoohEIb', '; iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABqklEQVR4Ae2VS0sCURiGzx8IIogiQX'), (13, '; +y1JIssEW1KMigQlpFaVH2IVGt1BSTolEi/KBVFBVYa7cVtbzb/tXp3gFBhDBtzp1R7gPvZhiG97ln', '; PUUkuaAltUiwJpEUWryiTKLOm28ordaJQIvLSKAoNqXcsKazfb/tXXnAlBighlvjNjfA+8m2EY3ud8'), (14, '; zgwhEolEwpka6Zk/DFkUnoekm34/BaA+/BoPv4+HGIXfCjdLTYboBS/eamnDiGhVvj78mUQEGOWFSf', '; 58xhjCAIgjM20DG9PW9TeG5SXvWjGoTG8Gc8/D0eZhV+K/xX6jLMLHjxZktbRsSo8o3h32QiwCgvTI'), (15, '; BRY5WvBfV1amdZDTMFEadfC8FApADKFDCXt+sE1uYGFKI1wUBf5wtU8z708u9FP8yM9ypEa7jAc9qD', '; KPGqt8PajbqZXDapkpiFj9ehgGIgVQpoB5eP+dwOJUt8KMJhTsan+Bp0IAvfxLUYaJ4U6FGQ0XuM36')]
+
+#285 ooze prevention  run 46fcf33b  base 02793334
+  config ooze_prevention                  1 | base 1
+  config standby_temperature_delta        -100 | base -150
+  config preheat_steps                    1 | base 1
+  config preheat_time                     15 | base 30
+  config temperature                      None | base None
+  config nozzle_temperature               220,220,220,220,220 | base 220,220,220,220,220
+  config nozzle_temperature_initial_layer 220,220,220,220,220 | base 220,220,220,220,220
+  config filament_diameter                1.75,1.75,1.75,1.75,1.75 | base 1.75,1.75,1.75,1.75,1.75
+  config filament_type                    PLA;PLA;PLA;PLA;PLA | base PLA;PLA;PLA;PLA;PLA
+  tools that extrude in the run: [0] ; T commands in events: ['T0', 'T0', 'T0']
+  M104/M109 lines in run: ['M104 T0 S140', 'M104 S0 T0 A0', 'M104 S0 T1 A0', 'M104 S0 T2 A0', 'M104 S0 T3 A0', 'M104 T0 S130', 'M109 T0 S130', 'M109 S170', 'M104 S130', 'M109 S130', 'M109 S220', 'M104 S220 T0']
+  M104/M109 lines in base: ['M104 T0 S140', 'M104 S0 T0 A0', 'M104 S0 T1 A0', 'M104 S0 T2 A0', 'M104 S0 T3 A0', 'M104 T0 S130', 'M109 T0 S130', 'M109 S170', 'M104 S130', 'M109 S130', 'M109 S220']
+  tool-change markers / comments mentioning toolchange in run: {'LAYER_CHANGE': 203, 'BEFORE_LAYER_CHANGE': 203, 'AFTER_LAYER_CHANGE': 203}
+  filament_count None | wipe_tower_filament 0 | enable_prime_tower 0
+  command lines identical run vs base: False
+
+#257 follow-up: first-layer inset and holes
+  [run] outer-wall centreline bbox L1 x 106.607..163.393 y 128.775..141.673 | L2 x 106.192..163.808 y 128.360..142.040 | L5 x 106.142..163.858 y 127.910..142.090
+       L1 centreline inset from L2 per side: x- 0.415 x+ 0.415 y- 0.415 y+ 0.367 ; nominal (0.5-0.42)/2 = 0.040
+       loops on L5 (cx, cy, area, perimeter): [(125.0, 132.0, 782.1486599999989, 136.8536958902661), (158.0, 137.0, 46.691789999998946, 24.2579967616577), (148.0, 137.0, 44.2956200000026, 23.564586528761446), (130.0, 137.0, 39.717899999999645, 22.179766219659577), (139.0, 137.0, 39.402423999998064, 22.872143025368597), (120.0, 137.0, 38.616720000001806, 21.83356120880388), (111.0, 137.0, 34.25007999999798, 21.486322805947818), (158.0, 137.0, 25.372100999995382, 19.374216861937516)]
+  [base] outer-wall centreline bbox L1 x 106.707..163.293 y 128.875..141.673 | L2 x 106.292..163.708 y 128.460..141.940 | L5 x 106.242..163.758 y 128.010..141.990
+       L1 centreline inset from L2 per side: x- 0.415 x+ 0.415 y- 0.415 y+ 0.267 ; nominal (0.5-0.42)/2 = 0.040
+       loops on L5 (cx, cy, area, perimeter): [(125.0, 132.0, 768.4925220000041, 136.1907696757896), (158.0, 137.0, 49.15375000000313, 24.95040694596991), (139.0, 137.0, 44.29903000000195, 23.565586629502477), (130.0, 137.0, 41.975469999999405, 22.87317653111611), (120.0, 137.0, 40.83284400000048, 22.52497128831437), (148.0, 137.0, 38.45378999999957, 24.25799676165773), (111.0, 137.0, 36.43910600000163, 22.179733192013142), (158.0, 137.0, 25.371377499999653, 18.728871526254128)]
+
+#258 follow-up: mesh height of the fixture (tolerance model)
+  3D/3dmodel.model: 0 vertices; z min nan max nan ; build transform: []
+  3D/Objects/OrcaToleranceTest_1.model: 7751 vertices; z min 0.0000 max 6.4000 ; build transform: []

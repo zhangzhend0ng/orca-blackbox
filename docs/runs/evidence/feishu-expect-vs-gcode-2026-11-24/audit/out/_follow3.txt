@@ -1,0 +1,19 @@
+#266 inner wall lines crossed when walking 2.6 mm inward from the longest outer-wall edge
+  [run] inner wall lines crossed (total loops = lines + 1): {0: 123, 1: 138, 2: 167, 3: 139, 4: 15}
+  [base] inner wall lines crossed (total loops = lines + 1): {0: 123, 1: 282, 2: 156, 3: 19, 4: 2}
+
+#261 travel chains whose start and end lie inside the same outer-wall loop
+  [run] chains inside one loop: 217; of which the straight line crosses an outer wall: 131; detoured (path > straight + 0.3): 128
+  [base] chains inside one loop: 106; of which the straight line crosses an outer wall: 84; detoured (path > straight + 0.3): 0
+
+#282 tree support: lateral growth per layer and branch width
+  lateral offset of a layer's support lines to the nearest support line of the layer below (0.2 mm lower), layers with new growth: 8
+  per-layer max: median 1.000 p90 1.000 max 1.000 | p95 within layer: median 0.868 max 1.278 ; tan(40)*0.2 = 0.168, tan(45)*0.2 = 0.200, tan(30)*0.2 = 0.115
+Traceback (most recent call last):
+  File "C:\coil\vm_setup\q21\audit\follow3.py", line 172, in <module>
+    len(wid), wid.min(), float(np.percentile(wid, 10)), float(np.median(wid)), float(np.percentile(wid, 90)), wid.max()))
+              ^^^^^^^^^
+  File "C:\Users\snapmaker\AppData\Local\Programs\Python\Python311\Lib\site-packages\numpy\_core\_methods.py", line 45, in _amin
+    return umr_minimum(a, axis, None, out, keepdims, initial, where)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: zero-size array to reduction operation minimum which has no identity

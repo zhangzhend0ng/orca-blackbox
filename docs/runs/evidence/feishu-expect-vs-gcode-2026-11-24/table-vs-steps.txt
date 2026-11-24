@@ -1,0 +1,45 @@
+#255 uia_param_line_width_all
+     table keys the steps do not name:   layer_height
+#267 uia_param_shells_pattern
+     step keys the table does not carry: top_color_penetration_layers
+#268 uia_param_infill_combo
+     step keys the table does not carry: infill_wall_overlap
+     table keys the steps do not name:   top_bottom_infill_wall_overlap
+#276 uia_param_speed_limits
+     step keys the table does not carry: filament_max_volumetric_speed machine_max_speed_x
+#293 uia_param_spiral_vase
+     table keys the steps do not name:   sparse_infill_density top_shell_layers wall_loops
+#278 uia_param_raft
+     step keys the table does not carry: raft_expansion
+     table keys the steps do not name:   enable_support support_type
+#263 uia_param_bridge
+     step keys the table does not carry: max_bridge_length
+#264 uia_param_overhang_speeds
+     step keys the table does not carry: overhang_totally_speed
+#265 uia_param_overhang_curl
+     step keys the table does not carry: enable_overhang_bridge_fan overhang_fan_threshold overhang_fan_speed
+#269 uia_param_infill_structure
+     step keys the table does not carry: internal_bridge_support_thickness
+#272 uia_param_overhang_bridge
+     step keys the table does not carry: overhang_totally_speed
+#280 uia_param_support_ironing
+     table keys the steps do not name:   enable_support support_type
+#281 uia_param_support_interface
+     table keys the steps do not name:   enable_support support_type
+#279 uia_param_support_filament
+     table keys the steps do not name:   enable_support support_type
+#284 uia_param_filament_features
+     table keys the steps do not name:   enable_support support_type
+#287 uia_param_material_advanced
+     table keys the steps do not name:   enable_support support_type
+#282 uia_param_tree_support
+     table keys the steps do not name:   enable_support support_style
+#286 uia_param_flush_options
+     step keys the table does not carry: flush_into_objects
+#285 uia_param_ooze_prevention
+     step keys the table does not carry: preheat_steps
+#292 uia_param_by_object
+     step keys the table does not carry: extruder_clearance_radius extruder_clearance_height_to_rod
+
+TALLY: 12 rows name step keys the table lacks (16 keys in all); 19 table keys are not step keys
+   rows: #267 #268 #276 #278 #263 #264 #265 #269 #272 #286 #285 #292

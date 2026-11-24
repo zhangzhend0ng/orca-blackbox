@@ -1,0 +1,222 @@
+========================================================================================== 
+#255 line widths  run cd9a4f6a  base e9aa6f88
+  config line_width                 run 0.42 | base 0.42
+  config initial_layer_line_width   run 0.5 | base 0.5
+  config outer_wall_line_width      run 0.42 | base 0.42
+  config inner_wall_line_width      run 0.45 | base 0.45
+  config top_surface_line_width     run 0.4 | base 0.42
+  config sparse_infill_line_width   run 0.45 | base 0.45
+  config support_line_width         run 0.42 | base 0.42
+  config filament_flow_ratio        run 0.98,0.98,0.98,0.98,0.98 | base 0.98,0.98,0.98,0.98,0.98
+  config print_flow_ratio           run 1 | base 1
+  config layer_height               run 0.2 | base 0.2
+  config first_layer_height         run 0.250 | base 0.250
+  summary run: external perimeters extrusion width = 0.42mm | perimeters extrusion width = 0.45mm | infill extrusion width = 0.45mm | solid infill extrusion width = 0.42mm | top infill extrusion width = 0.40mm | first layer extrusion width = 0.50mm
+  Outer wall           E/mm L>=2 0.03073 (base 0.03073; formula w=0.42,h=.2,0.98: 0.03073; ratio to formula 1.0000; ratio to w*h/2.405 0.8799) | L1 0.04546 (base 0.04546; formula w=.5,h=.25: 0.04546)
+  Inner wall           E/mm L>=2 0.03317 (base 0.03317; formula w=0.45,h=.2,0.98: 0.03317; ratio to formula 1.0000; ratio to w*h/2.405 0.8865) | L1 0.04546 (base 0.04546; formula w=.5,h=.25: 0.04546)
+  Sparse infill        E/mm L>=2 0.03317 (base 0.03317; formula w=0.45,h=.2,0.98: 0.03317; ratio to formula 0.9999; ratio to w*h/2.405 0.8865) | L1 nan (base nan; formula w=.5,h=.25: 0.04546)
+  Top surface          E/mm L>=2 0.02924 (base 0.03103; formula w=0.40,h=.2,0.98: 0.02910; ratio to formula 1.0050; ratio to w*h/2.405 0.8792) | L1 nan (base nan; formula w=.5,h=.25: 0.04546)
+  Internal solid infill E/mm L>=2 0.03076 (base 0.03076; formula w=0.42,h=.2,0.98: 0.03073; ratio to formula 1.0011; ratio to w*h/2.405 0.8808) | L1 nan (base nan; formula w=.5,h=.25: 0.04546)
+  Bottom surface       E/mm L>=2 nan (base nan; formula w=0.50,h=.2,0.98: 0.03725; ratio to formula nan; ratio to w*h/2.405 nan) | L1 0.04574 (base 0.04574; formula w=.5,h=.25: 0.04546)
+  Internal Bridge      E/mm L>=2 0.05120 (base 0.05120; formula w=0.42,h=.2,0.98: 0.03073; ratio to formula 1.6663; ratio to w*h/2.405 1.4661) | L1 nan (base nan; formula w=.5,h=.25: 0.04546)
+  paths Outer wall           run vs base: 540 moves, max dev 0.0000
+  paths Inner wall           run vs base: 536 moves, max dev 0.0000
+  paths Sparse infill        run vs base: 3684 moves, max dev 0.0000
+  paths Internal solid infill run vs base: 957 moves, max dev 0.0000
+  paths Internal Bridge      run vs base: 156 moves, max dev 0.0000
+  paths Bottom surface       run vs base: 153 moves, max dev 0.0000
+  Top surface len: run 1935.0 base 1823.0 ; moves 102 vs 96
+========================================================================================== 
+#262 surface flow  run 2779be8f  base 5994d5e6
+  Top surface          E/mm run 0.03428 base 0.03116 ratio 1.1000 | len 3457.7/3457.7 moves 956/956
+  Bottom surface       E/mm run 0.04115 base 0.04572 ratio 0.9000 | len 463.9/463.9 moves 310/310
+  Internal solid infill E/mm run 0.03102 base 0.03102 ratio 1.0000 | len 20913.0/20913.0 moves 11451/11451
+  Outer wall           E/mm run 0.03085 base 0.03085 ratio 1.0000 | len 32783.7/32783.7 moves 29273/29273
+  Inner wall           E/mm run 0.03326 base 0.03326 ratio 1.0000 | len 30432.7/30432.7 moves 20882/20882
+  Sparse infill        E/mm run 0.03317 base 0.03317 ratio 1.0000 | len 16269.4/16269.4 moves 4605/4605
+  Bridge               E/mm run 0.03073 base 0.03073 ratio 1.0000 | len 1569.2/1569.2 moves 338/338
+  Internal Bridge      E/mm run 0.05120 base 0.05120 ratio 1.0000 | len 3204.4/3204.4 moves 864/864
+  bottom-surface layers in run: [1]
+  top-surface layers in run: [3, 22, 23, 32, 42, 53, 54, 55, 56, 57, 58, 59, 60, 61, 67, 68, 69, 70, 74, 77, 93, 94, 102, 114, 123, 185, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 240]
+  paths Top surface          run vs base: 956 moves, max dev 0.0000
+  paths Bottom surface       run vs base: 310 moves, max dev 0.0000
+  paths Outer wall           run vs base: 29273 moves, max dev 0.0000
+  paths Inner wall           run vs base: 20882 moves, max dev 0.0000
+  paths Sparse infill        run vs base: 4605 moves, max dev 0.0000
+  paths Internal solid infill run vs base: 11451 moves, max dev 0.0000
+  paths Bridge               run vs base: 338 moves, max dev 0.0000
+  paths Internal Bridge      run vs base: 864 moves, max dev 0.0000
+  paths Gap infill           run vs base: 6103 moves, max dev 0.0000
+  paths Overhang wall        run vs base: 336 moves, max dev 0.0000
+  top-surface feeds run: {'8846.7': 157, '8543.0': 69, '1200.0': 60, '2118.0': 37}
+========================================================================================== 
+#259 ironing  run fcfb01eb  base e9aa6f88
+  config ironing_type               run topmost | base no ironing
+  config ironing_flow               run 10% | base 10%
+  config ironing_spacing            run 0.15 | base 0.15
+  config ironing_speed              run 60 | base 30
+  config ironing_pattern            run rectilinear | base rectilinear
+  config ironing_direction          run None | base None
+  config ironing_angle              run -1 | base -1
+  config support_ironing            run 0 | base 0
+  config support_ironing_flow       run 10% | base 10%
+  config support_ironing_spacing    run 0.1 | base 0.1
+  config support_ironing_pattern    run rectilinear | base rectilinear
+  config support_line_width         run 0.42 | base 0.42
+  config top_surface_line_width     run 0.42 | base 0.42
+  config line_width                 run 0.42 | base 0.42
+  config layer_height               run 0.2 | base 0.2
+  config filament_flow_ratio        run 0.98,0.98,0.98,0.98,0.98 | base 0.98,0.98,0.98,0.98,0.98
+  Ironing: 1 blocks on 1 layers 135..135; moves 500; len 4717.0; E 5.766; E/mm 0.00122; feeds {'3600': 500}
+  reference E/mm of Top surface = 0.03103 -> ironing/ref = 0.039 ; 10% of it would be 0.00310; ironing mm3/mm = 0.00294
+  ironing line spacing (layer 135, 242 long segments): median 0.150 min 0.150 max 0.150 (n=242)
+  ironing move lengths: min 0.106 median 0.213 max 37.256
+  raw sample:
+     ;TYPE:Ironing
+     ;WIDTH:0.40161
+     ;HEIGHT:0.0075
+     G1 F3600
+     G1 X148.685 Y122.775 E.00019
+     G1 X148.473 Y122.775 E.00026
+     G1 X148.725 Y123.027 E.00044
+     G1 X148.725 Y123.239 E.00026
+     G1 X148.261 Y122.775 E.0008
+     G1 X148.049 Y122.775 E.00026
+     G1 X148.725 Y123.451 E.00117
+     G1 X148.725 Y123.663 E.00026
+     G1 X147.837 Y122.775 E.00154
+     G1 X147.625 Y122.775 E.00026
+  paths Top surface          run vs base: 96 moves, max dev 0.0000
+  paths Outer wall           run vs base: 540 moves, max dev 0.0000
+  paths Inner wall           run vs base: 536 moves, max dev 0.0000
+  paths Sparse infill        run vs base: 3684 moves, max dev 0.0000
+  paths Internal solid infill run vs base: 957 moves, max dev 0.0000
+========================================================================================== 
+#280 ironing  run f366c4c9  base 0cccce4a
+  config ironing_type               run no ironing | base no ironing
+  config ironing_flow               run 10% | base 10%
+  config ironing_spacing            run 0.15 | base 0.15
+  config ironing_speed              run 30 | base 30
+  config ironing_pattern            run rectilinear | base rectilinear
+  config ironing_direction          run None | base None
+  config ironing_angle              run -1 | base -1
+  config support_ironing            run 1 | base 0
+  config support_ironing_flow       run 10% | base 10%
+  config support_ironing_spacing    run 0.15 | base 0.1
+  config support_ironing_pattern    run rectilinear | base rectilinear
+  config support_line_width         run 0.42 | base 0.42
+  config top_surface_line_width     run 0.42 | base 0.42
+  config line_width                 run 0.42 | base 0.42
+  config layer_height               run 0.2 | base 0.2
+  config filament_flow_ratio        run 0.98,0.98,0.98,0.98,0.98 | base 0.98,0.98,0.98,0.98,0.98
+  Ironing: 194 blocks on 194 layers 24..249; moves 22491; len 29188.0; E 98.893; E/mm 0.00339; feeds {'1800': 22491}
+  reference E/mm of Support = 0.03118 -> ironing/ref = 0.109 ; 10% of it would be 0.00312; ironing mm3/mm = 0.00815
+  layers with Support interface: 221; with Ironing: 194; ironing layers that also have support interface: 194; without: 0
+  ironing layers without support interface (first 10): []
+  block type preceding each Ironing block: {'Support': 144, 'Support interface': 50}
+  last model layer 460 has ironing: False
+  raw sample:
+     ;TYPE:Ironing
+     ;HEIGHT:0.02
+     G1 X97.375 Y152.475 E.01801
+     G1 X97.375 Y152.625 E.00051
+     G1 X102.625 Y152.625 E.01778
+     G1 X102.625 Y152.775 E.00051
+     G1 X97.375 Y152.775 E.01778
+     G1 X97.375 Y152.925 E.00051
+     G1 X102.625 Y152.925 E.01778
+     G1 X102.625 Y153.075 E.00051
+     G1 X97.375 Y153.075 E.01778
+     G1 X97.375 Y153.225 E.00051
+     G1 X102.625 Y153.225 E.01778
+     G1 X102.625 Y153.375 E.00051
+  paths Support              run vs base: moves 27279 vs 0
+  paths Support interface    run vs base: moves 24887 vs 0
+  paths Outer wall           run vs base: 55732 moves, max dev 31.5740
+  paths Top surface          run vs base: 2350 moves, max dev 0.0000
+  paths Internal solid infill run vs base: 28829 moves, max dev 0.0000
+========================================================================================== 
+#268 infill combo  run d08d1fe8  base e9aa6f88
+  config sparse_infill_density        run 20% | base 15%
+  config sparse_infill_pattern        run gyroid | base grid
+  config infill_direction             run 45 | base 45
+  config infill_wall_overlap          run 15% | base 15%
+  config top_bottom_infill_wall_overlap run 15% | base 25%
+  config sparse_infill_line_width     run 0.45 | base 0.45
+  config gap_fill_target              run everywhere | base topbottom
+  config gap_fill_enabled             run None | base None
+  config infill_combination           run 0 | base 0
+  config wall_loops                   run 2 | base 2
+  config line_width                   run 0.42 | base 0.42
+  sparse-infill length per mid layer (layers 20..119): run 334.6 mm base 277.2 mm ratio 1.2070
+  line length ratio -> density: run/base 1.2070 vs 20%/15% = 1.3333
+  direction histogram of sparse infill (5-deg buckets, % of moves) run: 0:4% 5:2% 10:2% 15:2% 20:3% 25:2% 30:2% 35:3% 40:5% 45:2% 50:6% 55:4% 60:2% 65:2% 70:2% 75:2% 80:2% 85:2% 90:4% 95:2% 100:2% 105:2% 110:2% 115:2% 120:2% 125:4% 130:6% 135:2% 140:5% 145:3% 150:2% 155:2% 160:3% 165:2% 170:2% 175:2%
+  direction histogram base: 0:24% 45:24% 90:28% 135:24%
+  run sparse-infill move lengths: n=46049 median 0.674 p90 1.110 max 4.734
+  layer 60 spacing: run median 7.412 (n=255, segs 287) | base median 5.428 (n=25, segs 29)
+  [run] distance from sparse-infill line ends to inner-wall centreline: min 0.3480, 5% 0.3480, median 3.5860
+  [base] distance from sparse-infill line ends to inner-wall centreline: min 0.3480, 5% 0.3480, median 0.3480
+  gap infill blocks/moves: run 0/0 base 0/0
+  paths Outer wall           run vs base: 540 moves, max dev 0.0000
+  paths Inner wall           run vs base: 536 moves, max dev 0.0000
+  paths Top surface          run vs base: 96 moves, max dev 0.0380
+  paths Internal solid infill run vs base: moves 927 vs 957
+========================================================================================== 
+#263 bridge  run 4dc30e72  base 0cccce4a
+  config bridge_flow              run 1 | base 1
+  config bridge_density           run 100% | base 100%
+  config thick_bridges            run 1 | base 0
+  config bridge_angle             run 0 | base 0
+  config max_bridge_length        run 10 | base 10
+  config bridge_line_width        run None | base None
+  config bridge_speed             run 50 | base 50
+  config enable_support           run 0 | base 0
+  config support_type             run tree(auto) | base tree(auto)
+  config internal_bridge_flow     run 1 | base 1
+  config thick_internal_bridges   run 1 | base 1
+  config bridge_acceleration      run 50% | base 50%
+  [run] Bridge: blocks 16 on 9 layers [13, 18, 26, 31, 41, 56, 71, 86, 251]; moves 808; len 6674.2; E 341.7; E/mm 0.05120; direction (by length) 0:82% 90:18% 30:0% 110:0%
+       move lengths: median 1.472 max 51.404; longest [51.2, 51.2, 51.2, 51.4, 51.4]
+       layer 13: 16 bridge moves, 12 long segments, spacing median 0.450 min 0.450 max 0.450 (n=8)
+       layer 18: 16 bridge moves, 12 long segments, spacing median 0.450 min 0.450 max 0.450 (n=8)
+       layer 26: 13 bridge moves, 7 long segments, spacing median 0.450 min 0.450 max 0.450 (n=7)
+       layer 86: 13 bridge moves, 7 long segments, spacing median 0.450 min 0.450 max 0.450 (n=7)
+       layer 251: 515 bridge moves, 315 long segments, spacing median 0.450 min 0.450 max 0.450 (n=315)
+       Overhang wall E/mm 0.05120 moves 328
+       Internal Bridge E/mm 0.05120 moves 3150
+       Support types present: []
+  [base] Bridge: blocks 16 on 9 layers [13, 18, 26, 31, 41, 56, 71, 86, 251]; moves 963; len 7898.1; E 242.7; E/mm 0.03073; direction (by length) 0:82% 90:18% 50:0% 140:0%
+       move lengths: median 1.331 max 51.444; longest [51.3, 51.3, 51.3, 51.4, 51.4]
+       layer 13: 24 bridge moves, 16 long segments, spacing median 0.378 min 0.377 max 0.378 (n=16)
+       layer 18: 24 bridge moves, 16 long segments, spacing median 0.378 min 0.377 max 0.378 (n=16)
+       layer 26: 15 bridge moves, 8 long segments, spacing median 0.377 min 0.377 max 0.377 (n=8)
+       layer 86: 15 bridge moves, 8 long segments, spacing median 0.377 min 0.377 max 0.377 (n=8)
+       layer 251: 613 bridge moves, 375 long segments, spacing median 0.377 min 0.377 max 1.132 (n=375)
+       Overhang wall E/mm 0.03317 moves 452
+       Internal Bridge E/mm 0.05120 moves 3150
+       Support types present: []
+========================================================================================== 
+#281 support interface  run 99f34ea9  base 0cccce4a
+  config support_top_z_distance         run 0.2 | base 0.2
+  config support_bottom_z_distance      run 0.2 | base 0.2
+  config support_object_xy_distance     run 0.5 | base 0.35
+  config support_interface_top_layers   run 3 | base 2
+  config support_interface_bottom_layers run 2 | base 2
+  config support_interface_spacing      run 0 | base 0.5
+  config support_interface_pattern      run rectilinear | base auto
+  config support_line_width             run 0.42 | base 0.42
+  config support_interface_speed        run 80 | base 80
+  config enable_support                 run 1 | base 0
+  config support_type                   run normal(auto) | base tree(auto)
+  config support_interface_not_for_body run 1 | base 1
+  config support_base_pattern           run default | base default
+  config support_pattern                run None | base None
+  config support_spacing                run None | base None
+  config support_object_first_layer_gap run 0.2 | base 0.2
+  Support interface on 215 layers: 7 .. 249
+  Support on 245 layers: 1 .. 245
+  interface line spacing per sampled layer (layer, long segs, median, min, max): [(7, 24, 0.377, 0.377, 2.639), (50, 7, 0.377, 0.084, 0.377), (69, 92, 0.377, 0.085, 0.378), (86, 68, 0.377, 0.377, 0.378), (103, 69, 0.377, 0.371, 0.378), (120, 68, 0.377, 0.377, 0.378), (137, 10, 0.377, 0.377, 0.377), (154, 15, 0.377, 0.377, 0.377), (171, 41, 0.377, 0.377, 0.378), (188, 38, 0.377, 0.377, 0.377), (205, 50, 0.377, 0.185, 1.508), (222, 47, 0.377, 0.377, 1.508), (239, 50, 0.377, 0.377, 1.885)]
+  interface move lengths: median 0.533 p90 5.754 max 51.957; E/mm 0.03073
+  runs of consecutive layers with interface: [3, 4, 4, 4, 7, 193] (count per run length: {3: 1, 4: 3, 7: 1, 193: 1})
+  vertical gap between top interface layer and the first model layer above (per top-interface layer): {'-0.00': 2, '0.00': 4}
+  min XY distance support <-> outer wall centreline per sampled layer: min 0.728 median 0.847 max 0.899; [(7, 0.89), (27, 0.729), (49, 0.729), (59, 0.89), (67, 0.847), (75, 0.89), (83, 0.847), (91, 0.893), (99, 0.892), (107, 0.891), (115, 0.892), (123, 0.896)]
