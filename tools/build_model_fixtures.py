@@ -37,6 +37,7 @@ import io
 import math
 import os
 import re
+import struct
 import sys
 import tempfile
 import zipfile
@@ -128,6 +129,55 @@ def source_of(path: Path) -> Source:
                    tuple(bf.present(bf.attributes(items[0]).get("transform"), f"{path.name}: build item has no transform").split()))
     if len(found.component) != 12 or len(found.item) != 12:
         raise bf.TemplateError(f"{path.name}: a transform does not have 12 numbers")
+    _sources[path] = found
+    return found
+
+
+def stl_facts(path: Path) -> tuple[int, int]:
+    """(triangle count, number of distinct vertex positions) of a binary STL, positions rounded to 1e-5 mm."""
+    data = path.read_bytes()
+    bf.need(len(data) >= 84, f"{path.name}: shorter than a binary STL header")
+    count = struct.unpack_from("<I", data, 80)[0]
+    bf.need(len(data) == 84 + 50 * count, f"{path.name}: {len(data)} bytes are not {count} triangles of 50 bytes")
+    positions = {tuple(round(value, 5) for value in struct.unpack_from("<3f", data, 84 + 50 * triangle + 12 + 12 * corner))
+                 for triangle in range(count) for corner in range(3)}
+    return count, len(positions)
+
+
+def stl_source(path: Path) -> Source:
+    """A binary STL as a mesh: vertices welded by position (1e-5 mm), triangles in the file's order and winding.
+
+    An STL has no transform: the object's own frame is the file's, and the item transform lifts the
+    lowest point to z = 0. Coordinates are written with 9 significant digits, which carries a
+    32-bit float without loss, as the slicer's exporter writes them.
+    """
+    if path in _sources:
+        return _sources[path]
+    count, distinct = stl_facts(path)
+    data = path.read_bytes()
+    index_of: dict[tuple[float, float, float], int] = {}
+    vertices: list[tuple[float, float, float]] = []
+    vertex_lines: list[str] = []
+    triangle_lines: list[str] = []
+    for triangle in range(count):
+        record = struct.unpack_from("<9f", data, 84 + 50 * triangle + 12)
+        corners = []
+        for corner in range(3):
+            x, y, z = record[3 * corner: 3 * corner + 3]
+            key = (round(x, 5), round(y, 5), round(z, 5))
+            at = index_of.get(key)
+            if at is None:
+                at = len(vertices)
+                index_of[key] = at
+                vertices.append((x, y, z))
+                vertex_lines.append(f'     <vertex x="{x:.9g}" y="{y:.9g}" z="{z:.9g}"/>\n')
+            corners.append(at)
+        triangle_lines.append(f'     <triangle v1="{corners[0]}" v2="{corners[1]}" v3="{corners[2]}"/>\n')
+    bf.need(len(vertices) == distinct, f"{path.name}: {len(vertices)} welded vertices, {distinct} distinct positions")
+    lift = -min(z for _, _, z in vertices) + 0.0   # + 0.0: no "-0" when the lowest point is already at z = 0
+    found = Source(path, path.stem, "".join(vertex_lines), "".join(triangle_lines), tuple(vertices), count,
+                   tuple(bf.IDENTITY_TRANSFORM.split()),
+                   ("1", "0", "0", "0", "1", "0", "0", "0", "1", "0", "0", f"{lift:.9g}"))
     _sources[path] = found
     return found
 
@@ -240,9 +290,11 @@ def specs(models: Path) -> dict[str, list[Item]]:
     for stem, file_name in (("bunny", "Stanford_Bunny.3mf"), ("hell", "Orca_stringhell.3mf")):
         model = source_of(models / file_name)
         out[f"feishu_std_{stem}"] = [Item(replace(imported, name=model.name), "1", CENTRE, model)]
+    tolerance = stl_source(models / "OrcaToleranceTest.stl")
+    out["feishu_std_tolerance"] = [Item(replace(imported, name=tolerance.name), "1", CENTRE, tolerance)]
     return dict(sorted(out.items(), key=lambda entry: ["feishu_std_boat", "feishu_std_boat2", "feishu_std_fdmt", "feishu_std_fdmt2",
                                                         "feishu_std_cubes2", "feishu_std_sphere", "feishu_std_cylinder",
-                                                        "feishu_std_bunny", "feishu_std_hell"].index(entry[0])))
+                                                        "feishu_std_bunny", "feishu_std_hell", "feishu_std_tolerance"].index(entry[0])))
 
 
 def place(template: bf.Template, items: Sequence[Item]) -> list[bf.Placed]:
@@ -383,14 +435,27 @@ def validate(output: bytes, template: bf.Template, items: Sequence[Item], object
                        f"{placed.member}: counts differ from the source")
             bf.require(all(int(value) < len(parsed_vertices) for triangle in TRIANGLE.findall(triangle_block) for value in triangle),
                        f"{placed.member}: a triangle index is out of range")
-            bf.require([(float(bf.attributes(vertex)["x"]), float(bf.attributes(vertex)["y"]), float(bf.attributes(vertex)["z"]))
-                        for vertex in parsed_vertices] == list(item.source.vertices), f"{placed.member}: parsed vertices differ from the source's")
+            # a 3MF source's text is copied, so the floats are equal; an STL's float32 is compared as float32
+            as_float32 = item.source.path.suffix.lower() == ".stl"
+            same = (lambda value, expected: struct.pack("<f", value) == struct.pack("<f", expected)) if as_float32 else (
+                lambda value, expected: value == expected)
+            bf.require(all(same(float(bf.attributes(vertex)["x"]), wanted[0]) and same(float(bf.attributes(vertex)["y"]), wanted[1])
+                           and same(float(bf.attributes(vertex)["z"]), wanted[2])
+                           for vertex, wanted in zip(parsed_vertices, item.source.vertices)),
+                       f"{placed.member}: parsed vertices differ from the source's")
             bf.require([(int(bf.attributes(triangle)["v1"]), int(bf.attributes(triangle)["v2"]), int(bf.attributes(triangle)["v3"]))
                         for triangle in parsed_triangles]
                        == [tuple(int(value) for value in triangle) for triangle in TRIANGLE.findall(triangle_block)],
                        f"{placed.member}: parsed triangles differ from the source's")
             say(f"  {item.source.name} ({item.source.path.name}): source lines verbatim, {len(parsed_vertices)} vertices and "
                 f"{len(parsed_triangles)} triangles as in the source, every triangle index < {len(parsed_vertices)}")
+            if item.source.path.suffix.lower() == ".stl":
+                stl_triangles, stl_positions = stl_facts(item.source.path)
+                bf.require(len(parsed_triangles) == stl_triangles and len(parsed_vertices) == stl_positions,
+                           f"{placed.member}: {len(parsed_triangles)} triangles / {len(parsed_vertices)} vertices against the "
+                           f"STL's {stl_triangles} triangles / {stl_positions} distinct positions")
+                say(f"  binary STL: triangle count = the STL's {stl_triangles}; welded vertex count = the STL's "
+                    f"{stl_positions} distinct positions (1e-5 mm); closedness and orientation not required, not checked")
         else:
             bf.require(all(bf.DECIMAL_TEXT.fullmatch(value) for vertex in VERTEX.findall(vertex_block) for value in vertex),
                        f"{placed.member}: a coordinate has more than 6 decimals")
