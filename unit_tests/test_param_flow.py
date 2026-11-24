@@ -867,7 +867,7 @@ def test_a_title_further_out_gets_its_notches_in_one_call_and_lands_where_the_on
 
 @pytest.mark.parametrize("end,after_the_burst", [
     (1540, [(1, -120)] * 7),                            # 31px short of the band: single notches from then on
-    (1500, [(2, -120), (2, -120)] + [(1, -120)] * 5),   # 71px short: the still page is only counted one wheel later
+    (1500, [(2, -120)] + [(1, -120)] * 6),              # 71px short: a burst of 2 that moves nothing, then single notches
 ], ids=["31px-short", "71px-short"])
 def test_a_page_that_stops_short_takes_its_burst_then_the_stall_tail_in_single_notches(make_page, end, after_the_burst):
     page = make_page(OVERHANGS, end=end)
@@ -880,10 +880,12 @@ def test_a_page_that_stops_short_takes_its_burst_then_the_stall_tail_in_single_n
 def test_a_wheel_dead_until_its_focus_reset_meets_the_same_stall_logic_then_one_burst_for_the_rest(make_page):
     page = make_page(OVERHANGS, dead=True)
     assert scroll_group(page) == title_at(page) and page.offset == 27 * STEP      # the landing of 27 single notches
-    # the still page is counted from the second wheel; the third single is the
-    # reset and the fourth the first live notch (still counted against the old
-    # measurement); then one burst covers the 25 notches left
-    assert page.calls == [(27, -120), (27, -120)] + [(1, -120)] * 4 + [(25, -120)]
+    # the burst moves nothing and has nothing to be compared with, so it is
+    # not counted; every wheel after it is one notch, decided from the page
+    # not having moved: three still ones, the third the reset, then the first
+    # live notch (still counted against the old measurement) and one more
+    # while that count is on; then one burst covers the 25 notches left
+    assert page.calls == [(27, -120)] + [(1, -120)] * 5 + [(25, -120)]
     assert page.resets == ["scroll_group(%r)" % GROUP]
 
 

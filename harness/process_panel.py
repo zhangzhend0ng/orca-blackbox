@@ -484,11 +484,14 @@ def scroll_group_into_view(session, substr, timeout_s=420.0):
             below = ty1 > y1 - 24
             # Just the notches the 1-notch steps would have needed for the
             # distance left to the band edge, in one call (the tab switch's
-            # reset sends that many); a single notch once the page may be
-            # stuck, so the stall logic below counts as it always did.
+            # reset sends that many) - but ONE notch, decided before this
+            # wheel, when the wheel before did not move the title or the
+            # stall count is already on. So a stalled page never gets the
+            # burst twice in a row, and the stall logic below counts single
+            # notches, as it always did.
             left = ty1 - (y1 - 24) if below else (y0 + 2) - ty1
             notches = max(1, min(RESET_WHEEL_NOTCHES, -(-left // WHEEL_STEP_PX)))
-            wheel_viewport(session, vp, 1 if stuck else notches,
+            wheel_viewport(session, vp, 1 if stuck or last_y == ty1 else notches,
                            delta=-120 if below else 120)
             if last_y == ty1:
                 stuck += 1
