@@ -1,6 +1,6 @@
 # ZCode 稳定性验收入口
 
-固定使用已有Snapmaker供应商 new-provider / glm-5.3-flash，不改个人配置、代理或全局守卫。
+新批次固定使用现有 Snapmaker 供应商 `new-provider/glm-5.4`。历史 `glm-5.3-flash` 批次保留原模型收据。
 
 先提交代码并通过Git bundle同步客机到相同clean HEAD。管理员relay后台执行 `python -B tools/zcode_matrix.py --batch-id <32hex>`；入口逐次调用native_save_demo → hv_go，禁止宿主跑GUI。
 

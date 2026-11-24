@@ -6,7 +6,7 @@
 
 验证原生agent能否在限定权限、预算和独立判定下完成真实业务，并减少新任务与UI变化的维护成本。AI自主选路线和操作；测试器提供目标、隔离环境与证据，不给点击清单，不让模型自签通过。
 
-固定路线为 ZCode 原生 app-server → Snapmaker `new-provider/glm-5.3-flash` → Windows-MCP 0.8.9 的 UIA 优先接口 → `win11-test`。同一原生 turn 内由模型选择目标，执行器判断可用的定位与输入通道。
+新评估路线为 ZCode 原生 app-server → Snapmaker `new-provider/glm-5.4` → Windows-MCP 0.8.9 的 UIA 优先接口 → `win11-test`。同一原生 turn 内由模型选择目标，执行器判断可用的定位与输入通道。
 
 - 原生控件先读取 owned 窗口 UIA 树，用名称、控件类型、AutomationId 和当前所属窗唯一定位。读取或替换值走 ValuePattern，动作按钮优先 InvokePattern。每次操作重新查询、核对窗口归属和撤销状态，记录定位、操作及读回方式。
 - wx 自绘和 ImGui 画布缺少独立语义节点时，先定位已登记的父窗或画布边界，再返回该范围的局部画面。仅在同次观察覆盖的范围执行像素输入，输入前复查目标及焦点。普通对话框和原生输入框走属性接口。

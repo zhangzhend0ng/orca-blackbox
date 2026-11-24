@@ -11,7 +11,8 @@ sys.path.insert(0, str(REPO))
 from harness.agent_protocol import valid_run_id
 from harness.native_matrix import REPLAY_SOURCES, UIA_SAVE_SCENARIO
 from harness.native_pilots import TRIALS, native_fixture, verify_business
-from harness.native_save_session import NATIVE_SUT_SHA256, verify_layer_saved, verify_unchanged_saved
+from harness.native_save_session import (NATIVE_SUT_SHA256, ZCODE_LEGACY_MODEL_ID, ZCODE_MODEL_ID,
+    ZCODE_PROVIDER_ID, verify_layer_saved, verify_unchanged_saved)
 from harness.native_uia_replay import compile_recipe, recipe_path
 from tools.zcode_matrix import grade, load
 
@@ -35,7 +36,8 @@ def record(run_id):
     if (any(item["run_id"] != run_id for item in (summary, host, process, teardown, setup, scope, proof))
             or any(item["scenario"] != scenario for item in (host, setup, scope))
             or summary["actor"] != "zcode" or not host["toolset_verified"]
-            or (host["provider_id"], host["model_id"]) != ("new-provider", "glm-5.3-flash")
+            or host["provider_id"] != ZCODE_PROVIDER_ID
+            or host["model_id"] not in (ZCODE_LEGACY_MODEL_ID, ZCODE_MODEL_ID)
             or setup["tab_clicked"] != "Quality"
             or scope["app_pid"] != setup["app_pid"] or scope["app_pid"] != proof["old_pid"]
             or scope["output_path"] != proof["output_path"] or proof["sut_sha256"] != NATIVE_SUT_SHA256

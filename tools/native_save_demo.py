@@ -5,7 +5,9 @@ existing actor configuration selected for this run; credentials are never copied
 """
 from pathlib import Path
 import argparse
+import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -148,7 +150,8 @@ def main():
         args.scenario = BOUND_MODEL_MOVE if args.model is not None else "base" if args.actor == "codex" else UIA_LAYER_SCENARIO
     if (args.scenario == BOUND_MODEL_MOVE) != (args.model is not None) or (args.model is not None and args.actor != "script"):
         p.error("--model requires --actor script and the bound_model_move scenario")
-    if args.goal_only and (args.actor != "zcode" or args.scenario not in UIA_HYBRID_SCENARIOS):
+    from harness.agent_protocol import MAINTENANCE_TRIALS
+    if args.goal_only and (args.actor != "zcode" or args.scenario not in UIA_HYBRID_SCENARIOS | MAINTENANCE_TRIALS.keys()):
         p.error("--goal-only requires --actor zcode and a UIA hybrid scenario")
     if args.inspect_mix_controls and (args.actor != "script" or args.scenario != UIA_MIX_RECIPES):
         p.error("--inspect-mix-controls requires the mixing baseline script")
@@ -334,6 +337,30 @@ def main():
     summary = {"run_id": run_id, "source_sha": head, "actor": args.actor, "scenario": args.scenario, "actor_exit": code,
                "actor_error": error, "result": result, "release_eligible": False,
                "host_wall_seconds": time.monotonic() - started, "harvest_seconds": harvest_seconds}
+    paired = True
+    if args.scenario in MAINTENANCE_TRIALS:
+        paired = False
+        summary["comparison"] = {"status": "no_verified_gui_result"}
+        if result.get("verified_pass") is True and code == 0:
+            from harness.native_pilots import comparison_baseline, native_fixture, verify_business
+            try:
+                harvest = result_path.parent
+                proof = json.loads((harvest / "proof.json").read_bytes())
+                fixture = (harvest / "input/fixture.3mf").read_bytes()
+                project = (harvest / "proof/0001.3mf").read_bytes()
+                export = (harvest / "exports/0001.gcode").read_bytes()
+                if (hashlib.sha256(fixture).hexdigest() != native_fixture(args.scenario)[1]
+                        or hashlib.sha256(project).hexdigest() != proof["project_sha256"]
+                        or hashlib.sha256(export).hexdigest() != proof["gcode_sha256"]
+                        or proof["run_id"] != run_id):
+                    raise ValueError("comparison_artifact_identity")
+                baseline_root = Path(os.environ.get("ORCA_BB_HARVEST", result_path.parent.parent))
+                baseline = comparison_baseline(args.scenario, baseline_root)
+                detail = verify_business(args.scenario, project, fixture, export, baseline_gcode=baseline)
+                paired = detail.get("pair_status") == "checked"
+                summary["comparison"] = {"status": "paired" if paired else "unverified", "detail": detail}
+            except (OSError, ValueError, KeyError) as exc:
+                summary["comparison"] = {"status": "unverified", "reason": str(exc)[:250]}
     if args.goal_only:
         summary["prompt_mode"] = "goal_only"
     if args.probe_mix_waits:
@@ -344,7 +371,7 @@ def main():
         summary["mix_boot_probe"] = True
     (root / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(json.dumps(summary), flush=True)
-    return 0 if code == 0 and result.get("verified_pass") is True and plan_matches is not False else 1
+    return 0 if code == 0 and result.get("verified_pass") is True and plan_matches is not False and paired else 1
 
 
 if __name__ == "__main__":

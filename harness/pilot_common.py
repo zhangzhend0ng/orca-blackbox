@@ -60,7 +60,7 @@ def require_gcode_settings(gcode, expected, error_code):
         _require(values and all(value == wanted for value in values), error_code + ":" + key)
 
 
-def inspect_preserved_settings(actual, expected, *, allowed_changes=None, cancelled=lambda: False):
+def inspect_preserved_settings(actual, expected, *, allowed_changes=None, manifest_scopes=None, cancelled=lambda: False):
     _require(type(actual) is dict and type(expected) is dict, "pilot_config_schema")
     changes = {} if allowed_changes is None else allowed_changes
     _require(type(changes) is dict and (not changes or changes in
@@ -88,6 +88,14 @@ def inspect_preserved_settings(actual, expected, *, allowed_changes=None, cancel
         _check_cancel(cancelled)
         after = actual[key]
         if key == "different_settings_to_system" and key not in changes:
+            if manifest_scopes is not None:
+                _require(type(before) is list and type(after) is list and len(before) == len(after),
+                         "pilot_dirty_manifest_out_of_scope")
+                for index, (old, new) in enumerate(zip(before, after)):
+                    prior, current = set(filter(None, old.split(";"))), set(filter(None, new.split(";")))
+                    _require(prior <= current <= prior | manifest_scopes.get(index, set()),
+                             "pilot_dirty_manifest_out_of_scope")
+                continue
             # The app maintains a manifest of keys diverging from the
             # system preset; any allowed edit legitimately extends it
             # (run 14bd2fb9). New entries must be within the allowed keys.
@@ -101,6 +109,14 @@ def inspect_preserved_settings(actual, expected, *, allowed_changes=None, cancel
             # one-element list (ironing_speed ['60']); normalize before the
             # target comparison (same rule as make_verify's value loop).
             want_v = changes[key]
+            if isinstance(want_v, tuple):
+                index, target = want_v
+                _require(type(after) is list and type(before) is list and index < len(before),
+                         "param_slot_shape:" + key)
+                wanted = before.copy()
+                wanted[index] = target
+                _require(after == wanted, "param_slot_value_or_preservation:" + key)
+                continue
             if isinstance(after, list) and len(after) == 1 and not isinstance(want_v, list):
                 after = after[0]
             _require(after == want_v, "pilot_target_setting_mismatch")

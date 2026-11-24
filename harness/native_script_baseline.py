@@ -4,6 +4,7 @@ from pathlib import Path
 import re
 import sys
 
+from .agent_protocol import MAINTENANCE_TRIALS
 from .agent_protocol import (BASELINES, LAYER_FIELDS_BY_FIXTURE, SHAPES_SCENARIO, SUFFIX_TARGETS,
                              STD_SCENARIO, ProtocolError, base_scenario, fixture_suffix, read_json)
 from .native_matrix import (UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO,
@@ -454,9 +455,8 @@ PARAM_OPS = {        "uia_param_ironing_top": [
             # The row paints 'Brim-object gap' (hyphen; screenshot f0e683fb).
             {"op": "float", "label": "gap", "value": "0.2", "group": "Brim"},
         ],
-        # Feishu #276 (snapshot line 195): the table's filament/machine-scope
-        # keys (filament_max_volumetric_speed, machine_max_speed_x) are not
-        # reachable from the process panel and stay out of the ops/values.
+        # Feishu #276 (snapshot line 195): the STD02 path drives the
+        # filament and machine scopes separately, via the preset editors.
         "uia_param_speed_limits": [
             {"tab": "Quality", "tab_hint": "height", "op": "float",
              "label": ["Layer height", "layer height"], "value": "0.2"},
@@ -705,9 +705,8 @@ PARAM_OPS = {        "uia_param_ironing_top": [
                                       "Bottom surface flow"], "value": "0.9",
              "group": "Walls and surfaces"},
         ],
-        # Feishu #265 (line 184): the three fan keys are Filament-scope
-        # (Cooling page, Tab.cpp:3847) - unreachable from the process panel
-        # (#276 precedent). 'curled' is the band-unique word for the Slow
+        # Feishu #265 (line 184): the FDMT path handles the three fan keys
+        # in Material settings > Cooling. 'curled' is the band-unique word for the Slow
         # down for curled perimeters checkbox inside the Speed Overhang
         # speed group ('Slow down' alone would hit enable_overhang_speed).
         "uia_param_overhang_curl": [
@@ -1073,6 +1072,14 @@ def edit_project(ui, scenario, canvas, *, mix_census=False):
     elif base == "uia_param_mix_census":
         from .param_mix_census import census_mix_dialog
         census_mix_dialog(ui)
+    elif scenario in MAINTENANCE_TRIALS:
+        from .native_preset_script import edit_cooling, edit_speed_limits
+
+        if base == "uia_param_overhang_curl":
+            edit_cooling(ui)
+        else:
+            edit_speed_limits(ui)
+        edit_param_cases(ui, scenario)
     elif scenario.startswith("uia_param_"):
         edit_param_cases(ui, scenario)
     else:

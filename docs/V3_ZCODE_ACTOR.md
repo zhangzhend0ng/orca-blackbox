@@ -4,7 +4,7 @@
 
 入口为`python -B tools/native_save_demo.py --actor zcode`，GUI只在Hyper-V win11-test由hv_go交互任务执行，沿用run_once、owned Job、canonical桌面锁和独立harvest。宿主与客机须为相同已提交HEAD；上游源码只读。
 
-供应商固定原有Snapmaker `new-provider/glm-5.3-flash`，原有HTTP地址`http://ai-gateway.s.com/v1`、Anthropic协议、reasoning/thought low。原生ZCode app-server持有模型agent循环；项目客户端只创建会话、给目标、限制权限、收集事件与停止，不替模型生成下一动作。客户端不导出Key、不复制到客机、不修改全局模型/账号/代理；三份个人配置hash在每轮前后核对。实际model-io再次核验provider/model和每次七项工具清单。
+新会话固定使用 Snapmaker `new-provider/glm-5.4` 和公司网关 `http://ai-gateway.s.com/v1` 的 Anthropic 协议。先以 ZCode 的默认设置创建会话。默认模型不匹配时，只有 app-server 返回该模型及其有效默认推理档位才允许通过 `session/setModel` 切换当前会话，核验通过后才发送目标。轮末及模型请求收据再次核验 provider/model，请求工具清单逐次核验。历史 `glm-5.3-flash` 收据继续按对应冻结契约检验。原生 ZCode app-server 负责模型循环，项目客户端负责会话、目标、权限、事件和停止。密钥由宿主 ZCode 读取，个人配置在每轮前后通过哈希核验。
 
 混合场景开放 Snapshot、Screenshot、Click、Type、Shortcut、Wait、ControlStatus。独立 Save As 只开放其中的属性查询、属性输入、等待和状态。模型不获 shell、文件系统、任意路径或全局快捷键。数值、固定保存路径及窗口归属由执行端校验。Screenshot 只接受当前 wx 或 ImGui 区域的名字，裁图边界由执行端计算。会话关闭搜索、记忆和子 agent 等额外能力，bootstrap 仍可能初始化已有插件。
 

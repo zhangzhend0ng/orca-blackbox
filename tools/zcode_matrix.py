@@ -12,6 +12,7 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 from harness.native_matrix import (BUSINESS, GENERALIZATION, SAFETY, UIA_GENERALIZATION,
     UIA_DISTURBANCE_SCENARIO, UIA_HYBRID_SCENARIOS)
+from harness.native_save_session import ZCODE_LEGACY_MODEL_ID, ZCODE_MODEL_ID, ZCODE_PROVIDER_ID
 
 UIA_DIAGNOSTIC_SLOTS = ("uia_general_wall", "uia_general_y_quality", "uia_general_slot2")
 
@@ -111,7 +112,8 @@ def uia_gate_proofs(runs):
         raw = (root/"native_trace.ndjson").read_bytes()
         trace = [json.loads(line) for line in raw.splitlines() if line]
         if (summary["run_id"] != run or summary["scenario"] != scenario or settings["scenario"] != scenario
-                or (host["provider_id"], host["model_id"]) != ("new-provider", "glm-5.3-flash")
+                or host["provider_id"] != ZCODE_PROVIDER_ID
+                or host["model_id"] not in (ZCODE_LEGACY_MODEL_ID, ZCODE_MODEL_ID)
                 or host["toolset_verified"] is not True
                 or not grade(scenario, host, result, process, teardown, trace, coordinator_exit=summary["actor_exit"])):
             raise ValueError("uia_development_gate_failed:" + scenario)
@@ -163,6 +165,7 @@ def main():
         if slot["scenario"] in PILOT_BLOCKS:
             slot.update(status="blocked", reason=PILOT_BLOCKS[slot["scenario"]])
     plan = {"batch_id": batch, "suite": args.suite, "source_sha": head, "slots": slots, "release_eligible": False}
+    plan.update(provider_id=ZCODE_PROVIDER_ID, model_id=ZCODE_MODEL_ID)
     if gate is not None:
         plan["uia_gate_proofs"] = gate
     bundle = Path(r"C:\Program Files\ZCode\resources\glm\zcode.cjs")
@@ -173,7 +176,7 @@ def main():
         from harness.run_verdict import contract_digest
         plan.update(sut_sha256=NATIVE_SUT_SHA256, fixture_sha256=LAYER_FIXTURE_SHA256,
                     bundle_sha256=hashlib.sha256(bundle.read_bytes()).hexdigest(),
-                    provider_id="new-provider", model_id="glm-5.3-flash", tools=sorted(NATIVE_TOOLS))
+                    tools=sorted(NATIVE_TOOLS))
         for slot in slots:
             slot["contract_sha256"] = contract_digest(native_contract("zcode", slot["scenario"]))
     (root/"plan.json").write_text(json.dumps(plan, indent=2), encoding="utf-8")
@@ -208,7 +211,8 @@ def main():
             trace = [json.loads(line) for line in trace_file.read_text(encoding="utf-8").splitlines() if line] if trace_file.exists() else []
             if not trace and result.get("verified_pass") is True:
                 raise ValueError("matrix_pass_without_trace")
-            passed = grade(scenario, host, result, process, teardown, trace, coordinator_exit=done.returncode)
+            passed = ((host.get("provider_id"), host.get("model_id")) == (ZCODE_PROVIDER_ID, ZCODE_MODEL_ID)
+                      and grade(scenario, host, result, process, teardown, trace, coordinator_exit=done.returncode))
             slot.update(status="pass" if passed else "fail", coordinator_exit=done.returncode,
                         execution_status=result.get("execution_status"), verified_pass=result.get("verified_pass"))
             if recording_details:

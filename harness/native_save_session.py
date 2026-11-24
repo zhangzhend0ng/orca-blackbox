@@ -27,6 +27,10 @@ from .runtime_ports import VerificationOutcome
 from .script_executor import _ScriptHandle
 
 REPO = Path(__file__).resolve().parents[1]
+ZCODE_PROVIDER_ID = "new-provider"
+ZCODE_MODEL_ID = "glm-5.4"
+ZCODE_LEGACY_MODEL_ID = "glm-5.3-flash"
+ZCODE_MODEL_SCENARIO_EXCLUSIONS = {"canvas_probe", "authority_probe"}
 NATIVE_SUT_SHA256 = "5c48644d7da18b50636ceeee4ef9fd2eaf6d4e8ac05bd88752f40e3717fc47bf"
 
 
@@ -46,7 +50,7 @@ class NativeSaveHandle(_ScriptHandle):
         return super().poll()
 
 
-def native_contract(actor="codex", scenario="base"):
+def native_contract(actor="codex", scenario="base", *, legacy_zcode=False):
     from .native_matrix import scenario_spec
     scenario_spec(actor, scenario)
     if scenario == BOUND_MODEL_MOVE:
@@ -91,7 +95,7 @@ def native_contract(actor="codex", scenario="base"):
             goal = "Move the cube exactly +10 mm in global X."
         elif source_scenario == UIA_SAVE_SCENARIO:
             goal = "Save the loaded project unchanged from the prepared Save As dialog."
-        elif source_scenario in {UIA_PROCESS_COMBO, UIA_MIX_RECIPES, UIA_QUALITY_ENUMS, UIA_MOVE_LAYER}:
+        elif source_scenario in {UIA_PROCESS_COMBO, UIA_MIX_RECIPES, UIA_QUALITY_ENUMS, UIA_MOVE_LAYER} or source_scenario.startswith("compare_"):
             from .native_pilots import business_goal
             goal = business_goal(source_scenario)
         data["steps"] = [
@@ -107,10 +111,11 @@ def native_contract(actor="codex", scenario="base"):
                                         else "native-uia-recording-1-" + scenario)
             data["steps"].insert(1, {"id": "recording", "goal": "Run the registered UIA recording with SHA256 " + digest})
         return validate_contract(data)
+    model_id = ZCODE_LEGACY_MODEL_ID if legacy_zcode else ZCODE_MODEL_ID
     data = {"schema_version": 1, "case_id": "m3g_export_3mf",
         "contract_version": "native-save-1" if actor == "codex" else "native-save-zcode-1", "executor": "agent_mcp",
         "required_checks": ["path", "business"], "steps": [
-            {"id": "goal", "goal": ("Native Codex" if actor == "codex" else "Native ZCode with Snapmaker glm-5.3-flash")+" independently edits regular layer height to .24, preserves initial .4 and cube, then GUI saves."},
+            {"id": "goal", "goal": ("Native Codex" if actor == "codex" else f"Native ZCode with Snapmaker {model_id}")+" independently edits regular layer height to .24, preserves initial .4 and cube, then GUI saves."},
             {"id": "proof", "goal": "After MCP stops and old SUT exits, freeze saved bytes, reopen with an independent profile and GUI reslice/export."},
             {"id": "close", "goal": "Independently inspect 3MF/G-code and confirm owned Job is empty."}],
         "limits": {"timeout_s": 900, "max_actions": 40, "max_retries": 0, "max_cost_usd": 0}}
@@ -131,7 +136,9 @@ def native_contract(actor="codex", scenario="base"):
             pilot = pilot_module(scenario)
             data["case_id"] = pilot.CASE_ID
             data["contract_version"] = "native-pilot-zcode-1-"+scenario
-            data["steps"][1]["goal"] = "Native ZCode with Snapmaker glm-5.3-flash: "+pilot.GOAL
+            from .native_pilots import business_goal
+            pilot_goal = pilot.GOAL if legacy_zcode else business_goal(scenario)
+            data["steps"][1]["goal"] = f"Native ZCode with Snapmaker {model_id}: " + pilot_goal
             if scenario == "canvas_trial":
                 data["contract_version"] = "native-canvas-trial-zcode-1-observed-wxglcanvas-v1"
                 data["steps"].insert(1, {"id": "canvas_authority", "goal": "Explicit observed-wxglcanvas-v1 numeric-only capability trial; fixed diagnostic/SUT hashes; clear=false/caret=idle/press_enter=false; prior successful same-loc Click. PFD and internal field activation unproven; at most two proven owned numeric pre-dispatch refusals with fresh observation."})
@@ -161,16 +168,19 @@ def native_contract(actor="codex", scenario="base"):
         if scenario in UIA_HYBRID_SCENARIOS:
             data["contract_version"] = "native-uia-hybrid-zcode-4-" + scenario
             data["steps"].insert(1, {"id": "uia_authority", "goal": "Use owned UIA target properties and readback for native controls. Use the latest crop of the intended named wx or ImGui region after any mutation. Allow up to two proven owned, pre-dispatch input refusals followed by fresh observation. Require the UIA Save As trace and independent saved-file verification."})
+    if actor == "zcode" and not legacy_zcode and scenario not in ZCODE_MODEL_SCENARIO_EXCLUSIONS:
+        data["steps"].append({"id": "model_identity", "goal": f"Use {ZCODE_PROVIDER_ID}/{model_id} with default session reasoning."})
     return validate_contract(data)
 
 
 def native_spec(digest):
     from .native_uia_replay import recipe_path
+    from .agent_protocol import MAINTENANCE_TRIALS
     # A `_std02` contract names its full scenario; it is found like any other.
     for actor, scenarios in (("codex", ("base",)),
                              ("zcode", (s for s in scenario_names() if s not in RECORDED_SCENARIOS
                                         and s not in FIXTURE_SCENARIOS and s != BOUND_MODEL_MOVE)),
-                             ("script", (*SCRIPT_SCENARIOS, *std_twins(SCRIPT_SCENARIOS)))):
+                             ("script", (*SCRIPT_SCENARIOS, *std_twins(SCRIPT_SCENARIOS), *MAINTENANCE_TRIALS))):
         for scenario in scenarios:
             if scenario in REPLAY_SOURCES and not recipe_path(scenario).is_file():
                 continue
@@ -183,6 +193,9 @@ def native_spec(digest):
                 if not all(recipe_path(case).is_file() for case in FIXTURE_CASES):
                     continue
             if digest == contract_digest(native_contract(actor, scenario)):
+                return actor, scenario
+            if (actor == "zcode" and scenario not in ZCODE_MODEL_SCENARIO_EXCLUSIONS
+                    and digest == contract_digest(native_contract(actor, scenario, legacy_zcode=True))):
                 return actor, scenario
     raise ValueError("native_contract_digest")
 
@@ -378,8 +391,10 @@ def verify_saved(snapshot, *, cancelled=lambda: False, batch_process=None, plan_
                  and host["run_id"] == snapshot.run_id and host["native_ok"] is True
                  and host["host_active_processes"] == 0 and host["host_forced"] is False, "native_host_receipt")
         if actor == "zcode":
-            _require(host.get("actor") == "zcode" and host.get("provider_id") == "new-provider"
-                     and host.get("model_id") == "glm-5.3-flash"
+            model_id = (ZCODE_MODEL_ID if any(step.id == "model_identity" for step in snapshot.contract.steps)
+                        else ZCODE_LEGACY_MODEL_ID)
+            _require(host.get("actor") == "zcode" and host.get("provider_id") == ZCODE_PROVIDER_ID
+                     and host.get("model_id") == model_id
                      and host.get("guard_checked") is True and host.get("sources_unchanged") is True
                      and host.get("toolset_verified") is True, "native_zcode_identity_or_gate")
         trace = [_json(line) for line in read("native_trace.ndjson", 256000).splitlines() if line]

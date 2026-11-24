@@ -29,6 +29,41 @@ def test_script_comparison_is_not_available_for_arbitrary_native_scenarios():
         native_contract("script", "uia_general_wall")
 
 
+@pytest.mark.parametrize("scenario,target", [
+    ("uia_param_overhang_curl_fdmt", "cooling"),
+    ("compare_265_quality", "cooling"),
+    ("compare_265_strength", "cooling"),
+    ("uia_param_speed_limits_std02", "speed_limits"),
+    ("compare_276_quality", "speed_limits"),
+    ("compare_276_strength", "speed_limits"),
+])
+def test_full_case_drives_presets_then_process(monkeypatch, scenario, target):
+    calls = []
+    ui = object()
+    monkeypatch.setattr(f"harness.native_preset_script.edit_{target}", lambda u: calls.append((target, u)))
+    monkeypatch.setattr("harness.native_script_baseline.edit_param_cases",
+                        lambda u, s: calls.append((s, u)))
+    edit_project(ui, scenario, None)
+    if scenario.startswith('compare_'):
+        assert calls == [(target, ui), (scenario, ui)]
+    else:
+        assert calls == [(scenario, ui)]
+
+
+def test_machine_limit_number_is_read_only():
+    from harness.native_preset_script import PresetUI
+
+    # No input methods are provided. A write or click would fail this test.
+    preset = PresetUI.__new__(PresetUI)
+    preset.ui = SimpleNamespace(owned=lambda hwnd: hwnd == 42)
+    preset.wu = SimpleNamespace(edit_text=lambda hwnd: "500.0")
+    preset._row = lambda name, match, paired: ((0, 0, 10, 10), 42)
+    preset.number("Maximum speed X", "500", "500", paired=True)
+    preset.wu.edit_text = lambda hwnd: "200.0"
+    with pytest.raises(ValueError, match="script_preset_wrong_start"):
+        preset.number("Maximum speed X", "500", "500", paired=True)
+
+
 def test_layer_driver_converts_position_and_requires_target_and_readback(monkeypatch):
     edits = [((260, 740, 300, 760), 3, "0.4"), ((260, 770, 300, 790), 4, "0.40")]
     monkeypatch.setattr("harness.process_panel.float_edits_in_view", lambda app: edits)

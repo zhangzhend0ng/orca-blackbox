@@ -64,15 +64,18 @@ def test_native_actor_registry_preserves_codex_digest_and_rejects_unknown_contra
 
 
 @pytest.mark.parametrize("fault", [None,"provider_id","model_id","guard_checked","sources_unchanged","toolset_verified"])
-def test_zcode_proof_requires_exact_vendor_and_completed_safety_receipt(native_evidence, fault):
-    snapshot=native_evidence;snapshot.contract=native_contract("zcode")
+@pytest.mark.parametrize("legacy", [False, True])
+def test_zcode_proof_requires_exact_vendor_and_completed_safety_receipt(native_evidence, fault, legacy):
+    snapshot=native_evidence;snapshot.contract=native_contract("zcode", legacy_zcode=legacy)
     root=snapshot.artifact_dir
     proof=json.loads((root/"proof.json").read_text());proof["contract_sha256"]=contract_digest(snapshot.contract)
     (root/"proof.json").write_text(json.dumps(proof))
     host=json.loads((root/"host_done.json").read_text())
-    host.update(actor="zcode",provider_id="new-provider",model_id="glm-5.3-flash",
+    model_ids=("glm-5.4","glm-5.3-flash")
+    host.update(actor="zcode",provider_id="new-provider",model_id=model_ids[legacy],
                 guard_checked=True,sources_unchanged=True,toolset_verified=True)
-    if fault:host[fault]="wrong" if fault.endswith("_id") else False
+    if fault:
+        host[fault]={"model_id":model_ids[not legacy],"provider_id":"wrong"}.get(fault, False)
     (root/"host_done.json").write_text(json.dumps(host))
     assert verify_saved(snapshot).evidence_complete is (fault is None)
 
@@ -84,7 +87,7 @@ def test_provider_metadata_rejects_a_different_company_endpoint(tmp_path, host, 
         "providerId":"new-provider","providerName":"Snapmaker","config":{
             "api":{"type":protocol,"baseUrl":"http://"+host+"/v1"},
             "access":{"type":"api-key","apiKey":"test-placeholder"},
-            "personalModelIds":["glm-5.3-flash"]}}]}}}))
+            "personalModelIds":["glm-5.4"]}}]}}}))
     with pytest.raises(ValueError, match="provider_changed"):provider_metadata(p)
 
 
@@ -94,19 +97,20 @@ def test_provider_metadata_accepts_existing_company_address_without_exposing_key
         "providerId":"new-provider","providerName":"Snapmaker","config":{
             "api":{"type":"anthropic-messages","baseUrl":"http://ai-gateway.s.com/v1"},
             "access":{"type":"api-key","apiKey":"test-placeholder-secret"},
-            "personalModelIds":["glm-5.3-flash"]}}]}}}))
+            "personalModelIds":["glm-5.4"]}}]}}}))
     metadata=provider_metadata(p)
     assert metadata["endpoint_scheme"]=="http" and metadata["provider_name"]=="Snapmaker"
     assert "test-placeholder-secret" not in json.dumps(metadata)
 
 
-@pytest.mark.parametrize("fault", [None,"provider","tools"])
+@pytest.mark.parametrize("fault", [None,"provider","model","tools"])
 def test_native_model_io_requires_actual_vendor_and_exact_gui_toolset(tmp_path, fault):
     from harness.native_save_policy import NATIVE_TOOLS
     root=tmp_path/"storage/cli/rollout";root.mkdir(parents=True)
     data={"request":{"toolNames":["mcp__windows_mcp__"+n for n in NATIVE_TOOLS]},
-          "response":{"usage":{}},"model":{"providerId":"new-provider","modelId":"glm-5.3-flash"}}
+          "response":{"usage":{}},"model":{"providerId":"new-provider","modelId":"glm-5.4"}}
     if fault=="provider":data["model"]["providerId"]="other"
+    if fault=="model":data["model"]["modelId"]="glm-5.3-flash"
     if fault=="tools":data["request"]["toolNames"].append("Bash")
     (root/"model-io-test.jsonl").write_text(json.dumps(data)+"\n")
     if fault:
@@ -124,11 +128,19 @@ rl.on('line',line=>{
  }
  if(q.method==='runtime/capabilities')result={};
  if(q.method==='session/create'){
-  if(q.params.model?.options?.reasoningLevel!=='low'||q.params.thoughtLevel!=='low'){
-   process.stdout.write(JSON.stringify({id:q.id,error:{code:-32602,message:'Both model reasoning and thoughtLevel are required'}})+'\n');return;
+  if('model' in q.params||'thoughtLevel' in q.params){
+   process.stdout.write(JSON.stringify({id:q.id,error:{code:-32602,message:'Create must use registered default preferences'}})+'\n');return;
   }
   process.stdout.write(JSON.stringify({id:'preferences',method:'session/requestRuntimePreferences',params:{}})+'\n');
-  result={session:{sessionId:'sess_test'},settings:{model:{current:{providerId:fault==='wrong_model'?'other':'new-provider',modelId:'glm-5.3-flash'}},thoughtLevel:{current:'low'}}};
+  const current={providerId:fault==='wrong_model'?'other':'new-provider',modelId:fault==='switch_model'?'older':'glm-5.4'};
+  const available=fault==='switch_model'?[{ref:{providerId:'new-provider',modelId:'glm-5.4'},reasoning:{defaultLevel:'enabled',levels:[{value:'enabled'}]}}]:[];
+  result={session:{sessionId:'sess_test'},settings:{model:{current,available},thoughtLevel:{current:'enabled'}}};
+ }
+ if(q.method==='session/setModel'){
+  if(q.params.sessionId!=='sess_test'||q.params.persistAsWorkspaceLastUsed!==false||q.params.model?.options?.reasoningLevel!=='enabled'){
+   process.stdout.write(JSON.stringify({id:q.id,error:{code:-32602,message:'Session model must use the registered default effort'}})+'\n');return;
+  }
+  result={settings:{model:{current:q.params.model},thoughtLevel:{current:'enabled'}}};
  }
  if(q.method==='session/send' && fault!=='tool_error'){
   process.stdout.write(JSON.stringify({id:'permission',method:'interaction/requestPermission',params:{toolName:'Bash',input:{command:'DO_NOT_EXECUTE'}}})+'\n');
@@ -141,7 +153,7 @@ rl.on('close',()=>process.exit(0));
 """
 
 
-@pytest.mark.parametrize("fault", ["wrong_model","permission","tool_error"])
+@pytest.mark.parametrize("fault", ["wrong_model","permission","tool_error","switch_model"])
 def test_protocol_client_stops_model_drift_and_denies_non_gui_permission(tmp_path, monkeypatch, fault):
     node=shutil.which("node")
     if not node:pytest.skip("Node runtime unavailable")

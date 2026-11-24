@@ -17,8 +17,8 @@ FAKE_SERVER = r"""
 const fs=require('node:fs');
 const path=require('node:path');
 const config=JSON.parse(fs.readFileSync(path.join(process.cwd(),'fake-config.json'),'utf8'));
-const selected={providerId:'new-provider',modelId:'glm-5.3-flash'};
-const settings={model:{current:selected},thoughtLevel:{current:'low'}};
+const selected={providerId:'new-provider',modelId:'glm-5.4'};
+const settings={model:{current:selected},thoughtLevel:{current:'enabled'}};
 fs.writeFileSync(path.join(process.cwd(),'fake-concurrency.txt'),process.env.ZCODE_MAX_TOOL_CONCURRENCY??'');
 const rl=require('node:readline').createInterface({input:process.stdin});
 let polls=0;

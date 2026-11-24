@@ -10,8 +10,8 @@ const spec=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
 const names=spec.tools??['Snapshot','Screenshot','Click','Type','Shortcut','Wait','ControlStatus'];
 const allowed=new Set(names.map(n=>'mcp__windows_mcp__'+n));
 const authorityMode=spec.authority_protocol==='native-authority-1';
-const serialScheduler=authorityMode&&typeof spec.scenario==='string'&&spec.scenario.startsWith('uia_');
-const report={actor:'zcode',provider_id:'new-provider',model_id:'glm-5.3-flash',error:null,
+const serialScheduler=authorityMode&&typeof spec.scenario==='string'&&(spec.scenario.startsWith('uia_')||spec.scenario.startsWith('compare_'));
+const report={actor:'zcode',provider_id:'new-provider',model_id:'glm-5.4',error:null,
  native_tool_calls:[],permissions:[],event_counts:{},stage:'starting'};
 let lastProgress;
 function saveProgress(){
@@ -159,9 +159,9 @@ let session,finished=false;
 try{
  if(diagnosticMode&&!authorityMode)throw new Error('native_diagnostic_authority_required');
  await request('runtime/capabilities',{});
- const snapshot=await request('session/create',{
+ let snapshot=await request('session/create',{
   workspace:{workspacePath:spec.workspace,workspaceKey:'orca-native-'+spec.run_id},
-  model:{providerId:report.provider_id,modelId:report.model_id,options:{reasoningLevel:'low'}},thoughtLevel:'low',
+  // ZCode retains GLM-5.4's registered reasoning settings on its default-session path.
   mode:'guarded',persistence:'deferred',titleGenerationEnabled:false,
   toolAllowlist:[...allowed],dynamicWorkflowEnabled:false,offPeakToolEnabled:false,
   mcpServers:[{name:'windows_mcp',scope:'user',command:spec.python,
@@ -169,11 +169,22 @@ try{
     ...(spec.scenario&&spec.scenario!=='base'?['--scenario',spec.scenario]:[]),
     ...(authorityMode?['--authority-log',spec.authority_log]:[])],env:[],isolation:'session',protocolVersion:'legacy',alwaysLoad:true,timeoutMs:60000}]
  });
- report.selection=snapshot.settings?.model?.current;
- report.thought_level=snapshot.settings?.thoughtLevel?.current;
- if(report.selection?.providerId!==report.provider_id||report.selection?.modelId!==report.model_id||report.thought_level!=='low')throw new Error('selected_model_mismatch');
  session=snapshot.session?.sessionId;
  if(!session)throw new Error('session_id_missing');
+ const matchesModel=ref=>ref?.providerId===report.provider_id&&ref?.modelId===report.model_id;
+ if(!matchesModel(snapshot.settings?.model?.current)){
+  const registered=snapshot.settings?.model?.available?.find(model=>matchesModel(model.ref));
+  const reasoningLevel=registered?.reasoning?.defaultLevel;
+  if(!reasoningLevel||!registered.reasoning.levels?.some(level=>level.value===reasoningLevel))
+   throw new Error('selected_model_mismatch');
+  snapshot=await request('session/setModel',{sessionId:session,persistAsWorkspaceLastUsed:false,
+   model:{providerId:report.provider_id,modelId:report.model_id,options:{reasoningLevel}}});
+  if(snapshot.settings?.model?.current?.options?.reasoningLevel!==reasoningLevel)
+   throw new Error('selected_reasoning_mismatch');
+ }
+ report.selection=snapshot.settings?.model?.current;
+ report.thought_level=snapshot.settings?.thoughtLevel?.current;
+ if(!matchesModel(report.selection))throw new Error('selected_model_mismatch');
  report.session_id=session;report.stage='ready';saveProgress();
  // Newer app-server builds start the turn immediately and snapshot the tool
  // registry as-is: run 6165a41c went out with toolNames=[] because the

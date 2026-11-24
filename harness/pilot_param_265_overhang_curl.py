@@ -15,9 +15,20 @@ PrintConfig.cpp:1245) on the Speed tab's 'Overhang speed' group
 (Tab.cpp:2438), fixture 0 -> 1 via its checkbox. Slow-down changes speeds,
 not the layer grid: 68 x 0.4 / 27.2."""
 from .param_case_lib import make_verify
+from .param_comparison import make_comparison_verify
 
 CASE_ID = "param_265_overhang_curl"
 GOAL = ("Enable slow down for curled perimeters. Preserve the cube geometry, "
         "its placement, material assignment and every other setting.")
 VALUES = {"slowdown_for_curled_perimeters": "1"}
 verify_business = make_verify(CASE_ID, VALUES, schedule={"layer_count": 68, "last_z": "27.2"})
+
+COMPARISON_GOAL = (
+    "On the FDM test model, set filament slot 1 PLA forced cooling for overhangs and bridges "
+    "to enabled, its cooling overhang threshold to 10%, and its overhang fan speed to 80%. "
+    "Enable process Slow down for curled perimeters. Preserve model geometry and placement, "
+    "material assignment, all other filament slots and unrelated settings."
+)
+verify_comparison = make_comparison_verify("265", VALUES, {
+    "enable_overhang_bridge_fan": "1", "overhang_fan_threshold": "10%", "overhang_fan_speed": "80%",
+})

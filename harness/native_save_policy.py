@@ -23,6 +23,15 @@ EDIT_NUMBER = r"(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?"
 CANVAS_NUMBER = r"(?:[1-9][0-9]{0,2}(?:\.[0-9]{1,4})?|0\.(?=[0-9]{0,3}[1-9])[0-9]{1,4})"
 
 
+def edit_number(scenario):
+    # The comparison only extends native numeric input for named case targets.
+    if scenario in {"compare_276_quality", "compare_276_strength"}:
+        return "(?:" + EDIT_NUMBER + "|500|700)"
+    if scenario in {"compare_265_quality", "compare_265_strength"}:
+        return "(?:" + EDIT_NUMBER + "|10%)"
+    return EDIT_NUMBER
+
+
 def native_tools(scenario):
     if scenario in UIA_MIX_SCENARIOS:
         # The pinned upstream server always retains ControlStatus.
@@ -152,7 +161,7 @@ def scoped_tool_schemas(tools, output_path, scenario="base"):
         return result
     loc = {"type": "array", "items": {"type": "integer", "minimum": 0, "maximum": 1919},
            "minItems": 2, "maxItems": 2, "description": "Desktop [x,y] as two JSON integers. x<1920 and y<1080. Do not stringify."}
-    numeric = {"type": "string", "pattern": "^" + EDIT_NUMBER + "$"}
+    numeric = {"type": "string", "pattern": "^" + edit_number(scenario) + "$"}
     if scenario in CANVAS_SCENARIOS:
         numeric = {"type": "string", "pattern": "^" + CANVAS_NUMBER + "$"}
     fields = {
@@ -291,7 +300,7 @@ def validate_input(name, args, output_path, scenario="base"):
             text = args.get("text")
             from .canvas_input import numeric_text_allowed
             numeric_ok = numeric_text_allowed("pilot_transform", text) if scenario in CANVAS_SCENARIOS else bool(
-                type(text) is str and re.fullmatch(EDIT_NUMBER, text))
+                type(text) is str and re.fullmatch(edit_number(scenario), text))
             if (type(text) is not str or len(text) > 1024 or not (text == output_path or numeric_ok)):
                 raise ValueError("native_type_text_rejected")
             if (set(args) - {"loc", "text", "clear", "caret_position", "press_enter"}

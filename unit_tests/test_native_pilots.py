@@ -15,7 +15,10 @@ from unit_tests.test_native_save import native_evidence
 def test_pilots_leave_existing_stability_denominator_and_legacy_contracts_unchanged():
     assert len(BUSINESS) == 8 and not (set(BUSINESS) & set(PILOTS))
     assert contract_digest(native_contract()) == "ee2dd9ed8b78898962450b9f3c540ad41ad8e19196ce8bc4ef3f25a7d33e2517"
-    assert contract_digest(native_contract("zcode")) == "63877b2dd26fa6564e843c32cba40c5cc4e54cd940f3c18b412c1c55e21c938c"
+    legacy_digest = "63877b2dd26fa6564e843c32cba40c5cc4e54cd940f3c18b412c1c55e21c938c"
+    assert contract_digest(native_contract("zcode", legacy_zcode=True)) == legacy_digest
+    assert native_spec(legacy_digest) == ("zcode", "base")
+    assert contract_digest(native_contract("zcode")) != legacy_digest
 
 
 @pytest.mark.parametrize("scenario", tuple(PILOTS))
@@ -81,7 +84,7 @@ def test_shared_custody_envelope_dispatches_only_the_bound_business_oracle(nativ
                  gcode_sha256=hashlib.sha256(gcode).hexdigest())
     (root/"proof.json").write_text(json.dumps(proof))
     host = json.loads((root/"host_done.json").read_text())
-    host.update(actor="zcode", provider_id="new-provider", model_id="glm-5.3-flash",
+    host.update(actor="zcode", provider_id="new-provider", model_id="glm-5.4",
                 guard_checked=True, sources_unchanged=True, toolset_verified=True,
                 scenario=scenario, contract_sha256=digest if fault != "host_contract" else "0"*64)
     (root/"host_done.json").write_text(json.dumps(host))

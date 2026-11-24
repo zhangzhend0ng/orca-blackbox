@@ -1,7 +1,7 @@
 """Finite, trusted setup registry. These routes are never sent to the model."""
 from __future__ import annotations
 
-from .agent_protocol import BASELINES, FIXTURE_SUFFIXES, STD_SUFFIX, base_scenario
+from .agent_protocol import BASELINES, FIXTURE_SUFFIXES, MAINTENANCE_TRIALS, STD_SUFFIX, base_scenario
 from .native_diagnostic_recovery import COMMIT_SCENARIO, SCENARIO as DIAGNOSTIC_SCENARIO
 from .native_pairwise import PAIR_CASES, PAIR_ENUM_CASES, PAIR_MOVE_CASES
 from .model_move_pilot import SCENARIO as BOUND_MODEL_MOVE
@@ -256,12 +256,16 @@ def std_twins(names):
 
 def scenario_names():
     """Every name a command line may take: the registered scenarios and their twins."""
-    return (*SCENARIOS, *std_twins(SCENARIOS))
+    return (*SCENARIOS, *std_twins(SCENARIOS), *MAINTENANCE_TRIALS)
 
 
 def scenario_spec(actor, scenario):
     # A suffixed name has its base's tab spec: only the fixture differs.
     base = std_base(scenario)
+    if scenario in MAINTENANCE_TRIALS:
+        if actor not in {"script", "zcode"}:
+            raise ValueError("maintenance_trial_actor")
+        return MAINTENANCE_TRIALS[scenario][2], None
     if actor == "script":
         if base not in SCRIPT_SCENARIOS:
             raise ValueError("native_script_scenario_not_registered")

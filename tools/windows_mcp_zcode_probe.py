@@ -17,6 +17,7 @@ from harness.native_diagnostic_recovery import COMMIT_SCENARIO, DIAGNOSTIC_SCENA
 from harness.native_authority import RECOVERY_SCENARIOS
 from harness.native_matrix import (CANVAS_REPLACE_SCENARIOS, CANVAS_SCENARIOS, SAVE_CLEAR_SCENARIOS,
     UIA_HYBRID_SCENARIOS, UIA_SAVE_SCENARIO)
+from harness.native_save_session import ZCODE_MODEL_ID, ZCODE_PROVIDER_ID
 from harness.win32_job import OwnedJobProcess
 from runner.windows_mcp_bridge import GuestHTTP
 
@@ -24,7 +25,7 @@ from runner.windows_mcp_bridge import GuestHTTP
 def provider_metadata(path):
     data = json.loads(path.read_text(encoding="utf-8-sig"))
     rows = data["config"]["providerConfigRules"]["providerRules"]
-    row = next(r for r in rows if r["providerId"] == "new-provider")
+    row = next(r for r in rows if r["providerId"] == ZCODE_PROVIDER_ID)
     config = row["config"]
     endpoint = urlsplit(config["api"]["baseUrl"])
     if (row.get("providerName") != "Snapmaker" or config["api"]["type"] != "anthropic-messages"
@@ -32,9 +33,9 @@ def provider_metadata(path):
             or endpoint.port not in (None, 80) or endpoint.path.rstrip("/") != "/v1"
             or endpoint.query or endpoint.fragment or endpoint.username or endpoint.password
             or config["access"]["type"] != "api-key" or not config["access"].get("apiKey")
-            or "glm-5.3-flash" not in config["personalModelIds"]):
+            or ZCODE_MODEL_ID not in config["personalModelIds"]):
         raise ValueError("zcode_snapmaker_provider_changed")
-    return {"provider_id": "new-provider", "provider_name": "Snapmaker", "model_id": "glm-5.3-flash",
+    return {"provider_id": ZCODE_PROVIDER_ID, "provider_name": "Snapmaker", "model_id": ZCODE_MODEL_ID,
             "endpoint_scheme": endpoint.scheme, "endpoint_host": endpoint.hostname, "protocol": "anthropic-messages"}
 
 
@@ -52,7 +53,7 @@ def model_io_summary(root, scenario="base"):
                 if not all(k in data for k in ("request", "response", "model")):
                     continue
             model = data["model"]
-            if model.get("providerId") != "new-provider" or model.get("modelId") != "glm-5.3-flash":
+            if model.get("providerId") != ZCODE_PROVIDER_ID or model.get("modelId") != ZCODE_MODEL_ID:
                 raise ValueError("zcode_native_model_changed")
             names = data["request"].get("toolNames")
             if type(names) is not list or set(names) != allowed or len(names) != len(allowed):
@@ -72,7 +73,8 @@ def main(argv=None):
     parser.add_argument("--scenario", choices=tuple(s for s in scenario_names() if s not in {"canvas_probe", "authority_probe"}), default="base")
     parser.add_argument("--goal-only", action="store_true", help="Omit the guided UI route in a UIA exploration.")
     args = parser.parse_args(argv)
-    if args.goal_only and args.scenario not in UIA_HYBRID_SCENARIOS:
+    from harness.agent_protocol import MAINTENANCE_TRIALS
+    if args.goal_only and args.scenario not in UIA_HYBRID_SCENARIOS | MAINTENANCE_TRIALS.keys():
         parser.error("--goal-only requires a UIA hybrid scenario")
     _, disturbance = scenario_spec("zcode", args.scenario)
     from harness.native_pilots import require_pilot_ready
@@ -172,6 +174,11 @@ def main(argv=None):
                       "Once both are registered, use Shortcut ctrl+shift+s, Snapshot, Type the exact assigned full path "
                       + output + " through the observed Edit target, verify the returned value, click the observed "
                       "Save button, and Snapshot to confirm closure. Finish your turn. The verifier will reopen and slice.")
+        elif args.scenario in MAINTENANCE_TRIALS:
+            if not args.goal_only:
+                raise ValueError("maintenance_trial_requires_goal_only")
+            # The default native tool instructions above contain no business
+            # click sequence. The target and save path come from the contract.
         elif args.goal_only:
             prompt = ("Use only Windows-MCP in the isolated Snapmaker Orca window. " + business_goal(args.scenario)
                       + " The assigned output path is " + output + ". Save the complete project there as a 3MF. "
@@ -278,6 +285,7 @@ def main(argv=None):
         actor = json.loads((root/"actor.json").read_text(encoding="utf-8"))
         report["native_tool_calls"] = actor.get("native_tool_calls", [])
         report["selection"] = actor.get("selection")
+        report["thought_level"] = actor.get("thought_level")
         if code or actor.get("error"):
             raise RuntimeError("zcode_actor_failed:"+str(actor.get("error")))
         if args.scenario in DIAGNOSTIC_SCENARIOS:
@@ -321,7 +329,7 @@ def main(argv=None):
                 "host_active_processes": report.get("host_job", {}).get("active_processes", 0),
                 "host_forced": report.get("host_job", {}).get("forced_termination", False),
                 "tool_count": len(report["native_tool_calls"]), "actor": "zcode",
-                "provider_id": "new-provider", "model_id": "glm-5.3-flash",
+                "provider_id": ZCODE_PROVIDER_ID, "model_id": ZCODE_MODEL_ID,
                 "guard_checked": report["guard_checked"], "sources_unchanged": report["sources_unchanged"],
                 "toolset_verified": report["toolset_verified"]}
             if "expected_contract" in locals():

@@ -248,7 +248,13 @@ def worker(run_id, actor="codex", scenario="base"):
         output = root / "projects/0001.3mf"
         from harness.native_matrix import CANVAS_SCENARIOS, RECORDED_SCENARIOS, REPLAY_SOURCES, UIA_HYBRID_SCENARIOS, UIA_SAVE_SCENARIO, scenario_spec
         tab, disturbance = scenario_spec(actor, scenario)
-        if scenario.startswith("uia_param_"):
+        from harness.agent_protocol import MAINTENANCE_TRIALS
+        if scenario in MAINTENANCE_TRIALS:
+            from harness.process_panel import click_tab
+            word = {"Quality": "height", "Strength": "loops"}[tab]
+            if not click_tab(ui.app, tab, word):
+                raise RuntimeError("maintenance_initial_tab_unverified")
+        elif scenario.startswith("uia_param_"):
             # 2026-11-22: param scenarios switch tabs themselves inside
             # run_ops (param_case_lib click_tab, OCR-based). The eager
             # pre-click by exact child caption times out for the Speed tab

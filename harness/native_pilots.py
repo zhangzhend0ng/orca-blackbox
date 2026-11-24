@@ -137,7 +137,20 @@ def pilot_module(scenario):
     return cases[base] if type(cases) is dict and base in cases else loaded
 
 
+COMPARISON_ROWS = {
+    "compare_265_quality": "265", "compare_265_strength": "265",
+    "compare_276_quality": "276", "compare_276_strength": "276",
+}
+
+
+def comparison_baseline(scenario, harvest_root):
+    from .param_comparison import comparison_baseline as read_baseline
+    return read_baseline(COMPARISON_ROWS[scenario], harvest_root)
+
+
 def business_goal(scenario):
+    if scenario in COMPARISON_ROWS:
+        return pilot_module(scenario).COMPARISON_GOAL
     if base_scenario(scenario) in {**PILOTS, **TRIALS, **CONTROLS}:
         return pilot_module(scenario).GOAL
     from .native_matrix import SCENARIOS
@@ -147,5 +160,9 @@ def business_goal(scenario):
             "and the cube model. Do not change other settings.")
 
 
-def verify_business(scenario, project, fixture, gcode, *, cancelled=lambda: False):
-    return pilot_module(scenario).verify_business(project, fixture, gcode, cancelled=cancelled)
+def verify_business(scenario, project, fixture, gcode, *, baseline_gcode=None, cancelled=lambda: False):
+    pilot = pilot_module(scenario)
+    if scenario in COMPARISON_ROWS:
+        return pilot.verify_comparison(project, fixture, gcode, baseline_gcode=baseline_gcode,
+                                       cancelled=cancelled)
+    return pilot.verify_business(project, fixture, gcode, cancelled=cancelled)

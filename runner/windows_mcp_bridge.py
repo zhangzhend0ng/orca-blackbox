@@ -259,7 +259,7 @@ def main():
             with args.authority_log.open("a", encoding="utf-8") as stream:
                 stream.write(json.dumps(sidecar)+"\n")
                 stream.flush()
-            terminal = args.scenario.startswith("uia_") and receipt["decision"] == "fatal"
+            terminal = args.scenario.startswith(("uia_", "compare_")) and receipt["decision"] == "fatal"
         print(json.dumps(response, separators=(",", ":")), flush=True)
         if terminal:
             return

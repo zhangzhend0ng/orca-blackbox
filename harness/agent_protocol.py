@@ -118,9 +118,23 @@ LAYER_FIELDS_BY_FIXTURE = {LAYER_FIXTURE_SHA256: CUBE_LAYER_FIELDS,
 LAYER_FIELDS_BY_FIXTURE.update({sha: STD_LAYER_FIELDS for _file, sha, _key in MODEL_FIXTURES.values()})
 
 
+# Matched maintenance trials. Both actors open identical model bytes; only
+# the verified Process tab changes between the two starts of each case.
+MAINTENANCE_TRIALS = {
+    f"compare_{row}_{tab.lower()}": (scenario, suffix, tab)
+    for row, scenario, suffix in (
+        (265, "uia_param_overhang_curl", "_fdmt"),
+        (276, "uia_param_speed_limits", "_std02"),
+    )
+    for tab in ("Quality", "Strength")
+}
+
+
 def base_scenario(name):
     """The scenario a suffixed name runs as: the name without its fixture suffix."""
     if type(name) is str:
+        if name in MAINTENANCE_TRIALS:
+            return MAINTENANCE_TRIALS[name][0]
         for suffix in sorted(FIXTURE_SUFFIXES, key=len, reverse=True):
             if name.endswith(suffix) and len(name) > len(suffix):
                 return name[:-len(suffix)]
@@ -131,6 +145,8 @@ def fixture_suffix(name):
     """The fixture suffix `name` carries ("" when it opens the cube)."""
     if type(name) is not str:
         return ""
+    if name in MAINTENANCE_TRIALS:
+        return MAINTENANCE_TRIALS[name][1]
     return name[len(base_scenario(name)):]
 
 
