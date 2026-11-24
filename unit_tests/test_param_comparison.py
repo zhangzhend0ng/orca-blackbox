@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from harness import pilot_param_276_speed_limits
@@ -83,3 +85,37 @@ def test_comparison_checked_does_not_award_full_business_pass(detail, expected):
     assert verdict["business_status"] == expected
     assert verdict["comparison_checked"] is (expected != "UNVERIFIED")
     assert bool(verdict["unmet_expectations"]) is (expected != "PASS")
+
+
+def test_265_saved_fan_speed_uses_integer_percent_without_suffix(monkeypatch):
+    from harness import pilot_param_265_overhang_curl as pilot
+    from harness import param_comparison as comparison
+
+    original = {"enable_overhang_bridge_fan": ["1", "1"],
+                "overhang_fan_threshold": ["50%", "50%"],
+                "overhang_fan_speed": ["100", "100"],
+                "slowdown_for_curled_perimeters": "0"}
+    saved = {**original, "overhang_fan_threshold": ["10%", "50%"],
+             "overhang_fan_speed": ["80", "100"],
+             "slowdown_for_curled_perimeters": ["1"]}
+    monkeypatch.setattr(comparison, "_archive", lambda raw, cancelled: {
+        comparison.SETTINGS_MEMBER: json.dumps(saved if raw == b"saved" else original).encode()})
+    gcode = b"""M83
+T0
+G1 X0 Y0
+;Z:0.45
+;TYPE:Outer wall
+G1 F6000
+G1 X10 E.5
+; CONFIG_BLOCK_START
+; enable_overhang_bridge_fan = 1,1
+; overhang_fan_threshold = 10%,50%
+; overhang_fan_speed = 80,100
+; slowdown_for_curled_perimeters = 1
+; CONFIG_BLOCK_END
+"""
+    result = pilot.verify_comparison(b"saved", b"fixture", gcode)
+    assert result["target_values"]["overhang_fan_speed"] == "80"
+    saved["overhang_fan_speed"][0] = "80%"
+    with pytest.raises(_InvalidEvidence, match="param_slot_value_or_preservation:overhang_fan_speed"):
+        pilot.verify_comparison(b"saved", b"fixture", gcode)

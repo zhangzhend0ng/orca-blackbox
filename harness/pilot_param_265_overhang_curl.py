@@ -30,5 +30,5 @@ COMPARISON_GOAL = (
     "material assignment, all other filament slots and unrelated settings."
 )
 verify_comparison = make_comparison_verify("265", VALUES, {
-    "enable_overhang_bridge_fan": "1", "overhang_fan_threshold": "10%", "overhang_fan_speed": "80%",
+    "enable_overhang_bridge_fan": "1", "overhang_fan_threshold": "10%", "overhang_fan_speed": "80",
 })
