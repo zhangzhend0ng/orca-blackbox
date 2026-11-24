@@ -78,6 +78,10 @@ MODEL_FIXTURES = {
                "bb3609710d30e1ea9ba08a9b2937a6e0692effda1213bd56256be8c2e4dc5489", "bunny"),
     "_hell": ("feishu_std_hell.3mf",
               "b69b63df1973afad4155c89f953a799783b91c53840f77d8915cdf1825dd30ca", "hell"),
+    "_tol": ("feishu_std_tolerance.3mf",
+             "1352876740f31948885542cbfdf3ed4fd92d912de59205aca3ca8036a455b607", "tol"),
+    "_text": ("feishu_std_text.3mf",
+              "5a88c4caed4463db4d76c16ac2efb80951aa91021ad664019c9560b66fc1dd04", "text"),
 }
 FIXTURE_SUFFIXES.update({suffix: ("fixtures/" + file, sha)
                          for suffix, (file, sha, _key) in MODEL_FIXTURES.items()})
