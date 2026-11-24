@@ -92,7 +92,9 @@ for suffix, items in sorted(plan.items(), key=lambda kv: (-len(kv[1]), str(kv[0]
         rec = feishu[number]
         row = {"row": number, "fixture": suffix or "", "scenario": scenario or "", "run": "", "verdict": "", "layers": "",
                "first_layer_feeds": "", "other_layer_feeds": "", "travel": "", "tools": "", "arcs": "",
-               "support_bridge_blocks": "", "expected": rec["预期结果"].replace("\n", " / ")}
+               "support_bridge_blocks": "", "outer_wall_all_feeds": "", "directions": "", "feature_z": "", "fan": "",
+               "tools_by_feature": "", "special": "",
+               "expected": rec["预期结果"].replace("\n", " / ")}
         if not scenario:
             tally["no_scenario"].append(number)
             out.write("#%d  (no scenario: %s)\n" % (number, rec["用例标题"][:30]))
@@ -119,6 +121,31 @@ for suffix, items in sorted(plan.items(), key=lambda kv: (-len(kv[1]), str(kv[0]
                     row["support_bridge_blocks"] = "support %s, interface %s, bridge %s, overhang wall %s" % (
                         blocks(facts, "Support"), blocks(facts, "Support interface"), blocks(facts, "Bridge"),
                         blocks(facts, "Overhang wall"))
+                    # what the rows' expected results 2 and 3 talk about: every feed of the
+                    # outer walls (the overhang bands are interpolated), the direction of
+                    # bridges and infill, where support starts and ends, the fan's steps
+                    wall = facts["features"].get("Outer wall")
+                    row["outer_wall_all_feeds"] = " ".join("%s x%d" % (f, n) for f, n in wall["feeds"]["other"]) if wall else ""
+                    row["directions"] = "; ".join(
+                        "%s: %s" % (name[:10], facts["features"][name]["angle_top"])
+                        for name in ("Bridge", "Internal Bridge", "Sparse infill", "Outer wall", "Support")
+                        if name in facts["features"] and facts["features"][name]["angle_top"])
+                    row["feature_z"] = "; ".join(
+                        "%s: %s..%s on %d layers" % (name[:10], f["z"][0], f["z"][1], f["layers_with"])
+                        for name in ("Support", "Support interface", "Bridge", "Overhang wall")
+                        for f in (facts["features"].get(name),) if f)
+                    row["tools_by_feature"] = "; ".join(
+                        "%s %s" % (name[:10], " ".join("T%s %d" % (t, v) for t, v in f["e_by_tool"].items()))
+                        for name in ("Support", "Support interface", "Prime tower", "Bridge", "Sparse infill")
+                        for f in (facts["features"].get(name),) if f and f["e_by_tool"])
+                    row["special"] = "; ".join(
+                        "%s %s blocks %s E/mm %s" % (name, facts["features"][name]["feed"]["other"],
+                                                     facts["features"][name]["blocks"], facts["features"][name]["e_per_mm"])
+                        for name in ("Ironing", "Skirt", "Brim", "Prime tower", "Support", "Support interface")
+                        if name in facts["features"]) + ("; wipe %d moves %s" % (facts["wipe"]["moves"], facts["wipe"]["feed"]) if facts["wipe"]["moves"] else "")
+                    row["fan"] = "%s | steps %s" % (
+                        " ".join("%s x%d" % kv for kv in sorted(facts["fan"].items())),
+                        " ".join("%d:%s" % (l, s) for l, s in facts["fan_changes"][:16]))
                 if verdict == "SHADOW":
                     tally["shadow"].append(number)
                 else:
@@ -128,7 +155,10 @@ for suffix, items in sorted(plan.items(), key=lambda kv: (-len(kv[1]), str(kv[0]
                     out.write("     layers %s | tools %s | arcs %s | %s\n" % (
                         row["layers"], row["tools"], row["arcs"], row["support_bridge_blocks"]))
                     out.write("     first layer: %s\n     travels: %s\n" % (row["first_layer_feeds"], row["travel"]))
-                    out.write("     other layers: %s\n" % row["other_layer_feeds"])
+                    out.write("     other layers: %s\n     outer wall, every feed: %s\n     directions: %s\n" % (
+                        row["other_layer_feeds"], row["outer_wall_all_feeds"][:230], row["directions"]))
+                    out.write("     where: %s\n     fan: %s\n     tools by feature: %s\n     special: %s\n" % (
+                        row["feature_z"], row["fan"][:200], row["tools_by_feature"][:300], row["special"][:330]))
         out.write("     飞书预期: %s\n" % row["expected"][:200])
         rows_out.append(row)
 out.write("\nTALLY of the 44 rows: SHADOW on their own model %d | NON_GREEN %d | not run yet %d | no fixture for the model %d | no scenario %d\n" % (

@@ -46,17 +46,22 @@ def _num(text):
 
 def _new_feature():
     return {"blocks": 0, "moves": 0, "feed": {FIRST: {}, OTHER: {}},
-            "e": 0.0, "length": 0.0, "retracts": 0, "primes": 0}
+            "e": 0.0, "length": 0.0, "retracts": 0, "primes": 0,
+            # direction of the extruding moves, 5-degree buckets (a bridge at 0 or
+            # 45 degrees, a seam, an infill direction); which layers and Z the
+            # feature sits on (support from the bed or from the model surface)
+            "angles": {}, "layers_on": set(), "zmin": None, "zmax": None, "e_by_tool": {}}
 
 
 def gcode_facts(path):
     out = {"layers": 0, "z": [], "height": [], "features": {}, "travel": {FIRST: {}, OTHER: {}},
            "wipe": {"moves": 0, "feed": {}, "e": 0.0},
            "arcs": {"extruding": 0, "travel": 0}, "tools": [], "e_by_tool": {},
-           "temps": [], "fan": {}, "fan_aux": {}, "accel": {}, "widths": {},
+           "temps": [], "fan": {}, "fan_aux": {}, "fan_changes": [], "accel": {}, "widths": {},
            "object_labels": 0, "numbered_lines": 0, "verbose_comment_lines": 0,
            "feature_order": []}
     layer = 0
+    z_cur = None
     kind = None
     feed = None
     feed_ok = False
@@ -65,6 +70,7 @@ def gcode_facts(path):
     x = y = None
     tool = None
     wiping = False
+    fan_prev = None
     with open(path, encoding="utf-8", errors="replace") as stream:
         for raw in stream:
             line = raw.split(";", 1)[0].strip()
@@ -81,6 +87,10 @@ def gcode_facts(path):
                 continue
             if raw.startswith(";Z:"):
                 out["z"].append(raw[3:].strip())
+                try:
+                    z_cur = float(raw[3:].strip())
+                except ValueError:
+                    z_cur = None
                 continue
             if raw.startswith(";HEIGHT:"):
                 out["height"].append(raw[8:].strip())
@@ -125,6 +135,11 @@ def gcode_facts(path):
                 aux = "P2" in line
                 table = out["fan_aux"] if aux else out["fan"]
                 table[val] = table.get(val, 0) + 1
+                if not aux and val != fan_prev:
+                    # the part-cooling fan's steps: layer and speed at each change
+                    if len(out["fan_changes"]) < 40:
+                        out["fan_changes"].append([layer, val])
+                    fan_prev = val
                 continue
             if line.startswith("SET_VELOCITY_LIMIT"):
                 found = ACCEL_RE.search(line)
@@ -166,8 +181,19 @@ def gcode_facts(path):
                 feature["length"] += length
                 if feed_ok and feed:
                     feature["feed"][bucket][feed] = feature["feed"][bucket].get(feed, 0) + 1
+                nx, ny = coords.get("X", x), coords.get("Y", y)
+                if nx is not None and ny is not None and x is not None and y is not None \
+                        and (nx != x or ny != y):
+                    angle = int(round((math.degrees(math.atan2(ny - y, nx - x)) % 180.0) / 5.0)) * 5 % 180
+                    feature["angles"][str(angle)] = feature["angles"].get(str(angle), 0) + 1
+                feature["layers_on"].add(layer)
+                if z_cur is not None:
+                    feature["zmin"] = z_cur if feature["zmin"] is None else min(feature["zmin"], z_cur)
+                    feature["zmax"] = z_cur if feature["zmax"] is None else max(feature["zmax"], z_cur)
                 if tool is not None:
                     out["e_by_tool"][str(tool)] = round(out["e_by_tool"].get(str(tool), 0.0) + delta, 3)
+                    # which tool prints which feature (支撑主体使用工具1，接触面使用工具0)
+                    feature["e_by_tool"][str(tool)] = round(feature["e_by_tool"].get(str(tool), 0.0) + delta, 3)
                 if arc:
                     out["arcs"]["extruding"] += 1
             elif moving_xy:
@@ -190,12 +216,33 @@ def gcode_facts(path):
                 y = coords["Y"]
             if e is not None:
                 e_last = e
-    for feature in out["features"].values():
+    for kind, feature in out["features"].items():
         feature["e_per_mm"] = round(feature["e"] / feature["length"], 5) if feature["length"] else None
+        # every feed of the band by move count, not only the four most used: an
+        # overhang band's feeds are interpolated by the real overhang degree
+        feature["feeds"] = {bucket: [[feed, moves] for feed, moves in
+                                     sorted(feature["feed"][bucket].items(), key=lambda kv: -kv[1])][:12]
+                            for bucket in (FIRST, OTHER)}
+        feature["feed_range"] = {
+            bucket: ([min(table, key=float), max(table, key=float)] if table else None)
+            for bucket, table in ((FIRST, feature["feed"][FIRST]), (OTHER, feature["feed"][OTHER]))}
         for bucket in (FIRST, OTHER):
             feature["feed"][bucket] = _ranked(feature["feed"][bucket])
+        total = sum(feature["angles"].values())
+        feature["angle_top"] = ", ".join(
+            "%d deg %d%%" % (int(angle), round(100.0 * n / total))
+            for angle, n in sorted(feature["angles"].items(), key=lambda kv: -kv[1])[:3]) if total else ""
+        del feature["angles"]
+        feature["layers_with"] = len(feature["layers_on"])
+        del feature["layers_on"]
+        feature["z"] = [feature["zmin"], feature["zmax"]]
+        del feature["zmin"], feature["zmax"]
         feature["e"] = round(feature["e"], 3)
         feature["length"] = round(feature["length"], 1)
+    # the travels' every feed by move count, before the four-most-used string
+    out["travel_feeds"] = {bucket: [[feed, moves] for feed, moves in
+                                    sorted(out["travel"][bucket].items(), key=lambda kv: -kv[1])]
+                           for bucket in (FIRST, OTHER)}
     for bucket in (FIRST, OTHER):
         out["travel"][bucket] = _ranked(out["travel"][bucket])
     out["wipe"]["feed"] = _ranked(out["wipe"]["feed"])
@@ -240,6 +287,14 @@ def main():
         print("%-24s blocks %3d moves %5d | first: %-34s | other: %-34s | E/mm %s | retract %d" % (
             kind, row["blocks"], row["moves"], row["feed"][FIRST], row["feed"][OTHER],
             row["e_per_mm"], row["retracts"]))
+        if "--more" in sys.argv:
+            print("     all other-layer feeds (mm/min x moves): %s" % " ".join(
+                "%s x%d" % (f, n) for f, n in row["feeds"][OTHER]))
+            print("     direction %s | on %d layers, Z %s..%s" % (
+                row["angle_top"] or "-", row["layers_with"], row["z"][0], row["z"][1]))
+    if "--more" in sys.argv:
+        print("part-cooling fan steps (layer: speed): %s" % " ".join(
+            "%d:%s" % (l, s) for l, s in facts["fan_changes"][:24]))
     return 0
 
 
