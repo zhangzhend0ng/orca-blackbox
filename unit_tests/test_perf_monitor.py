@@ -366,7 +366,7 @@ def test_session_monitor_records_unexpected_exit_without_losing_terminal_event(t
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows Job integration")
 def test_two_owned_workers_capture_only_their_process_tree(tmp_path):
-    pytest.importorskip("psutil")
+    psutil = pytest.importorskip("psutil")
     from pathlib import Path
     from uuid import uuid4
 
@@ -387,13 +387,21 @@ finally:
     target.wait()
     monitor.stop()
 """
+    # Windows venv launchers create an extra process. This test needs
+    # exactly one worker and one target in each Job.
+    worker_python = sys._base_executable
+    worker_env = os.environ.copy()
+    import_paths = [str(Path(psutil.__file__).resolve().parents[1])]
+    if worker_env.get("PYTHONPATH"):
+        import_paths.append(worker_env["PYTHONPATH"])
+    worker_env["PYTHONPATH"] = os.pathsep.join(import_paths)
     workers = []
     try:
         for label in ("a", "b"):
             output = tmp_path / f"{label}.jsonl"
-            owned = OwnedJobProcess.start([sys.executable, "-B", "-c", script],
+            owned = OwnedJobProcess.start([worker_python, "-B", "-c", script],
                 cwd=Path.cwd(), log_path=tmp_path / f"{label}.log",
-                env={**os.environ, "ORCA_BB_PERF": "1", "ORCA_BB_PERF_JOB": "1",
+                env={**worker_env, "ORCA_BB_PERF": "1", "ORCA_BB_PERF_JOB": "1",
                      "ORCA_BB_PERF_RUN_ID": uuid4().hex, "ORCA_BB_PERF_OUT": str(output)})
             workers.append((owned, output))
         deadline = time.monotonic() + 8

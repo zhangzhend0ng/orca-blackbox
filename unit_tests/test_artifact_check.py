@@ -109,7 +109,7 @@ def test_file_identity_change_before_read_is_unknown(artifact, monkeypatch):
         info = original(fd)
         return SimpleNamespace(st_mode=info.st_mode, st_dev=info.st_dev,
                                st_ino=info.st_ino + 1)
-    monkeypatch.setattr(artifact_check.os, "fstat", replaced)
+    monkeypatch.setattr(artifact_check, "os", SimpleNamespace(fstat=replaced))
     assert check(artifact).detail == "artifact_replaced_before_read"
 
 
