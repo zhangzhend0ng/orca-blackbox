@@ -9,7 +9,7 @@ import sys
 import time
 
 from .agent_business_ui import BusinessUI, GW_OWNER
-from .agent_protocol import ProtocolError, write_json_once
+from .agent_protocol import EXPORT_STABLE_WAIT_S, ProtocolError, write_json_once
 
 PROJECT_PATH = "projects/0001.3mf"
 MAX_PROJECT_BYTES = 16 * 1024 * 1024
@@ -165,7 +165,7 @@ class ProjectUI(BusinessUI):
             settled = value == last[0] and time.monotonic() - since[0] >= 1
             last[0] = value
             return settled
-        self.wait(stable, 60)
+        self.wait(stable, EXPORT_STABLE_WAIT_S)
         self.saved = self._snapshot()
         return {"dialog_hwnd": dialog[3], "edit_hwnd": edit, **self.saved}
 

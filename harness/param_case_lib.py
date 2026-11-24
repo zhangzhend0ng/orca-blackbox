@@ -9,8 +9,8 @@ from decimal import Decimal
 import re
 
 from .agent_layer_verify import analyze_gcode
-from .agent_protocol import (LAYER_FIXTURE_SHA256, SHAPES_FIXTURE_SHA256, STD_FIXTURE_SHA256,
-                             ProtocolError)
+from .agent_protocol import (FIXTURE_SUFFIXES, LAYER_FIXTURE_SHA256, SHAPES_FIXTURE_SHA256,
+                             STD_FIXTURE_SHA256, ProtocolError)
 from .agent_verify import _require
 from .pilot_common import _register_param_change_scope, inspect_preserved_settings
 from .project_3mf import _archive, _json
@@ -20,13 +20,16 @@ from .project_3mf import _archive, _json
 # verify_business does with the G-code's layers on a project saved from it.
 #   True  the fixture the schedules were pinned on: assert the case's schedule
 #   None  no schedule pinned yet: record the measured layers, assert nothing
-# STD_FIXTURE_SHA256 is None pending measurement by uia_param_std_save_only. (Its
-# preset says a 0.25 first layer and 0.20 after: 135 layers / 27.05 is a prediction,
-# not a pin.) The shapes plate holds five objects of three heights: one layer count
-# cannot say what is right for it, so it stays None. A fixture outside this table is
-# refused: no run is judged on a schedule nobody pinned.
-SCHEDULE_BY_FIXTURE = {LAYER_FIXTURE_SHA256: True, STD_FIXTURE_SHA256: None,
-                       SHAPES_FIXTURE_SHA256: None}
+# STD_FIXTURE_SHA256 is None pending a pin of its own: (Its preset says a 0.25
+# first layer and 0.20 after: the baseline measured 135 layers / first 0.25 / last
+# 27.05, VM e9aa6f8e - but the cases' schedules are the cube's numbers, 68 / 27.2,
+# so "True" would assert those.) The shapes plate holds five objects of three
+# heights, the model fixtures other heights again: no layer count is pinned for
+# any of them. Every fixture of agent_protocol.FIXTURE_SUFFIXES is in the table
+# with None; a fixture outside the table is refused: no run is judged on a
+# schedule nobody pinned.
+SCHEDULE_BY_FIXTURE = {LAYER_FIXTURE_SHA256: True}
+SCHEDULE_BY_FIXTURE.update({sha: None for _path, sha in FIXTURE_SUFFIXES.values()})
 
 
 def schedule_for(fixture, schedule):

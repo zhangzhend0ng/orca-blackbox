@@ -4,8 +4,8 @@ from pathlib import Path
 import re
 import sys
 
-from .agent_protocol import (SHAPES_SCENARIO, SUFFIX_TARGETS, STD_SCENARIO, ProtocolError, base_scenario,
-                             fixture_suffix, read_json)
+from .agent_protocol import (BASELINES, SHAPES_SCENARIO, SUFFIX_TARGETS, STD_SCENARIO, ProtocolError,
+                             base_scenario, fixture_suffix, read_json)
 from .native_matrix import (UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO,
     UIA_MIX_RECIPES, UIA_MOVE_LAYER, UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS)
 
@@ -896,12 +896,15 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         ],
         # Save-only controls (2026-11-24): no operation. run_ops still switches
         # Advanced on, then the worker saves, reopens, slices and exports as for
-        # every parameter case. The cube here; the precondition fixture and the
-        # shapes plate in the other two (native_pilots.native_fixture).
+        # every parameter case. The cube here; every other fixture's baseline is
+        # added below from agent_protocol.BASELINES (native_pilots.native_fixture
+        # names the file).
         "uia_param_save_only": [],
         STD_SCENARIO: [],
         SHAPES_SCENARIO: [],
 }
+for _baseline, _case in BASELINES.values():
+    PARAM_OPS.setdefault(_baseline, [])
 
 
 def scenario_ops(scenario):

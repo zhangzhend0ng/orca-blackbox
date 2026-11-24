@@ -1,7 +1,7 @@
 """Finite, trusted setup registry. These routes are never sent to the model."""
 from __future__ import annotations
 
-from .agent_protocol import FIXTURE_SUFFIXES, SHAPES_SCENARIO, STD_SCENARIO, STD_SUFFIX, base_scenario
+from .agent_protocol import BASELINES, FIXTURE_SUFFIXES, STD_SUFFIX, base_scenario
 from .native_diagnostic_recovery import COMMIT_SCENARIO, SCENARIO as DIAGNOSTIC_SCENARIO
 from .native_pairwise import PAIR_CASES, PAIR_ENUM_CASES, PAIR_MOVE_CASES
 from .model_move_pilot import SCENARIO as BOUND_MODEL_MOVE
@@ -87,10 +87,10 @@ SCRIPT_SCENARIOS = (*SCRIPT_COMPARISON_SCENARIOS, *REPLAY_SOURCES, *PAIR_CASES, 
     # Controls (2026-11-24), no operation: open, slice, export, save through the
     # parameter cases' path (run_ops with an empty op list). A review noted 35 other
     # keys differ between the fixture's config and the saved one in each passing case
-    # and that no save-only control was run. The cube here, the precondition fixture
-    # (U1 0.4 nozzle, 0.20mm Standard, PLA) in the second, the five-object shapes
-    # plate in the third.
-    "uia_param_save_only", STD_SCENARIO, SHAPES_SCENARIO)
+    # and that no save-only control was run. The cube here; every other fixture's
+    # baseline (the precondition cube, the shapes plate, the rows' own models on the
+    # precondition settings) is added below from agent_protocol.BASELINES.
+    "uia_param_save_only", *(baseline for baseline, _case in BASELINES.values()))
 UIA_Y_SCENARIOS = ("uia_general_y_quality", "uia_general_y_others")
 UIA_DISTURBANCE_SCENARIO = "uia_general_combo_dialog"
 UIA_GENERALIZATION = ("uia_general_wall", "uia_general_slot2",
@@ -214,18 +214,18 @@ SCENARIOS = {
     "uia_param_gcode_output": ("Others", None),
     "uia_param_exclude_objects": ("Others", None),
     "uia_param_save_only": ("Quality", None),
-    STD_SCENARIO: ("Quality", None),
-    SHAPES_SCENARIO: ("Quality", None),
     "authority_probe": ("Quality", None),
 }
+for _baseline, _case in BASELINES.values():
+    # the save-only baseline of every other fixture (agent_protocol.BASELINES)
+    SCENARIOS[_baseline] = ("Quality", None)
 BUSINESS = ("quality_a", "quality_b", "strength_a", "strength_b", "others_a", "others_b", "save_dialog", "overwrite")
 SAFETY = tuple(k for k in SCENARIOS if k.startswith("safety_"))
 # The `_std02` suffix is defined for the param family (see agent_protocol.base_scenario).
 STD_FAMILY = "uia_param_"
-# The save-only controls name their fixture - the cube's control, the precondition
-# fixture's baseline, the shapes plate's - so they are the param scenarios without a
-# twin.
-STD_UNTWINED = frozenset(("uia_param_save_only", STD_SCENARIO, SHAPES_SCENARIO))
+# The save-only controls name their fixture - the cube's control and every other
+# fixture's baseline - so they are the param scenarios without a twin.
+STD_UNTWINED = frozenset(("uia_param_save_only", *(baseline for baseline, _case in BASELINES.values())))
 
 
 def std_base(scenario):
@@ -241,9 +241,10 @@ def std_base(scenario):
 
 
 def on_std_fixture(scenario):
-    """The scenarios that open another project than the cube's: the two suffixed
+    """The scenarios that open another project than the cube's: the save-only
     baselines and the twins of the param family."""
-    return scenario in (STD_SCENARIO, SHAPES_SCENARIO) or std_base(scenario) != scenario
+    return (any(scenario == baseline for baseline, _case in BASELINES.values())
+            or std_base(scenario) != scenario)
 
 
 def std_twins(names):

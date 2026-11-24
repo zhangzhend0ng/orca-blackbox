@@ -8,7 +8,7 @@ import re
 import sys
 import time
 
-from .agent_protocol import LAYER_FIXTURE, LAYER_FIXTURE_SHA256, ProtocolError, write_json_once
+from .agent_protocol import EXPORT_STABLE_WAIT_S, LAYER_FIXTURE, LAYER_FIXTURE_SHA256, ProtocolError, write_json_once
 from .perf_monitor import finish_session
 
 GW_OWNER = 4  # winuser.h: 2 is GW_HWNDNEXT (Z order), not window ownership.
@@ -333,7 +333,7 @@ class BusinessUI:
                        and time.monotonic() - same_since[0] >= 1)
             last[0] = value
             return settled
-        self.wait(stable, 60)
+        self.wait(stable, EXPORT_STABLE_WAIT_S)
         # Diagnostic (2026-11-24, #296): the exported file may be rewritten
         # by a post-processing step of the app (line numbering in the source
         # trees). ORCA_BB_POST_EXPORT_WAIT=<seconds> keeps the app open that
@@ -344,7 +344,7 @@ class BusinessUI:
         if linger > 0:
             print("[export] lingering %.0f s after the file is stable" % linger, flush=True)
             self.pause(linger)
-            self.wait(stable, 60)
+            self.wait(stable, EXPORT_STABLE_WAIT_S)
         raw = output.read_bytes()
         self.exports += 1
         return {"dialog_hwnd": dialog[3], "edit_hwnd": edit, "path": relative,

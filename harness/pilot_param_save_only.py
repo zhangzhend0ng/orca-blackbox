@@ -5,13 +5,18 @@ export" and is judged on its own values plus "every other setting preserved"
 (pilot_common.inspect_preserved_settings, which admits the reviewed 2.3.6 -> 2.4.0
 representation migrations and nothing else). A 2026-11-24 review of the Mac runs
 noted that 35 other keys differ between the fixture's config and the saved one in
-each passing case, and that no save-only control was run. These two are it:
+each passing case, and that no save-only control was run. These are it:
 
   uia_param_save_only        the cube, fixtures/agent_layer_cube.3mf
-  uia_param_std_save_only    the precondition fixture, fixtures/feishu_std_cube.3mf
+  uia_param_std_save_only    the precondition cube, fixtures/feishu_std_cube.3mf
                              (U1 0.4 nozzle, 0.20mm Standard, PLA)
+  uia_param_shapes_save_only  the five-object shapes plate
+  uia_param_<x>_save_only    one per fixture that carries the rows' own models on
+                             the precondition settings - x in boat, boat2, fdmt,
+                             fdmt2, cubes2, sphere, cyl, bunny, hell
+                             (agent_protocol.BASELINES is the list)
 
-Both run the cases' path with an empty op list (native_script_baseline.PARAM_OPS)
+All run the cases' path with an empty op list (native_script_baseline.PARAM_OPS)
 and are judged by the same make_verify as the cases, with empty VALUES: "values
 preserved / other settings preserved" is the existing rule's verdict. Nothing is
 asserted about the layer schedule. The G-code facts are RECORDED, not judged - the
@@ -39,11 +44,12 @@ from types import SimpleNamespace
 from tools.gcode_feature_speeds import feature_speeds
 
 from .agent_layer_verify import analyze_gcode
+from .agent_protocol import BASELINES
 from .param_case_lib import make_verify
 from .project_3mf import _archive, _json
 
 VALUES = {}
-GOAL = ("Save the loaded project without changing any setting. Preserve the cube geometry, "
+GOAL = ("Save the loaded project without changing any setting. Preserve the models' geometry, "
         "its placement, material assignment and every setting.")
 LIMIT = 120
 SAMPLE = 6          # changed keys shown with their values; the rest by name
@@ -116,17 +122,26 @@ def _control(case_id):
             if len(json.dumps(result, sort_keys=True)) <= DETAIL_ROOM:
                 break
             result["config_changes"][droppable] = "(dropped: over the check's detail bound)"
+        if len(json.dumps(result, sort_keys=True)) > DETAIL_ROOM:
+            # A plate with many features (a 3DBenchy adds overhang, bridge and
+            # internal-bridge blocks) can still be over the bound without the two
+            # dropped parts: keep the twelve features with the most moves.
+            moves = lambda row: sum(int(part.split("x")[-1]) for part in row["other"].split() if "x" in part)
+            keep = sorted(result["feature_speeds"], key=lambda k: -moves(result["feature_speeds"][k]))[:12]
+            result["feature_speeds"] = dict({k: result["feature_speeds"][k] for k in keep},
+                                            other_features="(dropped: over the check's detail bound)")
         return result
 
     return verify_business
 
 
 # One module, the controls: native_pilots.pilot_module hands back the one asked for.
+# The cube's control by hand; one baseline per other fixture from agent_protocol.BASELINES
+# (the precondition cube, the shapes plate, the rows' own models on the precondition
+# settings).
 CASES = {
     "uia_param_save_only": SimpleNamespace(CASE_ID="param_save_only_control", VALUES=VALUES, GOAL=GOAL,
                                            verify_business=_control("param_save_only_control")),
-    "uia_param_std_save_only": SimpleNamespace(CASE_ID="param_std_save_only", VALUES=VALUES, GOAL=GOAL,
-                                               verify_business=_control("param_std_save_only")),
-    "uia_param_shapes_save_only": SimpleNamespace(CASE_ID="param_shapes_save_only", VALUES=VALUES, GOAL=GOAL,
-                                                  verify_business=_control("param_shapes_save_only")),
 }
+for _baseline, _case in BASELINES.values():
+    CASES[_baseline] = SimpleNamespace(CASE_ID=_case, VALUES=VALUES, GOAL=GOAL, verify_business=_control(_case))

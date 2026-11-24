@@ -13,6 +13,12 @@ MAX_RUNTIME_S = 900
 LAYER_CASE = "m3d_param_reslice"
 PROJECT_CASE = "m3g_export_3mf"
 LAYER_FIXTURE = "fixtures/agent_layer_cube.3mf"
+# How long the engine waits for the exported G-code to appear and stop changing.
+# 60 s was enough for the 27 mm cube (the file is there in about two seconds); the
+# Feishu rows' own models on the model fixtures (a 3DBenchy of 225,000 triangles,
+# a 118 mm bunny) slice longer, and a wait that is too short reads as a failed
+# case although nothing is wrong with it (2026-11-24).
+EXPORT_STABLE_WAIT_S = 180
 LAYER_FIXTURE_SHA256 = "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef"
 # The Feishu process cases' precondition ("U1 0.4mm喷嘴、PLA耗材和0.20mm标准工艺预设"):
 # the same cube on the U1 0.4 nozzle, 0.20mm Standard, PLA. Built and pinned by
@@ -46,9 +52,47 @@ SHAPES_SCENARIO = "uia_param_shapes_save_only"
 # suffix -> the fixture a `<base><suffix>` scenario opens
 FIXTURE_SUFFIXES = {STD_SUFFIX: (STD_FIXTURE, STD_FIXTURE_SHA256),
                     SHAPES_SUFFIX: (SHAPES_FIXTURE, SHAPES_FIXTURE_SHA256)}
+# The rows' own models on the precondition settings (tools/build_model_fixtures.py,
+# 2026-11-24): the meshes are the slicer's built-in "add model" files
+# (resources/handy_models) or generated primitives; the project settings are
+# STD_FIXTURE's byte for byte, so the app keeps them as it keeps the cube's.
+#   suffix -> (file under fixtures/, sha256, key of the baseline scenario)
+# The hashes were read off the builder's output and re-checked on a rebuild that
+# rewrote nothing; tools/test_param_engine_sim.py checks the bytes against them.
+MODEL_FIXTURES = {
+    "_boat": ("feishu_std_boat.3mf",
+              "d550f8ac10adfbea6fcfc61be46d76f07515384e20225d425e42eb49d50b4d65", "boat"),
+    "_boat2": ("feishu_std_boat2.3mf",
+               "e2e5bfa332259810823dee58953f9af5b617883772b146784bb061b0251a21fc", "boat2"),
+    "_fdmt": ("feishu_std_fdmt.3mf",
+              "02b5d2f3ed8addad78be88e5a5fa177c8b8df187dad2344d97b9da36912af92b", "fdmt"),
+    "_fdmt2": ("feishu_std_fdmt2.3mf",
+               "57a55b062107ba3dc4f46d4026c6bf9e0a5341caa1e9294fb9de57a0b6d13f60", "fdmt2"),
+    "_cubes2": ("feishu_std_cubes2.3mf",
+                "2ff94a1efffe621b3a2c5358b61e65aad1d228b3ba5525d3daf6651a40b7ec21", "cubes2"),
+    "_sphere": ("feishu_std_sphere.3mf",
+                "f5f83d00545522c7cde44c0cd4260c325418707afdc83e6056390a0b8800d13c", "sphere"),
+    "_cyl": ("feishu_std_cylinder.3mf",
+             "f710bffe6a13cd86ab57cf6ed288e372fcb41c89c66d8c3ce0eeeee6fb9fe43b", "cyl"),
+    "_bunny": ("feishu_std_bunny.3mf",
+               "bb3609710d30e1ea9ba08a9b2937a6e0692effda1213bd56256be8c2e4dc5489", "bunny"),
+    "_hell": ("feishu_std_hell.3mf",
+              "b69b63df1973afad4155c89f953a799783b91c53840f77d8915cdf1825dd30ca", "hell"),
+}
+FIXTURE_SUFFIXES.update({suffix: ("fixtures/" + file, sha)
+                         for suffix, (file, sha, _key) in MODEL_FIXTURES.items()})
+# suffix -> (its save-only baseline, the baseline's case id). A baseline is a
+# scenario of its own, not a twin: nothing is edited, the run shows what the app
+# does with the fixture as it is.
+BASELINES = {STD_SUFFIX: (STD_SCENARIO, "param_std_save_only"),
+             SHAPES_SUFFIX: (SHAPES_SCENARIO, "param_shapes_save_only")}
+BASELINES.update({suffix: ("uia_param_%s_save_only" % key, "param_%s_save_only" % key)
+                  for suffix, (_file, _sha, key) in MODEL_FIXTURES.items()})
 # suffix -> the rowcombo targets that name a filament row differently on that fixture
-# (the shapes plate keeps the cube's filaments, so nothing is substituted there)
+# (the shapes plate keeps the cube's filaments, so nothing is substituted there; every
+# model fixture is all PLA, like the precondition cube)
 SUFFIX_TARGETS = {STD_SUFFIX: STD_TARGETS}
+SUFFIX_TARGETS.update({suffix: STD_TARGETS for suffix in MODEL_FIXTURES})
 
 
 def base_scenario(name):
@@ -70,8 +114,9 @@ def fixture_suffix(name):
 def suffixed_fixture(scenario):
     """(fixture, sha256) of a scenario that opens another project than the cube's -
     a suffixed name or one of the save-only baselines - else None."""
-    if scenario in (STD_SCENARIO, SHAPES_SCENARIO):
-        return FIXTURE_SUFFIXES[STD_SUFFIX if scenario == STD_SCENARIO else SHAPES_SUFFIX]
+    for suffix, (baseline, _case) in BASELINES.items():
+        if scenario == baseline:
+            return FIXTURE_SUFFIXES[suffix]
     return FIXTURE_SUFFIXES.get(fixture_suffix(scenario))
 
 

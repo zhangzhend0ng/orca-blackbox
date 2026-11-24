@@ -1825,6 +1825,23 @@ check("shapes: the plate's save-only baseline opens the plate, keeps the cube's 
       and _ap31.SHAPES_SCENARIO + _SUFFIX31 not in _names31
       and _ap31.SHAPES_SCENARIO + _ap31.SHAPES_SUFFIX not in _names31)
 
+# Every other fixture suffix follows the same rule (the rows' own models on the
+# precondition settings, added 2026-11-24): the bytes are the pin, each twinned
+# param scenario holds on it, its baseline is registered with no ops and no twin.
+for _sfx in [s for s in _ap31.FIXTURE_SUFFIXES if s not in (_SUFFIX31, _ap31.SHAPES_SUFFIX)]:
+    _pair = _ap31.FIXTURE_SUFFIXES[_sfx]
+    _tw = [name for name in _twinned31 if name + _sfx in _names31]
+    _br = [name for name in _tw if not _holds31(name, _sfx, _pair)]
+    _base, _case = _ap31.BASELINES[_sfx]
+    check("fixture %s: the bytes on disk are the pin; every twinned param scenario (%d of %d) "
+          "holds on it with its base's ops, pilot, tab spec and dispatch; its baseline is "
+          "registered, has no ops and no twin" % (_sfx, len(_tw), len(_twinned31)),
+          _sha31(_pair) == _pair[1] and len(_tw) == len(_twinned31) and not _br
+          and _np31.pilot_module(_base).CASE_ID == _case and nsb.scenario_ops(_base) == []
+          and _np31.native_fixture(_base) == _pair and _base + _sfx not in _names31
+          and _base + _SUFFIX31 not in _names31,
+          "failing: %r" % (_br[:6],))
+
 _baseline31 = _BASELINE31
 _controls31 = (_np31.native_fixture("uia_param_save_only") == _CUBE31
                and _np31.native_fixture(_baseline31) == _STD31

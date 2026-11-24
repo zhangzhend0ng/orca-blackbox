@@ -1,6 +1,6 @@
 """Finite business experiments; never a model-selected verifier or import path."""
 from importlib import import_module
-from .agent_protocol import SHAPES_SCENARIO, STD_SCENARIO, base_scenario, suffixed_fixture
+from .agent_protocol import BASELINES, base_scenario, suffixed_fixture
 from .native_matrix import (CANVAS_REPLACE_SCENARIO, SCALE_SCENARIOS, UIA_CANVAS_SCENARIO,
     UIA_DISTURBANCE_SCENARIO, UIA_MIX_RECIPES, UIA_MIX_SCENARIOS, UIA_MOVE_LAYER,
     UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS, UIA_Y_SCENARIOS, std_base)
@@ -95,14 +95,11 @@ TRIALS = {
 }
 # Save-only controls, not Feishu cases: param_closure_list / param_oracle_surface /
 # export_param_cases / rejudge_shadows count and export TRIALS, and the closure
-# number (40 of 44 on 2026-11-24) is quoted from there. One module holds both cases
-# (its CASES, one per scenario): what a save with no edit changes, on the cube and on
-# the precondition fixture.
-CONTROLS = {
-    "uia_param_save_only": "pilot_param_save_only",
-    STD_SCENARIO: "pilot_param_save_only",
-    SHAPES_SCENARIO: "pilot_param_save_only",
-}
+# number (40 of 44 on 2026-11-24) is quoted from there. One module holds them all
+# (its CASES, one per scenario): what a save with no edit changes, on the cube and
+# on every other fixture (agent_protocol.BASELINES).
+CONTROLS = {"uia_param_save_only": "pilot_param_save_only",
+            **{baseline: "pilot_param_save_only" for baseline, _case in BASELINES.values()}}
 
 
 def native_fixture(scenario):
