@@ -1933,6 +1933,29 @@ check("schedule: ... and passes on 68 layers with the result it always gave",
                      "last_z": "27.2", "gcode_sha256": "0" * 64}, "got %r" % (_cube_ok31,))
 check("schedule: a fixture nobody pinned is refused", _on_other31 == "param_fixture_unregistered",
       "got %r" % (_on_other31,))
+# analyze_gcode refuses some exports of a plate (two object tools on the shapes plate:
+# gcode_multiple_object_tools, fa706g3 70da5cd5). With nothing pinned the refusal is
+# recorded; where something is asserted it still propagates.
+def _refusing31(raw, **options):
+    raise ValueError("gcode_multiple_object_tools")
+try:
+    pcl.analyze_gcode = _refusing31
+    _refused_std31 = _verify31(_std_raw31, _std_raw31, b"gcode")
+    _refused_cube31 = _code31(_verify31, _cube_raw31, _cube_raw31, b"gcode")
+    _ironing31 = pcl.make_verify("sim32_ironing", {}, schedule={"layer_count": 68, "last_z": "27.2"},
+                                 ironing={"speed_comment": "x", "min_moves": 1})
+    _refused_iron31 = _code31(_ironing31, _std_raw31, _std_raw31, b"gcode")
+finally:
+    pcl.analyze_gcode = _genuine_analyze31
+check("schedule: a layer analysis that refuses the export is recorded, not raised, on a fixture "
+      "with no pin (values and preserved settings still judged)",
+      _refused_std31.get("other_settings_preserved") is True
+      and _refused_std31.get("schedule_error") == "gcode_multiple_object_tools"
+      and "layer_count" not in _refused_std31, "got %r" % (_refused_std31,))
+check("schedule: ... and still raised where something is asserted (the cube's pin, an ironing count)",
+      _refused_cube31 == "gcode_multiple_object_tools"
+      and _refused_iron31 == "gcode_multiple_object_tools",
+      "got %r %r" % (_refused_cube31, _refused_iron31))
 
 # 33. The save-only controls run the cases' path with no op and are judged by the same
 #     rule with an empty change set; the G-code facts are recorded. The real fixture

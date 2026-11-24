@@ -66,25 +66,37 @@ def make_verify(case_id, values, *, schedule=None, ironing=None, cancelled_guard
             result[key] = got
         if schedule or ironing:
             pinned = schedule_for(fixture, schedule) if schedule else None
-            layers = analyze_gcode(gcode, layer_height=str(actual.get("layer_height", "0.4")),
-                                   first_layer_height=str(actual.get("initial_layer_print_height", "0.4")),
-                                   inspect_ironing=bool(ironing), cancelled=cancelled)
-            if pinned:
-                _require(layers["layer_count"] == pinned["layer_count"], "param_layer_count")
-                _require(Decimal(layers["last_z"]) == Decimal(pinned["last_z"]), "param_last_z")
-            if ironing:
-                # 2026-11-23 run 4380d8ff: analyze_gcode reports the count
-                # under 'ironing_xy_e_moves' (agent_layer_verify.py:193);
-                # the old key 'ironing_moves' never existed, so every
-                # ironing case failed the schedule check with 0.
-                _require(layers.get("ironing_xy_e_moves", 0) >= ironing["min_moves"],
-                         "param_ironing_moves")
-            result["layer_count"] = layers["layer_count"]
-            result["last_z"] = layers["last_z"]
-            result["gcode_sha256"] = layers["sha256"]
-            if schedule and not pinned:
-                result["first_z"] = layers["first_z"]       # measured, for the pending pin
-                result["schedule_asserted"] = False
+            try:
+                layers = analyze_gcode(gcode, layer_height=str(actual.get("layer_height", "0.4")),
+                                       first_layer_height=str(actual.get("initial_layer_print_height", "0.4")),
+                                       inspect_ironing=bool(ironing), cancelled=cancelled)
+            except ValueError as exc:
+                # analyze_gcode reads one schedule for the whole plate and refuses some
+                # exports (two object tools on the shapes plate: gcode_multiple_object_tools,
+                # fa706g3 run 70da5cd5). On a fixture whose schedule is not pinned nothing
+                # is asserted about layers, so the refusal is recorded, not raised; where
+                # something is asserted (a pin, ironing) the analysis has to stand.
+                if pinned or ironing:
+                    raise
+                result["schedule_error"] = str(exc)[:120]
+                layers = None
+            if layers is not None:
+                if pinned:
+                    _require(layers["layer_count"] == pinned["layer_count"], "param_layer_count")
+                    _require(Decimal(layers["last_z"]) == Decimal(pinned["last_z"]), "param_last_z")
+                if ironing:
+                    # 2026-11-23 run 4380d8ff: analyze_gcode reports the count
+                    # under 'ironing_xy_e_moves' (agent_layer_verify.py:193);
+                    # the old key 'ironing_moves' never existed, so every
+                    # ironing case failed the schedule check with 0.
+                    _require(layers.get("ironing_xy_e_moves", 0) >= ironing["min_moves"],
+                             "param_ironing_moves")
+                result["layer_count"] = layers["layer_count"]
+                result["last_z"] = layers["last_z"]
+                result["gcode_sha256"] = layers["sha256"]
+                if schedule and not pinned:
+                    result["first_z"] = layers["first_z"]       # measured, for the pending pin
+                    result["schedule_asserted"] = False
         return result
 
     return verify_business
