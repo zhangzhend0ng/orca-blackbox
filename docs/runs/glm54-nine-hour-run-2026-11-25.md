@@ -188,7 +188,7 @@ Mac 线没有走通。壁环数 2→3 的首次运行是 NON_GREEN（run `5bb1a7
 
 | 线 | 入口 | 条件 |
 |---|---|---|
-| 客机 | 在已同步到该提交的分支型 checkout 里，先 `runner\guest_v3_bundle_sync.ps1 -Head <sha>`，再 `python -B tools/native_save_demo.py --actor script --scenario <name> --run-id <新的 32 位十六进制>` | checkout 的 `artifacts\windows_mcp_harvest` 里要有两份固定的对照基线 `e9aa6f88…`（#276）和 `0cccce4a…`（#264 FDM 测试模型）。配对完成但业务没有全过时退出码是 1，看 `summary.json` 的 `comparison` |
+| 客机 | 在已同步到该提交的分支型 checkout 里，先 `runner\guest_v3_bundle_sync.ps1 -Head <sha>`，再 `python -B tools/native_save_demo.py --actor script --scenario <name> --run-id <新的 32 位十六进制>` | checkout 的 `artifacts\windows_mcp_harvest` 里要有两份固定的对照基线 `e9aa6f88…`（#276）和 `0cccce4a…`（#265；它也是 #264 FDM 测试模型的默认切片基线）。配对完成但业务没有全过时退出码是 1，看 `summary.json` 的 `comparison` |
 | fa706g3 | `fa_run.py <name>`：宿主脚本把作业交给计划任务 `glm_line`，在交互会话里带 `ORCA_BB_ALLOW_TESTBOX=1` 跑 | 结果只能记 SHADOW；同一个 HEAD 在跑批期间不要换。今晚用的脚本是 `C:\coil\vm_setup\ninehour_1125\fa_run.py`，不在仓库里 |
 | Mac | `runner/macos_project_copy.py coilwin@localhost --identity ~/.ssh/orca_bb_local --known-hosts ~/.ssh/orca_bb_known_hosts --candidate <label> --goal walls` | 只在 coil 的控制台会话解锁之后跑 |
 | 收据 | `python -B tools/ninehour_receipts.py <harvest root> --runs <ids> --ledger <ledger> --json <dir>` | 只读收割件 |
