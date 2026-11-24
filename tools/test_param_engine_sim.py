@@ -263,6 +263,53 @@ finally:
 check("scroll_group_into_view: first group's title stuck above the band -> accepted quickly",
       hit3 == ((0, 0, 400, 690), 99) and 0 < wheels_top <= 8, "hit3=%r wheels=%d" % (hit3, wheels_top))
 
+# 6b. A title far outside the band gets ONE wheel call with just as many
+#     notches as the 1-notch steps would have needed, and lands where they
+#     landed (2026-11-25). The checkbox 'Detect overhang' of #264 spent 20 of
+#     its 27 s on 27 single notches: 'Overhangs' is the last group of Quality
+#     (census c101c0f4, page at top: title top 2560, 18 high).
+page = Page([("x", 700)], {}, row_h=pp.WHEEL_STEP_PX)
+install(page)
+_saved6b = (pp.group_title, pp.view_band, pp.time.sleep, pp.client_origin)
+TOP6b, HEIGHT6b = 2560, 18
+pp.time.sleep = lambda s: None
+pp.client_origin = lambda session: (0, 0)
+pp.view_band = lambda session: BAND
+
+
+def _title6b(session, sub):          # the title window: its rect follows the page
+    top = TOP6b - page.offset
+    return ((13, top, 406, top + HEIGHT6b), 4321)
+
+
+pp.group_title = _title6b
+try:
+    # what the loop did before: one notch a turn until the title's bottom
+    # passed the band edge
+    offset6b = 0
+    while TOP6b + HEIGHT6b - offset6b > BAND[1] - 24:
+        offset6b += pp.WHEEL_STEP_PX
+    wheels6b = offset6b // pp.WHEEL_STEP_PX
+    hit6b = REAL_SGIV(None, "Overhangs", timeout_s=30.0)
+    burst_calls, burst_offset = page.wheels, page.offset
+    # the same function on a page that moves ONE notch per call however many
+    # it is asked for: the 1-notch loop, turn by turn
+    page.wheels, page.offset = 0, 0
+    _wheel6b = pp.wheel_viewport
+    pp.wheel_viewport = lambda session, vp, notches, delta=-120: _wheel6b(session, vp, 1, delta)
+    hit6b_single = REAL_SGIV(None, "Overhangs", timeout_s=30.0)
+    single_calls, single_offset = page.wheels, page.offset
+    pp.wheel_viewport = _wheel6b
+finally:
+    (pp.group_title, pp.view_band, pp.time.sleep, pp.client_origin) = _saved6b
+check("scroll_group_into_view: a title 27 notches under the band -> the rect and the page offset of the 1-notch loop",
+      wheels6b == 27 and hit6b == ((13, TOP6b - offset6b, 406, TOP6b + HEIGHT6b - offset6b), 4321)
+      and burst_offset == offset6b and single_offset == offset6b and hit6b_single == hit6b,
+      "wheels=%d hit=%r offset=%r single=%r hit_single=%r" % (wheels6b, hit6b, burst_offset, single_offset, hit6b_single))
+check("scroll_group_into_view: ... reached in at most 2 wheel calls where the 1-notch loop took 27",
+      single_calls == 27 and burst_calls <= 2,
+      "single calls=%d burst calls=%d" % (single_calls, burst_calls))
+
 # 7. focus_info is a REAL Win32 call - nothing here is stubbed. Python 3.11
 #    has no ctypes.wintypes.GUITHREADINFO: run 7834c486 died on that the
 #    first time the stall guard reset the focus, and the previous revision

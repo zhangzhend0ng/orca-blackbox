@@ -6,6 +6,7 @@ Fake Win32 boundaries only: nothing here launches an application."""
 from pathlib import Path
 import re
 import sys
+import time
 from types import SimpleNamespace
 
 import pytest
@@ -733,3 +734,162 @@ def test_a_276_run_on_pages_that_never_settle_still_passes_and_says_so_per_field
     assert [line for line in out.splitlines() if "flow_commit" in line] == [NOT_STABLE.format(value)
                                                                             for value in ("0.2", "0.42", "700")]
     assert parse_stages(out) == [(name, "1") for name in STAGES_276]
+
+
+# ---- scroll_group_into_view: one wheel call sized from the title's own rect ----
+
+# Census c101c0f4 (2.4.0, page at top, 1032-tall work area): the options
+# viewport, and the top of 'Overhangs', the last group of the Quality page.
+BAND = (718, 1031)
+TITLE_H = 18
+OVERHANGS = 2560
+EDGE = BAND[1] - 24                    # a title's bottom has to reach [BAND[0] + 2, EDGE]
+STEP = pp.WHEEL_STEP_PX
+GROUP = "Overhangs"
+
+
+def refuse(*args, **kwargs):
+    pytest.fail("a test reached the desktop: real wheel input or a real focus reset")
+
+
+class ScrollPage:
+    """The options page as scroll_group_into_view reads it: the title's rect
+    follows the page offset, a notch moves the page STEP px, and the page
+    stops at its top and at `end`. `jumpy` is how many notches the FIRST wheel
+    moves beyond what it was asked; a `dead` page moves for no wheel until
+    its focus reset."""
+
+    def __init__(self, title_top, end=None, jumpy=0, dead=False):
+        self.title_top, self.end, self.jumpy, self.dead = title_top, end, jumpy, dead
+        self.offset, self.calls, self.resets = 0, [], []
+
+    def title(self, session, substr):
+        top = self.title_top - self.offset
+        return (13, top, 406, top + TITLE_H), 4321
+
+    def wheel(self, session, viewport, notches, delta=-120):
+        self.calls.append((notches, delta))
+        if self.dead:
+            return
+        step = STEP * (notches + self.jumpy) * (-1 if delta > 0 else 1)
+        self.jumpy = 0
+        self.offset = max(0, self.offset + step)
+        if self.end is not None:
+            self.offset = min(self.end, self.offset)
+
+    def reset(self, session, why=""):
+        self.resets.append(why)
+        self.dead = False
+        return True
+
+
+@pytest.fixture
+def make_page(monkeypatch):
+    """A maker of fake pages for scroll_group_into_view, which then runs for
+    real on them. A page cannot be made without every collaborator the
+    function has being faked with it, and the real wheel input and the real
+    focus resets - which would act on whatever window sits on this desktop -
+    are refused."""
+    def make(title_top, band=BAND, **options):
+        page = ScrollPage(title_top, **options)
+        page.band = band
+        monkeypatch.setattr(pp, "options_viewport", lambda session: ((1, band[0], 421, band[1]), 4321))
+        monkeypatch.setattr(pp, "view_band", lambda session: band)
+        monkeypatch.setattr(pp, "client_origin", lambda session: (0, 0))
+        monkeypatch.setattr(pp, "time", SimpleNamespace(monotonic=time.monotonic, sleep=lambda seconds: None))
+        monkeypatch.setattr(pp, "real_wheel", refuse)
+        monkeypatch.setattr(pp, "neutralize_focus", refuse)
+        monkeypatch.setattr(pp, "group_title", page.title)
+        monkeypatch.setattr(pp, "wheel_viewport", page.wheel)
+        monkeypatch.setattr(pp, "focus_off_edit", page.reset)
+        return page
+    return make
+
+
+def scroll_group(page):
+    """Run the real function on `page` (the title 'Overhangs'); what it returned."""
+    return pp.scroll_group_into_view(None, GROUP, timeout_s=5.0)
+
+
+def title_at(page):
+    """The title as the page shows it now."""
+    return page.title(None, GROUP)
+
+
+def in_band(page):
+    """True when the title's bottom is where the function wants it: inside its band."""
+    return page.band[0] + 2 <= title_at(page)[0][3] <= page.band[1] - 24
+
+
+def test_a_title_already_in_the_band_is_returned_without_a_wheel(make_page):
+    page = make_page(OVERHANGS)
+    page.offset = 1600
+    assert scroll_group(page) == title_at(page) and in_band(page)
+    assert page.calls == [] and page.resets == []
+
+
+@pytest.mark.parametrize("title_top,start,wheel,landing", [
+    (EDGE + 40 - TITLE_H, 0, (1, -120), STEP),                      # 40px under the band edge
+    (EDGE + STEP - TITLE_H, 0, (1, -120), STEP),                    # a notch under it: the landing is the edge itself
+    (BAND[0] + 2 - 40 + 300 - TITLE_H, 300, (1, 120), 240),         # 40px over the band top, the page 300px down
+], ids=["40px-under", "a-notch-under", "40px-over"])
+def test_a_title_at_most_a_notch_outside_the_band_still_takes_one_notch(make_page, title_top, start, wheel, landing):
+    page = make_page(title_top)
+    page.offset = start
+    assert scroll_group(page) == title_at(page) and in_band(page)
+    assert page.calls == [wheel] and page.offset == landing and page.resets == []
+
+
+def notches_to_reach(page, down):
+    """What the 1-notch loop sent: whole notches until the title's bottom passed the band edge it had to cross."""
+    bottom = page.title_top + TITLE_H - page.offset
+    left = bottom - (page.band[1] - 24) if down else (page.band[0] + 2) - bottom
+    return -(-left // STEP)
+
+
+@pytest.mark.parametrize("title_top,start,wheels", [
+    (OVERHANGS, 0, [(27, -120)]),                 # census c101c0f4: its bottom 1571px under the band edge
+    (1720, 1500, [(9, 120)]),                     # 482px over the band top, the page 1500px down
+    (EDGE + 55 * STEP - TITLE_H, 0, [(40, -120), (15, -120)]),       # more notches than one call may carry
+], ids=["overhangs-27-notches", "over-the-band", "beyond-one-call"])
+def test_a_title_further_out_gets_its_notches_in_one_call_and_lands_where_the_one_notch_loop_landed(make_page, title_top,
+                                                                                                  start, wheels):
+    page = make_page(title_top)
+    page.offset = start
+    notches = notches_to_reach(page, wheels[0][1] < 0)      # read before the page moves
+    assert scroll_group(page) == title_at(page) and in_band(page)
+    # as many notches as the 1-notch loop sent, in as few calls as the largest allows
+    assert sum(count for count, _delta in wheels) == notches
+    assert max(count for count, _delta in wheels) <= pp.RESET_WHEEL_NOTCHES
+    assert page.calls == wheels and page.resets == []
+    assert page.offset == start + notches * STEP * (1 if wheels[0][1] < 0 else -1)     # wheeling down moves the page up
+
+
+@pytest.mark.parametrize("end,after_the_burst", [
+    (1540, [(1, -120)] * 7),                            # 31px short of the band: single notches from then on
+    (1500, [(2, -120), (2, -120)] + [(1, -120)] * 5),   # 71px short: the still page is only counted one wheel later
+], ids=["31px-short", "71px-short"])
+def test_a_page_that_stops_short_takes_its_burst_then_the_stall_tail_in_single_notches(make_page, end, after_the_burst):
+    page = make_page(OVERHANGS, end=end)
+    assert scroll_group(page) == title_at(page)          # accepted where the page stopped, as before
+    assert page.calls == [(27, -120)] + after_the_burst and page.offset == end
+    # the tail the loop always had, in both cases: the third still page it measures resets the focus, the sixth accepts
+    assert len(after_the_burst) == 7 and page.resets == ["scroll_group(%r)" % GROUP]
+
+
+def test_a_wheel_dead_until_its_focus_reset_meets_the_same_stall_logic_then_one_burst_for_the_rest(make_page):
+    page = make_page(OVERHANGS, dead=True)
+    assert scroll_group(page) == title_at(page) and page.offset == 27 * STEP      # the landing of 27 single notches
+    # the still page is counted from the second wheel; the third single is the
+    # reset and the fourth the first live notch (still counted against the old
+    # measurement); then one burst covers the 25 notches left
+    assert page.calls == [(27, -120), (27, -120)] + [(1, -120)] * 4 + [(25, -120)]
+    assert page.resets == ["scroll_group(%r)" % GROUP]
+
+
+def test_a_burst_that_overshoots_the_band_is_corrected_by_one_notch_onto_the_one_notch_landing(make_page):
+    # a short band, 702..776, and a title 100px under its edge: 2 notches
+    page = make_page(776 + 100 - TITLE_H, band=(700, 800), jumpy=1)
+    assert scroll_group(page) == title_at(page) and in_band(page)
+    # the burst moved 3 notches (696: over the band top); one notch back, onto the landing of 2 single notches
+    assert page.calls == [(2, -120), (1, 120)] and page.offset == 2 * STEP and page.resets == []

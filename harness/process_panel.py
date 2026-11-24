@@ -441,8 +441,14 @@ def scroll_group_into_view(session, substr, timeout_s=420.0):
     """Wheel the options viewport until the group title `substr` sits high
     enough in the VISIBLE band that its FIRST OPTION ROW is also fully
     visible (title bottom within [band_top+2, band_bottom-24], band from
-    view_band()). 1-notch steps with position read from the title's own
-    rect (a multi-notch wheel can jump whole groups between OCRs).
+    view_band()). The position is read from the title's own rect before
+    every wheel: a title outside the band gets ONE wheel call with as many
+    notches as 1-notch steps would have needed for the distance left to the
+    band edge (ceil(distance / WHEEL_STEP_PX), never more than the tab
+    switch's reset sends at once), then the page is measured again. The
+    wheel stays at one notch when less than a notch is left and from the
+    first wheel that did not move the page on: the stall logic counts single
+    notches, as it always did.
     Self-heals a wheel stuck on the Edit focus via neutralize_focus().
     Returns (rect, hwnd) or None."""
     deadline = time.monotonic() + timeout_s
@@ -475,8 +481,15 @@ def scroll_group_into_view(session, substr, timeout_s=420.0):
             y0, y1 = view_band(session)
             if y0 + 2 <= ty1 <= y1 - 24:
                 return hit
-            wheel_viewport(session, vp, 1,
-                           delta=-120 if ty1 > y1 - 24 else 120)
+            below = ty1 > y1 - 24
+            # Just the notches the 1-notch steps would have needed for the
+            # distance left to the band edge, in one call (the tab switch's
+            # reset sends that many); a single notch once the page may be
+            # stuck, so the stall logic below counts as it always did.
+            left = ty1 - (y1 - 24) if below else (y0 + 2) - ty1
+            notches = max(1, min(RESET_WHEEL_NOTCHES, -(-left // WHEEL_STEP_PX)))
+            wheel_viewport(session, vp, 1 if stuck else notches,
+                           delta=-120 if below else 120)
             if last_y == ty1:
                 stuck += 1
                 if stuck == 3:
