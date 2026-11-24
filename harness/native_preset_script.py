@@ -196,8 +196,9 @@ class PresetUI:
 
         self.hwnd = self._wait(dialog, 10, title)
         # Recheck the editing preset displayed by the dialog before changing it.
-        if self._preset_combo(preset, trace=True) is None:
-            self._wait(lambda: self._preset_combo(preset), 10, "dialog_preset")
+        candidate = self._preset_combo(preset, trace=True)
+        self.preset_bar, _hwnd = candidate or self._wait(
+            lambda: self._preset_combo(preset), 10, "dialog_preset")
 
     def _edit_menu(self, before, bounds):
         def menu():
@@ -261,31 +262,41 @@ class PresetUI:
         ], name)
 
     def page(self, name):
-        # The page selector occupies the dialog's left column; same-named
-        # text elsewhere in the pane cannot qualify as navigation.
-        session = SimpleNamespace(hwnd=self.hwnd, pid=self.ui.app.pid)
-        ox, oy = self.pp.client_origin(session)
-        height, width = self.pp.capture_bgr(session).shape[:2]
-        pane = (ox, oy, ox + width // 3, oy + height)
-        point = self._wait(lambda: self._line(name, rect=pane), 12, "page:" + name)
-        self._trace("page:" + name, [point])
-        self._click(point, self.hwnd)
+        # Native sibling page labels sit on the horizontal tab strip just
+        # under the preset bar in both Material and Printer settings.
+        def candidate():
+            return _unique([
+                (r, h) for text, cls, r, h in self._children()
+                if text.strip() == name and cls == "wxWindowNR"
+                and 6 <= r[1] - self.preset_bar[3] <= 32
+                and 16 <= r[3] - r[1] <= 30 and self._onscreen(h, _center(r))
+            ], name)
+
+        bounds, hwnd = self._wait(candidate, 12, "page:" + name)
+        self._trace("page:" + name, [(self.wu.window_class(hwnd), bounds)])
+        self._click(_center(bounds), self.hwnd, exact=hwnd)
+        self.page_bottom = bounds[3]
         self.ui.pause(0.8)
 
     def _row(self, name, match, *, paired=False):
         session = SimpleNamespace(hwnd=self.hwnd, pid=self.ui.app.pid)
         ox, oy = self.pp.client_origin(session)
         height, width = self.pp.capture_bgr(session).shape[:2]
-        # The label is painted and some labels wrap. Use its unique leading
-        # phrase in the content pane, and insist on a visible same-row field.
-        pane = (ox + width // 4, oy + height // 8, ox + 2*width // 3, oy + height)
+        # The material dialog capture shows painted row labels in the
+        # leftmost column: text starts at x=28 and fields start at x=227
+        # on its 734px-wide client area. Keep the value column out of OCR.
+        pane = (ox + 8, self.page_bottom + 5, ox + 3*width // 10, oy + height)
+        last_label, last_controls = None, []
         for _ in range(16):
             label = self._line(name, rect=pane, prefix=True)
             if label is not None:
                 x, y = label
-                keys = [(r, h) for t, c, r, h in self._children()
-                        if r[0] > x and abs(_center(r)[1] - y) <= 12
-                        and self._onscreen(h, _center(r)) and match(t, c, r)]
+                nearby = [(t, c, r, h) for t, c, r, h in self._children()
+                          if r[0] > x and abs(_center(r)[1] - y) <= 12
+                          and self._onscreen(h, _center(r))]
+                last_label = label
+                last_controls = [(c, r) for _t, c, r, _h in nearby]
+                keys = [(r, h) for t, c, r, h in nearby if match(t, c, r)]
                 if paired and len(keys) in (1, 2):
                     # TabPrinter appends Normal before Silent. If both
                     # are present, select the leftmost field only.
@@ -302,6 +313,7 @@ class PresetUI:
                 raise ProtocolError("script_preset_scroll_scope")
             self.wu.real_wheel_screen(*scroll, -2)
             self.ui.pause(0.4)
+        self._trace("row_missing:" + name, [last_label, *last_controls])
         raise ProtocolError("script_preset_row_missing:" + name)
 
     def number(self, name, start, wanted, *, paired=False):
@@ -338,7 +350,7 @@ class PresetUI:
         print("[native-script] preset %s: %s -> %s" % (name, before, wanted), flush=True)
 
     def forced_cooling(self):
-        bounds, _field = self._row("Force cooling for overhangs",
+        bounds, _field = self._row("Force cooling",
                                    lambda t, c, r: c == "Button" and not t.strip()
                                    and 12 <= r[2]-r[0] <= 26 and 12 <= r[3]-r[1] <= 26)
         session = SimpleNamespace(hwnd=self.hwnd, pid=self.ui.app.pid)
@@ -347,7 +359,7 @@ class PresetUI:
         print("[native-script] preset force cooling already checked", flush=True)
 
     def threshold(self):
-        name = "Overhang cooling activation"
+        name = "Overhang cooling"
         bounds, field = self._row(name, lambda t, c, r: t.strip() == "50%" and
                                   (c.startswith("wxWindow") or c == "ComboBox"))
         before = {h for _c, _t, _r, h in self.mix.toplevel(self.ui.app.pid)}
@@ -441,7 +453,7 @@ def edit_cooling(ui):
         preset.page("Cooling")
         preset.forced_cooling()
         preset.threshold()
-        preset.number("Overhangs and external", "100", "80")
+        preset.number("Overhangs and", "100", "80")
         preset.close()
     except Exception:
         _capture_failed_preset(preset)

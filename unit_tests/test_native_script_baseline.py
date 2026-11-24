@@ -50,6 +50,36 @@ def test_full_case_drives_presets_then_process(monkeypatch, scenario, target):
         assert calls == [(scenario, ui)]
 
 
+@pytest.mark.parametrize("name,bounds,point", [
+    ("Cooling", (694, 301, 752, 323), (723, 312)),
+    ("Motion ability", (1312, 301, 1323, 323), (1317, 312)),
+])
+def test_preset_page_targets_observed_horizontal_tab(name, bounds, point):
+    from harness.native_preset_script import PresetUI
+
+    # Guest captures bb66fde4 and 0dffeec0. The rightmost printer page
+    # exposes just 11 pixels, and a content control can share its caption.
+    preset = PresetUI.__new__(PresetUI)
+    preset.hwnd = 900
+    preset.preset_bar = (626, 257, 1140, 287)
+    preset._children = lambda: [
+        (name, "wxWindowNR", bounds, 11),
+        (name, "wxWindowNR", (600, 400, 720, 422), 12),
+    ]
+    preset._onscreen = lambda hwnd, center: True
+    preset._trace = lambda *args: None
+    preset._wait = lambda predicate, timeout, stage: predicate()
+    preset.wu = SimpleNamespace(window_class=lambda hwnd: "wxWindowNR")
+    preset.ui = SimpleNamespace(pause=lambda seconds: None)
+    clicks = []
+    preset._click = lambda center, root, exact: clicks.append((center, root, exact))
+
+    preset.page(name)
+
+    assert clicks == [(point, 900, 11)]
+    assert preset.page_bottom == bounds[3]
+
+
 def test_machine_limit_number_is_read_only():
     from harness.native_preset_script import PresetUI
 
