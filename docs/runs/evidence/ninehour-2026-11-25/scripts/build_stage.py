@@ -16,6 +16,10 @@ Rules the numbers follow:
     same scenario (start state and fixture), same build line. K2 is compared with K1.
   * 636a733 logged no stage line for #264: the stage reference of a #264 group is its timed build
     (49439ab or 008d97b), and the whole-run reference is the 636a733 baseline where one exists.
+  * The engine to merge is 2a17376 (d5fc2fa plus one fix on the stall path of
+    scroll_group_into_view). Runs labelled final2-* are its confirmation and are compared with the
+    baseline in the last column of each whole-run table; runs labelled final-* ran on d5fc2fa and
+    are kept as a record only.
   * fa706g3 writes no host summary. Its whole-run figure is process.json (the receipt's "guest"
     seconds). The ledger's process_seconds is what the host driver measured and is kept apart:
     on the guest the coordinator process, on fa706g3 the time from job to harvest, polling included.
@@ -243,6 +247,8 @@ def build_stage(ledger, receipts):
             pairs.append(("wait264", "burst264", "K1 → K2"))
             if whole_ref == "baseline":
                 pairs.append(("baseline", "burst264", "基线 → K2（两步合计）"))
+        if "final2" in present and whole_ref:
+            pairs.append((whole_ref, "final2", "%s → 最终引擎复核" % ("基线" if whole_ref == "baseline" else "计时版")))
         links = []
         for start, end, text in pairs:
             link = {"from": start, "to": end, "text": text, "whole_run": {}}
@@ -256,7 +262,7 @@ def build_stage(ledger, receipts):
         if whole_ref:
             reference = next(run for run in runs if run["role"] == whole_ref)
             for run in runs:
-                if run["role"] not in CANDIDATES:
+                if run["role"] not in CANDIDATES + ("final2", "final"):
                     continue
                 try:
                     identity.append(compare_exports(Path(receipts[reference["run_id"]]["run_dir"]),
@@ -353,6 +359,8 @@ def stage_markdown(data):
         "- fa706g3 没有宿主摘要，它的整轮比较用机内进程秒。fa706g3 与 Mac 的结果按 README 第 6 条最高记 SHADOW；本轮没有发布 GREEN。",
         "- #276 的链是 基线 → 就绪等待（eae2376）；#264 的链是 基线 → K1 就绪等待（3ef1f94）→ K2 滚轮一次到位（e3bfdfe；客机在合并提交 d5fc2fa 上跑，引擎相同）。",
         "  636a733 的 #264 日志没有阶段行，阶段参照取计时版（49439ab / 008d97b）；计时版只加了阶段行，动作秒见各组第一段。",
+        "- 要合并的引擎是 `2a17376` = `d5fc2fa` 加一处停滞路径的修正（只改 `scroll_group_into_view` 的循环体，普通路径不走它）。",
+        "  `final2-*` 是在它上面的复核，整轮表最后一列是它对基线的节省；`final-*` 是在 `d5fc2fa` 上的复核，不是最终引擎，只留作记录。",
         "",
     ]
     for group in data["groups"]:
@@ -417,13 +425,24 @@ def stage_markdown(data):
                     "" if not s["differing_keys"] else "（%s）" % "、".join(s["differing_keys"][:6]),
                     "相同" if item["initial_frame_equal"] else "不同",
                     "导出件与保存件相同。" if item["behaviour_unchanged"] else "**导出件不同，原因今晚没有查。**"))
+        final2 = [run for run in runs if run["role"] == "final2"]
+        if final2:
+            lines += ["", "**最终引擎 `2a17376` 上的复核**（`d5fc2fa` 加一处停滞路径的修正，普通路径不走它；候选的节省在这里再对一次基线，见上面整轮表的最后一列）", "",
+                      "| run ID | 标签 | 宿主整轮秒 | 动作秒 | 叶段合计 | 评级 |", "|---|---|---:|---:|---:|---|"]
+            for run in final2:
+                verdict = run["release_verdict"] or "-"
+                if run["comparison_status"]:
+                    verdict += "，配对 %s / 业务 %s" % (run["comparison_status"], run["business_status"])
+                lines.append("| `%s` | %s | %s | %s | %s | %s |" % (
+                    run["run_id"], run["label"], f3(run["seconds"]["host_wall"]), f3(run["seconds"]["action"]),
+                    f3(run["seconds"]["leaf_sum"]), verdict))
         final = [run for run in runs if run["role"] == "final"]
         if final:
-            lines += ["", "**最终引擎复核**（合并提交 d5fc2fa = 引擎 e3bfdfe + 收据工具）", "",
-                      "| run ID | 提交 | 宿主整轮秒 | 动作秒 | 叶段合计 | 评级 |", "|---|---|---:|---:|---:|---|"]
+            lines += ["", "**`d5fc2fa` 上的复核**（不是最终引擎，已被上一张表取代；留作记录）", "",
+                      "| run ID | 标签 | 宿主整轮秒 | 动作秒 | 叶段合计 | 评级 |", "|---|---|---:|---:|---:|---|"]
             for run in final:
                 lines.append("| `%s` | %s | %s | %s | %s | %s |" % (
-                    run["run_id"], commit_text(run["commit"]), f3(run["seconds"]["host_wall"]), f3(run["seconds"]["action"]),
+                    run["run_id"], run["label"], f3(run["seconds"]["host_wall"]), f3(run["seconds"]["action"]),
                     f3(run["seconds"]["leaf_sum"]), run["release_verdict"] or "-"))
         lines.append("")
     lines += reproducibility_markdown(data["reproducibility"])

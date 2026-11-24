@@ -1,84 +1,85 @@
 {
- "ledger_lines": 72,
- "ledger_runs": 71,
- "ledger_last_ended": "04:43:56",
- "schema": "ninehour_family_regression/1",
+ "ledger_lines": 136,
+ "ledger_runs": 135,
+ "ledger_last_ended": "06:57:35",
+ "schema": "ninehour_family_regression/2",
  "generated_by": "scripts/build_family.py",
- "status": "in_progress",
- "placeholder": true,
- "placeholder_note": "最终引擎上的 42 行参数族回归仍在进行。本文件在台账复制时生成，只填台账里已有的结果；没有结果的行留空，由总控在回归结束后补入。",
+ "status": "final",
+ "placeholder": false,
  "engine": {
-  "integration_commit": "d5fc2fad9ed919467e096a3a7d4c2ec746d6c7e0",
-  "engine_commit": "e3bfdfe",
-  "note": "git diff --stat e3bfdfe d5fc2fa 只列出 tools/ninehour_receipts.py 和它的单测；引擎相同。"
+  "final_engine": "2a1737689ff519686b90c588d52d96519e76f370",
+  "final_engine_short": "2a17376",
+  "superseded_engine": "d5fc2fa",
+  "note": "2a17376 的父提交是 d5fc2fa，二者只差一个提交：5b38c80 的拣选，改 harness/process_panel.py 的 scroll_group_into_view 循环体和 unit_tests/test_param_flow.py（git diff --stat d5fc2fa 2a17376）。"
  },
  "counts": {
   "rows": 42,
-  "per_machine": {
-   "guest": 21,
-   "fa706g3": 21
-  },
-  "done": 12,
-  "done_per_machine": {
-   "guest": 4,
-   "fa706g3": 8
-  },
-  "done_by_verdict": {
-   "SHADOW": 17,
+  "rows_by_status": {
+   "SHADOW": 41,
    "NON_GREEN": 1
   },
-  "done_with_failure": [
-   268
-  ],
-  "failed_runs": [
-   {
-    "feishu_row": 268,
-    "run_id": "62a3cd012aa549f593e3c6630db4c6b9",
-    "machine": "fa706g3",
-    "label": "regress-final",
-    "verdict": "NON_GREEN",
-    "worker_error": "ProtocolError:param_combo_readback:Gyroid:Grid"
+  "per_machine": {
+   "guest": {
+    "rows": 21,
+    "SHADOW": 21,
+    "NON_GREEN": 0,
+    "without_a_verdict": 0
+   },
+   "fa706g3": {
+    "rows": 21,
+    "SHADOW": 20,
+    "NON_GREEN": 1,
+    "without_a_verdict": 0
    }
+  },
+  "final_engine_runs": 43,
+  "final_engine_verdicts": {
+   "SHADOW": 41,
+   "NON_GREEN": 2
+  },
+  "final_engine_runs_per_machine": {
+   "guest": 22,
+   "fa706g3": 21
+  },
+  "rows_with_a_non_shadow_run": [
+   294
   ],
-  "dispatch_failed_runs": [
+  "d5fc2fa_runs": 13,
+  "d5fc2fa_rows_shadow": {
+   "guest": [
+    255,
+    257,
+    259,
+    261
+   ],
+   "fa706g3": [
+    256,
+    258,
+    260,
+    262,
+    264,
+    266,
+    270
+   ]
+  },
+  "d5fc2fa_failed_runs": [
+   "62a3cd012aa549f593e3c6630db4c6b9"
+  ],
+  "d5fc2fa_dispatch_failures": [
    "9117553219f14bc58703177577b2ebb9"
   ],
-  "rows_with_a_failed_dispatch": [
-   256
-  ],
-  "rows_only_dispatch_failed": [],
-  "not_run_yet": [
-   254,
-   263,
-   265,
-   267,
-   269,
-   271,
-   272,
-   273,
-   274,
-   275,
-   276,
-   277,
-   278,
-   279,
-   280,
-   281,
-   282,
-   283,
-   284,
-   285,
-   286,
-   287,
-   290,
-   291,
-   292,
-   293,
-   294,
-   295,
-   296,
-   297
-  ]
+  "retries": 8,
+  "retries_per_machine": {
+   "fa706g3": 4,
+   "guest": 4
+  },
+  "retries_verdicts": {
+   "SHADOW": 8
+  },
+  "in_progress_runs_at_copy": {
+   "twins": 7,
+   "shapes": 6
+  }
  },
  "rows": [
   {
@@ -91,28 +92,56 @@
    "record_id": "reczz28b6mRB0WGN",
    "title": "线宽-全特征线宽组合",
    "feishu_status": "待实现",
-   "runs": [
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "473c4e7c5e8e4419aa45ab2b0db9ed13",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "05:22:39",
+     "ended": "05:26:34",
+     "ledger_line": 83,
+     "ledger_scenario_raw": "uia_param_line_width_all",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 234.73400000005495,
+     "process_seconds": 207.4488392,
+     "script_action_seconds": 103.188,
+     "host_orchestration_seconds": 234.797,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [
     {
      "run_id": "cfaa8a0d3aa94d929028838c8dc71310",
      "label": "regress-final",
-     "commit": "d5fc2fa",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "d5fc2fad9ed919467e096a3a7d4c2ec746d6c7e0",
+     "on_final_engine": false,
      "started": "04:11:57",
      "ended": "04:15:50",
      "ledger_line": 59,
      "ledger_scenario_raw": "uia_param_line_width_all",
-     "machine": "guest",
      "verdict": "SHADOW",
      "verified_pass": true,
      "cleanup_confirmed": true,
-     "process_seconds": 208.2983007,
      "host_wall_seconds": 232.9220000000205,
+     "process_seconds": 208.2983007,
      "script_action_seconds": 103.391,
      "host_orchestration_seconds": 232.985,
      "dispatch_error": null,
-     "worker_error": null
+     "worker_error": null,
+     "failed_checks": null
     }
    ],
-   "status": "done"
+   "retries": []
   },
   {
    "order": 2,
@@ -124,28 +153,56 @@
    "record_id": "reczz28b6mRB1nLf",
    "title": "精度-尺寸补偿组合",
    "feishu_status": "待实现",
-   "runs": [
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "d64dc969eca34b7f9f4bee3aa08ffa2e",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "05:26:34",
+     "ended": "05:29:43",
+     "ledger_line": 85,
+     "ledger_scenario_raw": "uia_param_precision_comp",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 188.89000000001397,
+     "process_seconds": 165.0317578,
+     "script_action_seconds": 60.609,
+     "host_orchestration_seconds": 188.938,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [
     {
      "run_id": "ee33d983b0c04517ab418bc3f1e85c3d",
      "label": "regress-final",
-     "commit": "d5fc2fa",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "d5fc2fad9ed919467e096a3a7d4c2ec746d6c7e0",
+     "on_final_engine": false,
      "started": "04:15:51",
      "ended": "04:19:04",
      "ledger_line": 61,
      "ledger_scenario_raw": "uia_param_precision_comp",
-     "machine": "guest",
      "verdict": "SHADOW",
      "verified_pass": true,
      "cleanup_confirmed": true,
-     "process_seconds": 167.8452695,
      "host_wall_seconds": 193.2970000000205,
+     "process_seconds": 167.8452695,
      "script_action_seconds": 63.469,
      "host_orchestration_seconds": 193.359,
      "dispatch_error": null,
-     "worker_error": null
+     "worker_error": null,
+     "failed_checks": null
     }
    ],
-   "status": "done"
+   "retries": []
   },
   {
    "order": 3,
@@ -157,28 +214,56 @@
    "record_id": "reczz28b6mRB0WWP",
    "title": "熨烫-顶面参数组合",
    "feishu_status": "待实现",
-   "runs": [
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "1f79a0cedd23462fb69c3e738a7f8bf7",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "05:29:43",
+     "ended": "05:32:56",
+     "ledger_line": 87,
+     "ledger_scenario_raw": "uia_param_ironing_top",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 193.51500000001397,
+     "process_seconds": 167.4637926,
+     "script_action_seconds": 63.078,
+     "host_orchestration_seconds": 193.563,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [
     {
      "run_id": "8ef072a97c2042b597b567014922f6ac",
      "label": "regress-final",
-     "commit": "d5fc2fa",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "d5fc2fad9ed919467e096a3a7d4c2ec746d6c7e0",
+     "on_final_engine": false,
      "started": "04:19:04",
      "ended": "04:22:18",
      "ledger_line": 63,
      "ledger_scenario_raw": "uia_param_ironing_top",
-     "machine": "guest",
      "verdict": "SHADOW",
      "verified_pass": true,
      "cleanup_confirmed": true,
-     "process_seconds": 167.6290557,
      "host_wall_seconds": 193.7029999999795,
+     "process_seconds": 167.6290557,
      "script_action_seconds": 63.11,
      "host_orchestration_seconds": 193.765,
      "dispatch_error": null,
-     "worker_error": null
+     "worker_error": null,
+     "failed_checks": null
     }
    ],
-   "status": "done"
+   "retries": []
   },
   {
    "order": 4,
@@ -190,28 +275,56 @@
    "record_id": "reczz28b6mRAzTBr",
    "title": "墙壁和表面-单墙与避墙组合",
    "feishu_status": "待实现",
-   "runs": [
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "10c4fed642c74b72a96947d384e447db",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "05:32:57",
+     "ended": "05:36:09",
+     "ledger_line": 89,
+     "ledger_scenario_raw": "uia_param_single_wall_avoid",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 192.89099999994505,
+     "process_seconds": 166.4435332,
+     "script_action_seconds": 61.266,
+     "host_orchestration_seconds": 192.953,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [
     {
      "run_id": "b0f9538396a34f9ea1eb1d182ed5e3e1",
      "label": "regress-final",
-     "commit": "d5fc2fa",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "d5fc2fad9ed919467e096a3a7d4c2ec746d6c7e0",
+     "on_final_engine": false,
      "started": "04:22:18",
      "ended": "04:25:31",
      "ledger_line": 65,
      "ledger_scenario_raw": "uia_param_single_wall_avoid",
-     "machine": "guest",
      "verdict": "SHADOW",
      "verified_pass": true,
      "cleanup_confirmed": true,
-     "process_seconds": 165.3551464,
      "host_wall_seconds": 192.92199999990407,
+     "process_seconds": 165.3551464,
      "script_action_seconds": 61.031,
      "host_orchestration_seconds": 192.953,
      "dispatch_error": null,
-     "worker_error": null
+     "worker_error": null,
+     "failed_checks": null
     }
    ],
-   "status": "done"
+   "retries": []
   },
   {
    "order": 5,
@@ -223,8 +336,33 @@
    "record_id": "reczz28b6mRB1jdF",
    "title": "搭桥-桥接质量组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "7d8d505a659946bc961f053ef0164971",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "05:36:10",
+     "ended": "05:39:19",
+     "ledger_line": 91,
+     "ledger_scenario_raw": "uia_param_bridge",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 188.89000000001397,
+     "process_seconds": 161.7104011,
+     "script_action_seconds": 57.468,
+     "host_orchestration_seconds": 188.922,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 6,
@@ -236,8 +374,33 @@
    "record_id": "reczz28b6mRAzpVx",
    "title": "悬垂-风扇与翘边组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "e23232a376d14c6b9d05a827bc3884e7",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "05:39:19",
+     "ended": "05:42:08",
+     "ledger_line": 92,
+     "ledger_scenario_raw": "uia_param_overhang_curl",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 169.06299999996554,
+     "process_seconds": 141.0863744,
+     "script_action_seconds": 36.579,
+     "host_orchestration_seconds": 169.125,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 7,
@@ -249,8 +412,33 @@
    "record_id": "reczz28b6mRB1b7s",
    "title": "外壳-层数/图案/颜色渗透组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "2acd39bdd1ab47bb8073d1636c473de9",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "05:42:08",
+     "ended": "05:45:21",
+     "ledger_line": 94,
+     "ledger_scenario_raw": "uia_param_shells_pattern",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 193.2970000000205,
+     "process_seconds": 167.4042343,
+     "script_action_seconds": 60.281,
+     "host_orchestration_seconds": 193.328,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 8,
@@ -262,8 +450,33 @@
    "record_id": "reczz28b6mRB164l",
    "title": "强度高级-填充结构组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "b4129312f198479fb8650609d5aa2024",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "05:45:22",
+     "ended": "05:48:31",
+     "ledger_line": 96,
+     "ledger_scenario_raw": "uia_param_infill_structure",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 188.89100000006147,
+     "process_seconds": 164.1703094,
+     "script_action_seconds": 59.891,
+     "host_orchestration_seconds": 188.938,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 9,
@@ -275,8 +488,33 @@
    "record_id": "reczz28b6mRAyekU",
    "title": "其他层速度-特征速度组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "7d2fabac2af5479ea1b1245974e10260",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "05:48:31",
+     "ended": "05:52:08",
+     "ledger_line": 98,
+     "ledger_scenario_raw": "uia_param_feature_speeds",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 217.51599999994505,
+     "process_seconds": 192.5398911,
+     "script_action_seconds": 88.344,
+     "host_orchestration_seconds": 217.562,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 10,
@@ -288,8 +526,33 @@
    "record_id": "reczz28b6mRB1Pm2",
    "title": "空驶速度-全局映射",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "a88d113829be47169c58acf8eb897a59",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "05:52:08",
+     "ended": "05:54:58",
+     "ledger_line": 100,
+     "ledger_scenario_raw": "uia_param_travel_speed",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 169.079000000027,
+     "process_seconds": 142.4075623,
+     "script_action_seconds": 38.156,
+     "host_orchestration_seconds": 169.11,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 11,
@@ -301,8 +564,33 @@
    "record_id": "reczz28b6mRAytbr",
    "title": "抖动-特征组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "dd7ab37630b5420d98d51ae553cbec06",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "05:54:58",
+     "ended": "05:58:31",
+     "ledger_line": 101,
+     "ledger_scenario_raw": "uia_param_jerk",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 213.31299999996554,
+     "process_seconds": 187.7009419,
+     "script_action_seconds": 83.235,
+     "host_orchestration_seconds": 213.375,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 12,
@@ -314,8 +602,33 @@
    "record_id": "reczz28b6mRAydro",
    "title": "支撑-开启与基础结构组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "cab7609dfda84f60ba51b00d2118d97e",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "05:58:31",
+     "ended": "06:01:29",
+     "ledger_line": 103,
+     "ledger_scenario_raw": "uia_param_support_basic",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 177.48399999993853,
+     "process_seconds": 151.7890472,
+     "script_action_seconds": 47.375,
+     "host_orchestration_seconds": 177.531,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 13,
@@ -327,8 +640,33 @@
    "record_id": "reczz28b6mRAyV6h",
    "title": "支撑耗材-主体与界面组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "98dc9db83bb5417088d3bf48985cefbf",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:01:29",
+     "ended": "06:04:26",
+     "ledger_line": 105,
+     "ledger_scenario_raw": "uia_param_support_filament",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 176.875,
+     "process_seconds": 150.2899656,
+     "script_action_seconds": 45.843,
+     "host_orchestration_seconds": 176.937,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 14,
@@ -340,8 +678,33 @@
    "record_id": "reczz28b6mRAz1dW",
    "title": "支撑高级-距离与界面组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "50e7445eae1d4b39b124d154414e3971",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:04:26",
+     "ended": "06:08:11",
+     "ledger_line": 107,
+     "ledger_scenario_raw": "uia_param_support_interface",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 224.90600000007544,
+     "process_seconds": 197.9113842,
+     "script_action_seconds": 93.578,
+     "host_orchestration_seconds": 224.969,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 15,
@@ -353,8 +716,33 @@
    "record_id": "reczz28b6mRAy1At",
    "title": "擦拭塔-结构/清理/附着组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "51f2c5a1be9c42458cb0bfbd61dae68e",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:08:11",
+     "ended": "06:11:56",
+     "ledger_line": 109,
+     "ledger_scenario_raw": "uia_param_prime_tower",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 225.10999999998603,
+     "process_seconds": 198.7642844,
+     "script_action_seconds": 94.375,
+     "host_orchestration_seconds": 225.157,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 16,
@@ -366,8 +754,33 @@
    "record_id": "reczz28b6mRB1fwT",
    "title": "Ooze预防-待机与预热组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "c27e3d11da3c460c994a5f4d96dd8ec1",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:11:56",
+     "ended": "06:15:06",
+     "ledger_line": 111,
+     "ledger_scenario_raw": "uia_param_ooze_prevention",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 189.28100000007544,
+     "process_seconds": 160.8418997,
+     "script_action_seconds": 56.469,
+     "host_orchestration_seconds": 189.344,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 17,
@@ -379,8 +792,33 @@
    "record_id": "reczz28b6mRAzl7P",
    "title": "材料高级-界面外壳与工具组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "55065a003b19456da086f600474bb42b",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:15:06",
+     "ended": "06:18:23",
+     "ledger_line": 113,
+     "ledger_scenario_raw": "uia_param_material_advanced",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 197.31299999996554,
+     "process_seconds": 169.0244566,
+     "script_action_seconds": 64.593,
+     "host_orchestration_seconds": 197.359,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 18,
@@ -392,8 +830,33 @@
    "record_id": "reczz28b6mRAyNfH",
    "title": "Brim-宽度间隙与类型组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "f6dc29a855044611be03ed93a7eed870",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:18:23",
+     "ended": "06:21:29",
+     "ledger_line": 115,
+     "ledger_scenario_raw": "uia_param_brim",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 185.0779999999795,
+     "process_seconds": 157.555825,
+     "script_action_seconds": 53.218,
+     "host_orchestration_seconds": 185.125,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 19,
@@ -405,8 +868,33 @@
    "record_id": "reczz28b6mRB19md",
    "title": "特殊模式-螺旋花瓶单墙",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "e2dc078f7d384e5693b18ffee354845a",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:21:29",
+     "ended": "06:24:34",
+     "ledger_line": 117,
+     "ledger_scenario_raw": "uia_param_spiral_vase",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 184.875,
+     "process_seconds": 157.2347749,
+     "script_action_seconds": 52.875,
+     "host_orchestration_seconds": 184.937,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 20,
@@ -418,8 +906,33 @@
    "record_id": "reczz28b6mRAyPQV",
    "title": "绒毛表面-范围/点距/厚度组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "c953a01499a24423b5b7f28f794970a3",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:24:34",
+     "ended": "06:27:39",
+     "ledger_line": 118,
+     "ledger_scenario_raw": "uia_param_fuzzy",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 184.875,
+     "process_seconds": 159.8585887,
+     "script_action_seconds": 55.312,
+     "host_orchestration_seconds": 184.938,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 21,
@@ -431,8 +944,33 @@
    "record_id": "reczz28b6mRAyshq",
    "title": "G-code输出-排除对象与填充回抽组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "2c581bd4b35f4d358dbde5cefac710c2",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:27:39",
+     "ended": "06:30:28",
+     "ledger_line": 120,
+     "ledger_scenario_raw": "uia_param_exclude_objects",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 169.06299999996554,
+     "process_seconds": 141.7368816,
+     "script_action_seconds": 37.156,
+     "host_orchestration_seconds": 169.125,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 1,
@@ -444,47 +982,78 @@
    "record_id": "reczz28b6mRAynyS",
    "title": "接缝-位置/间隙/擦拭组合",
    "feishu_status": "待实现",
-   "runs": [
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "fefd58ea53cb432bb97433c828b2576a",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "05:17:18",
+     "ended": "05:20:51",
+     "ledger_line": 80,
+     "ledger_scenario_raw": "uia_param_seam_wipe",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 160.0056368,
+     "script_action_seconds": 59.781,
+     "host_orchestration_seconds": 213.524,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [
     {
      "run_id": "9117553219f14bc58703177577b2ebb9",
      "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
      "commit": "d5fc2fa",
+     "on_final_engine": false,
      "started": "03:55:54",
      "ended": "03:57:03",
      "ledger_line": 50,
      "ledger_scenario_raw": "uia_param_seam_wipe\r",
-     "machine": "fa706g3",
      "verdict": null,
      "verified_pass": null,
      "cleanup_confirmed": null,
-     "process_seconds": null,
      "host_wall_seconds": null,
+     "process_seconds": null,
      "script_action_seconds": null,
      "host_orchestration_seconds": 68.333,
      "dispatch_error": "no worker.json",
-     "worker_error": "no worker.json"
+     "worker_error": "no worker.json",
+     "failed_checks": null
     },
     {
      "run_id": "8352f74d3bb6492db7333d850447b2f9",
      "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
      "commit": "d5fc2fa",
+     "on_final_engine": false,
      "started": "03:58:34",
      "ended": "04:02:08",
      "ledger_line": 52,
      "ledger_scenario_raw": "uia_param_seam_wipe",
-     "machine": "fa706g3",
      "verdict": "SHADOW",
      "verified_pass": true,
      "cleanup_confirmed": true,
-     "process_seconds": 160.0309733,
      "host_wall_seconds": null,
+     "process_seconds": 160.0309733,
      "script_action_seconds": 59.797,
      "host_orchestration_seconds": 213.612,
      "dispatch_error": null,
-     "worker_error": ""
+     "worker_error": null,
+     "failed_checks": null
     }
    ],
-   "status": "done"
+   "retries": []
   },
   {
    "order": 2,
@@ -496,28 +1065,56 @@
    "record_id": "reczz28b6mRAyQE3",
    "title": "精度-圆弧/分辨率/间隙闭合组合",
    "feishu_status": "待实现",
-   "runs": [
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "3a43c6fd450147f8a2a011d45b63e5e1",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "05:20:51",
+     "ended": "05:24:25",
+     "ledger_line": 82,
+     "ledger_scenario_raw": "uia_param_arc_resolution",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 146.7206873,
+     "script_action_seconds": 46.468,
+     "host_orchestration_seconds": 213.564,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [
     {
      "run_id": "925fe20fbfcd474380ff3f77743aed56",
      "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
      "commit": "d5fc2fa",
+     "on_final_engine": false,
      "started": "04:02:08",
      "ended": "04:05:42",
      "ledger_line": 54,
      "ledger_scenario_raw": "uia_param_arc_resolution",
-     "machine": "fa706g3",
      "verdict": "SHADOW",
      "verified_pass": true,
      "cleanup_confirmed": true,
-     "process_seconds": 146.6083196,
      "host_wall_seconds": null,
+     "process_seconds": 146.6083196,
      "script_action_seconds": 46.438,
      "host_orchestration_seconds": 213.532,
      "dispatch_error": null,
-     "worker_error": ""
+     "worker_error": null,
+     "failed_checks": null
     }
    ],
-   "status": "done"
+   "retries": []
   },
   {
    "order": 3,
@@ -529,28 +1126,56 @@
    "record_id": "reczz28b6mRAxxD7",
    "title": "墙生成器-Arachne薄壁组合",
    "feishu_status": "待实现",
-   "runs": [
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "ea11c71012154f1c9f1640aa1db2d8c4",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "05:24:25",
+     "ended": "05:27:59",
+     "ledger_line": 84,
+     "ledger_scenario_raw": "uia_param_wall_generator",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 143.9100319,
+     "script_action_seconds": 43.672,
+     "host_orchestration_seconds": 213.54,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [
     {
      "run_id": "afc73d60a48b4dbc892f77f942e69c76",
      "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
      "commit": "d5fc2fa",
+     "on_final_engine": false,
      "started": "04:05:42",
      "ended": "04:09:15",
      "ledger_line": 56,
      "ledger_scenario_raw": "uia_param_wall_generator",
-     "machine": "fa706g3",
      "verdict": "SHADOW",
      "verified_pass": true,
      "cleanup_confirmed": true,
-     "process_seconds": 143.8743348,
      "host_wall_seconds": null,
+     "process_seconds": 143.8743348,
      "script_action_seconds": 43.656,
      "host_orchestration_seconds": 213.463,
      "dispatch_error": null,
-     "worker_error": ""
+     "worker_error": null,
+     "failed_checks": null
     }
    ],
-   "status": "done"
+   "retries": []
   },
   {
    "order": 4,
@@ -562,28 +1187,56 @@
    "record_id": "reczz28b6mRAyIRW",
    "title": "墙壁和表面-表面流量组合",
    "feishu_status": "待实现",
-   "runs": [
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "f3daf5c3e30e4cba8303e2418f99d0a0",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "05:27:59",
+     "ended": "05:31:32",
+     "ledger_line": 86,
+     "ledger_scenario_raw": "uia_param_surface_flow",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 151.7324794,
+     "script_action_seconds": 51.515,
+     "host_orchestration_seconds": 213.57,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [
     {
      "run_id": "c7c8a5475e404cc2a3849a1a8bf8df5b",
      "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
      "commit": "d5fc2fa",
+     "on_final_engine": false,
      "started": "04:09:15",
      "ended": "04:12:49",
      "ledger_line": 58,
      "ledger_scenario_raw": "uia_param_surface_flow",
-     "machine": "fa706g3",
      "verdict": "SHADOW",
      "verified_pass": true,
      "cleanup_confirmed": true,
-     "process_seconds": 151.7821968,
      "host_wall_seconds": null,
+     "process_seconds": 151.7821968,
      "script_action_seconds": 51.5,
      "host_orchestration_seconds": 213.604,
      "dispatch_error": null,
-     "worker_error": ""
+     "worker_error": null,
+     "failed_checks": null
     }
    ],
-   "status": "done"
+   "retries": []
   },
   {
    "order": 5,
@@ -595,28 +1248,56 @@
    "record_id": "reczz28b6mRB0mjp",
    "title": "悬垂-识别与分档速度组合",
    "feishu_status": "待实现",
-   "runs": [
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "b82b9932762a446f9386182e9501aaa9",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "05:31:32",
+     "ended": "05:35:33",
+     "ledger_line": 88,
+     "ledger_scenario_raw": "uia_param_overhang_speeds",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 182.2859452,
+     "script_action_seconds": 82.14,
+     "host_orchestration_seconds": 240.683,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [
     {
      "run_id": "9e687519d15a4b77a6cfb7fa12ddba47",
      "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
      "commit": "d5fc2fa",
+     "on_final_engine": false,
      "started": "04:12:49",
      "ended": "04:16:50",
      "ledger_line": 60,
      "ledger_scenario_raw": "uia_param_overhang_speeds",
-     "machine": "fa706g3",
      "verdict": "SHADOW",
      "verified_pass": true,
      "cleanup_confirmed": true,
-     "process_seconds": 182.2844014,
      "host_wall_seconds": null,
+     "process_seconds": 182.2844014,
      "script_action_seconds": 82.157,
      "host_orchestration_seconds": 240.65,
      "dispatch_error": null,
-     "worker_error": ""
+     "worker_error": null,
+     "failed_checks": null
     }
    ],
-   "status": "done"
+   "retries": []
   },
   {
    "order": 6,
@@ -628,28 +1309,56 @@
    "record_id": "reczz28b6mRAyM4X",
    "title": "墙-圈数与薄壁组合",
    "feishu_status": "待实现",
-   "runs": [
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "09b59283ea2049de9213b0a2b20d01e1",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "05:35:33",
+     "ended": "05:39:07",
+     "ledger_line": 90,
+     "ledger_scenario_raw": "uia_param_wall_thin",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 142.5488939,
+     "script_action_seconds": 42.297,
+     "host_orchestration_seconds": 213.564,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [
     {
      "run_id": "ac15b9ca5fad4b7da33e02c42f192b89",
      "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
      "commit": "d5fc2fa",
+     "on_final_engine": false,
      "started": "04:16:50",
      "ended": "04:20:23",
      "ledger_line": 62,
      "ledger_scenario_raw": "uia_param_wall_thin",
-     "machine": "fa706g3",
      "verdict": "SHADOW",
      "verified_pass": true,
      "cleanup_confirmed": true,
-     "process_seconds": 142.4674462,
      "host_wall_seconds": null,
+     "process_seconds": 142.4674462,
      "script_action_seconds": 42.297,
      "host_orchestration_seconds": 213.521,
      "dispatch_error": null,
-     "worker_error": ""
+     "worker_error": null,
+     "failed_checks": null
     }
    ],
-   "status": "done"
+   "retries": []
   },
   {
    "order": 7,
@@ -661,142 +1370,237 @@
    "record_id": "reczz28b6mRAz0f1",
    "title": "填充-密度/图案/方向/重叠组合",
    "feishu_status": "待实现",
-   "runs": [
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "72f7f6ded4174e2db24d6844d7cc8921",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "05:39:07",
+     "ended": "05:43:08",
+     "ledger_line": 93,
+     "ledger_scenario_raw": "uia_param_infill_combo",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 179.9055416,
+     "script_action_seconds": 79.75,
+     "host_orchestration_seconds": 240.661,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [
     {
      "run_id": "62a3cd012aa549f593e3c6630db4c6b9",
      "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
      "commit": "d5fc2fa",
+     "on_final_engine": false,
      "started": "04:20:23",
      "ended": "04:23:03",
      "ledger_line": 64,
      "ledger_scenario_raw": "uia_param_infill_combo",
-     "machine": "fa706g3",
      "verdict": "NON_GREEN",
      "verified_pass": false,
      "cleanup_confirmed": true,
-     "process_seconds": 85.4987979,
      "host_wall_seconds": null,
+     "process_seconds": 85.4987979,
      "script_action_seconds": 34.578,
      "host_orchestration_seconds": 159.288,
      "dispatch_error": null,
-     "worker_error": "ProtocolError:param_combo_readback:Gyroid:Grid"
-    },
+     "worker_error": "ProtocolError:param_combo_readback:Gyroid:Grid",
+     "failed_checks": {
+      "business": "unknown: not checked",
+      "path": "unknown: not checked",
+      "visual": "unknown: not checked"
+     }
+    }
+   ],
+   "retries": [
     {
      "run_id": "47d680529b2140968547bcc48351edfc",
      "label": "retry-infill-1",
+     "role": "retry",
+     "machine": "fa706g3",
      "commit": "d5fc2fa",
+     "on_final_engine": false,
      "started": "04:28:45",
      "ended": "04:32:46",
      "ledger_line": 68,
      "ledger_scenario_raw": "uia_param_infill_combo",
-     "machine": "fa706g3",
      "verdict": "SHADOW",
      "verified_pass": true,
      "cleanup_confirmed": true,
-     "process_seconds": 179.8925359,
      "host_wall_seconds": null,
+     "process_seconds": 179.8925359,
      "script_action_seconds": 79.766,
      "host_orchestration_seconds": 240.685,
      "dispatch_error": null,
-     "worker_error": ""
+     "worker_error": null,
+     "failed_checks": null
     },
     {
      "run_id": "d58abb248fb14ddf9e3baed84c90ba13",
      "label": "retry-infill-1",
-     "commit": "d5fc2fa",
+     "role": "retry",
+     "machine": "guest",
+     "commit": "d5fc2fad9ed919467e096a3a7d4c2ec746d6c7e0",
+     "on_final_engine": false,
      "started": "04:28:45",
      "ended": "04:32:18",
      "ledger_line": 67,
      "ledger_scenario_raw": "uia_param_infill_combo",
-     "machine": "guest",
      "verdict": "SHADOW",
      "verified_pass": true,
      "cleanup_confirmed": true,
-     "process_seconds": 185.2813412,
      "host_wall_seconds": 213.59400000004098,
+     "process_seconds": 185.2813412,
      "script_action_seconds": 80.89,
      "host_orchestration_seconds": 213.641,
      "dispatch_error": null,
-     "worker_error": null
+     "worker_error": null,
+     "failed_checks": null
     },
     {
      "run_id": "3f5f22d753684e6797dbc3808b8ed039",
      "label": "retry-infill-2",
-     "commit": "d5fc2fa",
+     "role": "retry",
+     "machine": "guest",
+     "commit": "d5fc2fad9ed919467e096a3a7d4c2ec746d6c7e0",
+     "on_final_engine": false,
      "started": "04:32:18",
      "ended": "04:35:52",
      "ledger_line": 69,
      "ledger_scenario_raw": "uia_param_infill_combo",
-     "machine": "guest",
      "verdict": "SHADOW",
      "verified_pass": true,
      "cleanup_confirmed": true,
-     "process_seconds": 184.9933647,
      "host_wall_seconds": 213.10899999993853,
+     "process_seconds": 184.9933647,
      "script_action_seconds": 80.609,
      "host_orchestration_seconds": 213.172,
      "dispatch_error": null,
-     "worker_error": null
+     "worker_error": null,
+     "failed_checks": null
     },
     {
      "run_id": "cad6b0103b834310b4836c08979930f7",
      "label": "retry-infill-2",
+     "role": "retry",
+     "machine": "fa706g3",
      "commit": "d5fc2fa",
+     "on_final_engine": false,
      "started": "04:32:46",
      "ended": "04:36:46",
      "ledger_line": 70,
      "ledger_scenario_raw": "uia_param_infill_combo",
-     "machine": "fa706g3",
      "verdict": "SHADOW",
      "verified_pass": true,
      "cleanup_confirmed": true,
-     "process_seconds": 180.0118632,
      "host_wall_seconds": null,
+     "process_seconds": 180.0118632,
      "script_action_seconds": 79.782,
      "host_orchestration_seconds": 240.709,
      "dispatch_error": null,
-     "worker_error": ""
+     "worker_error": null,
+     "failed_checks": null
     },
     {
      "run_id": "da86773c154c4f7698da7eb2f2509cd1",
      "label": "retry-infill-3",
-     "commit": "d5fc2fa",
+     "role": "retry",
+     "machine": "guest",
+     "commit": "d5fc2fad9ed919467e096a3a7d4c2ec746d6c7e0",
+     "on_final_engine": false,
      "started": "04:36:49",
      "ended": "04:40:23",
      "ledger_line": 71,
      "ledger_scenario_raw": "uia_param_infill_combo",
-     "machine": "guest",
      "verdict": "SHADOW",
      "verified_pass": true,
      "cleanup_confirmed": true,
-     "process_seconds": 184.7924857,
      "host_wall_seconds": 213.17199999990407,
+     "process_seconds": 184.7924857,
      "script_action_seconds": 80.578,
      "host_orchestration_seconds": 213.219,
      "dispatch_error": null,
-     "worker_error": null
+     "worker_error": null,
+     "failed_checks": null
     },
     {
      "run_id": "0b51fb837ff44727951931dc769bb61b",
      "label": "retry-infill-4",
-     "commit": "d5fc2fa",
+     "role": "retry",
+     "machine": "guest",
+     "commit": "d5fc2fad9ed919467e096a3a7d4c2ec746d6c7e0",
+     "on_final_engine": false,
      "started": "04:40:23",
      "ended": "04:43:56",
      "ledger_line": 72,
      "ledger_scenario_raw": "uia_param_infill_combo",
-     "machine": "guest",
      "verdict": "SHADOW",
      "verified_pass": true,
      "cleanup_confirmed": true,
-     "process_seconds": 185.2276395,
      "host_wall_seconds": 213.3279999999795,
+     "process_seconds": 185.2276395,
      "script_action_seconds": 80.86,
      "host_orchestration_seconds": 213.359,
      "dispatch_error": null,
-     "worker_error": null
+     "worker_error": null,
+     "failed_checks": null
+    },
+    {
+     "run_id": "f4d9633d9b784e85897741bda3609b91",
+     "label": "retry-infill-3",
+     "role": "retry",
+     "machine": "fa706g3",
+     "commit": "d5fc2fa",
+     "on_final_engine": false,
+     "started": "04:41:01",
+     "ended": "04:45:02",
+     "ledger_line": 73,
+     "ledger_scenario_raw": "uia_param_infill_combo",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 180.0447584,
+     "script_action_seconds": 79.766,
+     "host_orchestration_seconds": 240.707,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    },
+    {
+     "run_id": "38cf0c29f7ec4f98bc9bd1ef98594354",
+     "label": "retry-infill-4",
+     "role": "retry",
+     "machine": "fa706g3",
+     "commit": "d5fc2fa",
+     "on_final_engine": false,
+     "started": "04:45:02",
+     "ended": "04:49:03",
+     "ledger_line": 74,
+     "ledger_scenario_raw": "uia_param_infill_combo",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 179.9180825,
+     "script_action_seconds": 79.719,
+     "host_orchestration_seconds": 240.717,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
     }
-   ],
-   "status": "done_with_failure"
+   ]
   },
   {
    "order": 8,
@@ -808,28 +1612,56 @@
    "record_id": "reczz28b6mRAyhVJ",
    "title": "首层速度-全速度链组合",
    "feishu_status": "待实现",
-   "runs": [
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "e15272b87a904d0ab18e02dd3f45ff0a",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "05:43:08",
+     "ended": "05:46:41",
+     "ledger_line": 95,
+     "ledger_scenario_raw": "uia_param_first_speeds",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 153.9620029,
+     "script_action_seconds": 53.688,
+     "host_orchestration_seconds": 213.543,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [
     {
      "run_id": "74f17375bbda48fb9e06d91f0a8b3e4a",
      "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
      "commit": "d5fc2fa",
+     "on_final_engine": false,
      "started": "04:23:03",
      "ended": "04:26:36",
      "ledger_line": 66,
      "ledger_scenario_raw": "uia_param_first_speeds",
-     "machine": "fa706g3",
      "verdict": "SHADOW",
      "verified_pass": true,
      "cleanup_confirmed": true,
-     "process_seconds": 153.9293894,
      "host_wall_seconds": null,
+     "process_seconds": 153.9293894,
      "script_action_seconds": 53.688,
      "host_orchestration_seconds": 213.561,
      "dispatch_error": null,
-     "worker_error": ""
+     "worker_error": null,
+     "failed_checks": null
     }
    ],
-   "status": "done"
+   "retries": []
   },
   {
    "order": 9,
@@ -841,8 +1673,33 @@
    "record_id": "reczz28b6mRB1ZL4",
    "title": "悬垂速度-分档与桥接组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "ed9d6ba332314cb28c2a8b9229b3470e",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "05:46:42",
+     "ended": "05:50:42",
+     "ledger_line": 97,
+     "ledger_scenario_raw": "uia_param_overhang_bridge",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 181.9307268,
+     "script_action_seconds": 81.796,
+     "host_orchestration_seconds": 240.668,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 10,
@@ -854,8 +1711,33 @@
    "record_id": "reczz28b6mRAzthX",
    "title": "加速度-特征组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "5f69c567baa94d1d8653b35c9276fbf4",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "05:50:42",
+     "ended": "05:54:43",
+     "ledger_line": 99,
+     "ledger_scenario_raw": "uia_param_accelerations",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 189.5689062,
+     "script_action_seconds": 89.438,
+     "host_orchestration_seconds": 240.541,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 11,
@@ -867,8 +1749,33 @@
    "record_id": "reczz28b6mRAyH5p",
    "title": "速度高级-流量与机器上限组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "9d89930fbff44e2f9c35323d0d7f54b8",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "05:54:43",
+     "ended": "05:58:44",
+     "ledger_line": 102,
+     "ledger_scenario_raw": "uia_param_speed_limits",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 164.6487268,
+     "script_action_seconds": 64.391,
+     "host_orchestration_seconds": 240.649,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 12,
@@ -880,8 +1787,33 @@
    "record_id": "reczz28b6mRAzKa2",
    "title": "筏层-结构/间距/扩展组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "f8267f3b550e428bb7ee86c71a85d346",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "05:58:44",
+     "ended": "06:02:45",
+     "ledger_line": 104,
+     "ledger_scenario_raw": "uia_param_raft",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 177.2847537,
+     "script_action_seconds": 77.032,
+     "host_orchestration_seconds": 240.758,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 13,
@@ -893,8 +1825,33 @@
    "record_id": "reczz28b6mRAz8Gm",
    "title": "支撑熨烫-开关/流量/间距组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "4000ec43039e49e68a75b947e13eb87a",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "06:02:45",
+     "ended": "06:06:19",
+     "ledger_line": 106,
+     "ledger_scenario_raw": "uia_param_support_ironing",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 159.247532,
+     "script_action_seconds": 58.922,
+     "host_orchestration_seconds": 213.807,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 14,
@@ -906,8 +1863,33 @@
    "record_id": "reczz28b6mRB0dhl",
    "title": "支撑高级-树状支撑组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "b543390be2fb4083939b585f2248ec10",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "06:06:19",
+     "ended": "06:10:19",
+     "ledger_line": 108,
+     "ledger_scenario_raw": "uia_param_tree_support",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 184.7148072,
+     "script_action_seconds": 84.531,
+     "host_orchestration_seconds": 240.66,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 15,
@@ -919,8 +1901,33 @@
    "record_id": "reczz28b6mRAzFuo",
    "title": "特征用耗材-塔与支撑映射组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "85f43119a4b84389b6bf4b5e4cdca8fb",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "06:10:20",
+     "ended": "06:13:53",
+     "ledger_line": 110,
+     "ledger_scenario_raw": "uia_param_filament_features",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 145.0086516,
+     "script_action_seconds": 44.766,
+     "host_orchestration_seconds": 213.548,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 16,
@@ -932,8 +1939,33 @@
    "record_id": "reczz28b6mRB035T",
    "title": "换料冲刷-去向与体积组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "27bb889edf9b413c917b0e0c21bd0da2",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "06:13:53",
+     "ended": "06:17:27",
+     "ledger_line": 112,
+     "ledger_scenario_raw": "uia_param_flush_options",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 145.8688364,
+     "script_action_seconds": 45.531,
+     "host_orchestration_seconds": 213.519,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 17,
@@ -945,8 +1977,33 @@
    "record_id": "reczz28b6mRAyRCt",
    "title": "裙边-圈数高度距离与风挡组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "a8f21d45f0334cc3b0c13f5a1d827173",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "06:17:27",
+     "ended": "06:21:01",
+     "ledger_line": 114,
+     "ledger_scenario_raw": "uia_param_skirt",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 159.5011376,
+     "script_action_seconds": 59.219,
+     "host_orchestration_seconds": 213.653,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 18,
@@ -958,8 +2015,33 @@
    "record_id": "reczz28b6mRB1mQt",
    "title": "特殊模式-逐件打印与碰撞",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "9ad1b7e263cd4a609dc47c8ef86123a1",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "06:21:01",
+     "ended": "06:24:07",
+     "ledger_line": 116,
+     "ledger_scenario_raw": "uia_param_by_object",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 134.9381038,
+     "script_action_seconds": 34.594,
+     "host_orchestration_seconds": 186.393,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 19,
@@ -971,8 +2053,63 @@
    "record_id": "reczz28b6mRAzCq8",
    "title": "特殊模式-延时与切片模式组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "NON_GREEN",
+   "runs_final_engine": [
+    {
+     "run_id": "1a4c0845ae0047fca869fcd11bf74455",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "06:24:07",
+     "ended": "06:29:02",
+     "ledger_line": 119,
+     "ledger_scenario_raw": "uia_param_timelapse",
+     "verdict": "NON_GREEN",
+     "verified_pass": false,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 221.1338198,
+     "script_action_seconds": 121.093,
+     "host_orchestration_seconds": 294.862,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": {
+      "business": "unknown: pilot_target_setting_mismatch",
+      "path": "unknown: pilot_target_setting_mismatch",
+      "visual": "unknown: not checked"
+     }
+    },
+    {
+     "run_id": "9db255d48fe64f2db8564a1c476ae48d",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:30:54",
+     "ended": "06:35:07",
+     "ledger_line": 122,
+     "ledger_scenario_raw": "uia_param_timelapse",
+     "verdict": "NON_GREEN",
+     "verified_pass": false,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 253.0,
+     "process_seconds": 226.9485009,
+     "script_action_seconds": 122.453,
+     "host_orchestration_seconds": 253.031,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": {
+      "business": "unknown: pilot_target_setting_mismatch",
+      "path": "unknown: pilot_target_setting_mismatch",
+      "visual": "unknown: not checked"
+     }
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 20,
@@ -984,8 +2121,33 @@
    "record_id": "reczz28b6mRAyaVq",
    "title": "G-code输出-注释/行号/标签/文件名组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "2c31895fb3994cb193a020beca14b979",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "06:29:02",
+     "ended": "06:33:03",
+     "ledger_line": 121,
+     "ledger_scenario_raw": "uia_param_gcode_output",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 164.318005,
+     "script_action_seconds": 63.86,
+     "host_orchestration_seconds": 240.523,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   },
   {
    "order": 21,
@@ -997,8 +2159,53 @@
    "record_id": "reczz28b6mRB1GVG",
    "title": "层高-首层与常规层高组合",
    "feishu_status": "待实现",
-   "runs": [],
-   "status": "not_run_yet"
+   "status": "SHADOW",
+   "runs_final_engine": [
+    {
+     "run_id": "1f6c810ad1ca4ebba0b286f07e23a8e9",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "06:33:03",
+     "ended": "06:36:10",
+     "ledger_line": 123,
+     "ledger_scenario_raw": "uia_param_layer_pair",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 127.6259059,
+     "script_action_seconds": 27.391,
+     "host_orchestration_seconds": 186.468,
+     "dispatch_error": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_on_d5fc2fa": [],
+   "retries": []
   }
- ]
+ ],
+ "in_progress": {
+  "twins": [
+   "246466cc65014ff6ad8491fe44ccdfdf",
+   "57df279e01bc474a9f813b3be21a9aa3",
+   "68ef48ff435a452892291c711f281b9d",
+   "8d854874a8bf42fbaa4acb48e173d46c",
+   "a277ec34257c4e75bfe5053c9aab9f6c",
+   "b3764fd45e4048f0851d6933bc1fe75a",
+   "b685855e48bb4ffb8c878b1b8d30f487"
+  ],
+  "shapes": [
+   "0c44e1014ef74ec6b2bc999790ee0719",
+   "399e6d25b9d64ce6be64a92195c88a0f",
+   "6099d347c3384994b9a847c713aaff0a",
+   "83f09dc39a864edda042fb779543f26a",
+   "b294b048e1554d02a0563f9e1ca4f7bf",
+   "f3709f1cb2294dc7b3eeff6b96304ee8"
+  ],
+  "note": "标签 guest-twins 和 fa-shapes 在本版写成时还在跑，留给以后补；这里只记台账复制时已有的 run，不计入上面任何数字。"
+ }
 }

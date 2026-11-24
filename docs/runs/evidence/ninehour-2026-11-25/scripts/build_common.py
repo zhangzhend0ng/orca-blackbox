@@ -23,16 +23,23 @@ SNAPSHOT = "docs/runs/evidence/feishu-tblKjIVV8KA53kUQ-2026-11-22/tblKjIVV8KA53k
 ROLES = (
     ("base-", "baseline"), ("timed-", "timed"), ("cand-k1-", "wait264"), ("cand-k2-", "burst264"),
     ("cand-q-", "wait276"), ("cand-s-", "wait276"), ("cand-fa-", "wait276"),
-    ("backlog-", "backlog"), ("regress", "regress"), ("retry-", "regress"), ("native-", "native"), ("final-", "final"),
+    ("backlog-", "backlog"), ("regress", "regress"), ("retry-", "retry"), ("native-", "native"),
+    ("final2-", "final2"), ("final-", "final"), ("guest-twins", "twins"), ("fa-shapes", "shapes"),
 )
-ROLE_ORDER = ("baseline", "timed", "wait276", "wait264", "burst264", "final")
+ROLE_ORDER = ("baseline", "timed", "wait276", "wait264", "burst264", "final2", "final")
 CANDIDATES = ("wait276", "wait264", "burst264")
-TIMED_ROLES = ("baseline", "timed", "wait276", "wait264", "burst264", "final")
+TIMED_ROLES = ("baseline", "timed", "wait276", "wait264", "burst264", "final2", "final")
 ROLE_TEXT = {
     "baseline": "基线", "timed": "计时版", "wait276": "候选（#276 就绪等待）",
-    "wait264": "K1（就绪等待）", "burst264": "K2（滚轮一次到位）", "final": "最终引擎复核",
-    "backlog": "补覆盖", "regress": "最终引擎回归", "native": "原生模型对照",
+    "wait264": "K1（就绪等待）", "burst264": "K2（滚轮一次到位）",
+    "final2": "最终引擎 2a17376 上的复核", "final": "d5fc2fa 上的复核（不是最终引擎）",
+    "backlog": "补覆盖", "regress": "回归", "retry": "重试", "native": "原生模型对照",
+    "twins": "客机自有模型孪生（进行中）", "shapes": "fa706g3 多形状孪生（进行中）",
 }
+# The engine to merge: d5fc2fa plus the cherry-pick of 5b38c80 (one commit, parent d5fc2fa).
+FINAL_ENGINE = "2a17376"
+SUPERSEDED_ENGINE = "d5fc2fa"
+IN_PROGRESS_ROLES = ("twins", "shapes")     # left for a later pass: never counted, only mentioned
 MACHINE_TEXT = {"guest": "客机 win11-test", "fa706g3": "fa706g3"}
 MACHINE_OF_LEDGER = {"win11-test": "guest", "fa706g3": "fa706g3"}
 
@@ -42,6 +49,11 @@ def role_of(label):
         if (label or "").startswith(prefix):
             return role
     return "other"
+
+
+def on_final_engine(entry):
+    """Whether the ledger says a run was on the final engine (its commit field)."""
+    return (entry.get("commit") or "").startswith(FINAL_ENGINE)
 
 
 def f3(value):
