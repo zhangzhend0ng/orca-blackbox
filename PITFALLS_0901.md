@@ -538,3 +538,66 @@ feed 请求日志 + 真实弹窗 WM_CLOSE 实测），逐条收敛 §19 的残�
 - **launcher 的 --datadir 必须绝对路径**：launcher 以 exe 目录为子进程
   cwd，相对 datadir 落到 exe 旁 → 种子 conf 不生效 → 首启向导模态阻塞
   主窗口 → find_main_window 90s 超时。
+
+## 21. 1124 补充：飞书参数用例通宵段（夹具 / 判据 / 验证器 / 队列）
+
+run 编号是 `artifacts/windows_mcp_harvest/<编号>`；叙述与决策见运行记录
+`docs/runs/glm-flash-expansion-2026-11-21.md`「续五」，飞书预期与导出件实测的
+对照表在 `docs/runs/evidence/feishu-expect-vs-gcode-2026-11-24/`。
+
+- **判据迁就工具**：#270 首层空驶速度、#271 小轮廓速度在用例表里是 `150%` /
+  `50%`，飞书步骤原文是 150 / 50 mm/s（预期里就是 F≈9000、50mm/s）；pilot 的
+  VALUES 也是那两个错值，所以「值写入」一直通过，而飞书预期的数字永远不可能
+  出现。在按前置条件做的夹具上才暴露（376e80a1 首层空驶 F45000）。已更正
+  （7f0abbb），两条在两种夹具上各重证一次（463f00e3 / 691c2e93、c45355d9 /
+  1bbd8180）。**用例值逐字取自飞书步骤（含单位）；判据不得迁就引擎打了什么。**
+- **单个立方体看不到的东西**：支撑族 5 条的 G-code 没有 `;TYPE:Support`，#258
+  没有挤出圆弧，#263 没有桥，全程只用 T0——这些条的「闭环」只证明了参数写进
+  去。读导出件用 `tools/gcode_facts.py`，把飞书预期和实测并排用
+  `tools/feishu_expect_facts.py . [--suffix=_std02|_shapes]`；夹具要带特征
+  （`fixtures/feishu_shapes_plate.3mf`，开支撑后才有支撑 42 段：e28975a0）。
+- **读 G-code 的结构事实**（第一版读错过）：E 是本条移动的挤出量，不是位置
+  （立方体每条边都是 E3.00173；文件里没有 M82）；首层墙的 F 设在块外的 prime
+  行上，块内没有 F 行；加速度在 `SET_VELOCITY_LIMIT ACCEL=`；klipper 口味没有
+  jerk；对象标签是 `EXCLUDE_OBJECT_*`，归 `exclude_object` 管。
+- **手搭工程文件三条**：① `different_settings_to_system` 必须是应用自己会给这个
+  工程写的（两种夹具都是 `['mixed_filament_definitions','','','','','','']`），
+  按预设树算出来的 9 个键让整轮 `_std02` 死于 `pilot_dirty_manifest_out_of_scope`
+  （c88272e / 7c067c0）；② 数字写法同应用（预设 JSON 的 "1.0"，应用存成 "1"：
+  7b8a4e73）；③ 重建后先拿应用上一轮存下的配置离线比对
+  （`python tools/fixture_vs_saved.py <仓根> <夹具> <run>`），已知迁移之外
+  0 个键再上机器。两处各白跑了一轮。
+- **检查详情有 4096 字符上限**，且验证器把非证据类异常一律写成
+  `native_evidence_unavailable`（baa3168 的真实异常是
+  `check detail must be a bounded string`）。解掩：
+  `python tools/verify_one_real.py <run>`，在产生该 run 的提交上跑。
+- **`analyze_gcode` 假设整盘一个层网格**：两个对象工具的导出件抛
+  `gcode_multiple_object_tools`（70da5cd5）；没钉层网格的夹具上现在记成
+  `schedule_error`，不再让整条用例死掉（69fecb0）。
+- **fa 的窗口比客机矮**：「Overhang speed」第 4 个堆叠框落在页面底边之外，
+  Win32 仍报它可见，`uia_set_float` 选中后 `ui.edit` 拒绝点击
+  （4491e40 / 7e7fd61，#264 / #272 第一次在 fa 上跑）。`_park_field` 先给这个框
+  留 12px、下滚正好够的格数再重定位（188053e / c2368e86）。
+- **耗材全是 PLA 时弹窗的行是「1 PLA…5 PLA」**，OCR 读不出第一行的数字，客机
+  与 fa 都一样（f57a3bf8 / 28d7a69d / 0d05d3e8 / f7f796f6：#279 / #284 / #287
+  的 `_std02` 副本）。要按位置选行。立方体上唯一的一行是「1 PETG」，所以从没
+  暴露过。
+- **「Bridge」行有 External / Internal 两个框夹着标签行**：`^Bridge` 锚定把 30
+  写进了 internal_bridge_speed（cf6ac769），op 已撤回（f371b47）。
+- **按对象打印的建议框**：多挤出机加擦料塔时应用弹「Print By Object: We
+  suggest using auto…」，切片按钮不可用（95b1972e）。引擎还不会答这个框。
+- **#254 的专用驱动写死了立方体的起始值**（`edit_param_layer_pair` 先确认首层框
+  读到 0.4：bfa67eb6 `script_layer_fields_not_as_expected`）。
+- **停队列 / 换版本、单测、全族重跑**：见 README 第 7、8 条。
+- **子代理**：两个宿主 general-purpose 子代理分别建了两个夹具，产出可用、报告
+  精确（各 40–75 分钟）。其中一个的一次 pytest 失败把环境变量（含令牌）写进了
+  宿主临时目录的工具日志（它自己删了）——读这类日志前先按密钥特征**只数文件
+  数**（不回显内容），命中即删；子代理用 `-x` 会停在第一条红就收工，回来要自己
+  跑全量。提示词里写明：只在指定 worktree、不跑 GUI、不 push、15 分钟内交。
+- **飞书指定模型的来源**：画布右键「添加模型」是 `GUI_Factories.cpp` 的两个子
+  菜单——Add Primitive（立方体 / 圆柱 / 球，代码生成）和 Add Handy models（7
+  个，安装目录 `resources\handy_models\` 下的现成文件：OrcaCube_v2.3mf、
+  OrcaToleranceTest.stl、3DBenchy.3mf、ksr_fdmtest_v4.3mf、
+  Voron_Design_Cube_v7.3mf、Stanford_Bunny.3mf、Orca_stringhell.3mf）。客机与
+  fa 的该目录 7 个文件大小与 2.4.1 源码树一致——做夹具直接取这些文件，不必走
+  菜单。
