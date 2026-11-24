@@ -17,7 +17,9 @@ reading of that page has no value token on the row); a reading without the chain
 refuses the row; the ops' time limits are checked as numbers. Step 12: set_float's
 value cell is taken by the row's label on run 063651's own page reading - its row 'X-Y hole
 compensation' carries 'mm' and no number - and by a page that paints no number at all; the edit
-itself (the AX tree) is the GUI run's to judge. Exit status 1 when a check fails."""
+itself (the AX tree) is the GUI run's to judge. Step 13: a row OCR reads without its word space
+('Firstlayer', run 075830) is taken by its label before a prefix hit on another row. Exit status
+1 when a check fails."""
 
 import json
 import re
@@ -439,6 +441,41 @@ def main():
           "a row that paints its number is clicked 3 px right of it as before ('token', x 333)",
           [round(bare_cell[0]), round(bare_cell[1]), bare_cell[3]] == [256, 733, "VALUE_X"]
           and [round(painted_cell[0]), painted_cell[3]] == [333, "token"])
+    # step 13, run 075830 (uia_param_first_speeds, op0): OCR read the row 'First layer' as
+    # 'Firstlayer'. On the code before step 13 no level took that row, and the prefix hit of
+    # '^First layer' on 'First layer infill' (value 55) took it - 30 was written there and saved
+    first = replay("case-075830-op0-find-page")
+    first_rows = first.read("x")
+    first_row = first.find_row(first_rows, "First layer speed", ["^First layer 35", "^First layer"])
+    first_match = {k: first.last_match[k] for k in ("label", "level", "row", "group_by")}
+    first_hits = {c["label"]: c["hits"] for c in first.last_match["candidates"]}
+    first_numbered = [t["text"] for t in po.numbered(first.line_values(first_rows, first_row))]
+    spaced_rows = [{**r, "text": "First layer"} if r["text"] == "Firstlayer" else r for r in first_rows]
+    spaced = replay("case-075830-op0-find-page")  # the same page with the space read
+    spaced.read = lambda tag, full=False: spaced_rows
+    spaced_row = spaced.find_row(spaced_rows, "First layer speed", ["^First layer 35", "^First layer"])
+    off_by_one = replay("case-075830-op0-find-page")
+    refused = None
+    try:
+        off_by_one.find_row(first_rows, "First layer speed", ["^First layer 30", "^First laye"])
+    except RuntimeError as error:
+        refused = po.brief(error, 200)
+    out["step13_nospace"] = {"run_075830": first_match, "numbered_on_the_row": first_numbered,
+                             "hits": first_hits, "row_read_with_its_space": spaced_row["text"],
+                             "level_then": spaced.last_match["level"], "off_by_one": refused}
+    check("step 13, run 075830's own page: op0 of uia_param_first_speeds takes the row OCR reads "
+          "'Firstlayer' (its value 35) by '^First layer' at level 'nospace' in the group "
+          "'First layer speed' - not 'First layer infill' (55), the prefix hit that took it on the GUI",
+          first_match == {"label": "^First layer", "level": "nospace", "row": "Firstlayer",
+                          "group_by": "title"} and int(first_row["y"]) == 751 and first_numbered == ["35"]
+          and first_hits["^First layer 35"] == [])
+    check("step 13 guards: the same page read with its space takes the row at 'exact'; '^First layer' "
+          "still lists 'First layer infill' as its prefix hit and loses to nospace; a label that is "
+          "not the row's letters ('^First laye') is refused - nospace forgives spaces only",
+          spaced_row["text"] == "First layer" and spaced.last_match["level"] == "exact"
+          and first_hits["^First layer"] == [{"level": "nospace", "row": "Firstlayer"},
+                                             {"level": "prefix", "row": "First layer infill"}]
+          and refused is not None and "not visible" in refused)
     # the op limits (step 10): each op gets min(OP_FUSE, the case's time left before the save)
     now = 1_000_000.0
     at = (50, 160, 270, 381)

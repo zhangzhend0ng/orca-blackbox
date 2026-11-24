@@ -1,6 +1,71 @@
 {
-"note": "OCR readings (px, panel-relative: window-left = x 0, window-top = y 0) of the panel shots in shots/ of these names (y >= 670: the tab band and the page), read offline on 2026-11-24 with the ocr binary of ocr.swift 9f36f57b1ab9. Replayed by runner/macos/param_locate_check.py (step 10).",
+"note": "OCR readings (px, panel-relative: window-left = x 0, window-top = y 0) of the panel shots in shots/ of these names (y >= 670: the tab band and the page), read offline on 2026-11-24 with the ocr binary of ocr.swift 9f36f57b1ab9. Replayed by runner/macos/param_locate_check.py (step 10). Step 13 adds run 075830's op0 page (case-075830-op0-find-page: the row 'First layer' read as 'Firstlayer', its value 35), read the same way.",
 "readings": {
+"case-075830-op0-find-page": [
+{
+"x": 18.0,
+"y": 684.0,
+"w": 338.0,
+"h": 16.0,
+"text": "Quality Strength Speed Support Multimaterial"
+},
+{
+"x": 370.0,
+"y": 684.0,
+"w": 44.0,
+"h": 14.0,
+"text": "Others"
+},
+{
+"x": 30.0,
+"y": 720.0,
+"w": 110.0,
+"h": 16.0,
+"text": "First layer speed"
+},
+{
+"x": 30.0,
+"y": 751.0,
+"w": 67.0,
+"h": 14.0,
+"text": "Firstlayer"
+},
+{
+"x": 28.0,
+"y": 778.0,
+"w": 96.0,
+"h": 19.0,
+"text": "First layer infill"
+},
+{
+"x": 200.0,
+"y": 748.0,
+"w": 20.0,
+"h": 16.0,
+"text": "35"
+},
+{
+"x": 276.0,
+"y": 754.0,
+"w": 32.0,
+"h": 10.0,
+"text": "mm/s"
+},
+{
+"x": 200.0,
+"y": 778.0,
+"w": 20.0,
+"h": 14.0,
+"text": "55"
+},
+{
+"x": 276.0,
+"y": 782.0,
+"w": 32.0,
+"h": 10.0,
+"text": "mm/s"
+}
+],
 "case-050208-op0-find-page-full-scroll-4": [
 {
 "x": 18.0,

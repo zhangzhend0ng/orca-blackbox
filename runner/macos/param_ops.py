@@ -63,7 +63,7 @@ PANEL_WIDTH = 470  # left settings column, px at scale 1.0
 TITLE_X = 26       # a row label starts right of this offset (group titles are told by their fold glyph)
 GLYPH_X, GLYPH_W = 5, 18  # the fold glyph's strip at the column's left edge, px
 VALUE_X = 253      # value column: numbers, and the faint square of a bool row
-LEVELS = ("exact", "prefix", "substring")  # how well a row's text fits a label candidate, best first
+LEVELS = ("exact", "nospace", "prefix", "substring")  # how well a row's text fits a label candidate, best first
 SCROLL_STEPS = 24  # page-scrollbar presses that all of one locate_row's scroll chains share
 VIEW_TOP = 712     # options viewport starts here (window-relative px): tab band + gap
 VIEW_RIGHT = 406   # viewport right edge (window-relative); the 15 px strip beyond is not page
@@ -566,9 +566,12 @@ class Panel:
     def find_row(self, rows, group, label):
         """The row a label of `label` paints inside group `group` (None = whole page). `label`
         is one label or all the candidates of an op, judged against this one reading of the
-        page. A candidate hits a row whose text is the candidate, else starts with it (its
-        value and unit follow: 'Travel 500 mm/s' for 'Travel'), else - unless it carries '^' -
-        has it anywhere; exact beats prefix beats substring. self.last_match names the
+        page. A candidate hits a row whose text is the candidate, else a row whose text is the
+        candidate without its word spaces (OCR drops one at times: run 075830 read 'First layer'
+        as 'Firstlayer', and the prefix hit on 'First layer infill' took that row), else starts
+        with it (its value and unit follow: 'Travel 500 mm/s' for 'Travel'), else - unless it
+        carries '^' - has it anywhere; exact beats nospace beats prefix beats substring.
+        self.last_match names the
         candidate that hit and what each of them matched, and `group_by` how the group was
         told: 'title' (on the page), or 'entered' (step 11: a scroll chain went through the
         title and it is above the page - the rows from the viewport's top down to the first
@@ -596,8 +599,9 @@ class Panel:
             wanted, hits = norm(cand), []
             for r in inside:
                 text = norm(r["text"])
-                level = (0 if text == wanted else 1 if text.startswith(wanted + " ")
-                         else 2 if not cand.startswith("^") and wanted in text else None)
+                level = (0 if text == wanted else 1 if text.replace(" ", "") == wanted.replace(" ", "")
+                         else 2 if text.startswith(wanted + " ")
+                         else 3 if not cand.startswith("^") and wanted in text else None)
                 if level is not None:
                     hits.append((level, r["y"], r))
             seen.append({"label": cand, "hits": [{"level": LEVELS[h[0]], "row": h[2]["text"]}
