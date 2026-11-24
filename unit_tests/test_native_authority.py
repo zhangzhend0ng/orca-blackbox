@@ -194,3 +194,36 @@ def test_sidecar_only_accepts_bound_guest_receipt(fault):
             authority_receipt(response, request, RUN, 1)
     else:
         assert authority_receipt(response, request, RUN, 1) == receipt
+
+
+
+def test_server_reads_unicode_comparison_contract_as_utf8(tmp_path, monkeypatch):
+    import json
+    from pathlib import Path
+
+    from harness.native_save_session import native_contract
+    from harness.run_verdict import contract_digest
+    from tools.native_save_server import load_scope
+
+    run_id = "a" * 32
+    scenario = "compare_276_quality"
+    root = tmp_path / "artifacts"
+    root.mkdir()
+    contract = native_contract("zcode", scenario)
+    digest = contract_digest(contract)
+    manifest = dict(run_id=run_id, contract_sha256=digest)
+    scope = dict(manifest, actor="zcode", scenario=scenario, app_pid=1, hwnd=2,
+                 output_path=str(root / "projects/0001.3mf"))
+    encoded = json.dumps(contract.to_dict(), ensure_ascii=False)
+    assert "mm³/s" in encoded
+    (root / "scope.json").write_text(json.dumps(scope), encoding="utf-8")
+    (tmp_path / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    (tmp_path / "contract.json").write_text(encoded, encoding="utf-8")
+
+    read_text = Path.read_text
+
+    def legacy_windows_read(path, encoding=None, errors=None):
+        return read_text(path, encoding=encoding or "cp1252", errors=errors)
+
+    monkeypatch.setattr(Path, "read_text", legacy_windows_read)
+    assert load_scope(root, run_id) == (scope, False)

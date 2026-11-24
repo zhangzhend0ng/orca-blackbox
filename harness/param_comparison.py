@@ -187,3 +187,26 @@ def make_comparison_verify(row, process_values, slot_values, machine_values=None
         return result
 
     return verify
+
+
+def comparison_business_status(detail):
+    """Report complete Feishu acceptance separately from completed comparison."""
+    if detail.get("pair_status") != "checked":
+        return {"comparison_checked": False, "business_status": "UNVERIFIED",
+                "unmet_expectations": ["comparison_baseline"]}
+    if detail["row"] == "265":
+        expectations = {
+            "overhang_80pct": detail.get("fan_effect") == "observed",
+            "overhang_10pct_transition": detail.get("overhang_percentage_threshold") == "observed",
+            "curled_wall_slowdown": detail.get("matched_wall_slowdowns", 0) > 0,
+            "ordinary_surface_feed": detail.get("ordinary_surface_feed_changes") == 0,
+            "ordinary_surface_fan": detail.get("ordinary_surface_fan_changes") == 0,
+        }
+    else:
+        expectations = {
+            "outer_wall_near_178_mm_s": detail.get("near_feishu_178_mm_s") is True,
+            "machine_x_limit_intervention": detail.get("x_limit_effect") == "observed",
+        }
+    unmet = [name for name, proven in expectations.items() if not proven]
+    return {"comparison_checked": True, "business_status": "SHADOW" if unmet else "PASS",
+            "unmet_expectations": unmet}

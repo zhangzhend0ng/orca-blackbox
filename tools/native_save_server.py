@@ -32,6 +32,17 @@ def authority_refusal(receipt, window):
             f"region_name={hint['region_name']} before a new Click."), result
 
 
+def load_scope(root, run_id):
+    from harness.native_authority import validate_scope
+
+    scope = json.loads((root / "scope.json").read_text(encoding="utf-8"))
+    recovery_enabled = validate_scope(scope,
+        json.loads((root.parent / "manifest.json").read_text(encoding="utf-8")),
+        json.loads((root.parent / "contract.json").read_text(encoding="utf-8")),
+        run_id=run_id, output_path=str(root / "projects/0001.3mf"))
+    return scope, recovery_enabled
+
+
 def main():
     from harness import host_guard
     from harness.agent_protocol import valid_run_id
@@ -44,17 +55,13 @@ def main():
         raise PermissionError("native server requires guest")
     root = REPO / "artifacts/v3" / args.run_id / "artifacts"
     from harness.native_save_policy import InputGuard, native_tools
-    scope = json.loads((root / "scope.json").read_text())
     from fastmcp.server.middleware import Middleware
     from fastmcp.tools.base import ToolResult
     from mcp.types import TextContent
-    from harness.native_authority import AuthorityController, validate_scope, attach_authority
+    from harness.native_authority import AuthorityController, attach_authority
     from harness.native_diagnostic_recovery import DIAGNOSTIC_SCENARIOS
     from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, SAVE_CLEAR_SCENARIOS, UIA_HYBRID_SCENARIOS, UIA_SAVE_SCENARIOS
-    recovery_enabled = validate_scope(scope,
-        json.loads((root.parent / "manifest.json").read_text()),
-        json.loads((root.parent / "contract.json").read_text()),
-        run_id=args.run_id, output_path=str(root / "projects/0001.3mf"))
+    scope, recovery_enabled = load_scope(root, args.run_id)
     from windows_mcp import __main__ as original
     from windows_mcp.uia import SendKeys
     hybrid = scope["scenario"] in UIA_HYBRID_SCENARIOS

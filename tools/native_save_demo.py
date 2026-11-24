@@ -184,7 +184,13 @@ def main():
     if args.model is not None:
         sources += ("harness/model_move_pilot.py", "fixtures/agent_layer_cube.3mf")
     from harness.agent_protocol import suffixed_fixture
+    if args.scenario in MAINTENANCE_TRIALS:
+        sources += ("harness/agent_protocol.py", "harness/native_preset_script.py",
+                    "harness/param_comparison.py", "harness/pilot_param_265_overhang_curl.py",
+                    "harness/pilot_param_276_speed_limits.py")
     other_fixture = suffixed_fixture(args.scenario)
+    if args.scenario in MAINTENANCE_TRIALS and other_fixture is None:
+        raise ValueError("comparison_fixture_not_registered")
     if other_fixture:
         # The run opens another fixture than the cube's: its bytes belong to the
         # sources like the cube's do (tracked and unmodified against HEAD, checked below).
@@ -337,10 +343,11 @@ def main():
     summary = {"run_id": run_id, "source_sha": head, "actor": args.actor, "scenario": args.scenario, "actor_exit": code,
                "actor_error": error, "result": result, "release_eligible": False,
                "host_wall_seconds": time.monotonic() - started, "harvest_seconds": harvest_seconds}
-    paired = True
+    business_pass = True
     if args.scenario in MAINTENANCE_TRIALS:
-        paired = False
-        summary["comparison"] = {"status": "no_verified_gui_result"}
+        from harness.param_comparison import comparison_business_status
+        business_pass = False
+        summary["comparison"] = {"status": "no_verified_gui_result", **comparison_business_status({})}
         if result.get("verified_pass") is True and code == 0:
             from harness.native_pilots import comparison_baseline, native_fixture, verify_business
             try:
@@ -357,10 +364,16 @@ def main():
                 baseline_root = Path(os.environ.get("ORCA_BB_HARVEST", result_path.parent.parent))
                 baseline = comparison_baseline(args.scenario, baseline_root)
                 detail = verify_business(args.scenario, project, fixture, export, baseline_gcode=baseline)
-                paired = detail.get("pair_status") == "checked"
-                summary["comparison"] = {"status": "paired" if paired else "unverified", "detail": detail}
+                verdict = comparison_business_status(detail)
+                business_pass = verdict["business_status"] == "PASS"
+                summary["comparison"] = {
+                    "status": "paired" if verdict["comparison_checked"] else "unverified",
+                    **verdict, "detail": detail,
+                }
             except (OSError, ValueError, KeyError) as exc:
-                summary["comparison"] = {"status": "unverified", "reason": str(exc)[:250]}
+                summary["comparison"] = {
+                    "status": "unverified", **comparison_business_status({}), "reason": str(exc)[:250],
+                }
     if args.goal_only:
         summary["prompt_mode"] = "goal_only"
     if args.probe_mix_waits:
@@ -371,7 +384,7 @@ def main():
         summary["mix_boot_probe"] = True
     (root / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(json.dumps(summary), flush=True)
-    return 0 if code == 0 and result.get("verified_pass") is True and plan_matches is not False and paired else 1
+    return 0 if code == 0 and result.get("verified_pass") is True and plan_matches is not False and business_pass else 1
 
 
 if __name__ == "__main__":

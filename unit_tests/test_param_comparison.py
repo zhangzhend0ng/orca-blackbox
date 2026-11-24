@@ -1,7 +1,8 @@
 import pytest
 
 from harness import pilot_param_276_speed_limits
-from harness.param_comparison import _export, _fan_effect, _flow_effect
+from harness.param_comparison import (_export, _fan_effect, _flow_effect,
+                                      comparison_business_status)
 from harness.pilot_common import inspect_preserved_settings
 from harness.script_verify import _InvalidEvidence
 
@@ -65,3 +66,20 @@ def test_saved_slots_and_alternate_machine_mode_are_preserved(key, vector):
     inspect_preserved_settings(correct, original, allowed_changes=changes)
     with pytest.raises(_InvalidEvidence, match="param_slot_value_or_preservation:" + key):
         inspect_preserved_settings({**correct, key: vector}, original, allowed_changes=changes)
+
+
+@pytest.mark.parametrize("detail, expected", [
+    ({}, "UNVERIFIED"),
+    ({"row": "265", "pair_status": "checked", "fan_effect": "not_observed",
+      "matched_wall_slowdowns": 1, "ordinary_surface_feed_changes": 1,
+      "ordinary_surface_fan_changes": 0}, "SHADOW"),
+    ({"row": "276", "pair_status": "checked", "near_feishu_178_mm_s": True,
+      "x_limit_effect": "not_exercised_by_flow_limited_outer_walls"}, "SHADOW"),
+    ({"row": "276", "pair_status": "checked", "near_feishu_178_mm_s": True,
+      "x_limit_effect": "observed"}, "PASS"),
+])
+def test_comparison_checked_does_not_award_full_business_pass(detail, expected):
+    verdict = comparison_business_status(detail)
+    assert verdict["business_status"] == expected
+    assert verdict["comparison_checked"] is (expected != "UNVERIFIED")
+    assert bool(verdict["unmet_expectations"]) is (expected != "PASS")

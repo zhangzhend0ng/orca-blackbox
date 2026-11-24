@@ -3,7 +3,7 @@ from decimal import Decimal, InvalidOperation
 import re
 from types import SimpleNamespace
 
-from .agent_protocol import ProtocolError
+from .agent_protocol import FIXTURE_SUFFIXES, ProtocolError
 
 
 def _center(rect):
@@ -41,10 +41,10 @@ class PresetUI:
                 raise
             raise ProtocolError("script_preset_timeout:" + stage) from error
 
-    def _trace(self, stage, candidates=()):
+    def _trace(self, stage, candidates=(), *, limit=8):
         print("[native-script] preset %s hwnd=%#x class=%s rect=%r candidates=%r" % (
             stage, self.hwnd, self.wu.window_class(self.hwnd),
-            self.wu.window_rect(self.hwnd), list(candidates)[:8]), flush=True)
+            self.wu.window_rect(self.hwnd), list(candidates)[:limit]), flush=True)
 
     def _onscreen(self, hwnd, point):
         hit = self.wu.window_from_screen_point(*point)
@@ -76,12 +76,23 @@ class PresetUI:
     def _preset_combo(self, identity, *, slot_one=False, trace=False):
         crops = self._children()
         main = self.hwnd == self.ui.app.hwnd
-        sidebar_right = self.wu.window_rect(self.hwnd)[0] + 435
+        left, top, right, _bottom = self.wu.window_rect(self.hwnd)
+
+        def in_preset_region(rect):
+            if main:
+                return left <= rect[0] < rect[2] <= left + 435
+            # The preset bar is a wx panel above the options. Its combo has
+            # stretch proportion 1 and can be wider than the main sidebar.
+            return left <= rect[0] < rect[2] <= right and top <= rect[1] < top + 105
+
         candidates = [
             (text, rect, hwnd) for text, cls, rect, hwnd in crops
-            if cls.startswith("wxWindow") and 85 <= rect[2] - rect[0] <= 420
+            if cls.startswith("wxWindow") or cls in {"ComboBox", "ComboBoxEx32"}
+        ]
+        candidates = [
+            (text, rect, hwnd) for text, rect, hwnd in candidates
+            if in_preset_region(rect) and rect[2] - rect[0] >= 85
             and 19 <= rect[3] - rect[1] <= 46 and self._onscreen(hwnd, _center(rect))
-            and (not main or rect[2] <= sidebar_right)
             and (not slot_one or any(
                 label.strip() == "1" and 0 <= rect[0] - badge[2] <= 18
                 and abs(_center(badge)[1] - _center(rect)[1]) <= 6
@@ -94,8 +105,10 @@ class PresetUI:
         allowed = {identity, identity + "(fixture.3mf)", identity + " (fixture.3mf)"}
         for text, rect, hwnd in candidates:
             seen = text.strip()
-            if not seen:
-                seen = " ".join(word[0] for word in self._words(rect)).lstrip("vV⌄˅ ")
+            if seen not in allowed and (not seen or not main):
+                painted = " ".join(word[0] for word in self._words(rect)).lstrip("vV⌄˅ ")
+                if painted in allowed or not seen:
+                    seen = painted
             matched = seen in allowed or (slot_one and re.fullmatch(r"Generic PLA @U1(?:\.{2,}|…)", seen))
             if matched:
                 found.append((rect, hwnd))
@@ -104,7 +117,8 @@ class PresetUI:
             display = seen if matched else "expected prefix" if seen.startswith(identity.split(" @")[0]) else "other"
             observed.append((self.wu.window_class(hwnd), rect, display))
         if trace:
-            self._trace("slot1" if slot_one else "preset", observed)
+            observed.sort(key=lambda c: c[2] == "other")
+            self._trace("slot1" if slot_one else "main_preset" if main else "dialog_preset_bar", observed)
         return _unique(found, identity)
 
     def _advanced(self):
@@ -205,7 +219,38 @@ class PresetUI:
         if not self.wu.user32.GetMenuItemRect(popup_hwnd, ctypes.c_void_p(hmenu), 0,
                                              ctypes.byref(item)):
             raise ProtocolError("script_preset_edit_menu_rect")
-        self._click(_center((item.left, item.top, item.right, item.bottom)), popup_hwnd)
+        row = (item.left, item.top, item.right, item.bottom)
+        point = _center(row)
+        session_hwnd = self.ui.app.hwnd
+        self.ui.guard()
+        self.ui.identity()
+
+        # WindowFromPoint can report the window behind a native menu. The
+        # newly opened same-PID #32768, its live HMENU and the GUI thread's
+        # menu owner together identify the presented Edit row.
+        desktop = self.wu.user32
+        thread = desktop.GetWindowThreadProcessId(session_hwnd, None)
+        state = self.pp._GUITHREADINFO()
+        state.cbSize = ctypes.sizeof(state)
+        owner = 0
+        if desktop.GetGUIThreadInfo(thread, ctypes.byref(state)):
+            owner = state.hwndMenuOwner or 0
+        hit = self.wu.window_from_screen_point(*point)
+        self._trace("slot1_menu_edit", [(popup[:4], row, owner, hit)])
+        l, t, r, b = popup[:4]
+        own_menu = owner == session_hwnd or (owner and desktop.IsChild(session_hwnd, owner))
+        try:
+            if (not own_menu or popup not in self.menu._enum_menu_windows(self.ui.app.pid)
+                    or self.menu.menu_hmenu(popup_hwnd) != hmenu
+                    or not l <= row[0] < row[2] <= r or not t <= row[1] < row[3] <= b
+                    or (hit and self.wu._window_pid(hit) != self.ui.app.pid)):
+                raise ProtocolError("script_preset_menu_edit_target")
+            self.wu.real_click_screen(*point)
+            self.ui.pause(0.7)
+        finally:
+            # Allow graceful cleanup even if the selected menu did not close.
+            if popup in self.menu._enum_menu_windows(self.ui.app.pid):
+                desktop.PostMessageW(popup_hwnd, 0x001F, 0, 0)  # WM_CANCELMODE
 
     def _line(self, name, *, rect=None, prefix=False):
         hits = self.pp.popup_line_hits(self._words(rect), name)
@@ -324,6 +369,55 @@ class PresetUI:
             raise ProtocolError("script_preset_threshold_readback")
         print("[native-script] preset overhang cooling threshold: 50% -> 10%", flush=True)
 
+    def diagnose_failure(self):
+        """Collect only the real preset panel of the two fixed test projects."""
+        if self.ui.boot_details.get("fixture_sha256") not in {
+            FIXTURE_SUFFIXES[suffix][1] for suffix in ("_fdmt", "_std02")
+        }:
+            return
+        self.ui.guard()
+        root = self.ui.app.hwnd
+        dialogs = [(title, hwnd) for cls, title, _rc, hwnd in self.mix.toplevel(self.ui.app.pid)
+                   if cls == "#32770" and title in {"Material settings", "Printer settings"}
+                   and self.wu.user32.GetWindow(hwnd, 4) == root and self.ui.owned(hwnd)]
+        if len(dialogs) != 1:
+            self._trace("failure_no_unique_owned_preset", [len(dialogs)])
+            return
+        title, hwnd = dialogs[0]
+        controls = self.mix.children(hwnd)
+        if any(self.ui.owned(child) and any(token in cls.casefold() for token in (
+            "webview", "internet explorer", "chrome_widget", "mozilla", "auth", "login"
+        )) for _text, cls, _bounds, child in controls):
+            self._trace("failure_preset_capture_skipped")
+            return
+        self.hwnd = hwnd
+        allowed = {"Filament", "Cooling", "Motion ability", "Part cooling fan",
+                   "Speed limitation", "Normal", "Silent", "Advanced", "Max volumetric speed",
+                   "Maximum speed X", "Force cooling for overhangs and bridges",
+                   "Overhang cooling activation threshold", "Overhangs and external bridges fan speed"}
+        selected = []
+        for text, cls, bounds, child in controls:
+            if not self.ui.owned(child) or not self._onscreen(child, _center(bounds)):
+                continue
+            label = text.strip()
+            if label in allowed or cls in {"Edit", "Button", "ComboBox", "SysTreeView32"}:
+                left, top, right, bottom = bounds
+                selected.append((label if label in allowed else "", cls,
+                                 (left, top, right-left, bottom-top)))
+        self._trace("failure_dialog:" + title, selected[:32], limit=32)
+
+        # Reuse the failure image already in hv_harvest's native-save allowlist.
+        # PrintWindow is restricted to this client HWND, without desktop fallback.
+        from PIL import Image
+
+        width, height, bgra = self.wu.capture_window(hwnd)
+        if not self.ui.owned(hwnd) or self.wu.window_title(hwnd) != title:
+            raise ProtocolError("script_preset_capture_identity_changed")
+        result = self.ui.artifacts / "param_failure.png"
+        with result.open("xb") as output:
+            Image.frombytes("RGB", (width, height), bgra, "raw", "BGRX").save(output, "PNG")
+        print("[native-script] preset diagnostic param_failure.png", flush=True)
+
     def close(self):
         self.ui.guard()
         self.ui.identity()
@@ -333,23 +427,38 @@ class PresetUI:
         self.hwnd = self.ui.app.hwnd
 
 
+def _capture_failed_preset(preset):
+    try:
+        preset.diagnose_failure()
+    except Exception as error:
+        print("[native-script] preset diagnostic failed: " + type(error).__name__, flush=True)
+
+
 def edit_cooling(ui):
     preset = PresetUI(ui)
-    preset.open(filament=True)
-    preset.page("Cooling")
-    preset.forced_cooling()
-    preset.threshold()
-    preset.number("Overhangs and external", "100", "80")
-    preset.close()
+    try:
+        preset.open(filament=True)
+        preset.page("Cooling")
+        preset.forced_cooling()
+        preset.threshold()
+        preset.number("Overhangs and external", "100", "80")
+        preset.close()
+    except Exception:
+        _capture_failed_preset(preset)
+        raise
 
 
 def edit_speed_limits(ui):
     preset = PresetUI(ui)
-    preset.open(filament=False)
-    preset.page("Motion ability")
-    preset.number("Maximum speed X", "500", "500", paired=True)
-    preset.close()
-    preset.open(filament=True)
-    preset.page("Filament")
-    preset.number("Max volumetric speed", "12", "15")
-    preset.close()
+    try:
+        preset.open(filament=False)
+        preset.page("Motion ability")
+        preset.number("Maximum speed X", "500", "500", paired=True)
+        preset.close()
+        preset.open(filament=True)
+        preset.page("Filament")
+        preset.number("Max volumetric speed", "12", "15")
+        preset.close()
+    except Exception:
+        _capture_failed_preset(preset)
+        raise
