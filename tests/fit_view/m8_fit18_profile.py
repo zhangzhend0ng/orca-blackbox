@@ -21,7 +21,6 @@ from m8a_fit_view import cap, m7, m8, winutil
 from m3_common import add_common_args, boot_session
 
 FIXTURE = ROOT / "fixtures/feishu_std_cube.3mf"
-OUTPUT = ROOT / "artifacts/fit18_profile.json"
 
 
 @contextmanager
@@ -68,13 +67,38 @@ def cube(frame, bounds):
             "within_proposed_8_12_percent": all(.08 <= v <= .12 for v in margins)}
 
 
+def select_cube(session, row):
+    # This client coordinate is a hint from the fixed pass. Require the
+    # disabled-to-enabled Rotate tooltip transition before trusting it.
+    rotate_x = 1108
+    m7.ensure_maximized(session)
+    bounds = viewport(session)
+    target = cube(cap(session), bounds)
+    if target:
+        old = m7.tooltip_text(session, rotate_x, m7.BAR_Y).lower()
+        if "rotate" in old and "select" in old:
+            x, y, w, h = target["bbox"]
+            (left, top), _ = bounds
+            xy = m7.client(session, left + x + w//2, top + y + 3*h//4)
+            winutil.user32.SetCursorPos(*xy)
+            winutil.real_click_screen(*xy)
+            new = m7.tooltip_text(session, rotate_x, m7.BAR_Y).lower()
+            row["selection_tooltips"] = [old, new]
+            if "rotate" in new and "[r" in new and "select" not in new:
+                row["selection_path"] = "confirmed_hint"
+                return True
+    row["selection_path"] = "toolbar_scan"
+    return m7.select_model(session)
+
+
 def observe(session, mode, row):
     with measure(row, "arrival"):
         arrived, _ = m8.wait_arrival(session, timeout_s=35)
         if not arrived:
             raise ValueError("fixture arrival unconfirmed")
     with measure(row, "select"):
-        if not m7.select_model(session):
+        selected = select_cube(session, row) if mode == "guided_select" else m7.select_model(session)
+        if not selected:
             raise ValueError("object selection unconfirmed")
     with measure(row, "pre_fit"):
         bounds = viewport(session)
@@ -102,7 +126,7 @@ def observe(session, mode, row):
                 same = last_box and max(abs(a-b) for a, b in zip(last_box, box)) <= 2
                 stable = stable + 1 if same else 1
                 last_box = box
-                if stable >= 3 and (mode == "ready" or elapsed >= 1.5):
+                if stable >= 3 and (mode != "fixed" or elapsed >= 1.5):
                     row["after"] = state
                     return
             else:
@@ -111,12 +135,12 @@ def observe(session, mode, row):
         raise ValueError("enlarged stable fixture silhouette unconfirmed")
 
 
-def main():
+def main(modes=("fixed", "ready"), output_name="fit18_profile.json"):
     args = add_common_args(argparse.ArgumentParser(), default_model=FIXTURE).parse_args()
     if args.model.resolve() != FIXTURE.resolve():
         raise ValueError("profiling contract requires the one-cube fixture")
     report = {"case": 18, "fixture_sha256": hashlib.sha256(FIXTURE.read_bytes()).hexdigest(), "runs": []}
-    for mode in ("fixed", "ready"):
+    for mode in modes:
         row = {"mode": mode, "seconds": {}}
         report["runs"].append(row)
         start = time.perf_counter()
@@ -131,7 +155,7 @@ def main():
         except Exception as exc:
             row["error"] = f"{type(exc).__name__}: {exc}"
         row["wall_s"] = round(time.perf_counter() - start, 3)
-        OUTPUT.write_text(json.dumps(report, indent=2), encoding="utf-8")
+        (ROOT / "artifacts" / output_name).write_text(json.dumps(report, indent=2), encoding="utf-8")
         print(f"[fit18] {mode} {row['seconds']} {row.get('error', 'observed')}", flush=True)
     # This is a timing experiment. Keep row #18 outside the release verdict.
     return int(any("after" not in r or "error" in r for r in report["runs"]))

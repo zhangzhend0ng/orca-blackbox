@@ -158,6 +158,7 @@ CASES: dict[str, dict] = {
     #     regression —— 此前 suite=None 导致"实现了却没人跑"，是覆盖盲区) ------
     "m8a_fit_view": _r("m8", "A"),                       # GREEN 09-17 客机
     "m8_fit18_profile": _o("m8", "A", known_limitation=True),
+    "m8_fit18_single": _o("m8", "A", known_limitation=True),
     "m8b_official_color": _r("m8", "A", known_limitation=True),
     "m8c_temp_mix_gate": _r("m8", "A", known_limitation=True),
     "m8d_purifier_gcode": _r("m8", "A", known_limitation=True),
