@@ -1,0 +1,14 @@
+rc=0 finished=02:20:32 out=/Users/coilwin/orca-blackbox/artifacts/ninehour-1125/probe-other-ee217b3af8964872adb236c43552f93b
+stage=preflight cleanup_verified=True
+[other] trusted=True post_allowed=True test_uid=502 console_uid=501
+[other] Dock pid=85633 root=('AXApplication', 'Dock') windows=0
+[other] Finder pid=85635 root=('AXApplication', 'Finder') windows=3
+[other]    win ('AXApplication', '', 'Finder') box=[0.0, 1080.0, 0.0, 0.0] children=4
+[other]    win ('AXApplication', '', 'Finder') box=[0.0, 1080.0, 0.0, 0.0] children=4
+[other]    win ('AXScrollArea', '', '') box=[0.0, 0.0, 1920.0, 1080.0] children=1
+[other] UURemote pid=85671 root=('AXApplication', 'UU远程') windows=1
+[other]    win ('AXApplication', '', 'UU远程') box=None children=3
+[other] iTerm2 pid=88028 root=('AXApplication', 'iTerm2') windows=1
+[other]    win ('AXApplication', '', 'iTerm2') box=None children=2
+[other] Safari pid=92006 root=('AXApplication', 'Safari') windows=1
+[other]    win ('AXApplication', '', 'Safari') box=None children=2

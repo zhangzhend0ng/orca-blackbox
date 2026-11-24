@@ -1,0 +1,6 @@
+engine suite    PASS  230.3 s  175 checks, 0 failed
+unit tests      PASS  287.0 s  1742 passed, 3 skipped, 4 subtests passed in 286.40s (0:04:46)
+ops vs atlas    PASS    0.1 s  all ops validate (12 notes)
+ops red proofs  PASS    0.2 s  PASS a wrong target is a problem against the popup census
+gate: PASS | logs under C:\Users\SNAPMA~1\AppData\Local\Temp\orca-bb-pre_merge-zzgjupl1
+disk: 16.1 GB free  LOW (under 20 GB): a full disk fails the tests, and the guest's disk only grows

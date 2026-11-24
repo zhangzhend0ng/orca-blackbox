@@ -41,7 +41,7 @@ Mac 后台工程编辑用例从原始立方体切片开始，以新名字编辑�
 
 当前 **ZCode / Snapmaker glm-5.4** 路线入口为 `python -B tools/native_save_demo.py --actor zcode`，使用现有 Snapmaker 供应商配置。[接口与边界](docs/V3_ZCODE_ACTOR.md) 原生保存路线的客机编辑、保存、新 profile 重开及 112 层 G-code 证据来自 **glm-5.3-flash**，随原始收据保留。[历史运行记录](docs/runs/zcode-snapmaker-2026-11-17.md) 路线结果只在 SHADOW 范围内验收。 GLM‑5.4 与 Script 在 #265、#276 两种初态上的实测结果见[维护对照记录](docs/runs/glm54-maintenance-265-276.md)。
 
-#265 风扇、#276 流量的独立复算，以及 `win11-test` 上 GLM‑5.4 的后续编辑实测，见[三机复核记录](docs/runs/glm54-multimachine-2026-11-24.md)。
+#265 风扇、#276 流量的独立复算，以及 `win11-test` 上 GLM‑5.4 的后续编辑实测，见[三机复核记录](docs/runs/glm54-multimachine-2026-11-24.md)。 2026‑11‑25 九小时三机跑批的结论、逐项对照、各动作耗时、判据反例、复跑入口和证据包见[九小时运行记录](docs/runs/glm54-nine-hour-run-2026-11-25.md)。
 
 三业务线并行探索入口见[业务pilot](docs/V3_BUSINESS_PILOTS.md)（下文的「87 条」是 11-17 时点的登记册数；11-21 冻结为 89 条登记，见[台账](docs/V3_MIGRATION_LEDGER.md)）
 

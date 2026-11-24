@@ -1,0 +1,6 @@
+rc=1 started=01:42:05 out=/Users/coilwin/orca-blackbox/artifacts/ninehour-1125/probe-a89e6cc6e8f048e8ad9a646434e28df1
+no reply; stderr tail:   File "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.isT0Qzae/project_copy.py", line 187
+    text = "
+            ^
+SyntaxError: EOL while scanning string literal
+

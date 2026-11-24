@@ -1,0 +1,129 @@
+{
+ "schema": "ninehour_native_pairing/1",
+ "generated_by": "scripts/build_native.py",
+ "note": "原生模型 actor（ZCode）与 Script 共用保存件、重开切片和基线判据。本轮两次原生运行都没有取得经独立验证的 GUI 结果，配对 0 次。",
+ "runs": [
+  {
+   "run_id": "eefe9d783c1d4bb5b2145da89422eb24",
+   "label": "native-265-q-1",
+   "scenario": "compare_265_quality",
+   "feishu_row": "265",
+   "engine_commit": "eae2376",
+   "actor": "zcode",
+   "provider_id": "new-provider",
+   "provider_name": "Snapmaker",
+   "model_id": "glm-5.4",
+   "endpoint_host": "ai-gateway.s.com",
+   "prompt_mode": "goal_only",
+   "toolset_verified": false,
+   "tool_calls": 20,
+   "tool_calls_by_tool": {
+    "Click": 7,
+    "Screenshot": 1,
+    "Snapshot": 10,
+    "Wait": 2
+   },
+   "tool_calls_by_status": {
+    "completed": 19,
+    "pending": 1
+   },
+   "host_wall_seconds": 672.703,
+   "guest_process_seconds": 646.996,
+   "ledger_orchestration_seconds": 672.766,
+   "failure_signature": "RuntimeError:zcode_actor_failed:agent_deadline",
+   "comparison_status": "no_verified_gui_result",
+   "comparison_unmet_expectations": [
+    "comparison_baseline"
+   ],
+   "release_verdict": "NON_GREEN",
+   "reasons": [
+    "execution_not_completed",
+    "evidence_incomplete",
+    "execution_noncompliant",
+    "business_unknown",
+    "path_unknown"
+   ],
+   "verified_pass": false,
+   "cleanup_confirmed": true,
+   "paired": false,
+   "pairing_note": "没有经独立验证的 GUI 结果，未进入与 Script 的配对。",
+   "sources": [
+    "docs/runs/evidence/ninehour-2026-11-25/receipts/eefe9d783c1d4bb5b2145da89422eb24.json",
+    "C:/coil/Projects/SnapmakerOrca/external/orca-blackbox/artifacts/windows_mcp_host/eefe9d783c1d4bb5b2145da89422eb24/host.json"
+   ]
+  },
+  {
+   "run_id": "2053992ca24745b1bc1bcfcd22a44f2a",
+   "label": "native-276-q-1",
+   "scenario": "compare_276_quality",
+   "feishu_row": "276",
+   "engine_commit": "eae2376",
+   "actor": "zcode",
+   "provider_id": "new-provider",
+   "provider_name": "Snapmaker",
+   "model_id": "glm-5.4",
+   "endpoint_host": "ai-gateway.s.com",
+   "prompt_mode": "goal_only",
+   "toolset_verified": false,
+   "tool_calls": 41,
+   "tool_calls_by_tool": {
+    "Click": 16,
+    "Screenshot": 1,
+    "Shortcut": 2,
+    "Snapshot": 20,
+    "Type": 2
+   },
+   "tool_calls_by_status": {
+    "completed": 40,
+    "pending": 1
+   },
+   "host_wall_seconds": 437.125,
+   "guest_process_seconds": 411.525,
+   "ledger_orchestration_seconds": 437.188,
+   "failure_signature": "RuntimeError:zcode_actor_failed:native_action_budget",
+   "comparison_status": "no_verified_gui_result",
+   "comparison_unmet_expectations": [
+    "comparison_baseline"
+   ],
+   "release_verdict": "NON_GREEN",
+   "reasons": [
+    "execution_not_completed",
+    "evidence_incomplete",
+    "execution_noncompliant",
+    "business_unknown",
+    "path_unknown"
+   ],
+   "verified_pass": false,
+   "cleanup_confirmed": true,
+   "paired": false,
+   "pairing_note": "没有经独立验证的 GUI 结果，未进入与 Script 的配对。",
+   "sources": [
+    "docs/runs/evidence/ninehour-2026-11-25/receipts/2053992ca24745b1bc1bcfcd22a44f2a.json",
+    "C:/coil/Projects/SnapmakerOrca/external/orca-blackbox/artifacts/windows_mcp_host/2053992ca24745b1bc1bcfcd22a44f2a/host.json"
+   ]
+  }
+ ],
+ "script_runs_of_the_same_scenarios": {
+  "compare_265_quality": [
+   "6da679433a604d94b1ee9518d7fb8a95",
+   "b7778cd5650c40f6bcf11ed71db1bc3d"
+  ],
+  "compare_276_quality": [
+   "ec032d7cc54844f1a6f970a6990fa032",
+   "eebdf238d72e401b9636b161bad6c465",
+   "66048b9dbd7b4ff88dbe721e1fe69d6a",
+   "82f5390801584c9f99db3e57decf906c",
+   "c9e2ee61476a49fabaea1300514e39ff",
+   "194e79b568bc477082090a0b6061a4c4",
+   "3fe3ff186aa14f33a6cb282018e19bb3",
+   "9bc10b3f71c443729af68d18c9d933c6",
+   "db27fe2c663742eb996b08336963f822"
+  ],
+  "compare_276_strength": [
+   "5359abcadafa48a2bc493ee3acf56114",
+   "fe4a956a9c90418da3b6b9d67f3677e6",
+   "37ccc139957149b7a14eca15ff79fa05",
+   "9d6d1eb30c68464ba06dbb6d9180cac9"
+  ]
+ }
+}

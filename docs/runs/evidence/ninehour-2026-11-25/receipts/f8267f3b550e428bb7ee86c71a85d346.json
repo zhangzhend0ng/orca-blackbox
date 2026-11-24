@@ -1,0 +1,91 @@
+{
+  "schema": "ninehour_receipt/1",
+  "run_dir": "C:\\coil\\Projects\\SnapmakerOrca\\external\\orca-blackbox\\artifacts\\windows_mcp_harvest\\f8267f3b550e428bb7ee86c71a85d346",
+  "identity": {
+    "run_id": "f8267f3b550e428bb7ee86c71a85d346",
+    "source_commit": "2a17376",
+    "scenario": "uia_param_raft",
+    "goal": null,
+    "machine": "fa706g3",
+    "machine_inferred": "fa706g3",
+    "label": "regress-final",
+    "execution_host": {
+      "hyper_v_guest": false,
+      "machine": "DESKTOP-FA706G3",
+      "flag": "ORCA_BB_ALLOW_TESTBOX"
+    }
+  },
+  "verdicts": {
+    "release_verdict": "SHADOW",
+    "verified_pass": true,
+    "cleanup_confirmed": true,
+    "execution_status": "completed",
+    "mode": "script_shadow",
+    "comparison": null,
+    "comparison_source": null,
+    "paired_offline_at": null,
+    "verdict": null,
+    "failure_stage": null,
+    "error": null,
+    "guest_phases": null,
+    "wall_loops_gcode_echo": null
+  },
+  "seconds": {
+    "guest": 177.2847537,
+    "host_wall": null,
+    "harvest": null,
+    "script_action": 77.032,
+    "mac_wall": null
+  },
+  "stages": {
+    "list": [],
+    "stage_sum_ok": null,
+    "ok0": [],
+    "parents": [],
+    "tags": []
+  },
+  "artifacts": {
+    "proof_run_id": "f8267f3b550e428bb7ee86c71a85d346",
+    "project_sha256": "c07283d2732e4218522d332993a7f79760e0ef8653ea4df1e00f405a28b41e65",
+    "project_sha256_recomputed": "c07283d2732e4218522d332993a7f79760e0ef8653ea4df1e00f405a28b41e65",
+    "gcode_sha256": "d30b00c9ca9b8de4711d707fb44ef3e2ea51d631399c538ebdf8a34e040e6d44",
+    "gcode_sha256_recomputed": "d30b00c9ca9b8de4711d707fb44ef3e2ea51d631399c538ebdf8a34e040e6d44",
+    "artifact_hashes_match": true,
+    "teardown_active_processes": null
+  },
+  "missing": [
+    "teardown.json"
+  ],
+  "malformed": [],
+  "warnings": [],
+  "sources": {
+    "run_dir": "command line",
+    "identity.machine": "inferred: native_run.log exists",
+    "identity.machine_inferred": "inferred: native_run.log exists",
+    "identity.run_id": "directory name",
+    "verdicts.release_verdict": "result.json#release_verdict",
+    "verdicts.execution_status": "result.json#execution_status",
+    "verdicts.mode": "result.json#mode",
+    "verdicts.verified_pass": "result.json#verified_pass",
+    "verdicts.cleanup_confirmed": "result.json#cleanup_confirmed",
+    "seconds.guest": "process.json#finished_at_ns - started_at_ns",
+    "seconds.script_action": "native_worker.json#script_action_elapsed_ns",
+    "stages.list": "native_worker.log#stage lines, line per stage",
+    "stages.ok0": "native_worker.log#stage lines logged with ok=0",
+    "stages.parents": "native_worker.log#stages that wrap the locate./edit_readback. stage of the same field",
+    "stages.tags": "native_worker.log#tag per stage line",
+    "artifacts.proof_run_id": "proof.json#run_id",
+    "artifacts.project_sha256": "proof.json#project_sha256",
+    "artifacts.gcode_sha256": "proof.json#gcode_sha256",
+    "artifacts.project_sha256_recomputed": "proof/0001.3mf#sha256",
+    "artifacts.gcode_sha256_recomputed": "exports/0001.gcode#sha256",
+    "artifacts.artifact_hashes_match": "proof.json#project_sha256,gcode_sha256 compared with proof/0001.3mf#sha256 and exports/0001.gcode#sha256",
+    "artifacts.teardown_active_processes": "teardown.json#active_processes",
+    "identity.execution_host.hyper_v_guest": "execution_host.json#hyper_v_guest",
+    "identity.execution_host.machine": "execution_host.json#machine",
+    "identity.execution_host.flag": "execution_host.json#flag",
+    "identity.scenario": "native_worker.json#scenario",
+    "identity.source_commit": "docs\\runs\\evidence\\ninehour-2026-11-25\\ledger.jsonl:104#commit",
+    "identity.label": "docs\\runs\\evidence\\ninehour-2026-11-25\\ledger.jsonl:104#label"
+  }
+}

@@ -1,0 +1,9 @@
+start=01:35:35 head=636a733 goal=walls candidate=ninehour1125-walls-1
+probe1 start=01:42:05 head=636a733 repo_status=[]
+probe2 start=01:47:20 head=636a733 repo_status=[]
+probe3 start=01:54:01 head=636a733 repo_status=[]
+probe4 start=01:56:29 head=636a733 repo_status=[]
+probe5 start=02:05:28 head=636a733 repo_status=[]
+probe6 start=02:14:30 head=636a733 repo_status=[]
+probe-other start=02:20:31 (no app launch)
+probe-other2 start=02:21:26 (no app launch)
