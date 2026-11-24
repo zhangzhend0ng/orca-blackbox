@@ -629,6 +629,29 @@ def main():
         "pick_combo_proof": {"'~ Enabled' for 'Enabled'": po.painted_is("~ Enabled", "Enabled"),
                              "'5 ~Enabled' for 'Enabled' (run 152849's own readback)": po.painted_is("5 ~Enabled", "Enabled"),
                              "'~ Topmost surface only' for 'Topmost'": po.painted_is("~ Topmost surface only", "Topmost")}}
+    # --- step 16: pick_combo's own proof takes the whole words of the target at the start of what
+    # the row paints (the Ironing type control paints 'Topmost surface only' for the table's
+    # 'Topmost'); a part of a word, or the target behind other words, is still no hit.
+    out["step16_painted_is"] = {
+        "'~ Topmost surface only' for 'Topmost'": po.painted_is("~ Topmost surface only", "Topmost"),
+        "'Topmost surface only' for 'Topmost'": po.painted_is("Topmost surface only", "Topmost"),
+        "'5 ~Enabled' for 'Enabled' (run 152849's own readback)": po.painted_is("5 ~Enabled", "Enabled"),
+        "'~ Gyroid' for 'Gyroid'": po.painted_is("~ Gyroid", "Gyroid"),
+        "'~ Top' for 'Topmost'": po.painted_is("~ Top", "Topmost"),
+        "'~ Adaptive Gyroid' for 'Gyroid'": po.painted_is("~ Adaptive Gyroid", "Gyroid"),
+        "'~ Topmost' for 'Topmost surface'": po.painted_is("~ Topmost", "Topmost surface"),
+        "'v By object' for 'object'": po.painted_is("v By object", "object"),
+        "'<row lost>' for 'Topmost'": po.painted_is("<row lost: no tab band>", "Topmost"),
+        "'~ No ironing' for 'No'": po.painted_is("~ No ironing", "No")}
+    check("step 16, painted_is: the row's painted words that start with the whole words of the target are "
+          "the target ('~ Topmost surface only' for 'Topmost', as '~ Enabled' for 'Enabled' and run "
+          "152849's '5 ~Enabled'); a part of a word ('~ Top'), the target behind other words ('~ Adaptive "
+          "Gyroid'), a longer target than what is painted, a word inside the value ('object') and a lost "
+          "row are no hit",
+          [k for k, ok in out["step16_painted_is"].items() if ok]
+          == ["'~ Topmost surface only' for 'Topmost'", "'Topmost surface only' for 'Topmost'",
+              "'5 ~Enabled' for 'Enabled' (run 152849's own readback)", "'~ Gyroid' for 'Gyroid'",
+              "'~ No ironing' for 'No'"])
     check("step 15, run 152849's own page (uia_param_skirt, op 3): the combo is located by the value it "
           "paints - 'Disabled' - and the row handed on is 'Draft shield' (exact, by its group's title, "
           "the row painting '~ Disabled')",

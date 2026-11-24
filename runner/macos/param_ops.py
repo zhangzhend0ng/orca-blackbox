@@ -1412,11 +1412,14 @@ def op_set_checkbox(panel, ns):
 
 
 def painted_is(painted, target):
-    """True when the row's painted words are exactly `target`, or that preceded by one short
-    token - the dropdown glyph OCR glues in front of the value. title_key cannot judge it: it
-    also strips a value's own short word (run 021750 painted 'v By object' and was refused)."""
-    words, want = norm(painted).split(" "), norm(target)
-    return " ".join(words) == want or (len(words[0]) <= 2 and " ".join(words[1:]) == want)
+    """True when the row's painted words are exactly `target`, start with the whole words of
+    `target` (the control paints 'Topmost surface only' for the table's 'Topmost', run 152406),
+    or either preceded by one short token - the dropdown glyph OCR glues in front of the value.
+    A whole word only: 'Top' does not take 'Topmost'. title_key cannot judge it: it also strips
+    a value's own short word (run 021750 painted 'v By object' and was refused)."""
+    words, want = norm(painted).split(" "), norm(target).split(" ")
+    starts = [words] + ([words[1:]] if len(words[0]) <= 2 else [])
+    return any(have[:len(want)] == want for have in starts)
 
 
 def op_pick_combo(panel, ns):
@@ -1504,6 +1507,94 @@ def op_pick_combo(panel, ns):
                          "screenshots": {"before": tag + ".png", "popup": f"combo-0-cell-popup.png",
                                          "after": chosen["screenshot_after"] if chosen else None}}}
 
+
+
+def op_combo_list(panel, ns):
+    """Open the row's choice list and read it, picking nothing (a probe): what the screen
+    paints of it, the entries the app's AX tree names (a popup is a window of its own), what
+    it paints after scroll-wheel notches over it and after arrow keys while it is open. Escape
+    closes the list; the row's own value is read back after that. Nothing is saved."""
+    rows, row, note, tag = panel.locate_row(ns["tab"], ns.get("group"), ns["label"], "list")
+    time.sleep(1.5)  # the page is still settling after the chain's last scroll step (runs 152406 and combo_list: 'Missing field position' read at the click)
+    tokens = panel.line_values(rows, row)
+    require(tokens, f"No value token on the row: {row['text']}")
+    token = tokens[0]
+    point, size = panel.geometry()
+    gx, gy = round(token["x"] + min(8, token["w"] / 2)), round(token["y"] + token["h"] / 2)  # the reading is in screen px
+    dx, dy = (float(v) for v in ns.get("wheel", "350,490").split(","))
+    where = (round(point.x + dx), round(point.y + dy))
+    frames = []
+
+    def painted(name, how):
+        """The words the screen paints in the panel's value column, top to bottom (the list
+        covers the page where it opens; panel px)."""
+        seen = panel.read(name, full=True)
+        items = sorted(({"panel": [round(r["x"] - point.x), round(r["y"] - point.y)], "text": r["text"]}
+                        for r in seen if point.x + 245 <= r["x"] <= point.x + 470
+                        and point.y <= r["y"] <= point.y + size.y),
+                       key=lambda i: (i["panel"][1], i["panel"][0]))
+        frames.append({"how": how, "screenshot": name + ".png",
+                       "words": [[i["panel"][1], i["text"]] for i in items]})
+        return items
+
+    def tree():
+        """The windows the app has now, and what the ones that are not the project window name
+        (a popup list is a window of its own; the project window's tree is thousands of calls)."""
+        named = []
+        for window in panel.desktop.children(panel.root, "AXWindows"):
+            if panel.desktop.text(window, "AXTitle") == panel.title:
+                continue
+            item = {"subrole": panel.desktop.text(window, "AXSubrole"), "role": panel.desktop.text(window, "AXRole"),
+                    "items": [], "error": None}
+            try:
+                for element in panel.desktop.descendants(window):
+                    role = panel.desktop.text(element, "AXRole")
+                    title = panel.desktop.text(element, "AXTitle") or panel.desktop.text(element, "AXDescription")
+                    if title or role in ("AXMenuItem", "AXMenu", "AXList", "AXTable", "AXScrollArea", "AXRow", "AXCell"):
+                        item["items"].append([role, title[:50]])
+            except Exception as error:
+                item["error"] = brief(error, 200)
+            named.append(item)
+        return named
+
+    def keys(code, presses, name):
+        post_keys(panel.pid, code, presses)
+        time.sleep(0.5)
+        painted(name, f"{presses} x key code {code} while the list is open")
+
+    panel.click(gx, gy, guard=False)
+    time.sleep(0.9)
+    result = {"click": [gx, gy], "before": " ".join(t["text"] for t in tokens), "frames": frames, "ax": [],
+              "steps": [], "after": None}
+    steps = [("open", lambda: painted("list-open", "the cell click")),
+             ("ax-open", lambda: result["ax"].append({"when": "open", "windows": panel.windows(), "tree": tree()})),
+             ("wheel-up", lambda: painted("list-wheel-up", f"3 wheel line-notches at {where}, step +1")),
+             ("ax-wheel-up", lambda: result["ax"].append({"when": "wheel-up", "tree": tree()})),
+             ("wheel-down", lambda: painted("list-wheel-down", f"3 wheel line-notches at {where}, step -1")),
+             ("up-keys", lambda: keys(126, ns.get("arrows", 4), "list-up-keys")),
+             ("down-keys", lambda: keys(125, ns.get("arrows", 4), "list-down-keys")),
+             ("escape", lambda: painted("list-escape", "Escape"))]
+    for name, step in steps:  # the wheel and the Escape go in front of their reading
+        try:
+            if name in ("wheel-up", "wheel-down"):
+                post_wheel(panel.pid, *where, 3, 1, +1 if name == "wheel-up" else -1)
+                time.sleep(0.6)
+            elif name == "escape":
+                post_keys(panel.pid, 53, 1)
+                time.sleep(0.6)
+            step()
+        except Exception as error:
+            result["steps"].append({"step": name, "frames": len(frames), "error": brief(error, 300)})
+    try:
+        rows_after = panel.read("list-closed")
+        row_after = panel.find_row(rows_after, ns.get("group"), ns["label"])
+        result["after"] = " ".join(t["text"] for t in panel.line_values(rows_after, row_after))
+    except Exception as error:
+        result["after"] = f"<not read: {brief(error, 300)}>"
+    # one frame each: open, wheel-up, wheel-down, up-keys, down-keys, escape (run 161052 took all six and said ok False: 8 were asked for)
+    result["ok"] = len(frames) == 6 and not result["steps"]
+    return {"ok": result["ok"], "readback": result,
+            "evidence": {"notes": note, "screenshots": {"before": tag + ".png"}}}
 
 # --- step 4: one edit, Save Project, the key read from the saved 3mf ---
 
@@ -1900,7 +1991,7 @@ def op_advanced_check(panel, ns):
 
 OPS = {"switch_tab": op_switch_tab, "find_row": op_find_row, "set_float": op_set_float,
        "set_checkbox": op_set_checkbox, "pick_combo": op_pick_combo, "scroll_page": op_scroll_page,
-       "advanced_check": op_advanced_check, "scenario": op_scenario}
+       "advanced_check": op_advanced_check, "scenario": op_scenario, "combo_list": op_combo_list}
 
 
 # --- Aqua-session worker ---
@@ -2128,6 +2219,12 @@ def parser():
     scroll.add_argument("--group", default="Special mode")
     scroll.add_argument("--label", default="Print sequence")
     sub.add_parser("scenario").add_argument("--name", required=True, choices=sorted(SCENARIOS))
+    listing = sub.add_parser("combo_list")
+    listing.add_argument("--tab", default="Strength")
+    listing.add_argument("--group", default="Infill")
+    listing.add_argument("--label", default="Sparse infill pattern")
+    listing.add_argument("--wheel", default="350,490", help="where the wheel notches land: px right of and below the window's top-left corner")
+    listing.add_argument("--arrows", type=int, default=4)
     sub.add_parser("advanced_check")
     for case in sub.choices.values():
         case.add_argument("--fuse", type=int, default=240)
