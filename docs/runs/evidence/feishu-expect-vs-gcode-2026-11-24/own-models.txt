@@ -1,0 +1,194 @@
+#254 uia_param_layer_pair_sphere NON_GREEN ProtocolError:script_layer_fields_not_as_expected run None (baseline 71c5f8fc)
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 首层Z=0.25mm，第2层起按0.20mm递增。 / 3. 层数、总高度和后续层Z步进与默认基准一致。
+#295 uia_param_fuzzy_sphere SHADOW  run d3191da6 (baseline 71c5f8fc)
+     OW 1200/1826/1824->1200/1872/1865; IW 1200/1826/1824->1200/1872/1855; SI 1200/1826/1824->1200/1816/1872; Solid 1200/1574/1494->1200/1410/1597 | unchanged: Top Br
+     travel first F30000 x9 F18000 x1->F30000 x9 F18000 x1 | other F30000 x467->F30000 x470
+     blocks Br 1->1 IBr 1->1 Brim 1->1 OvW 5->201
+     tools of feature - -> -
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 仅外表面生成随机扰动，点距≈0.6mm、幅度≈0.3mm。 / 3. 内部填充和非目标表面路径不变。
+#255 uia_param_line_width_all_std02 SHADOW  run cd9a4f6a (baseline e9aa6f88)
+     layers 135->135 first Z 0.25->0.25 last Z 27.05->27.05
+     E/mm OW=0.0308 IW=0.0333 SI=0.0332 Top=0.0310 Bot=0.0000 -> OW=0.0308 IW=0.0333 SI=0.0332 Top=0.0292 Bot=0.0000
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 各特征线宽分别等于设置值。 / 3. 各路径E/mm匹配线宽×层高，误差≤2%，外形不变。
+#259 uia_param_ironing_top_std02 SHADOW  run fcfb01eb (baseline e9aa6f88)
+     Iron -->3600 | unchanged: OW IW SI Top Solid
+     travel first F30000 x4 F18000 x1->F30000 x4 F18000 x1 | other F30000 x642->F30000 x644
+     ironing 0->1 moves
+     E/mm OW=0.0308 IW=0.0333 SI=0.0332 Top=0.0310 Bot=0.0000 -> OW=0.0308 IW=0.0333 SI=0.0332 Top=0.0310 Bot=0.0000
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 仅顶面生成熨烫路径，线距≈0.15mm。 / 3. 熨烫E按10%流量生效，F≈3600，非目标表面不变。
+#267 uia_param_shells_pattern_std02 SHADOW  run 728e77c7 (baseline e9aa6f88)
+     layers 135->135 first Z 0.25->0.25 last Z 27.05->27.05
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 顶/底实体层数分别为5/3层，图案按设置切换。 / 3. 顶部颜色渗透3层，颜色边界与层号一致，模型外形不变。
+#268 uia_param_infill_combo_std02 SHADOW  run d08d1fe8 (baseline e9aa6f88)
+     OW 3746/3756/9741.893->9741.893/3988/4020; IW 3746/3756/9023.957->9023.957/3988/4020; SI 3746/3756/4344->3988/4020/4074; Top 9645.5->9673.134; Solid 9720.308/7708.692/9741.91->9720.308/9741.91/4732
+     travel first F30000 x4 F18000 x1->F30000 x4 F18000 x1 | other F30000 x642->F30000 x581
+     blocks IBr 1->1
+     tools of feature - -> -
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 填充线距对应20%密度，图案和方向符合设置。 / 3. 填充与墙重叠15%，缝隙填充完整，外墙尺寸不变。
+#270 uia_param_first_speeds_std02 SHADOW  run c45355d9 (baseline e9aa6f88)
+     layers 135->135 first Z 0.25->0.25 last Z 27.05->27.05
+     feeds unchanged
+     travel first F30000 x4 F18000 x1->F9000 x4 F18000 x1 | other F30000 x642->F30000 x642
+     wipe moves 410->410
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 首层外墙/内墙F≈1800，填充F≈2400，空驶F≈9000。 / 3. 第2层起恢复其他层速度，模型路径不变。
+#276 uia_param_speed_limits_std02 SHADOW  run 8902f8ae (baseline e9aa6f88)
+     feeds unchanged
+     E/mm OW=0.0308 IW=0.0333 SI=0.0332 Top=0.0310 Bot=0.0000 -> OW=0.0308 IW=0.0333 SI=0.0332 Top=0.0310 Bot=0.0000
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 外墙速度先受体积流量限制到约178mm/s。 / 3. 同时不超过机器X轴500mm/s，超限部分降速且路径不变。
+#256 uia_param_seam_wipe_cyl SHADOW  run fd0abb31 (baseline 818ecfc6)
+     layers 100->100 first Z 0.25->0.25 last Z 20.05->20.05
+     feeds unchanged
+     travel first F30000 x4 F18000 x1->F30000 x4 F18000 x1 F3000 x1 | other F30000 x437->F30000 x437 F1829 x24 F1832 x24 F1833 x16
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 接缝位于aligned（对齐）方向，每层1条且间隙≈15%。 / 3. 外墙结束生成擦拭路径，擦拭F≈3000，正常外墙F不变。
+#275 uia_param_jerk_cyl SHADOW  run 9f47af1f (baseline 818ecfc6)
+     layers 100->100 first Z 0.25->0.25 last Z 20.05->20.05
+     feeds unchanged
+     wipe moves 797->797
+     jerk: not in a Klipper-flavour export (no command carries it)
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 首层、外墙、内墙、填充、空驶Jerk分别匹配设置。 / 3. 拐角速度受限制，直线路径不变。
+#293 uia_param_spiral_vase_cyl SHADOW  run 4efcad2b (baseline 818ecfc6)
+     layers 100->101 first Z 0.25->0.25 last Z 20.05->20.05
+     arcs 0->0 | EXCLUDE_OBJECT 0->0 | numbered 0->0 | widths 24->4 kinds
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 单墙模型生成连续上升Z路径，无常规层接缝。 / 3. 多墙或多对象模型明确限制，不输出不安全螺旋G-code。
+#257 uia_param_precision_comp_tol SHADOW  run 3f239cab (baseline 0d6777e0)
+     layers 32->32 first Z 0.25->0.25 last Z 6.45->6.45
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 首层外轮廓内缩≈0.15mm，第2层恢复名义值。 / 3. 外墙外扩≈0.10mm、孔洞收缩≈0.10mm，精准外墙误差≤0.001mm。
+#258 uia_param_arc_resolution_tol SHADOW  run dc0f42c3 (baseline 0d6777e0)
+     arcs 0->300 | EXCLUDE_OBJECT 0->0 | numbered 0->0 | widths 144->176 kinds
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 圆弧输出G2/G3或arc元数据，轮廓误差≤0.012mm。 / 3. 最终Z误差≤0.001mm，约0.098mm以内缝隙闭合、更宽缝隙保留。
+#260 uia_param_wall_generator_text SHADOW  run 433b83c4 (baseline 78f01bb0)
+     OW 1965/2013/2060->1309/1310/9741.91; IW 9023.957/5102/6218->10804.321/9023.971/5103; SI 5102/6218->5103/6218; Top 9691.585->9689.719; Solid 9727.926/9741.91/9178.12->9727.926/9741.91/9118.023
+     travel first F30000 x4 F18000 x1->F30000 x4 F18000 x1 | other F30000 x527->F30000 x372
+     blocks IBr 1->1
+     tools of feature - -> -
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 薄壁与变宽度墙路径由Arachne重算，外轮廓连续。 / 3. 墙线按分布数过渡，无0宽线，外轮廓和总墙数不异常。
+#261 uia_param_single_wall_avoid_boat SHADOW  run bdf3dd93 (baseline 5994d5e6)
+     layers 240->240 first Z 0.25->0.25 last Z 48.05->48.05
+     wipe moves 3709->4006
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 窄顶面和窄区首层仅1圈墙，无额外填充。 / 3. 空驶不跨越外墙，必要时绕行且绕行距离不超2mm。
+#262 uia_param_surface_flow_boat SHADOW  run 2779be8f (baseline 5994d5e6)
+     Top 9731.379/8536/1200->8846.709/8543/1200 | unchanged: OW IW SI Solid Br
+     E/mm OW=0.0308 IW=0.0333 SI=0.0332 Top=0.0312 Bot=0.0000 -> OW=0.0308 IW=0.0333 SI=0.0332 Top=0.0343 Bot=0.0000
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 顶面E增加≈10%，底面E减少≈10%，对象整体流量不变。 / 3. 各表面路径和模型外形保持基准。
+#266 uia_param_wall_thin_boat SHADOW  run 1ffdefee (baseline 5994d5e6)
+     OW 1200/9741.893/4597->9741.893/1200/6512; IW 9023.957/1200/4824->9023.957/1200/6512; SI 9023.957/5929/6963->9023.957/7264/5623; Top 9731.379/8536/1200->9731.379/9529.696/1200; Solid 5929/9684.379/9682.645->7264/9683.23/9682.645; Br 3000/2652/2493->3000/1080
+     travel first F30000 x45 F18000 x1->F30000 x61 F18000 x1 | other F30000 x5318->F30000 x5673
+     blocks Br 13->3 IBr 15->9 Brim 1->1 OvW 98->110
+     tools of feature - -> -
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 正常区域总墙数为4圈，薄壁生成单线墙。 / 3. 每圈闭合无断墙，模型外形尺寸不变。
+#271 uia_param_feature_speeds_boat SHADOW  run 301dcb07 (baseline 5994d5e6)
+     OW 1200/9741.893/4597->6000/3000/1200; IW 9023.957/1200/4824->3000/9000/1200; SI 9023.957/5929/6963->9023.957/6120/4821; Top 9731.379/8536/1200->7200/1200/2114; Solid 5929/9684.379/9682.645->9741.91/6120/9684.379; Br 3000/2652/2493->3000/2652/2453
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 外墙/内墙/填充/顶面F分别≈6000/9000/12000/7200。 / 3. 周长<10mm的loop使用50mm/s，其他特征F不变。
+#274 uia_param_accelerations_boat SHADOW  run 0b0d9c99 (baseline 5994d5e6)
+     layers 240->240 first Z 0.25->0.25 last Z 48.05->48.05
+     feeds unchanged
+     wipe moves 3709->3709
+     SET_VELOCITY_LIMIT ACCEL (mm/s^2 x lines) 10000 x1771/2000 x956/5000 x817/2500 x154/500 x1 -> 8000 x4682/3000 x2009/2000 x1773/4000 x718/5000 x221/1000 x154/500 x1
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 首层、外墙、内墙、填充、空驶加速度分别匹配设置。 / 3. 超机器上限时被裁剪，非目标特征不变。
+#278 uia_param_raft_boat SHADOW  run 0c5eda6b (baseline 5994d5e6)
+     layers 240->244 first Z 0.25->0.25 last Z 48.05->49.05
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 模型下方生成3层筏层，接触Z间隙≈0.20mm。 / 3. 筏层XY外扩≈5mm，首层覆盖率100%且不超打印区域。
+#290 uia_param_skirt_boat SHADOW  run c2b32dd2 (baseline 5994d5e6)
+     layers 240->240 first Z 0.25->0.25 last Z 48.05->48.05
+     skirt 0->240 brim 1->1 blocks | skirt moves 0->42720 brim moves 16->16
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 生成3圈、2层、距模型5mm的裙边。 / 3. 风挡包围全部模型，模型本体路径和外形不变。
+#291 uia_param_brim_boat SHADOW  run ae7fc220 (baseline 5994d5e6)
+     skirt 0->0 brim 1->1 blocks | skirt moves 0->0 brim moves 16->771
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 仅外墙生成5mm Brim，与模型间隙≈0.2mm。 / 3. 内孔无Brim，Brim连续附着且不进入模型内部。
+#294 uia_param_timelapse_boat NON_GREEN  run 150834d4 (baseline 5994d5e6)
+     layers 240->240 first Z 0.25->0.25 last Z 48.05->48.05
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. G-code插入对应延时停靠/拍照指令。 / 3. regular（常规）切片路径保持不变，层数不减少。
+#263 uia_param_bridge_fdmt SHADOW  run 4dc30e72 (baseline 0cccce4a)
+     layers 460->460 first Z 0.25->0.25 last Z 92.05->92.05
+     IW 9023.957/1200/5737->9023.957/1200/5720; SI 9023.957/5911/5874->9023.957/5892/5854; Br 3000/960->3000/1800 | unchanged: OW Top Solid
+     blocks Br 16->16 IBr 28->28 OvW 146->146
+     tools of feature - -> -
+     direction unchanged (Br 0d 70%, IBr 135d 32%, SI 45d 16%)
+     E/mm OW=0.0309 IW=0.0333 SI=0.0332 Top=0.0310 Bot=0.0000 -> OW=0.0309 IW=0.0333 SI=0.0332 Top=0.0310 Bot=0.0000
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 桥接线方向为0°，线距对应100%密度，桥接区连续锚固。 / 3. 厚桥开启后桥接层数/流量增加，超过30mm跨度触发支撑或提示。
+#264 uia_param_overhang_speeds_fdmt SHADOW  run cb8d8859 (baseline 0cccce4a)
+     OW 9741.893/1200/1080->9741.893/1200/1860; IW 9023.957/1200/5737->9023.957/1200/1800; SI 9023.957/5911/5874->9023.957/6440/6390; Br 3000/960->3000/1800/1740 | unchanged: Top Solid
+     direction Br 0d 70%->0d 77% | IBr 135d 32%->135d 32% | SI 45d 16%->45d 16%
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 各悬垂区间的F分别≈2400/1800/1200/600/300。 / 3. 非悬垂区和桥接区F不变。
+#265 uia_param_overhang_curl_fdmt SHADOW  run 4b8da518 (baseline 0cccce4a)
+     OW 9741.893/1200/1080->9741.893/1200/600; IW 9023.957/1200/5737->9023.957/1200/600; SI 9023.957/5911/5874->9023.957/5735/8332; Br 3000/960->3000/600/2940 | unchanged: Top Solid
+     fan S0 x4 S255 x486->S0 x4 S255 x897 (fan lines 490->901)
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 悬垂比例超过10%时M106升至80%。 / 3. 翘边区域自动降速，普通表面风扇和F不变。
+#269 uia_param_infill_structure_fdmt SHADOW  run 3c6a8dc5 (baseline 0cccce4a)
+     layers 460->460 first Z 0.25->0.25 last Z 92.05->92.05
+     blocks Br 16->43 IBr 28->43 OvW 146->146
+     tools of feature - -> -
+     direction Br 0d 70%->45d 53% | IBr 135d 32%->135d 32% | SI 45d 16%->45d 17%
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 相邻填充层合并，小区域不生成稀疏填充。 / 3. 内部桥接有支撑，桥接线45°，狭窄区转实心且垂直壳体完整。
+#272 uia_param_overhang_bridge_fdmt NON_GREEN  run 94a82cda (baseline 0cccce4a)
+     OW 9741.893/1200/1080->9741.893/1200/1860; IW 9023.957/1200/5737->9023.957/1200/1800; SI 9023.957/5911/5874->9023.957/6440/6390; Br 3000/960->3000/1800/1740 | unchanged: Top Solid
+     direction Br 0d 70%->0d 77% | IBr 135d 32%->135d 32% | SI 45d 16%->45d 16%
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 各悬垂档F≈2400/1800/1200/600/300。 / 3. 桥接F≈1800，非悬垂区F不变。
+#277 uia_param_support_basic_fdmt SHADOW  run 06c69298 (baseline 0cccce4a)
+     blocks Sup 0->549 SupIf 0->476 Br 16->16 IBr 28->28 OvW 146->146
+     tools of feature - -> Sup=T0 SupIf=T0
+     support Z 0.25..49.25 on 246 layers
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 超过45°的悬垂生成支撑，结构为normal(auto)（普通自动）。 / 3. 允许支撑从模型表面起枝，完整覆盖关键和非关键悬垂。
+#280 uia_param_support_ironing_fdmt SHADOW  run f366c4c9 (baseline 0cccce4a)
+     IW 9023.957/1200/5737->9023.957/1200/5820; SI 9023.957/5911/5874->9023.957/6850/7859; Sup -->9000/8146/8122; SupIf -->4800; Iron -->1800 | unchanged: OW Top Solid Br
+     travel first F30000 x44 F18000 x1->F30000 x71 F18000 x1 | other F30000 x14892 F10804.321 x1->F30000 x18260 F10804.321 x1
+     blocks Sup 0->540 SupIf 0->460 Br 16->16 IBr 28->28 Iron 0->194 OvW 146->146
+     tools of feature - -> Sup=T0 SupIf=T0
+     support Z 0.25..49.25 on 246 layers
+     ironing 0->194 moves
+     E/mm OW=0.0309 IW=0.0333 SI=0.0332 Top=0.0310 Bot=0.0000 -> OW=0.0309 IW=0.0333 SI=0.0332 Top=0.0310 Bot=0.0000
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 仅支撑接触面生成rectilinear（直线）熨烫路径。 / 3. 熨烫E按10%流量生效，线距≈0.15mm，模型表面不变。
+#281 uia_param_support_interface_fdmt SHADOW  run 99f34ea9 (baseline 0cccce4a)
+     layers 460->460 first Z 0.25->0.25 last Z 92.05->92.05
+     blocks Sup 0->493 SupIf 0->420 Br 16->16 IBr 28->28 OvW 146->146
+     tools of feature - -> Sup=T0 SupIf=T0
+     support Z 0.25..49.05 on 245 layers
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 支撑顶/底Z间隙和模型XY间距符合设置。 / 3. 3层实心接触面生成，线距≈0，支撑不穿插模型。
+#273 uia_param_travel_speed_cubes2 SHADOW  run d15b8c66 (baseline cd540456)
+     layers 100->100 first Z 0.25->0.25 last Z 20.05->20.05
+     feeds unchanged
+     travel first F3000 x14 F30000 x13 F600 x10 F18000 x1->F18000 x14 F3000 x14 F600 x10 F1800 x1 | other F30000 x1330 F600 x990 F7200 x249 F1800 x199->F18000 x1350 F600 x990 F7200 x249 F1800 x199
+     wipe moves 706->702
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 所有非首层空驶F≈18000。 / 3. 挤出路径F和刀路不受影响。
+#292 uia_param_by_object_cubes2 NON_GREEN ProtocolError:slice_button_unavailable: Print By O run None (baseline cd540456)
+     飞书预期: 1. 非法或冲突配置被明确拒绝/纠正，不静默输出G-code；合法场景切片成功。 / 2. 间距充足时按对象逐个打印，工具头避让生效。 / 3. 间距不足时报告碰撞风险并阻止输出G-code。
+#296 uia_param_gcode_output_cubes2 SHADOW  run a3160612 (baseline cd540456)
+     arcs 0->0 | EXCLUDE_OBJECT 0->0 | numbered 0->0 | widths 9->11 kinds
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. G-code包含注释、行号和对象标签，文件名匹配格式。 / 3. 非注释运动指令和刀路与默认基准完全一致。
+#297 uia_param_exclude_objects_cubes2 SHADOW  run 24f867a0 (baseline cd540456)
+     blocks IBr 2->2 Tower 201->201
+     tools of feature Tower=T0,T2 -> Tower=T0,T2
+     arcs 0->0 | EXCLUDE_OBJECT 0->402 | numbered 0->0 | widths 9->11 kinds
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 被排除对象无打印路径，保留对象路径完整。 / 3. 填充区回抽次数减少，外墙和支撑回抽不变。
+#279 uia_param_support_filament_fdmt2 NON_GREEN ProtocolError:param_combo_target:1 PLA: run None (baseline 9226796a)
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 支撑主体使用工具1，接触面使用工具0。 / 3. 模型本体工具号不变，切换工具时擦料塔和回抽完整。
+#284 uia_param_filament_features_fdmt2 NON_GREEN ProtocolError:param_combo_target:1 PLA: run None (baseline 9226796a)
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 擦料塔使用工具0，支撑主体工具1，接触面工具0。 / 3. 模型本体工具号不变，换料顺序和擦料塔路径完整。
+#287 uia_param_material_advanced_fdmt2 NON_GREEN ProtocolError:param_combo_target:1 PLA: run None (baseline 9226796a)
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 支撑接触面生成2层界面外壳。 / 3. 主体工具1和界面工具0映射正确，模型外壳不变。
+#282 uia_param_tree_support_bunny SHADOW  run c4eb7a29 (baseline bfada110)
+     layers 592->592 first Z 0.25->0.25 last Z 118.45->118.45
+     blocks Sup 0->657 SupIf 0->185 Br 38->38 IBr 10->10 OvW 384->384
+     tools of feature - -> Sup=T0 SupIf=T0
+     support Z 0.25..100.65 on 503 layers
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 树状支撑分支角度和直径符合设置，分支连续。 / 3. 支撑层高自适应，超过30mm跨度触发支撑。
+#283 uia_param_prime_tower_boat2 SHADOW  run 9bc92f73 (baseline 0c80c4a0)
+     layers 240->240 first Z 0.25->0.25 last Z 48.05->48.05
+     blocks Br 26->26 IBr 30->30 Brim 2->2 Tower 481->481 OvW 196->196
+     tools of feature Tower=T0,T2 -> Tower=T0,T2
+     skirt 0->0 brim 2->2 blocks | skirt moves 0->0 brim moves 32->32
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 多工具换料时生成30mm宽擦料塔，清理量≈40mm³。 / 3. 塔体为rib（加强筋）墙、无稀疏层、15°锥角并带5mm Brim，模型不碰撞。
+#286 uia_param_flush_options_boat2 SHADOW  run 9dbad28b (baseline 0c80c4a0)
+     blocks Br 26->26 IBr 30->30 Brim 2->2 Tower 481->481 OvW 196->196
+     tools of feature Tower=T0,T2 -> Tower=T0,T2
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 冲刷废料按目标导入填充、对象和支撑。 / 3. 擦料塔废料减少，冲刷体积≈40mm³，模型外形不变。
+#288  (no scenario)  1. 组合参数写入正确，切片成功并产出G-code。 / 2. 混色组分偏置开关和0.20～0.40区间正确写入。 / 3. 渐变颜色边界位于对应Z层，区间外恢复单色，几何不变。
+#289  (no scenario)  1. 组合参数写入正确，切片成功并产出G-code。 / 2. 点彩像素≈0.6mm、线距≈0.2mm，区域塌缩和表面凹陷生效。 / 3. 混色边界连续，非混色区域路径和外形不变。
+#285 uia_param_ooze_prevention_hell SHADOW  run 46fcf33b (baseline 02793334)
+     blocks 
+     tools of feature - -> -
+     飞书预期: 1. 组合参数写入正确，切片成功并产出G-code。 / 2. 非活动工具进入待机温度，活动工具温度不变。 / 3. 换料前按2步、每步15s预热，换回后恢复打印温度。
+
+TALLY of 44 rows on their own models: SHADOW 35 | NON_GREEN 7 | not run 0 | no fixture 0 | no scenario 2
+   non_green    #254(ProtocolError:script_layer) #294() #272() #292(ProtocolError:slice_button) #279(ProtocolError:param_combo_) #284(ProtocolError:param_combo_) #287(ProtocolError:param_combo_)
+   no_scenario  #288 #289
