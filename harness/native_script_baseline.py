@@ -4,19 +4,49 @@ from pathlib import Path
 import re
 import sys
 
-from .agent_protocol import (BASELINES, SHAPES_SCENARIO, SUFFIX_TARGETS, STD_SCENARIO, ProtocolError,
-                             base_scenario, fixture_suffix, read_json)
+from .agent_protocol import (BASELINES, LAYER_FIELDS_BY_FIXTURE, SHAPES_SCENARIO, SUFFIX_TARGETS,
+                             STD_SCENARIO, ProtocolError, base_scenario, fixture_suffix, read_json)
 from .native_matrix import (UIA_CANVAS_SCENARIO, UIA_LAYER_SCENARIO, UIA_LAYER_STRENGTH_SCENARIO,
     UIA_MIX_RECIPES, UIA_MOVE_LAYER, UIA_PROCESS_COMBO, UIA_QUALITY_ENUMS)
 
 
-def edit_layer(ui, value="0.24"):
-    # Quality is open before locating its regular layer height Edit.
+def layer_fields_start(ui):
+    """(layer height, first layer height) the two height fields of the Quality page
+    read when the opened fixture is shown, before anything is typed: the fixture's
+    own pair (agent_protocol.LAYER_FIELDS_BY_FIXTURE), keyed by the sha256 of the
+    bytes BusinessUI verified and opened. A fixture whose pair nobody registered
+    is refused, not assumed to be the cube's."""
+    digest = ui.boot_details["fixture_sha256"]
+    try:
+        return LAYER_FIELDS_BY_FIXTURE[digest]
+    except KeyError:
+        raise ProtocolError("script_layer_fixture_unregistered") from None
+
+
+def _number(text):
+    """The number an Edit shows, or None when its text is not one."""
+    try:
+        return Decimal(str(text).strip())
+    except Exception:  # noqa: BLE001 - any unreadable text is "no number"
+        return None
+
+
+def edit_layer(ui, value="0.24", *, initial=None):
+    """Type `value` into the regular layer height Edit (the topmost float Edit of the
+    Quality page; Quality is open). On entry both height fields must read the
+    opened fixture's own pair - the cube's 0.4 / 0.4, the precondition fixtures'
+    0.2 / 0.25 - and with `initial` the first layer field that value; anything
+    else is script_layer_fields_not_as_expected. What the two fields read on
+    entry is in the log and in the returned receipt."""
     from .process_panel import float_edits_in_view
 
+    start = layer_fields_start(ui)
     edits = ui.wait(lambda: float_edits_in_view(ui.app), 16)
-    if (len(edits) < 2 or any(not ui.owned(hwnd) or Decimal(value) != Decimal("0.4")
-                              for _, hwnd, value in edits[:2])
+    read = tuple(field[2] for field in edits[:2])
+    print("[native-script] layer fields on entry: read=%r expected=%r" % (read, start), flush=True)
+    if (len(edits) < 2 or any(not ui.owned(hwnd) for _, hwnd, _value in edits[:2])
+            or (_number(read[0]), _number(read[1])) != (Decimal(start[0]), Decimal(start[1]))
+            or (initial is not None and _number(read[1]) != Decimal(initial))
             or edits[0][0][1] >= edits[1][0][1]):
         raise ProtocolError("script_layer_fields_not_as_expected")
     rect, edit_hwnd, _ = edits[0]
@@ -25,6 +55,7 @@ def edit_layer(ui, value="0.24"):
     receipt = ui.edit(x, y, value)
     if receipt["target_hwnd"] != edit_hwnd or Decimal(receipt["after_text"]) != Decimal(value):
         raise ProtocolError("script_layer_readback")
+    return dict(receipt, entry_read=list(read), start_expected=list(start), submitted=str(value))
 
 
 def _type_canvas_number(ui, scope, screen_point, text):
@@ -178,11 +209,19 @@ def add_mix_recipes(ui, *, census=False):
 
 
 def edit_param_layer_pair(ui):
-    """Feishu #254: regular 0.20 mm + initial layer 0.25 mm on Quality."""
+    """Feishu #254: regular 0.20 mm + initial layer 0.25 mm on Quality.
+
+    Both fields are typed whatever the fixture holds. On the precondition
+    fixtures (0.20mm Standard: 0.2 / 0.25) the pair is already the target, and
+    the step that writes it is still driven: each field is typed and read back.
+    Between the two the first layer field must still read the fixture's own
+    value - proof the first edit hit the other field. Returns the receipt of
+    both edits, with what the two fields read on entry."""
     from .process_panel import float_edits_in_view
 
+    _regular, initial = layer_fields_start(ui)
     ui.main_input()
-    edit_layer(ui, "0.2")
+    layer = edit_layer(ui, "0.2", initial=initial)
     ui.pause(1.5)
     ui.main_input()
     # 'First layer height' sits directly under Layer height on the same
@@ -190,7 +229,9 @@ def edit_param_layer_pair(ui):
     # value column (runs 35211f/d70ef26), but float_edits_in_view sees the
     # field itself - positional edit like edit_layer, second row.
     edits = ui.wait(lambda: float_edits_in_view(ui.app), 16)
-    if len(edits) < 2 or Decimal("0.4") != Decimal(edits[1][2]):
+    print("[native-script] first layer field before its edit: read=%r expected=%r"
+          % (edits[1][2] if len(edits) >= 2 else None, initial), flush=True)
+    if len(edits) < 2 or Decimal(initial) != Decimal(edits[1][2]):
         raise ProtocolError("param_layer_pair_initial_field")
     rect, edit_hwnd, _ = edits[1]
     origin_x, origin_y = ui.wu.client_to_screen(ui.app.hwnd, 0, 0)
@@ -200,6 +241,11 @@ def edit_param_layer_pair(ui):
         raise ProtocolError("param_layer_pair_initial_readback")
     ui.pause(6)
     ui.main_input()
+    pair = {"fixture_sha256": ui.boot_details["fixture_sha256"],
+            "entry_read": layer["entry_read"], "start_expected": layer["start_expected"],
+            "layer_height": layer, "initial_layer_print_height": dict(receipt, submitted="0.25")}
+    print("[native-script] layer pair receipt: %r" % (pair,), flush=True)
+    return pair
 
 
 # App config a scenario needs beyond profile.MINIMAL_CONF, merged when the
@@ -1017,7 +1063,7 @@ def edit_project(ui, scenario, canvas, *, mix_census=False):
     elif scenario == "pilot_material":
         assign_filament_slot2(ui)
     elif base == "uia_param_layer_pair":
-        edit_param_layer_pair(ui)
+        return edit_param_layer_pair(ui)
     elif base in ("uia_param_census", "uia_param_census_develop"):
         from .param_case_lib import census_param_pages
         census_param_pages(ui)

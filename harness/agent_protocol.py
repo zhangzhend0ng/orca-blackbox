@@ -97,6 +97,21 @@ BASELINES.update({suffix: ("uia_param_%s_save_only" % key, "param_%s_save_only" 
 # model fixture is all PLA, like the precondition cube)
 SUFFIX_TARGETS = {STD_SUFFIX: STD_TARGETS}
 SUFFIX_TARGETS.update({suffix: STD_TARGETS for suffix in MODEL_FIXTURES})
+# What the two height fields of the Quality page read when a fixture is opened,
+# (layer height, first layer height): the pair its project was saved with. The
+# cube and the shapes plate hold 0.4 / 0.4; the precondition cube and every
+# model fixture 0.2 / 0.25 (0.20mm Standard). Feishu #254 sets 0.20 + 0.25, so
+# on the precondition fixtures it sets the pair they already hold: a driver
+# that demands the cube's 0.4 of both fields refused them on entry
+# (script_layer_fields_not_as_expected, 2026-11-24). The values are read off
+# the fixture files by unit_tests/test_native_script_baseline.py.
+CUBE_LAYER_FIELDS = ("0.4", "0.4")
+STD_LAYER_FIELDS = ("0.2", "0.25")
+# sha256 of the fixture bytes -> its pair
+LAYER_FIELDS_BY_FIXTURE = {LAYER_FIXTURE_SHA256: CUBE_LAYER_FIELDS,
+                           SHAPES_FIXTURE_SHA256: CUBE_LAYER_FIELDS,
+                           STD_FIXTURE_SHA256: STD_LAYER_FIELDS}
+LAYER_FIELDS_BY_FIXTURE.update({sha: STD_LAYER_FIELDS for _file, sha, _key in MODEL_FIXTURES.values()})
 
 
 def base_scenario(name):
