@@ -18,8 +18,9 @@ refuses the row; the ops' time limits are checked as numbers. Step 12: set_float
 value cell is taken by the row's label on run 063651's own page reading - its row 'X-Y hole
 compensation' carries 'mm' and no number - and by a page that paints no number at all; the edit
 itself (the AX tree) is the GUI run's to judge. Step 13: a row OCR reads without its word space
-('Firstlayer', run 075830) is taken by its label before a prefix hit on another row. Exit status
-1 when a check fails."""
+('Firstlayer', run 075830) is taken by its label before a prefix hit on another row. Step 15: a combo
+op is located by the value it paints (op['current']) on three saved pages, its label handed to
+pick_combo, and the refusals; the pick itself is not replayed. Exit status 1 when a check fails."""
 
 import json
 import re
@@ -541,6 +542,128 @@ def main():
           op4_handed == "Small perimeters threshold" and op4_found["readback"]["wrapped"] is True
           and op4_found["readback"]["lines"] == ["Small perimeters", "threshold"]
           and op5_handed == "^Small perimeters" and op5_found["readback"]["wrapped"] is False)
+    # --- step 15: a combo op names no label. Its row is the one painting op['current'], found by
+    # find_combo while op_find_row's chain runs, and that row's label is what pick_combo then
+    # locates. Run 152849 (uia_param_skirt, op 3, PASS) read 'Draft shield' painting '~ Disabled';
+    # run 152406 (uia_param_ironing_top, op 0) 'Ironing type' painting '~ No ironing'; run 022226's
+    # proven Print sequence page paints '~ By layer'. The pick itself (the click, the popup, the
+    # painted readback) is the GUI run's to judge: not replayed here.
+    def combo_page(name, entered):
+        panel = replay(name)
+        panel.entered = entered
+        return panel, panel.read("x")
+
+    def refusal(what):
+        try:
+            return None, what()
+        except RuntimeError as error:
+            return po.brief(error, 220), None
+
+    def combo(current, tab, group, target="Enabled"):
+        return {"op": "combo", "tab": tab, "tab_hint": "x", "group": group, "current": current, "target": target}
+
+    paints = lambda text: [token(250, 774, 70, 18, text)]
+    words = {"a string inside the painted text": pc.paints(paints("~ By layer"), "By layer"),
+             "one word of it": pc.paints(paints("~ By layer"), "layer"),
+             "another value": pc.paints(paints("~ By layer"), "object"),
+             "the other glyph": pc.paints(paints("v By object"), "By object"),
+             "a list, as painted": pc.paints(paints("~ No ironing"), ["No", "ironing"]),
+             "a list, any case": pc.paints(paints("~ By layer"), ["by", "LAYER"]),
+             "a list over two tokens": pc.paints([token(0, 0, 20, 14, "No"), token(30, 0, 60, 14, "ironing")],
+                                                 ["No", "ironing"]),
+             "a run inside the value": pc.paints(paints("~ No ironing"), ["ironing"]),
+             "not a run of whole words": pc.paints(paints("~ No ironing"), ["No", "iron"]),
+             "another order": pc.paints(paints("~ By layer"), ["Layer", "By"]),
+             "nothing painted": pc.paints([], "By layer"),
+             "no current": pc.paints(paints("~ By layer"), "")}
+    out["step15_paints"] = words
+    check("step 15, paints: a combo op's `current` is read as the Windows engine reads a choice's value - "
+          "a string inside the painted text, a list a run of whole words - behind the one dropdown "
+          "glyph OCR glues in front; another value, another order, half a word, nothing painted and no "
+          "current are no hit",
+          [k for k, ok in words.items() if ok] == ["a string inside the painted text", "one word of it",
+                                                   "the other glyph", "a list, as painted", "a list, any case",
+                                                   "a list over two tokens", "a run inside the value"])
+    skirt, _ = combo_page("case-152849-op3-combo-page", "skirt")
+    skirt_label, skirt_found = pc.locate_combo(skirt, combo("Disabled", "Others", "Skirt"), "Others")
+    iron, iron_rows = combo_page("case-152406-op0-combo-page", "ironing")
+    iron_op = combo(["No", "ironing"], "Quality", "Ironing", "Topmost")
+    iron_label, iron_found = pc.locate_combo(iron, iron_op, "Quality")
+
+    def no_chain(page):  # a refusal goes on to the scroll chains: counted, not simulated
+        def start(group, label, tag, why, budget=None):
+            page.scroll_chains.append(tag)
+            raise RuntimeError("scroll chain is not simulated offline")
+        page.scroll_to = start
+    sequence, _ = combo_page("pick_combo-022226-combo-page", None)
+    sequence_label, sequence_found = pc.locate_combo(sequence, combo("By layer", "Others", "Special mode", "By object"),
+                                                     "Others")
+    painting = [r["text"] for r in iron_rows if pc.paints(iron.line_values(iron_rows, r), ["No", "ironing"])]
+    for page in (iron, sequence):  # the refusals below are asked of these two pages
+        no_chain(page)
+    # the hand-off: pick_combo's own locate, by the label handed to it, is the Panel's find_row again
+    # and lands on the same row with its value token in place (the head of op_pick_combo)
+    hand_rows, hand_row, _, _ = iron.locate_row("Quality", "Ironing", iron_label, "combo")
+    handed = {"label": iron_label, "row": hand_row["text"], "level": iron.last_match["level"],
+              "values": [t["text"] for t in iron.line_values(hand_rows, hand_row)],
+              "own_find_row_back": all("find_row" not in p.__dict__ for p in (skirt, iron, sequence))}
+    out["step15_combo"] = {
+        "skirt": {"label": skirt_label, "row": skirt_found["readback"]["label"],
+                  "value_text": skirt_found["readback"]["value_text"],
+                  "level": skirt_found["readback"]["match"]["level"],
+                  "group_by": skirt_found["readback"]["match"]["group_by"]},
+        "ironing": {"label": iron_label, "row": iron_found["readback"]["label"],
+                    "value_text": iron_found["readback"]["value_text"],
+                    "level": iron_found["readback"]["match"]["level"],
+                    "group_by": iron_found["readback"]["match"]["group_by"], "rows_painting_it": painting,
+                    "handed": handed},
+        "print_sequence": {"label": sequence_label, "row": sequence_found["readback"]["label"],
+                           "value_text": sequence_found["readback"]["value_text"],
+                           "group_by": sequence_found["readback"]["match"]["group_by"]},
+        "refused": {"'Disabled' on the Ironing page": refusal(lambda: pc.locate_combo(iron, {**iron_op, "current": "Disabled"}, "Quality"))[0],
+                    "'By object' on the Special mode page": refusal(lambda: pc.locate_combo(sequence, combo("By object", "Others", "Special mode"), "Others"))[0],
+                    "the hit in another group, find_combo": refusal(lambda: pc.find_combo(iron, iron_rows, "Wall generator", ["No", "ironing"]))[0],
+                    "the hit in another group, whole locate": refusal(lambda: pc.locate_combo(iron, {**iron_op, "group": "Wall generator"}, "Quality"))[0],
+                    "scroll chains started": [len(p.scroll_chains) for p in (iron, sequence)]},
+        # the primitive's own proof, recorded for the step that decides on it (not judged here)
+        "pick_combo_proof": {"'~ Enabled' for 'Enabled'": po.painted_is("~ Enabled", "Enabled"),
+                             "'5 ~Enabled' for 'Enabled' (run 152849's own readback)": po.painted_is("5 ~Enabled", "Enabled"),
+                             "'~ Topmost surface only' for 'Topmost'": po.painted_is("~ Topmost surface only", "Topmost")}}
+    check("step 15, run 152849's own page (uia_param_skirt, op 3): the combo is located by the value it "
+          "paints - 'Disabled' - and the row handed on is 'Draft shield' (exact, by its group's title, "
+          "the row painting '~ Disabled')",
+          skirt_label == "Draft shield" and out["step15_combo"]["skirt"]["row"] == "Draft shield"
+          and out["step15_combo"]["skirt"]["value_text"] == "~ Disabled"
+          and out["step15_combo"]["skirt"]["level"] == "exact"
+          and out["step15_combo"]["skirt"]["group_by"] == "title")
+    check("step 15, run 152406's own page (uia_param_ironing_top, op 0): 'No ironing' (a list) takes "
+          "'Ironing type', the one row painting it, exact, as a row of the group whose title is above "
+          "the page; pick_combo's own locate then finds that label on the same row, its value '~ No "
+          "ironing' in place, and the Panel's find_row is back on every page",
+          painting == ["Ironing type"] and iron_label == "Ironing type"
+          and out["step15_combo"]["ironing"]["row"] == "Ironing type"
+          and out["step15_combo"]["ironing"]["value_text"] == "~ No ironing"
+          and out["step15_combo"]["ironing"]["level"] == "exact"
+          and out["step15_combo"]["ironing"]["group_by"] == "entered"
+          and handed == {"label": "Ironing type", "row": "Ironing type", "level": "exact",
+                         "values": ["~ No ironing"], "own_find_row_back": True})
+    check("step 15, run 022226's proven page: a string `current` ('By layer') takes 'Print sequence', "
+          "which paints '~ By layer'",
+          sequence_label == "Print sequence" and out["step15_combo"]["print_sequence"]["row"] == "Print sequence"
+          and out["step15_combo"]["print_sequence"]["value_text"] == "~ By layer")
+    check("step 15 refusals: a value no row paints ('Disabled' on the Ironing page) is refused with the "
+          "value, the tab and the group named, after the locate went on to its scroll chain",
+          "No choice painting 'Disabled' found in tab 'Quality', group 'Ironing': " in (
+              out["step15_combo"]["refused"]["'Disabled' on the Ironing page"] or "")
+          and "No choice painting 'By object' found in tab 'Others', group 'Special mode'" in (
+              out["step15_combo"]["refused"]["'By object' on the Special mode page"] or "")
+          and len(iron.scroll_chains) >= 1 and len(sequence.scroll_chains) >= 1)
+    check("step 15 refusal: a row that paints the value but is outside the op's group is not handed on "
+          "- find_combo refuses it in the Panel's find_row's own words ('Ironing type' asked of 'Wall "
+          "generator') and so does the whole locate",
+          "not visible in group 'Wall generator'" in (out["step15_combo"]["refused"]["the hit in another group, find_combo"] or "")
+          and "No choice painting ['No', 'ironing'] found in tab 'Quality', group 'Wall generator'" in (
+              out["step15_combo"]["refused"]["the hit in another group, whole locate"] or ""))
     # the op limits (step 10): each op gets min(OP_FUSE, the case's time left before the save)
     now = 1_000_000.0
     at = (50, 160, 270, 381)

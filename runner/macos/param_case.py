@@ -9,12 +9,13 @@ The case's ops run in order, each through its param_ops operation:
   checkbox   -> find_row the same way, then the cell click of set_checkbox's check turn
                 (the uncheck turn and its saves are not wanted inside a case)
   rowcombo   -> pick_combo on its row label
+  combo      -> the row that paints the op's `current` (the value the choice shows now), then
+                pick_combo on that row's label
 
-`unsupported op` - the case is marked so and does not run, nothing is guessed: a combo op
-(located by the value it paints), a field / below box (a vertical stack of boxes), an op that
-must answer a dialog, a checkbox that must end unchecked (the box's painted state has no
-reader), or a row op before any tab op. A case whose app_conf is not empty is `needs develop
-mode` and does not run either.
+`unsupported op` - the case is marked so and does not run, nothing is guessed: a field / below
+box (a vertical stack of boxes), an op that must answer a dialog, a checkbox that must end
+unchecked (the box's painted state has no reader), or a row op before any tab op. A case whose
+app_conf is not empty is `needs develop mode` and does not run either.
 
 When every op is done: File > Save Project, then each key of the case's `values` is read from
 the saved 3mf's Metadata/project_settings.config and judged pass / mismatch - a one-element
@@ -44,7 +45,8 @@ OP_FUSE = 150  # seconds one op may take from its entry; surface_flow's op0 need
 SAVE = 40  # kept after the last op for Save Project and the keys read from the saved project
 PROGRESS = po.WORK / "progress.json"  # the ops finished so far, put down after each one
 RUNNABLE = {"float": ROW_KEYS | {"value"}, "checkbox": ROW_KEYS | {"value"},
-            "rowcombo": ROW_KEYS | {"target"}}
+            "rowcombo": ROW_KEYS | {"target"},
+            "combo": {"tab", "tab_hint", "group", "current", "target"}}
 
 
 def load_case(scenario):
@@ -75,6 +77,8 @@ def unsupported(case):
             why = "unsupported op: a row op before any tab op"
         elif op["op"] == "checkbox" and op.get("value") is not True:
             why = "unsupported op: a checkbox that must end unchecked (no reader for its painted state)"
+        elif op["op"] == "combo" and not (op.get("current") and op.get("target")):
+            why = "unsupported op: a combo without the value it paints (current) or without its target"
         if why:
             return {"index": index, "op": op, "reason": why}
     return None
@@ -134,6 +138,56 @@ def locate(panel, op, tab):
     # own locate then reads it back to the same lines (level 'wrapped', run 080428's op 4).
     handed = readback["label"] if readback.get("wrapped") else readback["label_candidate"]
     return handed, found, readback["match"]["candidates"]
+
+
+def paints(tokens, current):
+    """Whether the tokens a row paints right of it read `current`, as the Windows engine reads
+    a choice's value: a string is sought inside the painted text, a list is a run of
+    consecutive words. One short word in front is not part of the value: OCR glues the
+    dropdown glyph to it ('v By object')."""
+    if not tokens or not current:
+        return False
+    words = po.norm(" ".join(t["text"] for t in tokens)).split(" ")
+    readings = [words] + [words[1:] if len(words[0]) <= 2 else words]
+    if isinstance(current, str):
+        return any(po.norm(current) in " ".join(have) for have in readings)
+    wanted = [po.norm(word) for word in current]
+    return any(have[i:i + len(wanted)] == wanted for have in readings
+               for i in range(len(have) - len(wanted) + 1))
+
+
+def find_combo(panel, rows, group, current):
+    """Panel.find_row for a combo op, whose table entry names no label: the rows of this
+    reading whose value tokens paint `current` are the candidates of the real find_row (the
+    group's band is its reading, a hit is at its 'exact' level). Refused when the row it
+    returns is not one of them."""
+    hits = [r for r in rows if paints(panel.line_values(rows, r), current)]
+    po.require(hits, f"No choice on the page paints {current!r}: {panel.page_text(rows)}")
+    row = po.Panel.find_row(panel, rows, group, [r["text"] for r in hits])
+    po.require(row in hits, f"The row {row['text']!r} does not paint {current!r}: it paints "
+                            f"{' '.join(t['text'] for t in panel.line_values(rows, row))!r}")
+    return row
+
+
+def locate_combo(panel, op, tab):
+    """A combo op is located by the value it paints (op['current']), not by a label: while the
+    page is read, find_combo stands in for the panel's find_row, so op_find_row's chain (the
+    group's band, the scroll chains, Advanced mode) runs on it. (the label of the row found,
+    for pick_combo's own locate; op_find_row's result)"""
+    current = op["current"]
+    own = panel.__dict__.get("find_row")  # the Panel's own method, unless an op left one
+    panel.find_row = lambda rows, group, label: find_combo(panel, rows, group, current)
+    try:
+        found = po.op_find_row(panel, {"tab": tab, "group": op.get("group"), "label": current})
+    except (RuntimeError, TimeoutError) as error:
+        po.require(False, f"No choice painting {current!r} found in tab {tab!r}, group "
+                          f"{op.get('group')!r}: {po.brief(error, 2500)}")
+    finally:
+        if own is None:
+            panel.__dict__.pop("find_row", None)
+        else:
+            panel.find_row = own
+    return found["readback"]["label"], found
 
 
 def per_op_shots(panel, index):
@@ -243,8 +297,14 @@ def op_case(panel, ns):
                 step["tab"] = {"name": tab, "hint": op.get("tab_hint"), "readback": switched["readback"]}
                 po.require(switched["ok"], f"Tab {tab!r} did not open: {json.dumps(switched['readback'])[:300]}")
                 tab_evidence = switched["evidence"]
-            if op["op"] == "rowcombo":
-                done = po.op_pick_combo(panel, {"tab": tab, "group": op.get("group"), "label": op["label"],
+            if op["op"] in ("rowcombo", "combo"):
+                if op["op"] == "combo":  # by the value it paints; the row's label goes on to pick_combo
+                    label, found = locate_combo(panel, op, tab)
+                    step.update(label=label, row=found["readback"], current=op["current"],
+                                notes=found["evidence"]["notes"], page_text=found["evidence"]["page_text"][:60])
+                else:
+                    label = op["label"]
+                done = po.op_pick_combo(panel, {"tab": tab, "group": op.get("group"), "label": label,
                                                 "target": op["target"]})
                 step.update(readback=done["readback"])
                 po.require(done["ok"], f"pick_combo did not take: {json.dumps(done['readback'])[:300]}")
@@ -272,7 +332,7 @@ def op_case(panel, ns):
                 step["page_text_at_error"] = f"<not read: {po.brief(failure, 200)}>"
             stopped = step
         finally:
-            for name in ("shot", "shot_prefix"):  # back to the Panel's own methods
+            for name in ("shot", "shot_prefix", "find_row"):  # back to the Panel's own methods
                 panel.__dict__.pop(name, None)
             panel.deadline = None
         step["seconds"] = round(time.time() - started, 1) - step["at"]

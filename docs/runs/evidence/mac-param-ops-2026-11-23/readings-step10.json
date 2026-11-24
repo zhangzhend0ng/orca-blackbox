@@ -1,5 +1,5 @@
 {
-"note": "OCR readings (px, panel-relative: window-left = x 0, window-top = y 0) of the panel shots in shots/ of these names (y >= 670: the tab band and the page), read offline on 2026-11-24 with the ocr binary of ocr.swift 9f36f57b1ab9. Replayed by runner/macos/param_locate_check.py (step 10). Step 13 adds run 075830's op0 page (case-075830-op0-find-page: the row 'First layer' read as 'Firstlayer', its value 35), read the same way. Step 14 adds run 080428's op4 page (case-080428-op4-float-page: the label 'Small perimeters threshold' wrapped over two lines, 757 and 773, its value box painting no number), read the same way.",
+"note": "OCR readings (px, panel-relative: window-left = x 0, window-top = y 0) of the panel shots in shots/ of these names (y >= 670: the tab band and the page), read offline on 2026-11-24 with the ocr binary of ocr.swift 9f36f57b1ab9. Replayed by runner/macos/param_locate_check.py (step 10). Step 13 adds run 075830's op0 page (case-075830-op0-find-page: the row 'First layer' read as 'Firstlayer', its value 35), read the same way. Step 14 adds run 080428's op4 page (case-080428-op4-float-page: the label 'Small perimeters threshold' wrapped over two lines, 757 and 773, its value box painting no number), read the same way. Step 15 adds three combo pages, read the same way in two passes - the whole panel (y >= 670), then its value column (x 240..460, y 720..980), which the whole-panel pass did not return: the proven Print sequence page of run 022226 (pick_combo-022226-combo-page: the row 'Print sequence' painting '~ By layer') and run 152406's op0 page (case-152406-op0-combo-page: 'Ironing type' painting '~ No ironing', its group's title above the page) and run 152849's op3 page (case-152849-op3-combo-page: 'Draft shield' painting '~ Disabled'). The column pass returns a token twice, a pixel or two apart; the first is kept.",
 "readings": {
 "case-075830-op0-find-page": [
 {
@@ -1256,6 +1256,362 @@
 "w": 94.0,
 "h": 14.0,
 "text": "Slow down for"
+}
+],
+"pick_combo-022226-combo-page": [
+{
+"x": 16.0,
+"y": 684.0,
+"w": 50.0,
+"h": 18.0,
+"text": "Quality"
+},
+{
+"x": 86.0,
+"y": 684.0,
+"w": 60.0,
+"h": 17.0,
+"text": "Strength"
+},
+{
+"x": 168.0,
+"y": 684.0,
+"w": 54.0,
+"h": 16.0,
+"text": "Support"
+},
+{
+"x": 246.0,
+"y": 684.0,
+"w": 86.0,
+"h": 14.0,
+"text": "Multimaterial"
+},
+{
+"x": 356.0,
+"y": 684.0,
+"w": 46.0,
+"h": 14.0,
+"text": "Others"
+},
+{
+"x": 30.0,
+"y": 712.0,
+"w": 72.0,
+"h": 12.0,
+"text": "Brim width"
+},
+{
+"x": 6.0,
+"y": 742.0,
+"w": 112.0,
+"h": 18.0,
+"text": "EK Special mode"
+},
+{
+"x": 252.0,
+"y": 773.0,
+"w": 69.0,
+"h": 17.0,
+"text": "~ By layer"
+},
+{
+"x": 30.0,
+"y": 774.0,
+"w": 96.0,
+"h": 14.0,
+"text": "Print sequence"
+}
+],
+"case-152406-op0-combo-page": [
+{
+"x": 18.0,
+"y": 683.0,
+"w": 174.0,
+"h": 18.0,
+"text": "Quality Strength Speed"
+},
+{
+"x": 200.0,
+"y": 683.0,
+"w": 156.0,
+"h": 16.0,
+"text": "Support Multimaterial"
+},
+{
+"x": 370.0,
+"y": 685.0,
+"w": 44.0,
+"h": 12.0,
+"text": "Others"
+},
+{
+"x": 250.0,
+"y": 732.0,
+"w": 84.0,
+"h": 20.0,
+"text": "~ No ironing"
+},
+{
+"x": 28.0,
+"y": 735.0,
+"w": 82.0,
+"h": 14.0,
+"text": "Ironing type"
+},
+{
+"x": 30.0,
+"y": 767.0,
+"w": 100.0,
+"h": 16.0,
+"text": "Wall generator"
+},
+{
+"x": 30.0,
+"y": 796.0,
+"w": 96.0,
+"h": 19.0,
+"text": "Wall generator"
+},
+{
+"x": 252.0,
+"y": 796.0,
+"w": 60.0,
+"h": 15.0,
+"text": "~ Classic"
+},
+{
+"x": 28.0,
+"y": 831.0,
+"w": 126.0,
+"h": 14.0,
+"text": "Walls and surfaces"
+},
+{
+"x": 250.0,
+"y": 859.0,
+"w": 94.0,
+"h": 18.0,
+"text": "~Inner/Outer"
+},
+{
+"x": 28.0,
+"y": 861.0,
+"w": 130.0,
+"h": 20.0,
+"text": "Walls printing order"
+},
+{
+"x": 252.0,
+"y": 861.0,
+"w": 92.0,
+"h": 14.0,
+"text": "~ Inner/Outer"
+},
+{
+"x": 28.0,
+"y": 889.0,
+"w": 94.0,
+"h": 19.0,
+"text": "Print infill first"
+},
+{
+"x": 26.0,
+"y": 917.0,
+"w": 124.0,
+"h": 20.0,
+"text": "Wall loop direction"
+},
+{
+"x": 250.0,
+"y": 917.0,
+"w": 50.0,
+"h": 16.0,
+"text": "~Auto"
+},
+{
+"x": 26.0,
+"y": 945.0,
+"w": 142.0,
+"h": 18.0,
+"text": "Top surface flow ratio"
+},
+{
+"x": 252.0,
+"y": 945.0,
+"w": 10.0,
+"h": 14.0,
+"text": "1"
+}
+],
+"case-152849-op3-combo-page": [
+{
+"x": 16.0,
+"y": 683.0,
+"w": 50.0,
+"h": 18.0,
+"text": "Quality"
+},
+{
+"x": 66.0,
+"y": 683.0,
+"w": 286.0,
+"h": 18.0,
+"text": "Strength Speed Support Multimaterial"
+},
+{
+"x": 364.0,
+"y": 683.0,
+"w": 50.0,
+"h": 16.0,
+"text": "Others"
+},
+{
+"x": 10.0,
+"y": 719.0,
+"w": 52.0,
+"h": 14.0,
+"text": "L Skirt"
+},
+{
+"x": 30.0,
+"y": 749.0,
+"w": 70.0,
+"h": 17.0,
+"text": "Skirt loops"
+},
+{
+"x": 250.0,
+"y": 749.0,
+"w": 28.0,
+"h": 16.0,
+"text": ": 3"
+},
+{
+"x": 252.0,
+"y": 776.0,
+"w": 82.0,
+"h": 18.0,
+"text": "~ Combined"
+},
+{
+"x": 28.0,
+"y": 779.0,
+"w": 66.0,
+"h": 18.0,
+"text": "Skirt type"
+},
+{
+"x": 252.0,
+"y": 805.0,
+"w": 10.0,
+"h": 12.0,
+"text": "0"
+},
+{
+"x": 30.0,
+"y": 807.0,
+"w": 200.0,
+"h": 16.0,
+"text": "Skirt minimum extrusion length"
+},
+{
+"x": 336.0,
+"y": 810.0,
+"w": 22.0,
+"h": 12.0,
+"text": "mm"
+},
+{
+"x": 252.0,
+"y": 832.0,
+"w": 10.0,
+"h": 16.0,
+"text": "5"
+},
+{
+"x": 30.0,
+"y": 835.0,
+"w": 88.0,
+"h": 12.0,
+"text": "Skirt distance"
+},
+{
+"x": 334.0,
+"y": 838.0,
+"w": 24.0,
+"h": 14.0,
+"text": "mm"
+},
+{
+"x": 250.0,
+"y": 859.0,
+"w": 36.0,
+"h": 18.0,
+"text": "-135"
+},
+{
+"x": 30.0,
+"y": 863.0,
+"w": 102.0,
+"h": 14.0,
+"text": "Skirt start point"
+},
+{
+"x": 250.0,
+"y": 885.0,
+"w": 22.0,
+"h": 20.0,
+"text": "50"
+},
+{
+"x": 30.0,
+"y": 888.0,
+"w": 72.0,
+"h": 17.0,
+"text": "Skirt speed"
+},
+{
+"x": 322.0,
+"y": 891.0,
+"w": 36.0,
+"h": 16.0,
+"text": "mm/s"
+},
+{
+"x": 28.0,
+"y": 917.0,
+"w": 78.0,
+"h": 18.0,
+"text": "Skirt height"
+},
+{
+"x": 248.0,
+"y": 917.0,
+"w": 30.0,
+"h": 18.0,
+"text": "=2"
+},
+{
+"x": 324.0,
+"y": 919.0,
+"w": 40.0,
+"h": 16.0,
+"text": "layers"
+},
+{
+"x": 250.0,
+"y": 944.0,
+"w": 74.0,
+"h": 18.0,
+"text": "~ Disabled"
+},
+{
+"x": 30.0,
+"y": 945.0,
+"w": 74.0,
+"h": 15.0,
+"text": "Draft shield"
 }
 ]
 }
