@@ -7270,7 +7270,7 @@
     "screenshots": 16
    }
   },
-  "summary_written_at": "2026-11-24 07:46:00",
+  "summary_written_at": "2026-11-24 08:19:28",
   "code_after_the_proof": "final code = look-first scroll + painted_is() + pick_combo --take. On the final code: pick_combo pointer / keys (022226 / 022357) and scenario print-sequence (022045). One step behind it (no painted_is, no --take; neither is on that path): scenario thin-wall (021310). Older: the five op proofs and scenario layer-height (014352)",
   "pick_combo_attribution": {
    "status": "ISOLATED - the pointer click completes the pick; it is also the first input of the full sequence, so the keys that follow it are redundant",
@@ -7358,7 +7358,7 @@
   },
   "param_cases": {
    "what": "one case of param_cases.json through the param_ops primitives: runner/macos/param_case.py --case <scenario>",
-   "case_table": "runner/macos/param_cases.json = tools/param_cases_export.json at 2733ef6 (origin codex/glm-dev-20261124), byte-identical, sha256 fb2f1d23...",
+   "case_table": "runner/macos/param_cases.json = tools/param_cases_export.json at 7f0abbb (origin codex/glm-dev-20261124), byte-identical, sha256 fa8d8df1d218... (step 13; before it: 2733ef6, sha256 fb2f1d2313e8...). Two values corrected by the table's own commit 7f0abbb - uia_param_first_speeds initial_layer_travel_speed '150%' -> '150', uia_param_feature_speeds small_perimeter_speed '50%' -> '50' (the Feishu rows give mm/s); the two keys are saved as the corrected table expects in runs 075830 and 080428; nothing else in the table changed",
    "scan_before_any_gui_action": {
     "of": 42,
     "runnable": 24,
@@ -7382,11 +7382,14 @@
     "uia_param_surface_flow",
     "uia_param_speed_limits",
     "uia_param_arc_resolution",
-    "uia_param_precision_comp"
+    "uia_param_precision_comp",
+    "uia_param_first_speeds"
    ],
    "unsupported op": [],
    "needs develop mode": [],
-   "not_passed": {},
+   "not_passed": {
+    "uia_param_feature_speeds": "NOT PASSED run 080428, 357.7 s, 1 GUI attempt(s) (080428); outer_wall_speed 120 -> saved 100 (expected 100); inner_wall_speed 150 -> saved 150 (expected 150); sparse_infill_speed 100 -> saved 10 (expected 200); top_surface_speed 150 -> saved 120 (expected 120); small_perimeter_threshold 0 -> saved 0 (expected 10); small_perimeter_speed 50% -> saved 50 (expected 50); Orca left: []; ops_whose_readback_refused [3, 4, 5]; 35 other keys changed (review material, not judged); title 'probe' after Save Project REASON: mismatch: sparse_infill_speed, small_perimeter_threshold"
+   },
    "not_run": [],
    "not_run_why": "none: every asked case has been run at least once",
    "differences": [
@@ -7424,15 +7427,16 @@
     "the before/after proof of 034019 is the OCR of the panel crops, run after the run: this session's model cannot view images",
     "the supervisor needs .venv/bin/python (3.11): /usr/bin/python3 is 3.9 and stops at staging (seen a third time at 06:05:02 in step 10: no LaunchAgent registered, no GUI action, nothing recorded)"
    ],
-   "summary_written_at": "2026-11-24 07:46:00",
+   "summary_written_at": "2026-11-24 08:19:28",
    "pass_runs": {
     "uia_param_wall_thin": "run 074409, 144.4 s (step 12, on the step-12 code 153abad^: b652920; the pass before it: 035959, 177.2 s, on the step-7 code): wall_loops 2 -> saved 4 (expected 4, decimal); detect_thin_wall 0 -> saved 1 (expected 1, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 2",
-    "uia_param_layer_pair": "run 034408, 124.4 s (step 7) and again run 064408, 138.0 s (step 11, on 3117e51): layer_height 0.4 -> saved 0.2 (expected 0.2, decimal); initial_layer_print_height 0.4 -> saved 0.25 (expected 0.25, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed in each (review material, not judged); n = 2",
+    "uia_param_layer_pair": "run 034408, 124.4 s (step 7) and again run 064408, 138.0 s (step 11, on 3117e51): layer_height 0.4 -> saved 0.2 (expected 0.2, decimal); initial_layer_print_height 0.4 -> saved 0.25 (expected 0.25, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed in each (review material, not judged); n = 2 ; in step 13 PASS run 080701, 152.4 s, 3 GUI attempt(s) (034408, 064408, 080701); layer_height 0.4 -> saved 0.2 (expected 0.2); initial_layer_print_height 0.4 -> saved 0.25 (expected 0.25); Orca left: []; 35 other keys changed (review material, not judged); title 'probe' after Save Project ; n = 3",
     "uia_param_travel_speed": "run 045829, 147.6 s: travel_speed 500 -> saved 300 (expected 300, decimal); title after Save Project: 'probe'; Orca left: []; 35 other keys changed (review material, not judged) ; and again run 064719, 149.9 s (step 11, on 3117e51): travel_speed 500 -> saved 300 (expected 300, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 2",
-    "uia_param_speed_limits": "run 061300, 192.8 s: layer_height 0.4 -> saved 0.2 (expected 0.2, decimal); outer_wall_line_width 0.82 -> saved 0.42 (expected 0.42, decimal); outer_wall_speed 120 -> saved 700 (expected 700, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 1",
-    "uia_param_surface_flow": "run 062702, 253.4 s: top_solid_infill_flow_ratio 1 -> saved 1.1 (expected 1.1, decimal); bottom_solid_infill_flow_ratio 1 -> saved 0.9 (expected 0.9, decimal); print_flow_ratio 1 -> saved 1 (expected 1, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 1",
+    "uia_param_speed_limits": "run 061300, 192.8 s: layer_height 0.4 -> saved 0.2 (expected 0.2, decimal); outer_wall_line_width 0.82 -> saved 0.42 (expected 0.42, decimal); outer_wall_speed 120 -> saved 700 (expected 700, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 1 ; in step 13 PASS run 081057, 235.1 s, 3 GUI attempt(s) (050552, 061300, 081057); outer_wall_speed 120 -> saved 700 (expected 700); layer_height 0.4 -> saved 0.2 (expected 0.2); outer_wall_line_width 0.82 -> saved 0.42 (expected 0.42); Orca left: []; 35 other keys changed (review material, not judged); title 'probe' after Save Project ; n = 3",
+    "uia_param_surface_flow": "run 062702, 253.4 s: top_solid_infill_flow_ratio 1 -> saved 1.1 (expected 1.1, decimal); bottom_solid_infill_flow_ratio 1 -> saved 0.9 (expected 0.9, decimal); print_flow_ratio 1 -> saved 1 (expected 1, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 1 ; in step 13 PASS run 081536, 278.7 s, 6 GUI attempt(s) (041357, 043936, 050208, 060903, 062702, 081536); top_solid_infill_flow_ratio 1 -> saved 1.1 (expected 1.1); bottom_solid_infill_flow_ratio 1 -> saved 0.9 (expected 0.9); print_flow_ratio 1 -> saved 1 (expected 1); Orca left: []; ops_whose_readback_refused [0]; 35 other keys changed (review material, not judged); title 'probe' after Save Project ; n = 6",
     "uia_param_arc_resolution": "run 064139, 240.7 s: enable_arc_fitting 0 -> saved 1 (expected 1, decimal); precise_z_height 0 -> saved 1 (expected 1, decimal); resolution 0.012 -> saved 0.012 (expected 0.012, decimal); slice_closing_radius 0.049 -> saved 0.049 (expected 0.049, decimal); title 'probe' after Save Project; Orca left: []; 35 other keys changed (review material, not judged); n = 1",
-    "uia_param_precision_comp": "run 073835, 215.9 s (step 12, on the step-12 code 010cb4e): xy_hole_compensation 0 -> saved -0.1 (expected -0.1, decimal); xy_contour_compensation 0 -> saved 0.1 (expected 0.1, decimal); precise_outer_wall 0 -> saved 1 (expected 1, decimal); elefant_foot_compensation 0.15 -> saved 0.15 (expected 0.15, decimal); title 'probe' after Save Project; Orca left: []; ops_whose_readback_refused [1] (op1's OCR read '5 0.1|' on the row; the saved values decide); 35 other keys changed (review material, not judged); n = 1"
+    "uia_param_precision_comp": "run 073835, 215.9 s (step 12, on the step-12 code 010cb4e): xy_hole_compensation 0 -> saved -0.1 (expected -0.1, decimal); xy_contour_compensation 0 -> saved 0.1 (expected 0.1, decimal); precise_outer_wall 0 -> saved 1 (expected 1, decimal); elefant_foot_compensation 0.15 -> saved 0.15 (expected 0.15, decimal); title 'probe' after Save Project; Orca left: []; ops_whose_readback_refused [1] (op1's OCR read '5 0.1|' on the row; the saved values decide); 35 other keys changed (review material, not judged); n = 1",
+    "uia_param_first_speeds": "in step 13 PASS run 081857, 198.6 s, 2 GUI attempt(s) (075830, 081857); initial_layer_speed 35 -> saved 30 (expected 30); initial_layer_infill_speed 55 -> saved 40 (expected 40); initial_layer_travel_speed 100% -> saved 150 (expected 150); Orca left: []; 35 other keys changed (review material, not judged); title 'probe' after Save Project ; n = 2"
    },
    "blockers_e81e9fc_now": {
     "1 fuse": "default is now max(360, 120 + 80 per op) s (949ce13); neither run since reached it",
@@ -7446,7 +7450,8 @@
     "uia_param_speed_limits": 35,
     "uia_param_surface_flow": 35,
     "uia_param_arc_resolution": 35,
-    "uia_param_precision_comp": 35
+    "uia_param_precision_comp": 35,
+    "uia_param_first_speeds": 35
    },
    "step7": {
     "what": "step 7 in a 28-minute box: the tick() shot file names fixed with an offline check (90af1ba), then the case list in the asked order, one GUI attempt per case, no --fuse passed (default max(360, 120 + 80 per op) s)",
@@ -7600,21 +7605,36 @@
     "uia_param_precision_comp": "NOT PROVEN latest run 061619, 2 GUI attempt(s), 155.9 s: op0 stopped where the Precision title is on the page with its first rows under it and the wanted row below the fold (3 scroll presses, as in 051203; the scroll stop is unchanged in step 10, its change is NOT VERIFIED), then the fold step folded nothing and a second scroll chain's search for the scrollbar's buttons ran into op0's 110 s fuse, 16 s past the limit (the fuse is checked at page reads only); ops 1 and 2 not started, no cell clicked, nothing saved. NOT FIXED"
    },
    "cumulative": {
-    "asked": 7,
-    "tried": 7,
-    "passed": 7,
+    "asked": 9,
+    "tried": 9,
+    "passed": 8,
+    "not_passed": [
+     "uia_param_feature_speeds"
+    ],
     "not_proven": 0,
     "not_run": [],
-    "gui_attempts": 25,
+    "gui_attempts": 31,
     "gui_attempts_per_case": {
-     "uia_param_wall_thin": 5,
-     "uia_param_layer_pair": 2,
-     "uia_param_travel_speed": 4,
-     "uia_param_surface_flow": 5,
-     "uia_param_speed_limits": 2,
      "uia_param_arc_resolution": 3,
-     "uia_param_precision_comp": 4
-    }
+     "uia_param_feature_speeds": 1,
+     "uia_param_first_speeds": 2,
+     "uia_param_layer_pair": 3,
+     "uia_param_precision_comp": 4,
+     "uia_param_speed_limits": 3,
+     "uia_param_surface_flow": 6,
+     "uia_param_travel_speed": 4,
+     "uia_param_wall_thin": 5
+    },
+    "pass_on_its_latest_run": [
+     "uia_param_wall_thin",
+     "uia_param_layer_pair",
+     "uia_param_travel_speed",
+     "uia_param_surface_flow",
+     "uia_param_speed_limits",
+     "uia_param_arc_resolution",
+     "uia_param_precision_comp",
+     "uia_param_first_speeds"
+    ]
    },
    "step11": {
     "what": "step 11 in a 28-minute box (06:21:37 to 06:49:37): the fuse at 150 s per op and 420 s per case with an offline check; uia_param_surface_flow and uia_param_arc_resolution on that code; the rows of a group whose title has left the page as one change of its own (offline replay of 051203, 050208 and 050552) and uia_param_precision_comp on it; arc_resolution again on it; the old PASSes re-run as the box allowed; this summary. Nothing pushed",
@@ -7703,16 +7723,98 @@
      "uia_param_arc_resolution": "PASS run 064139, 240.7 s, 3 GUI attempt(s); on 3117e51; not re-run in step 12",
      "uia_param_precision_comp": "PASS run 073835, 215.9 s, 4 GUI attempt(s) (051203, 061619, 063651, 073835); xy_hole_compensation 0 -> saved -0.1 (expected -0.1); xy_contour_compensation 0 -> saved 0.1 (expected 0.1); precise_outer_wall 0 -> saved 1 (expected 1); elefant_foot_compensation 0.15 -> saved 0.15 (expected 0.15); op1's own readback refused, the saved values decided; Orca left: []"
     }
+   },
+   "order_asked_step13": [
+    "uia_param_first_speeds",
+    "uia_param_feature_speeds",
+    "uia_param_layer_pair",
+    "uia_param_speed_limits",
+    "uia_param_surface_flow"
+   ],
+   "step13": {
+    "what": "step 13 in a 28-minute box (the six GUI runs 07:55:28 to 08:18:57; the table taken over before them, the summary written after): the corrected case table taken over from origin codex/glm-dev-20261124 (fetched only, nothing merged, nothing pushed); the two corrected cases run for the first time on the Mac; three old PASSes re-run on the step-12 code; one locate fix found by the first run (a row OCR reads without its word space) with an offline check and the re-run of uia_param_first_speeds on it; this summary. Nothing pushed",
+    "case_table": {
+     "path": "runner/macos/param_cases.json",
+     "source_commit": "7f0abbb",
+     "source_branch": "origin/codex/glm-dev-20261124",
+     "source_path": "tools/param_cases_export.json",
+     "sha256": "fa8d8df1d2185d81609a853d103882698d94535025a92d8153587f66c366f588",
+     "note": "byte-identical copy of the file at that commit (git show after a fetch of the branch, no merge, nothing pushed; step 13); the platform-independent export of the 42 Feishu param cases. Against the table of step 12 it differs in 2 cases, 4 lines: uia_param_first_speeds initial_layer_travel_speed '150%' -> '150' (values and the op that writes it); uia_param_feature_speeds small_perimeter_speed '50%' -> '50' (the same). The values are run as the table gives them",
+     "previous": {
+      "path": "runner/macos/param_cases.json",
+      "source_commit": "2733ef6",
+      "source_branch": "origin/codex/glm-dev-20261124",
+      "source_path": "tools/param_cases_export.json",
+      "sha256": "fb2f1d2313e8608cf37031656b2f71fe79531909dcd944fc8fda3f27f0aef05b",
+      "note": "byte-identical copy of the file at that commit (git show, no merge of the branch); the platform-independent export of the 42 Feishu param cases"
+     }
+    },
+    "commits": {
+     "case table corrected": "4500c76",
+     "first_speeds NOT PASSED 075830, feature_speeds NOT PASSED 080428, layer_pair PASS 080701": "394e9aa",
+     "speed_limits PASS 081057, surface_flow PASS 081536": "56f5609",
+     "nospace level, offline": "85e2a6f",
+     "first_speeds PASS 081857": "a0f417e",
+     "this summary": "the commit that carries it",
+     "fixed_code_runs": [
+      "081857"
+     ]
+    },
+    "code_of_each_run": "075830, 080428, 080701, 081057, 081536: param_ops.py of 4a4bb04 (the step-12 code) with the corrected table - the staged copies carry no 'nospace'. 081857: the same with find_row's 'nospace' level",
+    "gui_runs": [
+     "075830 uia_param_first_speeds NOT PASSED, 181.3 s (the run that found the locate defect)",
+     "081857 uia_param_first_speeds PASS, 198.6 s",
+     "080428 uia_param_feature_speeds NOT PASSED, 357.7 s",
+     "080701 uia_param_layer_pair PASS, 152.4 s",
+     "081057 uia_param_speed_limits PASS, 235.1 s",
+     "081536 uia_param_surface_flow PASS, 278.7 s"
+    ],
+    "case_lines": {
+     "uia_param_first_speeds": "PASS run 081857, 198.6 s, 2 GUI attempt(s) (075830, 081857); initial_layer_speed 35 -> saved 30 (expected 30); initial_layer_infill_speed 55 -> saved 40 (expected 40); initial_layer_travel_speed 100% -> saved 150 (expected 150); Orca left: []; 35 other keys changed (review material, not judged); title 'probe' after Save Project",
+     "uia_param_feature_speeds": "NOT PASSED run 080428, 357.7 s, 1 GUI attempt(s) (080428); outer_wall_speed 120 -> saved 100 (expected 100); inner_wall_speed 150 -> saved 150 (expected 150); sparse_infill_speed 100 -> saved 10 (expected 200); top_surface_speed 150 -> saved 120 (expected 120); small_perimeter_threshold 0 -> saved 0 (expected 10); small_perimeter_speed 50% -> saved 50 (expected 50); Orca left: []; ops_whose_readback_refused [3, 4, 5]; 35 other keys changed (review material, not judged); title 'probe' after Save Project",
+     "uia_param_layer_pair": "PASS run 080701, 152.4 s, 3 GUI attempt(s) (034408, 064408, 080701); layer_height 0.4 -> saved 0.2 (expected 0.2); initial_layer_print_height 0.4 -> saved 0.25 (expected 0.25); Orca left: []; 35 other keys changed (review material, not judged); title 'probe' after Save Project",
+     "uia_param_speed_limits": "PASS run 081057, 235.1 s, 3 GUI attempt(s) (050552, 061300, 081057); outer_wall_speed 120 -> saved 700 (expected 700); layer_height 0.4 -> saved 0.2 (expected 0.2); outer_wall_line_width 0.82 -> saved 0.42 (expected 0.42); Orca left: []; 35 other keys changed (review material, not judged); title 'probe' after Save Project",
+     "uia_param_surface_flow": "PASS run 081536, 278.7 s, 6 GUI attempt(s) (041357, 043936, 050208, 060903, 062702, 081536); top_solid_infill_flow_ratio 1 -> saved 1.1 (expected 1.1); bottom_solid_infill_flow_ratio 1 -> saved 0.9 (expected 0.9); print_flow_ratio 1 -> saved 1 (expected 1); Orca left: []; ops_whose_readback_refused [0]; 35 other keys changed (review material, not judged); title 'probe' after Save Project"
+    },
+    "ops": {
+     "uia_param_first_speeds": "op0 (float ^First layer -> 30, 75.0 s) | op1 (float ^First layer infill -> 40, 28.900000000000006 s) | op2 (float ^Initial layer travel -> 150, 47.29999999999998 s)",
+     "uia_param_feature_speeds": "op0 (float ^Outer wall -> 100, 92.4 s) | op1 (float ^Inner wall -> 150, 29.5 s) | op2 (float ^Sparse infill -> 200, 72.6 s) | op3 (float ^Top surface -> 120, 32.69999999999999 s) | op4 (float threshold -> 10, 32.69999999999999 s) | op5 (float ^Small perimeters -> 50, 31.600000000000023 s)",
+     "uia_param_layer_pair": "op0 (float ^Layer height -> 0.2, 73.9 s) | op1 (float ^First layer height -> 0.25, 29.099999999999994 s)",
+     "uia_param_speed_limits": "op0 (float Layer height -> 0.2, 75.2 s) | op1 (float ^Outer wall -> 0.42, 46.7 s) | op2 (float ^Outer wall -> 700, 47.79999999999998 s)",
+     "uia_param_surface_flow": "op0 (float Top surface flow ratio -> 1.1, 127.5 s) | op1 (float Bottom surface flow ratio -> 0.9, 102.0 s)"
+    },
+    "first_speeds_075830": "NOT PASSED on the step-12 code: op0 ('^First layer 35' / '^First layer' -> 30) took 'First layer infill' (55) - OCR read the row 'First layer' as 'Firstlayer', no level matched it and the prefix hit won; 30 went into that row (its readback refused), op1 wrote 40 over it; initial_layer_speed stayed 35. FIXED in step 13 (find_row's 'nospace' level)",
+    "feature_speeds_080428": "NOT PASSED, NOT FIXED (run 080428 on the step-12 code). 4 of 6 keys pass, the corrected small_perimeter_speed among them (50% -> saved 50). op4 ('^Small perimeters threshold' / 'threshold' -> 10): the row's label is painted over two lines (OCR 'Small perimeters' y 757 / 'threshold' y 773, panel px; only 'threshold' hits) and the row paints no number (value 0). The click was on the second line's centre (window-local [256, 782], by 'VALUE_X': the Speed page's numbers start at x 200, under VALUE_X - 20 = 233, so the page's number column was not taken; the field's centre is about y 774) - it did not open that row's editor. The editor taken was the sparse infill speed's, still in the AX tree from op2 (27 px lower, AXHelp names sparse_infill_speed, AXValue '200' before the write): 10 was written there (sparse_infill_speed 100 -> 200 in op2 -> 10) and the threshold stayed 0",
+    "blockers": [
+     "uia_param_feature_speeds op4: set_float writes into an editor that is already in the AX tree when the click opens none on the clicked row (run 080428: sparse_infill_speed 200 -> 10). NOT FIXED. Two changes of its own are needed: the editor must be one the click opened (not any AXTextField within 30 px of the click); a row whose label runs over two lines is clicked on the row's field, not on its second line; a Speed row without a number falls back to the Speed page's number column (x 200), not VALUE_X",
+     "ops 3 and 5 of run 080428: their own OCR readbacks refused ('1201'; '50 mm/s 0r %'); the saved values decided (120 and 50 pass). Not investigated",
+     "a stray '5' is painted left of the number on the row whose editor is in the AX tree (080428: '5 200' at x 180 on the Sparse infill row; 073835 had it as '5 0.1|'). Now it is the visible trace of the materialized editor; NOT INVESTIGATED further"
+    ],
+    "not_verified": [
+     "uia_param_feature_speeds has one GUI attempt only (080428): its PASS on the Mac is not established",
+     "the 'nospace' level: proven offline on run 075830's page (42 of 42) and on the GUI by 081857; the other seven passing cases were not re-run on it in this step",
+     "wall_thin, travel_speed, arc_resolution and precision_comp were not re-run in step 13; layer_pair, speed_limits and surface_flow were re-run on the step-12 code, not on the 'nospace' code",
+     "an op that writes 0 into a float row: not exercised"
+    ],
+    "offline_check": "runner/macos/param_locate_check.py (.venv/bin/python 3.11, no Orca, no screen): 40 checks exit 0 on the step-12 code before any GUI run; 42 exit 0 with the 'nospace' level (85e2a6f); the same 42 on the code before it fail the two step-13 checks. param_case_check.py 3 of 3"
    }
   }
  },
  "case_table": {
   "path": "runner/macos/param_cases.json",
-  "source_commit": "2733ef6",
+  "source_commit": "7f0abbb",
   "source_branch": "origin/codex/glm-dev-20261124",
   "source_path": "tools/param_cases_export.json",
-  "sha256": "fb2f1d2313e8608cf37031656b2f71fe79531909dcd944fc8fda3f27f0aef05b",
-  "note": "byte-identical copy of the file at that commit (git show, no merge of the branch); the platform-independent export of the 42 Feishu param cases"
+  "sha256": "fa8d8df1d2185d81609a853d103882698d94535025a92d8153587f66c366f588",
+  "note": "byte-identical copy of the file at that commit (git show after a fetch of the branch, no merge, nothing pushed; step 13); the platform-independent export of the 42 Feishu param cases. Against the table of step 12 it differs in 2 cases, 4 lines: uia_param_first_speeds initial_layer_travel_speed '150%' -> '150' (values and the op that writes it); uia_param_feature_speeds small_perimeter_speed '50%' -> '50' (the same). The values are run as the table gives them",
+  "previous": {
+   "path": "runner/macos/param_cases.json",
+   "source_commit": "2733ef6",
+   "source_branch": "origin/codex/glm-dev-20261124",
+   "source_path": "tools/param_cases_export.json",
+   "sha256": "fb2f1d2313e8608cf37031656b2f71fe79531909dcd944fc8fda3f27f0aef05b",
+   "note": "byte-identical copy of the file at that commit (git show, no merge of the branch); the platform-independent export of the 42 Feishu param cases"
+  }
  },
  "cases": {
   "case:uia_param_wall_thin": {
