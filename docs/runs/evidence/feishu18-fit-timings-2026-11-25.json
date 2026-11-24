@@ -1,0 +1,803 @@
+{
+  "case": {
+    "record_id": "recvuCvWgTexLp",
+    "前置条件": "1. 盘中已放置至少1个3D模型",
+    "测试步骤": "1. 盘中放置至少1个3D模型\n2. 左键单击选中其中一个模型\n3. 点击Fit图标或按快捷键",
+    "用例编号": "18",
+    "预期结果": "1. 相机平滑过渡,选中模型完整居中放大显示在视口内,四周留白约10%"
+  },
+  "host": "win11-test",
+  "release_eligible": false,
+  "live_matches_snapshot": true,
+  "live_read_s": 0.8268975,
+  "author": {
+    "record": "recvuCvWgTexLp",
+    "model": "glm-5.4",
+    "request_id": "msg_202611250012519f3fd5a6d2394e6b",
+    "usage": {
+      "input_tokens": 117,
+      "output_tokens": 109,
+      "cache_read_input_tokens": 0,
+      "server_tool_use": {
+        "web_search_requests": 0
+      },
+      "service_tier": "standard"
+    },
+    "read_s": 0.0015,
+    "headers_s": 3.807,
+    "total_s": 3.809,
+    "reply": "**验收步骤**：Fit结束后取模型包围盒投影角点，计算左/右/上/下留白率=(视口边距/视口对应尺寸)。判定：四边均≈10%(±2%),模型完整可见。\n\n**反例**：模型紧贴视口左缘(左留白0%)→不通过。\n\n**不可判定项**：“平滑过渡”(无量化时长/曲线)、“约10%”若无容差、多个模型重叠时的选中目标投影遮挡。"
+  },
+  "native_author_attempt": {
+    "row": "recvuCvWgTexLp",
+    "read_s": 0.0,
+    "session": "sess_f1a86561-bd33-421a-a968-685514d0f7e6",
+    "model": {
+      "providerId": "new-provider",
+      "modelId": "glm-5.4"
+    },
+    "ready_s": 3.6869999999180436,
+    "elapsed_s": 180.2029999999795
+  },
+  "runs": [
+    {
+      "commit": "56733ea",
+      "mode": "fixed",
+      "seconds": {
+        "fresh_boot": 48.367,
+        "arrival": 0.132,
+        "select": 36.93,
+        "pre_fit": 0.095,
+        "click": 0.348,
+        "fit_observe": 1.561,
+        "close": 1.501
+      },
+      "canvas": [
+        [
+          426,
+          67
+        ],
+        [
+          1920,
+          1032
+        ]
+      ],
+      "before": {
+        "bbox": [
+          716,
+          404,
+          62,
+          87
+        ],
+        "area": 5305,
+        "margins": [
+          0.4793,
+          0.4793,
+          0.4187,
+          0.4912
+        ],
+        "touches_edge": false,
+        "within_proposed_8_12_percent": false
+      },
+      "samples": [
+        {
+          "s": 0.107,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        },
+        {
+          "s": 0.298,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        },
+        {
+          "s": 0.498,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        },
+        {
+          "s": 0.669,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        },
+        {
+          "s": 0.843,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        },
+        {
+          "s": 1.028,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        },
+        {
+          "s": 1.176,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        },
+        {
+          "s": 1.364,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        },
+        {
+          "s": 1.561,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        }
+      ],
+      "after": {
+        "bbox": [
+          469,
+          96,
+          556,
+          773
+        ],
+        "area": 425618,
+        "margins": [
+          0.3139,
+          0.3139,
+          0.0995,
+          0.0995
+        ],
+        "touches_edge": false,
+        "within_proposed_8_12_percent": false
+      },
+      "wall_s": 88.933
+    },
+    {
+      "commit": "56733ea",
+      "mode": "ready",
+      "seconds": {
+        "fresh_boot": 49.174,
+        "arrival": 0.115,
+        "select": 34.877,
+        "pre_fit": 0.083,
+        "click": 0.342,
+        "fit_observe": 0.424,
+        "close": 1.5
+      },
+      "canvas": [
+        [
+          426,
+          67
+        ],
+        [
+          1920,
+          1032
+        ]
+      ],
+      "before": {
+        "bbox": [
+          716,
+          404,
+          62,
+          87
+        ],
+        "area": 5305,
+        "margins": [
+          0.4793,
+          0.4793,
+          0.4187,
+          0.4912
+        ],
+        "touches_edge": false,
+        "within_proposed_8_12_percent": false
+      },
+      "samples": [
+        {
+          "s": 0.063,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        },
+        {
+          "s": 0.247,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        },
+        {
+          "s": 0.424,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        }
+      ],
+      "after": {
+        "bbox": [
+          469,
+          96,
+          556,
+          773
+        ],
+        "area": 425618,
+        "margins": [
+          0.3139,
+          0.3139,
+          0.0995,
+          0.0995
+        ],
+        "touches_edge": false,
+        "within_proposed_8_12_percent": false
+      },
+      "wall_s": 86.516
+    },
+    {
+      "commit": "f0ea72b",
+      "mode": "guided_select",
+      "seconds": {
+        "fresh_boot": 48.876,
+        "arrival": 0.123,
+        "select": 2.052,
+        "pre_fit": 0.093,
+        "click": 0.33,
+        "fit_observe": 0.452,
+        "close": 1.022
+      },
+      "selection_tooltips": [
+        "rotate: please select at least o",
+        "we vv rotate [r]"
+      ],
+      "selection_path": "confirmed_hint",
+      "canvas": [
+        [
+          426,
+          67
+        ],
+        [
+          1920,
+          1032
+        ]
+      ],
+      "before": {
+        "bbox": [
+          716,
+          404,
+          62,
+          87
+        ],
+        "area": 5305,
+        "margins": [
+          0.4793,
+          0.4793,
+          0.4187,
+          0.4912
+        ],
+        "touches_edge": false,
+        "within_proposed_8_12_percent": false
+      },
+      "samples": [
+        {
+          "s": 0.095,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        },
+        {
+          "s": 0.263,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        },
+        {
+          "s": 0.452,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        }
+      ],
+      "after": {
+        "bbox": [
+          469,
+          96,
+          556,
+          773
+        ],
+        "area": 425618,
+        "margins": [
+          0.3139,
+          0.3139,
+          0.0995,
+          0.0995
+        ],
+        "touches_edge": false,
+        "within_proposed_8_12_percent": false
+      },
+      "wall_s": 52.947
+    },
+    {
+      "commit": "347fa3e",
+      "mode": "ready_boot",
+      "seconds": {
+        "fresh_boot": 57.099
+      },
+      "error": "ValueError: enabled canvas with stable fixture did not become ready",
+      "wall_s": 57.099
+    },
+    {
+      "commit": "e9d9dc9",
+      "mode": "ready_boot",
+      "seconds": {
+        "fresh_boot": 36.38,
+        "arrival": 0.143,
+        "select": 2.282,
+        "pre_fit": 0.088,
+        "click": 0.342,
+        "fit_observe": 0.438,
+        "close": 1.001
+      },
+      "boot_last_state": "cube_visible",
+      "boot_target": [
+        716,
+        404,
+        62,
+        87
+      ],
+      "selection_tooltips": [
+        "rotate: please select at least o",
+        "we vv rotate [r]"
+      ],
+      "selection_path": "confirmed_hint",
+      "canvas": [
+        [
+          426,
+          67
+        ],
+        [
+          1920,
+          1032
+        ]
+      ],
+      "before": {
+        "bbox": [
+          716,
+          404,
+          62,
+          87
+        ],
+        "area": 5305,
+        "margins": [
+          0.4793,
+          0.4793,
+          0.4187,
+          0.4912
+        ],
+        "touches_edge": false,
+        "within_proposed_8_12_percent": false
+      },
+      "samples": [
+        {
+          "s": 0.106,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        },
+        {
+          "s": 0.266,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        },
+        {
+          "s": 0.438,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        }
+      ],
+      "after": {
+        "bbox": [
+          469,
+          96,
+          556,
+          773
+        ],
+        "area": 425618,
+        "margins": [
+          0.3139,
+          0.3139,
+          0.0995,
+          0.0995
+        ],
+        "touches_edge": false,
+        "within_proposed_8_12_percent": false
+      },
+      "wall_s": 40.674
+    },
+    {
+      "commit": "e9d9dc9",
+      "mode": "ready_boot",
+      "seconds": {
+        "fresh_boot": 35.522,
+        "arrival": 0.102,
+        "select": 1.492,
+        "pre_fit": 0.075,
+        "click": 0.342,
+        "fit_observe": 0.438,
+        "close": 1.001
+      },
+      "boot_last_state": "cube_visible",
+      "boot_target": [
+        716,
+        404,
+        62,
+        87
+      ],
+      "selection_tooltips": [
+        "rotate: please select at least o",
+        "we vv rotate [r]"
+      ],
+      "selection_path": "confirmed_hint",
+      "canvas": [
+        [
+          426,
+          67
+        ],
+        [
+          1920,
+          1032
+        ]
+      ],
+      "before": {
+        "bbox": [
+          716,
+          404,
+          62,
+          87
+        ],
+        "area": 5305,
+        "margins": [
+          0.4793,
+          0.4793,
+          0.4187,
+          0.4912
+        ],
+        "touches_edge": false,
+        "within_proposed_8_12_percent": false
+      },
+      "samples": [
+        {
+          "s": 0.096,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        },
+        {
+          "s": 0.264,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        },
+        {
+          "s": 0.438,
+          "state": {
+            "bbox": [
+              469,
+              96,
+              556,
+              773
+            ],
+            "area": 425618,
+            "margins": [
+              0.3139,
+              0.3139,
+              0.0995,
+              0.0995
+            ],
+            "touches_edge": false,
+            "within_proposed_8_12_percent": false
+          }
+        }
+      ],
+      "after": {
+        "bbox": [
+          469,
+          96,
+          556,
+          773
+        ],
+        "area": 425618,
+        "margins": [
+          0.3139,
+          0.3139,
+          0.0995,
+          0.0995
+        ],
+        "touches_edge": false,
+        "within_proposed_8_12_percent": false
+      },
+      "wall_s": 38.973
+    }
+  ],
+  "fixture_sha256": "36389ec3d26c54fc8d3e6bfccac3097fb080a12ab8fab0f2b7f8038cfc278d94"
+}
