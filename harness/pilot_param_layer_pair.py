@@ -32,17 +32,18 @@ EXPECTED_LAST_Z = "27.05"
 # sha256 of the fixture bytes -> the layers the pair produces on it:
 #   height_mm              the object's top: the analyzer's own sanity bound (the
 #                          last layer within one layer height of it)
-#   layer_count, last_z    pinned from what a run measured: asserted when they are
-#                          here, only recorded while they are not.
+#   layer_count, last_z    what a run measured on it: asserted.
 # A fixture outside the table is recorded the same way, with no bound on its
-# height. The cube is the 27 mm fixture the pair was proven on (the guest: 135
-# layers, 0.25 then 0.20, top 27.05). The precondition cube is the same model
-# on the pair's own starting values and the sphere is 20 mm across: both are
-# measured on fa706g3 before anything is pinned for them.
+# height and nothing asserted about count or top; so is one whose entry has
+# height_mm only, while it is being measured.
+#   cube (27 mm)              the pair proven on the guest: 0.25 + 134 x 0.20
+#   precondition cube (27 mm) fa706g3 run 66cbd0c1 (_std02), 2026-11-24
+#   sphere (20 mm across)     fa706g3 run 8e6363ab (_sphere), 2026-11-24: the
+#                             layer at 20.05 still prints, so 100, not 99
 SCHEDULE_BY_FIXTURE = {
     LAYER_FIXTURE_SHA256: {"height_mm": "27", "layer_count": EXPECTED_LAYERS, "last_z": EXPECTED_LAST_Z},
-    STD_FIXTURE_SHA256: {"height_mm": "27"},
-    MODEL_FIXTURES["_sphere"][1]: {"height_mm": "20"},
+    STD_FIXTURE_SHA256: {"height_mm": "27", "layer_count": 135, "last_z": "27.05"},
+    MODEL_FIXTURES["_sphere"][1]: {"height_mm": "20", "layer_count": 100, "last_z": "20.05"},
 }
 
 
