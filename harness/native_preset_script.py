@@ -34,7 +34,10 @@ ROW_276 = "compare_276_"
 # #276 trials are recognised by name (flow_step_measure); every later one is
 # listed HERE and nowhere else, because edit_param_cases and the worker's save
 # stage both ask flow_step_measure: a scenario cannot be timed on one side only.
-TIMED_FLOWS = {"uia_param_overhang_speeds": "[flow264]"}
+# #264 is timed on the cube and on the Feishu row's own model (欧特克FDM测试,
+# `_fdmt`) under the one tag: the same stages, read by the same reader.
+TIMED_FLOWS = {"uia_param_overhang_speeds": "[flow264]",
+               "uia_param_overhang_speeds_fdmt": "[flow264]"}
 
 
 def flow_step_measure(scenario):

@@ -223,6 +223,16 @@ def test_stage_names_separate_parents_children_and_same_labelled_fields(world, s
     assert stage_lines(capsys) == [(name, "1") for name in stages]
 
 
+# Feishu #264 names the FDM test model (欧特克FDM测试): the `_fdmt` twin is the
+# row as written, the cube's run its comparison.
+@pytest.mark.parametrize("scenario", ["uia_param_overhang_speeds", "uia_param_overhang_speeds_fdmt"], ids=["cube", "fdmt"])
+def test_the_264_scenarios_log_the_same_stages_under_the_one_tag_from_edit_param_cases(business, scenario, capsys):
+    nsb.edit_param_cases(business.ui, scenario)
+    lines = [line for line in capsys.readouterr().out.splitlines() if STAGE_LINE.fullmatch(line)]
+    assert all(line.startswith("[flow264] ") for line in lines)
+    assert parse_stages("\n".join(lines)) == [(name, "1") for name in STAGES_264]
+
+
 def test_checkbox_stage_times_the_locate_and_click_call_only(world):
     world.knobs.dialog = (99, "Spiral mode ...")
     ops = [{"op": "checkbox", "label": "Spiral", "value": True, "group": "Special mode", "answer": "Yes"}]
@@ -272,10 +282,12 @@ def test_a_stage_line_reports_the_step_outcome_and_returns_the_result(capsys):
     ("compare_276_quality", "[flow276]"),
     ("compare_276_strength", "[flow276]"),
     ("uia_param_overhang_speeds", "[flow264]"),
+    ("uia_param_overhang_speeds_fdmt", "[flow264]"),
     ("compare_265_quality", None),
     ("uia_param_speed_limits", None),
     ("uia_param_speed_limits_std02", None),
     ("uia_param_overhang_speeds_std02", None),
+    ("uia_param_overhang_speeds_shapes", None),
     ("uia_param_accelerations", None),
     ("uia_param_save_only", None),
 ])
@@ -289,12 +301,14 @@ def test_only_the_registered_scenarios_get_a_stage_timer(scenario, prefix, capsy
 
 
 def test_the_registry_names_registered_scenarios_and_times_every_276_trial():
-    assert set(TIMED_FLOWS) <= set(nm.SCENARIOS)
+    # a timed name is a registered scenario, or the twin of one on another fixture
+    assert set(TIMED_FLOWS) <= set(nm.SCENARIOS) | set(nm.std_twins(nm.SCENARIOS))
     assert all((flow_step_measure(name) is not None) == name.startswith("compare_276_") for name in MAINTENANCE_TRIALS)
 
 
 @pytest.mark.parametrize("scenario,prepared,prefix,waits", [
     ("uia_param_overhang_speeds", False, "[flow264]", False),
+    ("uia_param_overhang_speeds_fdmt", False, "[flow264]", False),
     ("uia_param_accelerations", False, None, False),
     ("compare_276_quality", True, "[flow276]", True),
     ("compare_276_strength", True, "[flow276]", True),
