@@ -40,6 +40,9 @@ EXPECTED_LAST_Z = "27.05"
 #   precondition cube (27 mm) fa706g3 run 66cbd0c1 (_std02), 2026-11-24
 #   sphere (20 mm across)     fa706g3 run 8e6363ab (_sphere), 2026-11-24: the
 #                             layer at 20.05 still prints, so 100, not 99
+# The last two were measured in those runs (the fixtures then unpinned: recorded)
+# and asserted end to end, pins in the code, in fa706g3 runs eeaa8ff6 (_std02)
+# and 345b87c6 (_sphere), 2026-11-24.
 SCHEDULE_BY_FIXTURE = {
     LAYER_FIXTURE_SHA256: {"height_mm": "27", "layer_count": EXPECTED_LAYERS, "last_z": EXPECTED_LAST_Z},
     STD_FIXTURE_SHA256: {"height_mm": "27", "layer_count": 135, "last_z": "27.05"},
