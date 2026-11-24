@@ -36,8 +36,15 @@ BY_PHRASE = [
     ("斯坦福兔子", "_bunny"),
     ("Orca拉丝地狱", "_hell"),
 ]
+# Rows whose steps need more of the plate than the model: #292 picks "By
+# object" and on the 40 mm pair the app refuses to slice - "立方体2 is too
+# close to others" (guest run 875f6c33) - so it runs on the same two cubes
+# 100 mm apart (fixtures/feishu_std_cubesfar.3mf), as its own precondition
+# asks ("复制为2个对象并调整间距"). Row number -> suffix, ahead of BY_PHRASE.
+BY_ROW = {292: "_cubesfar"}
 LABEL = {"_boat2": "two 3DBenchy, extruders 1 and 3", "_boat": "3DBenchy", "_fdmt2": "two FDM tests, extruders 1 and 3",
          "_fdmt": "the Autodesk FDM test (ksr_fdmtest_v4)", "_cubes2": "two 20 mm cubes, extruders 1 and 3",
+         "_cubesfar": "the same two cubes 100 mm apart (print by object)",
          "_std02": "the precondition cube", "_sphere": "a generated sphere", "_cyl": "a generated cylinder",
          "_bunny": "the Stanford bunny", "_hell": "Orca string hell", "_tol": "the Orca tolerance test (from the STL)",
          "_text": "raised text (a dot-matrix stand-in for the slicer's Text tool)"}
@@ -46,9 +53,11 @@ SNAPSHOT = os.path.join("docs/runs/evidence/feishu-tblKjIVV8KA53kUQ-2026-11-22",
 ROWS = range(254, 298)          # the 常用工艺参数 supplement rows
 
 
-def fixture_for(precondition):
+def fixture_for(precondition, number=None):
     steps = [s for s in (precondition or "").split("\n") if s.strip()]
     model = steps[1] if len(steps) > 1 else ""
+    if number in BY_ROW:
+        return BY_ROW[number]
     for phrase, suffix in BY_PHRASE:
         if phrase in model:
             return suffix
@@ -79,7 +88,7 @@ def row_plan(root):
             scenario_of_row[int(found.group(1))] = case["scenario"]
     plan = {}
     for number, rec in sorted(feishu_rows(root).items()):
-        plan.setdefault(fixture_for(rec["前置条件"]), []).append((number, scenario_of_row.get(number)))
+        plan.setdefault(fixture_for(rec["前置条件"], number), []).append((number, scenario_of_row.get(number)))
     return plan
 
 

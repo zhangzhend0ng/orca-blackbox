@@ -597,14 +597,15 @@ PARAM_OPS = {        "uia_param_ironing_top": [
         # previous edit just painted (fixture paints 0 50 25 5).
         # overhang_totally_speed does not exist in this fork; the enable flag
         # already sits at the table target. Bridge speed does too on the cube
-        # (30), so there is no op for it; the precondition fixture's preset
-        # says 50 and its twin ends pilot_target_setting_mismatch with the
-        # four overhang values right (run 26f9fb35, 2026-11-24). An op
-        # anchored '^Bridge' in this group was tried the same day and
-        # withdrawn: it wrote its 30 into the NEIGHBOURING field
-        # (internal_bridge_speed "100%" -> "30", run cf6ac769) - the row has
-        # an External and an Internal box around its label line, and which
-        # one the line's y selects has not been established. Open.
+        # (30); the precondition fixture's preset says 50 and its twin ended
+        # pilot_target_setting_mismatch with the four overhang values right
+        # (run 26f9fb35, 2026-11-24). The Bridge row (Tab.cpp: Line{L("Bridge")}
+        # with bridge_speed and internal_bridge_speed appended) is the two
+        # boxes under the overhang stack, the row's own label centred between
+        # them (guest screenshot 94a82cda: '50 mm/s  External' under the fourth
+        # overhang box): field 0 is the upper box, bridge_speed. The op tried
+        # on 2026-11-24 without a field index put its 30 into the Internal box
+        # (run cf6ac769) and was withdrawn; a stack row needs the index.
         # 2026-11-23: rows anchored to the row label only. The value-bearing
         # phrases ('Overhang speed 0', ... 'Overhang speed 40 30 20') never
         # matched what OCR made of the painted field row (overhang_bridge run
@@ -620,6 +621,10 @@ PARAM_OPS = {        "uia_param_ironing_top": [
              "group": "Overhang", "field": 2},
             {"op": "float", "label": "Overhang speed",
              "value": "10", "group": "Overhang", "field": 3},
+            # bridge_speed by the label painted beside its own box: 'Bridge'
+            # is the label of a two-box stack, and the stack search (+-60 px)
+            # would also take the fourth overhang box above it.
+            {"op": "float", "label": "^External", "value": "30", "group": "Overhang"},
         ],
         # Feishu #273 (line 192): the row paints just 'Travel' + the
         # value while the group TITLE reads 'Travel speed' - a plain

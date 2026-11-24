@@ -70,6 +70,10 @@ MODEL_FIXTURES = {
                "57a55b062107ba3dc4f46d4026c6bf9e0a5341caa1e9294fb9de57a0b6d13f60", "fdmt2"),
     "_cubes2": ("feishu_std_cubes2.3mf",
                 "2ff94a1efffe621b3a2c5358b61e65aad1d228b3ba5525d3daf6651a40b7ec21", "cubes2"),
+    # the same two cubes 100 mm apart: the print-by-object row (#292) is refused
+    # as "too close to others" on cubes2 (guest run 875f6c33)
+    "_cubesfar": ("feishu_std_cubesfar.3mf",
+                  "ae4043bcbc9cf2c9662096f27eebae0f7bbb5de2e3fb4adc9c3793e2a9299561", "cubesfar"),
     "_sphere": ("feishu_std_sphere.3mf",
                 "f5f83d00545522c7cde44c0cd4260c325418707afdc83e6056390a0b8800d13c", "sphere"),
     "_cyl": ("feishu_std_cylinder.3mf",

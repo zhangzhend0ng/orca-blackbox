@@ -105,6 +105,11 @@ CONDITIONAL = {
     ("uia_param_surface_flow", "Top surface flow ratio"): "on the page; the census OCR read it "
     "'Tan cirface flaw ratio' (#262 closed, run a7504d39)",
     ("uia_param_gcode_output", "number"): "develop mode only (case open: user_mode)",
+    ("uia_param_overhang_bridge", "^External"): "the label painted beside the bridge_speed box "
+    "under the overhang stack (Tab.cpp: Line{L(\"Bridge\")} with bridge_speed and "
+    "internal_bridge_speed; the atlas gives bridge_speed the label 'External'); the page census "
+    "stops above it - guest screenshot 94a82cda shows '50 mm/s  External' under the fourth "
+    "overhang box",
 }
 # Popup targets no census has listed yet: (scenario, op index) -> (target,
 # proof pending). The run that opens the popup is the proof; drop the entry

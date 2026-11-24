@@ -15,9 +15,16 @@ zero.
 Why one command: on the night of 2026-11-24 the engine suite was run after
 every change and the unit tests were not - two of them had been red for
 hours - and each of the four checks was typed by hand before ten merges.
+
+The gate leaves nothing behind but its four logs: pytest's scratch goes to
+<its temp dir>/pytest and is deleted at the end (three earlier runs had left
+6.7 GB under pytest-of-snapmaker when the disk filled up on 2026-11-24, and
+37 tests failed with "No space left on device"). The free space of that disk
+is printed with the verdict.
 """
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -27,10 +34,12 @@ PY = [sys.executable, "-B"]
 SECRET = re.compile(
     r"(api[_-]?key|secret|token|password)[\"' ]*[:=][\"' ]*[A-Za-z0-9_\-]{16,}"
     r"|sk-[A-Za-z0-9]{20,}|Bearer [A-Za-z0-9._\-]{20,}", re.I)
+LOW_FREE_GB = 20
 
 CHECKS = [
     ("engine suite", PY + ["tools/test_param_engine_sim.py", ROOT], ("checks, 0 failed",)),
-    ("unit tests", PY + ["-m", "pytest", "-q", "unit_tests", "-p", "no:cacheprovider"], (" passed",)),
+    ("unit tests", PY + ["-m", "pytest", "-q", "unit_tests", "-p", "no:cacheprovider", "--basetemp=<basetemp>"],
+     (" passed",)),
     ("ops vs atlas", PY + ["tools/check_ops_against_atlas.py", ROOT], ("all ops validate",)),
     ("ops red proofs", PY + ["tools/check_ops_red_proof.py"], ()),
 ]
@@ -55,9 +64,11 @@ def last_lines(path, n=3):
 
 def main():
     out_dir = os.path.join(os.environ.get("TEMP") or os.path.dirname(ROOT), "orca-bb-pre_merge-" + time.strftime("%H%M%S"))
+    basetemp = os.path.join(out_dir, "pytest")
     os.makedirs(out_dir, exist_ok=True)
     failed = 0
     for index, (name, command, must_contain) in enumerate(CHECKS, 1):
+        command = [part.replace("<basetemp>", basetemp) for part in command]
         path = os.path.join(out_dir, "%d-%s.log" % (index, name.replace(" ", "_")))
         started = time.monotonic()
         with open(path, "wb") as stream:
@@ -68,6 +79,8 @@ def main():
         line = "%-15s %s  %5.1f s  %s" % (name, "PASS" if ok else "FAIL", seconds, tail[-1][:90] if tail else "")
         if not ok:
             failed += 1
+            if any("No space left on device" in item for item in tail):
+                line += "  | THE DISK IS FULL - not a code verdict"
             hits = secret_count(path)
             if hits:
                 os.remove(path)
@@ -75,8 +88,13 @@ def main():
             else:
                 line += "  | log: " + path
         print(line, flush=True)
+    shutil.rmtree(basetemp, ignore_errors=True)
+    free_gb = shutil.disk_usage(out_dir).free / 2 ** 30
     print("gate:", "PASS" if not failed else "FAIL (%d of %d)" % (failed, len(CHECKS)),
           "| logs under", out_dir, flush=True)
+    print("disk: %.1f GB free%s" % (free_gb, "" if free_gb >= LOW_FREE_GB else
+                                    "  LOW (under %d GB): a full disk fails the tests, and the guest's disk only grows" % LOW_FREE_GB),
+          flush=True)
     return 1 if failed else 0
 
 

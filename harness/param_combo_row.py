@@ -85,20 +85,26 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
             raise ProtocolError("param_combo_row_after_park:" + label)
         (cx, cy), _bounds = found
 
+    def _click_point(point, pr, ph, what):
+        """True = clicked, 'offscreen' = the row is under the taskbar."""
+        x, y = pr[0] + point[0], pr[1] + point[1]
+        if not pp.popup_hit_clickable(ph, x, y):
+            print("[popup] row %r at (%d,%d) is off-screen (popup %r, "
+                  "work area %r)" % (what, x, y, pr, pp.work_area()), flush=True)
+            return "offscreen"
+        print("[popup] clicking %r at (%d,%d) in popup %r; rows OCR'd: %r" % (
+            what, x, y, pr, [(t, x_, y_) for t, x_, y_, *_ in words][:16]), flush=True)
+        winutil.msg_click_screen(x, y)
+        return True
+
     def _click_target(words_, pr, ph):
         """True = clicked, 'offscreen' = the row is under the taskbar,
         False = no such row in these words. Line-level match: a two-word
         target is never inside one OCR word."""
         for cx_, cy_, _line in pp.popup_line_hits(words_, target):
-            x, y = pr[0] + cx_, pr[1] + cy_
-            if not pp.popup_hit_clickable(ph, x, y):
-                print("[popup] row %r at (%d,%d) is off-screen (popup %r, "
-                      "work area %r)" % (target, x, y, pr, pp.work_area()), flush=True)
-                return "offscreen"
-            print("[popup] clicking %r at (%d,%d) in popup %r; rows OCR'd: %r" % (
-                target, x, y, pr, [(t, x_, y_) for t, x_, y_, *_ in words_][:16]), flush=True)
-            winutil.msg_click_screen(x, y)
-            return True
+            hit = _click_point((cx_, cy_), pr, ph, target)
+            if hit is True or hit == "offscreen":
+                return hit
         print("[popup] %r not among the popup rows: %r" % (
             target, [(t, x_, y_) for t, x_, y_, *_ in words_][:16]), flush=True)
         return False
@@ -140,6 +146,14 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
         print("[popup] opened %r" % (pr,), flush=True)
         words = _popup_words(ph)
         first = _click_target(words, pr, ph)
+        if first is False:
+            # '1 PLA' cannot be read as text on an all-PLA fixture
+            # (extruder_row_point): take the entry by its number instead.
+            point = extruder_row_point(words, pr, target)
+            if point is not None:
+                print("[popup] %r read by position in popup %r; lines OCR'd: %r; entry point %r" % (
+                    target, pr, _popup_lines(words), point), flush=True)
+                first = _click_point(point, pr, ph, target)
         if first is True:
             clicked = True
             break
@@ -216,6 +230,76 @@ def pick_combo_at_label(ui, label, target, group_substr=None):
     if not _shows(value, target):
         raise ProtocolError("param_combo_readback:" + target + ":" +
                             (value or line)[:60])
+
+
+def _popup_lines(words):
+    """[(cy, text)] of a popup capture: the OCR words grouped into lines by y
+    (10 px), each line's text left to right, the lines top to bottom."""
+    rows = []
+    for t, x, y, _w, h in sorted(words, key=lambda word: word[2]):
+        for row in rows:
+            if abs(row[0] - y) <= 10:
+                row[1].append((x, y + h // 2, t))
+                break
+        else:
+            rows.append([y, [(x, y + h // 2, t)]])
+    lines = []
+    for _y, parts in rows:
+        parts.sort()
+        lines.append((sum(cy for _x, cy, _t in parts) // len(parts),
+                      " ".join(t for _x, _cy, t in parts)))
+    lines.sort()
+    return lines
+
+
+def extruder_row_point(words, popup_rect, target):
+    """Point (x, y) inside `popup_rect` (left, top, right, bottom) of entry
+    number N of an extruder popup, for a target spelled '<N> <type>' ('1 PLA');
+    None when the OCR words do not sit on such a list.
+
+    Why by position: a fixture whose filaments are all PLA paints the rows
+    'Default', '1 PLA' .. '5 PLA', and OCR drops or mangles the leading digit
+    (run 1f8a4309, popup 180 px high: '~ Default' y8, '2) PLA' y65, 'By PLA'
+    y95, '4 PLA' y129, 'PLA' y159 - the '1 PLA' row itself was not read), so
+    '1 PLA' cannot be matched as text (param_combo_target). The list is a
+    grid: every row is popup height / row count high and the first row starts
+    at the top. The row count is read off the rows OCR did read - their
+    spacing must be one pitch or a whole multiple of it, the first row must
+    read 'Default' and every other row must end with the target's type word.
+    A wrong pick cannot pass silently: the pilot checks the number that lands
+    in the saved project."""
+    found = re.match(r"^(\d+)\s+([A-Za-z]+)$", target.strip())
+    if not found:
+        return None
+    index, kind = int(found.group(1)), found.group(2).lower()
+    lines = _popup_lines(words)
+    if len(lines) < 3 or lines[0][1].lower().split()[-1:] != ["default"]:
+        return None
+    tops = [cy for cy, _text in lines]
+    gaps = [b - a for a, b in zip(tops, tops[1:])]
+    pitch = min(gaps)
+    if pitch < 18 or any(abs(gap - pitch * max(1, round(gap / pitch))) > 6 for gap in gaps):
+        return None
+    left, top, right, bottom = popup_rect
+    count = int(round((bottom - top) / pitch))
+    if count < 2 or abs(count * pitch - (bottom - top)) > pitch / 2:
+        return None
+    pitch = (bottom - top) / count
+    seats = {}
+    for cy, text in lines:
+        seat = int(round((cy - tops[0]) / pitch))
+        if seat >= count or abs((cy - tops[0]) / pitch - seat) > 0.25:
+            return None
+        if seat and (seat in seats or text.lower().split()[-1:] != [kind]):
+            return None
+        seats[seat] = text
+    # the pitch is anchored by at least two rows after 'Default', and the entry
+    # taken sits at or before the last row OCR saw - never extrapolated past it
+    if len([seat for seat in seats if seat]) < 2 or index > max(seats):
+        return None
+    if not 1 <= index < count:
+        return None
+    return ((left + right) // 2 - left, (index + 0.5) * pitch)
 
 
 def _shows(value, target):

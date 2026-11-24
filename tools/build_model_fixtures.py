@@ -22,6 +22,7 @@ here (cube, cylinder, sphere) get the closed-shell checks of the other module.
     feishu_std_fdmt       ksr_fdmtest_v4 (the menu's "Autodesk FDM Test"), as above
     feishu_std_fdmt2
     feishu_std_cubes2     two 20 mm cubes, extruders 1 and 3, centres 40 mm apart
+    feishu_std_cubesfar   the same two cubes 100 mm apart, for the print-by-object row (#292)
     feishu_std_sphere     generated sphere, diameter 20 mm, extruder 1
     feishu_std_cylinder   the shapes plate's cylinder, d20 x 20 mm, extruder 1
     feishu_std_text       文字浮雕, a stand-in: the word ORCA in a 5 x 7 DOT-MATRIX font, one 1 x 1 x 2 mm
@@ -324,6 +325,13 @@ def specs(models: Path) -> dict[str, list[Item]]:
         out[f"feishu_std_{stem}2"] = [Item(replace(imported, name=model.name), "1", left, model),
                                       Item(replace(imported, name=model.name), "3", right, model)]
     out["feishu_std_cubes2"] = [Item(cube(20), "1", (CENTRE[0] - 20, CENTRE[1])), Item(replace(cube(20), name="立方体2"), "3", (CENTRE[0] + 20, CENTRE[1]))]
+    # Feishu #292 (print by object): the row's own precondition says "复制为2个对象并
+    # 调整间距" - two copies with the spacing adjusted. 40 mm between centres is
+    # "too close to others" the moment By object is picked (guest run 875f6c33:
+    # red error toast, Slice plate disabled); 100 mm is meant to leave their
+    # clearance hulls apart at the row's extruder_clearance_radius of 20 - the
+    # run on it is the proof.
+    out["feishu_std_cubesfar"] = [Item(cube(20), "1", (CENTRE[0] - 50, CENTRE[1])), Item(replace(cube(20), name="立方体2"), "3", (CENTRE[0] + 50, CENTRE[1]))]
     out["feishu_std_sphere"] = [Item(sphere(64, 32, 10.0), "1", CENTRE)]
     out["feishu_std_cylinder"] = [Item(bf.shapes()[1], "1", CENTRE)]
     out["feishu_std_text"] = [Item(text_relief("ORCA", (64.0, 16.0, 2.0), 6.0), "1", CENTRE)]
@@ -333,7 +341,8 @@ def specs(models: Path) -> dict[str, list[Item]]:
     tolerance = stl_source(models / "OrcaToleranceTest.stl")
     out["feishu_std_tolerance"] = [Item(replace(imported, name=tolerance.name), "1", CENTRE, tolerance)]
     return dict(sorted(out.items(), key=lambda entry: ["feishu_std_boat", "feishu_std_boat2", "feishu_std_fdmt", "feishu_std_fdmt2",
-                                                        "feishu_std_cubes2", "feishu_std_sphere", "feishu_std_cylinder",
+                                                        "feishu_std_cubes2", "feishu_std_cubesfar", "feishu_std_sphere",
+                                                        "feishu_std_cylinder",
                                                         "feishu_std_bunny", "feishu_std_hell", "feishu_std_tolerance",
                                                         "feishu_std_text"].index(entry[0])))
 
