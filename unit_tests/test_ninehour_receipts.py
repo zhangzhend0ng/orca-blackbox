@@ -29,6 +29,12 @@ HEADER = ("| machine | label | scenario | run (first 8 characters) | commit (fir
           "| comparison | cleanup | guest s | host s | action s | stage sum | stages with ok=0 |")
 PASSING = {"release_verdict": "SHADOW", "verified_pass": True, "cleanup_confirmed": True,
            "execution_status": "completed", "mode": "script_shadow", "checks": {}}
+OFFLINE = "summary.offline-pairing.json"
+UNVERIFIED = {"status": "unverified", "business_status": "UNVERIFIED", "unmet_expectations": ["comparison_baseline"],
+              "reason": "comparison_baseline: the fixed baseline export was not in the checkout yet"}
+PAIRING = {"status": "paired", "comparison_checked": True, "business_status": "SHADOW",
+           "unmet_expectations": ["outer_wall_near_178_mm_s", "machine_x_limit_intervention"],
+           "detail": {"row": "276", "pair_status": "checked", "outer_wall_peak_mm_s": 202.956}}
 
 
 def put_json(path, data):
@@ -136,6 +142,24 @@ def mac_evidence_copy(root):
     return folder
 
 
+def guest_run(root):
+    return root / "artifacts" / "windows_mcp_harvest" / GUEST
+
+
+def unverified_summary(root):
+    """The host summary of a #276 run that ended unverified: its fixed baseline was not yet in the checkout."""
+    path = root / "artifacts" / "native_save_demo" / GUEST / "summary.json"
+    return put_json(path, {**json.loads(path.read_text(encoding="utf-8")), "comparison": UNVERIFIED})
+
+
+def offline_pairing(root, **changes):
+    """What the orchestrator writes next to summary.json after re-doing the pairing on the host."""
+    record = {"run_id": GUEST, "scenario": "compare_276_quality", "source_sha": SHA,
+              "paired_offline_at": "2026-11-25 01:57:02", "in_flight_status": "unverified", "comparison": PAIRING}
+    record.update(changes)
+    return put_json(root / "artifacts" / "native_save_demo" / GUEST / OFFLINE, record)
+
+
 def half_harvested(root):
     """The process was killed and only part of the run directory reached the host."""
     run = root / "artifacts" / "windows_mcp_harvest" / HALF
@@ -175,6 +199,7 @@ def test_guest_run_receipt_gives_exact_seconds_and_never_adds_a_parent_to_its_ch
         "execution_status": "completed", "mode": "script_shadow",
         "comparison": {"status": "paired", "business_status": "SHADOW",
                        "unmet_expectations": ["outer_wall_near_178_mm_s"], "reason": None},
+        "comparison_source": "summary.json", "paired_offline_at": None,
         "verdict": None, "failure_stage": None, "error": None, "guest_phases": None, "wall_loops_gcode_echo": None}
     assert receipt["seconds"] == {"guest": 189.960451, "host_wall": 222.8279999999795, "harvest": 2.0,
                                   "script_action": 76.422, "mac_wall": None}
@@ -299,6 +324,112 @@ def test_changed_artifact_hash_and_absent_artifact_are_told_apart(tmp_path, dama
     receipt = receipts.receipts_for(run)[0]
     assert receipt["artifacts"]["artifact_hashes_match"] is expected
     assert ("exports/0001.gcode" in receipt["missing"]) is (damage == "absent")
+
+
+def test_unverified_in_flight_comparison_is_replaced_by_the_offline_pairing(tmp_path):
+    guest_harvest(tmp_path)
+    unverified_summary(tmp_path)
+    offline_pairing(tmp_path)
+    receipt = receipts.receipts_for(guest_run(tmp_path))[0]
+    assert receipt["verdicts"]["comparison"] == {
+        "status": "paired", "business_status": "SHADOW",
+        "unmet_expectations": ["outer_wall_near_178_mm_s", "machine_x_limit_intervention"], "reason": None}
+    assert receipt["verdicts"]["comparison_source"] == OFFLINE
+    assert receipt["verdicts"]["paired_offline_at"] == "2026-11-25 01:57:02"
+    assert receipt["sources"]["verdicts.comparison.status"] == f"native_save_demo/{GUEST}/{OFFLINE}#comparison.status"
+    assert receipt["sources"]["verdicts.paired_offline_at"] == f"native_save_demo/{GUEST}/{OFFLINE}#paired_offline_at"
+    assert receipt["sources"]["seconds.host_wall"] == f"native_save_demo/{GUEST}/summary.json#host_wall_seconds"
+    assert receipt["missing"] == [] and receipt["malformed"] == [] and receipt["warnings"] == []
+    assert receipts.markdown([receipt]).splitlines()[2].split(" | ")[7] == "paired/SHADOW (offline)"
+
+
+def test_offline_pairing_is_not_opened_while_the_in_flight_comparison_is_paired(tmp_path, capsys):
+    """The orchestrator writes the file for every compare run it re-pairs, paired ones included: it must change nothing."""
+    guest_harvest(tmp_path)
+    path = offline_pairing(tmp_path, comparison=UNVERIFIED)
+    path.write_text('{"run_id": "x", "compar', encoding="utf-8")      # damaged on purpose: it must not even be opened
+    assert receipts.main([str(guest_run(tmp_path).parent), "--runs", GUEST]) == 0
+    capsys.readouterr()
+    receipt = receipts.receipts_for(guest_run(tmp_path))[0]
+    assert receipt["verdicts"]["comparison"] == {
+        "status": "paired", "business_status": "SHADOW", "unmet_expectations": ["outer_wall_near_178_mm_s"],
+        "reason": None}
+    assert receipt["verdicts"]["comparison_source"] == "summary.json"
+    assert receipt["verdicts"]["paired_offline_at"] is None and "verdicts.paired_offline_at" not in receipt["sources"]
+    assert receipt["malformed"] == [] and receipt["warnings"] == []
+    assert receipts.markdown([receipt]).splitlines()[2].split(" | ")[7] == "paired/SHADOW"
+
+
+def test_offline_pairing_is_not_opened_while_the_summary_has_no_comparison_block(tmp_path, capsys):
+    """A scenario that is never paired (uia_param_*) has no comparison block to replace."""
+    guest_harvest(tmp_path)
+    path = tmp_path / "artifacts" / "native_save_demo" / GUEST / "summary.json"
+    summary = json.loads(path.read_text(encoding="utf-8"))
+    del summary["comparison"]
+    put_json(path, summary)
+    offline_pairing(tmp_path).write_text("{", encoding="utf-8")         # damaged on purpose: it must not be opened
+    assert receipts.main([str(guest_run(tmp_path).parent), "--runs", GUEST]) == 0
+    capsys.readouterr()
+    receipt = receipts.receipts_for(guest_run(tmp_path))[0]
+    assert receipt["verdicts"]["comparison"] is None
+    assert receipt["verdicts"]["comparison_source"] == "summary.json"
+    assert receipt["missing"] == [f"native_save_demo/{GUEST}/summary.json#comparison"]
+    assert receipt["malformed"] == [] and receipt["warnings"] == []
+
+
+def test_unverified_in_flight_comparison_without_an_offline_pairing_is_reported_as_it_is(tmp_path):
+    guest_harvest(tmp_path)
+    unverified_summary(tmp_path)
+    receipt = receipts.receipts_for(guest_run(tmp_path))[0]
+    assert receipt["verdicts"]["comparison"] == UNVERIFIED
+    assert receipt["verdicts"]["comparison_source"] == "summary.json"
+    assert receipt["verdicts"]["paired_offline_at"] is None
+    assert receipt["missing"] == [] and receipt["malformed"] == [] and receipt["warnings"] == []
+
+
+@pytest.mark.parametrize(("damage", "reason"), [
+    ("truncated", "invalid JSON"),
+    ("no-comparison", "comparison: expected dict, got NoneType"),
+    ("another-run", "run_id is " + "e5" * 16),
+    ("wrong-type", "comparison.status: expected str, got int"),
+])
+def test_malformed_offline_pairing_falls_back_to_the_in_flight_block(tmp_path, capsys, damage, reason):
+    guest_harvest(tmp_path)
+    unverified_summary(tmp_path)
+    path = offline_pairing(tmp_path)
+    if damage == "truncated":
+        path.write_text('{"run_id": "x", "compar', encoding="utf-8")
+    elif damage == "no-comparison":
+        put_json(path, {"run_id": GUEST, "paired_offline_at": "2026-11-25 01:57:02"})
+    elif damage == "another-run":
+        put_json(path, {"run_id": "e5" * 16, "comparison": PAIRING})
+    else:
+        put_json(path, {"run_id": GUEST, "comparison": {**PAIRING, "status": 1}})
+    assert receipts.main([str(guest_run(tmp_path).parent), "--runs", GUEST]) == 2
+    out, err = capsys.readouterr()
+    receipt = receipts.receipts_for(guest_run(tmp_path))[0]
+    assert receipt["verdicts"]["comparison"] == UNVERIFIED            # the in-flight block stays
+    assert receipt["verdicts"]["comparison_source"] == "summary.json"
+    assert receipt["verdicts"]["paired_offline_at"] is None
+    assert len(receipt["malformed"]) == 1
+    assert receipt["malformed"][0].startswith(f"native_save_demo/{GUEST}/{OFFLINE}: ") and reason in receipt["malformed"][0]
+    assert receipt["missing"] == []
+    assert str(path) in err and reason in err       # reported like any other damaged file ...
+    assert GUEST[:8] in out                        # ... while the receipt is still listed
+
+
+def test_physical_run_takes_its_commit_from_the_ledger_and_shows_it_in_the_table(tmp_path, capsys):
+    physical_harvest(tmp_path)
+    ledger = tmp_path / "ledger.jsonl"
+    ledger.write_text(json.dumps({"machine": "fa706g3", "scenario": "uia_param_overhang_speeds", "run_id": FA,
+                                  "label": "base-2", "commit": "636a733"}) + "\n", encoding="utf-8")
+    windows = tmp_path / "artifacts" / "windows_mcp_harvest"
+    assert receipts.main([str(windows), "--runs", FA, "--ledger", str(ledger)]) == 0
+    row = capsys.readouterr().out.splitlines()[2]
+    assert row.split(" | ")[1:5] == ["base-2", "uia_param_overhang_speeds", FA[:8], "636a733"]
+    receipt = receipts.receipts_for(windows / FA, ledger=receipts.load_ledger(ledger), ledger_path=ledger)[0]
+    assert receipt["identity"]["source_commit"] == "636a733"
+    assert receipt["sources"]["identity.source_commit"] == f"{ledger}:1#commit"
 
 
 def test_ledger_joins_by_run_id_and_the_last_line_wins(tmp_path):

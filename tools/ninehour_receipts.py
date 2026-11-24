@@ -41,6 +41,18 @@ apply to that kind of run (a Mac run has no process.json, a fa706g3 run has no
 host summary), and keys that only exist when something went wrong (an error, a
 failure_stage, comparison.reason, unmet_expectations) are null and unlisted.
 
+The comparison block comes from the host summary: comparison_source is
+"summary.json". When that block is unverified and
+native_save_demo/<run_id>/summary.offline-pairing.json sits next to the
+summary (the pairing the orchestrator re-did on the host), the block is read
+from there instead: comparison_source names that file and paired_offline_at
+carries its timestamp. The offline file is not opened while the in-flight block
+is paired or absent: the orchestrator writes it for every compare run it
+re-pairs, so its presence alone says nothing. A damaged offline file is not
+used: the receipt keeps the in-flight block, lists the file under `malformed`,
+and the run is reported like any other damaged file (exit 2). `malformed` lists
+files that are there but could not be used; `missing` lists what is absent.
+
   seconds.guest          process.json: finished_at_ns - started_at_ns
   seconds.host_wall      host summary: host_wall_seconds, harvest_seconds
   seconds.harvest
@@ -59,7 +71,8 @@ failure_stage, comparison.reason, unmet_expectations) are null and unlisted.
                          proof/0001.3mf and exports/0001.gcode.
                          artifact_hashes_match is null while one of them is absent.
 
-In the table a Mac row shows its Mac wall under "host s". stdout carries only
+In the table a Mac row shows its Mac wall under "host s", and a comparison
+taken from the offline pairing is marked "(offline)". stdout carries only
 the table; notes about missing evidence, hash mismatches and warnings, and the
 errors behind exit code 2, go to stderr.
 
@@ -93,15 +106,20 @@ PROJECT, GCODE = "proof/0001.3mf", "exports/0001.gcode"
 WINDOWS_FILES = ("result.json", "process.json", "native_worker.json", "native_worker.log", "proof.json",
                  PROJECT, GCODE, "teardown.json")
 EXECUTION_HOST, SUMMARY_DIR = "execution_host.json", "native_save_demo"
+OFFLINE = "summary.offline-pairing.json"        # the pairing re-done on the host, written next to summary.json
 MAC_ERROR_LIMIT = 300
+# The four reported keys of a comparison block, with their types; the last two exist only when something is unmet.
+COMPARISON_KEYS = (("status", (str,), False), ("business_status", (str,), False),
+                   ("unmet_expectations", (list,), True), ("reason", (str,), True))
 COLUMNS = ("machine", "label", "scenario", "run (first 8 characters)", "commit (first 7 characters)", "verdict",
            "pass", "comparison", "cleanup", "guest s", "host s", "action s", "stage sum", "stages with ok=0")
 BLANK = {
     "identity": {"run_id": None, "source_commit": None, "scenario": None, "goal": None, "machine": None,
                  "machine_inferred": None, "label": None, "execution_host": None},
     "verdicts": {"release_verdict": None, "verified_pass": None, "cleanup_confirmed": None, "execution_status": None,
-                 "mode": None, "comparison": None, "verdict": None, "failure_stage": None, "error": None,
-                 "guest_phases": None, "wall_loops_gcode_echo": None},
+                 "mode": None, "comparison": None, "comparison_source": None, "paired_offline_at": None,
+                 "verdict": None, "failure_stage": None, "error": None, "guest_phases": None,
+                 "wall_loops_gcode_echo": None},
     "seconds": {"guest": None, "host_wall": None, "harvest": None, "script_action": None, "mac_wall": None},
     "stages": {"list": None, "stage_sum_ok": None, "ok0": None, "parents": None, "tags": None},
     "artifacts": {"proof_run_id": None, "project_sha256": None, "project_sha256_recomputed": None,
@@ -115,6 +133,7 @@ class ReceiptError(Exception):
 
     def __init__(self, subject, reason):
         super().__init__(f"{subject}: {reason}")
+        self.subject, self.reason = subject, reason
 
 
 class MalformedInput(ReceiptError):
@@ -300,10 +319,12 @@ def machine_signals(run_dir, mac_file) -> list:
 class Receipt:
     """One run's receipt while it is filled in."""
 
-    def __init__(self, run_dir, paths, expected):
+    def __init__(self, run_dir, paths, expected, damaged=None):
         self.run_dir, self.paths, self.expected = run_dir, paths, expected
         self.data = {"schema": SCHEMA, "run_dir": str(run_dir), **copy.deepcopy(BLANK)}
         self.sources, self.missing, self.warnings, self.docs = {"run_dir": "command line"}, [], [], {}
+        self.malformed = []
+        self.damaged = [] if damaged is None else damaged    # files skipped without stopping the receipt
         self.entry, self.ledger_at, self.ledger_file = None, None, None
         self.ledger_note = "no --ledger given"
 
@@ -416,19 +437,72 @@ class Receipt:
             self.set("stages.stage_sum_ok", total,
                      "native_worker.log#seconds of the ok=1 stage lines that are not parents")
 
+    def no_comparison(self, name):
+        """File `name` holds no comparison block (or does not exist): the comparison is null and says so."""
+        self.set("verdicts.comparison", None, f"{name}#comparison")
+        self.set("verdicts.comparison_source", name.rpartition("/")[2], f"{name}#comparison")
+
+    def comparison(self, name):
+        """Report the comparison block of file `name`; comparison_source is that file's name."""
+        for key, kinds, optional in COMPARISON_KEYS:
+            value = self.pick(name, f"comparison.{key}", *kinds, optional=optional)
+            if key == "unmet_expectations" and value is not None:
+                value = strings(value, (self.paths[name], f"{name}#comparison.unmet_expectations"))
+            self.set(f"verdicts.comparison.{key}", value, f"{name}#comparison.{key}")
+        self.set("verdicts.comparison_source", name.rpartition("/")[2], f"{name}#comparison")
+
+    def offline_pairing(self, name, path) -> bool:
+        """Replace the unverified in-flight comparison with the offline pairing in file `name`.
+
+        False when that file cannot be used: the in-flight block stays and the file is listed under `malformed`."""
+        try:
+            data = read_offline_pairing(path, self.run_dir.name)
+        except MalformedInput as error:
+            self.damaged.append(error)
+            self.malformed.append(f"{name}: {error.reason}")
+            return False
+        self.paths[name], self.docs[name] = path, data
+        self.comparison(name)
+        self.set("verdicts.paired_offline_at", self.pick(name, "paired_offline_at", str), f"{name}#paired_offline_at")
+        return True
+
     def finish(self):
         self.data["missing"] = list(dict.fromkeys(self.missing))
+        self.data["malformed"] = self.malformed
         self.data["warnings"] = self.warnings
         self.data["sources"] = self.sources
         return self.data
 
 
-def build_windows(run_dir, ledger, ledger_path, override):
+def read_offline_pairing(path, run_id) -> dict:
+    """The offline pairing once it is known to be this run's and to hold a well-formed comparison block.
+
+    Everything the receipt reads from the file is type-checked here, so a damaged file is rejected as a whole
+    before it has replaced anything."""
+    data = parse_json(path)
+    seen = data.get("run_id")
+    if seen is not None:
+        check(seen, (str,), (path, f"{OFFLINE}#run_id"))
+        if seen != run_id:
+            raise MalformedInput(path, f"{OFFLINE}#run_id is {seen}, not {run_id}")
+    block = check(data.get("comparison"), (dict,), (path, f"{OFFLINE}#comparison"))
+    for key, kinds, _optional in COMPARISON_KEYS:
+        if block.get(key) is not None:
+            value = check(block[key], kinds, (path, f"{OFFLINE}#comparison.{key}"))
+            if key == "unmet_expectations":
+                strings(value, (path, f"{OFFLINE}#comparison.{key}"))
+    if data.get("paired_offline_at") is not None:
+        check(data["paired_offline_at"], (str,), (path, f"{OFFLINE}#paired_offline_at"))
+    return data
+
+
+def build_windows(run_dir, ledger, ledger_path, override, damaged=None):
     summary, path = summary_name(run_dir), summary_path(run_dir)
     signals = machine_signals(run_dir, None)
     machine = override or (signals[0][0] if signals else None)
     expected = set(WINDOWS_FILES) | {"guest": {summary}, "fa706g3": {EXECUTION_HOST}}.get(machine, set())
-    r = Receipt(run_dir, {**{name: run_dir / name for name in (*WINDOWS_FILES, EXECUTION_HOST)}, summary: path}, expected)
+    r = Receipt(run_dir, {**{name: run_dir / name for name in (*WINDOWS_FILES, EXECUTION_HOST)}, summary: path},
+                expected, damaged)
     r.bind_ledger(ledger, ledger_path, run_dir.name)
     r.machine(override, signals)
     r.set("identity.run_id", run_dir.name, "directory name")
@@ -472,20 +546,18 @@ def build_windows(run_dir, ledger, ledger_path, override):
                 r.set(f"identity.execution_host.{key}", r.pick(EXECUTION_HOST, key, kind), f"{EXECUTION_HOST}#{key}")
 
     if machine == "guest" or path.is_file():
+        offline_path, offline = path.with_name(OFFLINE), f"{SUMMARY_DIR}/{run_dir.name}/{OFFLINE}"
         if r.document(summary) is None:
-            r.set("verdicts.comparison", None, f"{summary}#comparison")
+            r.no_comparison(summary)
         else:
             r.note_run_id(summary)
-            comparison = r.pick(summary, "comparison", dict)
-            if comparison is None:
-                r.set("verdicts.comparison", None, f"{summary}#comparison")
+            if r.pick(summary, "comparison", dict) is None:
+                r.no_comparison(summary)
             else:
-                for key, kinds, optional in (("status", (str,), False), ("business_status", (str,), False),
-                                             ("unmet_expectations", (list,), True), ("reason", (str,), True)):
-                    value = r.pick(summary, f"comparison.{key}", *kinds, optional=optional)
-                    if key == "unmet_expectations" and value is not None:
-                        value = strings(value, (path, f"{summary}#comparison.unmet_expectations"))
-                    r.set(f"verdicts.comparison.{key}", value, f"{summary}#comparison.{key}")
+                status = r.pick(summary, "comparison.status", str)
+                if not (status == "unverified" and offline_path.is_file()
+                        and r.offline_pairing(offline, offline_path)):
+                    r.comparison(summary)
             for key, field in (("host_wall_seconds", "host_wall"), ("harvest_seconds", "harvest")):
                 r.set(f"seconds.{field}", r.pick(summary, key, int, float), f"{summary}#{key}")
 
@@ -555,15 +627,16 @@ def mac_results(run_dir):
     return found
 
 
-def receipts_for(run_dir, ledger=None, ledger_path=None, machine=None) -> list:
+def receipts_for(run_dir, ledger=None, ledger_path=None, machine=None, damaged=None) -> list:
     """One receipt per run in `run_dir` (several for a Mac evidence directory).
 
-    `ledger` is what load_ledger returned, `ledger_path` how the operator named it, `machine` the --machine choice."""
+    `ledger` is what load_ledger returned, `ledger_path` how the operator named it, `machine` the --machine choice.
+    A file that could not be used without stopping the receipt is appended to `damaged` as a MalformedInput."""
     run_dir = Path(run_dir)
     macs = mac_results(run_dir)
     if macs:
         return [build_mac(run_dir, name, data, ledger, ledger_path, machine) for name, data in macs]
-    return [build_windows(run_dir, ledger, ledger_path, machine)]
+    return [build_windows(run_dir, ledger, ledger_path, machine, damaged)]
 
 
 def shown(value):
@@ -584,12 +657,13 @@ def markdown(receipts) -> str:
         identity, verdicts, seconds, stages = (receipt[name] for name in ("identity", "verdicts", "seconds", "stages"))
         comparison = verdicts["comparison"] or {}
         failed = None if stages["ok0"] is None else "; ".join(stages["ok0"]) or "none"
+        compared = "/".join(part for part in (comparison.get("status"), comparison.get("business_status")) if part)
+        if compared and verdicts["comparison_source"] == OFFLINE:
+            compared += " (offline)"
         rows.append([identity["machine"], identity["label"], identity["scenario"] or identity["goal"],
                      identity["run_id"][:8],
                      None if identity["source_commit"] is None else identity["source_commit"][:7],
-                     verdicts["release_verdict"] or verdicts["verdict"], verdicts["verified_pass"],
-                     "/".join(part for part in (comparison.get("status"), comparison.get("business_status"))
-                              if part) or None,
+                     verdicts["release_verdict"] or verdicts["verdict"], verdicts["verified_pass"], compared or None,
                      verdicts["cleanup_confirmed"], seconds["guest"],
                      seconds["host_wall"] if seconds["host_wall"] is not None else seconds["mac_wall"],
                      seconds["script_action"], stages["stage_sum_ok"], failed])
@@ -603,6 +677,9 @@ def notes(receipts):
         short = receipt["identity"]["run_id"][:8]
         if receipt["artifacts"]["artifact_hashes_match"] is False:
             yield f"{short}: artifact_hashes_match=false"
+        if receipt["verdicts"]["comparison_source"] == OFFLINE:
+            yield (f"{short}: comparison read from {OFFLINE} "
+                   f"(paired offline at {receipt['verdicts']['paired_offline_at']})")
         if receipt["missing"]:
             yield f"{short}: missing {', '.join(receipt['missing'])}"
         for warning in receipt["warnings"]:
@@ -693,8 +770,9 @@ def main(argv=None) -> int:
         except ReceiptError as error:
             failures.append(error)
     for run_dir in targets:
+        damaged = []
         try:
-            for receipt in receipts_for(run_dir, ledger, ledger_path, args.machine):
+            for receipt in receipts_for(run_dir, ledger, ledger_path, args.machine, damaged):
                 run_id = receipt["identity"]["run_id"]
                 if run_id in seen:
                     raise MalformedInput(run_dir, f"run {run_id} appears more than once; there is one receipt per run")
@@ -702,6 +780,7 @@ def main(argv=None) -> int:
                 built.append(receipt)
         except ReceiptError as error:
             failures.append(error)
+        failures.extend(damaged)      # a file that could not be used but did not stop the receipt
     print(markdown(built), end="")      # stdout carries the table and nothing else
     if args.json_dir is not None:
         try:
@@ -717,7 +796,8 @@ def main(argv=None) -> int:
         print(f"ninehour_receipts: {note}", file=sys.stderr)
     print(f"ninehour_receipts: {len(built)} receipt(s); the table rounds seconds to 3 decimals and shows 7 characters "
           "of the commit - exact values, and the file behind every field, are in the JSON receipts; "
-          "'-' = not available; a Mac row shows its Mac wall under 'host s'", file=sys.stderr)
+          "'-' = not available; a Mac row shows its Mac wall under 'host s'; "
+          "'(offline)' marks a comparison paired on the host after the run", file=sys.stderr)
     return 2 if failures else 0
 
 
