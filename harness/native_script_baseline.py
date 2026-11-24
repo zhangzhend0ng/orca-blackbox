@@ -669,8 +669,10 @@ PARAM_OPS = {        "uia_param_ironing_top": [
              "value": "10", "group": "Overhang", "field": 3},
             # bridge_speed by the label painted beside its own box: 'Bridge'
             # is the label of a two-box stack, and the stack search (+-60 px)
-            # would also take the fourth overhang box above it.
-            {"op": "float", "label": "^External", "value": "30", "group": "Overhang"},
+            # would also take the fourth overhang box above it. No line-start
+            # anchor: OCR reads the whole row as '50 mm/s External' (fa706g3
+            # run 319dbf1e), so '^External' matched nothing.
+            {"op": "float", "label": "External", "value": "30", "group": "Overhang"},
         ],
         # Feishu #273 (line 192): the row paints just 'Travel' + the
         # value while the group TITLE reads 'Travel speed' - a plain

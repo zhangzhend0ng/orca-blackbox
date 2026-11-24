@@ -299,7 +299,9 @@ def extruder_row_point(words, popup_rect, target):
         return None
     if not 1 <= index < count:
         return None
-    return ((left + right) // 2 - left, (index + 0.5) * pitch)
+    # whole pixels: the click helpers take ints (fa706g3 run a876d8b8 died on
+    # a float here, 2026-11-24)
+    return ((left + right) // 2 - left, int((index + 0.5) * pitch))
 
 
 def _shows(value, target):
