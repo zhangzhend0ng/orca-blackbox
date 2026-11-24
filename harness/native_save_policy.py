@@ -25,6 +25,7 @@ MIX_ROLES = ("ratio", "gradient", "filament1", "filament3", "confirm")
 EDIT_NUMBER = r"(?:0|[1-9][0-9]?)(?:\.[0-9]{1,4})?"
 CANVAS_NUMBER = r"(?:[1-9][0-9]{0,2}(?:\.[0-9]{1,4})?|0\.(?=[0-9]{0,3}[1-9])[0-9]{1,4})"
 NATIVE_EDIT_OBSERVATION_SCENARIOS = frozenset(MAINTENANCE_TRIALS)
+TEXT_ONLY_SNAPSHOT_SCENARIOS = frozenset({"compare_276_quality", "compare_276_strength"})
 
 
 class _GuiThreadInfo(ctypes.Structure):

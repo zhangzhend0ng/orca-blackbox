@@ -101,6 +101,82 @@ def test_comparison_bridge_advertises_the_scoped_guest_toolset(monkeypatch, caps
     assert {tool["name"] for tool in advertised} == native_tools(scenario)
 
 
+@pytest.mark.parametrize("enabled", [False, True])
+def test_276_snapshot_image_trial_filters_only_valid_snapshot_image_blocks(tmp_path, monkeypatch, capsys, enabled):
+    from runner import windows_mcp_bridge as bridge
+
+    run_id = "a" * 32
+    log = tmp_path / "authority.ndjson"
+    args = ["windows_mcp_bridge", "--run-id", run_id, "--goal-save", "--scenario",
+            "compare_276_quality", "--authority-log", str(log)]
+    if enabled:
+        args.append("--text-only-snapshot")
+    text = [{"type": "text", "text": "Edit positions"}, {"type": "text", "text": "UI tree"}]
+    image = {"type": "image", "mimeType": "image/png", "data": "eA=="}
+    calls = [
+        ("Snapshot", {"use_annotation": True, "use_vision": True}, text + [image], "completed"),
+        ("Screenshot", {}, text + [image], "completed"),
+        ("Snapshot", {"use_vision": False}, text, "completed"),
+        ("Snapshot", {}, [{"type": "text", "text": "Authority revoked."}], "fatal"),
+    ]
+    requests, responses = [], []
+    for seq, (tool, arguments, content, decision) in enumerate(calls, 1):
+        requests.append(dict(jsonrpc="2.0", id=seq, method="tools/call", params=dict(name=tool, arguments=arguments)))
+        receipt = dict(protocol="native-authority-1", run_id=run_id, seq=seq, tool=tool,
+                       decision=decision, dispatched=decision == "completed")
+        responses.append(dict(jsonrpc="2.0", id=seq, result=dict(content=content,
+                          structuredContent={"authority": receipt}, isError=decision == "fatal")))
+    forwarded = []
+
+    def relay(spec):
+        forwarded.append(json.loads(spec["body"]))
+        return dict(status=200, body=json.dumps(responses[len(forwarded) - 1]))
+
+    monkeypatch.setattr(bridge, "GuestHTTP", lambda *args, **kwargs: SimpleNamespace(remote=relay))
+    monkeypatch.setattr(bridge.sys, "argv", args)
+    monkeypatch.setattr(bridge.sys, "stdin", SimpleNamespace(
+        buffer=io.BytesIO("\n".join(json.dumps(request) for request in requests).encode())))
+    bridge.main()
+
+    assert forwarded == requests
+    sent = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
+    sidecar = [json.loads(line) for line in log.read_text().splitlines()]
+    if enabled:
+        responses[0]["result"]["content"] = text
+        assert [row.get("snapshot_images_omitted") for row in sidecar] == [1, None, 0, None]
+    else:
+        assert all("snapshot_images_omitted" not in row for row in sidecar)
+    assert sent == responses
+
+
+def test_text_only_snapshot_rejects_unverified_structured_image_location():
+    from runner.windows_mcp_bridge import omit_snapshot_images
+
+    with pytest.raises(ValueError, match="native_text_only_snapshot_response_shape"):
+        omit_snapshot_images({"content": [{"type": "text", "text": "UI tree"}], "isError": False,
+                              "structuredContent": {"authority": {}, "image": {"type": "image"}}})
+
+
+@pytest.mark.parametrize("entry, options", [
+    ("demo", ["--actor", "script", "--scenario", "compare_276_quality"]),
+    ("demo", ["--actor", "zcode", "--scenario", "compare_276_quality"]),
+    ("demo", ["--actor", "zcode", "--goal-only", "--scenario", "compare_265_quality"]),
+    ("zcode", ["--scenario", "compare_276_quality"]),
+    ("bridge", ["--goal-save", "--scenario", "compare_276_quality"]),
+])
+def test_text_only_snapshot_requires_authorized_experiment(monkeypatch, capsys, entry, options):
+    from runner import windows_mcp_bridge
+    from tools import native_save_demo, windows_mcp_zcode_probe
+
+    main = {"demo": native_save_demo.main, "zcode": windows_mcp_zcode_probe.main,
+            "bridge": windows_mcp_bridge.main}[entry]
+    monkeypatch.setattr(windows_mcp_bridge.sys, "argv", [entry, "--run-id", "a" * 32,
+                                                        "--text-only-snapshot", *options])
+    with pytest.raises(SystemExit, match="2"):
+        main()
+    assert "--text-only-snapshot requires" in capsys.readouterr().err
+
+
 @pytest.mark.parametrize("scenario, operation, tool, deadline, succeeds", [
     ("compare_276_quality", "ready", None, None, True),
     ("compare_276_quality", "result", None, None, True),

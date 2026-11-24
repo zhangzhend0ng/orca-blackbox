@@ -137,6 +137,7 @@ def main():
     p.add_argument("--model", type=Path, help="STL or 3MF geometry for the bound-model translation trial.")
     p.add_argument("--record-desktop", action="store_true", help="Record the dedicated win11-test desktop.")
     p.add_argument("--goal-only", action="store_true", help="Omit the guided UI route for ZCode.")
+    p.add_argument("--text-only-snapshot", action="store_true", help="Omit Snapshot images from goal-only ZCode #276 tool results.")
     p.add_argument("--inspect-mix-controls", action="store_true", help="Capture Add Mix controls during the scripted probe.")
     p.add_argument("--probe-mix-waits", action="store_true", help="Measure the mixing replay with readiness checks replacing fixed sleeps.")
     p.add_argument("--probe-mix-boot", action="store_true", help="Include readiness-based startup dialog scanning in the mixing waits probe.")
@@ -152,8 +153,12 @@ def main():
     if (args.scenario == BOUND_MODEL_MOVE) != (args.model is not None) or (args.model is not None and args.actor != "script"):
         p.error("--model requires --actor script and the bound_model_move scenario")
     from harness.agent_protocol import MAINTENANCE_TRIALS
+    from harness.native_save_policy import TEXT_ONLY_SNAPSHOT_SCENARIOS
     if args.goal_only and (args.actor != "zcode" or args.scenario not in UIA_HYBRID_SCENARIOS | MAINTENANCE_TRIALS.keys()):
         p.error("--goal-only requires --actor zcode and a UIA hybrid scenario")
+    if args.text_only_snapshot and (args.actor != "zcode" or not args.goal_only
+                                    or args.scenario not in TEXT_ONLY_SNAPSHOT_SCENARIOS):
+        p.error("--text-only-snapshot requires --actor zcode --goal-only and a #276 comparison scenario")
     if args.inspect_mix_controls and (args.actor != "script" or args.scenario != UIA_MIX_RECIPES):
         p.error("--inspect-mix-controls requires the mixing baseline script")
     if args.probe_mix_waits and (args.actor != "script" or args.scenario != UIA_REPLAY_MIX):
@@ -297,6 +302,8 @@ def main():
             command = ["--run-id", run_id, "--scenario", args.scenario]
             if args.goal_only:
                 command.append("--goal-only")
+            if args.text_only_snapshot:
+                command.append("--text-only-snapshot")
             code = run_actor(command)
         else:
             from tools.windows_mcp_codex_probe import main as run_actor
@@ -377,6 +384,8 @@ def main():
                 }
     if args.goal_only:
         summary["prompt_mode"] = "goal_only"
+    if args.text_only_snapshot:
+        summary["text_only_snapshot"] = True
     if args.probe_mix_waits:
         summary["mix_wait_probe"] = True
     if plan is not None:

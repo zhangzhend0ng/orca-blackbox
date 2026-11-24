@@ -168,6 +168,7 @@ try{
   mcpServers:[{name:'windows_mcp',scope:'user',command:spec.python,
    args:['-B',spec.bridge,'--run-id',spec.run_id,'--goal-save',
     ...(spec.scenario&&spec.scenario!=='base'?['--scenario',spec.scenario]:[]),
+    ...(spec.text_only_snapshot===true?['--text-only-snapshot']:[]),
     ...(authorityMode?['--authority-log',spec.authority_log]:[])],env:[],isolation:'session',protocolVersion:'legacy',alwaysLoad:true,
    // Up to 15s for relay launch and 60s for comparison observations. The bridge keeps inputs at 45s.
    timeoutMs:comparison?80000:60000}]

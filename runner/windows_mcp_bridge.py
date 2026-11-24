@@ -196,16 +196,36 @@ def inline_canvas_observations(result, expected_size=(1920, 1080)):
     return changes
 
 
+def omit_snapshot_images(result):
+    """Filter the pinned Snapshot response shape, where images occur only in content."""
+    if (set(result) != {"content", "isError", "structuredContent"}
+            or set(result["structuredContent"]) != {"authority"}
+            or type(result["content"]) is not list
+            or any(type(block) is not dict or block.get("type") not in {"text", "image"}
+                   for block in result["content"])):
+        raise ValueError("native_text_only_snapshot_response_shape")
+    text = [block for block in result["content"] if block["type"] == "text"]
+    if not text:
+        raise ValueError("native_text_only_snapshot_missing_text")
+    omitted = len(result["content"]) - len(text)
+    result["content"] = text
+    return omitted
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--run-id", required=True)
     p.add_argument("--guest-root", default=r"C:\coil\orca-blackbox-v3-r1")
     p.add_argument("--goal-save", action="store_true")
     p.add_argument("--authority-log", type=Path)
+    p.add_argument("--text-only-snapshot", action="store_true")
     from harness.native_matrix import CANVAS_REPLACE_SCENARIOS, GENERALIZATION, UIA_HYBRID_SCENARIOS, scenario_names
-    from harness.native_save_policy import NATIVE_EDIT_OBSERVATION_SCENARIOS
+    from harness.native_save_policy import NATIVE_EDIT_OBSERVATION_SCENARIOS, TEXT_ONLY_SNAPSHOT_SCENARIOS
     p.add_argument("--scenario", choices=scenario_names(), default="base")
     args = p.parse_args()
+    if args.text_only_snapshot and (not args.goal_save or args.authority_log is None
+                                    or args.scenario not in TEXT_ONLY_SNAPSHOT_SCENARIOS):
+        p.error("--text-only-snapshot requires a guarded #276 comparison session")
     transport = GuestHTTP(args.guest_root, args.run_id, deadline=time.monotonic()+900,
                           goal_save=args.goal_save, scenario=args.scenario)
     calls = 0
@@ -266,6 +286,8 @@ def main():
                 changes = inline_canvas_observations(response["result"], size)
                 if changes:
                     sidecar["observation_transcode"] = changes
+                if args.text_only_snapshot and receipt["tool"] == "Snapshot":
+                    sidecar["snapshot_images_omitted"] = omit_snapshot_images(response["result"])
             # Written completely before forwarding this response. The agent has
             # no filesystem tool and cannot create its own authority receipts.
             with args.authority_log.open("a", encoding="utf-8") as stream:

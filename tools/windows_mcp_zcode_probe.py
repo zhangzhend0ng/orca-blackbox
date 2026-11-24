@@ -72,10 +72,14 @@ def main(argv=None):
     from harness.native_matrix import scenario_names, scenario_spec, completed_progress
     parser.add_argument("--scenario", choices=tuple(s for s in scenario_names() if s not in {"canvas_probe", "authority_probe"}), default="base")
     parser.add_argument("--goal-only", action="store_true", help="Omit the guided UI route in a UIA exploration.")
+    parser.add_argument("--text-only-snapshot", action="store_true", help="Omit Snapshot images in goal-only #276 runs.")
     args = parser.parse_args(argv)
     from harness.agent_protocol import MAINTENANCE_TRIALS
+    from harness.native_save_policy import TEXT_ONLY_SNAPSHOT_SCENARIOS
     if args.goal_only and args.scenario not in UIA_HYBRID_SCENARIOS | MAINTENANCE_TRIALS.keys():
         parser.error("--goal-only requires a UIA hybrid scenario")
+    if args.text_only_snapshot and (not args.goal_only or args.scenario not in TEXT_ONLY_SNAPSHOT_SCENARIOS):
+        parser.error("--text-only-snapshot requires --goal-only and a #276 comparison scenario")
     _, disturbance = scenario_spec("zcode", args.scenario)
     from harness.native_pilots import require_pilot_ready
     require_pilot_ready(args.scenario)
@@ -244,6 +248,8 @@ def main(argv=None):
                 "uia_refresh_enabled": args.scenario in UIA_HYBRID_SCENARIOS, "scenario": args.scenario,
                 "mcp_ready_wait_s": 25,
                 "tools": sorted(native_tools(args.scenario))}
+        if args.text_only_snapshot:
+            spec["text_only_snapshot"] = report["text_only_snapshot"] = True
         (root/"spec.json").write_text(json.dumps(spec), encoding="utf-8")
         env, report["proxy_source"] = _child_environment()
         env.update(ZCODE_PERSONAL_PROVIDER_CONFIG_FILE=str(provider),

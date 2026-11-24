@@ -128,6 +128,9 @@ rl.on('line',line=>{
  }
  if(q.method==='runtime/capabilities')result={};
  if(q.method==='session/create'){
+  if(q.params.mcpServers[0].args.includes('--text-only-snapshot')!==(process.env.ZCODE_TEST_TEXT_ONLY==='1')){
+   process.stdout.write(JSON.stringify({id:q.id,error:{code:-32602,message:'Incorrect Snapshot image trial flag'}})+'\n');return;
+  }
   if(q.params.mcpServers[0].timeoutMs!==Number(process.env.ZCODE_TEST_MCP_TIMEOUT)){
    process.stdout.write(JSON.stringify({id:q.id,error:{code:-32602,message:'Incorrect MCP timeout'}})+'\n');return;
   }
@@ -166,12 +169,13 @@ def test_protocol_client_stops_model_drift_and_denies_non_gui_permission(tmp_pat
     monkeypatch.setenv("ZCODE_TEST_FAULT",fault)
     monkeypatch.setenv("ZCODE_TEST_DECISION",str(decision))
     monkeypatch.setenv("ZCODE_TEST_MCP_TIMEOUT", "80000" if comparison else "60000")
+    monkeypatch.setenv("ZCODE_TEST_TEXT_ONLY", "1" if comparison else "0")
     spec=tmp_path/"spec.json"
     config = dict(root=str(tmp_path),bundle=str(server),workspace=str(tmp_path),
                   run_id="a"*32,python="unused",bridge="unused",prompt="probe")
     if comparison:
         config.update(scenario="compare_276_quality", authority_protocol="native-authority-1",
-                      authority_log=str(tmp_path / "authority.ndjson"))
+                      authority_log=str(tmp_path / "authority.ndjson"), text_only_snapshot=True)
     spec.write_text(json.dumps(config))
     driver=Path(__file__).resolve().parents[1]/"tools/zcode_session_driver.mjs"
     result=subprocess.run([node,str(driver),str(spec)],capture_output=True,timeout=15)
