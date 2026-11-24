@@ -1,5 +1,5 @@
 {
-"note": "OCR readings (px, panel-relative: window-left = x 0, window-top = y 0) of the panel shots in shots/ of these names (y >= 670: the tab band and the page), read offline on 2026-11-24 with the ocr binary of ocr.swift 9f36f57b1ab9. Replayed by runner/macos/param_locate_check.py (step 10). Step 13 adds run 075830's op0 page (case-075830-op0-find-page: the row 'First layer' read as 'Firstlayer', its value 35), read the same way.",
+"note": "OCR readings (px, panel-relative: window-left = x 0, window-top = y 0) of the panel shots in shots/ of these names (y >= 670: the tab band and the page), read offline on 2026-11-24 with the ocr binary of ocr.swift 9f36f57b1ab9. Replayed by runner/macos/param_locate_check.py (step 10). Step 13 adds run 075830's op0 page (case-075830-op0-find-page: the row 'First layer' read as 'Firstlayer', its value 35), read the same way. Step 14 adds run 080428's op4 page (case-080428-op4-float-page: the label 'Small perimeters threshold' wrapped over two lines, 757 and 773, its value box painting no number), read the same way.",
 "readings": {
 "case-075830-op0-find-page": [
 {
@@ -1086,6 +1086,176 @@
 "w": 72.0,
 "h": 16.0,
 "text": "C Ironing"
+}
+],
+"case-080428-op4-float-page": [
+{
+"x": 16.0,
+"y": 685.0,
+"w": 118.0,
+"h": 16.0,
+"text": "Quality Strength"
+},
+{
+"x": 144.0,
+"y": 685.0,
+"w": 46.0,
+"h": 15.0,
+"text": "Speed"
+},
+{
+"x": 202.0,
+"y": 683.0,
+"w": 154.0,
+"h": 16.0,
+"text": "Support Multimaterial"
+},
+{
+"x": 370.0,
+"y": 685.0,
+"w": 44.0,
+"h": 12.0,
+"text": "Others"
+},
+{
+"x": 28.0,
+"y": 729.0,
+"w": 110.0,
+"h": 18.0,
+"text": "Small perimeters"
+},
+{
+"x": 28.0,
+"y": 757.0,
+"w": 110.0,
+"h": 18.0,
+"text": "Small perimeters"
+},
+{
+"x": 26.0,
+"y": 773.0,
+"w": 66.0,
+"h": 18.0,
+"text": "threshold"
+},
+{
+"x": 30.0,
+"y": 801.0,
+"w": 74.0,
+"h": 16.0,
+"text": "Sparse infill"
+},
+{
+"x": 26.0,
+"y": 829.0,
+"w": 118.0,
+"h": 16.0,
+"text": "Internal solid infill"
+},
+{
+"x": 28.0,
+"y": 857.0,
+"w": 78.0,
+"h": 16.0,
+"text": "Top surface"
+},
+{
+"x": 30.0,
+"y": 885.0,
+"w": 58.0,
+"h": 17.0,
+"text": "Gap infill"
+},
+{
+"x": 200.0,
+"y": 729.0,
+"w": 32.0,
+"h": 16.0,
+"text": "50%"
+},
+{
+"x": 248.0,
+"y": 731.0,
+"w": 60.0,
+"h": 14.0,
+"text": "mm/s or %"
+},
+{
+"x": 284.0,
+"y": 771.0,
+"w": 24.0,
+"h": 10.0,
+"text": "mm"
+},
+{
+"x": 180.0,
+"y": 798.0,
+"w": 49.0,
+"h": 20.0,
+"text": "5 200"
+},
+{
+"x": 200.0,
+"y": 827.0,
+"w": 28.0,
+"h": 20.0,
+"text": "150"
+},
+{
+"x": 200.0,
+"y": 857.0,
+"w": 28.0,
+"h": 16.0,
+"text": "120"
+},
+{
+"x": 200.0,
+"y": 885.0,
+"w": 20.0,
+"h": 16.0,
+"text": "50"
+},
+{
+"x": 276.0,
+"y": 805.0,
+"w": 32.0,
+"h": 12.0,
+"text": "mm/s"
+},
+{
+"x": 276.0,
+"y": 833.0,
+"w": 32.0,
+"h": 12.0,
+"text": "mm/s"
+},
+{
+"x": 276.0,
+"y": 861.0,
+"w": 32.0,
+"h": 12.0,
+"text": "mm/s"
+},
+{
+"x": 276.0,
+"y": 889.0,
+"w": 32.0,
+"h": 12.0,
+"text": "mm/s"
+},
+{
+"x": 4.0,
+"y": 917.0,
+"w": 136.0,
+"h": 20.0,
+"text": "Vey Overhang speed"
+},
+{
+"x": 30.0,
+"y": 949.0,
+"w": 94.0,
+"h": 14.0,
+"text": "Slow down for"
 }
 ]
 }

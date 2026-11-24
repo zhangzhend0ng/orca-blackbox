@@ -476,6 +476,71 @@ def main():
           and first_hits["^First layer"] == [{"level": "nospace", "row": "Firstlayer"},
                                              {"level": "prefix", "row": "First layer infill"}]
           and refused is not None and "not visible" in refused)
+    # step 14, run 080428 (uia_param_feature_speeds, op 4): the label 'Small perimeters threshold'
+    # is painted over two lines (757 and 773) and its value box, spanning both, paints no number.
+    # On the code before step 14 only 'threshold' hit the second line; the click at its middle
+    # (782, the box's bottom edge) opened nothing on the row, and the next row's editor had the
+    # nearer top. The page is read with its group title above it: the run's scroll chain had
+    # entered the group.
+    def on_wrapped_page():
+        panel = replay("case-080428-op4-float-page")
+        panel.entered = "other layers speed"
+        return panel, panel.read("x")
+
+    both, both_rows = on_wrapped_page()
+    op4 = both.find_row(both_rows, "Other layers speed", ["^Small perimeters threshold", "threshold"])
+    op4_match = {k: both.last_match[k] for k in ("label", "level", "row", "group_by")}
+    op4_hits = {c["label"]: [(h["level"], h["row"]) for h in c["hits"]] for c in both.last_match["candidates"]}
+    op4_values = [t["text"] for t in po.numbered(both.line_values(both_rows, op4))]
+    whole, whole_rows = on_wrapped_page()
+    op4_edit = whole.find_row(whole_rows, "Other layers speed", "Small perimeters threshold")  # the edit's own locate
+    op4_cell = po.float_cell(whole, whole_rows, op4_edit)
+    speed, speed_rows = on_wrapped_page()
+    op5 = speed.find_row(speed_rows, "Other layers speed", "^Small perimeters")
+    op5_values = [t["text"] for t in speed.line_values(speed_rows, op5)]  # the number and its unit
+    op5_numbered = [t["text"] for t in po.numbered(speed.line_values(speed_rows, op5))]
+    tail, tail_rows = on_wrapped_page()
+    tail_row = tail.find_row(tail_rows, "Other layers speed", "threshold")
+    out["step14_wrapped"] = {"op4": op4_match, "hits": op4_hits, "box": {k: round(op4[k]) for k in ("x", "y", "w", "h")},
+                             "lines": op4.get("lines"), "numbered_on_the_row": op4_values,
+                             "edit_locate_level": whole.last_match["level"], "click": [round(op4_cell[0]), round(op4_cell[1]), op4_cell[3]],
+                             "op5": {"row": op5["text"], "y": int(op5["y"]), "h": int(op5["h"]), "wrapped": op5.get("wrapped"),
+                                     "values": op5_values, "numbered": op5_numbered},
+                             "tail_alone": {"y": int(tail_row["y"]), "h": int(tail_row["h"]), "wrapped": tail_row.get("wrapped")}}
+    check("step 14, run 080428's own page: op4 of uia_param_feature_speeds takes 'Small perimeters "
+          "threshold' as one row of both its lines (y 757, h 34; 'threshold' at exact, the whole "
+          "label at wrapped), paints no number on it, and the edit's own locate with the whole label "
+          "reads it back at 'wrapped' and clicks the box's middle (y 774, x 256 by VALUE_X)",
+          op4_match == {"label": "threshold", "level": "exact", "row": "Small perimeters threshold", "group_by": "entered"}
+          and {k: round(op4[k]) for k in ("x", "y", "w", "h")} == {"x": 28, "y": 757, "w": 110, "h": 34}
+          and op4.get("lines") == ["Small perimeters", "threshold"] and op4_values == []
+          and op4_hits["^Small perimeters threshold"] == [("wrapped", "Small perimeters threshold")]
+          and op4_hits["threshold"] == [("exact", "threshold")]
+          and whole.last_match["level"] == "wrapped"
+          and [round(op4_cell[0]), round(op4_cell[1]), op4_cell[3]] == [256, 774, "VALUE_X"])
+    check("step 14 guards: op5's '^Small perimeters' still takes the speed row above (y 729, h 18, "
+          "'50%' and 'mm/s or %'), not the wrapped label's first line, and is not widened; 'threshold' "
+          "alone stays its own second line - a row is widened only when its lines join into one of "
+          "the op's own label candidates",
+          op5["text"] == "Small perimeters" and int(op5["y"]) == 729 and int(op5["h"]) == 18
+          and op5.get("wrapped") is None and op5_values == ["50%", "mm/s or %"] and op5_numbered == ["50%"]
+          and tail_row["text"] == "threshold" and int(tail_row["y"]) == 773 and int(tail_row["h"]) == 18
+          and tail_row.get("wrapped") is None)
+    # the hand-off of param_case.locate (run 144419 stopped at op 4 on it: the whole label was
+    # read from a key the readback does not have)
+    hand, hand_rows = on_wrapped_page()
+    hand.locate_row = lambda tab, group, label, prefix: (hand_rows, hand.find_row(hand_rows, group, label),
+                                                         [], prefix + "-page")
+    op4_handed, op4_found, _ = pc.locate(hand, {"op": "float", "group": "Other layers speed", "value": "10",
+                                                "label": ["^Small perimeters threshold", "threshold"]}, "Speed")
+    op5_handed, op5_found, _ = pc.locate(hand, {"op": "float", "group": "Other layers speed", "value": "50",
+                                                "label": "^Small perimeters"}, "Speed")
+    out["step14_wrapped"]["handed"] = [op4_handed, op5_handed]
+    check("step 14, param_case.locate hands the edit the whole label ('Small perimeters threshold'; the row "
+          "read back as wrapped, both its lines) and op5's '^Small perimeters' as itself",
+          op4_handed == "Small perimeters threshold" and op4_found["readback"]["wrapped"] is True
+          and op4_found["readback"]["lines"] == ["Small perimeters", "threshold"]
+          and op5_handed == "^Small perimeters" and op5_found["readback"]["wrapped"] is False)
     # the op limits (step 10): each op gets min(OP_FUSE, the case's time left before the save)
     now = 1_000_000.0
     at = (50, 160, 270, 381)

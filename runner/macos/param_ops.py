@@ -63,7 +63,7 @@ PANEL_WIDTH = 470  # left settings column, px at scale 1.0
 TITLE_X = 26       # a row label starts right of this offset (group titles are told by their fold glyph)
 GLYPH_X, GLYPH_W = 5, 18  # the fold glyph's strip at the column's left edge, px
 VALUE_X = 253      # value column: numbers, and the faint square of a bool row
-LEVELS = ("exact", "nospace", "prefix", "substring")  # how well a row's text fits a label candidate, best first
+LEVELS = ("exact", "nospace", "wrapped", "prefix", "substring")  # how well a row's text fits a label candidate, best first
 SCROLL_STEPS = 24  # page-scrollbar presses that all of one locate_row's scroll chains share
 VIEW_TOP = 712     # options viewport starts here (window-relative px): tab band + gap
 VIEW_RIGHT = 406   # viewport right edge (window-relative); the 15 px strip beyond is not page
@@ -571,6 +571,12 @@ class Panel:
         as 'Firstlayer', and the prefix hit on 'First layer infill' took that row), else starts
         with it (its value and unit follow: 'Travel 500 mm/s' for 'Travel'), else - unless it
         carries '^' - has it anywhere; exact beats nospace beats prefix beats substring.
+        A label the page wraps over several lines is one row: a candidate hits the last of
+        its lines when the lines join into it ('wrapped', after nospace and before prefix),
+        and the row a candidate took is widened to all those lines whenever they join into
+        one of the candidates (run 080428: 'Small perimeters' over 'threshold' is the label
+        'Small perimeters threshold'; its value box spans both lines, and the click on the
+        second line alone took the next row's editor).
         self.last_match names the
         candidate that hit and what each of them matched, and `group_by` how the group was
         told: 'title' (on the page), or 'entered' (step 11: a scroll chain went through the
@@ -594,31 +600,72 @@ class Panel:
                 end = following["y"] if following else 1e9
                 by = "title"
         inside = [r for r in page if start < r["y"] < end and r["x"] - point.x >= TITLE_X]
+        cands = [label] if isinstance(label, str) else label
         best, seen = [], []
-        for index, cand in enumerate([label] if isinstance(label, str) else label):
+        for index, cand in enumerate(cands):
             wanted, hits = norm(cand), []
             for r in inside:
                 text = norm(r["text"])
                 level = (0 if text == wanted else 1 if text.replace(" ", "") == wanted.replace(" ", "")
-                         else 2 if text.startswith(wanted + " ")
-                         else 3 if not cand.startswith("^") and wanted in text else None)
+                         else 2 if self.wrapped_row(inside, r, [cand]) is not r
+                         else 3 if text.startswith(wanted + " ")
+                         else 4 if not cand.startswith("^") and wanted in text else None)
                 if level is not None:
                     hits.append((level, r["y"], r))
-            seen.append({"label": cand, "hits": [{"level": LEVELS[h[0]], "row": h[2]["text"]}
-                                                 for h in sorted(hits, key=lambda h: h[:2])[:3]]})
+            seen.append({"label": cand, "hits": [{"level": LEVELS[h[0]], "row": self.wrapped_row(
+                inside, h[2], cands)["text"] if h[0] == 2 else h[2]["text"]}
+                for h in sorted(hits, key=lambda h: h[:2])[:3]]})
             if hits:
                 best.append((min(hits, key=lambda h: h[:2]), index))
         require(best, f"Row {label!r} not visible in group {group!r}; page reads: {self.page_text(rows)}")
-        (level, _, row), index = min(best, key=lambda b: (b[0][0], b[1]))
-        self.last_match = {"label": ([label] if isinstance(label, str) else label)[index],
+        (level, _, taken), index = min(best, key=lambda b: (b[0][0], b[1]))
+        row = self.wrapped_row(inside, taken, cands)
+        self.last_match = {"label": cands[index],
                            "level": LEVELS[level], "row": row["text"], "candidates": seen,
                            "group_by": by}
         return row
 
+    def label_stack(self, inside, row):
+        """The lines a wrapped label paints, from `row` upwards: `row`, then every line stacked
+        tightly on the line below it that starts at the same x (lines of one label touch or
+        overlap; separate rows leave 10 px or more: run 080428's page has the speed row end at
+        747, the label's first line start at 757 and its second at 773, over the first's end
+        775)."""
+        stack = [row]
+        while True:
+            top = stack[0]
+            above = [r for r in inside if r["y"] < top["y"] and abs(r["x"] - top["x"]) <= 4
+                     and -top["h"] <= top["y"] - (r["y"] + r["h"]) <= 5]
+            if not above:
+                return stack
+            stack.insert(0, max(above, key=lambda r: r["y"]))
+
+    def wrapped_row(self, inside, row, candidates):
+        """`row` as the whole of a wrapped label when the lines of its stack, from some line down
+        to it, join into one of `candidates` (without '^'); `row` itself otherwise. The widened
+        row spans those lines: its box from the first line's top to the last line's bottom, its
+        text the whole label, `wrapped` and `lines` telling how it was read."""
+        stack = self.label_stack(inside, row)
+        wanted = [norm(cand).lstrip("^") for cand in candidates]
+        for index in range(0, len(stack) - 1):  # the whole stack, then dropping its first line; never the last line alone
+            lines = stack[index:]
+            if norm(" ".join(line["text"] for line in lines)) in wanted:
+                first, last = lines[0], lines[-1]
+                return {"x": first["x"], "y": first["y"], "w": first["w"], "h": last["y"] + last["h"] - first["y"],
+                        "text": " ".join(line["text"] for line in lines), "wrapped": True,
+                        "lines": [line["text"] for line in lines]}
+        return row
+
     def line_values(self, rows, row):
-        """Tokens painted right of `row` on its line, left to right."""
+        """Tokens painted right of `row` on its line, left to right; on any of its lines, for a
+        label wrapped over several (its unit sits between them: 'mm' at y 771 between 757 and
+        791 on run 080428's page)."""
         right = row["x"] + row["w"] - 5
-        return sorted((r for r in rows if abs(r["y"] - row["y"]) <= 10 and r["x"] > right), key=lambda r: r["x"])
+        if row.get("wrapped"):
+            on = lambda r: row["y"] - 2 <= r["y"] <= row["y"] + row["h"] - 2
+        else:
+            on = lambda r: abs(r["y"] - row["y"]) <= 10
+        return sorted((r for r in rows if on(r) and r["x"] > right), key=lambda r: r["x"])
 
     def click_tab(self, name, rows):
         tab = self.locate_tab(rows, name)
@@ -1208,7 +1255,8 @@ def op_find_row(panel, ns):
                          "window_local_center": [round(center[0] - point.x), round(center[1] - point.y)],
                          "box": {k: round(row[k]) for k in ("x", "y", "w", "h")},
                          "value_text": " ".join(v["text"] for v in values), "screenshot": tag + ".png",
-                         "label_candidate": panel.last_match["label"], "match": panel.last_match},
+                         "label_candidate": panel.last_match["label"], "match": panel.last_match,
+                         "wrapped": bool(row.get("wrapped")), "lines": row.get("lines")},
             "evidence": {"notes": note, "page_text": panel.page_text(rows)[:20]}}
 
 
@@ -1242,23 +1290,32 @@ def op_set_float(panel, ns):
     panel.click(gx, gy)
     time.sleep(0.8)
 
+    top, bottom = row["y"], row["y"] + row["h"]  # the row's own band: every line of a wrapped label
+    point = panel.geometry()[0]
+
     def editor():
+        """The value cell's text field: an AXTextField that sits on the row - its box inside or
+        crossing the row's band, 4 px of slack - and of those the one nearest to the click. A
+        field of the row below is never taken: run 080428's click on the second line of a
+        wrapped label (near the bottom of a value box that spans both lines) opened nothing
+        on that row, and the next row's field had the nearer top by the old rule (within 30 px
+        of the click, the least distance)."""
         best = None
         for element in panel.desktop.descendants(panel.window):
             if panel.desktop.text(element, "AXRole") != "AXTextField":
                 continue
-            try:
-                at = panel.desktop.position(element)
-            except RuntimeError:
+            box = panel.desktop.box(element)
+            if not box or not (box[1] < bottom + 4 and box[1] + box[3] > top - 4) or abs(box[1] - gy) > 30:
                 continue
-            if abs(at.y - gy) > 30:
-                continue
-            distance = abs(at.y - gy) * 4 + abs(at.x - gx)
+            distance = abs(box[1] - gy) * 4 + abs(box[0] - gx)
             if best is None or distance < best[0]:
-                best = (distance, element, at)
+                best = (distance, element, box)
         return best
 
-    found = wait_for(editor, "Value-cell editor (AXTextField) did not materialize after the cell click")
+    try:
+        found = wait_for(editor, "Value-cell editor (AXTextField) did not materialize after the cell click")
+    except (TimeoutError, RuntimeError) as error:  # say what the app has on that band instead
+        raise RuntimeError(f"{error} on the row's band y {top:.0f}..{bottom:.0f}; AX on it: {json.dumps(panel.controls_in((point.x, top - 20, PANEL_WIDTH, bottom - top + 44)), ensure_ascii=False)[:1400]}; focused: {brief(panel.focused(), 300)}") from None
     field = found[1]
     help_text = panel.desktop.text(field, "AXHelp") or ""
     # The value of a row that paints no number is read from the control, not the page: the editor's

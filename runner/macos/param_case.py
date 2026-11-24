@@ -129,7 +129,11 @@ def locate(panel, op, tab):
     except (RuntimeError, TimeoutError) as error:
         po.require(False, f"Row not found for any label candidate {candidates} in tab {tab!r}, group "
                           f"{op.get('group')!r}: {po.brief(error, 2500)}")
-    return found["readback"]["label_candidate"], found, found["readback"]["match"]["candidates"]
+    readback = found["readback"]
+    # A label the page wraps over several lines is handed on as the whole label: the edit's
+    # own locate then reads it back to the same lines (level 'wrapped', run 080428's op 4).
+    handed = readback["label"] if readback.get("wrapped") else readback["label_candidate"]
+    return handed, found, readback["match"]["candidates"]
 
 
 def per_op_shots(panel, index):
