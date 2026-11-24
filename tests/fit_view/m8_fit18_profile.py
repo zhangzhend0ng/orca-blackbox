@@ -3,7 +3,7 @@
 Explicit profiling case. The silhouette is a colour proxy. This script reports
 the four margins but cannot certify the product owner's approximate tolerance.
 """
-# feishu: baseline#18
+# feishu: none (timing experiment for baseline 18, not eligible for writeback)
 import argparse
 import hashlib
 import json
@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT), str(ROOT / "tests")]
 from m8a_fit_view import cap, m7, m8, winutil
 from m3_common import add_common_args, boot_session
+from harness import launcher, profile, shot_archive
 
 FIXTURE = ROOT / "fixtures/feishu_std_cube.3mf"
 
@@ -91,13 +92,46 @@ def select_cube(session, row):
     return m7.select_model(session)
 
 
+def boot_when_ready(args, row):
+    # Keep the standard modal sweep. Only replace the hands-off wait *after*
+    # it: explicitly require a rendered target in an enabled maximized canvas.
+    profile.seed_profile(args.datadir, fresh=True)
+    session = launcher.launch(exe=args.exe, datadir=args.datadir, model=FIXTURE, dismiss_wizard=True)
+    try:
+        archive = shot_archive.start_archiver(session, Path(sys.argv[0]).stem)
+        shot_archive.hook_stdout_tee(archive)
+        m7.ensure_maximized(session)
+        deadline = time.monotonic() + 20
+        last_box = None
+        while time.monotonic() < deadline:
+            # GW_ENABLEDPOPUP returns the owner itself when no enabled popup exists.
+            if win32gui.IsWindowEnabled(session.hwnd) and win32gui.GetWindow(session.hwnd, 6) == session.hwnd:
+                try:
+                    found = cube(cap(session), viewport(session))
+                except ValueError:
+                    found = None
+                if found and found["bbox"] == last_box:
+                    row["boot_target"] = last_box
+                    winutil.demote_window(session.hwnd)
+                    return session
+                last_box = found["bbox"] if found else None
+            else:
+                last_box = None
+                launcher.sweep_boot_blockers(session.pid, session.hwnd, budget_s=.25, dismiss_wizard=True)
+            time.sleep(.15)
+        raise ValueError("enabled canvas with stable fixture did not become ready")
+    except BaseException:
+        session.close()
+        raise
+
+
 def observe(session, mode, row):
     with measure(row, "arrival"):
         arrived, _ = m8.wait_arrival(session, timeout_s=35)
         if not arrived:
             raise ValueError("fixture arrival unconfirmed")
     with measure(row, "select"):
-        selected = select_cube(session, row) if mode == "guided_select" else m7.select_model(session)
+        selected = select_cube(session, row) if mode in ("guided_select", "ready_boot") else m7.select_model(session)
         if not selected:
             raise ValueError("object selection unconfirmed")
     with measure(row, "pre_fit"):
@@ -139,14 +173,15 @@ def main(modes=("fixed", "ready"), output_name="fit18_profile.json"):
     args = add_common_args(argparse.ArgumentParser(), default_model=FIXTURE).parse_args()
     if args.model.resolve() != FIXTURE.resolve():
         raise ValueError("profiling contract requires the one-cube fixture")
-    report = {"case": 18, "fixture_sha256": hashlib.sha256(FIXTURE.read_bytes()).hexdigest(), "runs": []}
+    report = {"case": 18, "release_eligible": False, "business_status": "UNVERIFIED",
+              "fixture_sha256": hashlib.sha256(FIXTURE.read_bytes()).hexdigest(), "runs": []}
     for mode in modes:
         row = {"mode": mode, "seconds": {}}
         report["runs"].append(row)
         start = time.perf_counter()
         try:
             with measure(row, "fresh_boot"):
-                session = boot_session(args, model=FIXTURE)
+                session = boot_when_ready(args, row) if mode == "ready_boot" else boot_session(args, model=FIXTURE)
             try:
                 observe(session, mode, row)
             finally:
