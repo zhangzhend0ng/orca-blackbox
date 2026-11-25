@@ -4,7 +4,7 @@
 
 import argparse
 import time
-from ctypes import byref, get_last_error, sizeof
+from ctypes import byref, get_last_error, set_last_error, sizeof
 from ctypes.wintypes import HWND, POINT
 
 import numpy as np
@@ -55,13 +55,22 @@ def request_background_focus(main, chip):
               f"Win32 error={get_last_error()}")
         return None
     try:
-        wu.SetActiveWindow(HWND(main))
-        wu.SetFocus(HWND(chip))
+        before = GUITHREADINFO(cbSize=sizeof(GUITHREADINFO))
+        if not wu.GetGUIThreadInfo(gui_thread, byref(before)):
+            print(f"{LOG} pre-request input queue query failed: Win32 error={get_last_error()}")
+            return None
+        set_last_error(0)
+        previous = wu.SetFocus(HWND(chip))
+        focus_error = get_last_error()
         info = GUITHREADINFO(cbSize=sizeof(GUITHREADINFO))
         if not wu.GetGUIThreadInfo(gui_thread, byref(info)):
             print(f"{LOG} background input queue query failed: Win32 error={get_last_error()}")
             return None
-        return info.hwndActive or 0, info.hwndFocus or 0
+        initial = before.hwndActive or 0, before.hwndFocus or 0
+        observed = info.hwndActive or 0, info.hwndFocus or 0
+        print(f"{LOG} SetFocus({chip:#x}): return={previous:#x}, Win32 error={focus_error}, "
+              f"(active, focus) before={initial!r}, after={observed!r}")
+        return initial, observed
     finally:
         wu.AttachThreadInput(ours, gui_thread, False)
 
@@ -150,7 +159,7 @@ def verify_background_reenabled(session, official_dialog, chip, chip_hwnd):
     keys = request_background_focus(session.hwnd, chip_hwnd)
     detail = (f"same background chip={chip_hwnd:#x}, desktop hit={hit:#x}, "
               f"main foreground={main_foreground}, active/focus={keys!r}")
-    if not main_foreground or keys != (session.hwnd, chip_hwnd):
+    if not main_foreground or not keys or keys[1] != (session.hwnd, chip_hwnd):
         return f"FAIL ({detail})"
     if hit == chip_hwnd:
         route = f"real mouse events={winutil.real_click_screen(*chip)}"
@@ -213,8 +222,10 @@ def main():
         before = {window[3] for window in m8._visible_toplevels(session.pid)}
         owner_blocked = not wu.IsWindowEnabled(session.hwnd)
         keys = request_background_focus(session.hwnd, probe_hwnd) if foreground else None
-        modal_keys = (keys is not None and keys[0] == dlg_hwnd
-                      and (keys[1] == dlg_hwnd or bool(wu.IsChild(dlg_hwnd, keys[1]))))
+        modal_keys = keys is not None and all(
+            active == dlg_hwnd and (focus == dlg_hwnd or bool(wu.IsChild(dlg_hwnd, focus)))
+            for active, focus in keys
+        )
         outside = (contains(winutil.window_rect(session.hwnd), probe)
                    and not contains(dialog[2], probe) and bool(wu.IsChild(session.hwnd, probe_hwnd)))
         hit = winutil.window_from_screen_point(*probe)
