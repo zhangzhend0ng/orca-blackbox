@@ -1,0 +1,7 @@
+# application log of export-profile: the lines with zip, failed, export, filament preset, json add successful (either case),
+# those that say which presets were loaded and which printers are visible, and what each
+# export wrote. Every line keeps the timestamp the application gave it.
+
+## the whole log, as far as it matters here (0 lines)
+
+## export 1: Filament presets(.zip) / Generic PLA (0 lines)

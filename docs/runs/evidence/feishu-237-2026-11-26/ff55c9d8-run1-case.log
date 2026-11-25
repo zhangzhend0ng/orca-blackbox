@@ -1,0 +1,35 @@
+﻿[m7x237] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\run-k728080h
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\run-k728080h\export-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}, "models": [{"vendor": "Snapmaker", "model": "Snapmaker U1", "nozzle_diameter": "0.4"}]}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\run-k728080h\export-profile C:\coil\orca-blackbox-v3-r1\fixtures\feishu_std_cube.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x5da0c76, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x4d80994, WM_CLOSE)
+[launcher] pid=11384 hwnd=0x5fa1134 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.10%)
+[m7x249] started read_export_dialog at 2026-11-25T19:19:04.507805+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x59503fa did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=330) sent, completed=False
+[m7x249] finished read_export_dialog in 13.110s
+[m7x249] started export_1 at 2026-11-25T19:19:17.622213+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x59503fa did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=330) sent, completed=False
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x5960278 did not complete
+[export] Filament presets.zip of kind 'Filament presets(.zip)': 0 bytes in C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\run-k728080h\packages\Filament_presets_.zip_Generic_PLA
+[m7x249] finished export_1 in 35.031s
+[m7x237] gaps {'鐢熸垚閰嶇疆鍖呮枃浠讹紙.ini/.zip锛?: ["Filament presets(.zip)/Generic PLA: the dialog reported 'ae add file fail ai Yes'", "Filament presets(.zip)/Generic PLA: 'Filament presets.zip' is not a readable package: BadZipFile: File is not a zip file"], '閲嶆柊瀵煎叆鍚庨璁惧弬鏁颁笌瀵煎嚭鍓嶄竴鑷?: ['not exercised: no package holding a preset was imported']}
+
+[m7] === verdict ===
+  鐢熸垚閰嶇疆鍖呮枃浠讹紙.ini/.zip锛? FAIL (Filament presets(.zip)/Generic PLA: the dialog reported 'ae add file fail ai Yes'; Filament presets(.zip)/Generic PLA: 'Filament presets.zip' is not a readable package: BadZipFile: File is not a zip file)
+  閲嶆柊瀵煎叆鍚庨璁惧弬鏁颁笌瀵煎嚭鍓嶄竴鑷? FAIL (not exercised: no package holding a preset was imported)
+[m7] RED

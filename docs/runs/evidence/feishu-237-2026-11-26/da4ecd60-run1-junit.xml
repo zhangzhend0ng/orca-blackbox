@@ -1,0 +1,38 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T02:53:35" tests="1" failures="1" errors="0">
+    <testcase name="m7x_237_export_configs" classname="blackbox.m7x_237_export" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_237_export_configs.log" />
+        <property name="dim:鐢熸垚閰嶇疆鍖呮枃浠讹紙.ini/.zip锛? FAIL (&quot;Process presets(.zip)&quot; lists no row in this profile, although 3 custom process presets are on disk; the dialog lists {'Printer config bundle(.orca_printer)'" value="[], 'Filament bundle(.orca_filament)': [{'label': 'Generic PLA', 'box': [788, 701, 806, 719], 'box_class': 'Button'}, {'label': 'Snapmaker PLA Basic', 'box': [939, 701, 957, 719], 'box_class': 'Button" />
+        <property name="dim:閲嶆柊瀵煎叆鍚庨璁惧弬鏁颁笌瀵煎嚭鍓嶄竴鑷? FAIL (not exercised" value="no package holding a preset was imported)" />
+      </properties>
+      <failure type="RED" message="鐢熸垚閰嶇疆鍖呮枃浠讹紙.ini/.zip锛? FAIL (&quot;Process presets(.zip)&quot; lists no row in this profile, although 3 custom process presets are on disk; the dialog lists {'Printer config bundle(.orca_printer)': [], 'Filament bundle(.orca_filament)': [{'label': 'Generic PLA', 'box': [788, 701, 806, 719], 'box_class': 'Button'}, {'label': 'Snapmaker PLA Basic', 'box': [939, 701, 957, 719], 'box_class': 'Button'}], 'Printer presets(.zip)': [], 'Filame); 閲嶆柊瀵煎叆鍚庨璁惧弬鏁颁笌瀵煎嚭鍓嶄竴鑷? FAIL (not exercised: no package holding a preset was imported)">[m7x237] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\run-8cq3748f
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\run-8cq3748f\export-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}, "models": [{"vendor": "Snapmaker", "model": "Snapmaker U1", "nozzle_diameter": "0.4"}]}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\run-8cq3748f\export-profile C:\coil\orca-blackbox-v3-r1\fixtures\feishu_std_cube.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x5aa0320, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x5ad0d62, WM_CLOSE)
+[launcher] pid=11492 hwnd=0x56409ba rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.10%)
+[m7x249] started read_export_dialog at 2026-11-25T18:53:20.733540+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5d5065c did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=330) sent, completed=False
+[m7x249] finished read_export_dialog in 13.094s
+[m7x237] gaps {'鐢熸垚閰嶇疆鍖呮枃浠讹紙.ini/.zip锛?: ['"Process presets(.zip)" lists no row in this profile, although 3 custom process presets are on disk; the dialog lists {\'Printer config bundle(.orca_printer)\': [], \'Filament bundle(.orca_filament)\': [{\'label\': \'Generic PLA\', \'box\': [788, 701, 806, 719], \'box_class\': \'Button\'}, {\'label\': \'Snapmaker PLA Basic\', \'box\': [939, 701, 957, 719], \'box_class\': \'Button\'}], \'Printer presets(.zip)\': [], \'Filament presets(.zip)\': [{\'label\': \'Generic PLA\', \'box\': [788, 708, 806, 726], \'box_class\': \'Button\'}, {\'label\': \'Snapmaker PLA Basic\', \'box\': [939, 708, 957, 726], \'box_class\': \'Button\'}], \'Process presets(.zip)\': []}'], '閲嶆柊瀵煎叆鍚庨璁惧弬鏁颁笌瀵煎嚭鍓嶄竴鑷?: ['not exercised: no package holding a preset was imported']}
+
+[m7] === verdict ===
+  鐢熸垚閰嶇疆鍖呮枃浠讹紙.ini/.zip锛? FAIL ("Process presets(.zip)" lists no row in this profile, although 3 custom process presets are on disk; the dialog lists {'Printer config bundle(.orca_printer)': [], 'Filament bundle(.orca_filament)': [{'label': 'Generic PLA', 'box': [788, 701, 806, 719], 'box_class': 'Button'}, {'label': 'Snapmaker PLA Basic', 'box': [939, 701, 957, 719], 'box_class': 'Button'}], 'Printer presets(.zip)': [], 'Filame)
+  閲嶆柊瀵煎叆鍚庨璁惧弬鏁颁笌瀵煎嚭鍓嶄竴鑷? FAIL (not exercised: no package holding a preset was imported)
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

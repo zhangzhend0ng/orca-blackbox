@@ -1,0 +1,72 @@
+﻿[
+    {
+        "part":  "analysis.json",
+        "bytes":  37342,
+        "sha256":  "713565E562EA19D105C740E262216452BD11B3323E84B454C5304B221F9BD6DC"
+    },
+    {
+        "part":  "app-log.log",
+        "bytes":  545799,
+        "sha256":  "7205A308C6BCFF34B573B5B730B86279B4515707AC356E713DE4D7B958AEA7CD"
+    },
+    {
+        "part":  "bundle-dialog.png",
+        "bytes":  30986,
+        "sha256":  "0E996EA448D158E47DF3666BF3072E16B3942E49575E65BAF0B229415FD1BA76"
+    },
+    {
+        "part":  "bundle-type-1.png",
+        "bytes":  33845,
+        "sha256":  "719461C68F801C11673D860AF701A9F877615687DBCBAB180BF0DA085F87E789"
+    },
+    {
+        "part":  "bundle-type-2.png",
+        "bytes":  35090,
+        "sha256":  "F744EB7EF0D161AC6BDDDA66AD543798A3335E42E4B5F3815C9FD0A9461DC60E"
+    },
+    {
+        "part":  "bundle-type-3.png",
+        "bytes":  35451,
+        "sha256":  "04793342CD66197AF1B14E418FB520A972076860563BA420AE21ED63DA4959F2"
+    },
+    {
+        "part":  "bundle-type-4.png",
+        "bytes":  39382,
+        "sha256":  "64E15B5320741626C9EFA8026E22A3A227293B8E9512346CA305E206E20D8AC5"
+    },
+    {
+        "part":  "bundle-type-5.png",
+        "bytes":  37240,
+        "sha256":  "F226054AD1EA0ED72F5AFC9C43D09EC4C146B38CF8F00DE18E7D1525CF2C8DE2"
+    },
+    {
+        "part":  "directory-dialog.png",
+        "bytes":  45222,
+        "sha256":  "7E519D9B861F64864685AED9AC3A11F0DAC3956638E1A86C030D3DD0D7746643"
+    },
+    {
+        "part":  "export-dialog.png",
+        "bytes":  30872,
+        "sha256":  "4537571E7EED538C8183B2604DC9B9F41C6A75BC41640994CFBAB23956EEA74D"
+    },
+    {
+        "part":  "export-dialog-ticked.png",
+        "bytes":  39533,
+        "sha256":  "49DE1EB6AF9C0398FCBEE29D5D478C643A72563F89C5E57DB0BC8768F4987E1E"
+    },
+    {
+        "part":  "presets-after.json",
+        "bytes":  243,
+        "sha256":  "052E0B21E208ECAFEB32320132FF1374666C4828EAD7777AE22D2AFE7B28BEE0"
+    },
+    {
+        "part":  "presets-before.json",
+        "bytes":  139889,
+        "sha256":  "4AA2A543A61E24AD3566D02ACBB7BD7DB469407B22516573CB39E821B6504B3C"
+    },
+    {
+        "part":  "result-dialog.png",
+        "bytes":  4241,
+        "sha256":  "9E0908142C50AB19970518EFE35572914A4E87EA5B24BE50F837E7CFF7FEFA79"
+    }
+]

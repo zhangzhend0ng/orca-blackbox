@@ -1,0 +1,42 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T03:44:28" tests="1" failures="1" errors="0">
+    <testcase name="m7x_237_export_configs" classname="blackbox.m7x_237_export" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_237_export_configs.log" />
+        <property name="dim:鐢熸垚閰嶇疆鍖呮枃浠讹紙.ini/.zip锛? FAIL (the dialog lists no row to export, although the profile holds custom presets on disk ({'process'" value="3, 'filament': 3, 'machine': 0}); making a user preset through the application failed: ValueError: the Advanced switch of the process page did not turn on; it lists Printer config bundle(.orca_printer" />
+        <property name="dim:閲嶆柊瀵煎叆鍚庨璁惧弬鏁颁笌瀵煎嚭鍓嶄竴鑷? FAIL (not exercised" value="no package holding a preset was imported)" />
+      </properties>
+      <failure type="RED" message="鐢熸垚閰嶇疆鍖呮枃浠讹紙.ini/.zip锛? FAIL (the dialog lists no row to export, although the profile holds custom presets on disk ({'process': 3, 'filament': 3, 'machine': 0}); making a user preset through the application failed: ValueError: the Advanced switch of the process page did not turn on; it lists Printer config bundle(.orca_printer): nothing; Filament bundle(.orca_filament): ['Generic PLA', 'Snapmaker PLA Basic']; Printer presets(.); 閲嶆柊瀵煎叆鍚庨璁惧弬鏁颁笌瀵煎嚭鍓嶄竴鑷? FAIL (not exercised: no package holding a preset was imported)">python.exe : Traceback (most recent call last):
+At C:\coil\run_suite.ps1:35 char:3
++   &amp; "C:\Python311\python.exe" (Case-File $c) 2&gt;&amp;1 | Out-File -FilePat ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\m7x_237_export_configs.py", line 189, in export_session
+    made = save_process_preset(session, SAVED_PRESET, work, analysis)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\coil\orca-blackbox-v3-r1\tests\file_export_cases.py", line 650, in save_process_preset
+    raise ValueError('the Advanced switch of the process page did not turn on')
+ValueError: the Advanced switch of the process page did not turn on
+[m7x249] started filament_reading at 2026-11-25T19:43:51.530728+00:00
+[m7x249] started export_1 at 2026-11-25T19:43:51.530728+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x45204ce did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=330) sent, completed=False
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x21711a8 did not complete
+[export] Filament presets.zip of kind 'Filament presets(.zip)': 0 bytes in C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\run-zdgscg30\packages\Filament_presets_.zip_Generic_PLA\1
+[m7x249] finished export_1 in 34.906s
+[m7x249] finished filament_reading in 35.078s
+[m7x237] gaps {'鐢熸垚閰嶇疆鍖呮枃浠讹紙.ini/.zip锛?: ["the dialog lists no row to export, although the profile holds custom presets on disk ({'process': 3, 'filament': 3, 'machine': 0}); making a user preset through the application failed: ValueError: the Advanced switch of the process page did not turn on; it lists Printer config bundle(.orca_printer): nothing; Filament bundle(.orca_filament): ['Generic PLA', 'Snapmaker PLA Basic']; Printer presets(.zip): nothing; Filament presets(.zip): ['Generic PLA', 'Snapmaker PLA Basic']; Process presets(.zip): nothing"], '閲嶆柊瀵煎叆鍚庨璁惧弬鏁颁笌瀵煎嚭鍓嶄竴鑷?: ['not exercised: no package holding a preset was imported']}
+
+[m7] === verdict ===
+  鐢熸垚閰嶇疆鍖呮枃浠讹紙.ini/.zip锛? FAIL (the dialog lists no row to export, although the profile holds custom presets on disk ({'process': 3, 'filament': 3, 'machine': 0}); making a user preset through the application failed: ValueError: the Advanced switch of the process page did not turn on; it lists Printer config bundle(.orca_printer): nothing; Filament bundle(.orca_filament): ['Generic PLA', 'Snapmaker PLA Basic']; Printer presets(.)
+  閲嶆柊瀵煎叆鍚庨璁惧弬鏁颁笌瀵煎嚭鍓嶄竴鑷? FAIL (not exercised: no package holding a preset was imported)
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>
