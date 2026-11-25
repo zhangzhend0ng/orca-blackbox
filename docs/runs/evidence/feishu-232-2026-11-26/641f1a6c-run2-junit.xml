@@ -1,0 +1,42 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T04:08:20" tests="1" failures="1" errors="0">
+    <testcase name="m7x_232_import_configs" classname="blackbox.m7x_232_import" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_232_import_configs.log" />
+        <property name="dim:瀵煎叆鎴愬姛锛? 涓璁惧嚭鐜板湪瀵瑰簲鍒楄〃涓斿弬鏁版纭? FAIL (2 presets are not in their preset lists" value="['filament/BB Test Filament', 'process/BB Test Process']; the presets were not selected in the sidebar, so the effective values were not compared (ValueError: the printer preset could not be switched " />
+        <property name="dim:鍚屽悕閲嶅鏃舵寜浜у搧鏃㈡湁绛栫暐鎻愮ず锛堣鐩?閲嶅懡鍚嶏級" value="PASS" />
+      </properties>
+      <failure type="RED" message="瀵煎叆鎴愬姛锛? 涓璁惧嚭鐜板湪瀵瑰簲鍒楄〃涓斿弬鏁版纭? FAIL (2 presets are not in their preset lists: ['filament/BB Test Filament', 'process/BB Test Process']; the presets were not selected in the sidebar, so the effective values were not compared (ValueError: the printer preset could not be switched to BB Test Printer))">[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=322) sent, completed=False
+[m7x232] chooser {'title': 'Select profile to load:', 'entered': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\232\\run-ylugny4_\\inputs\\bb_three.zip', 'file': 'bb_three.zip', 'filters': [{'selected': -1, 'items': []}, {'selected': 0, 'items': ['Config files (*.json;*.zip;*.orca_printer;*.orca_filament)']}, {'selected': -1, 'items': []}], 'ini_in_filter': False}
+[m7x232] dialog {'title': 'Import result', 'texts': ['OK', 'htmlWindow'], 'screenshot': 'zip1-dialog-1.png', 'message': 'There are 3 configs imported. (Only non-system and compatible configs) S'}
+[m7x249] finished first_import in 9.593s
+[m7x249] started preset_lists_and_selection at 2026-11-25T20:07:54.390325+00:00
+[m7x232] machine list (2 pages): ['------ Project-inside presets ------', '------ User presets ------', 'BB Test Printer', '------ Select/Remove printers (system presets) ------', '------ Create printer ------']
+[m7x249] finished preset_lists_and_selection in 4.735s
+[m7x249] started second_import at 2026-11-25T20:07:59.203088+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5c70724 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=322) sent, completed=False
+[m7x232] chooser {'title': 'Select profile to load:', 'entered': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\232\\run-ylugny4_\\inputs\\bb_three.zip', 'file': 'bb_three.zip', 'filters': [{'selected': -1, 'items': []}, {'selected': 0, 'items': ['Config files (*.json;*.zip;*.orca_printer;*.orca_filament)']}, {'selected': -1, 'items': []}], 'ini_in_filter': False}
+[m7x232] dialog {'title': 'Overwrite config', 'texts': ['Yes', 'No', 'htmlWindow', 'Yes to All', 'No to All'], 'screenshot': 'zip2-dialog-1.png', 'message': 'A config exists with the same name: BB Test Printer. Do you want to overwrite it? 2 S No Yes to All | | No to All'}
+[m7x232] dialog {'title': 'Overwrite config', 'texts': ['Yes', 'No', 'htmlWindow', 'Yes to All', 'No to All'], 'screenshot': 'zip2-dialog-2.png', 'message': 'A config exists with the same name: BB Test Filament. Do you want to overwrite it? 2 S No Yes to All | | No to All'}
+[m7x232] dialog {'title': 'Overwrite config', 'texts': ['Yes', 'No', 'htmlWindow', 'Yes to All', 'No to All'], 'screenshot': 'zip2-dialog-3.png', 'message': 'A config exists with the same name: BB Test Process. Do you want to overwrite it? 2 S No Yes to All | | No to All'}
+[m7x232] dialog {'title': 'Import result', 'texts': ['OK', 'htmlWindow'], 'screenshot': 'zip2-dialog-4.png', 'message': ''}
+[m7x249] finished second_import in 10.500s
+[m7x249] started verify at 2026-11-25T20:08:19.718074+00:00
+[m7x232] {'瀵煎叆鎴愬姛锛? 涓璁惧嚭鐜板湪瀵瑰簲鍒楄〃涓斿弬鏁版纭?: "FAIL (2 presets are not in their preset lists: ['filament/BB Test Filament', 'process/BB Test Process']; the presets were not selected in the sidebar, so the effective values were not compared (ValueError: the printer preset could not be switched to BB Test Printer))", '鍚屽悕閲嶅鏃舵寜浜у搧鏃㈡湁绛栫暐鎻愮ず锛堣鐩?閲嶅懡鍚嶏級': 'PASS'}
+[m7x249] finished verify in 0.218s
+
+[m7] === verdict ===
+  瀵煎叆鎴愬姛锛? 涓璁惧嚭鐜板湪瀵瑰簲鍒楄〃涓斿弬鏁版纭? FAIL (2 presets are not in their preset lists: ['filament/BB Test Filament', 'process/BB Test Process']; the presets were not selected in the sidebar, so the effective values were not compared (ValueError: the printer preset could not be switched to BB Test Printer))
+  鍚屽悕閲嶅鏃舵寜浜у搧鏃㈡湁绛栫暐鎻愮ず锛堣鐩?閲嶅懡鍚嶏級: PASS
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

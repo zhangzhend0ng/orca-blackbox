@@ -1,0 +1,107 @@
+﻿[
+    {
+        "part":  "analysis.json",
+        "bytes":  61042,
+        "sha256":  "952ED2AFF17C9D44124252A9314A278EA1287B7121F04117E2E330800D5DF9C9"
+    },
+    {
+        "part":  "bb_test_filament.json",
+        "bytes":  5920,
+        "sha256":  "1A64DA2EAC3D73EE3620CB1E67470BE3A3D6981CEAFE2D17A738ADF63FA4A60A"
+    },
+    {
+        "part":  "bb_test_machine.json",
+        "bytes":  13546,
+        "sha256":  "F8855A45AFFDE2732DB3EE39ADE5402DBB65EBB5B3F2329DDC8BE17F3C38AFEE"
+    },
+    {
+        "part":  "bb_test_process.json",
+        "bytes":  4392,
+        "sha256":  "0402A27BD1E147E1C45585352566E512229128836C74E025D9A814D69EC54CF9"
+    },
+    {
+        "part":  "chooser-1.png",
+        "bytes":  53178,
+        "sha256":  "E86DF5032D09D702912018AB98326B6879A4FD8FBEA02FC6DEBFBD7EFB4EF9E3"
+    },
+    {
+        "part":  "chooser-2.png",
+        "bytes":  73424,
+        "sha256":  "A2F1F5F04B0CE99DD3D24F444B0431F876D0AAA61D1D32A5D7C51C7791B92BD6"
+    },
+    {
+        "part":  "chooser-3.png",
+        "bytes":  56885,
+        "sha256":  "7887D524239E7BC29AEE34BE5B2C31600F88F31094E4392FCDDD64B296564DBC"
+    },
+    {
+        "part":  "imported.png",
+        "bytes":  286494,
+        "sha256":  "47967B38951B91E230983F0227EBB97FB7E37824ECC7698BD3656310C580A839"
+    },
+    {
+        "part":  "imported-again.png",
+        "bytes":  286787,
+        "sha256":  "08C1C4AF1CCC226AD129A751AE9A7F2F5B0EE0ECA6EC6637DAAC5AF72B0D4C0E"
+    },
+    {
+        "part":  "ini-dialog-1.png",
+        "bytes":  13445,
+        "sha256":  "E90D5229F2FF93C4233815A0DDE87CFDA535BCA5F72E940F949D55D534C4C094"
+    },
+    {
+        "part":  "machine-list.png",
+        "bytes":  20437,
+        "sha256":  "2BDBEE1AB691C8A1BE0AF1EFA9A2618D4F5C69AC3789B2D18DA1559128563698"
+    },
+    {
+        "part":  "machine-list-2.png",
+        "bytes":  20437,
+        "sha256":  "2BDBEE1AB691C8A1BE0AF1EFA9A2618D4F5C69AC3789B2D18DA1559128563698"
+    },
+    {
+        "part":  "presets-first.json",
+        "bytes":  2355074,
+        "sha256":  "6BD1CC3857269035EA3AB68C2202F92DAC5EC403B96ECD4E22AF9B625FC49D84"
+    },
+    {
+        "part":  "presets-second.json",
+        "bytes":  2355074,
+        "sha256":  "6BD1CC3857269035EA3AB68C2202F92DAC5EC403B96ECD4E22AF9B625FC49D84"
+    },
+    {
+        "part":  "presets-start.json",
+        "bytes":  2317276,
+        "sha256":  "CD4E64875875EE87F4BD47DCFEED8C879DAFCC90E56081EA24813D6734D9AB89"
+    },
+    {
+        "part":  "selection-failed.png",
+        "bytes":  286787,
+        "sha256":  "08C1C4AF1CCC226AD129A751AE9A7F2F5B0EE0ECA6EC6637DAAC5AF72B0D4C0E"
+    },
+    {
+        "part":  "zip1-dialog-1.png",
+        "bytes":  8639,
+        "sha256":  "3DBBBAE66C4F2D753E6A2BFE5B3D5D985D41E7E89B847D721896FC6BAADD9B03"
+    },
+    {
+        "part":  "zip2-dialog-1.png",
+        "bytes":  13862,
+        "sha256":  "A10862C93008E36E426D7C7B17C54E6DC0A4D9AB038A27DB66F4F47A9ED3E975"
+    },
+    {
+        "part":  "zip2-dialog-2.png",
+        "bytes":  13976,
+        "sha256":  "6E156D3DEE6D23214BD4F7FEE2D774D3941F37490ACF5E5A3BF195B348740C3E"
+    },
+    {
+        "part":  "zip2-dialog-3.png",
+        "bytes":  13896,
+        "sha256":  "ACA91AA7E65563401F5E6BD9D56758B498171C9482DD5B937AB5EE253F70F5AF"
+    },
+    {
+        "part":  "zip2-dialog-4.png",
+        "bytes":  8639,
+        "sha256":  "3DBBBAE66C4F2D753E6A2BFE5B3D5D985D41E7E89B847D721896FC6BAADD9B03"
+    }
+]
