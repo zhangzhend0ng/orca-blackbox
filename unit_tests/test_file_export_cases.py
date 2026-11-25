@@ -698,7 +698,7 @@ def ticking(monkeypatch):
 
 
 def test_open_menus_are_closed_with_real_escape_only_while_orca_is_the_foreground(monkeypatch):
-    menus, keys, foreground = [['menu'], ['menu', 'submenu']], [], {'pid': SESSION_PID}
+    menus, keys, posted, foreground = [list(MENU), list(SUBMENU)], [], [], {'pid': SESSION_PID}
 
     def escape(pressed):
         keys.append(pressed)
@@ -707,19 +707,45 @@ def test_open_menus_are_closed_with_real_escape_only_while_orca_is_the_foregroun
         else:
             menus.clear()
 
+    def post(hwnd, message, key, _lparam):
+        posted.append((hwnd, message, key))
+        menus.clear()  # the menu loop takes the posted Escape
+
     monkeypatch.setattr(cases.topbar_util, '_enum_menu_windows', lambda pid: list(menus))
     monkeypatch.setattr(cases.topbar_util, 'close_menu_windows', lambda pid: None)
     monkeypatch.setattr(cases.winutil.user32, 'GetForegroundWindow', lambda: 11)
     monkeypatch.setattr(cases.winutil, '_window_pid', lambda hwnd: foreground['pid'])
     monkeypatch.setattr(cases.m7.mdu, '_send_keys', escape)
+    monkeypatch.setattr(cases.winutil.user32, 'PostMessageW', post)
     ticking(monkeypatch)
     session = SimpleNamespace(pid=SESSION_PID, hwnd=4242)
     assert cases.dismiss_menus(session) is True and keys == [[(0x1B, False), (0x1B, True)]] * 2
+    assert posted == []  # the real keys were enough
     keys.clear()
     assert cases.dismiss_menus(session) is True and keys == []  # nothing was open
-    menus.extend(['menu', 'submenu'])
-    foreground['pid'] = SESSION_PID + 1  # another window has the keyboard: no key is sent
-    assert cases.dismiss_menus(session) is False and keys == []
+    menus.extend([list(MENU), list(SUBMENU)])
+    foreground['pid'] = SESSION_PID + 1  # another window has the keyboard: no real key is sent
+    assert cases.dismiss_menus(session) is True and keys == []
+    assert posted == [(hwnd, message, 0x1B) for hwnd in (501, 502) for message in (0x0100, 0x0101)]
+
+
+MENU = [1, 29, 251, 229, 501]  # the File menu as the guest's final canary listed it, and its Export submenu
+SUBMENU = [245, 170, 521, 330, 502]
+
+
+def test_a_menu_that_ignores_the_posted_escape_too_is_reported_open(monkeypatch):
+    menus, keys, posted = [list(MENU), list(SUBMENU)], [], []
+    monkeypatch.setattr(cases.topbar_util, '_enum_menu_windows', lambda pid: list(menus))
+    monkeypatch.setattr(cases.topbar_util, 'close_menu_windows', lambda pid: None)
+    monkeypatch.setattr(cases.winutil.user32, 'GetForegroundWindow', lambda: 11)
+    monkeypatch.setattr(cases.winutil, '_window_pid', lambda hwnd: SESSION_PID)
+    monkeypatch.setattr(cases.m7.mdu, '_send_keys', lambda pressed: keys.append(pressed))
+    monkeypatch.setattr(cases.winutil.user32, 'PostMessageW',
+                        lambda hwnd, message, key, _lparam: posted.append((hwnd, message, key)))
+    ticking(monkeypatch)
+    assert cases.dismiss_menus(SimpleNamespace(pid=SESSION_PID, hwnd=4242)) is False
+    assert len(keys) == 3 and len(posted) == 6 * 4  # every open menu window, six times over
+    assert {hwnd for hwnd, _message, _key in posted} == {501, 502}
 
 
 def menus_rig(monkeypatch, tmp_path, *, hover_opens=True, key_opens=True, wrong_submenu=False,
@@ -806,6 +832,17 @@ def menus_rig(monkeypatch, tmp_path, *, hover_opens=True, key_opens=True, wrong_
     monkeypatch.setattr(cases.winutil.user32, 'GetCursorPos', cursor_pos)
     monkeypatch.setattr(cases.winutil, '_window_pid', lambda hwnd: SESSION_PID)
     monkeypatch.setattr(cases.m7.mdu, '_send_keys', key)
+
+    def post(hwnd, message, value, _lparam):
+        calls.append(('post', hwnd, value))
+        if state['closes']:  # the menu loop takes a posted Escape the same way
+            if len(state['menus']) > 1 and hwnd == state['menus'][-1]:
+                state['menus'].pop()
+            elif state['menus'] == [hwnd]:
+                state['menus'].clear()
+        return 1
+
+    monkeypatch.setattr(cases.winutil.user32, 'PostMessageW', post)
     monkeypatch.setattr(cases.winutil, 'screen_grab', grab)
     ticking(monkeypatch)
     return calls, state

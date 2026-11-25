@@ -114,18 +114,36 @@ def dismiss_menus(session):
 
     A menu whose submenu opened for the real cursor ignores WM_CANCELMODE (PITFALLS 17.10). It
     closes for real Escape keys, and those go to the foreground window: they are only sent while
-    the application under test is that window. Returns True once no menu is left."""
+    the application under test is that window. A menu that is still open after that is closed by
+    Escape posted to the menu windows themselves: the menu loop reads its own thread's queue,
+    whichever window has the keyboard. (#238's second read, with the submenu open on screen: the
+    real keys did not close the menus on fa706g3 and, once real input reached the guest, three
+    times there on 2026-11-26.) Returns True once no menu is left."""
+    open_menus = topbar_util._enum_menu_windows
     for _attempt in range(3):
-        if not topbar_util._enum_menu_windows(session.pid):
+        if not open_menus(session.pid):
             break
         if winutil._window_pid(winutil.user32.GetForegroundWindow()) == session.pid:
             m7.mdu._send_keys([(0x1B, False), (0x1B, True)])  # VK_ESCAPE
         time.sleep(0.5)
     topbar_util.close_menu_windows(session.pid)
-    deadline = time.monotonic() + 5
-    while topbar_util._enum_menu_windows(session.pid) and time.monotonic() < deadline:
+    if not _menus_gone(session, open_menus, 5):
+        for _attempt in range(6):
+            for found in open_menus(session.pid):
+                winutil.user32.PostMessageW(found[4], winutil.WM_KEYDOWN, 0x1B, 0)
+                winutil.user32.PostMessageW(found[4], winutil.WM_KEYUP, 0x1B, 0)
+            if _menus_gone(session, open_menus, 0.4):
+                print(f'{LOG} the real Escape keys left the menus open; Escape posted to the menu windows closed them',
+                      flush=True)
+                break
+    return not open_menus(session.pid)
+
+
+def _menus_gone(session, open_menus, seconds):
+    deadline = time.monotonic() + seconds
+    while open_menus(session.pid) and time.monotonic() < deadline:
         time.sleep(0.2)
-    return not topbar_util._enum_menu_windows(session.pid)
+    return not open_menus(session.pid)
 
 
 def _row_ink(frame, menu_hwnd, hmenu, index):
