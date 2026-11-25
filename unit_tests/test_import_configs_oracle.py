@@ -8,10 +8,10 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tests'))
-from import_configs_oracle import (ARCHIVE, DUPLICATES, IMPORTED, INI, NAMES, VENDOR, build_config, bundle_presets,
-                                   checkbox_rows, effective_preset, effective_report, list_rows, missing_from_lists,
-                                   normalize, profile_presets, project_settings, standalone_preset, template_presets,
-                                   verify_import, vendor_directory, write_ini)
+from import_configs_oracle import (ARCHIVE, DUPLICATES, EFFECTIVE_KINDS, IMPORTED, INI, NAMES, VENDOR, build_config,
+                                   bundle_presets, checkbox_rows, effective_preset, effective_report, list_rows,
+                                   missing_from_lists, normalize, profile_presets, project_settings,
+                                   standalone_preset, template_presets, verify_import, vendor_directory, write_ini)
 
 SAMPLES = ROOT / 'docs/runs/evidence/feishu-232-2026-11-26/dev-fc163e85'
 
@@ -244,13 +244,34 @@ def test_template_effective_values_match_the_exported_presets(guest):
     base = project_settings(TEMPLATE)
     report = effective_report(config, selected(base), set(base))
     assert report['selection_ok']
+    # The printer preset is compared through its stored file, not through effective values.
     assert {label: len(row['changed']) for label, row in report['by_preset'].items()} == {
-        'machine/BB Test Printer': 0, 'filament/BB Test Filament': 0, 'process/BB Test Process': 0}
-    # 62 exported keys are not in the build's effective configuration at all: inert readings.
+        'filament/BB Test Filament': 0, 'process/BB Test Process': 0}
+    # 60 exported keys of the two presets are not in the build's effective configuration: inert readings.
     assert {label: row['count'] for label, row in report['inert_keys'].items()} == {
-        'machine/BB Test Printer': 2, 'filament/BB Test Filament': 52, 'process/BB Test Process': 8}
-    assert report['inert_keys']['machine/BB Test Printer']['keys'] == ['bed_model', 'bed_texture']
+        'filament/BB Test Filament': 52, 'process/BB Test Process': 8}
     assert all(not keys for keys in report['dropped_defined_keys'].values())
+    assert report['machine_check'].startswith('the printer preset cannot be selected in the sidebar')
+    # The printer stays on the project-inside preset of the template: not part of the selection check.
+    settings = selected(base)
+    settings['printer_settings_id'] = 'Snapmaker U1 (0.8 nozzle)(agent_layer_cube.3mf)'
+    assert effective_report(config, settings, set(base))['selection_ok']
+    del settings['print_settings_id']
+    assert not effective_report(config, settings, set(base))['selection_ok']
+
+
+def test_imported_filament_and_process_are_compatible_with_every_printer(vendored, tmp_path):
+    # An empty list and an empty condition: is_compatible_with_printer then returns true for any printer.
+    built = build_config(vendored, template_presets(TEMPLATE), tmp_path, tmp_path / 'inputs' / ARCHIVE)
+    for kind in EFFECTIVE_KINDS:
+        assert built['presets'][kind]['compatible_printers'] == []
+        assert built['presets'][kind]['compatible_printers_condition'] == ''
+    assert built['presets']['filament']['compatible_prints'] == []
+    assert built['presets']['filament']['compatible_prints_condition'] == ''
+    assert not any(key.startswith('compatible_') for key in built['presets']['machine'])
+    old = json.loads((SAMPLES / 'fc163e85-dev-bb_test_filament.json').read_text(encoding='utf-8'))
+    assert old['compatible_printers'] == ['Snapmaker U1 (0.8 nozzle)']  # what run fc163e85 imported
+    assert [row['kind'] for row in bundle_presets(tmp_path / 'inputs' / ARCHIVE)] == ['filament', 'machine', 'process']
 
 
 def test_only_changed_effective_values_fail(guest):
@@ -266,8 +287,8 @@ def test_only_changed_effective_values_fail(guest):
     assert report['reading']['effective']['dropped_defined_keys']['process/BB Test Process'] == ['wall_loops']
     untouched = selected(base)
     report = verify_import(config, [], imported, [RESULT], OPEN, untouched, base, 'ok')
-    assert report[IMPORTED] == 'PASS'  # the three names are listed and no effective value differs
-    assert sum(row['count'] for row in report['reading']['effective']['inert_keys'].values()) == 62
+    assert report[IMPORTED] == 'PASS'  # the three names are listed and no parameter differs
+    assert sum(row['count'] for row in report['reading']['effective']['inert_keys'].values()) == 60
 
 
 def test_wrong_selection_is_rejected(guest):

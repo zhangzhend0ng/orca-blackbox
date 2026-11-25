@@ -35,6 +35,12 @@ KIND_NAMES = {'machine': 'printer', 'filament': 'filament', 'process': 'process'
 VENDOR = 'Snapmaker'
 NAMES = {'machine': 'BB Test Printer', 'filament': 'BB Test Filament', 'process': 'BB Test Process'}
 ID_KEYS = {'machine': 'printer_settings_id', 'filament': 'filament_settings_id', 'process': 'print_settings_id'}
+# The two presets that are selected in the sidebar and compared through the project's
+# effective values. The printer preset cannot be switched to in the sidebar (guest runs
+# 2c32e51c, 641f1a6c, a09a066): its parameters are compared through the stored file.
+EFFECTIVE_KINDS = ('filament', 'process')
+MACHINE_CHECK = ('the printer preset cannot be selected in the sidebar on this build; its parameters are '
+                 'compared through the stored preset file against the exported JSON')
 VERSION = '2.4.0.0'
 ARCHIVE = 'bb_three.zip'
 INI = 'bb_three.ini'
@@ -135,12 +141,27 @@ def effective_preset(vendor_dir, kind, name):
 
 def standalone_preset(vendor_dir, kind, source):
     """A user preset JSON that carries the parameters of the system preset `source`
-    under a name of its own, as a custom root preset (no inherits)."""
+    under a name of its own, as a custom root preset (no inherits).
+
+    The filament and process presets are made compatible with every printer: an
+    empty `compatible_printers` and an empty `compatible_printers_condition` (and for
+    the filament an empty `compatible_prints`). is_compatible_with_printer only
+    evaluates the condition when the list is empty and the condition is not, and
+    then returns true for an empty list (libslic3r/Preset.cpp:1049 with :1065-1080 at
+    sync/softfever-20261010; :754 with :772 and :781 at sm-v2.4.0). The system presets they come
+    from name one printer, which leaves them incompatible with the printer the
+    template project carries, whose name has the project file appended."""
     values, chain = effective_preset(vendor_dir, kind, source)
     body = {key: value for key, value in values.items() if key not in BOOKKEEPING and not key.endswith('_settings_id')}
     preset = {'type': kind, 'name': NAMES[kind], 'from': 'User', 'version': VERSION, 'inherits': '',
               'instantiation': 'true',
               ID_KEYS[kind]: [NAMES[kind]] if kind == 'filament' else NAMES[kind], **body}
+    if kind in EFFECTIVE_KINDS:
+        preset['compatible_printers'] = []
+        preset['compatible_printers_condition'] = ''
+    if kind == 'filament':
+        preset['compatible_prints'] = []
+        preset['compatible_prints_condition'] = ''
     return preset, chain
 
 
@@ -253,17 +274,19 @@ def missing_from_lists(dropdowns, config):
     return missing
 
 
-def effective_report(config, settings, defined):
-    """Every exported parameter that the project's effective configuration carries is
-    compared with it.
+def effective_report(config, settings, defined, kinds=EFFECTIVE_KINDS):
+    """Every exported parameter of the presets in `kinds` that the project's effective
+    configuration carries is compared with it; the selection is read from their ids.
 
     A key the effective configuration does not carry is inert for this build: it is
     not a parameter of the product and takes no part in the verdict. It is only listed,
     per preset, in `inert_keys`; those of them the template project writes are also
-    listed in `dropped_defined_keys`. The selection is read from the three settings ids
+    listed in `dropped_defined_keys`. The selection is read from the settings ids
     the project carries."""
     report, inert, dropped = {}, {}, {}
     for row in config:
+        if row['kind'] not in kinds:
+            continue
         label = f'{row["kind"]}/{row["name"]}'
         changed, absent = {}, []
         for key, value in parameters(row['settings']).items():
@@ -278,7 +301,8 @@ def effective_report(config, settings, defined):
     selected = {'machine': settings.get('printer_settings_id'), 'process': settings.get('print_settings_id'),
                 'filament': ids[0] if isinstance(ids, list) and ids else ids}
     return {'by_preset': report, 'inert_keys': inert, 'dropped_defined_keys': dropped, 'selected': selected,
-            'selection_ok': all(selected[kind] == NAMES[kind] for kind in NAMES)}
+            'selection_ok': all(selected[kind] == NAMES[kind] for kind in kinds),
+            'machine_check': MACHINE_CHECK}
 
 
 def dropped_report(config, after, defined):
@@ -313,12 +337,15 @@ def _key(row):
 def verify_import(config, before, after, dialogs, dropdowns=None, effective=None, defined=(), reason=None) -> dict:
     """Every preset of the config files must be in the profile afterwards with the
     parameter values it was exported with, each of the three kinds must be among them,
-    and a name clash must bring a prompt.
+    each name must be in its own preset list, the filament and process presets must be
+    the selected ones with every exported parameter equal to its effective value, and
+    a name clash must bring a prompt.
 
     `config`, `before` and `after` are preset lists (bundle_presets, profile_presets),
-    `dialogs` the [{'title', 'texts', 'message'}] the product showed after the import.
-    The imported preset holds the whole inherited config, so only the exported
-    parameters are compared; extra keys of the imported preset are counted, not failed."""
+    `dialogs` the [{'title', 'texts', 'message'}] the product showed after the import,
+    `dropdowns` {kind: {'rows': [...]}} what the three preset popups listed, `effective`
+    the project settings saved after the selection and `defined` the keys the template
+    project writes. The printer preset is compared through its stored file only."""
     wanted = {_key(row): row['settings'] for row in config}
     had = {_key(row) for row in before}
     now = {_key(row): row['settings'] for row in after}

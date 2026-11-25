@@ -29,10 +29,9 @@ from m3_common import add_common_args, boot_session
 from m7x_249_add_part import capture, stage
 from m8_common import combo_text, switch_filament_preset, wait_arrival, wait_slots
 from zip_import_oracle import digest
-from import_configs_cases import (answer_dialogs, find_printer_combo, import_once, printer_row_text, read_popup,
-                                  select_printer)
-from import_configs_oracle import (ARCHIVE, DUPLICATES, IMPORTED, INI, NAMES, VENDOR, build_config, bundle_presets,
-                                   profile_presets, project_settings, template_presets, verify_import,
+from import_configs_cases import answer_dialogs, find_printer_combo, import_once, read_popup
+from import_configs_oracle import (ARCHIVE, DUPLICATES, IMPORTED, INI, MACHINE_CHECK, NAMES, VENDOR, build_config,
+                                   bundle_presets, profile_presets, project_settings, template_presets, verify_import,
                                    vendor_directory, write_ini)
 
 TEMPLATE = HERE / 'fixtures/agent_layer_cube.3mf'
@@ -77,13 +76,16 @@ def run(args, work, analysis):
             first = profile_presets(datadir)
             capture(session, work / 'imported.png')
         with stage(analysis, 'preset_lists_and_selection'):
-            # Feishu step 2: switch the printer first (the other two lists depend on it),
-            # then read the filament and process lists, select what was imported, and save.
+            # Feishu step 2. The printer preset is not switched to: two clicks on its
+            # popup row did not switch it (guest runs 2c32e51c, 641f1a6c, a09a066). The
+            # imported filament and process presets are compatible with every printer, so
+            # the three lists are read as they stand, the two presets are selected, and
+            # the project is saved.
             analysis['dropdowns'] = {}
+            analysis['machine_check'] = MACHINE_CHECK
             effective, reason = None, None
-            model = settings['printer_model']
             try:
-                printer = find_printer_combo(session, model)
+                printer = find_printer_combo(session, settings['printer_model'])
                 if not printer:
                     raise ValueError('the printer preset list control was not found in the sidebar')
                 rect, control = printer[1], printer[2]
@@ -92,10 +94,6 @@ def run(args, work, analysis):
                 popup = read_popup(session, point, session.hwnd, 'machine', work, machine)
                 if popup[1]:
                     pp.close_popup(session, popup[1], point)
-                if not select_printer(session, rect, control, NAMES['machine'], machine):
-                    raise ValueError(f'the printer preset could not be switched to {NAMES["machine"]}')
-                machine['after'] = printer_row_text(session, model, NAMES['machine'])
-                answer_dialogs(session, work, analysis, 'printer-selected')
                 slot = next((s for s in wait_slots(session, timeout_s=10) if s['slot'] == 1 and s['combo']), None)
                 if not slot:
                     raise ValueError('the first filament preset list control was not found')

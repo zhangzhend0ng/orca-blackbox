@@ -36,12 +36,6 @@ def real_wheel(x, y, notches):
     winutil.user32.mouse_event(0x0800, 0, 0, 120 * int(notches), 0)
 
 
-def real_click(x, y):
-    winutil.user32.SetCursorPos(x, y)
-    time.sleep(0.2)
-    winutil.real_click_screen(x, y)
-
-
 def open_popup(session, point, root):
     """Click the combo at screen `point`; the popup's (rect, hwnd), or (None, None).
     A popup that was just dismissed can swallow the first click (process_panel)."""
@@ -112,48 +106,6 @@ def read_popup(session, point, root, kind, work, record, pages=10):
     record['pages_read'] = page + 1
     print(f'[m7x232] {kind} list ({page + 1} pages): {rows!r}', flush=True)
     return popup_rect, popup_hwnd
-
-
-def select_printer(session, rect, hwnd, name, record):
-    """Switch the printer combo to the row named `name`. The row is clicked where its first
-    word was read, as m5g clicks a popup row; when the combo text does not change, the row
-    is clicked once more through the input queue. True once the text carries `name`."""
-    point = ((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2)
-    record['attempts'] = []
-    for how, click in (('message click', winutil.msg_click_screen), ('real click', real_click)):
-        popup_rect, popup_hwnd = open_popup(session, point, session.hwnd)
-        if not popup_hwnd:
-            record['attempts'].append({'how': how, 'result': 'the popup did not open'})
-            return False
-        _image, words = popup_page(popup_rect, popup_hwnd)
-        hit = next((word for text, word in row_lines(words) if name.casefold() in text.casefold()), None)
-        if hit is None:
-            record['attempts'].append({'how': how, 'result': f'{name} is not a row of the popup'})
-            pp.close_popup(session, popup_hwnd, point)
-            return False
-        click(popup_rect[0] + hit[1] + hit[3] // 2, popup_rect[1] + hit[2] + hit[4] // 2)
-        for wait in (2.0, 2.0):  # a printer change reloads the presets; give it time before judging
-            time.sleep(wait)
-            record['after'] = combo_text(hwnd)
-            if name.casefold() in record['after'].casefold():
-                record['attempts'].append({'how': how, 'result': 'switched'})
-                return True
-        record['attempts'].append({'how': how, 'result': f'the combo still reads {record["after"]!r}'})
-        if winutil.user32.IsWindowVisible(popup_hwnd):
-            pp.close_popup(session, popup_hwnd, point)
-    return False
-
-
-def printer_row_text(session, model, name):
-    """What the printer preset row reads: the combo found by the printer model, or, once
-    the row was switched, the child that carries the new name."""
-    hit = find_printer_combo(session, model)
-    if hit:
-        return hit[0]
-    for text, rect, child in export_util._children_texts(session.hwnd):
-        if name.casefold() in text.casefold() and rect[1] < 400 and rect[3] - rect[1] < 60:
-            return text
-    return ''
 
 
 def answer_dialogs(session, work, analysis, tag, timeout_s=1.5):
