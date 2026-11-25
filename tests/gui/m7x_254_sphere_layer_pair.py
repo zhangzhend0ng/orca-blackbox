@@ -11,6 +11,7 @@ import sys
 import tempfile
 import time
 from types import SimpleNamespace
+from zipfile import ZipFile
 
 import cv2
 
@@ -69,9 +70,17 @@ def set_pair(session, current, wanted, edits_log):
     expected = list(current)
     for index, value in enumerate(wanted):
         rect, hwnd, before = fields(session, expected)[index]
-        after = panel.real_edit_set(session, rect, hwnd, value)
-        require(after is not None and Decimal(after) == Decimal(value), f"Edit {index} read {after}")
-        panel.neutralize_focus(session)
+        x, y = (rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2
+        require(winutil.deepest_child_at(session.hwnd, x, y) == hwnd
+                and winutil.window_class(hwnd) == "Edit" and winutil.user32.IsWindowEnabled(hwnd),
+                f"Invalid Quality edit {index}")
+        # Use the same owned native Edit input sequence as BusinessUI.edit.
+        winutil.msg_click_screen(x, y, session.hwnd)
+        winutil._send_msg(hwnd, 0x00B1, 0, -1)  # EM_SETSEL
+        winutil.msg_text(hwnd, value)
+        require(Decimal(winutil.edit_text(hwnd)) == Decimal(value), f"Edit {index} rejected {value}")
+        winutil.msg_text(hwnd, "\r")
+        winutil._send_msg(hwnd, 0x0008, 0, 0)  # WM_KILLFOCUS commits the wx field.
         time.sleep(6)  # The process pane rebuilds after committing a height.
         expected[index] = value
         row = {"field": ["layer_height", "initial_layer_print_height"][index],
@@ -112,6 +121,13 @@ def run(args, work, results, analysis):
         quality(session)
         other = ("0.24", "0.30")
         set_pair(session, TARGET, other, analysis["edits"])
+        control = work / "off-target.3mf"
+        require(m7.save_project_as(session, control, timeout_s=45), "Off-target save failed")
+        with ZipFile(control) as archive:
+            config = json.loads(archive.read("Metadata/project_settings.config"))
+        pair = [config[k] for k in ("layer_height", "initial_layer_print_height")]
+        require(list(map(Decimal, pair)) == list(map(Decimal, other)), f"Off-target save contains {pair}")
+        analysis["off_target_saved"] = pair
         set_pair(session, other, TARGET, analysis["edits"])
         require(m7.save_project_as(session, saved, timeout_s=45), "Edited project save failed")
     finally:
