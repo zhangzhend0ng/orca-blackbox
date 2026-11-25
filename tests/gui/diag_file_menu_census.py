@@ -27,7 +27,7 @@ from m2_slice_chain import click_slice_start, wait_slicing_done
 from m3_common import add_common_args, boot_session
 from m8_common import wait_arrival
 
-PROBED = ('g-code', 'sliced file', 'stl', 'config')
+PROBED = ('g-code', 'sliced file', 'stl', 'config', 'zip', 'generic 3mf', 'preset bundle')
 SKIPPED = ('factory', 'sd card')
 
 
@@ -60,11 +60,28 @@ def descendants(hwnd):
         winutil.user32.GetWindowTextW(child, text, 4096)
         cls = ctypes.create_unicode_buffer(128)
         winutil.user32.GetClassNameW(child, cls, 128)
-        out.append((cls.value, text.value))
+        out.append((cls.value, text.value, child))
         return True
 
     winutil.user32.EnumChildWindows(ctypes.c_void_p(hwnd), callback(visit), 0)
     return out
+
+
+def combobox_items(combobox):
+    """Every list entry of a ComboBox child (CB_GETCOUNT / CB_GETLBTEXT); the selected text is not a window text."""
+    import ctypes.wintypes as wintypes
+
+    user32 = ctypes.WinDLL('user32', use_last_error=True)
+    user32.SendMessageW.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM]
+    user32.SendMessageW.restype = wintypes.LPARAM
+    count = user32.SendMessageW(combobox, 0x0146, 0, 0)
+    items = []
+    for index in range(count):
+        length = user32.SendMessageW(combobox, 0x0149, index, 0)
+        buffer = ctypes.create_unicode_buffer(length + 1)
+        user32.SendMessageW(combobox, 0x0148, index, ctypes.addressof(buffer))
+        items.append(buffer.value)
+    return {'selected': user32.SendMessageW(combobox, 0x0147, 0, 0), 'items': items}
 
 
 def probe_dialog(session, work, via, label, serial):
@@ -77,8 +94,9 @@ def probe_dialog(session, work, via, label, serial):
     _, title, _, hwnd = dialog
     entry['title'] = title
     children = descendants(hwnd)
-    entry['texts'] = [text for _cls, text in children if text]
-    entry['classes'] = sorted({cls for cls, _text in children})
+    entry['texts'] = [text for _cls, text, _child in children if text]
+    entry['classes'] = sorted({cls for cls, _text, _child in children})
+    entry['comboboxes'] = [combobox_items(child) for cls, _text, child in children if cls == 'ComboBox']
     edit = export_util.find_edit(hwnd)
     entry['filename'] = winutil.edit_text(edit, size=1024) if edit else None
     width, height, pixels = winutil.capture_window(hwnd)
