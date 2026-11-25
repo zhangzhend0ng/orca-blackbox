@@ -1,0 +1,52 @@
+﻿[m7x237] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\run-l9r2mrv4
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\run-l9r2mrv4\export-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false, "log_severity_level": "debug"}, "firstguide": {"finish": true}, "models": [{"vendor": "Snapmaker", "model": "Snapmaker U1", "nozzle_diameter": "0.4"}]}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\run-l9r2mrv4\export-profile C:\coil\orca-blackbox-v3-r1\fixtures\feishu_std_cube.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x5ed056c, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x5cf0bbc, WM_CLOSE)
+[launcher] pid=268 hwnd=0x6161106 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.10%)
+[m7x249] started read_export_dialog at 2026-11-25T20:02:59.807496+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5a410a8 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=330) sent, completed=False
+[m7x249] finished read_export_dialog in 13.094s
+[m7x249] started make_user_preset at 2026-11-25T20:03:12.905962+00:00
+[m7x249] finished make_user_preset in 3.281s
+python.exe : Traceback (most recent call last):
+At C:\coil\run_suite.ps1:35 char:3
++   & "C:\Python311\python.exe" (Case-File $c) 2>&1 | Out-File -FilePat ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\m7x_237_export_configs.py", line 189, in export_session
+    made = save_process_preset(session, SAVED_PRESET, work, analysis)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\coil\orca-blackbox-v3-r1\tests\file_export_cases.py", line 714, in save_process_preset
+    raise ValueError('the Advanced switch of the process page did not turn on')
+ValueError: the Advanced switch of the process page did not turn on
+[m7x249] started filament_reading at 2026-11-25T20:03:16.191410+00:00
+[m7x249] started export_1 at 2026-11-25T20:03:16.193407+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5a410a8 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=330) sent, completed=False
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x5df0574 did not complete
+[export] Filament presets.zip of kind 'Filament presets(.zip)': 0 bytes in C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\run-l9r2mrv4\packages\Filament_presets_.zip_Generic_PLA\1
+[m7x249] finished export_1 in 34.734s
+[m7x249] finished filament_reading in 34.891s
+[m7x237] gaps {'鐢熸垚閰嶇疆鍖呮枃浠讹紙.ini/.zip锛?: ['"Process presets(.zip)" lists no row; the application loaded none of the 3 process presets the harness seeds (its log: "can not find parent for config"); the filament name "Generic PLA" exported with "ae add file fail ai Yes", left a 0-byte zip, the log could not add Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).json; making a user preset through the application failed: ValueError: the Advanced switch of the process page did not turn on; it lists Printer config bundle(.orca_printer): nothing; Filament bundle(.orca_filament): [\'Generic PLA\', \'Snapmaker PLA Basic\']; Printer presets(.zip): nothing; Filament presets(.zip): [\'Generic PLA\', \'Snapmaker PLA Basic\']; Process presets(.zip): nothing'], '閲嶆柊瀵煎叆鍚庨璁惧弬鏁颁笌瀵煎嚭鍓嶄竴鑷?: ['not exercised: no package holding a preset was imported']}
+
+[m7] === verdict ===
+  鐢熸垚閰嶇疆鍖呮枃浠讹紙.ini/.zip锛? FAIL ("Process presets(.zip)" lists no row; the application loaded none of the 3 process presets the harness seeds (its log: "can not find parent for config"); the filament name "Generic PLA" exported with "ae add file fail ai Yes", left a 0-byte zip, the log could not add Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).json; making a user preset through the application failed: ValueError: the Advanced )
+  閲嶆柊瀵煎叆鍚庨璁惧弬鏁颁笌瀵煎嚭鍓嶄竴鑷? FAIL (not exercised: no package holding a preset was imported)
+[m7] RED
