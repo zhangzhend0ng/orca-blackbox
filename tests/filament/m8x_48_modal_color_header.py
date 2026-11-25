@@ -4,10 +4,13 @@
 
 import argparse
 import time
+from ctypes import byref
+from ctypes.wintypes import POINT
 
 import numpy as np
 
-from m8b_official_color import MIXED_3MF, add_common_args, boot_session, click_cancel, m7, m8
+from m8b_official_color import (MIXED_3MF, add_common_args, boot_session, click_cancel,
+                                is_native_picker, m7, m8, read_rgb)
 from harness import export_util, winutil
 
 LOG = "[m8x48]"
@@ -28,6 +31,25 @@ def contains(rect, point):
     return x0 <= x < x1 and y0 <= y < y1
 
 
+def preview_pixels(hwnd, rect):
+    """Capture the dialog client independently of desktop foreground changes."""
+    x0, y0, x1, y1 = rect
+    try:
+        width, height, raw = winutil.capture_window(hwnd)
+    except winutil.CaptureError as exc:
+        print(f"{LOG} dialog client capture failed: {exc}")
+    else:
+        ox, oy = winutil.client_to_screen(hwnd, 0, 0)
+        pixels = np.frombuffer(raw, dtype=np.uint8).reshape(height, width, 4)
+        yield "dialog client", pixels[max(0, y0 - oy):y1 - oy, max(0, x0 - ox):x1 - ox, :3]
+
+    # After an outside click the VM may activate another process. Only use
+    # the desktop surface after the same dialog has visibly regained focus.
+    if winutil.force_set_foreground(hwnd):
+        time.sleep(0.2)
+        yield "foreground desktop", m8._screen_crop(*rect)
+
+
 def verify_header(dialog):
     """Read the visible labels and the preview colors above the swatch list."""
     children = [
@@ -39,7 +61,7 @@ def verify_header(dialog):
     name = rows.get(NAME.casefold())
     sku = rows.get(SKU)
     marker = rows.get("official filaments")
-    print(f"{LOG} visible dialog labels={children!r}")
+    print(f"{LOG} visible dialog labels={[(text, rect) for text, rect in children if text != 'panel']!r}")
     if not (name and sku and marker):
         return "FAIL (the official color name, SKU or swatch-list label is missing)"
 
@@ -61,15 +83,50 @@ def verify_header(dialog):
     x0, y0, x1, y1 = card_rect
     if x1 <= x0 or y1 <= y0:
         return f"FAIL (invalid preview area {card_rect})"
-    image = m8._screen_crop(*card_rect)
-    if image.size == 0:
-        return f"FAIL (preview area outside the desktop: {card_rect})"
-    pixels = image.astype(np.int16)
-    shares = tuple(float((np.abs(pixels - color).max(axis=2) <= 16).mean())
-                   for color in CARD_BGR)
-    detail = (f"name={NAME!r} at {name}, {SKU!r} at {sku}, preview={card_rect}, "
-              f"catalog pixel shares={tuple(round(v, 3) for v in shares)}")
-    return f"{'PASS' if min(shares) >= 0.08 else 'FAIL'} ({detail})"
+    detail = f"name={NAME!r} at {name}, {SKU!r} at {sku}, preview={card_rect}"
+    for surface, image in preview_pixels(dialog[3], card_rect):
+        if not image.size:
+            continue
+        pixels = image.astype(np.int16)
+        shares = tuple(float((np.abs(pixels - color).max(axis=2) <= 16).mean())
+                       for color in CARD_BGR)
+        evidence = f"surface={surface}, catalog pixel shares={tuple(round(v, 3) for v in shares)}"
+        print(f"{LOG} {evidence}")
+        if min(shares) >= 0.08:
+            return f"PASS ({detail}, {evidence})"
+    return f"FAIL ({detail}, official card colors not found)"
+
+
+def verify_background_reenabled(session, official_dialog, chip, chip_hwnd):
+    """After Cancel the same background chip can open its own color picker."""
+    wu = winutil.user32
+    clicked = click_cancel(official_dialog)
+    closed = not wu.IsWindowVisible(official_dialog[3])
+    enabled = bool(wu.IsWindowEnabled(session.hwnd))
+    same_chip = (winutil.deepest_child_at(session.hwnd, *chip) == chip_hwnd
+                 and winutil.window_title(chip_hwnd).strip() == "1")
+    print(f"{LOG} after Cancel: clicked={clicked}, closed={closed}, owner enabled={enabled}, "
+          f"same chip={same_chip}")
+    if not (clicked and closed and enabled and same_chip):
+        return "FAIL (official dialog did not return control to the same background chip)"
+
+    winutil.force_set_foreground(session.hwnd)
+    hit = winutil.window_from_screen_point(*chip)
+    print(f"{LOG} enabled background at {chip}: desktop hit={hit:#x}, chip={chip_hwnd:#x}")
+    if hit == chip_hwnd:
+        route = "real mouse"
+        winutil.real_click_screen(*chip)
+    else:
+        route = "Orca window tree"
+        winutil.msg_click_screen(*chip, session.hwnd)
+
+    picker = export_util.wait_toplevel(session.pid, lambda c, t, r: c == "#32770", timeout_s=6.0)
+    native = picker and is_native_picker(picker)
+    rgb = read_rgb(session, picker) if native else None
+    if native:
+        click_cancel(picker)
+    detail = f"same background chip={chip_hwnd:#x}, click={route}, native picker RGB={rgb!r}"
+    return f"{'PASS' if rgb == ('217', '166', '58') else 'FAIL'} ({detail})"
 
 
 def main():
@@ -101,6 +158,8 @@ def main():
             return m7.m7_verdict({"#48 fixture controls available": "FAIL"})
 
         winutil.force_set_foreground(session.hwnd)
+        print(f"{LOG} enabled background desktop hit={winutil.window_from_screen_point(*probe):#x}, "
+              f"Orca chip={probe_hwnd:#x}")
         winutil.msg_click_screen(*opener, session.hwnd)
         dialog = m8.official_color_popup(session, timeout_s=8.0)
         if dialog is None:
@@ -112,27 +171,36 @@ def main():
         foreground = winutil.force_set_foreground(dlg_hwnd)
         before = {window[3] for window in m8._visible_toplevels(session.pid)}
         owner_blocked = not wu.IsWindowEnabled(session.hwnd)
-        outside = not contains(dialog[2], probe)
+        outside = (contains(winutil.window_rect(session.hwnd), probe)
+                   and not contains(dialog[2], probe) and bool(wu.IsChild(session.hwnd, probe_hwnd)))
+        hit = winutil.window_from_screen_point(*probe)
         sent = winutil.real_click_screen(*probe) if outside else 0
         time.sleep(0.8)
         after = {window[3] for window in m8._visible_toplevels(session.pid)}
         remained = dlg_hwnd in after
         still_blocked = not wu.IsWindowEnabled(session.hwnd)
-        restored = wu.GetForegroundWindow() == dlg_hwnd
+        active = wu.GetForegroundWindow()
+        active_pid = winutil._window_pid(active) if active else None
+        cursor = POINT()
+        cursor_on_chip = (wu.GetCursorPos(byref(cursor))
+                          and contains(background["swatch"], (cursor.x, cursor.y)))
+        same_preset = winutil.window_title(background["combo"][2]).strip() == background["combo"][0]
+        other_orca_foreground = active_pid == session.pid and active != dlg_hwnd
         detail = (f"outside={outside}, real mouse events={sent}, foreground before={foreground}, "
-                  f"dialog foreground after={restored}, same dialog visible={remained}, "
+                  f"cursor={(cursor.x, cursor.y)}, desktop hit={hit:#x}, foreground after={active:#x} "
+                  f"(pid={active_pid}, dialog={dlg_hwnd:#x}), same dialog visible={remained}, "
                   f"owner disabled before/after={owner_blocked}/{still_blocked}, "
-                  f"new Orca windows={len(after - before)}")
-        passed = (outside and sent == 2 and foreground and restored and remained
-                  and owner_blocked and still_blocked and not (after - before))
+                  f"same background preset={same_preset}, new Orca windows={len(after - before)}")
+        passed = (outside and sent == 2 and foreground and cursor_on_chip and remained
+                  and owner_blocked and still_blocked and same_preset
+                  and not other_orca_foreground and not (after - before))
         results["#48 modal dialog blocks background chip"] = (
             f"{'PASS' if passed else 'FAIL'} ({detail})")
         results["#48 header has color card, name and SKU"] = (
             verify_header(dialog) if remained else "FAIL (dialog closed before header read)")
-        if remained:
-            click_cancel(dialog)
-            print(f"{LOG} cleanup: dialog visible={bool(wu.IsWindowVisible(dlg_hwnd))}, "
-                  f"owner enabled={bool(wu.IsWindowEnabled(session.hwnd))}")
+        results["#48 same background chip works after Cancel"] = (
+            verify_background_reenabled(session, dialog, probe, probe_hwnd)
+            if remained else "FAIL (dialog closed during the outside click)")
         return m7.m7_verdict(results)
     finally:
         session.close()
