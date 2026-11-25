@@ -14,6 +14,7 @@ from types import SimpleNamespace
 from zipfile import ZipFile
 
 import cv2
+import numpy as np
 
 HERE = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(HERE))
@@ -23,6 +24,7 @@ from harness import anchors, process_panel as panel, winutil
 from harness.agent_protocol import MODEL_FIXTURES
 from harness.pilot_param_layer_pair import verify_business
 from m3_common import add_common_args, boot_session
+from m7x_249_add_part import stage as measure_stage
 from m7x_250_negative_part import slice_and_export
 from m8_common import wait_arrival
 from harness.model_move_pilot import geometry_unchanged
@@ -110,11 +112,13 @@ def slice_project(args, work, project, stage, results, analysis):
 def run(args, work, results, analysis):
     original = args.model.read_bytes()
     require(hashlib.sha256(original).hexdigest() == MODEL_FIXTURES["_sphere"][1], "Wrong sphere fixture")
-    baseline = work / "default.3mf"
-    baseline.write_bytes(original)
-    slice_project(args, work, baseline, "baseline", results, analysis)
-    source = work / "edit-source.3mf"
+    # Orca appends the opened filename to its embedded preset IDs. Use the
+    # canonical filename that the preserved-settings verifier recognizes.
+    source = work / "fixture.3mf"
     source.write_bytes(original)
+    with measure_stage(analysis, "baseline_reopen_slice_export"):
+        slice_project(args, work, source, "baseline", results, analysis)
+    require(source.read_bytes() == original, "Baseline changed the source project")
     saved = work / "sphere-edited.3mf"
     session = load_sphere(args, work, "editor-profile", source)
     try:
@@ -134,8 +138,17 @@ def run(args, work, results, analysis):
         session.close()
     edited = saved.read_bytes()
     require(geometry_unchanged(edited, original), "Sphere mesh or placement changed")
-    slice_project(args, work, saved, "target", results, analysis)
+    with measure_stage(analysis, "target_reopen_slice_export"):
+        slice_project(args, work, saved, "target", results, analysis)
     require(saved.read_bytes() == edited, "Reopen modified the edited project")
+    masks = []
+    for name in ("baseline", "target"):
+        frame = cv2.imread(str(work / (name + "-preview.png")))
+        masks.append(np.ptp(anchors.viewport_crop(frame), axis=2) > anchors.SPREAD_COLORED)
+    common, either = np.logical_and(*masks).sum(), np.logical_or(*masks).sum()
+    overlap = float(common / either) if either else 0
+    analysis["colored_preview_overlap"] = overlap
+    require(overlap >= 0.9, f"Colored Preview paths no longer agree ({overlap:.1%})")
     for stage, model in (("baseline", original), ("target", edited)):
         analysis[stage] = verify_business(model, original, (work / (stage + ".gcode")).read_bytes())
     keys = ("layer_count", "first_z", "last_z", "layer_height", "initial_layer_print_height")
@@ -150,7 +163,7 @@ def main():
     work = Path(tempfile.mkdtemp(prefix="run-", dir=root))
     print(f"[m7x254] retained work directory: {work}", flush=True)
     results = {}
-    analysis = {"edits": []}
+    analysis = {"edits": [], "timings": {}}
     try:
         run(args, work, results, analysis)
     except Exception as error:
