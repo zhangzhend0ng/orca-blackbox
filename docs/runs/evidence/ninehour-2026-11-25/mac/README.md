@@ -41,3 +41,22 @@ coil 的控制台会话由它的用户解锁。解锁后可以先检查（命令
 | `probe_other1.log`、`probe_other2.log` | 两次不带应用启动的探针：同一会话里其它应用的 AX 窗口 |
 | `console_sessions_0342.json` | 03:42 的控制台会话列表（coil 锁屏，coilwin 不在控制台） |
 | `mac_probe6_baseline2.png` | probe6 的截图，本目录唯一的一张 |
+
+## 09:57 解锁之后的三次运行（追加于窗口结束前）
+
+控制台会话在 09:57 的复查里已经解锁（`IOConsoleLocked = No`）。下面三次都停在比启动更晚的位置，上面的锁屏阻塞不再出现。
+
+| 文件 | 内容 |
+|---|---|
+| `result_af903eb963c64ed4a777bedca5f05fe7.json`、`result_681c990797e149b381f96dc999d052c6.json` | 两次正式运行（提交 `6fc59b2`，候选标签 `ninehour1125-walls-2`、`-3`）。都是 NON_GREEN，`failure_stage` 是 `baseline.wall`；`guest.phases.baseline` 记有 PID、窗口标题 `baseline` 和读到的层高 0.4/0.4 |
+| `walls_af903eb9_strength_tab.png` | 第一次失败时的整屏截图，页签行清晰可见 |
+| `strength-tab-merged-line.candidate.patch` | 候选补丁：页签行被 OCR 合并时，用只含 Strength 的窄裁剪再读一次。只在草稿副本上跑过，没有合入 |
+| `candidate-8f8efa35-report.json` | 候选探针的 worker 报告：基线读到壁环数 2，编辑后读到 3 并保存副本，基线切片回执在，重开后停在 `reopen.wall` |
+| `ledger.txt` | Mac 上的起始时刻表，含这三次 |
+
+失败签名：
+
+- 两次正式运行：`RuntimeError: Strength tab label not found by OCR`。在那张截图上手工运行同一个 OCR（`swift ocr.swift <png> 360 700 460 190`，1 秒返回）得到 `376,764,132,18  Quality Strength`，两个页签是一个文本框；`go_strength` 要求某一行的小写恰好是 `strength`。
+- 候选探针：`TimeoutError: Strength wall-loops OCR value mismatch in reopen`。页签在基线和编辑两个阶段都是经窄裁剪读到的（坐标 448,764，宽 59），重开阶段读壁环数值时没有在限时内读到 3，原因没有查。
+
+没有做的事：没有改仓库里的 Mac 驱动，没有重试第三次。10:12 的状态：测试账号下没有 worker 和测试应用进程，控制台未锁。

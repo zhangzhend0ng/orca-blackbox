@@ -1,0 +1,15 @@
+--- a/runner/macos/project_copy.py
++++ b/runner/macos/project_copy.py
+@@ -241,6 +241,12 @@
+     # candidates (the 03f21d11 "No Strength tab candidate" blocker). OCR names it.
+     rows = screen_ocr("strength-tab", (360, 700, 460, 190))
+     band = [r for r in rows if r["text"].lower() == "strength" and 750 <= r["y"] <= 790]
++    if not band:
++        # Vision can box "Quality" and "Strength" as one line (run af903eb9);
++        # read the label alone from a crop that holds only that tab.
++        rows = screen_ocr("strength-tab", (440, 748, 71, 44))
++        print("[probe] merged tab line; narrow crop rows: %r" % (rows,), flush=True)
++        band = [r for r in rows if r["text"].lower() == "strength" and 750 <= r["y"] <= 790]
+     require(band, "Strength tab label not found by OCR")
+     tab = band[0]
+     desktop.click_point(pid, root, window, title, tab["x"] + tab["w"] / 2 - origin.x,

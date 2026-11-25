@@ -126,6 +126,8 @@
 
 Mac 线没有走通。壁环数 2→3 的首次运行是 NON_GREEN（run `5bb1a766`，只见于 `findings-sheet.md`，宿主上没有收割件），随后的 8 次探针（01:42–02:21）都停在这个阻塞上。阻塞是前台账号 coil 的控制台会话自 2026‑11‑24 19:25:27 起锁屏：测试会话仍受信，窗口服务器也列得出 179 个窗口，但这个会话里每个应用（测试 Orca、Finder、Safari、iTerm2、UURemote）的 `AXWindows`、`AXMainWindow` 都返回一个标题为应用名、自指的 `AXApplication` 节点，工作器等不到带工程标题的窗口，报 `Named project window did not open`。截图里测试实例在渲染，工程已装进窗口，所以不是应用的问题。到 08:20 的最后一次检查，控制台会话仍然锁着。07:51 清掉了探针的暂存目录（今晚建的 9 个 `orca-bb-copy.*` 工作目录和 Mac 上的 `/tmp/ninehour_mac`），测试账号下没有留下测试应用的进程，coil 自己的 Orca（pid 69507）没有被碰过，Mac 的 checkout 还在 `636a733`，第二次推送之后才移到最终提交。这几条是总控的说明，没有对应的文件。恢复条件不变：coil 的控制台会话由它的用户解锁；证据和两次不算数的探针见 [mac/README.md](evidence/ninehour-2026-11-25/mac/README.md)。
 
+09:57 再查时控制台会话已经解锁（`IOConsoleLocked = No`，coil 仍在控制台，几分钟前还有键鼠输入；coil 自己的 Orca 进程此时已经不在，不是被碰掉的）。窗口结束前又跑了三次，都停在比启动更晚的位置，所以锁屏确实是整晚读不到窗口的原因；解锁这件事没有事先安排，这一条只有那一次复查的输出为证。两次正式运行（`af903eb9`、`681c9907`，提交 `6fc59b2`）都是 NON_GREEN：启动、找到工程窗口、读到层高 0.4/0.4 都通过了，停在 `baseline.wall`，报 `Strength tab label not found by OCR`。失败时的截图里页签清晰可见；在那张截图上手工跑同一个 OCR，它把相邻的 `Quality` 和 `Strength` 框成了一行（`Quality Strength`），而脚本要求有一行恰好等于 `strength`。第三次是草稿副本上的候选探针（run `8f8efa35`，不入库、不计评级）：页签被合并时改用只含该页签的窄裁剪再读一次，于是基线读到壁环数 2、编辑后读到 3 并以 `wall-3-copy` 保存、基线切片回执在，独立进程重开副本后停在 `reopen.wall`，报 `Strength wall-loops OCR value mismatch in reopen`。候选补丁没有合入。下一轮从这两处 OCR 读回改起（`runner/macos/project_copy.py` 的 `go_strength` 和 `ocr_wall_read`），改完先跑 walls，再跑 layer 和错值对照。两次运行和候选探针的报告、那张截图和候选补丁在 `mac/` 里。
+
 ## 判据复核与反例
 
 **今晚没有改任何判据。** 任务要求保持原判据，分别写出保存了什么、切片证明了什么、哪项尚未验证。`636a733..2a17376` 之间（`62cddee` 的引擎与它相同）`harness/param_comparison.py`、`harness/native_pilots.py`、`harness/native_save_session.py` 没有改动，`harness/pilot_param_264_overhang_speeds.py` 只改了 7 行注释；合并的提交是计时、等待方式、滚轮、注释、收据工具和那一处停滞路径的修正。

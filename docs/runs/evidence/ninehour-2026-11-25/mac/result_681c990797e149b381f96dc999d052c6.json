@@ -1,0 +1,43 @@
+{
+  "run_id": "681c990797e149b381f96dc999d052c6",
+  "verdict": "NON_GREEN",
+  "candidate": "ninehour1125-walls-3",
+  "goal": "walls",
+  "test_kind": "walls_comparison",
+  "started_at": "2026-11-25T02:00:25.716476+00:00",
+  "slices": {},
+  "native_save_as": "NOT_TESTED",
+  "gui_gcode_export": "NOT_TESTED",
+  "guest": {
+    "ok": false,
+    "failure_stage": "baseline.wall",
+    "run_id": "681c990797e149b381f96dc999d052c6",
+    "console_uid": 501,
+    "test_uid": 502,
+    "source_before": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+    "phases": {
+      "baseline": {
+        "pid": 68630,
+        "window": "baseline",
+        "layers": [
+          "0.4",
+          "0.4"
+        ]
+      }
+    },
+    "slice_receipts": {},
+    "sut": {
+      "version": "2.4.1",
+      "build": "sha256:a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd",
+      "bundle_build": "",
+      "build_source": "executable_sha256",
+      "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+    },
+    "error": "Traceback (most recent call last):\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.l58HOKWl/project_copy.py\", line 462, in run_worker\n    worker(report)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.l58HOKWl/project_copy.py\", line 418, in worker\n    go_strength(desktop, pid, root, window, origin, title)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.l58HOKWl/project_copy.py\", line 244, in go_strength\n    require(band, \"Strength tab label not found by OCR\")\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.l58HOKWl/project_copy.py\", line 38, in require\n    raise RuntimeError(message)\nRuntimeError: Strength tab label not found by OCR\n",
+    "cleanup_verified": true,
+    "remote_evidence": "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.l58HOKWl"
+  },
+  "failure_stage": "baseline.wall",
+  "error": "Traceback (most recent call last):\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.l58HOKWl/project_copy.py\", line 462, in run_worker\n    worker(report)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.l58HOKWl/project_copy.py\", line 418, in worker\n    go_strength(desktop, pid, root, window, origin, title)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.l58HOKWl/project_copy.py\", line 244, in go_strength\n    require(band, \"Strength tab label not found by OCR\")\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.l58HOKWl/project_copy.py\", line 38, in require\n    raise RuntimeError(message)\nRuntimeError: Strength tab label not found by OCR\n",
+  "finished_at": "2026-11-25T02:01:06.410981+00:00"
+}

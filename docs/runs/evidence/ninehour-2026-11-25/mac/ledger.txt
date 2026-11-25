@@ -7,3 +7,6 @@ probe5 start=02:05:28 head=636a733 repo_status=[]
 probe6 start=02:14:30 head=636a733 repo_status=[]
 probe-other start=02:20:31 (no app launch)
 probe-other2 start=02:21:26 (no app launch)
+walls2 start=09:58:08 head=6fc59b2 goal=walls candidate=ninehour1125-walls-2 console=unlocked
+walls3 start=10:00:25 head=6fc59b2 goal=walls candidate=ninehour1125-walls-3 console=unlocked
+probe-fix start=10:04:36 head=6fc59b2 goal=walls (scratch worker copy; repository untouched)
