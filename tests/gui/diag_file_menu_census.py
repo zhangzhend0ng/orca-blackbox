@@ -29,6 +29,8 @@ from m8_common import wait_arrival
 
 PROBED = ('g-code', 'sliced file', 'stl', 'config', 'zip', 'generic 3mf', 'preset bundle')
 SKIPPED = ('factory', 'sd card')
+# Where the application unpacks a chosen archive (Plater::preview_zip_archive uses wxStandardPaths::GetTempDir).
+TEMP_DIR = r'C:\Users\test\AppData\Local\Temp'
 
 
 def rows(hmenu):
@@ -272,6 +274,38 @@ def shoot(hwnd, path):
     return [word[0] for word in m7.mdu.ocr_words_img(image, scale=2, psm=6)]
 
 
+def import_plain(session, source, work, started):
+    """File > Import > the STL row with one file; what the application shows in the 12 s after."""
+    import ctypes
+    wintypes = ctypes.wintypes
+
+    user32 = winutil.user32
+    before = round(m7.model_colored_frac(session), 5)
+    dispatched, dialog = m7.file_menu_dispatch(session, 'Import 3MF/STL/STEP/SVG/OBJ/AMF', expect_dialog=True, via='Import', timeout_s=10)
+    out = {'file': str(source), 'dispatched': bool(dispatched), 'fraction_before': before, 'samples': []}
+    if not dialog:
+        return out
+    hwnd = dialog[3]
+    edit = export_util.find_edit(hwnd)
+    winutil.select_all(edit)
+    winutil.msg_text(edit, str(source))
+    winutil._send_msg(hwnd, 0x0111, 1, 0)  # IDOK
+    time.sleep(1.0)
+    out['chooser_closed'] = not user32.IsWindowVisible(hwnd)
+    for _index in range(12):
+        time.sleep(1.0)
+        top = user32.GetForegroundWindow()
+        owner = wintypes.DWORD()
+        user32.GetWindowThreadProcessId(top, ctypes.byref(owner))
+        out['samples'].append({'at_s': _index + 2, 'model_fraction': round(m7.model_colored_frac(session), 5),
+                               'foreground_is_app': owner.value == session.pid,
+                               'app_dialogs': [w['title'] for w in toplevels(session.pid) if w['class'] == '#32770'],
+                               'desktop_dialogs': [w['title'] for w in desktop_dialogs()]})
+    out['alive'] = session.alive()
+    print('[census] plain import', json.dumps(out, ensure_ascii=False)[:1200], flush=True)
+    return out
+
+
 def open_archive(session, work, preview):
     """Press All, then Open, on the Archive preview and record every dialog that follows, then answer them."""
     import ctypes
@@ -293,34 +327,62 @@ def open_archive(session, work, preview):
     started = time.monotonic()
     seen = {}
     samples = []
-    while time.monotonic() - started < 30:
-        time.sleep(1.0)
+    presses = {}
+    loading = []
+    error_answered = None
+    while time.monotonic() - started < 26:
+        time.sleep(0.5)
         for window in toplevels(session.pid):
-            if window['hwnd'] in known or window['class'] != '#32770' or window['hwnd'] in seen:
+            if window['hwnd'] in known or window['class'] != '#32770':
                 continue
-            record = seen[window['hwnd']] = {'class': window['class'], 'title': window['title'], 'rect': window['rect'],
-                                             'at_s': round(time.monotonic() - started, 1), 'ocr': None}
-            try:
-                record['ocr'] = shoot(window['hwnd'], work / f'after-open-{len(seen)}.png')
-            except (OSError, RuntimeError, ValueError) as exc:
-                record['ocr'] = f'unavailable ({exc})'
-            print('[census] new dialog', json.dumps(record, ensure_ascii=False)[:700], flush=True)
-            if time.monotonic() - started > 6 and window['title'].casefold() == 'snapmaker orca error':
-                # The error has been read and kept; answer it so the application can continue.
-                press_in(window, 'OK')
-                record['ok_pressed_s'] = round(time.monotonic() - started, 1)
+            record = seen.get(window['hwnd'])
+            if record is None:
+                record = seen[window['hwnd']] = {'class': window['class'], 'title': window['title'],
+                                                 'rect': window['rect'], 'at_s': round(time.monotonic() - started, 1),
+                                                 'ocr': None, 'answers': []}
+                try:
+                    record['ocr'] = shoot(window['hwnd'], work / f'after-open-{len(seen)}.png')
+                except (OSError, RuntimeError, ValueError) as exc:
+                    record['ocr'] = f'unavailable ({exc})'
+                print('[census] new dialog', json.dumps(record, ensure_ascii=False)[:700], flush=True)
+            if not user32.IsWindowVisible(window['hwnd']):
+                continue
+            count = presses.get(window['hwnd'], 0)
+            if time.monotonic() - started >= 4 + 2 * count and count < 4:
+                # The dialogs have been read and kept; answer them so the application can continue.
+                try:
+                    label = 'OK' if window['title'].casefold() == 'snapmaker orca error' else 'Cancel'
+                    record['answers'].append({'at_s': round(time.monotonic() - started, 1), 'pressed': label,
+                                              'point': press_in(window, label)})
+                except (ValueError, OSError) as exc:
+                    record['answers'].append({'at_s': round(time.monotonic() - started, 1), 'failed': str(exc)[:120]})
+                    winutil._send_msg(window['hwnd'], 0x0010, 0, 0)  # WM_CLOSE
+                    record['answers'][-1]['wm_close'] = True
+                presses[window['hwnd']] = count + 1
+                if window['title'].casefold() == 'snapmaker orca error' and error_answered is None:
+                    error_answered = round(time.monotonic() - started, 1)
+            if window['title'].casefold() == 'loading...' and window not in loading:
+                loading.append(window)
+        app_dialogs = [w['title'] for w in toplevels(session.pid) if w['class'] == '#32770']
         top = user32.GetForegroundWindow()
         owner = wintypes.DWORD()
         user32.GetWindowThreadProcessId(top, ctypes.byref(owner))
         samples.append({'at_s': round(time.monotonic() - started, 1),
                         'model_fraction': round(m7.model_colored_frac(session), 5),
                         'foreground_is_app': owner.value == session.pid,
-                        'app_dialogs': [w['title'] for w in toplevels(session.pid) if w['class'] == '#32770'],
+                        'app_dialogs': app_dialogs,
                         'desktop_dialogs': [w['title'] for w in desktop_dialogs()]})
-        if len(samples) >= 12 and not samples[-1]['app_dialogs'] and not samples[-1]['desktop_dialogs']:
+        if len(samples) >= 6 and not samples[-1]['app_dialogs'] and not samples[-1]['desktop_dialogs']:
             break
     out['dialogs'] = list(seen.values())
-    out['samples'] = samples
+    out['samples'] = samples[-8:]
+    out['model_fraction_after_dialogs'] = round(m7.model_colored_frac(session), 5)
+    out['temp_dir'] = TEMP_DIR
+    out['temp_files'] = sorted(path.name for path in Path(TEMP_DIR).glob('cube_*mm*.stl'))
+    # Experiment: the same extracted STL through the ordinary File > Import row.
+    plain = Path(TEMP_DIR) / 'cube_10mm.stl'
+    if plain.is_file():
+        out['plain_import'] = import_plain(session, plain, work, started)
     width, height, pixels = winutil.screen_grab()
     shot = np.frombuffer(pixels, np.uint8).reshape(height, width, 4)
     cv2.imwrite(str(work / 'zip-after-open-screen.png'), cv2.cvtColor(shot, cv2.COLOR_BGRA2BGR))
