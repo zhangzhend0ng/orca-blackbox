@@ -1,0 +1,33 @@
+{
+ "payload": {
+  "cli_cases.py": {
+   "bytes": 8628,
+   "sha256": "bfc69380f806040900b069716bc4bf600a19583203cf3321e2c70fe9af76ae10"
+  },
+  "project_copy.py": {
+   "bytes": 32268,
+   "sha256": "dc247efc7a954c14a3da76825e3def698f4085ece79ad8b46d06bd9c7259da11"
+  },
+  "baseline.3mf": {
+   "bytes": 30270,
+   "sha256": "36389ec3d26c54fc8d3e6bfccac3097fb080a12ab8fab0f2b7f8038cfc278d94"
+  }
+ },
+ "artifacts": {
+  "plate.gcode.3mf": {
+   "file": "plate.gcode.3mf",
+   "bytes": 59135,
+   "sha256": "fbfc55d309b3e4f40f2779120fcc51e7bb771ddff51b267da40c830e8ea40f02"
+  },
+  "slice-export-3mf.log": {
+   "file": "slice-export-3mf.log",
+   "bytes": 447,
+   "sha256": "e2e902aab79114d55a83d282a4dde8bbfb48657f90a0b9a17028cae55fbe35d6"
+  },
+  "slice-export-slicedata.log": {
+   "file": "slice-export-slicedata.log",
+   "bytes": 447,
+   "sha256": "2996a4f28bc9cc09ef4c87365712f15da7880f9f1191f3e0dcf685bed7981de5"
+  }
+ }
+}

@@ -1,0 +1,2 @@
+[    0.0s] stage preflight
+[    0.1s] preflight {'ax_trusted': True, 'post_allowed': True, 'console_uid': 501, 'test_uid': 502, 'console_locked': 'Yes', 'session': {'on_console': None, 'login_done': True, 'uid': None, 'screen_locked': None}, 'app': '/Applications/Snapmaker Orca.app', 'version': '2.4.2', 'bundle_version': '', 'executable_sha256': '8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75', 'orca_processes': [], 'gui_cases_runnable': False}

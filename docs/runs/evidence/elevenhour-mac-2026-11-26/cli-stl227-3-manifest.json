@@ -1,0 +1,46 @@
+{
+ "payload": {
+  "cli_cases.py": {
+   "bytes": 8628,
+   "sha256": "bfc69380f806040900b069716bc4bf600a19583203cf3321e2c70fe9af76ae10"
+  },
+  "project_copy.py": {
+   "bytes": 32268,
+   "sha256": "dc247efc7a954c14a3da76825e3def698f4085ece79ad8b46d06bd9c7259da11"
+  },
+  "import/cube_20mm.stl": {
+   "bytes": 684,
+   "sha256": "2a9cc7337d02c2e631ff13540c8caffc490e5eab38f3ec3a983b08965b73e0d3"
+  },
+  "cube_20mm.sha256": {
+   "bytes": 64,
+   "sha256": "31b9acd292befa773718c9319a166b278b5b0dd2e9a52055c79e593f3ba6be20"
+  },
+  "presets.json": {
+   "bytes": 138,
+   "sha256": "56589bf6cacd7f8c5a7fe63da5b1643fd29f225c7a476417a311c01789c8851f"
+  }
+ },
+ "artifacts": {
+  "export-3mf-default.log": {
+   "file": "export-3mf-default.log",
+   "bytes": 2360,
+   "sha256": "337ee9524dec50f5c0c75d359dc582b0892b343101f9369d3d50e7580994bdc9"
+  },
+  "export-3mf-template-presets.log": {
+   "file": "export-3mf-template-presets.log",
+   "bytes": 2360,
+   "sha256": "d4c4c96090e368ea4da5a6499f4cee805b9e9d4d73c45d1c8a53f1ed84794aa3"
+  },
+  "imported-u1.3mf": {
+   "file": "imported-u1.3mf",
+   "bytes": 11166,
+   "sha256": "29dc677e763f3b0708b8375880dab78d052754048284bec5197ef623c7059c50"
+  },
+  "imported.3mf": {
+   "file": "imported.3mf",
+   "bytes": 8851,
+   "sha256": "dca7c98169de6056c3983918e299faf296f0035b940a47d8c2d23a53678a88fd"
+  }
+ }
+}

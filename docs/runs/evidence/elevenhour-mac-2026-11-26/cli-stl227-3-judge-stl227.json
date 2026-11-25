@@ -1,0 +1,190 @@
+{
+ "case": "stl227",
+ "mode": "CLI",
+ "repository": {
+  "variants": {
+   "imported-u1.3mf": {
+    "project_sha256": "29dc677e763f3b0708b8375880dab78d052754048284bec5197ef623c7059c50",
+    "stl_sha256": "2a9cc7337d02c2e631ff13540c8caffc490e5eab38f3ec3a983b08965b73e0d3",
+    "checks": {
+     "恰好 1 个可打印对象、1 个实例": "PASS",
+     "12 个三角面与源 STL 一致（与摆放位置、顶点顺序、绕序无关）": "PASS",
+     "三轴 20 mm（容差 1e-4）": "PASS",
+     "在当前盘": "PASS",
+     "source_file 指向本轮 cube_20mm.stl": "PASS"
+    },
+    "all_pass": true,
+    "instances": [
+     {
+      "name": "cube_20mm.stl",
+      "plate": "1",
+      "triangles": 12,
+      "vertices": 8,
+      "bounds": [
+       [
+        126,
+        146
+       ],
+       [
+        126,
+        146
+       ],
+       [
+        0,
+        20
+       ]
+      ]
+     }
+    ],
+    "plates": [
+     "1"
+    ],
+    "stl": {
+     "triangles": 12,
+     "size": [
+      20.0,
+      20.0,
+      20.0
+     ]
+    },
+    "selected_presets": {
+     "printer_settings_id": "Snapmaker U1 (0.8 nozzle)",
+     "print_settings_id": "0.40mm Standard @Snapmaker U1 (0.8 nozzle)",
+     "filament_settings_id": [
+      "Generic PETG @U1 0.8 nozzle"
+     ],
+     "printer_model": "Snapmaker U1",
+     "nozzle_diameter": [
+      "0.8",
+      "0.8",
+      "0.8",
+      "0.8"
+     ],
+     "layer_height": "0.2",
+     "filament_type": [
+      "PETG"
+     ]
+    },
+    "case_a_oracle": {
+     "object_names": [
+      "cube_20mm.stl"
+     ],
+     "source_file": "cube_20mm.stl",
+     "dimensions_mm": [
+      20.0,
+      20.0,
+      20.0
+     ],
+     "world_box_mm": [
+      [
+       125.5,
+       145.5
+      ],
+      [
+       126.0,
+       146.0
+      ],
+      [
+       0.0,
+       20.0
+      ]
+     ],
+     "placement_offset_mm": [
+      125.5,
+      126.0,
+      0.0
+     ],
+     "triangles": 12,
+     "printer": {
+      "model": "Snapmaker U1",
+      "profile": "Snapmaker U1 (0.8 nozzle)"
+     },
+     "plates": 1
+    }
+   },
+   "imported.3mf": {
+    "project_sha256": "dca7c98169de6056c3983918e299faf296f0035b940a47d8c2d23a53678a88fd",
+    "stl_sha256": "2a9cc7337d02c2e631ff13540c8caffc490e5eab38f3ec3a983b08965b73e0d3",
+    "checks": {
+     "恰好 1 个可打印对象、1 个实例": "PASS",
+     "12 个三角面与源 STL 一致（与摆放位置、顶点顺序、绕序无关）": "PASS",
+     "三轴 20 mm（容差 1e-4）": "PASS",
+     "在当前盘": "PASS",
+     "source_file 指向本轮 cube_20mm.stl": "PASS"
+    },
+    "all_pass": true,
+    "instances": [
+     {
+      "name": "cube_20mm.stl",
+      "plate": "1",
+      "triangles": 12,
+      "vertices": 8,
+      "bounds": [
+       [
+        90,
+        110
+       ],
+       [
+        90,
+        110
+       ],
+       [
+        0,
+        20
+       ]
+      ]
+     }
+    ],
+    "plates": [
+     "1"
+    ],
+    "stl": {
+     "triangles": 12,
+     "size": [
+      20.0,
+      20.0,
+      20.0
+     ]
+    },
+    "selected_presets": {
+     "printer_settings_id": null,
+     "print_settings_id": null,
+     "filament_settings_id": null,
+     "printer_model": "",
+     "nozzle_diameter": [
+      "0.4"
+     ],
+     "layer_height": "0.2",
+     "filament_type": [
+      "PLA"
+     ]
+    },
+    "case_a_oracle": "ValueError: expected selected U1 0.8 printer, found '' / None"
+   }
+  },
+  "checks": {
+   "imported-u1.3mf: 恰好 1 个可打印对象、1 个实例": "PASS",
+   "imported-u1.3mf: 12 个三角面与源 STL 一致（与摆放位置、顶点顺序、绕序无关）": "PASS",
+   "imported-u1.3mf: 三轴 20 mm（容差 1e-4）": "PASS",
+   "imported-u1.3mf: 在当前盘": "PASS",
+   "imported-u1.3mf: source_file 指向本轮 cube_20mm.stl": "PASS",
+   "imported.3mf: 恰好 1 个可打印对象、1 个实例": "PASS",
+   "imported.3mf: 12 个三角面与源 STL 一致（与摆放位置、顶点顺序、绕序无关）": "PASS",
+   "imported.3mf: 三轴 20 mm（容差 1e-4）": "PASS",
+   "imported.3mf: 在当前盘": "PASS",
+   "imported.3mf: source_file 指向本轮 cube_20mm.stl": "PASS"
+  },
+  "all_pass": true
+ },
+ "cross_check": {
+  "checks": {
+   "恰好 1 个可打印对象、1 个实例": "PASS",
+   "在当前盘": "PASS",
+   "12 个三角面与源 STL 一致（与摆放位置、顶点顺序、绕序无关）": "PASS",
+   "三轴 20 mm（容差 1e-4）": "PASS",
+   "source_file 指向本轮 cube_20mm.stl": "PASS"
+  },
+  "all_pass": true
+ },
+ "all_pass": true
+}

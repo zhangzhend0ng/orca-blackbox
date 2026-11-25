@@ -1,0 +1,83 @@
+{
+ "case": "gcode236",
+ "mode": "CLI",
+ "ok": true,
+ "run_id": "2e7ec2189cde45cea19cf4f12ad49c38",
+ "commit": "ac775d663c5a",
+ "started": "2026-11-26 00:12:59 +0800",
+ "commands": [
+  {
+   "step": "slice-export-3mf",
+   "argv": [
+    "Snapmaker_Orca",
+    "--datadir",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.YTZjQE5h/profile",
+    "--slice",
+    "1",
+    "--export-3mf",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.YTZjQE5h/plate.gcode.3mf",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.YTZjQE5h/baseline.3mf"
+   ],
+   "exit": 0,
+   "timed_out_after": null,
+   "seconds": 2.074,
+   "output_lines": 8,
+   "output_head": "[2026-11-26 00:13:00.112499] [0x00000001f23e2180] [trace]   Initializing StaticPrintConfigs\nsentry_init returned: 0\nsentry_init succeeded, init_success set to true\nStarting Sentry session and setting flags...\n[2026-11-26 00:13:00.126207] [0x00000001f23e2180] [error]   calc_exclude_triangles:Unable to create exclude triangles\n\n[2026-11-26 00:13:00.126306] [0x00000001f23e2180] [error]   calc_exclude_triangles:Unable to create exclude triangles\n\n",
+   "output_tail": "[2026-11-26 00:13:00.112499] [0x00000001f23e2180] [trace]   Initializing StaticPrintConfigs\nsentry_init returned: 0\nsentry_init succeeded, init_success set to true\nStarting Sentry session and setting flags...\n[2026-11-26 00:13:00.126207] [0x00000001f23e2180] [error]   calc_exclude_triangles:Unable to create exclude triangles\n\n[2026-11-26 00:13:00.126306] [0x00000001f23e2180] [error]   calc_exclude_triangles:Unable to create exclude triangles\n\n"
+  },
+  {
+   "step": "slice-export-slicedata",
+   "argv": [
+    "Snapmaker_Orca",
+    "--datadir",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.YTZjQE5h/profile",
+    "--slice",
+    "1",
+    "--export-slicedata",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.YTZjQE5h/slicedata",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.YTZjQE5h/baseline.3mf"
+   ],
+   "exit": 0,
+   "timed_out_after": null,
+   "seconds": 2.102,
+   "output_lines": 8,
+   "output_head": "[2026-11-26 00:13:02.220940] [0x00000001f23e2180] [trace]   Initializing StaticPrintConfigs\nsentry_init returned: 0\nsentry_init succeeded, init_success set to true\nStarting Sentry session and setting flags...\n[2026-11-26 00:13:02.235752] [0x00000001f23e2180] [error]   calc_exclude_triangles:Unable to create exclude triangles\n\n[2026-11-26 00:13:02.235848] [0x00000001f23e2180] [error]   calc_exclude_triangles:Unable to create exclude triangles\n\n",
+   "output_tail": "[2026-11-26 00:13:02.220940] [0x00000001f23e2180] [trace]   Initializing StaticPrintConfigs\nsentry_init returned: 0\nsentry_init succeeded, init_success set to true\nStarting Sentry session and setting flags...\n[2026-11-26 00:13:02.235752] [0x00000001f23e2180] [error]   calc_exclude_triangles:Unable to create exclude triangles\n\n[2026-11-26 00:13:02.235848] [0x00000001f23e2180] [error]   calc_exclude_triangles:Unable to create exclude triangles\n\n"
+  }
+ ],
+ "sut": {
+  "app": "/Applications/Snapmaker Orca.app",
+  "version": "2.4.2",
+  "bundle_version": "",
+  "executable_sha256": "8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75"
+ },
+ "seed": {
+  "profile": "profile",
+  "conf_sha256": "aef0bd0f0aeef534037874178f980e0011f66659311c7c12d34f68736210c06d",
+  "system_vendors": [
+   "BBL",
+   "Snapmaker"
+  ]
+ },
+ "orca_processes_before": [],
+ "cleanup_verified": true,
+ "orca_processes_after": [],
+ "finished": "2026-11-26 00:13:04 +0800",
+ "files": {
+  "plate.gcode.3mf": {
+   "bytes": 59135,
+   "sha256": "fbfc55d309b3e4f40f2779120fcc51e7bb771ddff51b267da40c830e8ea40f02",
+   "returned": true
+  },
+  "slice-export-3mf.log": {
+   "bytes": 447,
+   "sha256": "e2e902aab79114d55a83d282a4dde8bbfb48657f90a0b9a17028cae55fbe35d6",
+   "returned": true
+  },
+  "slice-export-slicedata.log": {
+   "bytes": 447,
+   "sha256": "2996a4f28bc9cc09ef4c87365712f15da7880f9f1191f3e0dcf685bed7981de5",
+   "returned": true
+  }
+ }
+}

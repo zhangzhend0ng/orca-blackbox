@@ -1,0 +1,123 @@
+{
+ "case": "stl233",
+ "mode": "CLI",
+ "repository": {
+  "layout": {
+   "objects": [
+    {
+     "name": "立方体",
+     "triangles": 12,
+     "bounds_mm": [
+      [
+       122.0,
+       149.0
+      ],
+      [
+       133.487951,
+       160.487951
+      ],
+      [
+       0.0,
+       27.0
+      ]
+     ],
+     "shape": "cube"
+    },
+    {
+     "name": "obj_1_球体.stl",
+     "triangles": 3968,
+     "bounds_mm": [
+      [
+       125.5120489986052,
+       145.48795222005418
+      ],
+      [
+       111.51204917860518,
+       131.48795240005416
+      ],
+      [
+       0.0,
+       20.0
+      ]
+     ],
+     "shape": "other"
+    }
+   ],
+   "pairs": [
+    {
+     "objects": [
+      "立方体",
+      "obj_1_球体.stl"
+     ],
+     "overlap": false
+    }
+   ],
+   "checks": {
+    "two_objects": true,
+    "cube_and_sphere": false,
+    "disjoint": true,
+    "inside_bed": true
+   }
+  },
+  "project_sha256": "7146517e1d6e58e6ea2767ddddd0d6f28dbb4b0dd553941b374f0a28c4bf119c",
+  "stls": [
+   {
+    "file": "out__stl__obj_1_立方体.stl",
+    "triangles": 12,
+    "sha256": "605bf18ab4afa771ab4f7ff1e87248bf63c5bc0223c7bba1f1cefdd5690903f7",
+    "bounds": [
+     [
+      122,
+      149
+     ],
+     [
+      133,
+      160
+     ],
+     [
+      0,
+      27
+     ]
+    ],
+    "matches_instance": "立方体"
+   },
+   {
+    "file": "out__stl__obj_2_obj_1_球体.stl",
+    "triangles": 3968,
+    "sha256": "625bd42ac07232f63cfbddf8eebd0caa805831c49db2bfc38886510861d8e1e3",
+    "bounds": [
+     [
+      126,
+      145
+     ],
+     [
+      112,
+      131
+     ],
+     [
+      0,
+      20
+     ]
+    ],
+    "matches_instance": "obj_1_球体.stl"
+   }
+  ],
+  "instances": [
+   {
+    "name": "立方体",
+    "triangles": 12
+   },
+   {
+    "name": "obj_1_球体.stl",
+    "triangles": 3968
+   }
+  ],
+  "checks": {
+   "每个导出的 STL 与盘上一个对象的三角面一致（形状）": "PASS",
+   "盘上每个对象都有一个导出的 STL": "PASS",
+   "导出为单个 STL": "NOT_EVALUABLE (--export-stl wrote one file per object; the merged STL of the Feishu row is not produced by the command line)"
+  },
+  "all_pass": true
+ },
+ "all_pass": true
+}

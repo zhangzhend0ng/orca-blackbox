@@ -1,0 +1,99 @@
+{
+ "case": "stl233",
+ "mode": "CLI",
+ "ok": true,
+ "run_id": "2cc635e22cbd4f4c9dc453b8c8be5360",
+ "commit": "d8102c0507cc",
+ "started": "2026-11-26 00:17:16 +0800",
+ "commands": [
+  {
+   "step": "export-sphere-stl",
+   "argv": [
+    "Snapmaker_Orca",
+    "--datadir",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.82U3ctDG/profile",
+    "--outputdir",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.82U3ctDG/sphere-out",
+    "--export-stl",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.82U3ctDG/sphere.3mf"
+   ],
+   "exit": 0,
+   "timed_out_after": null,
+   "seconds": 2.07,
+   "output_lines": 8,
+   "output_head": "[2026-11-26 00:17:16.634002] [0x00000001f23e2180] [trace]   Initializing StaticPrintConfigs\nsentry_init returned: 0\nsentry_init succeeded, init_success set to true\nStarting Sentry session and setting flags...\n[2026-11-26 00:17:16.667161] [0x00000001f23e2180] [error]   calc_exclude_triangles:Unable to create exclude triangles\n\n[2026-11-26 00:17:16.667257] [0x00000001f23e2180] [error]   calc_exclude_triangles:Unable to create exclude triangles\n\n",
+   "output_tail": "[2026-11-26 00:17:16.634002] [0x00000001f23e2180] [trace]   Initializing StaticPrintConfigs\nsentry_init returned: 0\nsentry_init succeeded, init_success set to true\nStarting Sentry session and setting flags...\n[2026-11-26 00:17:16.667161] [0x00000001f23e2180] [error]   calc_exclude_triangles:Unable to create exclude triangles\n\n[2026-11-26 00:17:16.667257] [0x00000001f23e2180] [error]   calc_exclude_triangles:Unable to create exclude triangles\n\n"
+  },
+  {
+   "step": "export-cube-and-sphere",
+   "argv": [
+    "Snapmaker_Orca",
+    "--datadir",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.82U3ctDG/profile",
+    "--outputdir",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.82U3ctDG/out",
+    "--export-stl",
+    "--export-3mf",
+    "exported.3mf",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.82U3ctDG/cube.3mf",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.82U3ctDG/sphere-out/stl/obj_1_球体.stl"
+   ],
+   "exit": 0,
+   "timed_out_after": null,
+   "seconds": 2.111,
+   "output_lines": 48,
+   "output_head": "[2026-11-26 00:17:18.740583] [0x00000001f23e2180] [trace]   Initializing StaticPrintConfigs\nsentry_init returned: 0\nsentry_init succeeded, init_success set to true\nStarting Sentry session and setting flags...\n[2026-11-26 00:17:18.759114] [0x00000001f23e2180] [error]   calc_exclude_triangles:Unable to create exclude triangles\n\n[2026-11-26 00:17:18.759210] [0x00000001f23e2180] [error]   calc_exclude_triangles:Unable to create exclude triangles\n\n[2026-11-26 00:17:18.932151] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'imgui':\nERROR: 0:10: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:17:18.932510] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'flat':\nERROR: 0:7: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:17:18.933889] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'flat_texture':\nERROR: 0:9: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:17:18.934041] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'background':\nERROR: 0:10: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:17:18.936056] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'gouraud_light':\nERROR: 0:11: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:17:18.947099] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'thumbnail':\nERROR: 0:17: Use",
+   "output_tail": "00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'imgui':\nERROR: 0:10: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:17:18.932510] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'flat':\nERROR: 0:7: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:17:18.933889] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'flat_texture':\nERROR: 0:9: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:17:18.934041] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'background':\nERROR: 0:10: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:17:18.936056] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'gouraud_light':\nERROR: 0:11: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:17:18.947099] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'thumbnail':\nERROR: 0:17: Use of undeclared identifier 'gl_FragColor'\nERROR: 0:19: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:17:18.948156] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'gouraud_light_instanced':\nERROR: 0:11: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:17:18.949693] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'variable_layer_height':\nERROR: 0:40: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:17:18.949987] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'mm_contour':\nERROR: 0:7: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:17:18.955965] [0x00000001f23e2180] [error]   Unable to load shaders: imgui\nflat\nflat_texture\nbackground\ngouraud_light\nthumbnail\ngouraud_light_instanced\nvariable_layer_height\nmm_contour\n\n\n[2026-11-26 00:17:18.956844] [0x00000001f23e2180] [error]   can not get shader for rendering thumbnail\n"
+  }
+ ],
+ "sut": {
+  "app": "/Applications/Snapmaker Orca.app",
+  "version": "2.4.2",
+  "bundle_version": "",
+  "executable_sha256": "8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75"
+ },
+ "seed": {
+  "profile": "profile",
+  "conf_sha256": "aef0bd0f0aeef534037874178f980e0011f66659311c7c12d34f68736210c06d",
+  "system_vendors": [
+   "BBL",
+   "Snapmaker"
+  ]
+ },
+ "orca_processes_before": [],
+ "cleanup_verified": true,
+ "orca_processes_after": [],
+ "finished": "2026-11-26 00:17:20 +0800",
+ "files": {
+  "export-cube-and-sphere.log": {
+   "bytes": 2479,
+   "sha256": "4cf43978a066e65dd83ae9ee33911a2b22db30c2efd40e63c9a1320b2b17e0fd",
+   "returned": true
+  },
+  "export-sphere-stl.log": {
+   "bytes": 447,
+   "sha256": "ef627b4ea0304d9b4f6722aa1f5bb1f51b7f8a98dc67178b0301cc33a80f706a",
+   "returned": true
+  },
+  "out/exported.3mf": {
+   "bytes": 45546,
+   "sha256": "7146517e1d6e58e6ea2767ddddd0d6f28dbb4b0dd553941b374f0a28c4bf119c",
+   "returned": true
+  },
+  "out/stl/obj_1_立方体.stl": {
+   "bytes": 684,
+   "sha256": "605bf18ab4afa771ab4f7ff1e87248bf63c5bc0223c7bba1f1cefdd5690903f7",
+   "returned": true
+  },
+  "out/stl/obj_2_obj_1_球体.stl": {
+   "bytes": 198484,
+   "sha256": "625bd42ac07232f63cfbddf8eebd0caa805831c49db2bfc38886510861d8e1e3",
+   "returned": true
+  },
+  "sphere-out/stl/obj_1_球体.stl": {
+   "bytes": 198484,
+   "sha256": "0805467f75299172229972752061e0bf210d99696b965fd7ae9495bbbe87aac3",
+   "returned": true
+  }
+ }
+}

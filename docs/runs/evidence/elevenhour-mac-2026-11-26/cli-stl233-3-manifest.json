@@ -1,0 +1,52 @@
+{
+ "payload": {
+  "cli_cases.py": {
+   "bytes": 9878,
+   "sha256": "7dd24a8ef95224faaa18533e7e18da8cfcae7c2443ead97b6ffd1af016c0c9a3"
+  },
+  "project_copy.py": {
+   "bytes": 32268,
+   "sha256": "dc247efc7a954c14a3da76825e3def698f4085ece79ad8b46d06bd9c7259da11"
+  },
+  "cube.3mf": {
+   "bytes": 30270,
+   "sha256": "36389ec3d26c54fc8d3e6bfccac3097fb080a12ab8fab0f2b7f8038cfc278d94"
+  },
+  "sphere.3mf": {
+   "bytes": 64030,
+   "sha256": "f5f83d00545522c7cde44c0cd4260c325418707afdc83e6056390a0b8800d13c"
+  }
+ },
+ "artifacts": {
+  "export-cube-and-sphere.log": {
+   "file": "export-cube-and-sphere.log",
+   "bytes": 2479,
+   "sha256": "4cf43978a066e65dd83ae9ee33911a2b22db30c2efd40e63c9a1320b2b17e0fd"
+  },
+  "export-sphere-stl.log": {
+   "file": "export-sphere-stl.log",
+   "bytes": 447,
+   "sha256": "ef627b4ea0304d9b4f6722aa1f5bb1f51b7f8a98dc67178b0301cc33a80f706a"
+  },
+  "out/exported.3mf": {
+   "file": "out__exported.3mf",
+   "bytes": 45546,
+   "sha256": "7146517e1d6e58e6ea2767ddddd0d6f28dbb4b0dd553941b374f0a28c4bf119c"
+  },
+  "out/stl/obj_1_\u7acb\u65b9\u4f53.stl": {
+   "file": "out__stl__obj_1_\u7acb\u65b9\u4f53.stl",
+   "bytes": 684,
+   "sha256": "605bf18ab4afa771ab4f7ff1e87248bf63c5bc0223c7bba1f1cefdd5690903f7"
+  },
+  "out/stl/obj_2_obj_1_\u7403\u4f53.stl": {
+   "file": "out__stl__obj_2_obj_1_\u7403\u4f53.stl",
+   "bytes": 198484,
+   "sha256": "625bd42ac07232f63cfbddf8eebd0caa805831c49db2bfc38886510861d8e1e3"
+  },
+  "sphere-out/stl/obj_1_\u7403\u4f53.stl": {
+   "file": "sphere-out__stl__obj_1_\u7403\u4f53.stl",
+   "bytes": 198484,
+   "sha256": "0805467f75299172229972752061e0bf210d99696b965fd7ae9495bbbe87aac3"
+  }
+ }
+}

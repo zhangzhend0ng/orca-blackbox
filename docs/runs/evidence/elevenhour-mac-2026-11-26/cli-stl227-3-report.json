@@ -1,0 +1,91 @@
+{
+ "case": "stl227",
+ "mode": "CLI",
+ "ok": true,
+ "run_id": "141efdbe86df4e7db49f545a0b0342ba",
+ "commit": "ac775d663c5a",
+ "started": "2026-11-26 00:12:36 +0800",
+ "commands": [
+  {
+   "step": "export-3mf-default",
+   "argv": [
+    "Snapmaker_Orca",
+    "--datadir",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.uHB3HAjk/profile",
+    "--export-3mf",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.uHB3HAjk/imported.3mf",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.uHB3HAjk/import/cube_20mm.stl"
+   ],
+   "exit": 0,
+   "timed_out_after": null,
+   "seconds": 2.075,
+   "output_lines": 46,
+   "output_head": "[2026-11-26 00:12:37.152945] [0x00000001f23e2180] [trace]   Initializing StaticPrintConfigs\nsentry_init returned: 0\nsentry_init succeeded, init_success set to true\nStarting Sentry session and setting flags...\n[2026-11-26 00:12:37.181475] [0x00000001f23e2180] [error]   calc_exclude_triangles:Unable to create exclude triangles\n\n[2026-11-26 00:12:37.337117] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'imgui':\nERROR: 0:10: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:37.337489] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'flat':\nERROR: 0:7: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:37.338879] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'flat_texture':\nERROR: 0:9: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:37.339062] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'background':\nERROR: 0:10: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:37.341153] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'gouraud_light':\nERROR: 0:11: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:37.351874] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'thumbnail':\nERROR: 0:17: Use of undeclared identifier 'gl_FragColor'\nERROR: 0:19: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:37",
+   "output_tail": "00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'imgui':\nERROR: 0:10: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:37.337489] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'flat':\nERROR: 0:7: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:37.338879] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'flat_texture':\nERROR: 0:9: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:37.339062] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'background':\nERROR: 0:10: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:37.341153] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'gouraud_light':\nERROR: 0:11: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:37.351874] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'thumbnail':\nERROR: 0:17: Use of undeclared identifier 'gl_FragColor'\nERROR: 0:19: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:37.352860] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'gouraud_light_instanced':\nERROR: 0:11: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:37.354353] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'variable_layer_height':\nERROR: 0:40: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:37.354650] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'mm_contour':\nERROR: 0:7: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:37.360538] [0x00000001f23e2180] [error]   Unable to load shaders: imgui\nflat\nflat_texture\nbackground\ngouraud_light\nthumbnail\ngouraud_light_instanced\nvariable_layer_height\nmm_contour\n\n\n[2026-11-26 00:12:37.360586] [0x00000001f23e2180] [error]   can not get shader for rendering thumbnail\n"
+  },
+  {
+   "step": "export-3mf-template-presets",
+   "argv": [
+    "Snapmaker_Orca",
+    "--datadir",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.uHB3HAjk/profile",
+    "--load-settings",
+    "/Applications/Snapmaker Orca.app/Contents/Resources/profiles/Snapmaker/machine/Snapmaker U1 (0.8 nozzle).json;/Applications/Snapmaker Orca.app/Contents/Resources/profiles/Snapmaker/process/0.40mm Standard @Snapmaker U1 (0.8 nozzle).json",
+    "--load-filaments",
+    "/Applications/Snapmaker Orca.app/Contents/Resources/profiles/Snapmaker/filament/Generic PETG @U1 0.8 nozzle.json",
+    "--export-3mf",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.uHB3HAjk/imported-u1.3mf",
+    "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-cli.uHB3HAjk/import/cube_20mm.stl"
+   ],
+   "exit": 0,
+   "timed_out_after": null,
+   "seconds": 2.108,
+   "output_lines": 46,
+   "output_head": "[2026-11-26 00:12:39.257929] [0x00000001f23e2180] [trace]   Initializing StaticPrintConfigs\nsentry_init returned: 0\nsentry_init succeeded, init_success set to true\nStarting Sentry session and setting flags...\n[2026-11-26 00:12:39.270996] [0x00000001f23e2180] [error]   calc_exclude_triangles:Unable to create exclude triangles\n\n[2026-11-26 00:12:39.416145] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'imgui':\nERROR: 0:10: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:39.416409] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'flat':\nERROR: 0:7: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:39.417579] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'flat_texture':\nERROR: 0:9: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:39.417700] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'background':\nERROR: 0:10: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:39.419423] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'gouraud_light':\nERROR: 0:11: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:39.430290] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'thumbnail':\nERROR: 0:17: Use of undeclared identifier 'gl_FragColor'\nERROR: 0:19: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:39",
+   "output_tail": "00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'imgui':\nERROR: 0:10: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:39.416409] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'flat':\nERROR: 0:7: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:39.417579] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'flat_texture':\nERROR: 0:9: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:39.417700] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'background':\nERROR: 0:10: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:39.419423] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'gouraud_light':\nERROR: 0:11: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:39.430290] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'thumbnail':\nERROR: 0:17: Use of undeclared identifier 'gl_FragColor'\nERROR: 0:19: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:39.431186] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'gouraud_light_instanced':\nERROR: 0:11: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:39.432596] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'variable_layer_height':\nERROR: 0:40: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:39.432856] [0x00000001f23e2180] [error]   Unable to compile fragment shader of shader program 'mm_contour':\nERROR: 0:7: Use of undeclared identifier 'gl_FragColor'\n\n[2026-11-26 00:12:39.438035] [0x00000001f23e2180] [error]   Unable to load shaders: imgui\nflat\nflat_texture\nbackground\ngouraud_light\nthumbnail\ngouraud_light_instanced\nvariable_layer_height\nmm_contour\n\n\n[2026-11-26 00:12:39.438083] [0x00000001f23e2180] [error]   can not get shader for rendering thumbnail\n"
+  }
+ ],
+ "sut": {
+  "app": "/Applications/Snapmaker Orca.app",
+  "version": "2.4.2",
+  "bundle_version": "",
+  "executable_sha256": "8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75"
+ },
+ "seed": {
+  "profile": "profile",
+  "conf_sha256": "aef0bd0f0aeef534037874178f980e0011f66659311c7c12d34f68736210c06d",
+  "system_vendors": [
+   "BBL",
+   "Snapmaker"
+  ]
+ },
+ "orca_processes_before": [],
+ "renamed_presets": {
+  "0.40 Standard @Snapmaker U1 (0.8 nozzle)": "0.40mm Standard @Snapmaker U1 (0.8 nozzle)"
+ },
+ "cleanup_verified": true,
+ "orca_processes_after": [],
+ "finished": "2026-11-26 00:12:41 +0800",
+ "files": {
+  "export-3mf-default.log": {
+   "bytes": 2360,
+   "sha256": "337ee9524dec50f5c0c75d359dc582b0892b343101f9369d3d50e7580994bdc9",
+   "returned": true
+  },
+  "export-3mf-template-presets.log": {
+   "bytes": 2360,
+   "sha256": "d4c4c96090e368ea4da5a6499f4cee805b9e9d4d73c45d1c8a53f1ed84794aa3",
+   "returned": true
+  },
+  "imported-u1.3mf": {
+   "bytes": 11166,
+   "sha256": "29dc677e763f3b0708b8375880dab78d052754048284bec5197ef623c7059c50",
+   "returned": true
+  },
+  "imported.3mf": {
+   "bytes": 8851,
+   "sha256": "dca7c98169de6056c3983918e299faf296f0035b940a47d8c2d23a53678a88fd",
+   "returned": true
+  }
+ }
+}

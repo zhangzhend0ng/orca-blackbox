@@ -1,0 +1,44 @@
+{
+ "ok": true,
+ "run_id": "6c5b02be170341adab1150b29801a03c",
+ "started": "2026-11-25 23:53:01 +0800",
+ "worker_sha256": "0c1ffa5ddb700817ac7990112f2f3e61d57c044f94488c2bd2797ca876efcb7e",
+ "case": "preflight",
+ "commit": "f5e115ff5452",
+ "console_locked": "Yes",
+ "session": {
+  "on_console": null,
+  "login_done": true,
+  "uid": null,
+  "screen_locked": null
+ },
+ "stages": [
+  {
+   "name": "preflight",
+   "seconds": 0.028
+  }
+ ],
+ "preflight": {
+  "ax_trusted": true,
+  "post_allowed": true,
+  "console_uid": 501,
+  "test_uid": 502,
+  "console_locked": "Yes",
+  "session": {
+   "on_console": null,
+   "login_done": true,
+   "uid": null,
+   "screen_locked": null
+  },
+  "app": "/Applications/Snapmaker Orca.app",
+  "version": "2.4.2",
+  "bundle_version": "",
+  "executable_sha256": "8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75",
+  "orca_processes": [],
+  "gui_cases_runnable": false
+ },
+ "outcome": "PREFLIGHT",
+ "finished": "2026-11-25 23:53:02 +0800",
+ "cleanup_verified": true,
+ "orca_processes_after": []
+}
