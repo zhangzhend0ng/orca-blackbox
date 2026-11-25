@@ -1,0 +1,41 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T01:13:26" tests="1" failures="1" errors="0">
+    <testcase name="m7x_246_repair_model" classname="blackbox.m7x_246_repair" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_246_repair_model.log" />
+        <property name="dim:unfinished checks" value="FAIL (ValueError: slice click did not take)" />
+      </properties>
+      <failure type="RED" message="unfinished checks: FAIL (ValueError: slice click did not take)">[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x246] saved mesh after the menu action: {'triangles': 11, 'vertices': 8, 'open_edges': 3, 'nonmanifold_edges': 0, 'closed': False, 'is_cube': False, 'dimensions_mm': [20.0, 20.0, 20.0], 'same_box': True}
+[m7x249] finished save_repaired in 8.469s
+[m7x249] started slice at 2026-11-25T17:13:14.271379+00:00
+[m2] attempt 1: click didn't take (still 1.000), retry
+[m2] attempt 2: click didn't take (still 1.000), retry
+[m2] attempt 3: click didn't take (still 1.000), retry
+[m7x249] finished slice in 10.672s
+python.exe : Traceback (most recent call last):
+At C:\coil\run_suite.ps1:35 char:3
++   &amp; "C:\Python311\python.exe" (Case-File $c) 2&gt;&amp;1 | Out-File -FilePat ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\plate_reserve_case.py", line 35, in case_main
+    steps(session, work, analysis, args)
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\m7x_246_repair_model.py", line 91, in steps
+    sliced = slice_until_exportable(session, work, analysis)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\coil\orca-blackbox-v3-r1\tests\repair_model_cases.py", line 161, in slice_until_exportable
+    raise ValueError('slice click did not take')
+ValueError: slice click did not take
+
+[m7] === verdict ===
+  unfinished checks: FAIL (ValueError: slice click did not take)
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

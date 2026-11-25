@@ -1,0 +1,37 @@
+﻿[
+    {
+        "part":  "analysis.json",
+        "bytes":  6301,
+        "sha256":  "0E966017E9EA3AA311EA05DCFFC02CAF5FCEF186E4C8C2AC5E84D9958D1BB572"
+    },
+    {
+        "part":  "before.3mf",
+        "bytes":  34751,
+        "sha256":  "FC198BC7D4B9EF7CE62C40FC58031296DAAF4EC755D4A834D158B5797807FD8F"
+    },
+    {
+        "part":  "before.png",
+        "bytes":  309201,
+        "sha256":  "077205BC11C6CC57DB31B07B7E046D040FAD8A1F6F84795C861C2A52B28ABA0F"
+    },
+    {
+        "part":  "chooser.png",
+        "bytes":  104646,
+        "sha256":  "C7B6B826EC2E76AB8E6EACE7F8206CC88B64AC7C35B1CBD90745E6D86B9B294B"
+    },
+    {
+        "part":  "context-menu.png",
+        "bytes":  39393,
+        "sha256":  "21221A9086BACF23F4D89C18107340877CD748D458EBF90AEB70D661AA212E4E"
+    },
+    {
+        "part":  "cube_holed.stl",
+        "bytes":  634,
+        "sha256":  "875B719BAC781E06AFF94A5B577BBD33EB6A669E2ECC3DF58DF175ADA16A7C68"
+    },
+    {
+        "part":  "new-project.3mf",
+        "bytes":  34347,
+        "sha256":  "3478C628B1D903D6402808CA04F25A7B2F3B48016DFD1E36F35297C09DF2BB65"
+    }
+]

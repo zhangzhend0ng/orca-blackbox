@@ -1,0 +1,14 @@
+﻿{
+    "commit":  "a2aafd3d08edd1a105d99f56b4cebbfc3a06d28f",
+    "case":  "m7x_246_repair_model",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "orca_processes_after":  0,
+    "summary":  "SUMMARY: PASS=0 FAIL=1\r\nFAILED: m7x_246_repair_model",
+    "dispatched_at":  "2026-11-26T01:51:32.8174002+08:00",
+    "scenario_completed_at":  "2026-11-26T01:53:20.4845768+08:00",
+    "suite_completed_at":  "2026-11-26T01:53:20.7304923+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_246_repair_model.log",
+    "log_sha256":  "57CF984BB0CFDB9C3EE70C55A9C13C2D31572208200132848D775E6E9963E5BC"
+}

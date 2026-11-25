@@ -1,0 +1,302 @@
+{
+  "case": 246,
+  "results": {
+    "unfinished checks": "FAIL (ValueError: slice click did not take)"
+  },
+  "timings": {
+    "prepare_empty_plate": {
+      "started_utc": "2026-11-25T17:12:34.158779+00:00",
+      "duration_s": 11.641
+    },
+    "import_holed_cube": {
+      "started_utc": "2026-11-25T17:12:45.791141+00:00",
+      "duration_s": 10.078
+    },
+    "save_before": {
+      "started_utc": "2026-11-25T17:12:55.947103+00:00",
+      "duration_s": 8.422
+    },
+    "context_menu": {
+      "started_utc": "2026-11-25T17:13:04.376521+00:00",
+      "duration_s": 1.437
+    },
+    "save_repaired": {
+      "started_utc": "2026-11-25T17:13:05.801400+00:00",
+      "duration_s": 8.469
+    },
+    "slice": {
+      "started_utc": "2026-11-25T17:13:14.271379+00:00",
+      "duration_s": 10.672
+    }
+  },
+  "bed_point": [
+    1172,
+    514
+  ],
+  "initial_printer": {
+    "model": "Snapmaker U1",
+    "profile": "Snapmaker U1 (0.8 nozzle)(agent_layer_cube.3mf)"
+  },
+  "empty_plate": {
+    "fraction": 0.0010439742316604283,
+    "candidate_centroids": [
+      [
+        935,
+        331
+      ],
+      [
+        851,
+        759
+      ]
+    ]
+  },
+  "source": {
+    "bytes": 634,
+    "sha256": "875b719bac781e06aff94a5b577bbd33eb6a669e2ecc3df58df175ada16a7c68"
+  },
+  "chooser": {
+    "row": "Import 3MF",
+    "title": "Choose one or more files (3mf/step/stl/svg/obj/amf):",
+    "entered": "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\246\\run-sma2vavu\\cube_holed.stl",
+    "filters": [
+      {
+        "selected": -1,
+        "items": []
+      },
+      {
+        "selected": 0,
+        "items": [
+          "Supported files (*.3mf, *.stl, *.oltp, *.stp, *.step, *.svg, *.amf, *.obj)"
+        ]
+      },
+      {
+        "selected": -1,
+        "items": []
+      }
+    ]
+  },
+  "import_fraction": 0.0010439742316604283,
+  "initial": {
+    "triangles": 11,
+    "vertices": 8,
+    "open_edges": 3,
+    "nonmanifold_edges": 0,
+    "closed": false,
+    "missing_triangles": 1
+  },
+  "before_file": {
+    "bytes": 34749,
+    "sha256": "631c2af22c49d6caeac1e8e341447af73f1d290f381f8b2122556eec666e4fcb"
+  },
+  "context_menu": [
+    {
+      "index": 0,
+      "label": "Clone\tCtrl+K",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 1,
+      "label": "Simplify Model",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 2,
+      "label": "",
+      "enabled": false,
+      "separator": true,
+      "submenu": false
+    },
+    {
+      "index": 3,
+      "label": "Mesh boolean",
+      "enabled": false,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 4,
+      "label": "Center",
+      "enabled": false,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 5,
+      "label": "Drop",
+      "enabled": false,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 6,
+      "label": "Split",
+      "enabled": false,
+      "separator": false,
+      "submenu": true
+    },
+    {
+      "index": 7,
+      "label": "Mirror",
+      "enabled": true,
+      "separator": false,
+      "submenu": true
+    },
+    {
+      "index": 8,
+      "label": "Delete\tDel",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 9,
+      "label": "",
+      "enabled": false,
+      "separator": true,
+      "submenu": false
+    },
+    {
+      "index": 10,
+      "label": "Add Part",
+      "enabled": true,
+      "separator": true,
+      "submenu": true
+    },
+    {
+      "index": 11,
+      "label": "Add Negative Part",
+      "enabled": true,
+      "separator": true,
+      "submenu": true
+    },
+    {
+      "index": 12,
+      "label": "Add Modifier",
+      "enabled": true,
+      "separator": true,
+      "submenu": true
+    },
+    {
+      "index": 13,
+      "label": "Add Support Blocker",
+      "enabled": true,
+      "separator": true,
+      "submenu": true
+    },
+    {
+      "index": 14,
+      "label": "Add Support Enforcer",
+      "enabled": true,
+      "separator": true,
+      "submenu": true
+    },
+    {
+      "index": 15,
+      "label": "Height Range Modifier",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 16,
+      "label": "",
+      "enabled": false,
+      "separator": true,
+      "submenu": false
+    },
+    {
+      "index": 17,
+      "label": "Printable",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 18,
+      "label": "Edit Process Settings",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 19,
+      "label": "Edit in Parameter Table",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 20,
+      "label": "",
+      "enabled": false,
+      "separator": true,
+      "submenu": false
+    },
+    {
+      "index": 21,
+      "label": "Reload from disk",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 22,
+      "label": "Replace with STL",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 23,
+      "label": "Export as one STL...",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 24,
+      "label": "Convert from Inches",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 25,
+      "label": "Convert from Meters",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 26,
+      "label": "Change Filament",
+      "enabled": true,
+      "separator": false,
+      "submenu": true
+    }
+  ],
+  "fix_row": null,
+  "repair": {
+    "triangles": 11,
+    "vertices": 8,
+    "open_edges": 3,
+    "nonmanifold_edges": 0,
+    "closed": false,
+    "is_cube": false,
+    "dimensions_mm": [
+      20.0,
+      20.0,
+      20.0
+    ],
+    "same_box": true
+  },
+  "after_file": {
+    "bytes": 34749,
+    "sha256": "a3b81d9bfbfffbf4b36085b59d5d023da12e0cd98cf7ed137f8aaec57cd3b4ec"
+  },
+  "wall_seconds": 99.547
+}

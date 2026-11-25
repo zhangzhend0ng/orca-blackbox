@@ -1,0 +1,282 @@
+{
+  "case": 246,
+  "results": {
+    "\u6a21\u578b\u88ab\u4fee\u590d\uff08\u5b54\u6d1e\u8865\u9f50\uff09\u3001\u53ef\u6b63\u5e38\u5207\u7247\uff0c\u6216\u7ed9\u51fa\u65e0\u6cd5\u4fee\u590d\u7684\u660e\u786e\u63d0\u793a": "FAIL (the object menu has no \"Fix model\" row on Windows 10 Pro: 27 rows read; no repair was attempted and the model was not sliced; the hole stays open with 3 open edges in before.3mf)"
+  },
+  "timings": {
+    "prepare_empty_plate": {
+      "started_utc": "2026-11-25T17:52:38.733874+00:00",
+      "duration_s": 11.672
+    },
+    "import_holed_cube": {
+      "started_utc": "2026-11-25T17:52:50.404737+00:00",
+      "duration_s": 10.219
+    },
+    "save_before": {
+      "started_utc": "2026-11-25T17:53:00.687861+00:00",
+      "duration_s": 8.422
+    },
+    "context_menu": {
+      "started_utc": "2026-11-25T17:53:09.108521+00:00",
+      "duration_s": 1.344
+    }
+  },
+  "bed_point": [
+    1172,
+    514
+  ],
+  "initial_printer": {
+    "model": "Snapmaker U1",
+    "profile": "Snapmaker U1 (0.8 nozzle)(agent_layer_cube.3mf)"
+  },
+  "empty_plate": {
+    "fraction": 0.0010439742316604283,
+    "candidate_centroids": [
+      [
+        935,
+        331
+      ],
+      [
+        851,
+        759
+      ]
+    ]
+  },
+  "source": {
+    "bytes": 634,
+    "sha256": "875b719bac781e06aff94a5b577bbd33eb6a669e2ecc3df58df175ada16a7c68"
+  },
+  "chooser": {
+    "row": "Import 3MF",
+    "title": "Choose one or more files (3mf/step/stl/svg/obj/amf):",
+    "entered": "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\246\\run-_hz856e_\\cube_holed.stl",
+    "filters": [
+      {
+        "selected": -1,
+        "items": []
+      },
+      {
+        "selected": 0,
+        "items": [
+          "Supported files (*.3mf, *.stl, *.oltp, *.stp, *.step, *.svg, *.amf, *.obj)"
+        ]
+      },
+      {
+        "selected": -1,
+        "items": []
+      }
+    ]
+  },
+  "import_fraction": 0.0010439742316604283,
+  "initial": {
+    "triangles": 11,
+    "vertices": 8,
+    "open_edges": 3,
+    "nonmanifold_edges": 0,
+    "closed": false,
+    "missing_triangles": 1
+  },
+  "before_file": {
+    "bytes": 34751,
+    "sha256": "fc198bc7d4b9ef7ce62c40fc58031296daaf4ec755d4a834d158b5797807fd8f"
+  },
+  "context_menu": [
+    {
+      "index": 0,
+      "label": "Clone\tCtrl+K",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 1,
+      "label": "Simplify Model",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 2,
+      "label": "",
+      "enabled": false,
+      "separator": true,
+      "submenu": false
+    },
+    {
+      "index": 3,
+      "label": "Mesh boolean",
+      "enabled": false,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 4,
+      "label": "Center",
+      "enabled": false,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 5,
+      "label": "Drop",
+      "enabled": false,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 6,
+      "label": "Split",
+      "enabled": false,
+      "separator": false,
+      "submenu": true
+    },
+    {
+      "index": 7,
+      "label": "Mirror",
+      "enabled": true,
+      "separator": false,
+      "submenu": true
+    },
+    {
+      "index": 8,
+      "label": "Delete\tDel",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 9,
+      "label": "",
+      "enabled": false,
+      "separator": true,
+      "submenu": false
+    },
+    {
+      "index": 10,
+      "label": "Add Part",
+      "enabled": true,
+      "separator": true,
+      "submenu": true
+    },
+    {
+      "index": 11,
+      "label": "Add Negative Part",
+      "enabled": true,
+      "separator": true,
+      "submenu": true
+    },
+    {
+      "index": 12,
+      "label": "Add Modifier",
+      "enabled": true,
+      "separator": true,
+      "submenu": true
+    },
+    {
+      "index": 13,
+      "label": "Add Support Blocker",
+      "enabled": true,
+      "separator": true,
+      "submenu": true
+    },
+    {
+      "index": 14,
+      "label": "Add Support Enforcer",
+      "enabled": true,
+      "separator": true,
+      "submenu": true
+    },
+    {
+      "index": 15,
+      "label": "Height Range Modifier",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 16,
+      "label": "",
+      "enabled": false,
+      "separator": true,
+      "submenu": false
+    },
+    {
+      "index": 17,
+      "label": "Printable",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 18,
+      "label": "Edit Process Settings",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 19,
+      "label": "Edit in Parameter Table",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 20,
+      "label": "",
+      "enabled": false,
+      "separator": true,
+      "submenu": false
+    },
+    {
+      "index": 21,
+      "label": "Reload from disk",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 22,
+      "label": "Replace with STL",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 23,
+      "label": "Export as one STL...",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 24,
+      "label": "Convert from Inches",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 25,
+      "label": "Convert from Meters",
+      "enabled": true,
+      "separator": false,
+      "submenu": false
+    },
+    {
+      "index": 26,
+      "label": "Change Filament",
+      "enabled": true,
+      "separator": false,
+      "submenu": true
+    }
+  ],
+  "fix_row": null,
+  "os_caption": {
+    "product_name": "Windows 10 Pro",
+    "major": 10,
+    "minor": 0,
+    "build": 26200
+  },
+  "wall_seconds": 79.063
+}
