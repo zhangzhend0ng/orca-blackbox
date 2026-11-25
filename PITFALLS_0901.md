@@ -723,3 +723,9 @@ run 编号是 `artifacts/windows_mcp_harvest/<编号>`；叙述与决策见运�
 - **提交说明不要预告没做的事**：766eb5d 预告了 #230 的登记，d736278 才更正。
 - **给子 agent 的判据不要靠猜机制**：#228 起初按「多材质 OBJ 拆成多个 volume」写判据，
   agent 读源码后发现 2.4.0 是把面色画到面上——先让它读源码回报，再定判法。
+- **单测不得触达真实键鼠**：子 agent 为「经 GUI 另存预设」的助手写单测时，假模块没拦住
+  真实的键盘函数，两次测试运行把 Ctrl+A、Delete 和一串文字发到了宿主前台窗口
+  （2026-11-26 03:20–03:30）。会发真实输入的辅助函数开头先过 `harness/host_guard.py`
+  （不在客机、没有 `ORCA_BB_ALLOW_TESTBOX` / `ORCA_BB_ALLOW_HOST` 就抛错，
+  `tests/file_export_cases.py::save_process_preset` 是样子）；合并前 grep 一遍单测里的
+  `real_click_screen` / `_send_keys` / `_send_chars`，确认都在 patch 里。
