@@ -146,8 +146,8 @@ def open_dialog_and_dump(session, tag):
 # nothing and #46 reported 'clicked=False'. The dialog's own numeric fields are
 # the readback that exists: click a swatch, read &Red/&Green/Bl&ue back.
 
-def _rgb_edits(dlg):
-    """{'red'|'green'|'blue': (hwnd, rect)} — the numeric fields to the right
+def _color_edits(dlg, names):
+    """Map the requested color channels to the numeric fields to the right
     of their labels (the dialog's own current-color readback).
 
     Note the accelerator sits INSIDE one label: 'Bl&ue:' — stripping only a
@@ -158,7 +158,7 @@ def _rgb_edits(dlg):
     labels = {}
     for t, r, _h in kids:
         tt = t.strip().replace("&", "").rstrip(":").lower()
-        if tt in ("red", "green", "blue"):
+        if tt in names:
             labels.setdefault(tt, r)
     out = {}
     for name, lr in labels.items():
@@ -179,7 +179,7 @@ def read_rgb(session, dlg):
     control in another process — the first rewritten run found the three fields
     but always read ('', '', '')."""
     from harness import winutil as wu
-    edits = _rgb_edits(dlg)
+    edits = _color_edits(dlg, ("red", "green", "blue"))
     if len(edits) < 3:
         return None
     return tuple(wu.edit_text(edits[k][0]) for k in ("red", "green", "blue"))
@@ -199,13 +199,32 @@ def click_swatch_row(session, dlg, x_off, y_off, tries=14, step=17):
     x0, y0 = label[0] + x_off, label[3] + y_off
     for i in range(tries):
         cx, cy = x0 + (i % 7) * step + 8, y0 + (i // 7) * step + 8
-        wu.msg_click_screen(cx, cy, dlg[3])
+        wu.user32.SetCursorPos(cx, cy)
+        time.sleep(0.15)
+        wu.real_click_screen(cx, cy)
         time.sleep(0.5)
         now = read_rgb(session, dlg)
         if now and now != before:
             print(f"{LOG} swatch @({cx},{cy}) -> {now} (was {before})")
             return True
     return False
+
+
+def select_native_color(dialog, before):
+    from harness import winutil
+
+    channels = ("hue", "sat", "lum")
+    edits = _color_edits(dialog, ("red", *channels))
+    if len(edits) != 4 or not before or not before[0].isdecimal():
+        return False
+    before_hsl = tuple(winutil.edit_text(edits[channel][0]) for channel in channels)
+    red = edits["red"][0]
+    winutil._send_msg(red, 0x00B1, 0, -1)  # EM_SETSEL: select the native Edit contents.
+    winutil.msg_text(red, "0" if int(before[0]) >= 128 else "255")
+    time.sleep(0.5)
+    after_hsl = tuple(winutil.edit_text(edits[channel][0]) for channel in channels)
+    print(f"{LOG} native picker derived HSL: {before_hsl!r} -> {after_hsl!r}")
+    return before_hsl != after_hsl and all(field.isdecimal() for field in (*before_hsl, *after_hsl))
 
 
 def click_cancel(dialog):
@@ -231,9 +250,9 @@ def check_cancel_keeps_color(session, open_dialog):
     native = is_native_picker(dialog)
     if native:
         before = read_rgb(session, dialog)
-        click_swatch_row(session, dialog, 8, 8)
+        color_changed = select_native_color(dialog, before)
         selected = read_rgb(session, dialog)
-        changed = (before is not None and selected is not None and before != selected
+        changed = (color_changed and before is not None and selected is not None and before != selected
                    and all(field.isascii() and field.isdecimal()
                            for color in (before, selected) for field in color))
     else:
