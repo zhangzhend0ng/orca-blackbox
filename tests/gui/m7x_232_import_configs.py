@@ -27,7 +27,7 @@ import m7_common as m7
 from harness import process_panel as pp, profile
 from m3_common import add_common_args, boot_session
 from m7x_249_add_part import capture, stage
-from m8_common import wait_arrival, wait_slots
+from m8_common import combo_text, switch_filament_preset, wait_arrival, wait_slots
 from zip_import_oracle import digest
 from import_configs_cases import (answer_dialogs, find_printer_combo, import_once, printer_row_text, read_popup,
                                   select_printer)
