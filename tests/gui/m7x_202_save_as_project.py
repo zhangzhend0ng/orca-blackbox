@@ -26,6 +26,7 @@ from m7x_199_new_project_title import import_unsaved_model
 from project_file_cases import digest_file, dispatch_file_command, project_title, wait_project_write
 
 LOG = "[m7x202]"
+SOURCE_NAME = "test_project.3mf"
 TARGET_NAME = "test_project_v2.3mf"
 
 
@@ -38,7 +39,13 @@ def project_contents(path):
     names = tuple(sorted(element.attrib["value"] for element in object_info.findall("./object/metadata")
                          if element.attrib.get("key") == "name"))
     instances = len(model.findall("./{*}build/{*}item"))
-    return settings["printer_settings_id"], names, instances
+    printer_id = settings["printer_settings_id"]
+    print(f"{LOG} {path.name} raw printer_settings_id={printer_id!r}")
+    # Orca adds the project supplying this cached preset as a display suffix.
+    printer_id = printer_id.removesuffix(f"({TARGET_NAME})").removesuffix(f"({SOURCE_NAME})")
+    printer_signature = (printer_id, settings["printer_model"], settings["printer_variant"],
+                         tuple(settings["nozzle_diameter"]))
+    return printer_signature, names, instances
 
 
 def title_matches(session, expected, timeout_s=12.0):
@@ -84,7 +91,7 @@ def main():
     artifacts = args.datadir.resolve().parent / "feishu-project-cases" / "202"
     artifacts.mkdir(parents=True, exist_ok=True)
     workspace = Path(tempfile.mkdtemp(dir=artifacts))
-    old_path = workspace / "source" / "test_project.3mf"
+    old_path = workspace / "source" / SOURCE_NAME
     new_path = workspace / "target" / TARGET_NAME
     old_path.parent.mkdir()
     new_path.parent.mkdir()
@@ -101,7 +108,7 @@ def main():
         m7.ensure_maximized(session)
         source_before = digest_file(old_path)
         scene_before = project_contents(old_path)
-        print(f"{LOG} source before Save As SHA-256={source_before}, scene={scene_before!r}")
+        print(f"{LOG} source before Save As SHA-256={source_before}, scene={scene_before!a}")
         if not source_before or not scene_before[1] or scene_before[2] == 0 or new_path.exists():
             return m7.m7_verdict({"#202 isolated source/target precondition": "FAIL"})
 
@@ -114,7 +121,7 @@ def main():
         scene_as = project_contents(new_path)
         title_as = title_matches(session, new_path.stem)
         print(f"{LOG} after Save As source SHA-256={source_after_as}, target SHA-256={first_digest}, "
-              f"target scene={scene_as!r}")
+              f"target scene={scene_as!a}")
         results = {
             "#202 Save As generates new project": "PASS" if scene_as == scene_before else "FAIL",
             "#202 source bytes unchanged after Save As": "PASS" if source_after_as == source_before else "FAIL",
@@ -136,7 +143,7 @@ def main():
         old_final = digest_file(old_path)
         final_scene = project_contents(new_path) if final_digest else None
         print(f"{LOG} after ordinary Save source SHA-256={old_final}, target SHA-256={final_digest}, "
-              f"target scene={final_scene!r}")
+              f"target scene={final_scene!a}")
         old_names = Counter(name.casefold() for name in scene_as[1])
         new_names = Counter(name.casefold() for name in final_scene[1]) if final_scene else Counter()
         added_names = tuple((new_names - old_names).elements())
