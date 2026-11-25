@@ -1,0 +1,26 @@
+﻿{
+    "verdict_class":  "SHADOW",
+    "commit":  "c378dee09077104169474b34abc2aaa4a88995e7",
+    "case":  "m7x_238_export_disabled",
+    "host":  "DESKTOP-FA706G3",
+    "user":  "admin",
+    "version":  "2.4.0",
+    "binary_sha256":  "5C48644D7DA18B50636CEEEE4EF9FD2EAF6D4E8AC05BD88752F40E3717FC47BF",
+    "binary_dll_sha256":  "0485166d3c128320195d44c55db18fd43567e2fbbaa4aa5d3f163b71772fba35",
+    "preset_parity":  {
+                          "vendor":  "Snapmaker",
+                          "fa_files":  738,
+                          "fa_tree_sha256":  "8bcd776762d3a2b701101ab9410dce3671636cbfa51e19b3a621656ce2d783f9",
+                          "guest_tree_sha256":  "8bcd776762d3a2b701101ab9410dce3671636cbfa51e19b3a621656ce2d783f9",
+                          "guest_manifest":  "C:/coil/vm_setup/fa_line/guest_profiles.txt",
+                          "guest_manifest_sha256":  "bef3755821afdd603eacf8f88c45fb654d88fe24fd1be4608729453afbd307f9",
+                          "equal":  true
+                      },
+    "candidate_archive_sha256":  "13c3947439cdd549481982e18eb0e58faa2d657f6933c75599345498a1416fa2",
+    "runner":  "elevenhour_1125/fa_obj_run.py rid=06ad1c58064e",
+    "display_wake":  "monitor_on_sent=1 pixel_nudge_sent previous_execution_state=2147483648",
+    "started_at":  "2026-11-26T02:44:23.5054663+08:00",
+    "exit_code":  1,
+    "completed_at":  "2026-11-26T02:45:59.9510670+08:00",
+    "case_seconds":  96.4456007
+}

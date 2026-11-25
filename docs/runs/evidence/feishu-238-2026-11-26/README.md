@@ -1,0 +1,32 @@
+# 飞书 #238 未切片时切片导出条目置灰
+
+记录 `reczz28aa4fiXhYu`（P1）要求盘上有模型但未切片时观察「文件→导出」里切片类条目的状态，执行切片后再次观察。预期「切片导出类条目置灰；切片完成后恢复可用」。
+
+Snapmaker Orca 2.4.0，U1 0.4 mm、Generic PLA、0.20 mm Standard（`fixtures/feishu_std_cube.3mf`）。[构建摘要](build.json)
+
+| 候选提交 | 会话 | 客机 | 场景耗时 | 离线复核 |
+| --- | --- | --- | ---: | --- |
+| `c378dee0…` | [首轮收据](c378dee0-run1-receipt.json) | GREEN | 149.725 秒 | 通过（51 项） |
+| `c378dee0…` | [第二轮收据](c378dee0-run2-receipt.json) | GREEN | 147.204 秒 | 通过（51 项） |
+
+两个会话都在 win11-test 的 `test` 交互桌面经 `runner/hv_go.ps1` 启动，各自是新的 Orca 进程、配置目录和同一夹具。每个会话打开未切片的标准立方体工程，读一次 File→Export 子菜单，点一次 `Slice plate`，等 File→Export 的 `Export G-code` 行启用后再读一次。
+
+| 飞书预期 | 读数 |
+| --- | --- |
+| 切片导出类条目置灰 | 切片前读到的 7 行里，`Export plate sliced file... Ctrl+G`、`Export all plate sliced file...`、`Export G-code...` 三行禁用；另外 4 行（`Export all objects as one STL...`、`Export all objects as STLs...`、`Export Generic 3MF...`、`Export Preset Bundle...`）启用 |
+| 切片完成后恢复可用 | 点 Slice 后 8.6 秒 `Export G-code` 行启用；再读一次，三行都启用，另外 4 行仍启用，行名与行序和第一次相同 |
+
+行状态读的是原生菜单项的标志位（`harness/topbar_util.py` 的 `menu_items`）。逐项读数在 [analysis.json](c378dee0-run1-analysis.json)。
+
+**这条用例没有像素证据。** 客机上 Export 子菜单没有在屏幕上展开（记录里 `menu_picture.image` 为空，原因写作 `the Export submenu did not open on screen`），菜单状态只存在于 analysis.json 和 case.log。离线复核能把两者绑在一起，但不能重新观察界面。
+
+离线复核用 `tools/replay_case_evidence.py`：先核对清单里的字节数与 SHA-256，再重判并做 24 个反例，每个收据启动一个独立进程，各约 7 秒。读数分三层：三次读到的行与启用状态；主线判据 `export_rows_expectation_gaps` 的重算结果与记录对照；与收据哈希绑定的 case.log——日志里两行 `[export] File > Export read: [...]` 必须和记录的两次菜单逐行一致，`'Export G-code' enabled 8.6s` 必须等于记录的秒数。反例包括切片前任一行启用、切片后任一行仍置灰、行缺失或重复、两次行序不同、改了 gaps、阶段顺序颠倒、换成别的工程、切片前工程已含 G-code、护栏未关、清单不符、日志里的菜单行被改。
+
+```powershell
+& runner/hv_go.ps1 -Cases m7x_238_export_disabled -NoSync
+python tools/replay_case_evidence.py docs/runs/evidence/feishu-238-2026-11-26/c378dee0-run1-receipt.json docs/runs/evidence/feishu-238-2026-11-26/c378dee0-run2-receipt.json
+```
+
+计时：用例内每轮约 78 秒（打开工程 9.2、读菜单 27.2、切片 13.2、再读菜单 28.2），宿主派发到收割 127 秒。领取到首次客机通过（提交 `11858f1`，02:23:27）约 3 小时 24 分，其间 1 轮失败：Export 子菜单没有在屏幕上展开，用例当时因此中断；之后改成读原生菜单并把「没拍到」记为事实。随后的正式双会话没有失败轮。换初态的返工耗时和历史手工耗时均为未测。用例过程中没有人工桌面输入。
+
+实体机 fa706g3 的一次 SHADOW：`c378dee`（96.4 秒）RED，File 菜单点开后没有关上，没有读到菜单（[日志](fa-c378dee0-06ad1c58064e-case.log)）。只计 SHADOW，没有复跑。

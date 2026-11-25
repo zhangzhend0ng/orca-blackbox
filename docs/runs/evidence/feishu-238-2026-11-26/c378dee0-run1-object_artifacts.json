@@ -1,0 +1,22 @@
+﻿[
+    {
+        "part":  "analysis.json",
+        "bytes":  10722,
+        "sha256":  "9CB0BA56AEA0D261EBA088AC7A832D2A3DF9A5CE00A9ACC9CB29E29BC1C7F41B"
+    },
+    {
+        "part":  "before.3mf",
+        "bytes":  34324,
+        "sha256":  "8F792FAEA6CFE129D79D6998E9D962347D8A49B4E1C746807AC006B80D3EFE44"
+    },
+    {
+        "part":  "before.png",
+        "bytes":  289214,
+        "sha256":  "101AF13503AD29D3DB19613977607E6FDEA172160C52989070DCD807408BC8D0"
+    },
+    {
+        "part":  "sliced.png",
+        "bytes":  508525,
+        "sha256":  "5601C64927E970A1A7C7449118702544CF177AEF8FEFE288DF6433D1C99BDE58"
+    }
+]
