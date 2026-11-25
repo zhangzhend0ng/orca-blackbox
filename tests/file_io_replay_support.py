@@ -9,9 +9,11 @@ from contextlib import contextmanager
 from hashlib import sha256
 from io import BytesIO
 import json
+import math
 from pathlib import Path
 import re
 import shutil
+import struct
 import tempfile
 from xml.etree import ElementTree as ET
 from zipfile import BadZipFile, ZipFile, ZIP_DEFLATED
@@ -158,13 +160,14 @@ def _corners(files, models, object_id, matrix, depth=0):
     return out
 
 
-def _faces(points):
+def faces(corners: list) -> tuple:
     """Triangles as sorted rounded vertex triples, so that winding, order and indexing do not matter."""
-    corners = [tuple(round(value, 6) + 0.0 for value in point) for point in points]
-    return tuple(sorted(tuple(sorted(corners[index:index + 3])) for index in range(0, len(corners), 3)))
+    rounded = [tuple(round(value, 6) + 0.0 for value in point) for point in corners]
+    return tuple(sorted(tuple(sorted(rounded[index:index + 3])) for index in range(0, len(rounded), 3)))
 
 
-def _box(points):
+def box(points: list) -> tuple:
+    """(xmin, xmax, ymin, ymax, zmin, zmax) of the points, rounded to a millionth of a millimetre."""
     return tuple(round(value, 6) + 0.0 for axis in zip(*points) for value in (min(axis), max(axis)))
 
 
@@ -193,7 +196,7 @@ def project(raw: bytes) -> dict:
         corners = _corners(files, {MAIN: main}, item.get('objectid'), _matrix(item.get('transform')))
         _need(corners, f'object {item.get("objectid")} adds no triangles')
         objects.append({'name': names.get(item.get('objectid')), 'plate': plates.get(item.get('objectid')),
-                        'triangles': _faces(corners), 'box': _box(corners)})
+                        'triangles': faces(corners), 'box': box(corners)})
     application = main.find(CORE + 'metadata[@name="Application"]')
     return {'application': application.text if application is not None else None, 'settings': settings,
             'objects': objects}
@@ -332,10 +335,90 @@ def gcode(raw: bytes) -> dict:
     }
 
 
+# --- binary STL and project stand-ins --------------------------------------------
+
+STL_RECORD = struct.Struct('<12fH')
+ORDERS = ((0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0))
+
+
+def stl(raw: bytes) -> tuple:
+    """(header, triangles) of a binary STL: every triangle as its three (x, y, z) corners."""
+    _need(len(raw) >= 84, 'STL is shorter than a header and a triangle count')
+    count = struct.unpack_from('<I', raw, 80)[0]
+    _need(len(raw) == 84 + STL_RECORD.size * count,
+          f'not a whole binary STL: {count} triangles declared, {len(raw)} bytes held')
+    return raw[:80], [(record[3:6], record[6:9], record[9:12]) for record in STL_RECORD.iter_unpack(raw[84:])]
+
+
+def stl_bytes(header: bytes, triangles) -> bytes:
+    """A binary STL from triangles; the normals and attributes are left zero."""
+    rows = [header, struct.pack('<I', len(triangles))]
+    rows += [STL_RECORD.pack(0.0, 0.0, 0.0, *triangle[0], *triangle[1], *triangle[2], 0)
+             for triangle in triangles]
+    return b''.join(rows)
+
+
+def _gap(triangle, other):
+    """Smallest largest-coordinate distance over the ways to pair the corners of two triangles."""
+    return min(max(abs(a - b) for first, second in zip(order, other) for a, b in zip(first, second))
+               for order in ((triangle[i], triangle[j], triangle[k]) for i, j, k in ORDERS))
+
+
+def _cell(point, size):
+    return tuple(math.floor(value / size) for value in point)
+
+
+def paired(expected, actual, tol=1e-4, cell=1e-3):
+    """Pair every expected triangle with one STL triangle of the same corners within `tol`, whatever
+    the winding and the order. Returns (the STL triangle's number for each expected triangle, or None,
+    and the largest coordinate distance among the pairs)."""
+    _need(tol < cell, 'the search cell must be wider than the tolerance')
+    lookup = {}
+    for number, triangle in enumerate(actual):
+        for corner in triangle:
+            lookup.setdefault(_cell(corner, cell), set()).add(number)
+    pairs, used, worst = [], set(), 0.0
+    for triangle in expected:
+        # the matching STL triangle has a corner within tol of this one's smallest corner
+        x, y, z = _cell(min(triangle), cell)
+        candidates = set()
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                for dz in (-1, 0, 1):
+                    candidates |= lookup.get((x + dx, y + dy, z + dz), set())
+        best = None
+        for number in candidates - used:
+            gap = _gap(triangle, actual[number])
+            if gap <= tol and (best is None or gap < best[1]):
+                best = number, gap
+        if best is None:
+            pairs.append(None)
+        else:
+            used.add(best[0])
+            pairs.append(best[0])
+            worst = max(worst, best[1])
+    return pairs, worst
+
+
+def moved_project(raw: bytes, dx: float = 0.0, dy: float = 0.0, dz: float = 0.0) -> bytes:
+    """The project with every build item shifted by (dx, dy, dz): the same objects, somewhere else."""
+    files = archive(raw)
+    model = _xml(files[MAIN], MAIN)
+    for item in model.iter(CORE + 'item'):
+        values = list(_matrix(item.get('transform')))
+        values[9:12] = [values[9] + dx, values[10] + dy, values[11] + dz]
+        item.set('transform', ' '.join(f'{value:g}' for value in values))
+    files[MAIN] = ET.tostring(model, encoding='utf-8', xml_declaration=True)
+    return zipped(files)
+
+
 # --- pictures, manifests and copies ----------------------------------------------
 
 def png(raw: bytes) -> dict:
-    """Size and tonal range of a picture."""
+    """Size and tonal range of a picture. For one with an alpha channel, `solid` describes the fully
+    opaque pixels: their share, their box and whether it stays inside the picture, and how many colours
+    they show. A render has a bounded body of them; a blank or an opaque background has none or all."""
+    import numpy as np
     from PIL import Image
 
     try:
@@ -345,11 +428,56 @@ def png(raw: bytes) -> dict:
             histogram = gray.histogram()
             count = sum(histogram)
             mean = sum(level * n for level, n in enumerate(histogram)) / count
+            solid = None
+            if 'A' in image.getbands():
+                pixels = np.asarray(image.convert('RGBA'))
+                body = pixels[..., 3] == 255
+                rows, columns = np.nonzero(body)
+                height, width = body.shape
+                solid = {'fraction': float(body.mean()),
+                         'inside': bool(rows.size and 0 < columns.min() and columns.max() + 1 < width
+                                         and 0 < rows.min() and rows.max() + 1 < height),
+                         'box': None if not rows.size else [int(columns.min()), int(rows.min()),
+                                                           int(columns.max()) + 1, int(rows.max()) + 1],
+                         'colors': int(np.unique(pixels[body][:, :3], axis=0).shape[0]) if rows.size else 0}
+            facts = {'format': image.format, 'width': gray.width, 'height': gray.height, 'mode': image.mode,
+                     'gray_levels': sum(1 for n in histogram if n), 'solid': solid}
     except (OSError, ValueError, Image.DecompressionBombError) as exc:
         raise ValueError(f'not a readable picture ({type(exc).__name__})') from exc
     spread = sum(n * (level - mean) ** 2 for level, n in enumerate(histogram)) / count
-    return {'format': image.format, 'width': gray.width, 'height': gray.height, 'mode': image.mode,
-            'gray_levels': sum(1 for n in histogram if n), 'std': round(spread ** 0.5, 3)}
+    return dict(facts, std=round(spread ** 0.5, 3))
+
+
+def blank_png(width: int, height: int) -> bytes:
+    """A fully transparent RGBA picture of the given size, written without Pillow."""
+    rows = b''.join(b'\x00' + bytes(4 * width) for _ in range(height))
+
+    def chunk(kind: bytes, data: bytes) -> bytes:
+        return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind + data))
+
+    header = struct.pack('>IIBBBBB', width, height, 8, 6, 0, 0, 0)
+    return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', header) + chunk(b'IDAT', zlib.compress(rows))
+            + chunk(b'IEND', b''))
+
+
+def screenshots(raw: dict, recorded, names: tuple, dialog: str) -> dict:
+    """Two readings of retained screenshots: each is a picture with something in it, and the one of
+    the dialog has the size the record gives."""
+    pictures = {}
+    for part in names:
+        try:
+            pictures[part] = png(raw[part])
+        except ValueError:
+            pictures[part] = None
+    size = pictures[dialog] or {}
+    shown = recorded.get('dialog_image') if isinstance(recorded, dict) else None
+    return {
+        'screenshots_are_pictures': all(
+            picture and picture['format'] == 'PNG' and picture['width'] >= 640 and picture['height'] >= 400
+            and picture['gray_levels'] >= 32 and picture['std'] >= 5 for picture in pictures.values()),
+        'dialog_picture_matches_record': shown == {
+            'width_px': size.get('width'), 'height_px': size.get('height')},
+    }
 
 
 def manifest(directory, prefix) -> list:
@@ -404,3 +532,28 @@ def copy_of(directory, prefix, replace=None, rename=None, keep_manifest=True):
                     entry.update(bytes=len(raw), sha256=sha256(raw).hexdigest())
         (work / name).write_text(json.dumps(entries, indent=1), encoding='utf-8')
         yield work, prefix
+
+
+def refused(read, positive, directory, prefix, replace=None, rename=None, keep_manifest=True) -> bool:
+    """True when the run with a part stood in no longer passes every reading named in `positive`.
+    `read(directory, prefix)` returns the readings, its checks first; a ValueError counts as refusal."""
+    try:
+        with copy_of(directory, prefix, replace, rename, keep_manifest) as (folder, altered):
+            checks = read(folder, altered)[0]
+    except ValueError:
+        return True
+    return not all(checks[key] for key in positive)
+
+
+def flattering(raw: bytes, clauses, **changes) -> bytes:
+    """analysis.json as a forger would write it: every clause PASS and no gaps."""
+    analysis = json.loads(raw.decode('utf-8-sig'))
+    analysis['results'] = {clause: 'PASS' for clause in clauses}
+    analysis['expectation_gaps'] = {clause: [] for clause in clauses}
+    analysis.update(changes)
+    return json.dumps(analysis, indent=2, ensure_ascii=False).encode('utf-8')
+
+
+def work_directories(text: str, tag: str) -> list:
+    """The directories a case log says it retained: every `[tag] retained work directory: <path>` line."""
+    return re.findall(r'^\[' + re.escape(tag) + r'\] retained work directory: (.+?)[ \t\r]*$', text, re.M)

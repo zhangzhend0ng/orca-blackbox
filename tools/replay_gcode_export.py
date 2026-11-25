@@ -15,15 +15,14 @@ import json
 from pathlib import Path
 import re
 import sys
-from xml.etree import ElementTree as ET
 
 from tools.replay_evidence_files import verified_part
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from export_io_oracle import gcode_checks, gcode_export_facts, gcode_expectation_gaps
-from file_io_replay_support import CORE, LAYER, MAIN, MARKS, archive, copy_of, fan_off, gcode, head, heat_off
-from file_io_replay_support import heat_on, manifest, png, project, zipped
+from file_io_replay_support import LAYER, MARKS, fan_off, flattering, gcode, head, heat_off, heat_on, manifest
+from file_io_replay_support import moved_project, png, project, refused, screenshots
 
 CASE = 236
 FIXTURE = ROOT / "fixtures" / "feishu_std_cube.3mf"
@@ -177,21 +176,8 @@ def _claims(analysis, name, raw, digest, facts):
 
 def _pictures(raw, analysis):
     """The retained screenshots are pictures with something in them; the dialog one has the recorded size."""
-    pictures = {}
-    for part in PICTURES:
-        try:
-            pictures[part] = png(raw[part])
-        except ValueError:
-            pictures[part] = None
-    dialog = pictures["export-dialog.png"] or {}
-    recorded = analysis["export"].get("dialog_image") if isinstance(analysis.get("export"), dict) else None
-    return {
-        "screenshots_are_pictures": all(
-            picture and picture["format"] == "PNG" and picture["width"] >= 640 and picture["height"] >= 400
-            and picture["gray_levels"] >= 32 and picture["std"] >= 5 for picture in pictures.values()),
-        "dialog_picture_matches_record": recorded == {
-            "width_px": dialog.get("width"), "height_px": dialog.get("height")},
-    }
+    export = analysis.get("export")
+    return screenshots(raw, export if isinstance(export, dict) else None, PICTURES, "export-dialog.png")
 
 
 def _read(directory, prefix):
@@ -294,36 +280,6 @@ def _shifted(raw, dx=40.0, dy=0.0):
     return _join(out)
 
 
-def _moved_project(raw, dx=40.0):
-    """The saved project with its objects somewhere else than where the G-code prints."""
-    files = archive(raw)
-    model = ET.fromstring(files[MAIN])
-    for item in model.iter(CORE + "item"):
-        values = [float(word) for word in (item.get("transform") or "1 0 0 0 1 0 0 0 1 0 0 0").split()]
-        values[9] += dx
-        item.set("transform", " ".join(f"{value:g}" for value in values))
-    files[MAIN] = ET.tostring(model, encoding="utf-8", xml_declaration=True)
-    return zipped(files)
-
-
-def _flattering(raw):
-    """analysis.json as a forger would write it: every clause PASS and no gaps."""
-    analysis = json.loads(raw.decode("utf-8-sig"))
-    analysis["results"] = {clause: "PASS" for clause in CLAUSES}
-    analysis["expectation_gaps"] = {clause: [] for clause in CLAUSES}
-    return json.dumps(analysis, indent=2, ensure_ascii=False).encode("utf-8")
-
-
-def _refused(directory, prefix, replace=None, rename=None, keep_manifest=True):
-    """True when the run with a part stood in no longer passes every positive reading."""
-    try:
-        with copy_of(directory, prefix, replace, rename, keep_manifest) as (folder, altered):
-            checks = _read(folder, altered)[0]
-    except ValueError:
-        return True
-    return not all(checks[key] for key in POSITIVE)
-
-
 def _controls(directory, prefix, raw, name, plate):
     """Each counterexample of the row, stood in on a copy whose manifest agrees with it."""
     lines, count = raw[name].decode("utf-8").split("\n"), plate["layer_count"]
@@ -339,15 +295,15 @@ def _controls(directory, prefix, raw, name, plate):
         # a short move along Y only leaves the footprint test: every count, block and total still holds
         "print_moved_off_the_object_rejected": _shifted(raw[name], dx=0.0, dy=3.0),
     }
-    checks = {label: _refused(directory, prefix, {name: replacement})
+    checks = {label: refused(_read, POSITIVE, directory, prefix, {name: replacement})
               for label, replacement in stand_ins.items()}
-    checks["wrong_extension_rejected"] = _refused(directory, prefix, rename={name: "plate.gcode.3mf"})
-    checks["other_project_rejected"] = _refused(
-        directory, prefix, {"before.3mf": _moved_project(raw["before.3mf"])})
-    checks["manifest_mismatch_rejected"] = _refused(directory, prefix, {name: b""}, keep_manifest=False)
-    checks["edited_analysis_rejected"] = _refused(directory, prefix, {
+    checks["wrong_extension_rejected"] = refused(_read, POSITIVE, directory, prefix, rename={name: "plate.gcode.3mf"})
+    checks["other_project_rejected"] = refused(
+        _read, POSITIVE, directory, prefix, {"before.3mf": moved_project(raw["before.3mf"], dx=40.0)})
+    checks["manifest_mismatch_rejected"] = refused(_read, POSITIVE, directory, prefix, {name: b""}, keep_manifest=False)
+    checks["edited_analysis_rejected"] = refused(_read, POSITIVE, directory, prefix, {
         name: _join(_without_end(lines, plate["last_extruding_line"])),
-        "analysis.json": _flattering(raw["analysis.json"])})
+        "analysis.json": flattering(raw["analysis.json"], CLAUSES)})
     return checks
 
 

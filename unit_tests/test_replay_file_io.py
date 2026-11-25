@@ -1,8 +1,11 @@
-"""Feishu #236 replayed offline: synthetic harvests for tools/replay_gcode_export.py, and the independent
-readers of tests/file_io_replay_support.py against real archived bytes.
+"""Feishu #236 and #233 replayed offline: synthetic harvests for tools/replay_gcode_export.py and
+tools/replay_merged_stl.py, and the independent readers of tests/file_io_replay_support.py against
+real archived bytes.
 
-The synthetic run is built here with zipfile, string templates and Pillow: a project equal to the standard
-cube fixture by content, a G-code that prints it, two screenshots and the record the GUI would keep.
+The #236 run is built here with zipfile, string templates and Pillow: a project equal to the
+standard cube fixture by content, a G-code that prints it, two screenshots and the record the GUI
+would keep. The #233 run adds a ball beside the cube, an STL of both written with struct, a viewer
+render with an opaque body in a transparent frame, and the viewer's logs.
 """
 from hashlib import sha256
 from io import BytesIO
@@ -418,3 +421,393 @@ def test_picture_reader_reports_a_blank_and_a_real_screenshot():
     assert (real["format"], real["width"], real["height"]) == ("PNG", 1920, 1032) and real["std"] > 5
     with pytest.raises(ValueError, match="not a readable picture"):
         png(b"not a picture")
+
+
+# --- Feishu #233: the merged STL ---------------------------------------------------
+# The synthetic run is a saved plate with the fixture's cube and a ball built here, an STL of both
+# written with struct, a viewer render with an opaque body in a transparent frame, the viewer's
+# logs and the record the case writes for them.
+
+import math
+import struct
+
+import file_io_replay_support as support
+from plate_reserve_oracle import verify_f3d_image
+from tools import replay_merged_stl as merged
+
+MERGE_PREFIX = "be234567-run1"
+BED = {"printable_area": ["0.5x1", "270.5x1", "270.5x271", "0.5x271"], "printable_height": "270.05",
+       "bed_exclude_area": ["0x0"]}
+VERSION_LOG = b"F3D 4.0.1\r\n\r\nF3D - A fast and minimalist 3D viewer\r\nVersion: 4.0.1.\r\n"
+BROKEN = b"not an STL mesh\n"
+# where Arrange leaves the two: the cube's low corner and the ball's centre, a plate's width apart in Y
+CUBE_AT, BALL_AT = (122.0, 137.0, 0.0), (135.5, 121.5, 13.5)
+UNOPENABLE = object()     # a stand-in the replay cannot even open, so no reading names it
+BALL_TRIANGLES = 224      # 8 rings of 16 segments: 16 + 6 * 32 + 16
+
+
+def indexed(triangles):
+    """A triangle soup as (vertices, faces): every corner once, named by its index in each triangle."""
+    vertices, faces = [], []
+    for triangle in triangles:
+        face = []
+        for corner in triangle:
+            if corner not in vertices:
+                vertices.append(corner)
+            face.append(vertices.index(corner))
+        faces.append(tuple(face))
+    return vertices, faces
+
+
+def local_cube():
+    """The fixture's cube mesh in its own frame, which starts at the cube's low corner on the plate."""
+    world = project(FIXTURE.read_bytes())["objects"][0]["triangles"]
+    return indexed([tuple(tuple(c - o for c, o in zip(corner, CUBE_BOX[0::2])) for corner in triangle)
+                    for triangle in world])
+
+
+def ball_mesh(radius=13.5, rings=8, segments=16):
+    """A tessellated ball around the origin: two poles and rings of vertices, all exactly on its surface."""
+    vertices = [(0.0, 0.0, radius)]
+    for ring in range(1, rings):
+        theta = math.pi * ring / rings
+        vertices += [(radius * math.sin(theta) * math.cos(2 * math.pi * step / segments),
+                      radius * math.sin(theta) * math.sin(2 * math.pi * step / segments),
+                      radius * math.cos(theta)) for step in range(segments)]
+    vertices.append((0.0, 0.0, -radius))
+    faces = [(0, 1 + step, 1 + (step + 1) % segments) for step in range(segments)]
+    for ring in range(rings - 2):
+        top, below = 1 + ring * segments, 1 + (ring + 1) * segments
+        for step in range(segments):
+            a, b = top + step, top + (step + 1) % segments
+            c, d = below + step, below + (step + 1) % segments
+            faces += [(a, c, d), (a, d, b)]
+    last = 1 + (rings - 2) * segments
+    faces += [(last + step, len(vertices) - 1, last + (step + 1) % segments) for step in range(segments)]
+    return vertices, faces
+
+
+def plate_3mf(objects, settings=None):
+    """A saved plate from scratch: a (name, vertices, faces, translation) per object, in build order."""
+    resources, items, rows, instances = [], [], [], []
+    for index, (name, vertices, faces, at) in enumerate(objects):
+        outer, mesh = 2 * index + 2, 2 * index + 1
+        resources.append(
+            f'<object id="{outer}" type="model"><components><component objectid="{mesh}" '
+            'transform="1 0 0 0 1 0 0 0 1 0 0 0"/></components></object>'
+            f'<object id="{mesh}" type="model"><mesh><vertices>'
+            + "".join(f'<vertex x="{x:g}" y="{y:g}" z="{z:g}"/>' for x, y, z in vertices)
+            + "</vertices><triangles>"
+            + "".join(f'<triangle v1="{a}" v2="{b}" v3="{c}"/>' for a, b, c in faces)
+            + "</triangles></mesh></object>")
+        items.append(f'<item objectid="{outer}" transform="1 0 0 0 1 0 0 0 1 {at[0]:g} {at[1]:g} {at[2]:g}"/>')
+        rows.append(f'<object id="{outer}"><metadata key="name" value="{name}"/>'
+                    f'<part id="{mesh}" subtype="normal_part"><metadata key="name" value="{name}"/></part></object>')
+        instances.append(f'<model_instance><metadata key="object_id" value="{outer}"/>'
+                         '<metadata key="instance_id" value="0"/></model_instance>')
+    head = (f'<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xmlns="{CORE[1:-1]}" '
+            'xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06">'
+            '<metadata name="Application">Snapmaker_Orca-2.4.0</metadata>')
+    return zipped({
+        MAIN: (f"{head}<resources>{''.join(resources)}</resources>"
+               f"<build>{''.join(items)}</build></model>").encode(),
+        "Metadata/project_settings.config": json.dumps(
+            dict(SETTINGS, **BED) if settings is None else settings).encode(),
+        "Metadata/model_settings.config": (
+            f"<config>{''.join(rows)}<plate><metadata key=\"plater_id\" value=\"1\"/>"
+            "<metadata key=\"plater_name\" value=\"\"/>" + "".join(instances) + "</plate></config>").encode()})
+
+
+def default_plate():
+    return plate_3mf([("立方体", *local_cube(), CUBE_AT), ("Sphere", *ball_mesh(), BALL_AT)])
+
+
+def float32(value):
+    return struct.unpack("<f", struct.pack("<f", value))[0]
+
+
+def merged_stl_of(plate):
+    """A binary STL of a plate's triangles as the application writes one: float32, in plate order."""
+    return support.stl_bytes(bytes(80), [
+        tuple(tuple(float32(value) for value in corner) for corner in triangle)
+        for item in project(plate)["objects"] for triangle in item["triangles"]])
+
+
+PALETTE = np.array([[230, 60, 60], [60, 200, 90], [70, 110, 230], [240, 210, 60], [200, 80, 200],
+                    [80, 220, 220], [250, 150, 60], [160, 160, 160]], np.uint8)
+
+
+def render_png(width=800, height=600, body=True):
+    """What a viewer render looks like: a transparent frame around an opaque disc of eight sectors."""
+    y, x = np.mgrid[0:height, 0:width]
+    pixels = np.zeros((height, width, 4), np.uint8)
+    disc = (x - width / 2) ** 2 + (y - height / 2) ** 2 < (min(width, height) / 2 - 20) ** 2
+    if body:
+        sector = ((np.arctan2(y - height / 2, x - width / 2) + math.pi) / (2 * math.pi) * len(PALETTE)).astype(int)
+        pixels[disc, :3] = PALETTE[sector[disc] % len(PALETTE)]
+        pixels[disc, 3] = 255
+    out = BytesIO()
+    Image.fromarray(pixels, "RGBA").save(out, "PNG")
+    return out.getvalue()
+
+
+def write_merge_run(folder, prefix=MERGE_PREFIX, *, stl=None, plate=None, record=None, render=None, logs=None,
+                    control=BROKEN):
+    """A synthetic #233 harvest in the shape the collector leaves. The record is what the case writes
+    for these files: the oracle's readings of the plate and the STL, the viewer's exit codes and digests."""
+    folder.mkdir(parents=True, exist_ok=True)
+    plate = default_plate() if plate is None else plate
+    stl = merged_stl_of(plate) if stl is None else stl
+    render = render_png() if render is None else render
+    work = f"C:\\coil\\runs\\{prefix}"
+    texts = {"f3d-version.log": VERSION_LOG,
+             "f3d-view.log": "Loading all-objects.stl : 100% [00:00/00:00]\r\n".encode(),
+             "f3d-invalid.log": (f"{work}\\invalid.stl contains unsupported contents, use --skip-content-check "
+                                 "to try reading it anyway\r\nNo files loaded, no rendering performed\r\n").encode()}
+    parts = {"before.3mf": plate, "all-objects.stl": stl, "before.png": picture(seed=1),
+             "export-dialog.png": picture(seed=2), "f3d-view.png": render, "invalid.stl": control,
+             **dict(texts, **(logs or {}))}
+    for part, raw in parts.items():
+        (folder / f"{prefix}-{part}").write_bytes(raw)
+    before, shown, rendered = (folder / f"{prefix}-{part}" for part in
+                               ("before.3mf", "all-objects.stl", "f3d-view.png"))
+    gaps = merged.merged_stl_expectation_gaps(before, shown, ".stl")
+    try:
+        geometry = merged.verify_merged_stl(before, shown)       # what the case keeps when the geometry holds
+    except (OSError, ValueError):
+        geometry = None
+    try:
+        image = verify_f3d_image(rendered)
+    except (OSError, ValueError):
+        image = None
+    viewer = {"path": "C:/coil/tools/orca-bb-f3d/bin/f3d-console.exe",
+              "version": VERSION_LOG.decode().replace("\r\n", "\n").strip(), "version_rc": 0,
+              "source_sha256": sha256(stl).hexdigest(), "positive_rc": 0, "image": image,
+              "output_sha256": sha256(render).hexdigest(), "negative_rc": 1, "negative_rejected": True,
+              "same_bytes_as_export": True}
+    gaps["可正常打开"] = merged.viewer_gaps(viewer)
+    dialog = png(picture(seed=2))
+    default = {"case": 233,
+               "results": {clause: "PASS" if not failed else f"FAIL ({'; '.join(failed)[:400]})"
+                           for clause, failed in gaps.items()},
+               "fixture": {"name": FIXTURE.name, "bytes": len(FIXTURE.read_bytes()),
+                           "sha256": sha256(FIXTURE.read_bytes()).hexdigest()},
+               "plate": merged.plate_object_layout(before), "arranged": True,
+               "export": {"item": "Export all objects as one STL", "typed_name": "all-objects",
+                          "title": "Export STL file:", "directory": work, "saved_name": "all-objects.stl",
+                          "saved_extension": ".stl", "file_bytes": len(stl), "file_sha256": sha256(stl).hexdigest(),
+                          "dialog_image": {"width_px": dialog["width"], "height_px": dialog["height"]},
+                          "dialog_closed": True, "app_alive": True},
+               "expectation_gaps": gaps, "viewer": viewer,
+               "editor_after_export": {"alive": True, "dialog": None}, "wall_seconds": 1.0}
+    if geometry is not None:
+        default["merged_geometry"] = geometry
+    # `record` may be a callable that edits what the case would have written
+    parts["analysis.json"] = json.dumps(record(default) if callable(record) else default, ensure_ascii=False,
+                                        indent=2).encode("utf-8")
+    (folder / f"{prefix}-analysis.json").write_bytes(parts["analysis.json"])
+    manifest_ = [{"part": part, "bytes": len(raw), "sha256": sha256(raw).hexdigest()}
+                 for part, raw in parts.items()]
+    (folder / f"{prefix}-object_artifacts.json").write_text(json.dumps(manifest_, indent=1), encoding="utf-8")
+    log = f"[m7x233] retained work directory: {work}\n".encode()
+    (folder / f"{prefix}-case.log").write_bytes(log)
+    (folder / f"{prefix}-receipt.json").write_text(json.dumps({
+        "case": "m7x_233_export_merged_stl", "commit": "0" * 40, "summary": "SUMMARY: PASS=1 FAIL=0",
+        "dispatched_at": "2026-11-26T00:00:00+00:00", "scenario_completed_at": "2026-11-26T00:02:00+00:00",
+        "log_sha256": sha256(log).hexdigest()}), encoding="utf-8")
+    return folder, prefix
+
+
+def merge_refused(tmp_path, failed, **changes):
+    """A run whose files differ and whose record was written for those files: the replay names `failed`."""
+    folder, prefix = write_merge_run(tmp_path, **changes)
+    result = merged.replay(folder, prefix)
+    assert set(failed) <= set(result["export"]["failed"]), result["export"]["failed"]
+    assert not all(value is True for value in result["checks"].values())
+    return result
+
+
+# every stand-in of the merged STL replay with the readings that own it; UNOPENABLE: the replay
+# cannot even read the run
+MERGE_REFUSED_BY = {
+    "cube_only_export_rejected": ["stl_holds_every_plate_triangle_once", "oracle_accepts_export"],
+    "sphere_only_export_rejected": ["stl_holds_every_plate_triangle_once", "oracle_accepts_export"],
+    "objects_moved_together_rejected": ["stl_holds_every_plate_triangle_once", "each_object_keeps_its_place",
+                                        "oracle_accepts_export"],
+    "objects_moved_to_origin_rejected": ["stl_holds_every_plate_triangle_once", "each_object_keeps_its_place",
+                                         "oracle_accepts_export"],
+    "empty_stl_rejected": ["stl_holds_every_plate_triangle_once", "oracle_accepts_export"],
+    "collapsed_export_rejected": ["stl_holds_every_plate_triangle_once", "each_object_keeps_its_place",
+                                  "oracle_accepts_export"],
+    "truncated_stl_rejected": UNOPENABLE,
+    "shifted_export_rejected": ["stl_holds_every_plate_triangle_once", "each_object_keeps_its_place",
+                                "oracle_accepts_export"],
+    "blank_render_rejected": ["render_shows_a_mesh", "oracle_accepts_the_render"],
+    "viewer_accepted_the_control_rejected": ["viewer_refused_the_control"],
+    "viewer_read_other_bytes_rejected": ["viewer_read_the_exported_bytes"],
+    "valid_control_stl_rejected": ["control_is_not_an_stl"],
+    "wrong_extension_rejected": UNOPENABLE,
+    "project_moved_rejected": ["stl_holds_every_plate_triangle_once", "oracle_accepts_export"],
+    "manifest_mismatch_rejected": UNOPENABLE,
+    "edited_analysis_rejected": ["recorded_verdict_matches_file", "oracle_accepts_export"],
+}
+
+
+def test_synthetic_merged_run_passes_every_reading_and_every_counterexample(tmp_path):
+    folder, prefix = write_merge_run(tmp_path)
+    result = merged.replay(folder, prefix)
+    not_true = [key for key, value in result["checks"].items() if value is not True]
+    assert not not_true, not_true
+    assert set(merged.POSITIVE) <= set(result["checks"])
+    assert {key for key in result["checks"] if key.endswith("_rejected")} == set(MERGE_REFUSED_BY)
+    report = result["export"]
+    assert (report["exported"], report["triangles"]) == ("all-objects.stl", 12 + BALL_TRIANGLES)
+    assert 0 < report["worst_vertex_deviation_mm"] < 1e-5      # float32 corners against the project's
+
+
+def test_merged_stl_runs_through_the_shared_driver_like_the_other_replays(tmp_path, monkeypatch):
+    folder, prefix = write_merge_run(tmp_path)
+    monkeypatch.setitem(ADAPTERS, "m7x_233_export_merged_stl", merged.replay)
+    assert replay_receipt(folder / f"{prefix}-receipt.json")["offline_checks_passed"]
+    (folder / f"{prefix}-case.log").write_bytes(b"another log\n")
+    assert not replay_receipt(folder / f"{prefix}-receipt.json")["offline_checks_passed"]
+
+
+@pytest.mark.parametrize("label,failed", sorted(MERGE_REFUSED_BY.items()))
+def test_each_counterexample_is_refused_by_the_reading_that_owns_it(tmp_path, label, failed):
+    folder, prefix = write_merge_run(tmp_path)
+    how = dict(merged._stand_ins(merged._read(folder, prefix)[2]))[label]
+    with copy_of(folder, prefix, **how) as (other, altered):
+        if failed is UNOPENABLE:
+            with pytest.raises(ValueError):
+                merged._read(other, altered)
+            return
+        readings = merged._read(other, altered)[1]
+    assert set(failed) <= set(readings["failed"]), readings["failed"]
+
+
+def test_replay_reads_every_counterexample_of_the_merged_stl_on_a_temporary_copy(tmp_path, monkeypatch):
+    folder, prefix = write_merge_run(tmp_path)
+    reads, real = [], merged._read
+    monkeypatch.setattr(merged, "_read", lambda place, pre: reads.append(place.name) or real(place, pre))
+    result = merged.replay(folder, prefix)
+    assert all(value is True for value in result["checks"].values())
+    assert len(reads) == 17 and sum(name.startswith("replay-") for name in reads) == 16
+
+
+def lumpy_ball():
+    """The ball with its rings at 45 degrees pushed outwards: the same box, corners no longer on one ball."""
+    vertices, faces = ball_mesh()
+    segments = 16
+
+    def ring(index):          # the poles are outside the rings; ring 1 and ring 5 sit at 45 degrees
+        return -1 if index in (0, len(vertices) - 1) else (index - 1) // segments
+    grown = [tuple(value * (1.01 if ring(index) in (1, 5) else 1.0) for value in vertex)
+             for index, vertex in enumerate(vertices)]
+    return grown, faces
+
+
+@pytest.mark.parametrize("second", ["Cube", "Sphere"], ids=["second cube", "lumpy ball"])
+def test_a_plate_whose_second_object_is_no_ball_is_refused_whatever_the_stl_holds(tmp_path, second):
+    other = local_cube() + ((122.0, 90.0, 0.0),) if second == "Cube" else lumpy_ball() + (BALL_AT,)
+    plate = plate_3mf([("立方体", *local_cube(), CUBE_AT), (second, *other)])
+    result = merge_refused(tmp_path, ["plate_is_the_cube_and_a_sphere", "oracle_accepts_export"], plate=plate)
+    # the STL is that plate, faithfully, and the plate is otherwise in order: only the ball reading refuses
+    assert all(result["checks"][key] for key in ("stl_holds_every_plate_triangle_once", "objects_rest_on_the_bed",
+                                                 "objects_apart", "objects_inside_printable_area"))
+
+
+def test_a_ball_nudged_by_a_fifth_of_a_millimetre_is_refused(tmp_path):
+    plate = default_plate()
+    cube, ball = support.stl(merged_stl_of(plate))[1][:12], support.stl(merged_stl_of(plate))[1][12:]
+    nudged = [tuple((corner[0], corner[1] + 0.2, corner[2]) for corner in triangle) for triangle in ball]
+    merge_refused(tmp_path, ["stl_holds_every_plate_triangle_once", "each_object_keeps_its_place",
+                             "oracle_accepts_export"], stl=support.stl_bytes(bytes(80), cube + nudged))
+
+
+def test_viewer_logs_that_name_something_else_or_no_version_are_refused(tmp_path):
+    merge_refused(tmp_path, ["viewer_log_names_the_export"],
+                  logs={"f3d-view.log": b"Loading another-file.stl : 100%\r\n"})
+    merge_refused(tmp_path, ["viewer_identified_itself", "recorded_version_is_the_log"],
+                  logs={"f3d-version.log": b"some other program 1.0\r\n"})
+
+
+def test_a_record_that_points_the_export_elsewhere_or_overstates_it_is_refused(tmp_path):
+    merge_refused(tmp_path, ["export_targets_this_run"], record=lambda default: dict(
+        default, export=dict(default["export"], directory="C:\\coil\\runs\\somewhere-else")))
+    merge_refused(tmp_path, ["recorded_geometry_matches_file"], record=lambda default: dict(
+        default, merged_geometry=dict(default["merged_geometry"], max_vertex_deviation_mm=0.0)))
+    merge_refused(tmp_path, ["recorded_plate_matches_file"], record=lambda default: dict(default, plate={}))
+    merge_refused(tmp_path, ["recorded_verdict_matches_file"], record=lambda default: dict(
+        default, results={clause: "FAIL (x)" for clause in merged.CLAUSES}))
+
+
+def test_stl_reader_reads_a_real_export_and_refuses_what_is_not_one():
+    real = (EVIDENCE / "feishu-252-2026-11-25/74b49b23-run1-selected-object.stl").read_bytes()
+    header, triangles = support.stl(real)
+    assert (len(real), len(triangles)) == (1284, 24)
+    assert support.box([corner for triangle in triangles for corner in triangle]) == (
+        122.0, 211.300003, 122.5, 149.5, 0.0, 27.0)           # float32: 211.3 is kept as 211.300003
+    assert support.stl(support.stl_bytes(bytes(80), triangles))[1] == triangles
+    assert support.stl(bytes(84))[1] == []                # a header and a count of zero is an empty, whole STL
+    for not_an_stl in (b"", bytes(83), BROKEN, real[:-50], real + b"\x00"):
+        with pytest.raises(ValueError):
+            support.stl(not_an_stl)
+
+
+def moved_by(group, index, dx):
+    """The group with one triangle shifted by dx along X."""
+    return [tuple((corner[0] + dx, corner[1], corner[2]) for corner in triangle)
+            if number == index else triangle for number, triangle in enumerate(group)]
+
+
+def test_paired_matches_whatever_the_winding_and_names_what_is_missing_or_moved():
+    cube = project(FIXTURE.read_bytes())["objects"][0]["triangles"]
+    shuffled = [tuple(reversed(triangle)) for triangle in reversed(cube)]
+    pairs, worst = support.paired(cube, shuffled)
+    assert pairs == list(reversed(range(12))) and worst == 0.0
+    pairs, worst = support.paired(cube, moved_by(shuffled, 4, 5e-5))
+    assert pairs == list(reversed(range(12))) and math.isclose(worst, 5e-5, abs_tol=1e-9)
+    assert support.paired(cube, moved_by(shuffled, 4, 5e-4))[0][7] is None      # beyond the tolerance
+    assert support.paired(cube, shuffled[:11])[0][0] is None                     # a triangle left out
+    assert support.paired(cube[:1] * 2, [tuple(reversed(cube[0]))])[0] == [0, None]   # a copy is not a second one
+    with pytest.raises(ValueError, match="wider than the tolerance"):
+        support.paired(cube[:1], shuffled[:1], tol=1e-3, cell=1e-4)
+
+
+def test_render_reader_tells_a_body_from_a_blank_and_an_opaque_frame():
+    body = png(render_png())["solid"]
+    assert body["inside"] and 0.4 < body["fraction"] < 0.6 and body["colors"] == len(PALETTE)
+    assert png(render_png(body=False))["solid"] == {"fraction": 0.0, "inside": False, "box": None, "colors": 0}
+    frame = BytesIO()
+    Image.fromarray(np.full((600, 800, 4), 255, np.uint8), "RGBA").save(frame, "PNG")
+    assert png(frame.getvalue())["solid"]["fraction"] == 1.0 and not png(frame.getvalue())["solid"]["inside"]
+    assert png(support.blank_png(200, 150))["solid"] == {"fraction": 0.0, "inside": False, "box": None, "colors": 0}
+    real = png((EVIDENCE / "feishu-252-2026-11-25/74b49b23-run1-f3d-view.png").read_bytes())["solid"]
+    assert real["inside"] and real["fraction"] > 0.1 and real["colors"] > 3
+    assert png(picture())["solid"] is None                 # a screenshot has no alpha channel
+
+
+def test_project_stand_in_log_marker_and_shared_helpers(tmp_path):
+    before, after = project(default_plate()), project(support.moved_project(default_plate(), dy=20.0))
+    assert [[round(p - q, 6) for p, q in zip(x["box"], y["box"])] for x, y in zip(after["objects"], before["objects"])] == [
+        [0.0, 0.0, 20.0, 20.0, 0.0, 0.0]] * 2
+    log = "[m7x233] retained work directory: C:\\coil\\runs\\abc\r\n[m7x233] another line\r\n"
+    assert support.work_directories(log, "m7x233") == ["C:\\coil\\runs\\abc"]
+    assert support.work_directories(log, "m7x244") == []
+    assert support.faces([(0, 0, 0), (1, 0, 0), (0, 1, 0)]) == (((0.0, 0.0, 0.0), (0.0, 1.0, 0.0), (1.0, 0.0, 0.0)),)
+    assert support.box([(1, 2, 3), (5, 4, 2)]) == (1, 5, 2, 4, 2, 3)
+    flattered = json.loads(support.flattering(b'{"case": 233, "results": {"a": "FAIL (x)"}}', ("a", "b")))
+    assert flattered["results"] == {"a": "PASS", "b": "PASS"} and flattered["expectation_gaps"] == {"a": [], "b": []}
+    pictures = {"before.png": picture(seed=1), "export-dialog.png": picture(seed=2)}
+    size = png(pictures["export-dialog.png"])
+    shown = support.screenshots(pictures, {"dialog_image": {"width_px": size["width"], "height_px": size["height"]}},
+                                tuple(pictures), "export-dialog.png")
+    assert shown == {"screenshots_are_pictures": True, "dialog_picture_matches_record": True}
+    blanked = support.screenshots(dict(pictures, **{"export-dialog.png": picture(blank=True)}), {},
+                                  tuple(pictures), "export-dialog.png")
+    assert blanked == {"screenshots_are_pictures": False, "dialog_picture_matches_record": False}
+    folder, prefix = write_merge_run(tmp_path)
+    assert support.refused(merged._read, merged.POSITIVE, folder, prefix,
+                           {"f3d-view.png": support.blank_png(800, 600)})
+    assert not support.refused(merged._read, merged.POSITIVE, folder, prefix)
