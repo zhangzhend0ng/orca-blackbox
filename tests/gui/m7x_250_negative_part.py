@@ -66,8 +66,8 @@ def highlight_menu_item(session, menu, wanted, *, log='[m7x250]'):
     return False
 
 
-def open_part_submenu(session, *, menu_label='Add Negative Part', log='[m7x250]'):
-    root = open_model_menu(session, menu_label)
+def open_part_submenu(session, *, menu_label='Add Negative Part', child_label='load', candidates=None, log='[m7x250]'):
+    root = open_model_menu(session, menu_label, candidates=candidates)
     if root is None:
         return None
     root_hwnd, root_menu, parent_index = root
@@ -84,9 +84,9 @@ def open_part_submenu(session, *, menu_label='Add Negative Part', log='[m7x250]'
         if child:
             rows = topbar_util.menu_items(submenu)
             print(f'{log} visible {menu_label} submenu hwnd={child:#x} hmenu={submenu:#x}: {rows!r}')
-            load = [i for i, label, flags in rows
-                    if label.partition('\t')[0].rstrip('. …').strip().casefold() == 'load' and not flags & 3]
-            return (child, submenu, load[0]) if len(load) == 1 else None
+            matches = [i for i, label, flags in rows
+                    if label.partition('\t')[0].rstrip('. …').strip().casefold() == child_label.casefold() and not flags & 3]
+            return (child, submenu, matches[0]) if len(matches) == 1 else None
         time.sleep(0.2)
     print(f'{log} expected submenu HMENU {submenu:#x} not visible: {visible!r}')
     return None
