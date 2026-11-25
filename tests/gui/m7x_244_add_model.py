@@ -3,6 +3,7 @@
 """Right-click the empty build plate, import the specified cube and inspect the saved plate."""
 import argparse
 import json
+import math
 import re
 import sys
 import tempfile
@@ -44,7 +45,12 @@ def prepare_plate(session, work, analysis):
         raise ValueError('could not delete the template cube')
     deadline = time.monotonic() + 12
     while time.monotonic() < deadline:
-        if m7.model_colored_frac(session) < m7.EMPTY_BED_FLOOR and m7.find_centroid(session) is None:
+        fraction = m7.model_colored_frac(session)
+        centroids = m7.find_centroids(session)
+        if fraction < m7.EMPTY_BED_FLOOR and all(
+            math.dist(analysis['bed_point'], point) > 32 for point in centroids
+        ):
+            analysis['empty_plate'] = {'fraction': fraction, 'candidate_centroids': centroids}
             return
         time.sleep(0.3)
     raise ValueError('new project did not show an empty plate after removing its template cube')
