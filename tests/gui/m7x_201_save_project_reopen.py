@@ -11,6 +11,8 @@ import time
 from pathlib import Path
 from types import SimpleNamespace
 
+import numpy as np
+
 HERE = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE / "tests"))
@@ -21,6 +23,7 @@ from harness import topbar_util, winutil
 from harness.project_3mf import _archive, _geometry
 from m3_common import add_common_args, boot_session
 from m8_common import wait_arrival
+from m8x_48_modal_color_header import bring_main_to_mouse, request_background_focus
 from project_file_cases import digest_file, dispatch_file_command, project_title, wait_project_write
 
 FIXTURE = HERE / "fixtures" / "agent_layer_cube.3mf"
@@ -59,17 +62,50 @@ def dispatch_edit_command(session, label):
 
 
 def move_existing_object(session, origin):
-    # The archive precondition proves that Select All selects exactly this cube.
-    canvas = winutil.deepest_child_at(session.hwnd, *m7.client(session, *origin))
+    if not bring_main_to_mouse(session.hwnd):
+        print("[m7x201] could not expose Orca on the guest desktop")
+        return None
+    x, y = origin
+    point = m7.client(session, x, y)
+    canvas = winutil.deepest_child_at(session.hwnd, *point)
     if (winutil.window_class(canvas) != "wxGLCanvas" or not winutil.user32.IsWindowEnabled(canvas)
             or winutil._window_pid(canvas) != session.pid):
         print(f"[m7x201] unexpected canvas: {canvas:#x}, {winutil.window_class(canvas)!r}")
         return None
-    if not dispatch_edit_command(session, "select all"):
+
+    def cube_crop():
+        radius = 25
+        return m7.capture_bgr(session)[y - radius:y + radius, x - radius:x + radius].astype(int)
+
+    def selection_delta(raw):
+        return float(np.mean(np.max(np.abs(cube_crop() - raw), axis=2) >= 20))
+
+    def focus_canvas():
+        focus = request_background_focus(session.hwnd, canvas)
+        return bool(focus and focus[1][1] == canvas
+                    and winutil.user32.GetForegroundWindow() == session.hwnd)
+
+    if not focus_canvas():
+        print("[m7x201] guest input queue focus did not reach the Prepare canvas")
         return None
-    time.sleep(0.6)
+    raw = cube_crop()
+    winutil.user32.SetCursorPos(*point)
+    time.sleep(0.3)  # Let the canvas resolve the hovered model before clicking.
+    winutil.msg_click_screen(*point, session.hwnd)
+    time.sleep(0.8)
+    selection = selection_delta(raw)
+    if selection < 0.10:
+        # The archive precondition proves that Select All can select only this cube.
+        if not dispatch_edit_command(session, "select all"):
+            return None
+        time.sleep(0.8)
+        selection = selection_delta(raw)
+    print(f"[m7x201] selected cube pixel change={selection:.1%}, canvas={canvas:#x}")
+    if selection < 0.10 or not focus_canvas():
+        return None
+
     # Orca moves a selected instance 10 mm along world X for unmodified Right.
-    winutil.msg_key(canvas, 0x27)  # VK_RIGHT.
+    m7.mdu._send_keys([(0x27, False), (0x27, True)])
     time.sleep(1.2)
     winutil.msg_key(canvas, 0x1B)  # Escape clears selection for comparable rendering.
     time.sleep(0.8)
