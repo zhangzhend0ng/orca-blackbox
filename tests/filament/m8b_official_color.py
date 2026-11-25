@@ -199,13 +199,23 @@ def click_swatch_row(session, dlg, x_off, y_off, tries=14, step=17):
     x0, y0 = label[0] + x_off, label[3] + y_off
     for i in range(tries):
         cx, cy = x0 + (i % 7) * step + 8, y0 + (i // 7) * step + 8
-        wu.user32.SetCursorPos(cx, cy)
-        time.sleep(0.15)
-        wu.real_click_screen(cx, cy)
+        wu.msg_click_screen(cx, cy, dlg[3])
         time.sleep(0.5)
         now = read_rgb(session, dlg)
         if now and now != before:
             print(f"{LOG} swatch @({cx},{cy}) -> {now} (was {before})")
+            return True
+    return False
+
+
+def click_cancel(dialog):
+    from harness import export_util, winutil
+
+    for text, rect, _hwnd in export_util._children_texts(dialog[3]):
+        if text.replace("&", "").strip().casefold() == "cancel":
+            x0, y0, x1, y1 = rect
+            winutil.msg_click_screen((x0 + x1) // 2, (y0 + y1) // 2, dialog[3])
+            time.sleep(1.2)
             return True
     return False
 
@@ -231,14 +241,14 @@ def check_cancel_keeps_color(session, open_dialog):
         selected = pick_official_card(session, dialog)
         changed = official_colour_changed(before, selected)
 
-    cancel_clicked = m8.close_dialog_by_button(dialog, "Cancel")
+    cancel_clicked = click_cancel(dialog)
     closed = not wu.user32.IsWindowVisible(dialog[3])
     reopened = open_dialog("after_cancel") if closed else None
     after = None
     if reopened:
         if native == is_native_picker(reopened):
             after = read_rgb(session, reopened) if native else official_popup_colour(reopened)
-        m8.close_dialog_by_button(reopened, "Cancel")
+        click_cancel(reopened)
         time.sleep(0.8)
 
     detail = (f"before={before!r}, selected={selected!r}, changed={changed}, "
