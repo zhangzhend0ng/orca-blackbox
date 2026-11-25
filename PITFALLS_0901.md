@@ -627,8 +627,13 @@ run 编号是 `artifacts/windows_mcp_harvest/<编号>`；叙述与决策见运�
   核字节数与 SHA-256；离线复核喂带前缀的副本（`tools/replay_case_evidence.py` 按
   `<前缀>-*` 找件）。
 - **交互桌面预检**：提权中继里 PS Direct 进程的桌面指标是默认值（§18.7），派发前读
-  计划任务 `Ready`、Orca 与驱动进程数、分辨率；见过一次 `Windows Security` 防火墙提示
-  （约 00:36，程序未定位），以 IDCANCEL 取消并记 `guest desktop:`。
+  计划任务 `Ready`、Orca 与驱动进程数、分辨率。
+- **`Windows Security` 防火墙提示会在运行中途冒出来盖住应用**：它是 `Snapmaker Control`
+  请求访问网络时弹的，接走真实输入，表现为「开关点不动」「菜单关不上」。04:03 #237 的整屏
+  截图里它压在应用上面（`docs/runs/evidence/feishu-237-2026-11-26/a09a0662-run1-preset-before.png`）。
+  开跑前的预检只取消一次不够；给那个辅助程序加一条入站 Block 规则（等同于点 Cancel）
+  才不再弹，见 `C:\coilm_setup\elevenhour_1125\guest_fw_fix.ps1`。步骤莫名点不动时
+  先存整屏截图。
 - **`wait_arrival` 在空盘的 U1 模板上立即返回**：模板本身的彩色占比 0.104% 已经过了
   0.1% 的门，随后另存工程撞上还没关的 Loading 框（#251 第一轮）。导入后要等的是
   「盘上有模型候选且应用没有对话框」，不是彩色占比。
