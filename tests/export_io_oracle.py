@@ -329,7 +329,7 @@ def verify_gcode_export(path):
     try:
         facts = gcode_export_facts(path)
     except OSError as exc:
-        raise ValueError(f'{path.name}: unreadable G-code ({exc})') from exc
+        raise ValueError(_reason(path, exc) + ': unreadable G-code') from exc
     failed = [check for check, passed in gcode_checks(facts).items() if not passed]
     if failed:
         raise ValueError(f'{path.name}: ' + '; '.join(f'{check}: {_why(check, facts)}' for check in failed))
@@ -471,16 +471,83 @@ def project_presets(project):
             'print_sequence': settings.get('print_sequence')}
 
 
+def _shape(vertices, faces):
+    """'cube', 'sphere' or 'other', from the world-space mesh alone (names are not trusted)."""
+    (x0, x1), (y0, y1), (z0, z1) = extents = bounds(list(vertices))
+    sides = [x1 - x0, y1 - y0, z1 - z0]
+    if len(faces) == 12 and max(sides) - min(sides) <= 1e-4:
+        return 'cube'
+    center = tuple((low + high) / 2 for low, high in extents)
+    radius = max(sides) / 2
+    if (min(sides) > 1 and max(sides) - min(sides) <= 1e-4
+            and max(abs(math.dist(vertex, center) - radius) for vertex in vertices) <= 0.05):
+        return 'sphere'
+    return 'other'
+
+
 def plate_object_layout(project):
-    """Which objects a saved plate holds, whether they overlap and whether they fit the bed."""
+    """Which objects a saved plate holds (name, triangles, bounds, shape), whether they overlap and fit the bed."""
     bed, items = _project(Path(project))
+    objects = [{'name': item.name, 'triangles': len(item.faces), 'bounds_mm': item.box,
+                'shape': _shape(item.vertices, item.faces)} for item in items]
     pairs = _pairs(items)
-    return {'objects': [item.name for item in items],
-            'bounds_mm': {item.name: item.box for item in items},
-            'pairs': pairs,
+    return {'objects': objects, 'pairs': pairs,
             'checks': {'two_objects': len(items) == 2,
+                       'cube_and_sphere': sorted(object_['shape'] for object_ in objects) == ['cube', 'sphere'],
                        'disjoint': not any(pair['overlap'] for pair in pairs),
                        'inside_bed': bool(items) and all(bed.contains(item) for item in items)}}
+
+
+def merged_stl_expectation_gaps(project, exported, extension):
+    """{clause of the Feishu #233 expectation: [what failed]} for the STL as it landed.
+
+    `extension` is the one the application appended when saving. The clause
+    "可正常打开" is judged by the third-party viewer in the GUI case, not here."""
+    clauses = ('生成 .stl 文件', '包含两个模型的合并几何', '文件非 0 字节')
+    gaps = {clause: [] for clause in clauses}
+    if extension != '.stl':
+        gaps['生成 .stl 文件'].append(f'extension {extension!r}')
+    try:
+        raw = _read(Path(exported))
+        points, faces = stl_mesh(raw)
+    except (OSError, ValueError) as exc:
+        unreadable = f'not a readable STL mesh ({_reason(exported, exc)})'
+        gaps['生成 .stl 文件'].append(unreadable)
+        gaps['包含两个模型的合并几何'].append(unreadable)
+        gaps['文件非 0 字节'].append('empty file' if Path(exported).is_file() and not Path(exported).stat().st_size
+                                    else _reason(exported, exc))
+        return gaps
+    try:
+        verify_merged_stl(project, exported)
+    except ValueError as exc:
+        gaps['包含两个模型的合并几何'].append(str(exc))
+    return gaps
+
+
+def _reason(path, exc):
+    """A file error without the machine's path or locale in it."""
+    name = Path(path).name
+    if isinstance(exc, FileNotFoundError):
+        return f'{name}: missing file'
+    if isinstance(exc, OSError):
+        return f'{name}: {type(exc).__name__}'
+    return str(exc) if str(exc).startswith(name) else f'{name}: {exc}'
+
+
+def viewer_gaps(receipt):
+    """[what failed] for "可正常打开": the viewer opened the exact file, rendered it and rejected a broken STL."""
+    gaps = []
+    if receipt.get('version_rc') != 0:
+        gaps.append('viewer did not identify itself')
+    if receipt.get('positive_rc') != 0:
+        gaps.append(f'viewer exit code {receipt.get("positive_rc")!r} on the exported file')
+    if not receipt.get('image'):
+        gaps.append('viewer rendered no bounded foreground mesh')
+    if 'negative_rc' not in receipt:
+        gaps.append('malformed control STL was not run')
+    elif receipt['negative_rc'] == 0:
+        gaps.append('viewer accepted the malformed control STL')
+    return gaps
 
 
 # --- sliced-file archive (#234) -----------------------------------------------

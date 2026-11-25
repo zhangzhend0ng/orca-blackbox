@@ -213,6 +213,9 @@ def wait_export_enabled(session, work, analysis, item, timeout_s=150):
 def slice_until_exportable(session, work, analysis, item, timeout_s=150):
     """Click Slice once, then wait for the `item` export row; readings land in analysis['slice']."""
     analysis['slice'] = {'topbar_before': topbar_labels(session), 'clicked_at': time.monotonic()}
+    # Every run records whether the guest's memory guard came up, also when it did not.
+    analysis.setdefault('memory_guard_dialogs', [])
+    analysis.setdefault('guard_failures', 0)
     try:
         if not click_slice_start(session):
             raise ValueError('the Slice click did not take')

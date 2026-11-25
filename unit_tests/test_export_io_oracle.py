@@ -14,8 +14,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tests'))
 
 from export_io_oracle import (MERGED_VERTEX_TOL_MM, compare_sliced_sizes, gcode_checks,  # noqa: E402
-                              gcode_export_facts, plate_object_layout, sliced_3mf_checks,
-                              sliced_3mf_facts, verify_gcode_export, verify_merged_stl, verify_sliced_3mf)
+                              gcode_export_facts, merged_stl_expectation_gaps, plate_object_layout,
+                              sliced_3mf_checks, sliced_3mf_facts, verify_gcode_export, verify_merged_stl,
+                              verify_sliced_3mf, viewer_gaps)
 from plate_reserve_oracle import _CORE, read_project, verify_f3d_image  # noqa: E402
 
 FIXTURES = ROOT / 'fixtures'
@@ -291,8 +292,11 @@ def test_real_guest_export_of_the_standard_cube_passes():
 
 # --- merged STL (#233) --------------------------------------------------------
 
-def cube_sphere_project(path):
-    """feishu_std_cubes2.3mf with its second cube replaced by the fixture sphere."""
+def cube_sphere_project(path, sphere_at=None):
+    """feishu_std_cubes2.3mf with its second cube replaced by the fixture sphere.
+
+    `sphere_at` moves the sphere's instance offset (the application drops a new
+    primitive on the grid cell nearest the plate centre, overlapping the cube)."""
     with ZipFile(FIXTURES / 'feishu_std_cubes2.3mf') as cubes, ZipFile(FIXTURES / 'feishu_std_sphere.3mf') as sphere:
         sphere_xml = ET.fromstring(sphere.read('3D/Objects/球体_1.model'))
         cube_xml = ET.fromstring(cubes.read('3D/Objects/立方体2_2.model'))
@@ -300,12 +304,20 @@ def cube_sphere_project(path):
         settings = ET.fromstring(cubes.read('Metadata/model_settings.config'))
         for name in settings.findall('object')[1].findall(".//metadata[@key='name']"):
             name.set('value', 'Sphere')
+        main = ET.fromstring(cubes.read('3D/3dmodel.model'))
+        if sphere_at:
+            item = main.find(f"{_CORE}build/{_CORE}item[@objectid='3']")
+            matrix = item.get('transform').split()
+            matrix[9:11] = [str(float(value)) for value in sphere_at]
+            item.set('transform', ' '.join(matrix))
         with ZipFile(path, 'w', ZIP_DEFLATED) as output:
             for info in cubes.infolist():
                 if info.filename == '3D/Objects/立方体2_2.model':
                     output.writestr(info, ET.tostring(sphere_xml, encoding='utf-8'))
                 elif info.filename == 'Metadata/model_settings.config':
                     output.writestr(info, ET.tostring(settings, encoding='utf-8'))
+                elif info.filename == '3D/3dmodel.model':
+                    output.writestr(info, ET.tostring(main, encoding='utf-8'))
                 else:
                     output.writestr(info, cubes.read(info.filename))
     return path
@@ -423,15 +435,56 @@ def test_ascii_stl_with_the_same_triangles_is_accepted(two_objects):
     assert report['format'] == 'ascii' and all(o['matched'] == o['triangles'] for o in report['objects'])
 
 
-def test_plate_layout_reads_overlap_and_bed_fit():
-    apart = plate_object_layout(FIXTURES / 'feishu_std_cubes2.3mf')
-    assert apart['objects'] == ['立方体', '立方体2'] and apart['checks'] == {
-        'two_objects': True, 'disjoint': True, 'inside_bed': True}
+LAYOUT_KEYS = ('two_objects', 'cube_and_sphere', 'disjoint', 'inside_bed')
+
+
+def test_plate_layout_reads_shapes_overlap_and_bed_fit(tmp_path):
+    apart = plate_object_layout(cube_sphere_project(tmp_path / 'before.3mf'))
+    assert [(o['name'], o['shape'], o['triangles']) for o in apart['objects']] == [
+        ('立方体', 'cube', 12), ('Sphere', 'sphere', 3968)]
+    assert apart['checks'] == dict.fromkeys(LAYOUT_KEYS, True)
+    assert [o['bounds_mm'][0] for o in apart['objects']] == [(105.0, 125.0), (145.0, 165.0)]
     assert [pair['overlap'] for pair in apart['pairs']] == [False]
-    assert plate_object_layout(FIXTURES / 'feishu_std_cube.3mf')['checks'] == {
-        'two_objects': False, 'disjoint': True, 'inside_bed': True}
-    overlapping = plate_object_layout(FIXTURES / 'feishu_std_cubesfar.3mf')
-    overlapping = plate_object_layout(FIXTURES / 'feishu_std_cubes2.3mf')
+    # Where the application drops a new sphere: its centre next to the cube, the sphere on top of it.
+    piled = plate_object_layout(cube_sphere_project(tmp_path / 'piled.3mf', sphere_at=(125, 135)))
+    assert piled['checks'] == {'two_objects': True, 'cube_and_sphere': True, 'disjoint': False, 'inside_bed': True}
+    alone = plate_object_layout(FIXTURES / 'feishu_std_cube.3mf')
+    assert alone['checks'] == {'two_objects': False, 'cube_and_sphere': False, 'disjoint': True, 'inside_bed': True}
+    two_cubes = plate_object_layout(FIXTURES / 'feishu_std_cubes2.3mf')
+    assert two_cubes['checks'] == {'two_objects': True, 'cube_and_sphere': False, 'disjoint': True, 'inside_bed': True}
+
+
+def test_merged_stl_expectation_clauses_report_their_own_gaps(two_objects):
+    project, merged = two_objects
+    clauses = ('生成 .stl 文件', '包含两个模型的合并几何', '文件非 0 字节')
+    assert merged_stl_expectation_gaps(project, merged, '.stl') == dict.fromkeys(clauses, [])
+    assert merged_stl_expectation_gaps(project, merged, '.bin')['生成 .stl 文件'] == ["extension '.bin'"]
+    objects = world_triangles(project)
+    alone = write_stl(project.parent / 'alone.stl', objects[0][1])
+    gaps = merged_stl_expectation_gaps(project, alone, '.stl')
+    assert gaps['生成 .stl 文件'] == [] and gaps['文件非 0 字节'] == []
+    assert gaps['包含两个模型的合并几何'] == [
+        'facet counts differ: STL has 12, the plate has 3980 (立方体: 12, Sphere: 3968)']
+    empty = project.parent / 'empty.stl'
+    empty.write_bytes(b'')
+    unreadable = 'not a readable STL mesh (empty.stl: unexpected file size)'
+    assert merged_stl_expectation_gaps(project, empty, '.stl') == {
+        '生成 .stl 文件': [unreadable], '包含两个模型的合并几何': [unreadable], '文件非 0 字节': ['empty file']}
+    missing = 'not a readable STL mesh (absent.stl: missing file)'
+    assert merged_stl_expectation_gaps(project, project.parent / 'absent.stl', '.stl') == {
+        '生成 .stl 文件': [missing], '包含两个模型的合并几何': [missing], '文件非 0 字节': ['absent.stl: missing file']}
+
+
+def test_viewer_clause_needs_open_render_and_a_rejected_control():
+    good = {'version_rc': 0, 'positive_rc': 0, 'image': {'width_px': 800, 'height_px': 600}, 'negative_rc': 1}
+    assert viewer_gaps(good) == []
+    assert viewer_gaps({}) == ['viewer did not identify itself', 'viewer exit code None on the exported file',
+                               'viewer rendered no bounded foreground mesh', 'malformed control STL was not run']
+    assert viewer_gaps(dict(good, image=None)) == ['viewer rendered no bounded foreground mesh']
+    assert viewer_gaps(dict(good, positive_rc=1)) == ['viewer exit code 1 on the exported file']
+    assert viewer_gaps(dict(good, negative_rc=0)) == ['viewer accepted the malformed control STL']
+    assert viewer_gaps({key: value for key, value in good.items() if key != 'negative_rc'}) == [
+        'malformed control STL was not run']
 
 
 def test_blank_viewer_image_is_rejected(tmp_path):
