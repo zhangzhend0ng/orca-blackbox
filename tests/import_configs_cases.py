@@ -11,7 +11,7 @@ import numpy as np
 import m7_common as m7
 from harness import export_util, winutil
 from harness import process_panel as pp
-from m8_common import combo_text, wait_slots
+from m8_common import combo_text, switch_filament_preset, wait_slots
 from repair_model_cases import IMAGE_ERRORS, dialog_texts
 from zip_import_cases import _comboboxes, shoot, wait_closed
 
@@ -28,59 +28,132 @@ def find_printer_combo(session, model):
     return hits[0] if hits else None
 
 
-def popup_rows(popup_hwnd):
-    """(text, first word) of each row a preset popup shows, top to bottom. Rows are
-    self-drawn, so they are OCR-read with psm 6, which alone reads rows beside the
-    section dividers (PITFALLS 17.7); tokens are grouped by their line centre."""
-    width, height, pixels = winutil.capture_window(popup_hwnd)
-    image = cv2.cvtColor(np.frombuffer(pixels, np.uint8).reshape(height, width, 4), cv2.COLOR_BGRA2BGR)
+def real_wheel(x, y, notches):
+    """Wheel through the input queue with the pointer on the popup (m8_common._real_wheel):
+    the preset popups do not move on a posted WM_MOUSEWHEEL."""
+    winutil.user32.SetCursorPos(int(x), int(y))
+    time.sleep(0.1)
+    winutil.user32.mouse_event(0x0800, 0, 0, 120 * int(notches), 0)
+
+
+def real_click(x, y):
+    winutil.user32.SetCursorPos(x, y)
+    time.sleep(0.2)
+    winutil.real_click_screen(x, y)
+
+
+def open_popup(session, point, root):
+    """Click the combo at screen `point`; the popup's (rect, hwnd), or (None, None).
+    A popup that was just dismissed can swallow the first click (process_panel)."""
+    for _attempt in range(2):
+        winutil.msg_click_screen(*point, root)
+        popup = export_util.wait_popup(session.pid, timeout_s=4.0)
+        if popup:
+            return popup[2], popup[3]
+    return None, None
+
+
+def popup_page(popup_rect, popup_hwnd):
+    """The popup window as an image and its words: OCR at scale 3 with psm 6, the reading
+    that sees the rows beside the section dividers (PITFALLS 17.7, m5g). When the window
+    cannot be captured a screen crop is read instead (m8_common)."""
+    try:
+        width, height, pixels = winutil.capture_window(popup_hwnd)
+        image = cv2.cvtColor(np.frombuffer(pixels, np.uint8).reshape(height, width, 4), cv2.COLOR_BGRA2BGR)
+    except (OSError, RuntimeError, ValueError, cv2.error):
+        screen_w, screen_h, pixels = winutil.screen_grab()
+        frame = np.frombuffer(pixels, np.uint8).reshape(screen_h, screen_w, 4)
+        left, top, right, bottom = popup_rect
+        image = cv2.cvtColor(frame[max(top, 0):bottom, max(left, 0):right], cv2.COLOR_BGRA2BGR)
+    return image, m7.mdu.ocr_words_img(image, scale=3, psm=6)
+
+
+def row_lines(words):
+    """(text, first word) of each text line; tokens are grouped by their line centre."""
     lines = []
-    for word in sorted(m7.mdu.ocr_words_img(image, scale=3, psm=6), key=lambda w: (w[2] + w[4] / 2, w[1])):
+    for word in sorted(words, key=lambda w: (w[2] + w[4] / 2, w[1])):
         middle = word[2] + word[4] / 2
         if lines and abs(lines[-1][0] - middle) <= max(6, word[4] / 2):
             lines[-1][1].append(word)
         else:
             lines.append([middle, [word]])
-    return [(' '.join(word[0] for word in sorted(line, key=lambda w: w[1])), line[0]) for _middle, line in lines]
+    return [(' '.join(word[0] for word in sorted(line, key=lambda w: w[1])), min(line, key=lambda w: w[1]))
+            for _middle, line in lines]
 
 
-def read_and_select(session, rect, hwnd, name, analysis, kind, work):
-    """Open the preset popup at `rect`, keep every row it shows, then click the row named
-    `name`. The click goes to the popup without a root window, as process_panel does."""
-    record = analysis.setdefault('dropdowns', {})[kind] = {'target': name, 'before': combo_text(hwnd)}
-    point = ((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2)
-    winutil.msg_click_screen(*point, session.hwnd)
-    popup = export_util.wait_popup(session.pid, timeout_s=4.0)
-    if not popup:
+def read_popup(session, point, root, kind, work, record, pages=10):
+    """Open the preset popup and keep every row it lists, from the top down, one page at a
+    time with the real wheel. The first two pages are kept as images. Returns the popup's
+    (rect, hwnd) and leaves it open for the caller to close."""
+    popup_rect, popup_hwnd = open_popup(session, point, root)
+    if not popup_hwnd:
         record['error'] = 'the popup did not open'
-        return record
-    popup_rect, popup_hwnd = popup[2], popup[3]
-    try:
-        # The popup opens at the current selection; the user section is at the top.
-        x, y = (popup_rect[0] + popup_rect[2]) // 2, (popup_rect[1] + popup_rect[3]) // 2
-        winutil._send_msg(popup_hwnd, 0x020A, ((-120 * -40 & 0xFFFF) << 16), ((y & 0xFFFF) << 16) | (x & 0xFFFF))
-        time.sleep(0.7)
-        rows = popup_rows(popup_hwnd)
-        record['rows'] = [text for text, _word in rows]
-        try:
-            shoot(popup_hwnd, work / f'{kind}-list.png')
-        except IMAGE_ERRORS as exc:
-            record['image'] = f'unavailable ({exc})'
-        print(f'[m7x232] {kind} list: {record["rows"]!r}', flush=True)
-        hit = next((line for text, line in rows if name.casefold() in text.casefold()), None)
+        return None, None
+    x, y = (popup_rect[0] + popup_rect[2]) // 2, (popup_rect[1] + popup_rect[3]) // 2
+    real_wheel(x, y, 40)  # the popup opens at the current selection: back to the top first
+    time.sleep(0.8)
+    rows, seen, before, images = [], set(), None, 0
+    for page in range(pages):
+        image, words = popup_page(popup_rect, popup_hwnd)
+        if images < 2:
+            cv2.imwrite(str(work / (f'{kind}-list.png' if not images else f'{kind}-list-2.png')), image)
+            images += 1
+        texts = [text for text, _word in row_lines(words)]
+        if texts == before:
+            break  # the list did not move: its end
+        for text in texts:
+            if text not in seen:
+                seen.add(text)
+                rows.append(text)
+        before = texts
+        real_wheel(x, y, -8)
+        time.sleep(0.6)
+    record['rows'] = rows
+    record['pages_read'] = page + 1
+    print(f'[m7x232] {kind} list ({page + 1} pages): {rows!r}', flush=True)
+    return popup_rect, popup_hwnd
+
+
+def select_printer(session, rect, hwnd, name, record):
+    """Switch the printer combo to the row named `name`. The row is clicked where its first
+    word was read, as m5g clicks a popup row; when the combo text does not change, the row
+    is clicked once more through the input queue. True once the text carries `name`."""
+    point = ((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2)
+    record['attempts'] = []
+    for how, click in (('message click', winutil.msg_click_screen), ('real click', real_click)):
+        popup_rect, popup_hwnd = open_popup(session, point, session.hwnd)
+        if not popup_hwnd:
+            record['attempts'].append({'how': how, 'result': 'the popup did not open'})
+            return False
+        _image, words = popup_page(popup_rect, popup_hwnd)
+        hit = next((word for text, word in row_lines(words) if name.casefold() in text.casefold()), None)
         if hit is None:
-            record['selected'] = False
-            return record
-        sx = popup_rect[0] + hit[1] + hit[3] // 2
-        sy = popup_rect[1] + hit[2] + hit[4] // 2
-        winutil.msg_click_screen(sx, sy)
-        time.sleep(1.2)
-        record['after'] = combo_text(hwnd)
-        record['selected'] = name.casefold() in record['after'].casefold()
-        return record
-    finally:
+            record['attempts'].append({'how': how, 'result': f'{name} is not a row of the popup'})
+            pp.close_popup(session, popup_hwnd, point)
+            return False
+        click(popup_rect[0] + hit[1] + hit[3] // 2, popup_rect[1] + hit[2] + hit[4] // 2)
+        for wait in (2.0, 2.0):  # a printer change reloads the presets; give it time before judging
+            time.sleep(wait)
+            record['after'] = combo_text(hwnd)
+            if name.casefold() in record['after'].casefold():
+                record['attempts'].append({'how': how, 'result': 'switched'})
+                return True
+        record['attempts'].append({'how': how, 'result': f'the combo still reads {record["after"]!r}'})
         if winutil.user32.IsWindowVisible(popup_hwnd):
             pp.close_popup(session, popup_hwnd, point)
+    return False
+
+
+def printer_row_text(session, model, name):
+    """What the printer preset row reads: the combo found by the printer model, or, once
+    the row was switched, the child that carries the new name."""
+    hit = find_printer_combo(session, model)
+    if hit:
+        return hit[0]
+    for text, rect, child in export_util._children_texts(session.hwnd):
+        if name.casefold() in text.casefold() and rect[1] < 400 and rect[3] - rect[1] < 60:
+            return text
+    return ''
 
 
 def answer_dialogs(session, work, analysis, tag, timeout_s=1.5):

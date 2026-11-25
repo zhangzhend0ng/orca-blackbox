@@ -360,7 +360,8 @@ def verify_import(config, before, after, dialogs, dropdowns=None, effective=None
             problems.append(f'the imported presets were not the selected ones: {effective_reading["selected"]}')
         problems += _loss_text(effective_reading['by_preset'])
     elif dropdowns is not None:
-        problems.append(f'the effective values could not be read ({reason}); the stored presets were compared instead')
+        problems.append(f'the presets were not selected in the sidebar, so the effective values were not compared '
+                        f'({reason})')
         dropped = dropped_report(config, after, set(defined or ()))
     if not clashes:
         second = f'FAIL (not exercised: none of the {len(wanted)} presets of the config file was in the profile before the import)'

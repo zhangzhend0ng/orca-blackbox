@@ -29,7 +29,8 @@ from m3_common import add_common_args, boot_session
 from m7x_249_add_part import capture, stage
 from m8_common import wait_arrival, wait_slots
 from zip_import_oracle import digest
-from import_configs_cases import answer_dialogs, find_printer_combo, import_once, read_and_select
+from import_configs_cases import (answer_dialogs, find_printer_combo, import_once, printer_row_text, read_popup,
+                                  select_printer)
 from import_configs_oracle import (ARCHIVE, DUPLICATES, IMPORTED, INI, NAMES, VENDOR, build_config, bundle_presets,
                                    profile_presets, project_settings, template_presets, verify_import,
                                    vendor_directory, write_ini)
@@ -76,33 +77,64 @@ def run(args, work, analysis):
             first = profile_presets(datadir)
             capture(session, work / 'imported.png')
         with stage(analysis, 'preset_lists_and_selection'):
-            # Feishu step 2: check the three preset lists, then select what was imported
-            # (printer first, then filament and process) and save the project.
+            # Feishu step 2: switch the printer first (the other two lists depend on it),
+            # then read the filament and process lists, select what was imported, and save.
             analysis['dropdowns'] = {}
             effective, reason = None, None
+            model = settings['printer_model']
             try:
-                printer = find_printer_combo(session, settings['printer_model'])
+                printer = find_printer_combo(session, model)
                 if not printer:
                     raise ValueError('the printer preset list control was not found in the sidebar')
-                read_and_select(session, printer[1], printer[2], NAMES['machine'], analysis, 'machine', work)
+                rect, control = printer[1], printer[2]
+                point = ((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2)
+                machine = analysis['dropdowns']['machine'] = {'target': NAMES['machine'], 'before': combo_text(control)}
+                popup = read_popup(session, point, session.hwnd, 'machine', work, machine)
+                if popup[1]:
+                    pp.close_popup(session, popup[1], point)
+                if not select_printer(session, rect, control, NAMES['machine'], machine):
+                    raise ValueError(f'the printer preset could not be switched to {NAMES["machine"]}')
+                machine['after'] = printer_row_text(session, model, NAMES['machine'])
                 answer_dialogs(session, work, analysis, 'printer-selected')
                 slot = next((s for s in wait_slots(session, timeout_s=10) if s['slot'] == 1 and s['combo']), None)
                 if not slot:
                     raise ValueError('the first filament preset list control was not found')
                 _text, rect, control = slot['combo']
-                read_and_select(session, rect, control, NAMES['filament'], analysis, 'filament', work)
-                answer_dialogs(session, work, analysis, 'filament-selected')
+                point = ((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2)
+                filament = analysis['dropdowns']['filament'] = {'target': NAMES['filament'], 'before': combo_text(control)}
+                popup = read_popup(session, point, session.hwnd, 'filament', work, filament)
+                if popup[1]:
+                    pp.close_popup(session, popup[1], point)
                 process = pp.find_process_preset_combo(session)
                 if not process[1]:
                     raise ValueError('the process preset list control was not found')
-                read_and_select(session, process[0], process[1], NAMES['process'], analysis, 'process', work)
-                answer_dialogs(session, work, analysis, 'process-selected')
+                rect, control = process[0], process[1]
+                point = ((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2)
+                step = analysis['dropdowns']['process'] = {'target': NAMES['process'], 'before': combo_text(control)}
+                popup = read_popup(session, point, session.hwnd, 'process', work, step)
+                if popup[1]:
+                    pp.close_popup(session, popup[1], point)
+                # The switches themselves go through the helpers the other cases use.
+                filament['after'] = switch_filament_preset(session, 1, NAMES['filament'], tries=8)
+                if NAMES['filament'] not in filament['after']:
+                    raise ValueError(f'the filament preset could not be switched to {NAMES["filament"]}')
+                filament['selected'] = True
+                step['switched'] = pp.switch_process_preset(session, NAMES['process'], tries=6)
+                step['after'] = pp.find_process_preset_combo(session)[2] if pp.find_process_preset_combo(session)[1] else ''
+                if not step['switched'] or NAMES['process'] not in step['after']:
+                    raise ValueError(f'the process preset could not be switched to {NAMES["process"]}')
+                step['selected'] = True
+                answer_dialogs(session, work, analysis, 'selected')
                 capture(session, work / 'selected.png')
                 if not m7.save_project_as(session, after_import, timeout_s=40):
                     raise ValueError('could not save after-import.3mf')
                 effective = project_settings(after_import)
             except (OSError, RuntimeError, ValueError, KeyError) as exc:
                 reason = f'{type(exc).__name__}: {exc}'
+                try:
+                    capture(session, work / 'selection-failed.png')
+                except Exception:  # noqa: BLE001 - the screenshot is evidence, never the verdict
+                    pass
             analysis['effective_read'] = 'ok' if effective is not None else reason
         with stage(analysis, 'second_import'):
             # The same file again: every preset now exists, so a name clash is certain.

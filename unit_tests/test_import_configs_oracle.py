@@ -222,9 +222,11 @@ def test_preset_lists_must_carry_the_three_names(guest):
     assert missing_from_lists(OPEN, config) == []
     assert list_rows(LISTS['filament'])['user'] == ['Snapmaker PLA Silk', 'BB Test Filament', 'Generic PETG']
     without = {**OPEN, 'process': {'rows': [row for row in LISTS['process'] if 'BB Test' not in row]}}
-    text = verify_import(config, [], imported, [RESULT], without, None, (), 'selection failed')[IMPORTED]
+    report = verify_import(config, [], imported, [RESULT], without, None, (), 'selection failed')
+    text = report[IMPORTED]
     assert "1 presets are not in their preset lists: ['process/BB Test Process']" in text
-    assert 'the effective values could not be read (selection failed)' in text
+    assert ('the presets were not selected in the sidebar, so the effective values were not compared '
+            '(selection failed)') in text
     assert 'bed_model' not in text  # inert keys stay out of the failure text on the fallback too
 
 
