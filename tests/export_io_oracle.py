@@ -1121,3 +1121,51 @@ def all_plates_expectation_gaps(project, products):
         gaps['共 2 个'].append(f'{len(products)} sliced file(s) landed for {len(plates)} plates '
                               f'({", ".join(readings["files"])}); they hold the G-code of {len(held)} plate(s)')
     return gaps, readings
+
+
+# --- enabled state of the export rows (#238) ---------------------------------
+
+# The three rows the Feishu row is about, and two rows that stay enabled for any plate with a model
+# (MainFrame.cpp can_export_model: the model is not empty).
+SLICE_EXPORT_ROWS = ('Export plate sliced file', 'Export all plate sliced file', 'Export G-code')
+CONTROL_ROWS = ('Export all objects as one STL', 'Export Generic 3MF')
+ROW_CLAUSES = ('切片导出类条目置灰', '切片完成后恢复可用')
+
+
+def _row_name(text):
+    return text.partition('\t')[0].rstrip('. …').strip().casefold()
+
+
+def export_rows_expectation_gaps(before, after, rows=SLICE_EXPORT_ROWS, controls=CONTROL_ROWS):
+    """{clause of the Feishu #238 expectation: [what failed]} for the File > Export rows read
+    before and after slicing.
+
+    `before` and `after` are the Export submenu rows as read_export_menu() lists them. Every
+    slice export row must be on the menu once and disabled before slicing, then enabled after
+    it. Every control row must be on the menu once and enabled both times: that shows the menu
+    was readable and only the slice rows were disabled. Nothing raises."""
+    gaps = {clause: [] for clause in ROW_CLAUSES}
+    for seen_rows, clause, phase, wanted in ((before, ROW_CLAUSES[0], 'before slicing', False),
+                                             (after, ROW_CLAUSES[1], 'after slicing', True)):
+        seen = {}
+        for row in seen_rows:
+            seen.setdefault(_row_name(row['label']), []).append(row)
+        for name in rows:
+            hits = seen.get(name.casefold(), [])
+            if len(hits) != 1:
+                gaps[clause].append(f'{phase}: {name!r} is on the menu {len(hits)} times')
+            elif bool(hits[0]['enabled']) is not wanted:
+                gaps[clause].append(f'{phase}: {name!r} is {"enabled" if hits[0]["enabled"] else "disabled"}')
+        for name in controls:
+            hits = seen.get(name.casefold(), [])
+            if len(hits) != 1:
+                gaps[clause].append(f'{phase}: control row {name!r} is on the menu {len(hits)} times')
+            elif not hits[0]['enabled']:
+                gaps[clause].append(f'{phase}: control row {name!r} is disabled')
+    return gaps
+
+
+def project_has_gcode(project):
+    """Whether a saved project carries the G-code of a plate: False for a project saved before slicing."""
+    with ZipFile(Path(project)) as archive:
+        return any(PLATE_GCODE.match(name) for name in archive.namelist())

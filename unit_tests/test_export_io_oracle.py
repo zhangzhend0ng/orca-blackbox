@@ -17,11 +17,13 @@ sys.path.insert(0, str(ROOT / 'tests'))
 
 from export_io_oracle import (FOOTPRINT_TOL_MM, MERGED_VERTEX_TOL_MM, all_plates_expectation_gaps,  # noqa: E402
                               compare_sliced_sizes, gcode_checks, gcode_expectation_gaps, gcode_export_facts,
-                              gcode_footprint, plate_origins,
+                              gcode_footprint, plate_origins, project_has_gcode,
+                              export_rows_expectation_gaps,
                               harvested_readings, merged_stl_expectation_gaps, plate_object_layout,
                               sliced_3mf_checks, sliced_3mf_facts, sliced_expectation_gaps,
                               verify_gcode_export, verify_gcode_footprint, verify_merged_stl,
-                              verify_sliced_3mf, viewer_gaps)
+                              verify_sliced_3mf, viewer_gaps, CONTROL_ROWS, ROW_CLAUSES,
+                              SLICE_EXPORT_ROWS)
 from plate_reserve_oracle import _CORE, create_delete_plate_fixture, read_project, verify_f3d_image  # noqa: E402
 
 FIXTURES = ROOT / 'fixtures'
@@ -1157,3 +1159,93 @@ def test_a_plate_left_out_or_printed_somewhere_else_fails(tmp_path):
     gaps, readings = all_plates_expectation_gaps(tmp_path / 'loose.3mf', [])
     assert gaps == {clause: ['loose.3mf: unreadable project (File is not a zip file)'] for clause in PLATE_CLAUSES}
     assert readings['plates'] == []
+
+
+
+
+# --- enabled state of the export rows (#238) ---------------------------------
+
+ROW_LABELS = [label.partition('\t')[0].rstrip('. ') for label in EXPORT_ROWS]  # the names the menu is read by
+CENSUS = ROOT / 'docs/runs/evidence/elevenhour-filemenu-2026-11-25'
+
+
+def export_rows(*disabled):
+    """The seven Export rows of the build; the named ones (without dots and accelerator) are disabled."""
+    return [{'index': index, 'label': label, 'enabled': ROW_LABELS[index] not in disabled, 'submenu': False}
+            for index, label in enumerate(EXPORT_ROWS)]
+
+
+def test_slice_rows_disabled_before_and_enabled_after_slicing_passes():
+    gaps = export_rows_expectation_gaps(
+        export_rows(*SLICE_EXPORT_ROWS), export_rows())
+    assert gaps == dict.fromkeys(ROW_CLAUSES, [])
+    # Rows with their accelerator and dots are read by their plain name; extra keys are ignored.
+    dotted = [dict(row, text_luminance=90) for row in export_rows(*SLICE_EXPORT_ROWS)]
+    assert export_rows_expectation_gaps(dotted, export_rows()) == dict.fromkeys(ROW_CLAUSES, [])
+
+
+def test_enabled_before_or_still_disabled_after_fails_its_own_clause():
+    too_early = export_rows('Export plate sliced file', 'Export all plate sliced file')
+    gaps = export_rows_expectation_gaps(too_early, export_rows())
+    assert gaps == {'切片导出类条目置灰': ["before slicing: 'Export G-code' is enabled"],
+                    '切片完成后恢复可用': []}
+    too_late = export_rows('Export plate sliced file')
+    gaps = export_rows_expectation_gaps(export_rows(*SLICE_EXPORT_ROWS), too_late)
+    assert gaps == {'切片导出类条目置灰': [],
+                    '切片完成后恢复可用': ["after slicing: 'Export plate sliced file' is disabled"]}
+
+
+def test_a_menu_that_cannot_be_read_or_has_changed_fails():
+    # Every row disabled, as while a modal dialog is up: the slice rows are not disabled for the
+    # lack of a slice result, and the control rows say so.
+    blocked = export_rows(*ROW_LABELS)
+    gaps = export_rows_expectation_gaps(blocked, blocked)
+    assert gaps == {
+        '切片导出类条目置灰': ["before slicing: control row 'Export all objects as one STL' is disabled",
+                              "before slicing: control row 'Export Generic 3MF' is disabled"],
+        '切片完成后恢复可用': ["after slicing: 'Export plate sliced file' is disabled",
+                              "after slicing: 'Export all plate sliced file' is disabled",
+                              "after slicing: 'Export G-code' is disabled",
+                              "after slicing: control row 'Export all objects as one STL' is disabled",
+                              "after slicing: control row 'Export Generic 3MF' is disabled"]}
+    renamed = [row for row in export_rows(*SLICE_EXPORT_ROWS) if row['label'] != 'Export G-code...']
+    doubled = export_rows() + [dict(export_rows()[5], index=9)]
+    gaps = export_rows_expectation_gaps(renamed, doubled)
+    assert gaps['切片导出类条目置灰'] == ["before slicing: 'Export G-code' is on the menu 0 times"]
+    assert gaps['切片完成后恢复可用'] == ["after slicing: 'Export G-code' is on the menu 2 times"]
+    gaps = export_rows_expectation_gaps([], [])
+    assert len(gaps['切片导出类条目置灰']) == 5 and len(gaps['切片完成后恢复可用']) == 5
+    assert all('is on the menu 0 times' in failed for failed in gaps['切片完成后恢复可用'])
+    # Other rows are free to change: the STL rows are not what the Feishu row is about.
+    gaps = export_rows_expectation_gaps(export_rows(*SLICE_EXPORT_ROWS, 'Export all objects as STLs'),
+                                        export_rows('Export all objects as STLs'))
+    assert gaps == dict.fromkeys(ROW_CLAUSES, [])
+
+
+def test_project_without_a_plate_gcode_is_not_sliced(tmp_path):
+    assert project_has_gcode(FIXTURES / 'feishu_std_cube.3mf') is False
+    assert project_has_gcode(FIXTURES / 'feishu_std_sphere.3mf') is False
+    with ZipFile(FIXTURES / 'feishu_std_cube.3mf') as source, ZipFile(tmp_path / 'sliced.3mf', 'w') as target:
+        for info in source.infolist():
+            target.writestr(info, source.read(info.filename))
+        target.writestr('Metadata/plate_1.gcode', gcode_text(box=CUBE_BOX))
+    assert project_has_gcode(tmp_path / 'sliced.3mf') is True
+    assert project_has_gcode(write_sliced(tmp_path / 'plate.gcode.3mf')) is True
+
+
+@pytest.mark.skipif(not (CENSUS / '3270a35-census1-analysis.json').is_file(), reason='local evidence absent')
+def test_the_guest_menu_census_reads_as_the_expectation_says():
+    first = json.loads((CENSUS / '3270a35-census1-analysis.json').read_text(encoding='utf-8-sig'))
+
+    def rows(census, phase):
+        return census[phase]['submenus']['Export']
+
+    assert [(row['label'], row['enabled']) for row in rows(first, 'menus_before_slice')] == [
+        (EXPORT_ROWS[index], ROW_LABELS[index] not in SLICE_EXPORT_ROWS) for index in range(len(EXPORT_ROWS))]
+    assert export_rows_expectation_gaps(rows(first, 'menus_before_slice'), rows(first, 'menus_after_slice')) == {
+        '切片导出类条目置灰': [], '切片完成后恢复可用': []}
+    # The second census stopped with the memory guard open: its slice rows were still disabled.
+    second = json.loads((CENSUS / 'a0efc09-census2-analysis.json').read_text(encoding='utf-8-sig'))
+    gaps = export_rows_expectation_gaps(rows(second, 'menus_before_slice'), rows(second, 'menus_after_slice'))
+    assert gaps['切片导出类条目置灰'] == []
+    assert gaps['切片完成后恢复可用'] == [f"after slicing: {name!r} is disabled" for name in SLICE_EXPORT_ROWS]

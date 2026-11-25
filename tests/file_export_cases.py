@@ -109,6 +109,89 @@ def read_export_menu(session):
     return {'file': file_rows, 'export': export_rows}
 
 
+def dismiss_menus(session):
+    """Close the application's open popup menus, also one whose submenu was expanded.
+
+    A menu whose submenu opened for the real cursor ignores WM_CANCELMODE (PITFALLS 17.10). It
+    closes for real Escape keys, and those go to the foreground window: they are only sent while
+    the application under test is that window. Returns True once no menu is left."""
+    for _attempt in range(3):
+        if not topbar_util._enum_menu_windows(session.pid):
+            break
+        if winutil._window_pid(winutil.user32.GetForegroundWindow()) == session.pid:
+            m7.mdu._send_keys([(0x1B, False), (0x1B, True)])  # VK_ESCAPE
+        time.sleep(0.5)
+    topbar_util.close_menu_windows(session.pid)
+    deadline = time.monotonic() + 5
+    while topbar_util._enum_menu_windows(session.pid) and time.monotonic() < deadline:
+        time.sleep(0.2)
+    return not topbar_util._enum_menu_windows(session.pid)
+
+
+def _row_ink(frame, menu_hwnd, hmenu, index):
+    """Luminance of the brightest pixels of one menu row in a desktop frame (its text), or None
+    when the row has no rectangle on the screen. A reading for the picture, not a check."""
+    rect = wintypes.RECT()
+    try:
+        if not winutil.user32.GetMenuItemRect(menu_hwnd, hmenu, index, ctypes.byref(rect)):
+            return None
+        region = frame[max(rect.top, 0):max(rect.bottom, 0), max(rect.left, 0):max(rect.right, 0), :3]
+        if region.size == 0:
+            return None
+        return int(np.percentile(region.max(axis=2), 99))
+    except (OSError, ValueError, cv2.error):
+        return None
+
+
+def show_export_menu(session, path, margin=12):
+    """Open File > Export on screen with its submenu expanded and keep a desktop picture of both.
+
+    A popup menu is not part of the application's window, so PrintWindow cannot show it: the
+    picture is cut from the desktop around the two menus. The submenu opens for the real cursor
+    alone, so the window is brought to the foreground first: the real Escape keys that close the
+    menus again would otherwise reach another window. Returns the rows of both menus as they
+    stood while the picture was taken."""
+    from m8x_48_modal_color_header import bring_main_to_mouse
+
+    if not bring_main_to_mouse(session.hwnd):
+        raise ValueError('Orca could not come to the foreground to show the File menu')
+    menu = topbar_util.open_file_menu(session)
+    if not menu:
+        raise ValueError('topbar File menu did not open')
+    rect, hwnd, hmenu = menu
+    file_rows = _rows(hmenu)
+    index = topbar_util.find_item(hmenu, 'Export')
+    if index is None:
+        dismiss_menus(session)
+        raise ValueError('the File menu has no Export row')
+    try:
+        topbar_util.hover_row(rect, len(file_rows), index)
+        sub = topbar_util.wait_submenu(session.pid, {hwnd}, timeout_s=5.0)
+        if not sub:
+            raise ValueError('the Export submenu did not open on screen')
+        sub_rect, sub_hwnd, sub_menu = sub
+        time.sleep(0.5)  # let the submenu finish painting
+        width, height, pixels = winutil.screen_grab()
+        frame = np.frombuffer(pixels, np.uint8).reshape(height, width, 4)
+        left, top = max(0, min(rect[0], sub_rect[0]) - margin), max(0, min(rect[1], sub_rect[1]) - margin)
+        right = min(width, max(rect[2], sub_rect[2]) + margin)
+        bottom = min(height, max(rect[3], sub_rect[3]) + margin)
+        picture = cv2.cvtColor(frame[top:bottom, left:right], cv2.COLOR_BGRA2BGR)
+        if right <= left or bottom <= top or not cv2.imwrite(str(path), picture):
+            raise ValueError(f'could not keep a picture of the open menus as {Path(path).name}')
+        export_rows = _rows(sub_menu)
+        for row in export_rows:
+            row['text_luminance'] = _row_ink(frame, sub_hwnd, sub_menu, row['index'])
+    finally:
+        closed = dismiss_menus(session)
+    if not closed:
+        raise ValueError('the File menu stayed open')
+    print(f'{LOG} File > Export on screen: {[(row["index"], row["label"], row["enabled"], row["text_luminance"]) for row in export_rows]}',
+          flush=True)
+    return {'image': Path(path).name, 'screen_px': [width, height],
+            'menus_px': {'file': list(rect), 'export': list(sub_rect)}, 'file': file_rows, 'export': export_rows}
+
+
 def export_row_in(rows, item):
     """The one Export submenu row whose label (without accelerator and dots) is `item`, or None."""
     wanted = row_label(item).casefold()

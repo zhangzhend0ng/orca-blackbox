@@ -3,9 +3,13 @@
 The helpers drive real Win32 objects on the guest; here every window call is
 replaced by a recording fake so that the order of the actions, the refusal
 paths and the receipt are pinned without a GUI."""
+import ctypes
+from itertools import count
 from pathlib import Path
 import sys
 from types import SimpleNamespace
+
+import numpy as np
 
 import pytest
 
@@ -603,3 +607,183 @@ def test_slice_wait_can_be_started_by_another_click_and_keeps_its_default(monkey
     monkeypatch.setattr(cases, 'click_slice_start', lambda session: False)
     with pytest.raises(ValueError, match='the Slice click did not take'):
         cases.slice_until_exportable(rig.session, tmp_path, {}, 'Export G-code')
+
+
+
+
+def ticking(monkeypatch):
+    """A clock that advances half a second on every reading: waiting loops end at once."""
+    clock = iter(count * 0.5 for count in range(4000))
+    monkeypatch.setattr(cases.time, 'monotonic', lambda: next(clock))
+    monkeypatch.setattr(cases.time, 'sleep', lambda seconds: None)
+
+
+def test_open_menus_are_closed_with_real_escape_only_while_orca_is_the_foreground(monkeypatch):
+    menus, keys, foreground = [['menu'], ['menu', 'submenu']], [], {'pid': SESSION_PID}
+
+    def escape(pressed):
+        keys.append(pressed)
+        if len(menus) > 1:
+            menus.pop()  # the first Escape closes the submenu, the second the File menu
+        else:
+            menus.clear()
+
+    monkeypatch.setattr(cases.topbar_util, '_enum_menu_windows', lambda pid: list(menus))
+    monkeypatch.setattr(cases.topbar_util, 'close_menu_windows', lambda pid: None)
+    monkeypatch.setattr(cases.winutil.user32, 'GetForegroundWindow', lambda: 11)
+    monkeypatch.setattr(cases.winutil, '_window_pid', lambda hwnd: foreground['pid'])
+    monkeypatch.setattr(cases.m7.mdu, '_send_keys', escape)
+    ticking(monkeypatch)
+    session = SimpleNamespace(pid=SESSION_PID, hwnd=4242)
+    assert cases.dismiss_menus(session) is True and keys == [[(0x1B, False), (0x1B, True)]] * 2
+    keys.clear()
+    assert cases.dismiss_menus(session) is True and keys == []  # nothing was open
+    menus.extend(['menu', 'submenu'])
+    foreground['pid'] = SESSION_PID + 1  # another window has the keyboard: no key is sent
+    assert cases.dismiss_menus(session) is False and keys == []
+
+
+def menus_rig(monkeypatch, tmp_path, *, opens=True, closes=True):
+    """A File menu at (100, 100)-(300, 300) whose Export submenu opens at (300, 180)-(560, 400)."""
+    import m8x_48_modal_color_header as header
+    calls, state = [], {'menus': [], 'closes': closes, 'foreground': True}
+    menus = {9001: [(0, 'New Project\tCtrl+N', 0), (1, 'Export', 16)],
+             9002: [(index, text, 3 if index in (3, 4, 5) else 0) for index, text in enumerate(ROWS)]}
+
+    def open_file(session):
+        calls.append(('open',))
+        state['menus'].append('file')
+        return (100, 100, 300, 300), 501, 9001
+
+    def wait_submenu(pid, known, timeout_s=5.0):
+        if opens:
+            state['menus'].append('export')
+            return (300, 180, 560, 400), 502, 9002
+        return None
+
+    def escape(pressed):
+        calls.append(('escape',))
+        if state['closes']:
+            state['menus'].clear()
+
+    def row_rect(menu_hwnd, hmenu, index, rect):
+        box = ctypes.cast(rect, ctypes.POINTER(cases.wintypes.RECT)).contents
+        box.left, box.top, box.right, box.bottom = 300, 180 + 20 * index, 560, 200 + 20 * index
+        return 1
+
+    frame = np.zeros((480, 640, 4), np.uint8)
+    frame[180:400, 300:560, :3] = (40, 40, 40)  # the dark submenu
+    for index in range(7):  # one line of text per row: dim where the row is disabled
+        frame[188 + 20 * index:196 + 20 * index, 316:470, :3] = (110, 110, 110) if index in (3, 4, 5) else (230, 230, 230)
+    monkeypatch.setattr(header, 'bring_main_to_mouse', lambda hwnd: state['foreground'])
+    monkeypatch.setattr(cases.topbar_util, 'open_file_menu', open_file)
+    monkeypatch.setattr(cases.topbar_util, 'find_item', lambda hmenu, text: 1)
+    monkeypatch.setattr(cases.topbar_util, 'hover_row',
+                        lambda rect, count, index: calls.append(('hover', rect, count, index)))
+    monkeypatch.setattr(cases.topbar_util, 'wait_submenu', wait_submenu)
+    monkeypatch.setattr(cases.topbar_util, 'menu_items', lambda hmenu: list(menus[hmenu]))
+    monkeypatch.setattr(cases.topbar_util, '_enum_menu_windows', lambda pid: list(state['menus']))
+    monkeypatch.setattr(cases.topbar_util, 'close_menu_windows', lambda pid: None)
+    monkeypatch.setattr(cases.winutil.user32, 'GetForegroundWindow', lambda: 11)
+    monkeypatch.setattr(cases.winutil.user32, 'GetMenuItemRect', row_rect)
+    monkeypatch.setattr(cases.winutil, '_window_pid', lambda hwnd: SESSION_PID)
+    monkeypatch.setattr(cases.m7.mdu, '_send_keys', escape)
+    monkeypatch.setattr(cases.winutil, 'screen_grab', lambda: (640, 480, frame.tobytes()))
+    ticking(monkeypatch)
+    return calls, state, tmp_path / 'menu.png'
+
+
+def test_export_menu_is_shown_with_its_submenu_and_kept_as_a_desktop_picture(monkeypatch, tmp_path):
+    import cv2
+    calls, state, picture = menus_rig(monkeypatch, tmp_path)
+    shown = cases.show_export_menu(SimpleNamespace(pid=SESSION_PID, hwnd=4242), picture)
+    assert [call[0] for call in calls] == ['open', 'hover', 'escape']
+    assert calls[1] == ('hover', (100, 100, 300, 300), 2, 1)  # the cursor is parked on the Export row
+    assert state['menus'] == []
+    # The picture is the desktop around both menus with a margin: 88..572 across, 88..412 down.
+    kept = cv2.imread(str(picture))
+    assert kept.shape[:2] == (324, 484)
+    assert kept[100:108, 228:382].min() == 230  # text of the first row
+    assert kept[160:168, 228:382].max() == 110  # dim text of the first disabled row
+    assert shown['image'] == 'menu.png' and shown['screen_px'] == [640, 480]
+    assert shown['menus_px'] == {'file': [100, 100, 300, 300], 'export': [300, 180, 560, 400]}
+    assert [row['label'] for row in shown['file']] == ['New Project\tCtrl+N', 'Export']
+    assert [row['label'] for row in shown['export']] == ROWS
+    # What the picture shows agrees with what the menu reports.
+    assert [row['enabled'] for row in shown['export']] == [True, True, True, False, False, False, True]
+    assert [row['text_luminance'] for row in shown['export']] == [230, 230, 230, 110, 110, 110, 230]
+
+
+def test_export_menu_that_does_not_open_or_stay_closed_is_an_error_that_leaves_nothing_open(monkeypatch, tmp_path):
+    calls, state, picture = menus_rig(monkeypatch, tmp_path, opens=False)
+    with pytest.raises(ValueError, match='the Export submenu did not open on screen'):
+        cases.show_export_menu(SimpleNamespace(pid=SESSION_PID, hwnd=4242), picture)
+    assert state['menus'] == [] and picture.exists() is False
+    calls, state, picture = menus_rig(monkeypatch, tmp_path, closes=False)
+    with pytest.raises(ValueError, match='the File menu stayed open'):
+        cases.show_export_menu(SimpleNamespace(pid=SESSION_PID, hwnd=4242), picture)
+    assert picture.is_file() and calls.count(('escape',)) == 3
+    calls, state, picture = menus_rig(monkeypatch, tmp_path)
+    state['foreground'] = False
+    with pytest.raises(ValueError, match='could not come to the foreground'):
+        cases.show_export_menu(SimpleNamespace(pid=SESSION_PID, hwnd=4242), picture)
+    assert calls == []
+
+
+def export_rows(disabled):
+    return [{'index': index, 'label': text,
+             'enabled': gcode.EXPORT_ROWS[index].partition('\t')[0].rstrip('. ') not in disabled}
+            for index, text in enumerate(gcode.EXPORT_ROWS)]
+
+
+def disabled_case(monkeypatch, tmp_path, before, after):
+    """The #238 case's steps with every window call faked; the menu reads `before`, then `after`."""
+    sys.path.insert(0, str(ROOT / 'tests' / 'gui'))
+    import m7x_238_export_disabled as case
+    from PIL import Image
+    shown = []
+
+    def snapshot(session, work, phase):
+        Image.new('RGB', (4, 4), (9, 9, 9)).save(work / f'{phase}.png')
+        target = work / f'{phase}.3mf'
+        target.write_bytes(case.FIXTURE.read_bytes())
+        return target
+
+    def show(session, path):
+        shown.append(Path(path).name)
+        Path(path).write_bytes(b'picture of the open menus')
+        return {'image': Path(path).name, 'export': before if len(shown) == 1 else after}
+
+    monkeypatch.setattr(case, 'save_snapshot', snapshot)
+    monkeypatch.setattr(case, 'show_export_menu', show)
+    monkeypatch.setattr(case, 'slice_until_exportable',
+                        lambda session, work, analysis, item: analysis.__setitem__('slice', {'item': item}))
+    monkeypatch.setattr(case, 'capture', lambda session, path: Image.new('RGB', (4, 4), (9, 9, 9)).save(path))
+    monkeypatch.setattr(case.m7, 'wait_dialog', lambda pid, timeout_s=15.0, title_substr='': None)
+    analysis = {'results': {}, 'timings': {}}
+    case.steps(SimpleNamespace(pid=SESSION_PID, alive=lambda: True), tmp_path, analysis,
+               SimpleNamespace(model=case.FIXTURE))
+    assert shown == ['menu-before.png', 'menu-after.png']
+    assert analysis['before_is_sliced'] is False and analysis['plate_objects'] == ['立方体']
+    assert analysis['slice']['item'] == 'Export G-code'
+    assert set(analysis['timings']) == {'open_unsliced_plate', 'observe_before_slice', 'slice', 'observe_after_slice'}
+    assert sorted(path.name for path in tmp_path.iterdir()) == [
+        'before.3mf', 'before.png', 'menu-after.png', 'menu-before.png', 'sliced.png']
+    return analysis
+
+
+SLICE_ROWS = ('Export plate sliced file', 'Export all plate sliced file', 'Export G-code')
+
+
+def test_disabled_rows_case_passes_when_the_slice_rows_wake_up_after_slicing(monkeypatch, tmp_path):
+    analysis = disabled_case(monkeypatch, tmp_path, export_rows(SLICE_ROWS), export_rows(()))
+    assert analysis['results'] == dict.fromkeys(gcode.ROW_CLAUSES, 'PASS')
+    assert m7.m7_verdict(analysis['results']) == 0
+
+
+def test_disabled_rows_case_fails_the_clause_that_does_not_hold(monkeypatch, tmp_path):
+    analysis = disabled_case(monkeypatch, tmp_path, export_rows(SLICE_ROWS[:2]), export_rows(('Export G-code',)))
+    assert analysis['results'] == {
+        '切片导出类条目置灰': "FAIL (before slicing: 'Export G-code' is enabled)",
+        '切片完成后恢复可用': "FAIL (after slicing: 'Export G-code' is disabled)"}
+    assert m7.m7_verdict(analysis['results']) == 1
