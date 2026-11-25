@@ -22,7 +22,7 @@ import m7_common as m7
 from harness import export_util, topbar_util, winutil
 from m3_common import add_common_args, boot_session
 from m8_common import wait_arrival
-from m8x_48_modal_color_header import bring_main_to_mouse
+from model_context_cases import open_model_menu
 from negative_part_oracle import measure_difference, project_boxes
 
 FIXTURE = HERE / 'fixtures' / 'agent_layer_cube.3mf'
@@ -40,46 +40,61 @@ def write_cutter(path):
             stream.write(struct.pack('<12fH', 0, 0, 0, *vertices[a], *vertices[b], *vertices[c], 0))
 
 
-def open_negative_submenu(session, centroid):
-    if not bring_main_to_mouse(session.hwnd):
-        print('[m7x250] Orca could not own the guest foreground')
+def send_menu_key(session, vk):
+    fg = winutil.user32.GetForegroundWindow()
+    if winutil._window_pid(fg) != session.pid:
+        print(f'[m7x250] refusing menu key {vk:#x}: foreground {fg:#x} owned elsewhere')
+        return False
+    m7.mdu._send_keys([(vk, False), (vk, True)])
+    time.sleep(0.15)
+    return True
+
+
+def highlight_menu_item(session, menu, wanted):
+    rows = topbar_util.menu_items(menu)
+    if not any(i == wanted and flags & 0x80 for i, _, flags in rows):
+        if not send_menu_key(session, 0x24):  # VK_HOME.
+            return False
+    for _ in range(len(rows) + 1):
+        current = topbar_util.menu_items(menu)
+        if any(i == wanted and flags & 0x80 for i, _, flags in current):
+            print(f'[m7x250] native highlighted row {wanted} in menu {menu:#x}')
+            return True
+        if not send_menu_key(session, 0x28):  # VK_DOWN.
+            return False
+    print(f'[m7x250] target menu row {wanted} not highlighted: {topbar_util.menu_items(menu)!r}')
+    return False
+
+
+def open_negative_submenu(session):
+    root = open_model_menu(session, 'Add Negative Part')
+    if root is None:
         return None
-    candidates = [(centroid[0], centroid[1] + 14), centroid]
-    existing = {row[4] for row in topbar_util._enum_menu_windows(session.pid)}
-    for px, py in candidates:
-        x, y = m7.client(session, px, py)
-        canvas = winutil.deepest_child_at(session.hwnd, x, y)
-        if winutil.window_class(canvas) != 'wxGLCanvas' or winutil._window_pid(canvas) != session.pid:
-            continue
-        winutil.user32.SetCursorPos(x, y)
-        time.sleep(0.4)
-        winutil.msg_click_screen(x, y, session.hwnd)
-        time.sleep(0.4)
-        lp = winutil._lparam_from_screen(canvas, x, y)
-        winutil._send_msg(canvas, 0x0204, 0x0002, lp)  # WM_RBUTTONDOWN.
-        winutil._send_msg(canvas, 0x0205, 0, lp)       # WM_RBUTTONUP.
-        popup = topbar_util.wait_submenu(session.pid, existing, timeout_s=3.0)
-        if not popup:
-            continue
-        _, hwnd, menu = popup
-        rows = topbar_util.menu_items(menu)
-        print(f'[m7x250] object context menu: {rows!r}')
-        item = m7.click_menu_row(session, hwnd, menu, 'Add negative part', nested=True)
-        if item:
-            _, (submenu_hwnd, submenu) = item
+    root_hwnd, root_menu, parent_index = root
+    _, submenu = topbar_util.item_info(root_menu, parent_index)
+    if not submenu or not highlight_menu_item(session, root_menu, parent_index):
+        return None
+    if not send_menu_key(session, 0x27):  # VK_RIGHT.
+        return None
+    deadline = time.monotonic() + 5.0
+    while time.monotonic() < deadline:
+        visible = [(row[4], topbar_util.menu_hmenu(row[4]))
+                   for row in topbar_util._enum_menu_windows(session.pid)]
+        child = next((hwnd for hwnd, hmenu in visible if hwnd != root_hwnd and hmenu == submenu), None)
+        if child:
             rows = topbar_util.menu_items(submenu)
-            print(f'[m7x250] visible negative submenu hwnd={submenu_hwnd:#x}: {rows!r}')
-            if any(label.partition('\t')[0].rstrip('. …').strip().casefold() == 'load'
-                   and not flags & 3 for _, label, flags in rows):
-                return submenu_hwnd, submenu
-        topbar_util.close_menu_windows(session.pid)
+            print(f'[m7x250] visible negative submenu hwnd={child:#x} hmenu={submenu:#x}: {rows!r}')
+            load = [i for i, label, flags in rows
+                    if label.partition('\t')[0].rstrip('. …').strip().casefold() == 'load' and not flags & 3]
+            return (child, submenu, load[0]) if len(load) == 1 else None
+        time.sleep(0.2)
+    print(f'[m7x250] expected submenu HMENU {submenu:#x} not visible: {visible!r}')
     return None
 
 
 def load_negative_part(session, submenu, source):
-    hwnd, menu = submenu
-    chosen = m7.click_menu_row(session, hwnd, menu, 'Load')
-    if chosen is None:
+    _, menu, index = submenu
+    if not highlight_menu_item(session, menu, index) or not send_menu_key(session, 0x0D):
         return False
     dialog = m7.wait_dialog(session.pid, timeout_s=15)
     edit = export_util.find_edit(dialog[3]) if dialog else None
@@ -159,7 +174,7 @@ def run_case(args, work):
             return results
         before = m7.capture_bgr(session)
         cv2.imwrite(str(work / 'prepare-before.png'), before)
-        submenu = open_negative_submenu(session, center)
+        submenu = open_negative_submenu(session)
         results['Add negative part opens its second-level menu'] = 'PASS' if submenu else 'FAIL'
         if not submenu or not load_negative_part(session, submenu, src):
             results['load a negative part on model A'] = 'FAIL'
