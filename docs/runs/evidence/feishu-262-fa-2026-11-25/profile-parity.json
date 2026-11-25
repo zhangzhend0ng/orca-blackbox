@@ -1,0 +1,9 @@
+{
+  "snapmaker_profile_file_count_fa": 738,
+  "snapmaker_profile_file_count_vm_manifest": 738,
+  "equal": true,
+  "host_manifest_sha256": "bef3755821afdd603eacf8f88c45fb654d88fe24fd1be4608729453afbd307f9",
+  "snapmaker_entries_sha256": "8bcd776762d3a2b701101ab9410dce3671636cbfa51e19b3a621656ce2d783f9",
+  "only_fa": 0,
+  "only_vm": 0
+}

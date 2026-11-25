@@ -1,0 +1,193 @@
+{
+  "pass": true,
+  "flow_config": {
+    "top_solid_infill_flow_ratio": [
+      "1",
+      "1.1"
+    ],
+    "bottom_solid_infill_flow_ratio": [
+      "1",
+      "0.9"
+    ],
+    "print_flow_ratio": [
+      "1",
+      "1"
+    ]
+  },
+  "config_matches": true,
+  "profile_matches": true,
+  "outer_shell_paths_identical": true,
+  "all_labelled_features_extrusion_mm": [
+    3789.9900100000264,
+    3798.644350000026
+  ],
+  "all_labelled_features_ratio": 1.0022834730374393,
+  "feature_extrusion": {
+    "Bottom surface": {
+      "segments": [
+        310,
+        310
+      ],
+      "paths_identical": true,
+      "extrusion_mm": [
+        21.21237,
+        19.091299999999997
+      ],
+      "extrusion_ratio": 0.9000078727648064,
+      "segment_e_mismatches": 0
+    },
+    "Bridge": {
+      "segments": [
+        338,
+        338
+      ],
+      "paths_identical": true,
+      "extrusion_mm": [
+        48.218190000000085,
+        48.218190000000085
+      ],
+      "extrusion_ratio": 1.0,
+      "segment_e_mismatches": 0
+    },
+    "Brim": {
+      "segments": [
+        16,
+        16
+      ],
+      "paths_identical": true,
+      "extrusion_mm": [
+        0.09108000000000001,
+        0.09108000000000001
+      ],
+      "extrusion_ratio": 1.0,
+      "segment_e_mismatches": 0
+    },
+    "Gap infill": {
+      "segments": [
+        6103,
+        6103
+      ],
+      "paths_identical": true,
+      "extrusion_mm": [
+        230.14996999999968,
+        230.14996999999968
+      ],
+      "extrusion_ratio": 1.0,
+      "segment_e_mismatches": 0
+    },
+    "Inner wall": {
+      "segments": [
+        20882,
+        20882
+      ],
+      "paths_identical": true,
+      "extrusion_mm": [
+        1012.2732700000129,
+        1012.2732700000129
+      ],
+      "extrusion_ratio": 1.0,
+      "segment_e_mismatches": 0
+    },
+    "Internal Bridge": {
+      "segments": [
+        864,
+        864
+      ],
+      "paths_identical": true,
+      "extrusion_mm": [
+        164.0630100000002,
+        164.0630100000002
+      ],
+      "extrusion_ratio": 1.0,
+      "segment_e_mismatches": 0
+    },
+    "Internal solid infill": {
+      "segments": [
+        11451,
+        11451
+      ],
+      "paths_identical": true,
+      "extrusion_mm": [
+        648.7619500000037,
+        648.7619500000037
+      ],
+      "extrusion_ratio": 1.0,
+      "segment_e_mismatches": 0
+    },
+    "Outer wall": {
+      "segments": [
+        29273,
+        29273
+      ],
+      "paths_identical": true,
+      "extrusion_mm": [
+        1011.3634000000094,
+        1011.3634000000094
+      ],
+      "extrusion_ratio": 1.0,
+      "segment_e_mismatches": 0
+    },
+    "Overhang wall": {
+      "segments": [
+        336,
+        336
+      ],
+      "paths_identical": true,
+      "extrusion_mm": [
+        6.4150800000000014,
+        6.4150800000000014
+      ],
+      "extrusion_ratio": 1.0,
+      "segment_e_mismatches": 0
+    },
+    "Sparse infill": {
+      "segments": [
+        4605,
+        4605
+      ],
+      "paths_identical": true,
+      "extrusion_mm": [
+        539.68348,
+        539.68348
+      ],
+      "extrusion_ratio": 1.0,
+      "segment_e_mismatches": 0
+    },
+    "Top surface": {
+      "segments": [
+        956,
+        956
+      ],
+      "paths_identical": true,
+      "extrusion_mm": [
+        107.75820999999986,
+        118.53361999999974
+      ],
+      "extrusion_ratio": 1.0999961859054628,
+      "segment_e_mismatches": 0
+    }
+  },
+  "input_sha256": [
+    "ecfd79cd1423d1361c30b7856c3f1ec0406299f0ce7e90db773f1c878c050949",
+    "2bddbad299dd7f179d7fd29e99e610155d434663998d4bd80b514152aff75f48"
+  ],
+  "saved_geometry_member_hashes": {
+    "3D/3dmodel.model": "388e21f7af33ca79391b3a15b697aa636dca5ed4dab94efb0c4afb1f33a10a12",
+    "3D/Objects/3DBenchy_1.model": "6c15003adbba86c8628c86f3e6415f25ae3d2d60c65f28ddd409c818d47dd732"
+  },
+  "saved_geometry_counts": {
+    "vertices": 112569,
+    "triangles": 225154
+  },
+  "fixture_sha256": "d550f8ac10adfbea6fcfc61be46d76f07515384e20225d425e42eb49d50b4d65",
+  "runs": [
+    "391ed75583984c55b1d54ef3365b3d4f",
+    "e7db8c2cb262487c9612227cb3d76517"
+  ],
+  "negative_controls": {
+    "top_surface_path_shift_0.12mm_rejected": true,
+    "two_inner_wall_E_changes_plus_minus_0.005_rejected": true,
+    "unchanged_inner_wall_total_ratio_in_control": 1.0,
+    "baseline_against_itself_rejected": true
+  }
+}
