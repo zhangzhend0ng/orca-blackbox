@@ -608,3 +608,113 @@ run 编号是 `artifacts/windows_mcp_harvest/<编号>`；叙述与决策见运�
   develop 配置 2、实验重复与参数未生效 4）；有信息量的失败 19 个 / 40 分钟。客机
   忙碌 67%、fa 48%——fa 空等 163 分钟，最长三段 30 / 29 / 17 分钟都在等宿主修复；
   每个 run 的启动 / 收割 / 间隔约占 19% 的机器时间。对应做法见 README 第 9–11 条。
+
+## 22. 1126 补充：飞书文件导入/导出段（总控直派单例 / 内存护栏 / 2.4.0 驾驶事实）
+
+记录见[十一小时运行记录](docs/runs/elevenhour-file-io-2026-11-26.md)，菜单与对话框普查见
+[文件菜单普查](docs/runs/evidence/elevenhour-filemenu-2026-11-25/README.md)。
+
+### 22.1 客机单例直派链路（总控自己派、自己收）
+- **提权中继的调用形态**：宿主未提权，客机操作都走提权中继（单槽、覆写式
+  `relay_cmd.txt` / `relay_out.txt`），形态是 `python relay_long.py <秒> "<powershell 命令>"`；
+  外面再包一层 `powershell -File relay_long.py` 会报 "does not have a '.ps1' extension"。
+- **子 agent 一律不碰中继**：覆写式单槽，两个写者必撞。
+- **短提交号先解析**：`git rev-parse --verify <sha>^{commit}` 再截取，否则 `Substring` 越界。
+- **`hv_go.ps1` 的「宿主领先 origin」告警**：客机靠 git clone 跟踪 origin，未推送的改动
+  到不了客机。总控的直派脚本改用 git bundle 同步加 `-NoSync`，所以告警不等于没同步——
+  先推送，或在日志里记明用的是 bundle。
+- **一轮 = 新进程 + 新 profile + 新工作目录**：收割后按 `object_artifacts.json` 逐文件
+  核字节数与 SHA-256；离线复核喂带前缀的副本（`tools/replay_case_evidence.py` 按
+  `<前缀>-*` 找件）。
+- **交互桌面预检**：提权中继里 PS Direct 进程的桌面指标是默认值（§18.7），派发前读
+  计划任务 `Ready`、Orca 与驱动进程数、分辨率；见过一次 `Windows Security` 防火墙提示
+  （约 00:36，程序未定位），以 IDCANCEL 取消并记 `guest desktop:`。
+- **`wait_arrival` 在空盘的 U1 模板上立即返回**：模板本身的彩色占比 0.104% 已经过了
+  0.1% 的门，随后另存工程撞上还没关的 Loading 框（#251 第一轮）。导入后要等的是
+  「盘上有模型候选且应用没有对话框」，不是彩色占比。
+
+### 22.2 切片完成信号与运行期内存护栏
+- **假信号**：2.4.0 切片时可用内存低于 512 MB 持续 1 秒，会弹模态 `Memory Usage Warning`
+  （`Yes, Continue` / `No, Stop`，默认 No），切片停在半途；这时切片按钮的完成态模板
+  照样匹配。
+- **可靠信号**：File→Export 的 `Export G-code` 行启用——三条切片导出行在切片前禁用
+  （`tests/file_export_cases.py` 的 `slice_until_exportable` / `wait_export_enabled`）。
+- **关护栏要以对话框为根**：`winutil.msg_click_screen(cx, cy, dlg_hwnd)`；以主窗口为根的
+  点消息落空。1500 MB 的占内存夹具可确定性复现。
+- **两种情形都要容忍**：#234 的两个正式会话切球体时都弹了护栏，#236 的四个会话都没有。
+  证据见[内存护栏](docs/runs/evidence/elevenhour-filemenu-2026-11-25/README.md)和
+  [#234](docs/runs/evidence/feishu-234-2026-11-26/README.md)。
+
+### 22.3 2.4.0 的菜单与对话框（客机普查 + 源码）
+- **读源码先核对引用**：客机装的 2.4.0，界面提示语与 `sync/softfever-20261010`
+  （813784a）一致；tag `sm-v2.4.0`（b1831e5d）是它的祖先，OBJ 导入器等处在两个引用
+  之间有改动。
+- **File→Import 三行**：`Import 3MF/STL/STEP/SVG/OBJ/AMF...`（Ctrl+I；文件框标题
+  `Choose one or more files (3mf/step/stl/svg/obj/amf):`，类型下拉只有一项
+  `Supported files (*.3mf, *.stl, *.oltp, *.stp, *.step, *.svg, *.amf, *.obj)`）、
+  `Import Zip Archive...`（`Choose ZIP file:`）、`Import Configs...`（`Select profile to load:`，
+  过滤 `Config files (*.json;*.zip;*.orca_printer;*.orca_filament)`，没有 .ini）。
+- **File→Export 七行**：`Export all objects as one STL...`（`Export STL file:`）、
+  `Export all objects as STLs...`（文件夹框）、`Export Generic 3MF...`、
+  `Export plate sliced file...`（Ctrl+G，`Save Sliced file as:`）、
+  `Export all plate sliced file...`、`Export G-code...`（`Save G-code file as:`）、
+  `Export Preset Bundle...`（自绘对话框）。其中三条切片导出行（当前盘切片文件、
+  所有盘切片文件、G-code）在切片前禁用。
+- **类型下拉的文本在 ComboBox**：CB_GETCOUNT 0x0146、CB_GETLBTEXT 0x0148、
+  CB_GETCURSEL 0x0147。同一个文件框第二次打开时会多出一个空的 ComboBox——找过滤项
+  要看所有的框，不能只看最后一个（#232 第四轮）。
+- **保存框导航**：输入目录 + IDOK 只导航不关闭；再输裸文件名 + IDOK；应用自己补扩展名
+  （`plate`→`plate.gcode`，`plate-sliced`→`plate-sliced.gcode.3mf`）。
+- **弹层里的行以弹层自身为根再点**：Slice 下拉的 `Slice all` 第一次被上层窗口吞了
+  （#235）。
+- **`.ini` 交给「导入配置」是被静默忽略的**：文件框放行，产品弹 `Import result`：
+  `There are 0 configs imported. (Only non-system and compatible configs)`。源码
+  `PresetBundle::import_presets` 只收单个预设 JSON 或 zip 类容器里的成员
+  （`libslic3r/PresetBundle.cpp`，`sync/softfever-20261010`）。要做导入配置的夹具，
+  用装着三份预设 JSON 的 zip。
+- **「导出配置包」弹窗的列出条件**（`CreatePresetsDialog.cpp` 的 `ExportConfigsDialog::
+  data_init()`，`sync/softfever-20261010`）：对每个可见的非默认打印机，只收与它兼容的
+  用户耗材/工艺预设；`Printer presets(.zip)` 只列非系统打印机。种子 profile 里那 3 个
+  工艺预设在弹窗里一行都列不出（#237 第一轮）。
+- **导出预设包在这个构建上报 `add file fail`**：`Snapmaker Orca - Info`，按钮文本是
+  `Yes`，正文自绘（窗口文本只有 `Yes`，要 OCR）。源码在 `mz_zip_writer_add_file`
+  失败时返回 `ADD_FILE_FAIL`，并在应用日志里写一行 `<预设名> Failed to add file to ZIP
+  archive`——先读那一行。实测于 #232 第二轮（按类型导出耗材预设）。
+
+### 22.4 2.4.0 的对象驾驶事实
+- **另存工程后，消息点击对象不再选中它**：改走盘面右键菜单 `Select All`
+  （`tests/gui/m7x_227_import_stl.py` 的 `select_all`）。
+- **PageUp 按下即把选中对象绕 Z 轴转 45°**（`GLCanvas3D::on_key` 的 wxEVT_KEY_DOWN 分支）；
+  `R` 不是旋转快捷键，工具栏没有 Rotate 工具，gizmo 没有数值框。#227 为此在客机上
+  花了 7 轮——**先读源码再找控件**。
+- **一次导入多个模型文件都失败**：归档解出的多个文件、或文件框里一次给多个路径，
+  2.4.0 都报 `Loading of a model file failed.` 并停在 Loading 框；单个文件正常
+  （[#231](docs/runs/evidence/feishu-231-2026-11-26/README.md)）。
+- **File→Import 一个工程 3MF 只载几何**：盘与配置不还原
+  （[#230](docs/runs/evidence/feishu-230-2026-11-26/README.md)）。
+- **对象右键菜单 27 行里没有 `Fix model`**（Windows 11 客机；候选原因 `HAS_WIN10SDK`
+  编译开关）（[#246](docs/runs/evidence/feishu-246-2026-11-26/README.md)）。
+- **多盘切片一次导出落一个 `plates.gcode.3mf`**（`Metadata/plate_1.gcode`、`plate_2.gcode`），
+  不是每盘一个文件（[#235](docs/runs/evidence/feishu-235-2026-11-26/README.md)）。
+- **源文件缺失时 `Reload from disk` 弹文件选择框**（`Please select a file:`，预填文件名），
+  不是报错（#251 现状探针）。
+- **共享 3MF 读取器对大网格要放大 XML 上限**：标准球体网格 2.5 MB / 48,070 个元素，
+  `harness/project_3mf.py` 的上限已提到 16 MiB / 200,000 个元素。另存后的顶点有约
+  1e-6 mm 的末位差，「保存工程 == 夹具」的精确比较要换成 1e-4 mm 容差的三角形配对。
+
+### 22.5 实体机与并发
+- **fa706g3 的显示器 30 分钟无输入就休眠**，休眠后首个模型不渲染：任务开头唤醒显示
+  （一动一回的像素移动）并在运行期间保持常亮（`execution_host.json` 的 `display_wake`）。
+  #234 的前两次 SHADOW 因此是 RED。
+- **fa 上原生菜单可能关不上**：#238 的 SHADOW 两次菜单都读对了，收尾时 File 菜单窗口
+  没关上，用例按 RED 结束（§17.10 的同类现象）；客机上没出现过。
+- **Mac 日常账号 `coil` 锁屏时，后台 Aqua 会话（`coilwin`）读不到窗口**：整夜无法跑
+  GUI；不许替用户解锁。开跑前读
+  `ioreg -n Root -d1 | grep IOConsoleLocked`。
+- **反斜杠内容走 Write/Edit**：ZCode 的 Bash 在 Windows 上会吞 heredoc / `bash -c` 里的
+  一层反斜杠（占内存夹具的源码字符串就栽过一次）。
+- **`git checkout -B` / `branch -D` 被 hook 拦截**：换用 `git checkout -b <新名> <sha>`，
+  旧分支留着。
+- **提交说明不要预告没做的事**：766eb5d 预告了 #230 的登记，d736278 才更正。
+- **给子 agent 的判据不要靠猜机制**：#228 起初按「多材质 OBJ 拆成多个 volume」写判据，
+  agent 读源码后发现 2.4.0 是把面色画到面上——先让它读源码回报，再定判法。
