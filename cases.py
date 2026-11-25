@@ -132,6 +132,7 @@ CASES: dict[str, dict] = {
     "m7x_201_save_project_reopen": _r("m7", "A"),
     "m7x_202_save_as_project": _r("m7", "A"),
     "m7x_239_delete_all": _r("m7", "A"),
+    "m7x_240_arrange": _o("m7", "A"),
     "m7x_243_add_primitive": _r("m7", "A"),
     "m7x_244_add_model": _r("m7", "A"),
     "m7x_248_delete_object": _r("m7", "A"),

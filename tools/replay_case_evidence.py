@@ -1,4 +1,4 @@
-"""Replay the on-disk assertions of a harvested #201, #239, #243, #244, #248, #249, #250 or #254 run.
+"""Replay the on-disk assertions of a harvested GUI case.
 
 Pass one or more *-receipt.json files. JSON output and exit status describe the
 offline checks, including their negative controls. The original GUI verdict is
@@ -15,15 +15,18 @@ from zipfile import BadZipFile
 from xml.etree.ElementTree import ParseError
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from tools import replay_delete_object, replay_negative_part, replay_part_attachment, replay_plate_context, replay_plate_import, replay_project_save
+from tools import replay_delete_object, replay_negative_part, replay_part_attachment, replay_plate_context, replay_plate_import, replay_plate_layout, replay_project_save
 from tools import replay_sphere_layer_pair
 
 
 ADAPTERS = {
     "m7x_201_save_project_reopen": replay_project_save.replay,
     "m7x_239_delete_all": replay_plate_context.replay_delete_all,
+    "m7x_240_arrange": replay_plate_layout.replay_arrange,
+    "m7x_241_orient": replay_plate_layout.replay_orient,
     "m7x_243_add_primitive": replay_plate_context.replay_add_primitive,
     "m7x_244_add_model": replay_plate_import.replay,
+    "m7x_245_clone_fill": replay_plate_layout.replay_clone,
     "m7x_248_delete_object": replay_delete_object.replay,
     "m7x_249_add_part": replay_part_attachment.replay,
     "m7x_250_negative_part": replay_negative_part.replay,
