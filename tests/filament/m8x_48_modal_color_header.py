@@ -5,7 +5,7 @@
 import argparse
 import time
 from ctypes import byref
-from ctypes.wintypes import POINT
+from ctypes.wintypes import HWND, POINT
 
 import numpy as np
 
@@ -18,7 +18,7 @@ NAME = "Mint Lemonade"
 SKU = "sku 34205"
 # The fixture's official PLA Silk color carries these two catalog colors.
 CARD_BGR = ((23, 237, 236), (229, 173, 68))
-HWND_TOPMOST = -1
+HWND_TOPMOST = HWND(-1)
 
 
 def center(rect):
