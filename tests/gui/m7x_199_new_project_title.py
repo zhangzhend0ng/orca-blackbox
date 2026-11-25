@@ -38,17 +38,34 @@ def visible_project_title(session):
     return " ".join(word[0] for word in m7.mdu.ocr_words_img(title_band, scale=3, psm=7))
 
 
-def save_prompt_text(hwnd):
+def save_prompt_words(hwnd):
     width, height, pixels = winutil.capture_window(hwnd)
     frame = np.frombuffer(pixels, np.uint8).reshape(height, width, 4)
     image = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
-    return " ".join(word[0] for word in m7.mdu.ocr_words_img(image, scale=3, psm=6))
+    return m7.mdu.ocr_words_img(image, scale=3, psm=6)
 
 
 def is_save_prompt(text):
     return bool(re.search(r"\bsave\b", text, re.I)
                 and re.search(r"\b(?:unsaved|changes)\b", text, re.I)
                 and re.search(r"\bcancel\b", text, re.I))
+
+
+def click_discard(hwnd, words):
+    for text, (x0, y0, x1, y1), child in export_util._children_texts(hwnd):
+        if text.replace("&", "").strip().casefold() == "no" and winutil.user32.IsWindowVisible(child):
+            target = winutil.msg_click_screen((x0 + x1) // 2, (y0 + y1) // 2, hwnd)
+            print(f"[m7x199] clicked No from dialog control, target={target:#x}")
+            return True
+    cancel_y = next((y + h // 2 for text, x, y, w, h in words if text.casefold() == "cancel"), None)
+    for text, x, y, width, height in words:
+        if (text.casefold() == "no" and cancel_y is not None
+                and abs(y + height // 2 - cancel_y) <= height):
+            sx, sy = winutil.client_to_screen(hwnd, x + width // 2, y + height // 2)
+            target = winutil.msg_click_screen(sx, sy, hwnd)
+            print(f"[m7x199] clicked OCR-confirmed No button at ({sx}, {sy}), target={target:#x}")
+            return True
+    return False
 
 
 def import_unsaved_model(session):
@@ -107,13 +124,13 @@ def main():
         if not dispatched or not dialog:
             return m7.m7_verdict({"unsaved changes prompt": "FAIL (dialog did not open)"})
         _, dialog_title, _, dialog_hwnd = dialog
-        text = save_prompt_text(dialog_hwnd)
+        words = save_prompt_words(dialog_hwnd)
+        text = " ".join(word[0] for word in words)
         print(f"[m7x199] dialog={dialog_title!r} body={text!r}")
         if not is_save_prompt(text):
             return m7.m7_verdict({"unsaved changes prompt": "FAIL (prompt body did not match)"})
 
-        clicked = m7.click_dialog_button(dialog_hwnd, "no", fallback_first=False)
-        print(f"[m7x199] discard choice: {clicked!r}")
+        clicked = click_discard(dialog_hwnd, words)
         deadline = time.monotonic() + 15
         closed = False
         current_title, current_project = original_title, original_project
