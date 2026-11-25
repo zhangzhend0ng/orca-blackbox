@@ -4,7 +4,7 @@
 
 import argparse
 import time
-from ctypes import byref, sizeof
+from ctypes import byref, get_last_error, sizeof
 from ctypes.wintypes import HWND, POINT
 
 import numpy as np
@@ -51,12 +51,15 @@ def request_background_focus(main, chip):
     ours = winutil.kernel32.GetCurrentThreadId()
     gui_thread = wu.GetWindowThreadProcessId(main, None)
     if not gui_thread or not wu.AttachThreadInput(ours, gui_thread, True):
+        print(f"{LOG} background input queue attachment failed: thread={gui_thread}, "
+              f"Win32 error={get_last_error()}")
         return None
     try:
         wu.SetActiveWindow(HWND(main))
         wu.SetFocus(HWND(chip))
         info = GUITHREADINFO(cbSize=sizeof(GUITHREADINFO))
         if not wu.GetGUIThreadInfo(gui_thread, byref(info)):
+            print(f"{LOG} background input queue query failed: Win32 error={get_last_error()}")
             return None
         return info.hwndActive or 0, info.hwndFocus or 0
     finally:
@@ -209,6 +212,9 @@ def main():
         foreground = winutil.force_set_foreground(dlg_hwnd)
         before = {window[3] for window in m8._visible_toplevels(session.pid)}
         owner_blocked = not wu.IsWindowEnabled(session.hwnd)
+        keys = request_background_focus(session.hwnd, probe_hwnd) if foreground else None
+        modal_keys = (keys is not None and keys[0] == dlg_hwnd
+                      and (keys[1] == dlg_hwnd or bool(wu.IsChild(dlg_hwnd, keys[1]))))
         outside = (contains(winutil.window_rect(session.hwnd), probe)
                    and not contains(dialog[2], probe) and bool(wu.IsChild(session.hwnd, probe_hwnd)))
         hit = winutil.window_from_screen_point(*probe)
@@ -224,10 +230,6 @@ def main():
                           and contains(background["swatch"], (cursor.x, cursor.y)))
         same_preset = winutil.window_title(background["combo"][2]).strip() == background["combo"][0]
         other_orca_foreground = active_pid == session.pid and active != dlg_hwnd
-        focus_ready = winutil.force_set_foreground(dlg_hwnd)
-        keys = request_background_focus(session.hwnd, probe_hwnd) if focus_ready else None
-        modal_keys = (keys is not None and keys[0] == dlg_hwnd
-                      and (keys[1] == dlg_hwnd or bool(wu.IsChild(dlg_hwnd, keys[1]))))
         detail = (f"outside={outside}, real mouse events={sent}, foreground before={foreground}, "
                   f"cursor={(cursor.x, cursor.y)}, desktop hit={hit:#x}, foreground after={active:#x} "
                   f"(pid={active_pid}, dialog={dlg_hwnd:#x}), same dialog visible={remained}, "
