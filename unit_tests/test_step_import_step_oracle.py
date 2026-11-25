@@ -21,6 +21,7 @@ sys.path[:0] = [str(ROOT), str(ROOT / 'tests'), str(ROOT / 'tests' / 'gui')]
 from step_import_oracle import (  # noqa: E402
     CLAUSES, CLAUSE_COLOUR, CLAUSE_COMPLETE, CLAUSE_ENTITIES, CLAUSE_LIST, recorded_results_match,
     step_import_readings, verdicts, verify_step_import)
+from m7x_229_import_step import SPLIT_OPTION, find_checkbox, readings_of  # noqa: E402  (pure helpers of the case)
 
 REAL_227 = ROOT / 'docs/runs/evidence/feishu-227-2026-11-26/11858f17-run1-imported.3mf'
 MAIN, MESH = '3D/3dmodel.model', '3D/Objects/cube_20mm.stl_2.model'
@@ -256,3 +257,88 @@ def test_a_record_that_says_pass_is_not_taken_at_its_word(tmp_path):
     assert recorded_results_match({'case': 229, 'results': dict.fromkeys(CLAUSES, 'PASS')}, good)
     assert not recorded_results_match({'case': 228, 'results': dict.fromkeys(CLAUSES, 'PASS')}, good)
     assert not recorded_results_match({'case': 229}, good)
+
+
+def _rewrite(source, target, replaced):
+    """Copy a saved 3MF with some members replaced."""
+    with ZipFile(source) as src, ZipFile(target, 'w', ZIP_DEFLATED) as dst:
+        for info in src.infolist():
+            dst.writestr(info.filename, replaced.get(info.filename, src.read(info.filename)))
+
+
+def unticked_project(target):
+    """What the application saved on the first guest run (dev229a-253195c), with the "Split
+    compound and compsolid into multiple objects" box left as it comes: one object named after
+    the file, one part holding the 36 triangles of the three cubes, no extruder of its own."""
+    step_project(target)
+    with ZipFile(target) as src:
+        settings = json.loads(src.read(PROJECT))
+    settings['filament_colour'][0] = '#FF0000'
+    _rewrite(target, target.with_name('unticked.3mf'), {
+        MESH: _mesh([('1', _cube(0) + _cube(20) + _cube(40), None)]), MAIN: _main([('2', ['1'])]),
+        SETTINGS: _settings(_settings_xml(target), [('2', 'assembly.step', [('1', 'assembly', None)])]),
+        PROJECT: json.dumps(settings).encode('utf-8')})
+    return target.with_name('unticked.3mf')
+
+
+def _settings_xml(path):
+    with ZipFile(path) as archive:
+        return archive.read(SETTINGS)
+
+
+def test_option_unticked_one_part_of_36_faces_fails_every_clause(tmp_path):
+    """The first guest run, read back: 1 entity of 36 triangles in the first filament."""
+    project = unticked_project(tmp_path / 'as-unticked.3mf')
+    readings = step_import_readings(project, _words('assembly.step'))
+    assert verdicts(readings) == {
+        CLAUSE_ENTITIES: 'FAIL (1 entities, boxes [5000.0] mm3)',
+        CLAUSE_LIST: 'FAIL (object names [\'assembly.step\'], read [\'assembly.step\'])',
+        CLAUSE_COLOUR: "FAIL (filaments [1], colours {'1': '#ff0000'})",
+        CLAUSE_COMPLETE: 'FAIL (1 个实体，36 个三角面：三个立方体并成了一个部件)'}
+    assert not recorded_results_match({'case': 229, 'results': dict.fromkeys(CLAUSES, 'PASS')}, readings)
+    assert not any(readings['checks'].values()) and readings['triangles_total'] == 36 and not readings['side_by_side']
+
+
+# The census of "Step file import parameters" as the first guest run surveyed it (run
+# dev229a-253195c): (class, text, rectangle). Handles are left out on purpose.
+CENSUS = [
+    ('Static', 'Smaller linear and angular deflections result in higher-quality\ntransformations but increase the processing time.', [788, 442, 1109, 473]),
+    ('Static', 'View Wiki for more information', [788, 473, 964, 490]),
+    ('Static', 'Linear Deflection: ', [788, 510, 883, 526]),
+    ('msctls_trackbar32', '', [888, 510, 1088, 535]),
+    ('wxWindowNR', '', [1093, 510, 1163, 536]),
+    ('Edit', '0.003', [1098, 514, 1153, 532]),
+    ('Static', 'Angle Deflection: ', [788, 542, 882, 558]),
+    ('msctls_trackbar32', '', [888, 542, 1088, 567]),
+    ('wxWindowNR', '', [1093, 542, 1163, 568]),
+    ('Edit', '0.50', [1098, 546, 1153, 564]),
+    ('Button', SPLIT_OPTION, [788, 594, 1089, 609]),
+    ('Static', 'Number of triangular facets: ', [788, 646, 940, 662]),
+    ('Static', '36', [940, 646, 1090, 662]),
+    ('Button', "Don't show again", [788, 716, 902, 731]),
+    ('wxWindowNR', 'panel', [963, 698, 1183, 750]),
+    ('wxWindowNR', 'OK', [963, 708, 1063, 740]),
+    ('wxWindowNR', 'Cancel', [1073, 708, 1173, 740]),
+]
+
+
+def _children(census):
+    return [{'class': cls, 'text': text, 'rect': rect, 'hwnd': 1000 + index, 'id': -30000 + index,
+             'enabled': True, 'visible': True} for index, (cls, text, rect) in enumerate(census)]
+
+
+def test_the_split_box_is_found_among_the_dialog_windows():
+    children = _children(CENSUS)
+    split = find_checkbox(children, SPLIT_OPTION)
+    assert split['class'] == 'Button' and split['rect'] == [788, 594, 1089, 609]
+    assert find_checkbox(children, "Don't show again")['rect'] == [788, 716, 902, 731]
+    assert find_checkbox(children, 'OK') is None, 'OK is a drawn button, not a check box'
+    assert find_checkbox(children, 'Split compound') is None, 'the whole text is what counts'
+    assert find_checkbox(children[:10], SPLIT_OPTION) is None
+    assert find_checkbox(children + [dict(split, hwnd=9999)], SPLIT_OPTION) is None, 'two of them: none is taken'
+
+
+def test_the_dialog_readings_are_the_deflections_and_the_facet_count():
+    assert readings_of(_children(CENSUS)) == {'linear_deflection': '0.003', 'angle_deflection': '0.50',
+                                              'triangular_facets': '36'}
+    assert readings_of([]) == {'linear_deflection': None, 'angle_deflection': None, 'triangular_facets': None}

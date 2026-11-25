@@ -33,7 +33,10 @@ How each clause is read:
   colour kept as paint on the triangles and one kept as an extruder.
 * ``无缺件``: exactly three entities, none missing and none merged into
   another; each has the 12 triangles of a cube, or, when the application
-  divided them, as many as its two neighbours and at least 12.
+  divided them, as many as its two neighbours and at least 12. One part of
+  the 36 triangles of the three cubes is what the application saved when its
+  "Split compound and compsolid into multiple objects" box was left as it
+  comes (run dev229a-253195c), and the verdict says so in those words.
 """
 from pathlib import Path
 
@@ -121,7 +124,7 @@ def step_import_readings(project, object_words):
             'triangle_attribute_names': saved['triangle_attribute_names'],
             'side_by_side': _side_by_side(entities),
             'object_list': {'names': saved['object_names'], 'found': named, 'listed': listed,
-                            'words': [str(word[0]) for word in object_words][:60]}}
+                            'words': [str(word[0]) for word in object_words][:400]}}
 
 
 def _why(readings, clause):
@@ -134,6 +137,8 @@ def _why(readings, clause):
         return f'object names {readings["object_names"]}, read {readings["object_list"]["found"]}'
     if clause == CLAUSE_COLOUR:
         return f'filaments {[entity["filament"] for entity in readings["entities"]]}, colours {readings["filament_colours"]}'
+    if len(readings['entities']) == 1 and readings['triangles_total'] == ENTITIES * FACES_PER_CUBE:
+        return f'1 个实体，{ENTITIES * FACES_PER_CUBE} 个三角面：三个立方体并成了一个部件'
     return f'triangle counts {readings["triangle_counts"]}'
 
 

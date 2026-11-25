@@ -24,10 +24,21 @@ project and the list: an entity is a part of the saved project, so one object
 with three parts and three objects read the same.
 
 The application's command line refuses STEP files on this build
-(``Unknown file format``, control of 2026-11-26), so nothing of this row is
-known before the first guest run: whether the file loads as one object or
-three, and what becomes of the colours.
+(``Unknown file format``, control of 2026-11-26), so this row is only seen
+through the GUI. The first guest run (dev229a-253195c) showed what File >
+Import does with the file: a modal ``Step file import parameters`` dialog
+with two deflection boxes (``0.003`` and ``0.50``), the facet count, a
+``Don't show again`` box, and a check box ``Split compound and compsolid
+into multiple objects`` that is not ticked. With it as it came, the three
+cubes were saved as one object with one part of 36 triangles in the first
+filament. A user who wants the parts apart ticks that box, so the case
+does: it records the check box, its neighbours and its state, ticks it,
+reads the state back and only then presses OK. The deflections are left as
+they are and recorded. Whether a tick gives three objects or one object
+with three parts, and where the colours land, is read from the saved project.
 """
+import ctypes
+from ctypes import wintypes
 from hashlib import sha256
 from pathlib import Path
 import shutil
@@ -39,6 +50,7 @@ sys.path[:0] = [str(HERE), str(HERE / 'tests'), str(HERE / 'tests' / 'engine'), 
 
 import m7_common as m7  # noqa: E402
 from colored_obj_cases import _accept, affirmative, app_dialogs, survey_dialog  # noqa: E402
+from harness import winutil  # noqa: E402
 from m7x_227_import_stl import import_stl, show_objects_tab, sidebar  # noqa: E402
 from m7x_244_add_model import prepare_plate  # noqa: E402
 from m7x_249_add_part import stage  # noqa: E402
@@ -51,6 +63,15 @@ FIXTURE = HERE / 'fixtures' / 'agent_layer_redblue.3mf'
 STEP = HERE / 'fixtures' / 'assembly.step'
 LOG = '[m7x229]'
 STRANGER_WAIT_S = 20
+STEP_DIALOG = 'Step file import parameters'
+SPLIT_OPTION = 'Split compound and compsolid into multiple objects'
+BM_GETCHECK = 0x00F0
+UNCHECKED, CHECKED = 0, 1  # what BM_GETCHECK answers for a native check box (2 is the third state)
+WORDS_KEPT = 400  # the object list is read below the printer panel, well past the first words
+
+_user32 = ctypes.WinDLL('user32', use_last_error=True)
+_user32.SendMessageW.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM]
+_user32.SendMessageW.restype = wintypes.LPARAM
 
 
 def prepare_fixture(model, work):
@@ -60,6 +81,69 @@ def prepare_fixture(model, work):
 
 def _loading(title):
     return title.casefold().startswith('loading')
+
+
+def find_checkbox(children, text):
+    """The one native check box of a survey (class Button) whose whole text is `text`; None when
+    there is not exactly one."""
+    hits = [child for child in children if child['class'] == 'Button' and child['text'].strip() == text]
+    return hits[0] if len(hits) == 1 else None
+
+
+def readings_of(children):
+    """The numbers the dialog shows: the two deflection boxes in their order and the facet count
+    that follows its label."""
+    edits = [child['text'].strip() for child in children if child['class'] == 'Edit']
+    counts = [children[index + 1]['text'].strip() for index in range(len(children) - 1)
+              if children[index]['text'].strip().startswith('Number of triangular facets')]
+    return {'linear_deflection': edits[0] if edits else None, 'angle_deflection': edits[1] if len(edits) > 1 else None,
+            'triangular_facets': counts[0] if counts else None}
+
+
+def check_state(hwnd):
+    """What a native check box shows: CHECKED, UNCHECKED, or 2 when it is in its third state."""
+    return int(_user32.SendMessageW(hwnd, BM_GETCHECK, 0, 0))
+
+
+def _neighbours(children, child):
+    """The window before and the one after `child`, as the survey lists them."""
+    index = next((step for step, other in enumerate(children) if other['hwnd'] == child['hwnd']), None)
+    around = [children[step] for step in (index - 1, index + 1) if index is not None and 0 <= step < len(children)]
+    return [{'class': other['class'], 'rect': other['rect'], 'text': other['text'][:60]} for other in around]
+
+
+def tick_option(session, dialog, record, text):
+    """Tick the check box `text` of a surveyed dialog and see it ticked. The record keeps the
+    check box with its class, rectangle and neighbours, its state before and after, and what was
+    tried. Without such a box, or when it will not tick, the record stays and the error follows."""
+    child = find_checkbox(record['children'], text)
+    option = record['option'] = {'text': text}
+    if child is None:
+        option['error'] = 'no single check box with that text'
+        raise ValueError(f'{record["title"]!r}: {option["error"]}')
+    option.update({'class': child['class'], 'rect': child['rect'], 'neighbours': _neighbours(record['children'], child)})
+    left, top, right, bottom = child['rect']
+    x, y = left + 7, (top + bottom) // 2  # the box at the left end of a native check box
+    option['at'] = [x, y]
+    option['before'] = check_state(child['hwnd'])
+    option['tiers'] = []
+    if option['before'] != CHECKED:
+        winutil.msg_click_screen(x, y, dialog)  # resolved inside the dialog's own window tree
+        time.sleep(0.6)
+        option['tiers'].append({'how': 'message click inside dialog', 'state': check_state(child['hwnd'])})
+        if (check_state(child['hwnd']) != CHECKED and winutil.user32.IsWindow(dialog)
+                and winutil._window_pid(winutil.window_from_screen_point(x, y)) == session.pid):
+            # A real click goes through the OS input queue: only onto a window of the application under test.
+            winutil.user32.SetCursorPos(x, y)
+            time.sleep(0.2)
+            winutil.real_click_screen(x, y)
+            time.sleep(0.6)
+            option['tiers'].append({'how': 'real click', 'state': check_state(child['hwnd'])})
+    option['after'] = check_state(child['hwnd'])
+    if option['after'] != CHECKED:
+        option['error'] = f'the check box reads {option["after"]} after the click; {CHECKED} is ticked'
+        raise ValueError(f'{record["title"]!r}: {text!r}: {option["error"]}')
+    return option
 
 
 def wait_step_import(session, work, analysis, baseline=0, timeout_s=150):
@@ -89,6 +173,9 @@ def wait_step_import(session, work, analysis, baseline=0, timeout_s=150):
             if 'error' in title.casefold():
                 raise ValueError(f'the application showed {title!r}: '
                                  f'{[child["text"] for child in record["children"] if child["text"]][:12]!r}')
+            if title.casefold() == STEP_DIALOG.casefold():
+                record['readings'] = readings_of(record['children'])  # the deflections stay as they are
+                tick_option(session, hwnd, record, SPLIT_OPTION)
             if affirmative(record['children']) is not None:
                 _accept(session, work, hwnd, record)  # presses the button and sees the dialog close
                 answered.add(hwnd)
@@ -138,7 +225,7 @@ def steps(session, work, analysis, args):
         imported = save_snapshot(session, work, 'imported')
         show_objects_tab(session)
         words = sidebar(session)
-        analysis['object_list'] = {'words': [word[0] for word in words][:60]}
+        analysis['object_list'] = {'words': [word[0] for word in words][:WORDS_KEPT]}
         analysis['imported'] = step_import_readings(imported, words)
         analysis['object_list'].update({key: (analysis['imported'].get('object_list') or {}).get(key)
                                         for key in ('names', 'found', 'listed')})
