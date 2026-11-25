@@ -19,7 +19,7 @@ sys.path.insert(0, str(HERE / "tests"))
 sys.path.insert(0, str(HERE / "tests" / "engine"))
 
 import m7_common as m7
-from harness import topbar_util, winutil
+from harness import winutil
 from harness.project_3mf import _archive, _geometry
 from m3_common import add_common_args, boot_session
 from m8_common import wait_arrival
@@ -36,29 +36,6 @@ def project_geometry(path):
 
 def translated_geometry(faces, x_delta):
     return tuple(tuple((x + x_delta, y, z) for x, y, z in face) for face in faces)
-
-
-def dispatch_edit_command(session, label):
-    menu = topbar_util.open_dropdown_menu(session)
-    if not menu:
-        print("[m7x201] Edit dropdown did not open")
-        return False
-    _, _, root = menu
-    try:
-        edit_index = topbar_util.find_item(root, "Edit")
-        if edit_index is None:
-            print(f"[m7x201] Edit missing in {topbar_util.menu_items(root)!r}")
-            return False
-        _, edit = topbar_util.item_info(root, edit_index)
-        rows = topbar_util.menu_items(edit)
-        for index, text, flags in rows:
-            if text.partition("\t")[0].replace("&", "").strip().casefold() == label and not flags & 3:
-                print(f"[m7x201] Edit > {text!r}")
-                return topbar_util.activate_menu_item(session, edit, index)
-        print(f"[m7x201] {label!r} not enabled in {rows!r}")
-        return False
-    finally:
-        topbar_util.close_menu_windows(session.pid)
 
 
 def move_existing_object(session, origin):
@@ -95,19 +72,22 @@ def move_existing_object(session, origin):
     time.sleep(0.8)
     selection = selection_delta(raw)
     if selection < 0.10:
-        # The archive precondition proves that Select All can select only this cube.
-        if not dispatch_edit_command(session, "select all"):
+        if not focus_canvas():
             return None
+        # The archive precondition proves that Ctrl+A can select only this cube.
+        # Real input preserves the modifier state the canvas's wxEVT_CHAR reads.
+        m7.mdu._send_keys([(0x11, False), (ord("A"), False),
+                           (ord("A"), True), (0x11, True)])
         time.sleep(0.8)
         selection = selection_delta(raw)
     print(f"[m7x201] selected cube pixel change={selection:.1%}, canvas={canvas:#x}")
-    if selection < 0.10 or not focus_canvas():
+    if not focus_canvas():
         return None
 
     # Orca moves a selected instance 10 mm along world X for unmodified Right.
     m7.mdu._send_keys([(0x27, False), (0x27, True)])
     time.sleep(1.2)
-    winutil.msg_key(canvas, 0x1B)  # Escape clears selection for comparable rendering.
+    m7.mdu._send_keys([(0x1B, False), (0x1B, True)])  # Comparable, unselected rendering.
     time.sleep(0.8)
     return m7.find_centroid(session)
 
@@ -134,11 +114,8 @@ def run_case(args, project, work):
 
         edited = move_existing_object(editor, origin)
         changed = edited is not None and math.dist(origin, edited) >= 4
-        results["#201 existing object's X changed"] = (
-            f"{'PASS' if changed else 'FAIL'} (viewport centroid {origin} -> {edited}; "
-            f"initial X={initial_x}, target X={expected_x})")
-        if not changed:
-            return results
+        print(f"[m7x201] edit viewport centroid {origin} -> {edited}, moved={changed}; "
+              f"initial X={initial_x}, target X={expected_x}")
 
         # Capture the loaded, isolated file just before save to distinguish a
         # normal save from any identity update Orca may do while opening it.
@@ -154,6 +131,7 @@ def run_case(args, project, work):
             f"{'PASS' if saved else 'FAIL'} (command={sent}, path={project}, sha256={saved_digest})")
         if not saved:
             return results
+        shutil.copyfile(project, work / "after-save.3mf")
         faces, matrix = project_geometry(project)
         matches = (matrix[:9] == initial_matrix[:9] and matrix[9] == expected_x
                    and matrix[10:] == initial_matrix[10:]
@@ -168,7 +146,6 @@ def run_case(args, project, work):
     if editor.alive() or digest_file(project) != saved_digest:
         results["#201 independently reopening the saved project"] = "FAIL (editor still alive or save changed after close)"
         return results
-    shutil.copyfile(project, work / "after-save.3mf")
     reader_args = SimpleNamespace(exe=args.exe, datadir=work / "reopen-profile")
     reader = boot_session(reader_args, model=project)
     try:
@@ -177,7 +154,7 @@ def run_case(args, project, work):
         current_title = project_title(reader)
         independent = loaded and reader.pid != editor.pid and current_title == project.stem
         observed = m7.find_centroid(reader) if independent else None
-        retained = (observed is not None and math.dist(observed, edited) <= 4
+        retained = (observed is not None and edited is not None and math.dist(observed, edited) <= 4
                     and math.dist(observed, origin) >= 4)
         results["#201 independently reopening the saved project"] = (
             f"{'PASS' if retained else 'FAIL'} (path={project}, editor_pid={editor.pid}, "
