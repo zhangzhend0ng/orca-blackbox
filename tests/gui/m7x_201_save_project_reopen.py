@@ -5,6 +5,7 @@
 import argparse
 import math
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -143,9 +144,20 @@ def run_case(args, project, work):
     finally:
         editor.close()
 
-    if editor.alive() or digest_file(project) != saved_digest:
-        results["#201 independently reopening the saved project"] = "FAIL (editor still alive or save changed after close)"
+    try:
+        editor_exit = editor.popen.wait(timeout=8)
+    except subprocess.TimeoutExpired:
+        results["#201 independently reopening the saved project"] = "FAIL (editor still alive)"
         return results
+    settled_digest = digest_file(project)
+    settled_geometry = project_geometry(project)
+    print(f"[m7x201] editor exited: pid={editor.pid}, exit_code={editor_exit}, "
+          f"save SHA-256={saved_digest}, pre-reopen SHA-256={settled_digest}, "
+          f"pre-reopen translation={settled_geometry[1][9:]}")
+    if settled_geometry != (faces, matrix):
+        results["#201 independently reopening the saved project"] = "FAIL (saved geometry changed after editor exit)"
+        return results
+    shutil.copyfile(project, work / "reopen-input.3mf")
     reader_args = SimpleNamespace(exe=args.exe, datadir=work / "reopen-profile")
     reader = boot_session(reader_args, model=project)
     try:
