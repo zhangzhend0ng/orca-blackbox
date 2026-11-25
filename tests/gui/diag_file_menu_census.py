@@ -189,7 +189,7 @@ def describe(hwnd):
     return out
 
 
-def zip_dialog_census(session, work, analysis):
+def zip_dialog_census(session, work, analysis, open_it=False):
     """Import Zip Archive shows an application-drawn file list before anything is loaded: record and close it."""
     from zipfile import ZipFile
 
@@ -234,6 +234,9 @@ def zip_dialog_census(session, work, analysis):
     frame = np.frombuffer(pixels, np.uint8).reshape(height, width, 4)
     entry['screenshot'] = 'zip-dialog.png'
     cv2.imwrite(str(work / entry['screenshot']), cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR))
+    if open_it:
+        entry['after_open'] = open_archive(session, work, target)
+        return entry
     winutil._send_msg(target['hwnd'], 0x0010, 0, 0)  # WM_CLOSE
     deadline = time.monotonic() + 8
     while winutil.user32.IsWindowVisible(target['hwnd']) and time.monotonic() < deadline:
@@ -245,12 +248,68 @@ def zip_dialog_census(session, work, analysis):
     return entry
 
 
+def press_in(dialog, label):
+    """Message click on the one child of `dialog` whose text is `label`, resolved inside the dialog."""
+    rows = [(rect, child) for text, rect, child in export_util._children_texts(dialog['hwnd']) if text.strip() == label]
+    if len(rows) != 1:
+        raise ValueError(f'the Archive preview has {len(rows)} children labelled {label!r}')
+    (left, top, right, bottom), _child = rows[0]
+    point = ((left + right) // 2, (top + bottom) // 2)
+    winutil.msg_click_screen(*point, dialog['hwnd'])
+    return list(point)
+
+
+def open_archive(session, work, preview):
+    """Press All, then Open, on the Archive preview and watch the application for 24 s."""
+    import ctypes
+    wintypes = ctypes.wintypes
+
+    user32 = winutil.user32
+    out = {'all': press_in(preview, 'All')}
+    time.sleep(1.0)
+    width, height, pixels = winutil.capture_window(preview['hwnd'])
+    frame = np.frombuffer(pixels, np.uint8).reshape(height, width, 4)
+    cv2.imwrite(str(work / 'zip-after-all.png'), cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR))
+    out['open'] = press_in(preview, 'Open')
+    samples = []
+    started = time.monotonic()
+    while time.monotonic() - started < 24:
+        time.sleep(2.0)
+        windows = []
+        for window in toplevels(session.pid):
+            if window['hwnd'] in (session.hwnd, preview['hwnd']) or window['class'] == '#32768':
+                continue
+            if window['rect'][2] - window['rect'][0] >= 1100 and window['class'] not in ('#32770',):
+                continue  # the main frame and its full-size layers
+            windows.append({'class': window['class'], 'title': window['title'], 'rect': window['rect'],
+                            'texts': [text for _cls, text, _child in descendants(window['hwnd']) if text][:16]})
+        top = user32.GetForegroundWindow()
+        owner = wintypes.DWORD()
+        user32.GetWindowThreadProcessId(top, ctypes.byref(owner))
+        samples.append({'at_s': round(time.monotonic() - started, 1),
+                        'preview_visible': bool(user32.IsWindowVisible(preview['hwnd'])),
+                        'model_fraction': round(m7.model_colored_frac(session), 5),
+                        'foreground_is_app': owner.value == session.pid, 'windows': windows})
+        print('[census] after open', json.dumps(samples[-1], ensure_ascii=False)[:900], flush=True)
+    out['samples'] = samples
+    width, height, pixels = winutil.screen_grab()
+    shot = np.frombuffer(pixels, np.uint8).reshape(height, width, 4)
+    cv2.imwrite(str(work / 'zip-after-open-screen.png'), cv2.cvtColor(shot, cv2.COLOR_BGRA2BGR))
+    out['app_alive'] = session.alive()
+    return out
+
+
 def run(args, work, analysis):
+    # hv_go launches a case without arguments: the host runner leaves this file to open the archive.
+    open_zip = Path(r'C:\coil\diag_open_zip.txt').is_file()
     session = boot_session(SimpleNamespace(exe=args.exe, datadir=work / 'profile'), model=args.model)
     try:
         m7.ensure_maximized(session)
         if not wait_arrival(session, timeout_s=30, min_frac=0.001)[0]:
             raise ValueError('fixture did not render')
+        if open_zip:
+            analysis['zip_dialog'] = zip_dialog_census(session, work, analysis, open_it=True)
+            return
         before = census(session)
         analysis['menus_before_slice'] = before
         print('[census] before', json.dumps(before, ensure_ascii=False), flush=True)
