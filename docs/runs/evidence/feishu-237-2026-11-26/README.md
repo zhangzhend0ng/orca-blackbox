@@ -41,7 +41,7 @@
 
 随后弹 `add file fail`（[截图](ff55c9d8-run1-result-dialog.png)），磁盘上留下 0 字节的 zip。源码里对应 `ExportConfigsDialog::save_presets_to_zip`：`mz_zip_writer_add_file` 失败即返回 `ADD_FILE_FAIL`，压缩包已经创建但没有收尾（`src/slic3r/GUI/CreatePresetsDialog.cpp`）。#232 的另一轮（模板 U1 0.8 mm）导出耗材名时也是同样的签名。
 
-**给测试同事。** 这是一条可以单独提缺陷的产品问题：打开任意带内嵌耗材预设的工程 → 文件→导出→导出配置包 → 选 `Filament presets(.zip)` → 勾一个耗材名 → 导出，会得到 `add file fail` 和一个 0 字节的 zip。另外「经应用自己另存出来的用户工艺预设能否导出、再导入后参数是否一致」这一段本轮没有走到，仍是未测：第三到第五轮里经 GUI 造预设都停在找 Advanced 开关这一步。第四、五轮的整屏截图显示，当时桌面上压着一个 `Windows Security` 防火墙提示（程序名 `Snapmaker Control`，请求访问公共和专用网络），它盖在应用上面接走了输入。这是客机环境问题，不是产品的：被测构建的目录里没有叫这个名字的程序，客机上另有两份这个设备代理的拷贝；2026-11-26 04:36 给被测程序加了入站 Block 规则之后提示仍然出现，它由谁触发没有定位。
+**给测试同事。** 这是一条可以单独提缺陷的产品问题：打开任意带内嵌耗材预设的工程 → 文件→导出→导出配置包 → 选 `Filament presets(.zip)` → 勾一个耗材名 → 导出，会得到 `add file fail` 和一个 0 字节的 zip。另外「经应用自己另存出来的用户工艺预设能否导出、再导入后参数是否一致」这一段本轮没有走到，仍是未测：第三到第五轮里经 GUI 造预设都停在找 Advanced 开关这一步。fa706g3 上的一次 SHADOW（提交 `f9e99228…`，[整屏截图](fa-f9e99228-50e7b699a849-preset-before.png)）读数相同，截图说明了原因：普查五种类型之后「Export Preset Bundle」对话框还开着，用例是在这个模态对话框开着的时候去点侧栏的。这是用例流程的问题，修法是先关掉对话框再去造预设。客机第四、五轮的截图里，这个对话框上面还压着一个 `Windows Security` 防火墙提示（程序名 `Snapmaker Control`，请求访问公共和专用网络）；它是客机环境问题，被测构建的目录里没有叫这个名字的程序，2026-11-26 04:36 给被测程序加了入站 Block 规则之后提示仍然出现，由谁触发没有定位。
 
 ```powershell
 & runner/hv_go.ps1 -Cases m7x_237_export_configs -NoSync

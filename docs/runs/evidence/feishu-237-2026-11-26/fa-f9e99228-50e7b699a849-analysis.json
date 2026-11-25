@@ -1,0 +1,1721 @@
+{
+  "case": 237,
+  "results": {
+    "生成配置包文件（.ini/.zip）": "FAIL (\"Process presets(.zip)\" lists no row; the application loaded none of the 3 process presets the harness seeds (its log: \"can not find parent for config\"); the filament name \"Generic PLA\" exported with \"St add file fail Yes\", left a 0-byte zip, the log could not add Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).json; making a user preset through the application failed: ValueError: the Advanced swi)",
+    "重新导入后预设参数与导出前一致": "FAIL (not exercised: no package holding a preset was imported)"
+  },
+  "timings": {
+    "read_export_dialog": {
+      "started_utc": "2026-11-25T21:23:07.311002+00:00",
+      "duration_s": 12.953
+    },
+    "make_user_preset": {
+      "started_utc": "2026-11-25T21:23:20.256883+00:00",
+      "duration_s": 3.156
+    },
+    "filament_reading": {
+      "started_utc": "2026-11-25T21:23:23.428918+00:00",
+      "duration_s": 34.609
+    },
+    "export_1": {
+      "started_utc": "2026-11-25T21:23:23.429914+00:00",
+      "duration_s": 34.531
+    }
+  },
+  "export_session": {
+    "app_config": {
+      "models": [
+        {
+          "vendor": "Snapmaker",
+          "model": "Snapmaker U1",
+          "nozzle_diameter": "0.4"
+        }
+      ],
+      "app": {
+        "log_severity_level": "debug"
+      }
+    },
+    "custom_presets_on_disk": {
+      "process": 3,
+      "filament": 3,
+      "machine": 0
+    },
+    "custom_presets": {
+      "process": [
+        "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - HF-TEST",
+        "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - STD-TEST",
+        "0.24mm Standard @Snapmaker U1 (0.4 nozzle) - FLOW-TEST"
+      ],
+      "filament": [
+        "Snapmaker PLA SnapSpeed @U1 - FLOW-TEST",
+        "Snapmaker PLA SnapSpeed @U1 - HF-TEST",
+        "Snapmaker PLA SnapSpeed @U1 - STD-TEST"
+      ],
+      "machine": []
+    },
+    "listed_before": {
+      "Printer config bundle(.orca_printer)": [],
+      "Filament bundle(.orca_filament)": [
+        "Generic PLA",
+        "Snapmaker PLA Basic"
+      ],
+      "Printer presets(.zip)": [],
+      "Filament presets(.zip)": [
+        "Generic PLA",
+        "Snapmaker PLA Basic"
+      ],
+      "Process presets(.zip)": []
+    },
+    "made_preset": {
+      "file": null,
+      "typed": null,
+      "closed": null,
+      "preset_row_before_save": null,
+      "preset_row_after_save": null,
+      "error": "ValueError: the Advanced switch of the process page did not turn on",
+      "page_up": null,
+      "page": null,
+      "before": null,
+      "sidebar_tree": 0
+    },
+    "listed": {
+      "Printer config bundle(.orca_printer)": [],
+      "Filament bundle(.orca_filament)": [
+        "Generic PLA",
+        "Snapmaker PLA Basic"
+      ],
+      "Printer presets(.zip)": [],
+      "Filament presets(.zip)": [
+        "Generic PLA",
+        "Snapmaker PLA Basic"
+      ],
+      "Process presets(.zip)": []
+    },
+    "presets_rewritten_while_open": [
+      [
+        "filament",
+        "Snapmaker PLA SnapSpeed @U1 - FLOW-TEST"
+      ],
+      [
+        "filament",
+        "Snapmaker PLA SnapSpeed @U1 - HF-TEST"
+      ],
+      [
+        "filament",
+        "Snapmaker PLA SnapSpeed @U1 - STD-TEST"
+      ]
+    ],
+    "editor_after_export": {
+      "alive": true,
+      "dialog": null
+    },
+    "app_log": {
+      "file": "app-log.log",
+      "lines_kept": 1622,
+      "sources": [
+        "log/2026-11-26-05-22-24.log.0 (8603718 bytes)"
+      ],
+      "severities": {
+        "info": 29886,
+        "debug": 1481,
+        "warning": 90,
+        "error": 15
+      },
+      "loaded_user_presets": [],
+      "parents_not_found": [
+        "[error]\t2026-11-26 05:22:26.345642[Thread 0x000030e0]:can not find parent for config C:\\coil\\fa706g3_runs\\orca-bb-50e7b699a849\\feishu-object-cases\\237\\run-yhs0rm1d\\export-profile\\user\\default\\process\\0.20mm Standard @Snapmaker U1 (0.4 nozzle) - HF-TEST.json!",
+        "[error]\t2026-11-26 05:22:26.345642[Thread 0x000030e0]:can not find parent for config C:\\coil\\fa706g3_runs\\orca-bb-50e7b699a849\\feishu-object-cases\\237\\run-yhs0rm1d\\export-profile\\user\\default\\process\\0.20mm Standard @Snapmaker U1 (0.4 nozzle) - STD-TEST.json!",
+        "[error]\t2026-11-26 05:22:26.345642[Thread 0x000030e0]:can not find parent for config C:\\coil\\fa706g3_runs\\orca-bb-50e7b699a849\\feishu-object-cases\\237\\run-yhs0rm1d\\export-profile\\user\\default\\process\\0.24mm Standard @Snapmaker U1 (0.4 nozzle) - FLOW-TEST.json!",
+        "[error]\t2026-11-26 05:22:26.352653[Thread 0x000030e0]:can not find parent for config C:\\coil\\fa706g3_runs\\orca-bb-50e7b699a849\\feishu-object-cases\\237\\run-yhs0rm1d\\export-profile\\user\\default\\filament\\Snapmaker PLA SnapSpeed @U1 - FLOW-TEST.json!",
+        "[error]\t2026-11-26 05:22:26.352653[Thread 0x000030e0]:can not find parent for config C:\\coil\\fa706g3_runs\\orca-bb-50e7b699a849\\feishu-object-cases\\237\\run-yhs0rm1d\\export-profile\\user\\default\\filament\\Snapmaker PLA SnapSpeed @U1 - HF-TEST.json!",
+        "[error]\t2026-11-26 05:22:26.359687[Thread 0x000030e0]:can not find parent for config C:\\coil\\fa706g3_runs\\orca-bb-50e7b699a849\\feishu-object-cases\\237\\run-yhs0rm1d\\export-profile\\user\\default\\filament\\Snapmaker PLA SnapSpeed @U1 - STD-TEST.json!"
+      ],
+      "printer_visibility": [],
+      "failed_to_add": [
+        "[info]\t2026-11-26 05:23:42.589723[Thread 0x000030e0]:Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).json Filament preset failed to add file to ZIP archive"
+      ],
+      "added": []
+    }
+  },
+  "bundle_survey": {
+    "order": [
+      "Printer config bundle(.orca_printer)",
+      "Filament bundle(.orca_filament)",
+      "Printer presets(.zip)",
+      "Filament presets(.zip)",
+      "Process presets(.zip)"
+    ],
+    "kinds": {
+      "Printer config bundle(.orca_printer)": {
+        "clicked": {
+          "text": "Printer config bundle(.orca_printer)",
+          "class": "Static",
+          "rect": [
+            926,
+            447,
+            1129,
+            465
+          ],
+          "hit": "0x2dd0ff2"
+        },
+        "hint": "Only display printers with changes to printer, filament, and process presets are displayed.",
+        "items": [],
+        "image": {
+          "width_px": 556,
+          "height_px": 331
+        },
+        "image_name": "bundle-type-1.png"
+      },
+      "Filament bundle(.orca_filament)": {
+        "clicked": {
+          "text": "Filament bundle(.orca_filament)",
+          "class": "Static",
+          "rect": [
+            926,
+            510,
+            1106,
+            528
+          ],
+          "hit": "0x2601508"
+        },
+        "hint": "Only display the filament names with changes to filament presets.",
+        "items": [
+          {
+            "label": "Generic PLA",
+            "box": [
+              788,
+              705,
+              806,
+              723
+            ],
+            "box_class": "Button"
+          },
+          {
+            "label": "Snapmaker PLA Basic",
+            "box": [
+              951,
+              705,
+              969,
+              723
+            ],
+            "box_class": "Button"
+          }
+        ],
+        "image": {
+          "width_px": 556,
+          "height_px": 354
+        },
+        "image_name": "bundle-type-2.png"
+      },
+      "Printer presets(.zip)": {
+        "clicked": {
+          "text": "Printer presets(.zip)",
+          "class": "Static",
+          "rect": [
+            926,
+            567,
+            1039,
+            585
+          ],
+          "hit": "0x1930e88"
+        },
+        "hint": "Only printer names with user printer presets will be displayed, and each preset you choose will be exported as a zip.",
+        "items": [],
+        "image": {
+          "width_px": 710,
+          "height_px": 331
+        },
+        "image_name": "bundle-type-3.png"
+      },
+      "Filament presets(.zip)": {
+        "clicked": {
+          "text": "Filament presets(.zip)",
+          "class": "Static",
+          "rect": [
+            926,
+            595,
+            1049,
+            613
+          ],
+          "hit": "0x23a0e14"
+        },
+        "hint": "Only the filament names with user filament presets will be displayed, \nand all user filament presets in each filament name you ",
+        "items": [
+          {
+            "label": "Generic PLA",
+            "box": [
+              788,
+              716,
+              806,
+              734
+            ],
+            "box_class": "Button"
+          },
+          {
+            "label": "Snapmaker PLA Basic",
+            "box": [
+              951,
+              716,
+              969,
+              734
+            ],
+            "box_class": "Button"
+          }
+        ],
+        "image": {
+          "width_px": 556,
+          "height_px": 365
+        },
+        "image_name": "bundle-type-4.png"
+      },
+      "Process presets(.zip)": {
+        "clicked": {
+          "text": "Process presets(.zip)",
+          "class": "Static",
+          "rect": [
+            926,
+            623,
+            1046,
+            641
+          ],
+          "hit": "0x25f10a8"
+        },
+        "hint": "Only printer names with changed process presets will be displayed, \nand all user process presets in each printer name you selec",
+        "items": [],
+        "image": {
+          "width_px": 556,
+          "height_px": 342
+        },
+        "image_name": "bundle-type-5.png"
+      }
+    },
+    "title": "Export Preset Bundle",
+    "dialog": {
+      "title": "Export Preset Bundle",
+      "texts": [
+        "panel",
+        "Presets",
+        "Printer config bundle(.orca_printer)",
+        "Printer and all the filament&&process presets that belongs to the printer.\nCan be shared with others.",
+        "Filament bundle(.orca_filament)",
+        "User's filament preset set.\nCan be shared with others.",
+        "Printer presets(.zip)",
+        "Filament presets(.zip)",
+        "Process presets(.zip)",
+        "Please select a preset type you want to export",
+        "panel",
+        "panel",
+        "panel",
+        "OK",
+        "Cancel"
+      ],
+      "controls": [
+        [
+          "wxWindowNR",
+          "panel",
+          [
+            768,
+            426,
+            1324,
+            427
+          ]
+        ],
+        [
+          "Static",
+          "Presets",
+          [
+            783,
+            447,
+            883,
+            465
+          ]
+        ],
+        [
+          "Button",
+          "",
+          [
+            903,
+            447,
+            921,
+            465
+          ]
+        ],
+        [
+          "Static",
+          "Printer config bundle(.orca_printer)",
+          [
+            926,
+            447,
+            1129,
+            465
+          ]
+        ],
+        [
+          "Static",
+          "Printer and all the filament&&process presets that belongs to the printer.\nCan be shared with others.",
+          [
+            925,
+            471,
+            1309,
+            500
+          ]
+        ],
+        [
+          "Button",
+          "",
+          [
+            903,
+            510,
+            921,
+            528
+          ]
+        ],
+        [
+          "Static",
+          "Filament bundle(.orca_filament)",
+          [
+            926,
+            510,
+            1106,
+            528
+          ]
+        ],
+        [
+          "Static",
+          "User's filament preset set.\nCan be shared with others.",
+          [
+            925,
+            528,
+            1309,
+            557
+          ]
+        ],
+        [
+          "Button",
+          "",
+          [
+            903,
+            567,
+            921,
+            585
+          ]
+        ],
+        [
+          "Static",
+          "Printer presets(.zip)",
+          [
+            926,
+            567,
+            1039,
+            585
+          ]
+        ],
+        [
+          "Button",
+          "",
+          [
+            903,
+            595,
+            921,
+            613
+          ]
+        ],
+        [
+          "Static",
+          "Filament presets(.zip)",
+          [
+            926,
+            595,
+            1049,
+            613
+          ]
+        ],
+        [
+          "Button",
+          "",
+          [
+            903,
+            623,
+            921,
+            641
+          ]
+        ],
+        [
+          "Static",
+          "Process presets(.zip)",
+          [
+            926,
+            623,
+            1046,
+            641
+          ]
+        ],
+        [
+          "Static",
+          "Please select a preset type you want to export",
+          [
+            783,
+            666,
+            1309,
+            684
+          ]
+        ],
+        [
+          "wxWindowNR",
+          "panel",
+          [
+            783,
+            700,
+            1309,
+            700
+          ]
+        ],
+        [
+          "wxWindowNR",
+          "panel",
+          [
+            783,
+            700,
+            783,
+            700
+          ]
+        ],
+        [
+          "wxWindowNR",
+          "panel",
+          [
+            768,
+            705,
+            1324,
+            757
+          ]
+        ],
+        [
+          "wxWindowNR",
+          "OK",
+          [
+            1104,
+            715,
+            1204,
+            747
+          ]
+        ],
+        [
+          "wxWindowNR",
+          "Cancel",
+          [
+            1214,
+            715,
+            1314,
+            747
+          ]
+        ]
+      ],
+      "image": {
+        "width_px": 556,
+        "height_px": 331
+      },
+      "image_name": "bundle-dialog.png"
+    },
+    "closed": true
+  },
+  "preset_saved": {
+    "name": "BB Export Test",
+    "value": "0.3",
+    "steps": {
+      "advanced_on": false
+    },
+    "before": {
+      "image": {
+        "width_px": 1920,
+        "height_px": 1080
+      },
+      "image_name": "preset-before.png"
+    },
+    "page": {
+      "process_row_y": 614,
+      "quality_tab": [
+        15,
+        686,
+        71,
+        708
+      ],
+      "process_row_y_after": 614,
+      "quality_tab_after": [
+        15,
+        686,
+        71,
+        708
+      ]
+    },
+    "page_up": true
+  },
+  "export_1": {
+    "kind": "Filament presets(.zip)",
+    "directory": "C:\\coil\\fa706g3_runs\\orca-bb-50e7b699a849\\feishu-object-cases\\237\\run-yhs0rm1d\\packages\\Filament_presets_.zip_Generic_PLA\\1",
+    "package_name": "Filament presets.zip",
+    "title": "Export Preset Bundle",
+    "dialog": {
+      "title": "Export Preset Bundle",
+      "texts": [
+        "panel",
+        "Presets",
+        "Printer config bundle(.orca_printer)",
+        "Printer and all the filament&&process presets that belongs to the printer.\nCan be shared with others.",
+        "Filament bundle(.orca_filament)",
+        "User's filament preset set.\nCan be shared with others.",
+        "Printer presets(.zip)",
+        "Filament presets(.zip)",
+        "Process presets(.zip)",
+        "Please select a preset type you want to export",
+        "panel",
+        "panel",
+        "panel",
+        "OK",
+        "Cancel"
+      ],
+      "controls": [
+        [
+          "wxWindowNR",
+          "panel",
+          [
+            768,
+            426,
+            1324,
+            427
+          ]
+        ],
+        [
+          "Static",
+          "Presets",
+          [
+            783,
+            447,
+            883,
+            465
+          ]
+        ],
+        [
+          "Button",
+          "",
+          [
+            903,
+            447,
+            921,
+            465
+          ]
+        ],
+        [
+          "Static",
+          "Printer config bundle(.orca_printer)",
+          [
+            926,
+            447,
+            1129,
+            465
+          ]
+        ],
+        [
+          "Static",
+          "Printer and all the filament&&process presets that belongs to the printer.\nCan be shared with others.",
+          [
+            925,
+            471,
+            1309,
+            500
+          ]
+        ],
+        [
+          "Button",
+          "",
+          [
+            903,
+            510,
+            921,
+            528
+          ]
+        ],
+        [
+          "Static",
+          "Filament bundle(.orca_filament)",
+          [
+            926,
+            510,
+            1106,
+            528
+          ]
+        ],
+        [
+          "Static",
+          "User's filament preset set.\nCan be shared with others.",
+          [
+            925,
+            528,
+            1309,
+            557
+          ]
+        ],
+        [
+          "Button",
+          "",
+          [
+            903,
+            567,
+            921,
+            585
+          ]
+        ],
+        [
+          "Static",
+          "Printer presets(.zip)",
+          [
+            926,
+            567,
+            1039,
+            585
+          ]
+        ],
+        [
+          "Button",
+          "",
+          [
+            903,
+            595,
+            921,
+            613
+          ]
+        ],
+        [
+          "Static",
+          "Filament presets(.zip)",
+          [
+            926,
+            595,
+            1049,
+            613
+          ]
+        ],
+        [
+          "Button",
+          "",
+          [
+            903,
+            623,
+            921,
+            641
+          ]
+        ],
+        [
+          "Static",
+          "Process presets(.zip)",
+          [
+            926,
+            623,
+            1046,
+            641
+          ]
+        ],
+        [
+          "Static",
+          "Please select a preset type you want to export",
+          [
+            783,
+            666,
+            1309,
+            684
+          ]
+        ],
+        [
+          "wxWindowNR",
+          "panel",
+          [
+            783,
+            700,
+            1309,
+            700
+          ]
+        ],
+        [
+          "wxWindowNR",
+          "panel",
+          [
+            783,
+            700,
+            783,
+            700
+          ]
+        ],
+        [
+          "wxWindowNR",
+          "panel",
+          [
+            768,
+            705,
+            1324,
+            757
+          ]
+        ],
+        [
+          "wxWindowNR",
+          "OK",
+          [
+            1104,
+            715,
+            1204,
+            747
+          ]
+        ],
+        [
+          "wxWindowNR",
+          "Cancel",
+          [
+            1214,
+            715,
+            1314,
+            747
+          ]
+        ]
+      ],
+      "image": {
+        "width_px": 556,
+        "height_px": 331
+      },
+      "image_name": "export-dialog.png"
+    },
+    "listed": {
+      "clicked": {
+        "text": "Filament presets(.zip)",
+        "class": "Static",
+        "rect": [
+          926,
+          595,
+          1049,
+          613
+        ],
+        "hit": "0x263138c"
+      },
+      "hint": "Only the filament names with user filament presets will be displayed, \nand all user filament presets in each filament name you ",
+      "items": [
+        {
+          "label": "Generic PLA",
+          "box": [
+            788,
+            716,
+            806,
+            734
+          ],
+          "box_class": "Button"
+        },
+        {
+          "label": "Snapmaker PLA Basic",
+          "box": [
+            951,
+            716,
+            969,
+            734
+          ],
+          "box_class": "Button"
+        }
+      ]
+    },
+    "ticked": [
+      {
+        "label": "Generic PLA",
+        "box": [
+          788,
+          716,
+          806,
+          734
+        ],
+        "hit": "0x27a114a"
+      }
+    ],
+    "after_ticking": {
+      "title": "Export Preset Bundle",
+      "texts": [
+        "panel",
+        "Presets",
+        "Printer config bundle(.orca_printer)",
+        "Printer and all the filament&&process presets that belongs to the printer.\nCan be shared with others.",
+        "Filament bundle(.orca_filament)",
+        "User's filament preset set.\nCan be shared with others.",
+        "Printer presets(.zip)",
+        "Filament presets(.zip)",
+        "Process presets(.zip)",
+        "Only the filament names with user filament presets will be displayed, \nand all user filament presets in each filament name you ",
+        "panel",
+        "panel",
+        "Generic PLA",
+        "Snapmaker PLA Basic",
+        "panel",
+        "OK",
+        "Cancel"
+      ],
+      "controls": [
+        [
+          "wxWindowNR",
+          "panel",
+          [
+            768,
+            426,
+            1324,
+            427
+          ]
+        ],
+        [
+          "Static",
+          "Presets",
+          [
+            783,
+            447,
+            883,
+            465
+          ]
+        ],
+        [
+          "Button",
+          "",
+          [
+            903,
+            447,
+            921,
+            465
+          ]
+        ],
+        [
+          "Static",
+          "Printer config bundle(.orca_printer)",
+          [
+            926,
+            447,
+            1129,
+            465
+          ]
+        ],
+        [
+          "Static",
+          "Printer and all the filament&&process presets that belongs to the printer.\nCan be shared with others.",
+          [
+            925,
+            471,
+            1309,
+            500
+          ]
+        ],
+        [
+          "Button",
+          "",
+          [
+            903,
+            510,
+            921,
+            528
+          ]
+        ],
+        [
+          "Static",
+          "Filament bundle(.orca_filament)",
+          [
+            926,
+            510,
+            1106,
+            528
+          ]
+        ],
+        [
+          "Static",
+          "User's filament preset set.\nCan be shared with others.",
+          [
+            925,
+            528,
+            1309,
+            557
+          ]
+        ],
+        [
+          "Button",
+          "",
+          [
+            903,
+            567,
+            921,
+            585
+          ]
+        ],
+        [
+          "Static",
+          "Printer presets(.zip)",
+          [
+            926,
+            567,
+            1039,
+            585
+          ]
+        ],
+        [
+          "Button",
+          "",
+          [
+            903,
+            595,
+            921,
+            613
+          ]
+        ],
+        [
+          "Static",
+          "Filament presets(.zip)",
+          [
+            926,
+            595,
+            1049,
+            613
+          ]
+        ],
+        [
+          "Button",
+          "",
+          [
+            903,
+            623,
+            921,
+            641
+          ]
+        ],
+        [
+          "Static",
+          "Process presets(.zip)",
+          [
+            926,
+            623,
+            1046,
+            641
+          ]
+        ],
+        [
+          "Static",
+          "Only the filament names with user filament presets will be displayed, \nand all user filament presets in each filament name you ",
+          [
+            783,
+            666,
+            1309,
+            701
+          ]
+        ],
+        [
+          "wxWindowNR",
+          "panel",
+          [
+            783,
+            711,
+            1267,
+            734
+          ]
+        ],
+        [
+          "wxWindowNR",
+          "panel",
+          [
+            783,
+            711,
+            1267,
+            734
+          ]
+        ],
+        [
+          "Button",
+          "",
+          [
+            788,
+            716,
+            806,
+            734
+          ]
+        ],
+        [
+          "Static",
+          "Generic PLA",
+          [
+            811,
+            716,
+            880,
+            734
+          ]
+        ],
+        [
+          "Button",
+          "",
+          [
+            951,
+            716,
+            969,
+            734
+          ]
+        ],
+        [
+          "Static",
+          "Snapmaker PLA Basic",
+          [
+            974,
+            716,
+            1099,
+            734
+          ]
+        ],
+        [
+          "wxWindowNR",
+          "panel",
+          [
+            768,
+            739,
+            1324,
+            791
+          ]
+        ],
+        [
+          "wxWindowNR",
+          "OK",
+          [
+            1104,
+            749,
+            1204,
+            781
+          ]
+        ],
+        [
+          "wxWindowNR",
+          "Cancel",
+          [
+            1214,
+            749,
+            1314,
+            781
+          ]
+        ]
+      ],
+      "image": {
+        "width_px": 556,
+        "height_px": 365
+      },
+      "image_name": "export-dialog-ticked.png"
+    },
+    "ok": {
+      "text": "OK",
+      "class": "wxWindowNR",
+      "rect": [
+        1104,
+        749,
+        1204,
+        781
+      ],
+      "hit": "0x26704cc"
+    },
+    "directory_dialog": {
+      "title": "Choose a directory",
+      "texts": [
+        "命名空间树状控制项",
+        "命名空间树状控制项",
+        "树视图",
+        "ShellView",
+        "Folder:",
+        "Select Folder",
+        "Cancel",
+        "&Help",
+        "导航按钮",
+        "向上一级区段工具栏",
+        "地址: C:\\coil\\fa706g3_runs\\orca-bb-c2722a4fc3b1\\feishu-object-cases\\254\\run-m7gbwkx6",
+        "地址区段工具栏"
+      ],
+      "controls": [
+        [
+          "DUIViewWndClassName",
+          "",
+          [
+            776,
+            492,
+            1720,
+            883
+          ]
+        ],
+        [
+          "DirectUIHWND",
+          "",
+          [
+            776,
+            492,
+            1720,
+            883
+          ]
+        ],
+        [
+          "CtrlNotifySink",
+          "",
+          [
+            776,
+            524,
+            932,
+            883
+          ]
+        ],
+        [
+          "NamespaceTreeControl",
+          "命名空间树状控制项",
+          [
+            776,
+            524,
+            932,
+            883
+          ]
+        ],
+        [
+          "Static",
+          "命名空间树状控制项",
+          [
+            776,
+            524,
+            776,
+            524
+          ]
+        ],
+        [
+          "SysTreeView32",
+          "树视图",
+          [
+            776,
+            524,
+            932,
+            883
+          ]
+        ],
+        [
+          "CtrlNotifySink",
+          "",
+          [
+            936,
+            524,
+            1720,
+            883
+          ]
+        ],
+        [
+          "SHELLDLL_DefView",
+          "ShellView",
+          [
+            936,
+            524,
+            1720,
+            883
+          ]
+        ],
+        [
+          "DirectUIHWND",
+          "",
+          [
+            936,
+            524,
+            1720,
+            883
+          ]
+        ],
+        [
+          "CtrlNotifySink",
+          "",
+          [
+            936,
+            524,
+            936,
+            524
+          ]
+        ],
+        [
+          "ScrollBar",
+          "",
+          [
+            936,
+            524,
+            936,
+            524
+          ]
+        ],
+        [
+          "CtrlNotifySink",
+          "",
+          [
+            936,
+            524,
+            936,
+            524
+          ]
+        ],
+        [
+          "ScrollBar",
+          "",
+          [
+            936,
+            524,
+            936,
+            524
+          ]
+        ],
+        [
+          "Static",
+          "Folder:",
+          [
+            906,
+            896,
+            942,
+            911
+          ]
+        ],
+        [
+          "Edit",
+          "",
+          [
+            947,
+            892,
+            1703,
+            915
+          ]
+        ],
+        [
+          "Button",
+          "Select Folder",
+          [
+            1492,
+            920,
+            1603,
+            946
+          ]
+        ],
+        [
+          "Button",
+          "Cancel",
+          [
+            1615,
+            920,
+            1703,
+            946
+          ]
+        ],
+        [
+          "ScrollBar",
+          "",
+          [
+            1703,
+            941,
+            1720,
+            958
+          ]
+        ],
+        [
+          "Static",
+          "",
+          [
+            893,
+            466,
+            1409,
+            483
+          ]
+        ],
+        [
+          "Static",
+          "",
+          [
+            785,
+            470,
+            864,
+            500
+          ]
+        ],
+        [
+          "Static",
+          "",
+          [
+            893,
+            489,
+            1411,
+            512
+          ]
+        ],
+        [
+          "ListBox",
+          "",
+          [
+            776,
+            492,
+            1415,
+            879
+          ]
+        ],
+        [
+          "Static",
+          "",
+          [
+            906,
+            457,
+            1703,
+            457
+          ]
+        ],
+        [
+          "Button",
+          "&Help",
+          [
+            1236,
+            890,
+            1324,
+            916
+          ]
+        ],
+        [
+          "WorkerW",
+          "",
+          [
+            776,
+            457,
+            1720,
+            492
+          ]
+        ],
+        [
+          "ReBarWindow32",
+          "",
+          [
+            776,
+            457,
+            1720,
+            492
+          ]
+        ],
+        [
+          "TravelBand",
+          "",
+          [
+            776,
+            457,
+            857,
+            489
+          ]
+        ],
+        [
+          "ToolbarWindow32",
+          "导航按钮",
+          [
+            780,
+            459,
+            857,
+            489
+          ]
+        ],
+        [
+          "UpBand",
+          "",
+          [
+            857,
+            458,
+            881,
+            487
+          ]
+        ],
+        [
+          "ToolbarWindow32",
+          "向上一级区段工具栏",
+          [
+            857,
+            462,
+            881,
+            491
+          ]
+        ],
+        [
+          "Address Band Root",
+          "",
+          [
+            881,
+            458,
+            1495,
+            487
+          ]
+        ],
+        [
+          "msctls_progress32",
+          "",
+          [
+            883,
+            462,
+            1493,
+            485
+          ]
+        ],
+        [
+          "Breadcrumb Parent",
+          "",
+          [
+            883,
+            462,
+            1453,
+            485
+          ]
+        ],
+        [
+          "ToolbarWindow32",
+          "地址: C:\\coil\\fa706g3_runs\\orca-bb-c2722a4fc3b1\\feishu-object-cases\\254\\run-m7gbwkx6",
+          [
+            883,
+            462,
+            1453,
+            485
+          ]
+        ],
+        [
+          "ToolbarWindow32",
+          "地址区段工具栏",
+          [
+            1453,
+            462,
+            1493,
+            485
+          ]
+        ],
+        [
+          "ComboBoxEx32",
+          "",
+          [
+            883,
+            462,
+            1453,
+            485
+          ]
+        ],
+        [
+          "ComboBox",
+          "",
+          [
+            883,
+            462,
+            1453,
+            485
+          ]
+        ],
+        [
+          "Edit",
+          "",
+          [
+            907,
+            465,
+            1433,
+            482
+          ]
+        ],
+        [
+          "SeparatorBand",
+          "",
+          [
+            1499,
+            472,
+            1505,
+            473
+          ]
+        ],
+        [
+          "UniversalSearchBand",
+          "",
+          [
+            1505,
+            458,
+            1709,
+            487
+          ]
+        ],
+        [
+          "Search Box",
+          "",
+          [
+            1505,
+            461,
+            1709,
+            486
+          ]
+        ],
+        [
+          "SearchEditBoxWrapperClass",
+          "",
+          [
+            1510,
+            461,
+            1704,
+            486
+          ]
+        ],
+        [
+          "DirectUIHWND",
+          "",
+          [
+            1510,
+            461,
+            1704,
+            486
+          ]
+        ],
+        [
+          "SeparatorBand",
+          "",
+          [
+            1713,
+            472,
+            1720,
+            473
+          ]
+        ]
+      ],
+      "image": {
+        "width_px": 944,
+        "height_px": 501
+      },
+      "image_name": "directory-dialog.png",
+      "typed": "C:\\coil\\fa706g3_runs\\orca-bb-50e7b699a849\\feishu-object-cases\\237\\run-yhs0rm1d\\packages\\Filament_presets_.zip_Generic_PLA\\1",
+      "select_pressed": {
+        "text": "Select Folder",
+        "class": "Button",
+        "rect": [
+          1492,
+          920,
+          1603,
+          946
+        ],
+        "hit": "0x26814e8"
+      }
+    },
+    "result": {
+      "title": "Snapmaker Orca - Info",
+      "texts": [
+        "Yes",
+        "htmlWindow"
+      ],
+      "controls": [
+        [
+          "Static",
+          "",
+          [
+            956,
+            560,
+            1020,
+            624
+          ]
+        ],
+        [
+          "wxWindowNR",
+          "Yes",
+          [
+            1041,
+            624,
+            1141,
+            656
+          ]
+        ],
+        [
+          "wxWindowNR",
+          "htmlWindow",
+          [
+            1040,
+            560,
+            1163,
+            624
+          ]
+        ]
+      ],
+      "image": {
+        "width_px": 250,
+        "height_px": 136
+      },
+      "image_name": "result-dialog.png",
+      "words": "St add file fail Yes",
+      "words_error": null,
+      "pressed": {
+        "text": "Yes",
+        "class": "wxWindowNR",
+        "rect": [
+          1041,
+          624,
+          1141,
+          656
+        ],
+        "hit": "0x2a81302"
+      }
+    },
+    "dialog_closed": false,
+    "landed": true,
+    "saved_path": "C:\\coil\\fa706g3_runs\\orca-bb-50e7b699a849\\feishu-object-cases\\237\\run-yhs0rm1d\\packages\\Filament_presets_.zip_Generic_PLA\\1\\Filament presets.zip",
+    "saved_name": "Filament presets.zip",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "filament_reading": {
+    "kind": "Filament presets(.zip)",
+    "row": "Generic PLA",
+    "directory": "packages/Filament_presets_.zip_Generic_PLA/1",
+    "app_log": {
+      "lines": [
+        "[info]\t2026-11-26 05:23:42.589723[Thread 0x000030e0]:Slic3r::GUI::ExportConfigsDialog::archive_filament_preset_to_filestart exprot filament presets",
+        "[info]\t2026-11-26 05:23:42.589723[Thread 0x000030e0]:Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).json Filament preset failed to add file to ZIP archive"
+      ],
+      "failed_to_add": [
+        "[info]\t2026-11-26 05:23:42.589723[Thread 0x000030e0]:Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).json Filament preset failed to add file to ZIP archive"
+      ]
+    },
+    "result_words": "St add file fail Yes",
+    "result_words_error": null,
+    "dialog_closed": false,
+    "landed": true,
+    "package": {
+      "name": "Filament presets.zip",
+      "extension": ".zip",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preset_kind": "filament",
+      "rows": [
+        "Generic PLA"
+      ],
+      "members": {},
+      "error": "BadZipFile: File is not a zip file",
+      "path": "packages/Filament_presets_.zip_Generic_PLA/1/Filament presets.zip"
+    },
+    "gaps": [
+      "Filament presets(.zip)/Generic PLA: the dialog reported 'St add file fail Yes'",
+      "Filament presets(.zip)/Generic PLA: the application log could not add Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).json to the ZIP archive",
+      "Filament presets(.zip)/Generic PLA: 'Filament presets.zip' left a 0-byte zip: the file was created and nothing was added to it"
+    ]
+  },
+  "exports": [],
+  "fixture": {
+    "name": "feishu_std_cube.3mf",
+    "bytes": 30270,
+    "sha256": "36389ec3d26c54fc8d3e6bfccac3097fb080a12ab8fab0f2b7f8038cfc278d94"
+  },
+  "import_session": {
+    "app_config": {
+      "models": [
+        {
+          "vendor": "Snapmaker",
+          "model": "Snapmaker U1",
+          "nozzle_diameter": "0.4"
+        }
+      ],
+      "app": {
+        "log_severity_level": "debug"
+      }
+    },
+    "sources": [],
+    "note": "not run: no package holding a preset was exported"
+  },
+  "expectation_gaps": {
+    "生成配置包文件（.ini/.zip）": [
+      "\"Process presets(.zip)\" lists no row; the application loaded none of the 3 process presets the harness seeds (its log: \"can not find parent for config\"); the filament name \"Generic PLA\" exported with \"St add file fail Yes\", left a 0-byte zip, the log could not add Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).json; making a user preset through the application failed: ValueError: the Advanced switch of the process page did not turn on; it lists Printer config bundle(.orca_printer): nothing; Filament bundle(.orca_filament): ['Generic PLA', 'Snapmaker PLA Basic']; Printer presets(.zip): nothing; Filament presets(.zip): ['Generic PLA', 'Snapmaker PLA Basic']; Process presets(.zip): nothing"
+    ],
+    "重新导入后预设参数与导出前一致": [
+      "not exercised: no package holding a preset was imported"
+    ]
+  },
+  "import_readings": {},
+  "wall_seconds": 99.015
+}
