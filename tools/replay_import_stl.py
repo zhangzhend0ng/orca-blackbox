@@ -36,7 +36,7 @@ from tools.replay_evidence_files import verified_part
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from import_stl_oracle import listed_object_names, stl_filter_label, verify_imported, verify_moved, verify_rotated
-from file_io_replay_support import (CORE, at_origin, blank_png, box, compose, faces, flattering, grow,
+from file_io_replay_support import (as_recorded, CORE, at_origin, blank_png, box, compose, faces, flattering, grow,
                                     item_transform, manifest, moved_project, on_the_bed, paired, png, project,
                                     refused, shift, stl, stl_bytes, with_item_transform, with_model,
                                     with_settings, work_directories)
@@ -91,11 +91,6 @@ def _printer(settings):
     return tuple(tuple(value) if isinstance(value, list) else value
                  for value in (_as_loaded(settings.get(key))
                                for key in ("printer_model", "printer_settings_id", "nozzle_diameter")))
-
-
-def _as_recorded(value):
-    """A reading as the GUI's analysis.json holds it: tuples become lists."""
-    return json.loads(json.dumps(value))
 
 
 def _cube(raw: bytes) -> bool:
@@ -303,7 +298,7 @@ def _screen_changes(raw) -> dict:
 
 def _oracle(call, *args):
     try:
-        return _as_recorded(call(*args))
+        return as_recorded(call(*args))
     except UNREADABLE as exc:
         return {"refused": f"{type(exc).__name__}: {exc}"}
 

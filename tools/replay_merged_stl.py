@@ -27,7 +27,7 @@ from tools.replay_evidence_files import verified_part
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from export_io_oracle import merged_stl_expectation_gaps, plate_object_layout, verify_merged_stl, viewer_gaps
-from file_io_replay_support import (at_origin, blank_png, box, flattering, in_polygon, manifest, moved_project,
+from file_io_replay_support import (as_recorded, at_origin, blank_png, box, flattering, in_polygon, manifest, moved_project,
                                     paired, png, printable_area, project, refused, screenshots, stl, stl_bytes,
                                     work_directories)
 from plate_reserve_oracle import verify_f3d_image
@@ -72,11 +72,6 @@ def _number(value):
         return float(value)
     except (TypeError, ValueError):
         return None
-
-
-def _as_recorded(value):
-    """A reading as the GUI's analysis.json holds it: the oracle returns tuples, JSON keeps lists."""
-    return json.loads(json.dumps(value))
 
 
 def _mins(item):
@@ -195,7 +190,7 @@ def _oracle(project_raw: bytes, stl_raw: bytes, name: str, suffix) -> tuple:
                      lambda: plate_object_layout(folder / "before.3mf"),
                      lambda: merged_stl_expectation_gaps(folder / "before.3mf", folder / name, suffix)):
             try:
-                readings.append(_as_recorded(read()))
+                readings.append(as_recorded(read()))
             except UNREADABLE as exc:
                 readings.append({"refused": f"{type(exc).__name__}: {exc}"})
     return tuple(readings)

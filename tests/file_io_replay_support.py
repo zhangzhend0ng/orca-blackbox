@@ -596,6 +596,11 @@ def screenshots(raw: dict, recorded, names: tuple, dialog: str) -> dict:
     }
 
 
+def as_recorded(value):
+    """A reading as the GUI's analysis.json holds it: tuples and other sequences become lists."""
+    return json.loads(json.dumps(value))
+
+
 def manifest(directory, prefix) -> list:
     """The run's `<prefix>-object_artifacts.json`, checked for shape: a name, a byte count and a digest per part."""
     path = Path(directory) / f'{prefix}-object_artifacts.json'
