@@ -148,8 +148,10 @@ CASES: dict[str, dict] = {
     # 2026-11-26: Feishu file import/export rows. Runnable, not yet in the suite: each joins the
     # regression suite only after two independent guest sessions and the offline replay pass on one commit.
     "m7x_227_import_stl": _o("m7", "A"),            # File > Import, binary STL
+    "m7x_230_import_project": _o("m7", "A"),        # File > Import, a saved two-plate project
     "m7x_231_import_zip": _o("m7", "A"),            # File > Import Zip Archive
     "m7x_233_export_merged_stl": _o("m7", "A"),     # File > Export, all objects as one STL
+    "m7x_234_export_plate_slice": _o("m7", "A"),    # File > Export, the plate's sliced file
     "m7x_236_export_gcode": _o("m7", "A"),          # File > Export, plain G-code
     # #254 follow-up probe: a record of how the plate's temporary G-code grows under the memory guard,
     # never a verdict.
