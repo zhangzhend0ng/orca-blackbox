@@ -1,0 +1,4 @@
+*.log -text whitespace=cr-at-eol
+*.3mf -text
+*.stl -text
+*.png -text

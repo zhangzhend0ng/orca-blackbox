@@ -1,0 +1,3 @@
+*.log -text whitespace=cr-at-eol
+# Orca emits space-padded lines in its raw export. Keep their original bytes.
+*.gcode -text -whitespace

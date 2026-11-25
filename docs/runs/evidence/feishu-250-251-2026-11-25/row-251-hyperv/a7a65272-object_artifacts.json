@@ -1,0 +1,42 @@
+﻿[
+    {
+        "part":  "source-20mm.stl",
+        "bytes":  684,
+        "sha256":  "3F09D813EECC842C59960F2F76E22C038782B92CA8F294C6C3BB0BBC2BB5BFCD"
+    },
+    {
+        "part":  "source-30mm.stl",
+        "bytes":  684,
+        "sha256":  "1E8C68D2557DB9794E60A253E58A833B8405B8F05771C54B033FD244DB27457F"
+    },
+    {
+        "part":  "before-reload.3mf",
+        "bytes":  22249,
+        "sha256":  "4E94376FBE944D0CE7ABBF44DCC0EC14B3D270F0A1943B02BC757450AC879747"
+    },
+    {
+        "part":  "after-reload.3mf",
+        "bytes":  22644,
+        "sha256":  "F19A02F4BECA0137F6BD0146D2B585967F9195E7014817F68EBE2669CBFD27DB"
+    },
+    {
+        "part":  "after-missing.3mf",
+        "bytes":  22644,
+        "sha256":  "6091A4A453845EDA2520E944A1D2BC67038E69C1E50AB5B407BD17B1B7D41E1C"
+    },
+    {
+        "part":  "prepare-import.png",
+        "bytes":  221484,
+        "sha256":  "48880B550ABA498F836F2D783BF0AA3DDFDA7FE64B3554C6DC8EEBC5159FCA36"
+    },
+    {
+        "part":  "prepare-reloaded.png",
+        "bytes":  221078,
+        "sha256":  "3076BF5B7F822E384ED56700104789DE0E3A14D0F188160955F15741270F37E0"
+    },
+    {
+        "part":  "missing-dialog.png",
+        "bytes":  65824,
+        "sha256":  "4238B1666C0B84B8C549777D5E8F5CE6D1407BECC3A6553C653432D7FF9A9EA6"
+    }
+]

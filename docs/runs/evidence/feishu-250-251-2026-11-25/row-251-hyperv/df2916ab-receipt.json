@@ -1,0 +1,13 @@
+﻿{
+    "commit":  "df2916abaf5e245baa231ab0e7b3a41379b8d5cb",
+    "case":  "m7x_251_reload_from_disk",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "summary":  "SUMMARY: PASS=0 FAIL=1\r\nFAILED: m7x_251_reload_from_disk",
+    "dispatched_at":  "2026-11-25T15:13:25.4536662+08:00",
+    "scenario_completed_at":  "2026-11-25T15:14:57.2089344+08:00",
+    "suite_completed_at":  "2026-11-25T15:14:57.2996245+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_251_reload_from_disk.log",
+    "log_sha256":  "5FB7CE039293828271E41F8B5CA050E2F7FDA3697898DFF06B2680D06436827C"
+}

@@ -1,0 +1,95 @@
+{
+  "pass": true,
+  "body_box": [
+    [
+      122.0,
+      149.0
+    ],
+    [
+      122.5,
+      149.5
+    ],
+    [
+      0.0,
+      27.0
+    ]
+  ],
+  "cutter_box": [
+    [
+      141.5,
+      153.5
+    ],
+    [
+      118.0,
+      130.0
+    ],
+    [
+      -2.5,
+      29.5
+    ]
+  ],
+  "removed_region": [
+    [
+      143.0,
+      147.5
+    ],
+    [
+      124.0,
+      128.5
+    ],
+    [
+      1.5,
+      25.5
+    ]
+  ],
+  "retained_region": [
+    [
+      123.5,
+      128.0
+    ],
+    [
+      143.5,
+      148.0
+    ],
+    [
+      1.5,
+      25.5
+    ]
+  ],
+  "baseline": {
+    "removed_region_mm": 535.3171077577772,
+    "retained_region_mm": 613.0171077577758,
+    "layer_count": 68,
+    "body_center_z": 14.0,
+    "object_extruding_segments": 1907
+  },
+  "negative": {
+    "removed_region_mm": 0.0,
+    "retained_region_mm": 535.3171077577772,
+    "layer_count": 68,
+    "body_center_z": 14.0,
+    "object_extruding_segments": 2441
+  },
+  "color": {
+    "pass": true,
+    "negative_connected_pixels": 278,
+    "body_right_in_crop": 166,
+    "negative_box_in_crop": [
+      148,
+      119,
+      31,
+      68
+    ],
+    "body_bgr": [
+      48.0,
+      136.0,
+      178.0
+    ],
+    "negative_bgr": [
+      96.0,
+      97.0,
+      95.0
+    ]
+  },
+  "unchanged_control_pass": false
+}

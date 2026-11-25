@@ -1,0 +1,37 @@
+﻿[
+    {
+        "part":  "cutter.stl",
+        "bytes":  684,
+        "sha256":  "011B72C301781CEA91B31C6133BB97C92555084FD6DD51BEB9AC14C48BA7F74E"
+    },
+    {
+        "part":  "prepare-before.png",
+        "bytes":  288859,
+        "sha256":  "B8C745EB97198E07472021D0D38CAFDDF8C63CAFC2AB352005ABB1841AE68478"
+    },
+    {
+        "part":  "prepare-negative.png",
+        "bytes":  291365,
+        "sha256":  "1A1EEB45878E423F025D3F56BC03A8EB133E509CDDD130F218888FFD2CD51510"
+    },
+    {
+        "part":  "negative-project.3mf",
+        "bytes":  34488,
+        "sha256":  "DB38C348483879857CD8979C63B5E4AD23286A11070D14A7A11E254C9893D6F8"
+    },
+    {
+        "part":  "baseline.gcode",
+        "bytes":  161371,
+        "sha256":  "12FAC5B4D11CC1758A789688A0E7DFAC36712A71C9D473B93CD7D1DF866CCC39"
+    },
+    {
+        "part":  "negative.gcode",
+        "bytes":  172024,
+        "sha256":  "04848425A6B376A41BC409CA91B0073006FCBB9409155B26710B0C6749311F84"
+    },
+    {
+        "part":  "analysis.json",
+        "bytes":  1377,
+        "sha256":  "1AEE0FDE6797001607E34542DD82A3B7935B3FE77B160656B0AD6BD1D3B2E868"
+    }
+]

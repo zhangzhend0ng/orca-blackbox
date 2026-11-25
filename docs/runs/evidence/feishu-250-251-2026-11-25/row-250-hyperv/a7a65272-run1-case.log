@@ -1,0 +1,70 @@
+﻿[m7x250] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\250\run-2piepyf1
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\250\run-2piepyf1\negative-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\250\run-2piepyf1\negative-profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\250\run-2piepyf1\test-fixture.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x5520676, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x5270e1e, WM_CLOSE)
+[launcher] pid=10052 hwnd=0x53504c0 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.25%)
+[m7x250] negative-profile fixture arrived=True, foreground fraction=0.480%
+[model context] desktop hit-test did not resolve to canvas at (1172,528)
+[model context] message right-click @(1172,528) on 0x4ec08fc
+[model context] menu hwnd=0x53c0dec: [(0, 'Clone\tCtrl+K', 0), (1, 'Simplify Model', 0), (2, '', 2051), (3, 'Mesh boolean', 1), (4, 'Center', 1), (5, 'Drop', 1), (6, 'Split', 529), (7, 'Mirror', 784), (8, 'Delete\tDel', 0), (9, '', 2051), (10, 'Add Part', 3088), (11, 'Add Negative Part', 3088), (12, 'Add Modifier', 3088), (13, 'Add Support Blocker', 2064), (14, 'Add Support Enforcer', 2064), (15, 'Height Range Modifier', 0), (16, '', 2051), (17, 'Printable', 8), (18, 'Edit Process Settings', 0), (19, 'Edit in Parameter Table', 0), (20, '', 2051), (21, 'Reload from disk', 0), (22, 'Replace with STL', 0), (23, 'Export as one STL...', 0), (24, 'Convert from Inches', 0), (25, 'Convert from Meters', 0), (26, 'Change Filament', 1808)]
+[m7x250] native highlighted row 11 in menu 0x37c20293
+[m7x250] visible negative submenu hwnd=0x51c1112 hmenu=0x3ae610d1: [(0, 'Load...', 128), (1, '', 2051), (2, 'Cube', 0), (3, 'Cylinder', 0), (4, 'Sphere', 0), (5, 'Cone', 0), (6, 'Disc', 0), (7, 'Torus', 0), (8, '', 2051), (9, 'Text', 0), (10, '', 2051), (11, 'SVG', 0)]
+[m7x250] native highlighted row 0 in menu 0x3ae610d1
+[m7x250] Load chooser='Choose one or more files (3mf/step/stl/svg/obj/amf):', filename readback='C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\250\\run-2piepyf1\\cutter.stl'
+[m7x250] rendered negative against model A: {'pass': True, 'negative_connected_pixels': 278, 'body_right_in_crop': 166, 'negative_box_in_crop': [148, 119, 31, 68], 'body_bgr': [48.0, 136.0, 178.0], 'negative_bgr': [96.0, 97.0, 95.0]}
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5850854 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7] negative slice: slice button state='idle'
+[m2] slicing started (button left idle, score 0.666)
+[m7] negative slice: True
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5850854 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=329) sent, completed=False
+[m7x250] Export G-code chooser='Save G-code file as:', filename='C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\250\\run-2piepyf1\\negative.gcode'
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\250\run-2piepyf1\baseline-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\250\run-2piepyf1\baseline-profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\250\run-2piepyf1\baseline-fixture.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x503114a, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#2)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x5500632, WM_CLOSE)
+[launcher] pid=11920 hwnd=0x4dd106c rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.25%)
+[m7x250] baseline-profile fixture arrived=True, foreground fraction=0.480%
+[m7] baseline slice: slice button state='idle'
+[m2] slicing started (button left idle, score 0.666)
+[m7] baseline slice: True
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x4f0041a did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=329) sent, completed=False
+[m7x250] Export G-code chooser='Save G-code file as:', filename='C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\250\\run-2piepyf1\\baseline.gcode'
+[m7x250] geometric difference: {"pass": true, "body_box": [[122.0, 149.0], [122.5, 149.5], [0.0, 27.0]], "cutter_box": [[141.5, 153.5], [118.0, 130.0], [-2.5, 29.5]], "removed_region": [[143.0, 147.5], [124.0, 128.5], [1.5, 25.5]], "retained_region": [[123.5, 128.0], [143.5, 148.0], [1.5, 25.5]], "baseline": {"removed_region_mm": 535.3171077577772, "retained_region_mm": 613.0171077577758, "layer_count": 68, "body_center_z": 14.0, "object_extruding_segments": 1907}, "negative": {"removed_region_mm": 0.0, "retained_region_mm": 535.3171077577772, "layer_count": 68, "body_center_z": 14.0, "object_extruding_segments": 2441}, "color": {"pass": true, "negative_connected_pixels": 278, "body_right_in_crop": 166, "negative_box_in_crop": [148, 119, 31, 68], "body_bgr": [48.0, 136.0, 178.0], "negative_bgr": [96.0, 97.0, 95.0]}, "unchanged_control_pass": false}
+
+[m7] === verdict ===
+  Add negative part opens its second-level menu: PASS
+  negative part has a distinct canvas color: PASS ({'pass': True, 'negative_connected_pixels': 278, 'body_right_in_crop': 166, 'negative_box_in_crop': [148, 119, 31, 68], 'body_bgr': [48.0, 136.0, 178.0], 'negative_bgr': [96.0, 97.0, 95.0]})
+  negative part saved on the same object: PASS ({'normal_part': [[122.0, 149.0], [122.5, 149.5], [0.0, 27.0]], 'negative_part': [[141.5, 153.5], [118.0, 130.0], [-2.5, 29.5]]})
+  negative slice: PASS
+  negative G-code: PASS
+  baseline slice: PASS
+  baseline G-code: PASS
+  slice locally subtracts only where cutter intersects: PASS
+[m7] GREEN

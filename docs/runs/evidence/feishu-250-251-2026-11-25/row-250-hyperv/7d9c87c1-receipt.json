@@ -1,0 +1,13 @@
+﻿{
+    "commit":  "7d9c87c1753a41acfaa9421dbdb1592daca40ab1",
+    "case":  "m7x_250_negative_part",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "summary":  "SUMMARY: PASS=0 FAIL=1\r\nFAILED: m7x_250_negative_part",
+    "dispatched_at":  "2026-11-25T15:08:52.4037988+08:00",
+    "scenario_completed_at":  "2026-11-25T15:10:16.1502806+08:00",
+    "suite_completed_at":  "2026-11-25T15:10:16.3376398+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_250_negative_part.log",
+    "log_sha256":  "FD6BE159F3BE7B08F5760F41C5DC9DDB1FFAB48EC043AFEC50CF8F81E2ECD001"
+}

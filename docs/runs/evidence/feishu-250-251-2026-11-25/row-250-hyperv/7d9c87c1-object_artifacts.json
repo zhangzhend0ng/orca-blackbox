@@ -1,0 +1,12 @@
+﻿[
+    {
+        "part":  "cutter.stl",
+        "bytes":  684,
+        "sha256":  "011B72C301781CEA91B31C6133BB97C92555084FD6DD51BEB9AC14C48BA7F74E"
+    },
+    {
+        "part":  "prepare-before.png",
+        "bytes":  288859,
+        "sha256":  "B8C745EB97198E07472021D0D38CAFDDF8C63CAFC2AB352005ABB1841AE68478"
+    }
+]

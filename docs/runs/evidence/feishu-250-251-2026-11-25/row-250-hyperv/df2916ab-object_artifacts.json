@@ -1,0 +1,22 @@
+﻿[
+    {
+        "part":  "cutter.stl",
+        "bytes":  684,
+        "sha256":  "011B72C301781CEA91B31C6133BB97C92555084FD6DD51BEB9AC14C48BA7F74E"
+    },
+    {
+        "part":  "prepare-before.png",
+        "bytes":  288859,
+        "sha256":  "B8C745EB97198E07472021D0D38CAFDDF8C63CAFC2AB352005ABB1841AE68478"
+    },
+    {
+        "part":  "prepare-negative.png",
+        "bytes":  291365,
+        "sha256":  "1A1EEB45878E423F025D3F56BC03A8EB133E509CDDD130F218888FFD2CD51510"
+    },
+    {
+        "part":  "negative-project.3mf",
+        "bytes":  34489,
+        "sha256":  "5CE5C0390857126E92FC8F4DA10E322D193E1D90A03E72822D8CC4A3DC0F8B2A"
+    }
+]
