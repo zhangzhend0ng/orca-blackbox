@@ -18,6 +18,7 @@ NAME = "Mint Lemonade"
 SKU = "sku 34205"
 # The fixture's official PLA Silk color carries these two catalog colors.
 CARD_BGR = ((23, 237, 236), (229, 173, 68))
+HWND_TOPMOST = -1
 
 
 def center(rect):
@@ -29,6 +30,18 @@ def contains(rect, point):
     x0, y0, x1, y1 = rect
     x, y = point
     return x0 <= x < x1 and y0 <= y < y1
+
+
+def bring_main_to_mouse(hwnd):
+    """Temporarily expose the boot-demoted window on the dedicated VM desktop."""
+    wu = winutil.user32
+    style = wu.GetWindowLongW(hwnd, winutil.GWL_EXSTYLE)
+    wu.SetWindowLongW(hwnd, winutil.GWL_EXSTYLE, style & ~winutil.WS_EX_NOACTIVATE)
+    raised = wu.SetWindowPos(
+        hwnd, HWND_TOPMOST, 0, 0, 0, 0, winutil.SWP_NOMOVE | winutil.SWP_NOSIZE
+    )
+    foreground = winutil.force_set_foreground(hwnd)
+    return bool(raised and foreground)
 
 
 def preview_pixels(hwnd, rect):
@@ -110,23 +123,22 @@ def verify_background_reenabled(session, official_dialog, chip, chip_hwnd):
     if not (clicked and closed and enabled and same_chip):
         return "FAIL (official dialog did not return control to the same background chip)"
 
-    winutil.force_set_foreground(session.hwnd)
+    main_foreground = bring_main_to_mouse(session.hwnd)
     hit = winutil.window_from_screen_point(*chip)
-    print(f"{LOG} enabled background at {chip}: desktop hit={hit:#x}, chip={chip_hwnd:#x}")
-    if hit == chip_hwnd:
-        route = "real mouse"
-        winutil.real_click_screen(*chip)
-    else:
-        route = "Orca window tree"
-        winutil.msg_click_screen(*chip, session.hwnd)
+    detail = (f"same background chip={chip_hwnd:#x}, desktop hit={hit:#x}, "
+              f"main foreground={main_foreground}")
+    if not main_foreground or hit != chip_hwnd:
+        return f"FAIL ({detail})"
+    sent = winutil.real_click_screen(*chip)
 
     picker = export_util.wait_toplevel(session.pid, lambda c, t, r: c == "#32770", timeout_s=6.0)
     native = picker and is_native_picker(picker)
     rgb = read_rgb(session, picker) if native else None
     if native:
         click_cancel(picker)
-    detail = f"same background chip={chip_hwnd:#x}, click={route}, native picker RGB={rgb!r}"
-    return f"{'PASS' if rgb == ('217', '166', '58') else 'FAIL'} ({detail})"
+    detail += f", real mouse events={sent}, native picker RGB={rgb!r}"
+    passed = sent == 2 and rgb == ("217", "166", "58")
+    return f"{'PASS' if passed else 'FAIL'} ({detail})"
 
 
 def main():
@@ -157,9 +169,12 @@ def main():
                 and wu.IsWindowEnabled(probe_hwnd) and main_was_enabled):
             return m7.m7_verdict({"#48 fixture controls available": "FAIL"})
 
-        winutil.force_set_foreground(session.hwnd)
-        print(f"{LOG} enabled background desktop hit={winutil.window_from_screen_point(*probe):#x}, "
-              f"Orca chip={probe_hwnd:#x}")
+        main_foreground = bring_main_to_mouse(session.hwnd)
+        enabled_hit = winutil.window_from_screen_point(*probe)
+        print(f"{LOG} enabled background desktop hit={enabled_hit:#x}, "
+              f"Orca chip={probe_hwnd:#x}, main foreground={main_foreground}")
+        if not main_foreground or enabled_hit != probe_hwnd:
+            return m7.m7_verdict({"#48 unblocked mouse target is the background chip": "FAIL"})
         winutil.msg_click_screen(*opener, session.hwnd)
         dialog = m8.official_color_popup(session, timeout_s=8.0)
         if dialog is None:
@@ -203,6 +218,7 @@ def main():
             if remained else "FAIL (dialog closed during the outside click)")
         return m7.m7_verdict(results)
     finally:
+        winutil.demote_window(session.hwnd)
         session.close()
 
 
