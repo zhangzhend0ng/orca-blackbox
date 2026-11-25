@@ -1,6 +1,7 @@
-"""Feishu #236, #233, #227 and #238 replayed offline: synthetic harvests for tools/replay_gcode_export.py,
-tools/replay_merged_stl.py, tools/replay_import_stl.py and tools/replay_export_rows.py, and the
-independent readers of tests/file_io_replay_support.py against real archived bytes.
+"""Feishu #236, #233, #227, #238 and #232 replayed offline: synthetic harvests for
+tools/replay_gcode_export.py, tools/replay_merged_stl.py, tools/replay_import_stl.py,
+tools/replay_export_rows.py and tools/replay_import_configs.py, and the independent readers of
+tests/file_io_replay_support.py against real archived bytes.
 
 The #236 run is built here with zipfile, string templates and Pillow: a project equal to the
 standard cube fixture by content, a G-code that prints it, two screenshots and the record the GUI
@@ -11,7 +12,9 @@ moved and turned projects are those bytes with the instance transform rewritten.
 real move and a real turn by the application were checked on the green guest run of 0d7222e7 and on
 the two formal sessions of 11858f17, which live outside the repository. The #238 run holds the
 standard cube as the application saves it and the record the case writes for the File > Export menu
-it read before and after slicing, with a case log that prints each reading.
+it read before and after slicing, with a case log that prints each reading. The #232 run is built
+with the case's own builder from the system presets the repository carries; its profile snapshots
+model what the application writes back for an imported preset (guest run fc163e85).
 """
 from hashlib import sha256
 from io import BytesIO
@@ -1794,3 +1797,276 @@ def test_a_mesh_the_application_wrote_again_is_still_its_fixture():
     again, held = project(saved.read_bytes()), project(ball)
     assert export._same_shape(again, held)
     assert again["objects"][0]["triangles"] != held["objects"][0]["triangles"]    # written again, other last digits
+
+
+# --- Feishu #232: preset configs imported from a zip ---------------------------------------------
+#
+# The config is the one the case builds from the repository's system presets. The profile snapshots
+# model what the application writes back for an imported preset (measured on guest run fc163e85: no
+# "type", no "instantiation", an "is_custom_defined" of "0"), and the saved project carries the
+# exported values as its effective ones. The record is what the case writes for them, made with the
+# case's own oracle; the case log prints its lists, its dialogs and its verdict.
+
+from import_configs_oracle import (ARCHIVE, ID_KEYS, INI, KINDS, NAMES, build_config,
+                                   bundle_presets, parameters, template_presets, vendor_directory, verify_import)
+from tools import replay_import_configs as configs
+
+CONFIGS_PREFIX = "5c6d7e8f-run1"
+U1_TEMPLATE = ROOT / "fixtures" / "agent_layer_cube.3mf"      # the template the case opens
+RUN_232 = r"C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\232\run-configs01"
+FILTER = "Config files (*.json;*.zip;*.orca_printer;*.orca_filament)"
+RESULT, OVERWRITE = "Import result", "Overwrite config"
+HINT = "(Only non-system and compatible configs)"
+
+
+def the_config() -> tuple:
+    """The config the case builds from the repository's system presets: the three preset files, the
+    zip and the inheritance chains of each."""
+    sources = template_presets(U1_TEMPLATE)
+    with TemporaryDirectory() as temporary:
+        work = Path(temporary)
+        built = build_config(vendor_directory([ROOT / "resources"], sources), sources, work, work / ARCHIVE)
+        return ({f"bb_test_{kind}.json": (work / f"bb_test_{kind}.json").read_bytes() for kind in KINDS},
+                (work / ARCHIVE).read_bytes(), built["chains"])
+
+
+def stored_like_the_application(preset: dict) -> dict:
+    """What the application writes back for an imported preset: the whole config without the kind
+    and the instantiation marks, with its own bookkeeping."""
+    kept = {key: value for key, value in preset.items() if key not in ("type", "instantiation")}
+    return dict(kept, is_custom_defined="0")
+
+
+def effective_project(presets: dict) -> bytes:
+    """The template project with the three presets selected and, wherever the template carries the
+    key, the exported value in the template's own shape as its effective one."""
+    template = U1_TEMPLATE.read_bytes()
+    settings = project(template)["settings"]
+    for kind in KINDS:
+        for key, value in parameters(presets[kind]).items():
+            if key not in settings:
+                continue
+            held = settings[key]
+            if isinstance(held, list):
+                settings[key] = list(value) + held[len(value):] if isinstance(value, list) else [value] + held[1:]
+            else:
+                settings[key] = value
+        settings[ID_KEYS[kind]] = [NAMES[kind]] if kind == "filament" else NAMES[kind]
+
+    def replace(current):
+        current.clear()
+        current.update(settings)
+
+    return support.with_project_settings(template, replace)
+
+
+def system_rows() -> list:
+    """Three system presets as a profile snapshot lists them."""
+    return [{"kind": kind, "name": f"System {NAMES[kind]}", "file": f"system/{kind}/preset.json",
+             "settings": {"name": f"System {NAMES[kind]}", "inherits": "", ID_KEYS[kind]: f"System {NAMES[kind]}"}}
+            for kind in KINDS]
+
+
+def shown(title, message, screenshot, buttons=("OK", "htmlWindow"), **more) -> dict:
+    return {"title": title, "texts": list(buttons), "screenshot": screenshot, "message": message,
+            "buttons": list(buttons), **more}
+
+
+def printed_dialog(dialog: dict) -> str:
+    """A dialog as the case log prints it when it first records it."""
+    return repr({key: dialog[key] for key in ("title", "texts", "screenshot", "message") if key in dialog})
+
+
+def write_configs_run(folder, prefix=CONFIGS_PREFIX, *, parts=None, record=None, log_lines=None):
+    """A #232 harvest in the shape the collector leaves: the three preset files, the three snapshots of
+    the profile, the project saved after the selection, the pictures, the record the case writes for
+    them and the case log. `record` may be a callable that edits what the case would have written."""
+    folder.mkdir(parents=True, exist_ok=True)
+    loose, zipped, chains = the_config()
+    presets = {kind: json.loads(loose[f"bb_test_{kind}.json"].decode("utf-8")) for kind in KINDS}
+    start = system_rows()
+    first = list(start) + [{"kind": kind, "name": NAMES[kind], "file": f"user/default/{kind}/base/{NAMES[kind]}.json",
+                             "settings": stored_like_the_application(presets[kind])} for kind in KINDS]
+    second = json.loads(json.dumps(first))
+    files = dict(loose)
+    files.update({part: json.dumps(rows, indent=2).encode("utf-8") for part, rows in (
+        (configs.START, start), (configs.FIRST, first), (configs.SECOND, second))})
+    files["after-import.3mf"] = effective_project(presets)
+    dialogs = [
+        shown(RESULT, "& There are 0 configs imported. " + HINT + " Hint: Make sure you have added the printer.",
+              "ini-dialog-1.png"),
+        shown(RESULT, "There are 3 configs imported. " + HINT + " S", "zip1-dialog-1.png"),
+        *[shown(OVERWRITE, f"A config exists with the same name: {NAMES[kind]}. Do you want to overwrite it? 2 S",
+                f"zip2-dialog-{index + 1}.png", ("Yes", "No", "htmlWindow", "Yes to All", "No to All"), answer="Yes")
+          for index, kind in enumerate(KINDS)],
+        shown(RESULT, "There are 3 configs imported. " + HINT + " S", "zip2-dialog-4.png")]
+    for name in ("chooser-1.png", "chooser-2.png", "chooser-3.png", "machine-list.png", "filament-list.png",
+                 "process-list.png", "imported.png", "selected.png", "imported-again.png"):
+        files.setdefault(name, picture(seed=50 + len(files)))
+    files.update(parts or {})
+    for part, raw in files.items():
+        (folder / f"{prefix}-{part}").write_bytes(raw)
+    config = [row for part in sorted(f"bb_test_{kind}.json" for kind in KINDS)
+              for row in bundle_presets(folder / f"{prefix}-{part}")]
+    rows = {kind: ["User presets", NAMES[kind], "Snapmaker U1 (0.8 nozzle)", "System presets"] for kind in KINDS}
+    dropdowns = {kind: {"target": NAMES[kind], "before": "Snapmaker U1 (0.8 nozzle)", "rows": rows[kind],
+                        "after": NAMES[kind], "selected": True} for kind in KINDS}
+    effective = configs._settings(files["after-import.3mf"])
+    one = verify_import(config, start, first, dialogs[1:2], dropdowns, effective,
+                        project(U1_TEMPLATE.read_bytes())["settings"], "ok")
+    two = verify_import(config, first, second, dialogs[2:])
+    assert one[configs.IMPORTED] == two[configs.DUPLICATES] == "PASS", (one, two)
+    boxes = [{"selected": -1, "items": []}, {"selected": 0, "items": [FILTER]}]
+    choosers = [dict(title="Select profile to load:", entered=str(PureWindowsPath(RUN_232) / name),
+                     file=PureWindowsPath(name).name, filters=boxes, ini_in_filter=False)
+                for name in (INI, f"inputs/{ARCHIVE}", f"inputs/{ARCHIVE}")]
+    analysis = {
+        "case": 232, "timings": {}, "vendor_directory": str(ROOT / "resources" / "Snapmaker"), "inheritance": chains,
+        "config_file": {"file": f"inputs/{ARCHIVE}", "not_harvested": True, "bytes": len(zipped),
+                        "sha256": sha256(zipped).hexdigest()},
+        "config": [[row["kind"], row["name"]] for row in config], "choosers": choosers, "dialogs": dialogs,
+        "ini_attempt": {"file": INI, "chooser_closed": True, "dialogs": dialogs[:1], "presets_in_profile_after": sorted(
+            f"{row['kind']}/{row['name']}" for row in start)},
+        "first": {"file": ARCHIVE, "chooser_closed": True, "dialogs": dialogs[1:2]},
+        "second": {"file": ARCHIVE, "chooser_closed": True, "dialogs": dialogs[2:]},
+        "dropdowns": dropdowns, "effective_read": "ok",
+        "first_import": one["reading"], "second_import": two["reading"],
+        "results": {configs.IMPORTED: one[configs.IMPORTED], configs.DUPLICATES: two[configs.DUPLICATES]}}
+    files["analysis.json"] = json.dumps(record(analysis) if callable(record) else analysis, ensure_ascii=False,
+                                        indent=2).encode("utf-8")
+    (folder / f"{prefix}-analysis.json").write_bytes(files["analysis.json"])
+    (folder / f"{prefix}-object_artifacts.json").write_text(json.dumps(
+        [{"part": part, "bytes": len(raw), "sha256": sha256(raw).hexdigest()} for part, raw in files.items()],
+        indent=1), encoding="utf-8")
+    lines = [f"[m7x232] retained work directory: {RUN_232}", f"[m7x232] chooser {choosers[0]!r}",
+             f"[m7x232] dialog {printed_dialog(dialogs[0])}", f"[m7x232] chooser {choosers[1]!r}",
+             f"[m7x232] dialog {printed_dialog(dialogs[1])}",
+             *[f"[m7x232] {kind} list: {rows[kind]!r}" for kind in KINDS],
+             f"[m7x232] chooser {choosers[2]!r}",
+             *[f"[m7x232] dialog {printed_dialog(dialog)}" for dialog in dialogs[2:]],
+             f"[m7x232] {analysis['results']!r}"]
+    log = ("\n".join(lines if log_lines is None else log_lines) + "\n").encode("utf-8")
+    (folder / f"{prefix}-case.log").write_bytes(log)
+    (folder / f"{prefix}-receipt.json").write_text(json.dumps({
+        "case": "m7x_232_import_configs", "commit": "0" * 40, "summary": "SUMMARY: PASS=1 FAIL=0",
+        "dispatched_at": "2026-11-26T00:00:00+00:00", "scenario_completed_at": "2026-11-26T00:01:00+00:00",
+        "log_sha256": sha256(log).hexdigest()}), encoding="utf-8")
+    return folder, prefix
+
+
+def configs_refused(tmp_path, failed, **changes):
+    """A run whose files or record differ: the replay names `failed` among its readings."""
+    folder, prefix = write_configs_run(tmp_path, **changes)
+    result = configs.replay(folder, prefix)
+    assert set(failed) <= set(result["import_configs"]["failed"]), result["import_configs"]["failed"]
+    assert not all(value is True for value in result["checks"].values())
+    return result
+
+
+# every stand-in of the #232 replay with the readings that own it
+CONFIGS_REFUSED_BY = {
+    "preset_machine_missing_after_import_rejected": ["three_presets_added_once", "stored_presets_keep_the_parameters"],
+    "preset_filament_missing_after_import_rejected": ["three_presets_added_once",
+                                                      "stored_presets_keep_the_parameters"],
+    "preset_process_missing_after_import_rejected": ["three_presets_added_once", "stored_presets_keep_the_parameters"],
+    "preset_value_changed_rejected": ["stored_presets_keep_the_parameters"],
+    "already_present_before_the_import_rejected": ["start_holds_none_of_the_imports", "three_presets_added_once"],
+    "preset_renamed_on_clash_rejected": ["nothing_added_or_lost_on_the_second_import"],
+    "profile_emptied_on_the_second_import_rejected": ["nothing_added_or_lost_on_the_second_import"],
+    "config_file_not_standalone_rejected": ["config_files_match_the_template_presets"],
+    "preset_file_renamed_rejected": ["three_preset_files_named_and_typed"],
+    "wrong_preset_selected_rejected": ["project_selects_the_three_presets"],
+    "effective_value_changed_rejected": ["effective_values_match_the_export"],
+    "template_geometry_changed_rejected": ["project_is_the_template"],
+    "no_clash_prompt_rejected": ["dialogs_tell_what_the_profile_shows", "oracle_accepts_the_import",
+                                 "recorded_verdict_matches_readings"],
+    "result_count_disagrees_rejected": ["dialogs_tell_what_the_profile_shows"],
+    "dropdown_row_missing_rejected": ["dropdown_rows_name_the_presets"],
+    "chooser_path_elsewhere_rejected": ["choosers_tell_the_files"],
+    "flattering_record_rejected": ["three_presets_added_once", "recorded_verdict_matches_readings"],
+    "manifest_mismatch_rejected": UNOPENABLE,
+}
+
+
+def test_configs_run_passes_every_reading_and_every_counterexample(tmp_path):
+    folder, prefix = write_configs_run(tmp_path)
+    result = configs.replay(folder, prefix)
+    not_true = [key for key, value in result["checks"].items() if value is not True]
+    assert not not_true, not_true
+    assert set(configs.POSITIVE) == set(result["checks"]) - set(CONFIGS_REFUSED_BY)
+    report = result["import_configs"]
+    assert report["results"] == {configs.IMPORTED: "PASS", configs.DUPLICATES: "PASS"}
+    assert report["independent"]["selected"] == dict(zip(KINDS, (NAMES[kind] for kind in KINDS)))
+    # every parameter the stored presets carry was compared, and none differs there or in the project
+    assert sum(row["compared"] for row in report["independent"]["stored"].values()) > 200
+    assert all(not row["differing"] for row in report["independent"]["stored"].values())
+    assert all(not row["changed"] for row in report["independent"]["effective"].values())
+
+
+def test_configs_run_goes_through_the_shared_driver_like_the_other_replays(tmp_path, monkeypatch):
+    folder, prefix = write_configs_run(tmp_path)
+    monkeypatch.setitem(ADAPTERS, "m7x_232_import_configs", configs.replay)
+    assert replay_receipt(folder / f"{prefix}-receipt.json")["offline_checks_passed"]
+    (folder / f"{prefix}-case.log").write_bytes(b"another log\n")
+    assert not replay_receipt(folder / f"{prefix}-receipt.json")["offline_checks_passed"]
+
+
+@pytest.mark.parametrize("label,failed", sorted(CONFIGS_REFUSED_BY.items()))
+def test_each_configs_counterexample_is_refused_by_the_reading_that_owns_it(tmp_path, label, failed):
+    folder, prefix = write_configs_run(tmp_path)
+    with copy_of(folder, prefix, **configs._stand_ins(configs._read(folder, prefix)[2])[label]) as (other, altered):
+        if failed is UNOPENABLE:
+            with pytest.raises(ValueError):
+                configs._read(other, altered)
+            return
+        readings = configs._read(other, altered)[1]
+    assert set(failed) <= set(readings["failed"]), readings["failed"]
+
+
+def test_replay_reads_every_configs_counterexample_on_a_temporary_copy(tmp_path, monkeypatch):
+    folder, prefix = write_configs_run(tmp_path)
+    reads, real = [], configs._read
+    monkeypatch.setattr(configs, "_read", lambda place, pre: reads.append(place.name) or real(place, pre))
+    result = configs.replay(folder, prefix)
+    assert all(value is True for value in result["checks"].values())
+    # the run itself and one copy per counterexample
+    assert len(reads) == len(CONFIGS_REFUSED_BY) + 1
+    assert sum(name.startswith("replay-") for name in reads) == len(CONFIGS_REFUSED_BY)
+
+
+def test_the_config_is_what_the_repository_builds_and_the_case_log_ties_the_record(tmp_path):
+    loose, zipped, chains = the_config()
+    assert sorted(chains) == sorted(KINDS) and all(chain[0] for chain in chains.values())
+    # the zip holds the three files under the names the presets carry
+    held = archive(zipped)
+    assert sorted(held) == sorted(f"{NAMES[kind]}.json" for kind in KINDS)
+    assert all(held[f"{NAMES[kind]}.json"] == loose[f"bb_test_{kind}.json"] for kind in KINDS)
+    folder, prefix = write_configs_run(tmp_path)
+    lines = (folder / f"{prefix}-case.log").read_text(encoding="utf-8").splitlines()
+
+    def without(start):
+        return [line for line in lines if not line.startswith(start)]
+
+    configs_refused(tmp_path, ["lists_and_dialogs_are_in_the_case_log"], log_lines=without("[m7x232] machine list:"))
+    configs_refused(tmp_path, ["lists_and_dialogs_are_in_the_case_log"], log_lines=without("[m7x232] dialog "))
+    configs_refused(tmp_path, ["verdict_line_is_in_the_case_log"], log_lines=without("[m7x232] {"))
+    # a failure's text holds quotes and garbled clause names in the log: only its outcome is read
+    garbled = "[m7x232] {'瀵煎叆鎴愬姛': 'FAIL (2 presets are not in their lists: [\\'filament/BB\\']; x)', '鍚屽悕': 'PASS'}"
+    assert configs._logged_verdicts(garbled) == ["FAIL", "PASS"] and configs._logged_verdicts("nothing") is None
+    configs_refused(tmp_path, ["work_directory_named_in_the_case_log"], log_lines=without("[m7x232] retained"))
+    # a blank picture, a prompt that names a preset the config does not hold, a record of another case
+    configs_refused(tmp_path, ["pictures_are_pictures"], parts={"zip1-dialog-1.png": picture(640, 400, blank=True)})
+    configs_refused(tmp_path, ["dialogs_tell_what_the_profile_shows"], record=lambda default: dict(
+        default, second=dict(default["second"], dialogs=[
+            dict(row, message=row["message"].replace(NAMES["machine"], "Another Printer"))
+            if OVERWRITE in row["title"] else row for row in default["second"]["dialogs"]])))
+    configs_refused(tmp_path, ["recorded_case"], record=lambda default: dict(default, case=237))
+    configs_refused(tmp_path, ["recorded_config_lists_the_files"], record=lambda default: dict(default, config=[]))
+    # a guard dialog the record says was left open
+    configs_refused(tmp_path, ["guard_dialogs_answered"], record=lambda default: dict(
+        default, memory_guard_dialogs=[{"title": "Memory Usage Warning", "texts": ["Yes, Continue", "No, Stop"],
+                                        "closed": False, "screenshot": "memory-guard-0.png"}]))
+    configs_refused(tmp_path, ["config_file_digest_recorded"], record=lambda default: dict(
+        default, config_file=dict(default["config_file"], sha256="not a digest")))
+    # a snapshot file that is no preset list
+    configs_refused(tmp_path, ["snapshots_are_preset_lists"], parts={configs.SECOND: b"{}"})
