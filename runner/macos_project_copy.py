@@ -1,7 +1,7 @@
 """Run the fixed layer-height project-copy case in a Mac's inactive test login.
 
-Goals: layer (Quality layer-height edit), walls (Strength wall-loops 2->3),
-pan (canvas +10 mm global-X object move). All goals edit a named copy, save,
+Goals include layer height, wall loops, an X-axis move, and Feishu's standard
+sphere (#254) and boat surface flow (#262). All goals edit a named copy, save,
 reopen it in a new process and slice; the host verifies independently."""
 import argparse
 import base64
@@ -28,28 +28,16 @@ from harness.pilot_common import inspect_preserved_settings  # noqa: F401 - Wind
 from harness.pilot_transform import verify_translation
 from harness.profile import MINIMAL_CONF, write_conf
 from harness.project_3mf import inspect_project
-from harness.model_move_pilot import mesh_3mf, source_models, transform_point
+from harness.model_move_pilot import geometry_unchanged
 
 SPHERE_SHA256 = "f5f83d00545522c7cde44c0cd4260c325418707afdc83e6056390a0b8800d13c"
-COPY_NAMES = {"sphere254": "sphere-254-copy.3mf", "layer": "layer-024-copy.3mf", "walls": "wall-3-copy.3mf", "pan": "pan-x10-copy.3mf"}
+BOAT_SHA256 = "d550f8ac10adfbea6fcfc61be46d76f07515384e20225d425e42eb49d50b4d65"
+COPY_NAMES = {"boat262": "boat-flow-copy.3mf", "sphere254": "sphere-254-copy.3mf", "layer": "layer-024-copy.3mf", "walls": "wall-3-copy.3mf", "pan": "pan-x10-copy.3mf"}
 
 
 def settings_of(raw):
     with zipfile.ZipFile(io.BytesIO(raw)) as archive:
         return json.loads(archive.read("Metadata/project_settings.config"))
-
-
-def sphere_geometry_unchanged(saved, original):
-    """Orca retains this fixture's indexed facets but recenters its local mesh."""
-    def geometry(raw):
-        points, faces, build = mesh_3mf(source_models(raw), lambda: False)
-        matrix = tuple(map(float, build))
-        return [transform_point(p, matrix) for p in points], faces
-
-    a, a_faces = geometry(saved)
-    b, b_faces = geometry(original)
-    return (a_faces == b_faces and len(a) == len(b)
-            and all(abs(x - y) <= 0.00001 for p, q in zip(a, b) for x, y in zip(p, q)))
 
 
 def payload(output, run_id, fixture, edit_height, goal, copy_name, pan_presses):
@@ -61,7 +49,10 @@ def payload(output, run_id, fixture, edit_height, goal, copy_name, pan_presses):
     files = {"reference.3mf": fixture, "run-id": run_id.encode(), "seed.conf": seed.read_bytes(),
              "edit-height": edit_height.encode(), "goal": goal.encode(), "copy-name": copy_name.encode(),
              "pan-presses": str(pan_presses).encode()}
-    for filename in ("project_copy.py", "accessibility.py", "ocr.swift"):
+    worker_files = ["project_copy.py", "accessibility.py", "ocr.swift"]
+    if goal == "boat262":
+        worker_files.extend(["param_case.py", "param_ops.py", "param_cases.json"])
+    for filename in worker_files:
         files[filename] = (ROOT / "runner" / "macos" / filename).read_bytes()
     buffer = io.BytesIO()
     with tarfile.open(fileobj=buffer, mode="w:gz") as archive:
@@ -133,7 +124,7 @@ def verify_walls_differential(saved_raw, fixture_raw, sut):
         raise ValueError(f"mac_walls_unrelated_setting_changed:{key}")
 
 
-def verify_plate(output, name, receipt, expected_pid, project_sha256, height, count, *, sphere=False):
+def verify_plate(output, name, receipt, expected_pid, project_sha256, height, count, *, sphere=False, model_height=None, first_height=None):
     path = output / (name + ".gcode")
     raw = path.read_bytes()
     if (receipt["pid"] != expected_pid or receipt["size"] != len(raw)
@@ -141,8 +132,9 @@ def verify_plate(output, name, receipt, expected_pid, project_sha256, height, co
             or receipt["project_sha256"] != project_sha256 or receipt["source"] != "open_process_plate"
             or receipt["export_enabled_before"] is not False or receipt["export_enabled_after"] is not True):
         raise ValueError(f"{name} plate lineage or transfer mismatch")
-    facts = (analyze_gcode(raw, layer_height=height, first_layer_height="0.25", expected_height_mm=Decimal(20), allow_startup_retract=True)
-             if sphere else analyze_gcode(raw, layer_height=height, allow_startup_retract=True))
+    facts = analyze_gcode(raw, layer_height=height, first_layer_height=first_height or ("0.25" if sphere else "0.4"),
+                          expected_height_mm=Decimal(model_height or (20 if sphere else 27)),
+                          allow_startup_retract=True)
     if facts["layer_count"] != count:
         raise ValueError(f"{name} yielded {facts['layer_count']} model layers, expected {count}")
     return {**facts, "artifact": path.name, "origin": "gui_plate_temporary"}
@@ -166,15 +158,23 @@ def run(args):
     print(f"Evidence: {output}", flush=True)
     try:
         sphere = goal == "sphere254"
-        fixture = (ROOT / ("fixtures/feishu_std_sphere.3mf" if sphere else LAYER_FIXTURE)).read_bytes()
-        fixture_sha = SPHERE_SHA256 if sphere else LAYER_FIXTURE_SHA256
+        boat = goal == "boat262"
+        fixture_path, fixture_sha = LAYER_FIXTURE, LAYER_FIXTURE_SHA256
+        initial, baseline_count, model_height = ["0.4", "0.4"], 68, 27
+        if sphere:
+            fixture_path, fixture_sha = "fixtures/feishu_std_sphere.3mf", SPHERE_SHA256
+            initial, baseline_count, model_height = ["0.2", "0.25"], 100, 20
+        elif boat:
+            fixture_path, fixture_sha = "fixtures/feishu_std_boat.3mf", BOAT_SHA256
+            initial, baseline_count, model_height = ["0.2", "0.25"], 240, 48
+        fixture = (ROOT / fixture_path).read_bytes()
         if hashlib.sha256(fixture).hexdigest() != fixture_sha:
             raise ValueError("Repository fixture digest mismatch")
         stage = "transport"
         result = subprocess.run(ssh_command(args),
                                 input=payload(output, run_id, fixture, "0.32" if control else "0.24",
                                               goal, copy_name, args.pan_presses),
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=600)
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=900 if boat else 600)
         (output / "ssh.log").write_bytes(result.stderr)
         if result.returncode:
             raise RuntimeError(f"SSH or Mac supervisor exited with {result.returncode}. See ssh.log")
@@ -203,7 +203,6 @@ def run(args):
             raise ValueError("Actual Orca build identity is incomplete")
         phases = report["phases"]
         baseline, edit, reopened = phases["baseline"], phases["edit"], phases["reopen"]
-        initial = ["0.2", "0.25"] if sphere else ["0.4", "0.4"]
         if (len({baseline["pid"], edit["pid"], reopened["pid"]}) != 3
                 or baseline["layers"] != initial or edit["window"] != Path(copy_name).stem
                 or reopened["window"] != edit["window"] or edit["layers"] != initial):
@@ -214,7 +213,7 @@ def run(args):
             raise ValueError("Unexpected baseline receipt phase")
         summary["slices"]["baseline"] = verify_plate(
             output, "baseline", receipts["baseline"], baseline["pid"], fixture_sha,
-            "0.2" if sphere else "0.4", 100 if sphere else 68, sphere=sphere)
+            initial[0], baseline_count, first_height=initial[1], model_height=model_height)
         stage = "verify.saved_project"
         if "project" not in reply:
             raise ValueError("Mac did not return the saved project")
@@ -230,6 +229,22 @@ def run(args):
             stage = "verify.reopened_fields"
             if reopened["layers"] != ["0.24", "0.4"]:
                 raise ValueError(f"Reopened layer fields mismatch: {reopened['layers']}")
+        elif boat:
+            if report["surface_edit"]["status"] != "pass" or reopened["layers"] != initial:
+                raise ValueError("Missing GUI edit or independent restart")
+            cfg = settings_of(data)
+            for key, val in {"top_solid_infill_flow_ratio": "1.1", "bottom_solid_infill_flow_ratio": "0.9",
+                             "print_flow_ratio": "1"}.items():
+                if Decimal(cfg[key]) != Decimal(val):
+                    raise ValueError(f"Unexpected saved flow ratio: {key}")
+            original = settings_of(fixture)
+            for key in ("nozzle_diameter", "filament_type", "printer_model", "printer_variant", "print_settings_id"):
+                if cfg[key] != original[key]:
+                    raise ValueError(f"Boat preset mismatch: {key}")
+            if not geometry_unchanged(data, fixture):
+                raise ValueError("Boat mesh or transform changed")
+            summary["project"] = {"saved_sha256": report["saved_sha256"], "boat_unchanged": True,
+                                  "values": report["surface_edit"]["keys"]}
         elif sphere:
             if (report["off_target_layers"] != ["0.24", "0.3"] or report["target_layers"] != initial
                     or reopened["layers"] != initial):
@@ -240,7 +255,7 @@ def run(args):
                         "printer_model", "printer_variant", "print_settings_id"):
                 if settings[key] != original[key]:
                     raise ValueError(f"Sphere settings mismatch: {key}")
-            if not sphere_geometry_unchanged(data, fixture):
+            if not geometry_unchanged(data, fixture):
                 raise ValueError("Sphere mesh or transform changed")
             summary["project"] = {"sphere_unchanged": True, "layers": initial}
         elif goal == "walls":
@@ -256,8 +271,13 @@ def run(args):
             raise ValueError("Unexpected edited receipt phase")
         summary["slices"]["edited"] = verify_plate(
             output, "edited", receipts["edited"], reopened["pid"], report["saved_sha256"],
-            "0.2" if sphere else ("0.24" if goal == "layer" else "0.4"),
-            100 if sphere else (112 if goal == "layer" else 68), sphere=sphere)
+            "0.24" if goal == "layer" else initial[0], 112 if goal == "layer" else baseline_count,
+            first_height=initial[1], model_height=model_height)
+        if boat:
+            from tools.verify_surface_flow_paths import verify
+            summary["surface_flow"] = verify(output / "baseline.gcode", output / "edited.gcode")
+            if not summary["surface_flow"]["pass"]:
+                raise ValueError("Surface flow or paths failed")
         if sphere:
             for key in ("layer_count", "first_z", "last_z", "layer_height"):
                 if summary["slices"]["baseline"][key] != summary["slices"]["edited"][key]:

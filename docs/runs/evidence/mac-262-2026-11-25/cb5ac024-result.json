@@ -1,0 +1,375 @@
+{
+  "run_id": "cb5ac024f37b47a09e8dcbb57aca1068",
+  "verdict": "SHADOW",
+  "candidate": "mac-feishu-262-targeted-scroll",
+  "goal": "boat262",
+  "test_kind": "boat262_comparison",
+  "started_at": "2026-11-25T12:03:40.142772+00:00",
+  "slices": {
+    "baseline": {
+      "layer_height": "0.2",
+      "first_layer_height": "0.25",
+      "layer_count": 240,
+      "first_z": "0.25",
+      "last_z": "48.05",
+      "positive_xy_e_moves": 77470,
+      "object_tools": [
+        0
+      ],
+      "sha256": "7d0da850a6aaaf452e92f153965fbb9bc1402150e2ccd6fd9e7f8e7fadd953ec",
+      "artifact": "baseline.gcode",
+      "origin": "gui_plate_temporary"
+    },
+    "edited": {
+      "layer_height": "0.2",
+      "first_layer_height": "0.25",
+      "layer_count": 240,
+      "first_z": "0.25",
+      "last_z": "48.05",
+      "positive_xy_e_moves": 77470,
+      "object_tools": [
+        0
+      ],
+      "sha256": "72b497331768232969e9d99fe2f970dfbde1722d6566eb2bcaaf1548bd06bee0",
+      "artifact": "edited.gcode",
+      "origin": "gui_plate_temporary"
+    }
+  },
+  "native_save_as": "NOT_TESTED",
+  "gui_gcode_export": "NOT_TESTED",
+  "guest": {
+    "ok": true,
+    "run_id": "cb5ac024f37b47a09e8dcbb57aca1068",
+    "console_uid": 501,
+    "test_uid": 502,
+    "source_before": "d550f8ac10adfbea6fcfc61be46d76f07515384e20225d425e42eb49d50b4d65",
+    "phases": {
+      "baseline": {
+        "pid": 25899,
+        "window": "baseline",
+        "layers": [
+          "0.2",
+          "0.25"
+        ]
+      },
+      "edit": {
+        "pid": 26531,
+        "window": "boat-flow-copy",
+        "layers": [
+          "0.2",
+          "0.25"
+        ]
+      },
+      "reopen": {
+        "pid": 28091,
+        "window": "boat-flow-copy",
+        "layers": [
+          "0.2",
+          "0.25"
+        ]
+      }
+    },
+    "slice_receipts": {
+      "baseline": {
+        "phase": "baseline",
+        "pid": 25899,
+        "window_id": 68655,
+        "source": "open_process_plate",
+        "plate_file": ".25899.0.gcode",
+        "inode": 42425818,
+        "size": 3341611,
+        "sha256": "7d0da850a6aaaf452e92f153965fbb9bc1402150e2ccd6fd9e7f8e7fadd953ec",
+        "project_sha256": "d550f8ac10adfbea6fcfc61be46d76f07515384e20225d425e42eb49d50b4d65",
+        "export_enabled_before": false,
+        "export_enabled_after": true
+      },
+      "edited": {
+        "phase": "reopen",
+        "pid": 28091,
+        "window_id": 68849,
+        "source": "open_process_plate",
+        "plate_file": ".28091.0.gcode",
+        "inode": 42435096,
+        "size": 3342005,
+        "sha256": "72b497331768232969e9d99fe2f970dfbde1722d6566eb2bcaaf1548bd06bee0",
+        "project_sha256": "c5e2cec9056832ecd6b04e2e6d4bf28ca59b1c22fc4789e2918ab81806c52686",
+        "export_enabled_before": false,
+        "export_enabled_after": true
+      }
+    },
+    "sut": {
+      "version": "2.4.2",
+      "build": "sha256:8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75",
+      "bundle_build": "",
+      "build_source": "executable_sha256",
+      "executable_sha256": "8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75"
+    },
+    "surface_edit": {
+      "status": "pass",
+      "steps": [
+        {
+          "key": "top_solid_infill_flow_ratio",
+          "positions": [
+            {
+              "fraction": null,
+              "knob": 3.0
+            },
+            {
+              "fraction": 0.4,
+              "knob": 87.0
+            },
+            {
+              "fraction": 0.48,
+              "knob": 105.0
+            },
+            {
+              "fraction": 0.56,
+              "knob": 122.0
+            },
+            {
+              "fraction": 0.64,
+              "knob": 140.0
+            }
+          ],
+          "row": "Top surface flow ratio",
+          "before": "1",
+          "after": "1.1",
+          "seconds": 61.23
+        },
+        {
+          "key": "bottom_solid_infill_flow_ratio",
+          "positions": [
+            {
+              "fraction": null,
+              "knob": 141.0
+            }
+          ],
+          "row": "Bottom surface flow ratio",
+          "before": "1",
+          "after": "0.9",
+          "seconds": 9.58
+        }
+      ],
+      "table": {
+        "path": "runner/macos/param_cases.json",
+        "source_commit": "f371b47",
+        "sha256": "794b07ac03799bb0417298f9a70144a197d029c76892968c6f681704a3564969"
+      },
+      "keys": {
+        "top_solid_infill_flow_ratio": {
+          "expected": "1.1",
+          "before": "1",
+          "status": "pass",
+          "saved": "1.1",
+          "compared": "decimal"
+        },
+        "bottom_solid_infill_flow_ratio": {
+          "expected": "0.9",
+          "before": "1",
+          "status": "pass",
+          "saved": "0.9",
+          "compared": "decimal"
+        },
+        "print_flow_ratio": {
+          "expected": "1",
+          "before": "1",
+          "status": "pass",
+          "saved": "1",
+          "compared": "decimal"
+        }
+      }
+    },
+    "saved_sha256": "c5e2cec9056832ecd6b04e2e6d4bf28ca59b1c22fc4789e2918ab81806c52686",
+    "source_after": "d550f8ac10adfbea6fcfc61be46d76f07515384e20225d425e42eb49d50b4d65",
+    "cleanup_verified": true
+  },
+  "project": {
+    "saved_sha256": "c5e2cec9056832ecd6b04e2e6d4bf28ca59b1c22fc4789e2918ab81806c52686",
+    "boat_unchanged": true,
+    "values": {
+      "top_solid_infill_flow_ratio": {
+        "expected": "1.1",
+        "before": "1",
+        "status": "pass",
+        "saved": "1.1",
+        "compared": "decimal"
+      },
+      "bottom_solid_infill_flow_ratio": {
+        "expected": "0.9",
+        "before": "1",
+        "status": "pass",
+        "saved": "0.9",
+        "compared": "decimal"
+      },
+      "print_flow_ratio": {
+        "expected": "1",
+        "before": "1",
+        "status": "pass",
+        "saved": "1",
+        "compared": "decimal"
+      }
+    }
+  },
+  "surface_flow": {
+    "pass": true,
+    "flow_config": {
+      "top_solid_infill_flow_ratio": [
+        "1",
+        "1.1"
+      ],
+      "bottom_solid_infill_flow_ratio": [
+        "1",
+        "0.9"
+      ],
+      "print_flow_ratio": [
+        "1",
+        "1"
+      ]
+    },
+    "config_matches": true,
+    "profile_matches": true,
+    "outer_shell_paths_identical": true,
+    "all_labelled_features_extrusion_mm": [
+      3785.5973100000488,
+      3796.2315200000485
+    ],
+    "all_labelled_features_ratio": 1.0028091234035665,
+    "feature_extrusion": {
+      "Bottom surface": {
+        "segments": [
+          311,
+          311
+        ],
+        "paths_identical": true,
+        "extrusion_mm": [
+          21.038459999999993,
+          18.934769999999997
+        ],
+        "extrusion_ratio": 0.9000074149914016,
+        "segment_e_mismatches": 0
+      },
+      "Bridge": {
+        "segments": [
+          482,
+          482
+        ],
+        "paths_identical": true,
+        "extrusion_mm": [
+          43.953140000000005,
+          43.953140000000005
+        ],
+        "extrusion_ratio": 1.0,
+        "segment_e_mismatches": 0
+      },
+      "Gap infill": {
+        "segments": [
+          6458,
+          6458
+        ],
+        "paths_identical": true,
+        "extrusion_mm": [
+          233.0580799999996,
+          233.0580799999996
+        ],
+        "extrusion_ratio": 1.0,
+        "segment_e_mismatches": 0
+      },
+      "Inner wall": {
+        "segments": [
+          21422,
+          21422
+        ],
+        "paths_identical": true,
+        "extrusion_mm": [
+          1007.3800900000142,
+          1007.3800900000142
+        ],
+        "extrusion_ratio": 1.0,
+        "segment_e_mismatches": 0
+      },
+      "Internal Bridge": {
+        "segments": [
+          815,
+          815
+        ],
+        "paths_identical": true,
+        "extrusion_mm": [
+          159.5810200000003,
+          159.5810200000003
+        ],
+        "extrusion_ratio": 1.0,
+        "segment_e_mismatches": 0
+      },
+      "Internal solid infill": {
+        "segments": [
+          10122,
+          10122
+        ],
+        "paths_identical": true,
+        "extrusion_mm": [
+          639.0149000000042,
+          639.0149000000042
+        ],
+        "extrusion_ratio": 1.0,
+        "segment_e_mismatches": 0
+      },
+      "Outer wall": {
+        "segments": [
+          31950,
+          31950
+        ],
+        "paths_identical": true,
+        "extrusion_mm": [
+          1011.3610400000294,
+          1011.3610400000294
+        ],
+        "extrusion_ratio": 1.0,
+        "segment_e_mismatches": 0
+      },
+      "Overhang wall": {
+        "segments": [
+          362,
+          362
+        ],
+        "paths_identical": true,
+        "extrusion_mm": [
+          6.412980000000005,
+          6.412980000000005
+        ],
+        "extrusion_ratio": 1.0,
+        "segment_e_mismatches": 0
+      },
+      "Sparse infill": {
+        "segments": [
+          4534,
+          4534
+        ],
+        "paths_identical": true,
+        "extrusion_mm": [
+          536.4202100000005,
+          536.4202100000005
+        ],
+        "extrusion_ratio": 1.0,
+        "segment_e_mismatches": 0
+      },
+      "Top surface": {
+        "segments": [
+          1014,
+          1014
+        ],
+        "paths_identical": true,
+        "extrusion_mm": [
+          127.37739000000006,
+          140.11528999999993
+        ],
+        "extrusion_ratio": 1.100001263960581,
+        "segment_e_mismatches": 0
+      }
+    },
+    "input_sha256": [
+      "7d0da850a6aaaf452e92f153965fbb9bc1402150e2ccd6fd9e7f8e7fadd953ec",
+      "72b497331768232969e9d99fe2f970dfbde1722d6566eb2bcaaf1548bd06bee0"
+    ]
+  },
+  "finished_at": "2026-11-25T12:10:58.179746+00:00"
+}

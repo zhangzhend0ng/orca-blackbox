@@ -6,6 +6,20 @@ import pytest
 from runner.macos import project_copy
 
 
+def test_surface_editor_requires_its_exact_parameter_key():
+    key = "top_solid_infill_flow_ratio"
+    desktop = Mock()
+    desktop.descendants.return_value = ["adjacent", "label", "target"]
+    controls = {
+        "adjacent": ("AXTextField", "parameter name: " + key + "_extra"),
+        "label": ("AXStaticText", "parameter name: " + key),
+        "target": ("AXTextField", "parameter name: " + key),
+    }
+    desktop.text.side_effect = lambda element, attr: controls[element][attr == "AXHelp"]
+    assert project_copy.materialized_parameter_field(desktop, "window", key) == "target"
+    assert project_copy.materialized_parameter_field(desktop, "window", "bottom_solid_infill_flow_ratio") is None
+
+
 def test_strength_tab_rechecks_merged_label_from_the_same_frame(monkeypatch):
     frame = object()
     capture = Mock(return_value=frame)

@@ -1,0 +1,83 @@
+{
+  "run_id": "9aed995e13a44f65a4d7a0eb535e249e",
+  "verdict": "NON_GREEN",
+  "candidate": "mac-feishu-262-retry",
+  "goal": "boat262",
+  "test_kind": "boat262_comparison",
+  "started_at": "2026-11-25T11:44:30.848396+00:00",
+  "slices": {},
+  "native_save_as": "NOT_TESTED",
+  "gui_gcode_export": "NOT_TESTED",
+  "guest": {
+    "ok": false,
+    "failure_stage": "edit.surface_flow",
+    "run_id": "9aed995e13a44f65a4d7a0eb535e249e",
+    "console_uid": 501,
+    "test_uid": 502,
+    "source_before": "d550f8ac10adfbea6fcfc61be46d76f07515384e20225d425e42eb49d50b4d65",
+    "phases": {
+      "baseline": {
+        "pid": 17473,
+        "window": "baseline",
+        "layers": [
+          "0.2",
+          "0.25"
+        ]
+      },
+      "edit": {
+        "pid": 17975,
+        "window": "boat-flow-copy",
+        "layers": [
+          "0.2",
+          "0.25"
+        ]
+      }
+    },
+    "slice_receipts": {
+      "baseline": {
+        "phase": "baseline",
+        "pid": 17473,
+        "window_id": 68264,
+        "source": "open_process_plate",
+        "plate_file": ".17473.0.gcode",
+        "inode": 42401914,
+        "size": 3341611,
+        "sha256": "b95b308d952858096c2e9d2567fa995e3bea904b65f4d31debd08565c4c7e1ce",
+        "project_sha256": "d550f8ac10adfbea6fcfc61be46d76f07515384e20225d425e42eb49d50b4d65",
+        "export_enabled_before": false,
+        "export_enabled_after": true
+      }
+    },
+    "sut": {
+      "version": "2.4.2",
+      "build": "sha256:8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75",
+      "bundle_build": "",
+      "build_source": "executable_sha256",
+      "executable_sha256": "8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75"
+    },
+    "surface_edit": {
+      "status": "not passed",
+      "scenario": "uia_param_surface_flow",
+      "case_id": "param_262_surface_flow",
+      "table": {
+        "path": "runner/macos/param_cases.json",
+        "source_commit": "f371b47",
+        "sha256": "794b07ac03799bb0417298f9a70144a197d029c76892968c6f681704a3564969"
+      },
+      "limits": {
+        "per_op": 150,
+        "case": null,
+        "ops": {
+          "op0": 150
+        }
+      },
+      "reason": "stopped at op 0 (float ['Top surface flow ratio', 'Top surface flow']): op fuse (150 s): OpFuse: op fuse: 3 s past this op's limit"
+    },
+    "error": "Traceback (most recent call last):\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.lENLUjj1/project_copy.py\", line 524, in run_worker\n    worker(report)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.lENLUjj1/project_copy.py\", line 482, in worker\n    require(observed[\"ok\"], str(report[\"surface_edit\"]))\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.lENLUjj1/project_copy.py\", line 37, in require\n    raise RuntimeError(message)\nRuntimeError: {'status': 'not passed', 'scenario': 'uia_param_surface_flow', 'case_id': 'param_262_surface_flow', 'table': {'path': 'runner/macos/param_cases.json', 'source_commit': 'f371b47', 'sha256': '794b07ac03799bb0417298f9a70144a197d029c76892968c6f681704a3564969'}, 'limits': {'per_op': 150, 'case': None, 'ops': {'op0': 150}}, 'reason': \"stopped at op 0 (float ['Top surface flow ratio', 'Top surface flow']): op fuse (150 s): OpFuse: op fuse: 3 s past this op's limit\"}\n",
+    "cleanup_verified": true,
+    "remote_evidence": "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.lENLUjj1"
+  },
+  "failure_stage": "edit.surface_flow",
+  "error": "Traceback (most recent call last):\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.lENLUjj1/project_copy.py\", line 524, in run_worker\n    worker(report)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.lENLUjj1/project_copy.py\", line 482, in worker\n    require(observed[\"ok\"], str(report[\"surface_edit\"]))\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.lENLUjj1/project_copy.py\", line 37, in require\n    raise RuntimeError(message)\nRuntimeError: {'status': 'not passed', 'scenario': 'uia_param_surface_flow', 'case_id': 'param_262_surface_flow', 'table': {'path': 'runner/macos/param_cases.json', 'source_commit': 'f371b47', 'sha256': '794b07ac03799bb0417298f9a70144a197d029c76892968c6f681704a3564969'}, 'limits': {'per_op': 150, 'case': None, 'ops': {'op0': 150}}, 'reason': \"stopped at op 0 (float ['Top surface flow ratio', 'Top surface flow']): op fuse (150 s): OpFuse: op fuse: 3 s past this op's limit\"}\n",
+  "finished_at": "2026-11-25T11:49:42.046008+00:00"
+}

@@ -155,7 +155,7 @@ def open_copy(desktop, phase):
                        and desktop.text(w, "AXTitle") == project.stem]
             return exactly_one(windows) if windows else None
 
-        window = wait_for(main_window, "Named project window did not open", 80)
+        window = wait_for(main_window, "Named project window did not open", 150 if GOAL == "boat262" else 80)
         yield pid, root, window
     finally:
         close_owned(profile)
@@ -294,21 +294,75 @@ def ocr_wall_read():
     return digits_of(numbered[0]["text"])
 
 
-def materialized_wall_field(desktop, window):
+def materialized_parameter_field(desktop, window, key):
     # Clicking the value cell mounts the row's editor as a real AXTextField
     # carrying the parameter key in its tooltip (probe16 evidence).
     for element in desktop.descendants(window):
         if desktop.text(element, "AXRole") != "AXTextField":
             continue
-        if "wall_loops" in (desktop.text(element, "AXHelp") or ""):
+        if re.search(r"\b" + re.escape(key) + r"\b", desktop.text(element, "AXHelp") or ""):
             return element
     return None
 
 
 def open_wall_field(desktop, pid, root, window, title, cell_x, row_y):
     desktop.click_point(pid, root, window, title, cell_x, row_y)
-    return wait_for(lambda: materialized_wall_field(desktop, window),
+    return wait_for(lambda: materialized_parameter_field(desktop, window, "wall_loops"),
                     "Wall loops editor did not materialize after the cell click")
+
+
+def edit_boat_surface_flow(desktop, pid, root, window, report):
+    import accessibility as ax
+    import param_case
+    import param_ops as po
+
+    po.OUT.mkdir(exist_ok=True)
+    panel = po.Panel(desktop, pid, root, window)
+    case = param_case.load_case("uia_param_surface_flow")
+    before = po.settings_of(COPY)
+    trace = report["surface_edit"] = {"status": "not passed", "steps": [], "table": case["_table"]}
+    panel.deadline = time.monotonic() + 220
+    panel.maximize()
+    panel.ensure_advanced("surface-advanced")
+    for key, op in zip(("top_solid_infill_flow_ratio", "bottom_solid_infill_flow_ratio"), case["ops"]):
+        started = time.monotonic()
+        step = {"key": key, "positions": []}
+        trace["steps"].append(step)
+        for index, fraction in enumerate((None, .40, .48, .56, .64, .72, .80, .88, .96, .32, .24, .16, .08)):
+            if fraction is not None:
+                bar = panel.scrollbar()
+                require(bar and bar["knob"], "Quality page exposes no scrollbar thumb")
+                x, y, w, h = bar["knob"]
+                track_y, track_h = bar["box"][1], bar["box"][3]
+                panel.drag(x + w / 2, y + h / 2, x + w / 2, track_y + fraction * (track_h - h) + h / 2)
+                time.sleep(.3)
+            rows = panel.read(f"surface-{key}-{index}")
+            step["positions"].append({"fraction": fraction, "knob": panel.knob_at()})
+            try:
+                row = panel.find_row(rows, None, op["label"])
+            except RuntimeError:
+                continue
+            if po.norm(row["text"]) not in [po.norm(label) for label in op["label"]]:
+                continue
+            gx, gy, _, _ = po.float_cell(panel, rows, row)
+            panel.click(gx, gy)
+            field = wait_for(lambda: materialized_parameter_field(desktop, window, key),
+                             f"No AX editor with parameter key {key}", 6)
+            step["row"] = row["text"]
+            step["before"] = desktop.text(field, "AXValue")
+            desktop.act(pid, field, "AXFocused", ax.true_value)
+            desktop.act(pid, field, "AXValue", desktop.string(str(op["value"])))
+            desktop.act(pid, field, "AXConfirm")
+            step["after"] = desktop.text(field, "AXValue")
+            step["seconds"] = round(time.monotonic() - started, 2)
+            require(step["after"] == str(op["value"]), f"Unexpected AX value for {key}")
+            break
+        else:
+            raise RuntimeError(f"Quality page did not show an exact label for {key}")
+    save_project(desktop, pid, root, window)
+    trace["keys"] = param_case.judge(before, po.settings_of(COPY), case["values"])
+    require(all(item["status"] == "pass" for item in trace["keys"].values()), "Saved surface flow settings differ")
+    trace["status"] = "pass"
 
 
 def reopen_wall_value(origin):
@@ -424,7 +478,7 @@ def worker(report):
     report["test_uid"] = os.getuid()
     source_hash = digest(SOURCE)
     edit_height = (WORK / "edit-height").read_text().strip()
-    require(GOAL in ("layer", "walls", "pan", "sphere254"), "Unexpected requested goal")
+    require(GOAL in ("layer", "walls", "pan", "sphere254", "boat262"), "Unexpected requested goal")
     if GOAL == "layer":
         require(edit_height in ("0.24", "0.32"), "Unexpected requested GUI edit")
     if GOAL == "pan":
@@ -449,7 +503,7 @@ def worker(report):
             entry = {"pid": pid, "window": desktop.text(window, "AXTitle"), "layers": values}
             report["phases"][phase] = entry
             expected = [edit_height if (GOAL == "layer" and phase == "reopen") else "0.4", "0.4"]
-            if GOAL == "sphere254":
+            if GOAL in ("sphere254", "boat262"):
                 expected = ["0.2", "0.25"]
             require(values == expected, f"{phase}: expected layers {expected}, got {values}")
             if GOAL == "walls":
@@ -468,7 +522,10 @@ def worker(report):
                     entry["wall"] = wait_for(ocr_wall_read, "Strength Wall loops value was not visible", 30)
                     require(entry["wall"] == "2", f"Baseline Wall loops OCR value was {entry['wall']!r}, expected '2'")
             elif phase == "edit":
-                if GOAL == "sphere254":
+                if GOAL == "boat262":
+                    report["failure_stage"] = "edit.surface_flow"
+                    edit_boat_surface_flow(desktop, pid, root, window, report)
+                elif GOAL == "sphere254":
                     # The requested pair equals this preset. Verify an actual edit
                     # by saving an off-target pair, then restoring both fields.
                     report["failure_stage"] = "edit.off_target"
@@ -538,10 +595,15 @@ def supervise():
                "WorkingDirectory": str(WORK), "StandardOutPath": str(logfile), "StandardErrorPath": str(logfile)}
         plist = WORK / "worker.plist"
         plist.write_bytes(plistlib.dumps(job))
+        if GOAL == "boat262":
+            # Param rows may need repeated OCR while scrolling. Compile the same
+            # Vision reader once in this isolated workspace, as param_ops does.
+            subprocess.run(["/usr/bin/xcrun", "swiftc", "-O", str(WORK / "ocr.swift"),
+                            "-o", str(WORK / "ocr")], check=True, timeout=90)
         subprocess.run(["launchctl", "bootstrap", domain, str(plist)], check=True, timeout=15)
         registered = True
         result_file = WORK / "result.json"
-        wait_for(result_file.is_file, "Mac worker timed out", 510)
+        wait_for(result_file.is_file, "Mac worker timed out", 780 if GOAL == "boat262" else 510)
         result = json.loads(result_file.read_text())
     except Exception:
         result["error"] = traceback.format_exc()

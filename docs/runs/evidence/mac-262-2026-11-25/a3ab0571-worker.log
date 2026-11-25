@@ -1,0 +1,7 @@
+baseline: AX window candidates for 'baseline': ()
+baseline: AX window candidates for 'baseline': (('AXDialog', 'Loading...'), ('AXStandardWindow', ''))
+baseline: AX window candidates for 'baseline': (('', ''), ('AXStandardWindow', 'baseline'))
+edit: AX window candidates for 'boat-flow-copy': ()
+edit: AX window candidates for 'boat-flow-copy': (('AXStandardWindow', ''),)
+edit: AX window candidates for 'boat-flow-copy': (('AXDialog', 'Loading...'), ('AXStandardWindow', ''))
+edit: AX window candidates for 'boat-flow-copy': (('AXStandardWindow', 'boat-flow-copy'),)

@@ -1,0 +1,27 @@
+{
+  "run_id": "577365ce6fac4d5dbea9d0b04c598a33",
+  "verdict": "NON_GREEN",
+  "candidate": "mac-feishu-262",
+  "goal": "boat262",
+  "test_kind": "boat262_comparison",
+  "started_at": "2026-11-25T11:40:55.983986+00:00",
+  "slices": {},
+  "native_save_as": "NOT_TESTED",
+  "gui_gcode_export": "NOT_TESTED",
+  "guest": {
+    "ok": false,
+    "failure_stage": "baseline.launch",
+    "run_id": "577365ce6fac4d5dbea9d0b04c598a33",
+    "console_uid": 501,
+    "test_uid": 502,
+    "source_before": "d550f8ac10adfbea6fcfc61be46d76f07515384e20225d425e42eb49d50b4d65",
+    "phases": {},
+    "slice_receipts": {},
+    "error": "Traceback (most recent call last):\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.FbwcixxC/project_copy.py\", line 524, in run_worker\n    worker(report)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.FbwcixxC/project_copy.py\", line 442, in worker\n    with ax.Desktop(console_uid) as desktop, open_copy(desktop, phase) as (pid, root, window):\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py\", line 117, in __enter__\n    return next(self.gen)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.FbwcixxC/project_copy.py\", line 158, in open_copy\n    window = wait_for(main_window, \"Named project window did not open\", 80)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.FbwcixxC/project_copy.py\", line 73, in wait_for\n    raise TimeoutError(message)\nTimeoutError: Named project window did not open\n",
+    "cleanup_verified": true,
+    "remote_evidence": "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.FbwcixxC"
+  },
+  "failure_stage": "baseline.launch",
+  "error": "Traceback (most recent call last):\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.FbwcixxC/project_copy.py\", line 524, in run_worker\n    worker(report)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.FbwcixxC/project_copy.py\", line 442, in worker\n    with ax.Desktop(console_uid) as desktop, open_copy(desktop, phase) as (pid, root, window):\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py\", line 117, in __enter__\n    return next(self.gen)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.FbwcixxC/project_copy.py\", line 158, in open_copy\n    window = wait_for(main_window, \"Named project window did not open\", 80)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.FbwcixxC/project_copy.py\", line 73, in wait_for\n    raise TimeoutError(message)\nTimeoutError: Named project window did not open\n",
+  "finished_at": "2026-11-25T11:42:27.406957+00:00"
+}
