@@ -1,6 +1,6 @@
 # 九小时三机跑批（2026‑11‑25）：没有新增完整覆盖，没有发布 GREEN
 
-本轮 #276、#264 两行只做到纯提速，八行补了部分证据（补覆盖，不计闭环），两次原生模型对照和整条 Mac 线没有通过。最终引擎 `2a17376` 上的 42 行参数族回归已跑完：41 行 SHADOW，#294 是 NON_GREEN，它是 11‑24 就开着的行。客机上的脚本运行都是 SHADOW，两次原生模型对照是 NON_GREEN；fa706g3 和 Mac 按 README 第 6 条最高记 SHADOW。进行中的两批孪生场景（客机自有模型 7 个 run、fa706g3 多形状夹具 6 个 run）本版不计。逐项文件见[证据包](evidence/ninehour-2026-11-25/README.md)。
+本轮 #276、#264 两行只做到纯提速，八行补了部分证据（补覆盖，不计闭环），两次原生模型对照和整条 Mac 线没有通过。最终引擎 `2a17376` 上的 42 行参数族回归已跑完：41 行 SHADOW，#294 是 NON_GREEN，它是 11‑24 就开着的行。客机上的脚本运行都是 SHADOW，两次原生模型对照是 NON_GREEN；fa706g3 和 Mac 按 README 第 6 条最高记 SHADOW。第一次推送之后两台机器继续补覆盖到 08:50 停派，那一部分见文末「追加覆盖」，不计入上面的数字。逐项文件见[证据包](evidence/ninehour-2026-11-25/README.md)。
 
 ## 结论与范围
 
@@ -180,7 +180,7 @@ Mac 线没有走通。壁环数 2→3 的首次运行是 NON_GREEN（run `5bb1a7
 
 **最终引擎回归。** 42 行在 `2a17376` 上两台机器分跑，每行在分到的那台机器上跑一次（客机 21 行、fa706g3 21 行），客机另给 #294 加跑了一次：41 行 SHADOW（客机 21 行全部，fa706g3 20 行），NON_GREEN 1 行（#294：fa706g3 `1a4c0845`、客机 `9db255d4`）。回归只回答引擎改动有没有破坏该行已有的写入和导出，不逐项核对飞书预期；名单和逐行结果见 [family-regression.md](evidence/ninehour-2026-11-25/family-regression.md)。在 `d5fc2fa` 上先跑过的那一部分不是最终引擎：客机 4 行、fa706g3 7 行 SHADOW，#268 失败一次（第 3 节），已被最终引擎上的结果取代。
 
-进行中、本版不计：标签 `guest-twins`（客机 8 个自有模型的孪生场景）和 `fa-shapes`（fa706g3 的多形状夹具孪生场景）在本文写成时还在跑，台账复制时各有 7 个和 6 个 run；其中没通过的有 fa706g3 `83f09dc3`（`uia_param_spiral_vase_shapes`，ProtocolError:slice_button_unavailable: SS Jump to (spiral mode)），同样留给以后补。
+第 1 节到这里的数字是第一次推送（`62cddee`）时的状态。第一次推送之后两台机器又补跑到 08:50 停派（标签 `guest-twins`、`guest-twins-b`、`fa-shapes`、`second-sample`，以及 fa706g3 那一半在客机上的交叉运行），结果见文末「追加覆盖」；`ledger.jsonl` 和 `receipts/` 已随之刷新，其余各表没有重新生成。
 
 本轮没有回写飞书：没有一行是 GREEN 或已覆盖。
 
@@ -194,3 +194,32 @@ Mac 线没有走通。壁环数 2→3 的首次运行是 NON_GREEN（run `5bb1a7
 | 收据 | `python -B tools/ninehour_receipts.py <harvest root> --runs <ids> --ledger <ledger> --json <dir>` | 只读收割件 |
 
 人工分钟未测。台账能算出的机器占用（到 06:57:35）：客机第一条 01:34:09 开始、最后一条 06:57:35 结束，75 个 run 的宿主编排秒合计 15984 秒（266.4 分钟），占这段时间的 82.4%；fa706g3 第一条 01:34:43 开始、最后一条 06:57:05 结束，60 个 run 从投递到收割合计 13802 秒（230.0 分钟），占 71.3%。按机内 `process.json` 算，客机合计 13984 秒，fa706g3 9976 秒；脚本动作分别 5168 秒和 4059 秒。台账只有每个 run 的启动和结束时刻，没有派工时刻，所以算不出排队时间，只能算相邻两个 run 之间的空档：客机合计 3422 秒（最长 1517 秒，`0b51fb83` 之后），fa706g3 合计 5584 秒（最长 2004 秒，`8e207463` 之后）。宿主编排里启动应用和收割各占多少没有分开记；fa706g3 的合计含 10 秒一次的轮询；Mac 的 `ledger.txt` 只有起始时刻，没有时长。
+
+## 追加覆盖（第一次推送之后）
+
+第一次推送（`62cddee`）之后，两台机器继续补覆盖到 08:50 停派，最后一条 run 约 08:54 结束。引擎没有变化：`62cddee` 与 `2a17376` 的引擎文件相同。这些都是补覆盖或第二样本，单独记账，不计闭环，也不改变 42 行回归 41 行 SHADOW 的结论。
+
+| 追加项 | 机器、提交 | 结果 |
+|---|---|---|
+| 8 行各自飞书模型的孪生场景（此前只有 fa706g3 证据）：#258 `arc_resolution_tol`、#260 `wall_generator_text`、#263 `bridge_fdmt`、#277 `support_basic_fdmt`、#280 `support_ironing_fdmt`、#281 `support_interface_fdmt`、#292 `by_object_cubesfar`、#293 `spiral_vase_cyl` | 客机，`2a17376`，标签 `guest-twins` | 8 次，8 次 SHADOW |
+| 另 11 行各自飞书模型的孪生场景（11‑24 在 fa706g3 上的结论是「有出入」或「看不到」）：#256 `seam_wipe_cyl`、#257 `precision_comp_tol`、#272 `overhang_bridge_fdmt`、#275 `jerk_cyl`、#279 `support_filament_fdmt2`、#282 `tree_support_bunny`、#283 `prime_tower_boat2`、#284 `filament_features_fdmt2`、#286 `flush_options_boat2`、#287 `material_advanced_fdmt2`、#285 `ooze_prevention_hell` | 客机，`62cddee`，标签 `guest-twins-b` | 11 次，11 次 SHADOW |
+| fa706g3 那一半 21 行在客机上的交叉运行 | 客机，`62cddee`，标签 `regress-final` | 18 次：17 次 SHADOW，#294 `uia_param_timelapse` NON_GREEN（`ed62daca`）；另 3 行未跑 |
+| 客机那一半在 fa706g3 上的第二样本 | fa706g3，`2a17376`，标签 `second-sample` | 15 次，15 次 SHADOW；另 6 行未跑 |
+| 22 条多形状夹具孪生场景（连同客机在 `49439ab` 上先跑的 6 条，11‑24 备用队列里未跑的 27 条副本各有一次运行） | fa706g3，`2a17376`，标签 `fa-shapes` | 22 次：19 次 SHADOW，3 次 NON_GREEN |
+
+孪生场景在客机上的 SHADOW 只说明写入、保存、独立重开、切片和导出在这台机器上走通，不说明该行的飞书预期已经满足；11‑24 对照表里各行的预期缺口不变。
+
+`fa-shapes` 的三次失败：
+
+- `uia_param_spiral_vase_shapes`（`83f09dc3`）：`ProtocolError:slice_button_unavailable`（SS Jump to (spiral mode)）。同一场景在客机上也以同一签名失败（`a51409f7`，标签 `retry-spiral-shapes-1`），与机器无关。原因未查。
+- `uia_param_ironing_top_shapes`（`0b240d24`）和 `uia_param_layer_pair_shapes`（`919dcaf8`）：编辑、保存、重开、切片、导出都完成，判据回答 `gcode_multiple_object_tools`（unknown），是判据对多对象盘的限制，不是 GUI 失败。
+
+没有运行的派发，共 14 次，都不计入任何运行类别：
+
+- 客机 `467e62b1`（02:26）：暂存检出处于 detached 状态，`hv_go` 拒绝启动。
+- fa706g3 `91175532`（03:55）：场景名里带了 CRLF 行尾，参数解析拒绝。
+- 客机 12 次（07:04:19–07:04:53，标签 `guest-twins-b` 与 `retry-spiral-shapes-2`，台账行带 `dispatch_failed`）：总控为第一次推送把暂存检出快进到 `62cddee` 时客机还在 `2a17376`，启动预检在 3 秒内拒绝；随后把客机同步到 `62cddee` 重排队列。这是总控的失误，没有任何东西在错误的版本上运行。
+
+全晚合计（按飞书记录 ID 去重前的运行次数）：客机 SHADOW 101、NON_GREEN 5（两次原生模型对照、#294 两次、`spiral_vase_shapes` 一次），fa706g3 SHADOW 85、NON_GREEN 5（#294、`d5fc2fa` 上的 #268 一次、三条多形状夹具）。
+
+Mac：控制台会话到 08:20 的最后一次检查仍在锁屏。07:51 清掉了今晚探针在 Mac 上留下的 9 个草稿目录和 `/tmp/ninehour_mac`；测试账号下没有残留的测试进程，`coil` 自己的 Orca 进程没有被触碰。
