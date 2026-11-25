@@ -37,6 +37,9 @@ SETTINGS = {"layer_height": "0.2", "initial_layer_print_height": "0.25", "printe
             "filament_type": ["PLA"] * 5}
 # the outer wall's centre line of the cube, a quarter millimetre inside its 122..149 x 122.5..149.5 footprint
 WALL = (122.25, 122.75, 148.75, 149.25)
+# the U1 bed, as the saved projects name it
+BED = {"printable_area": ["0.5x1", "270.5x1", "270.5x271", "0.5x271"], "printable_height": "270.05",
+       "bed_exclude_area": ["0x0"]}
 CUBE_BOX = (122.0, 149.0, 122.5, 149.5, 0.0, 27.0)       # xmin, xmax, ymin, ymax, zmin, zmax
 TURN = "0 1 0 -1 0 0 0 0 1 0 0 0"                        # a quarter turn about Z
 UNIT_TURN = "1 0 0 0 1 0 0 0 1 0 0 0"
@@ -72,7 +75,8 @@ def project_3mf(triangles=None, transform="1 0 0 0 1 0 0 0 1 0 0 0", settings=No
     mesh = (f'<object id="2" type="model"><components><component objectid="1" transform="1 0 0 0 1 0 0 0 1 0 0 0"/>'
             '</components></object><object id="1" type="model">' + soup(triangles) + "</object>")
     return zipped({MAIN: model_xml(mesh, transform).encode("utf-8"),
-                   "Metadata/project_settings.config": json.dumps(SETTINGS if settings is None else settings).encode(),
+                   "Metadata/project_settings.config": json.dumps(
+                       dict(SETTINGS, **BED) if settings is None else settings).encode(),
                    "Metadata/model_settings.config": object_settings()})
 
 
@@ -126,15 +130,24 @@ def write_run(folder, prefix=PREFIX, *, gcode=None, project=None, record=None, p
     for part, raw in parts.items():
         (folder / f"{prefix}-{part}").write_bytes(raw)
     facts = export.gcode_export_facts(folder / f"{prefix}-plate.gcode")
+    # the case keeps the oracle's footprint reading, taken under the name it gave the file (a harvest
+    # stores that file under the run's prefix), and judges the clauses with it
+    plain = folder / "plate.gcode"
+    plain.write_bytes(parts["plate.gcode"])
+    footprint = export.gcode_footprint(plain, folder / f"{prefix}-before.3mf")
+    plain.unlink()
     shown = pictures or (picture(seed=1), picture(seed=2))
-    default = {"case": 236, "results": {clause: "PASS" for clause in export.CLAUSES},
+    gaps = export.gcode_expectation_gaps(facts, ".gcode", footprint)
+    default = {"case": 236,
+               "results": {clause: "PASS" if not failed else f"FAIL ({', '.join(failed)})"
+                           for clause, failed in gaps.items()},
                "fixture": {"name": FIXTURE.name, "bytes": len(FIXTURE.read_bytes()),
                            "sha256": sha256(FIXTURE.read_bytes()).hexdigest()},
                "export": {"typed_name": "plate", "saved_name": "plate.gcode", "saved_extension": ".gcode",
                           "file_bytes": len(parts["plate.gcode"]),
                           "file_sha256": sha256(parts["plate.gcode"]).hexdigest(),
                           "dialog_image": {"width_px": png(shown[1])["width"], "height_px": png(shown[1])["height"]}},
-               "gcode": facts, "expectation_gaps": export.gcode_expectation_gaps(facts, ".gcode")}
+               "gcode": facts, "footprint": footprint, "expectation_gaps": gaps}
     # `record` may be a callable that edits what the GUI would have written
     parts["analysis.json"] = json.dumps(record(default) if callable(record) else default if record is None else record,
                                         ensure_ascii=False, indent=2).encode("utf-8")
@@ -176,8 +189,8 @@ def test_synthetic_run_passes_every_reading_and_every_counterexample(tmp_path):
     assert {key for key in result["checks"] if key.endswith("_rejected")} == {
         "empty_file_rejected", "header_only_rejected", "missing_layer_rejected", "declared_total_mismatch_rejected",
         "layer_removed_with_rewritten_totals_rejected", "no_end_gcode_rejected", "tail_truncated_rejected",
-        "foreign_gcode_rejected", "print_moved_off_the_object_rejected", "wrong_extension_rejected",
-        "other_project_rejected", "manifest_mismatch_rejected", "edited_analysis_rejected"}
+        "foreign_gcode_rejected", "print_moved_off_the_object_rejected", "another_object_printed_rejected",
+        "wrong_extension_rejected", "other_project_rejected", "manifest_mismatch_rejected", "edited_analysis_rejected"}
     assert (result["export"]["layers"], result["export"]["z_last"], result["export"]["object_names"]) == (
         135, [27.05], ["立方体"])
 
@@ -199,8 +212,8 @@ def test_replay_actually_reads_every_counterexample_on_a_temporary_copy(tmp_path
     monkeypatch.setattr(export, "_read", lambda place, pre: reads.append(place.name) or real(place, pre))
     result = export.replay(folder, prefix)
     assert all(result["checks"].values())
-    assert len([key for key in result["checks"] if key.endswith("_rejected")]) == 13
-    assert len(reads) == 14 and sum(name.startswith("replay-") for name in reads) == 13
+    assert len([key for key in result["checks"] if key.endswith("_rejected")]) == 14
+    assert len(reads) == 15 and sum(name.startswith("replay-") for name in reads) == 14
 
 
 # --- what each reading refuses when the manifest agrees with the stand-in ------------
@@ -253,11 +266,54 @@ def test_configuration_that_differs_from_the_sliced_project_is_refused(tmp_path)
 
 @pytest.mark.parametrize("dx,dy", [(3, 0), (-3, 0), (0, 3), (0, -3)], ids=["x+3", "x-3", "y+3", "y-3"])
 def test_a_print_that_misses_the_saved_object_is_refused_in_every_direction(tmp_path, dx, dy):
-    # the GUI-side oracle reads the G-code alone and passes it wherever it prints; only the tie to the
-    # saved project refuses it, so the footprint test must hold on all four sides
+    # the oracle's reading of the file alone passes it wherever it prints: the file is whole and its
+    # layers run on. Two readings tie it to the saved object, the oracle's footprint and the replay's
+    # own, and both must hold on all four sides
     result = refused(tmp_path, [], gcode=export._shifted(plate_gcode(), dx, dy))
-    assert result["export"]["failed"] == ["extrusion_lies_on_the_objects"]
-    assert result["checks"]["oracle_accepts_export"] and result["checks"]["recorded_verdict_matches_file"]
+    assert {"extrusion_lies_on_the_objects", "oracle_locates_the_extrusion_on_the_objects"} <= set(
+        result["export"]["failed"])
+    assert result["checks"]["oracle_accepts_export"]
+    assert not result["checks"]["recorded_verdict_matches_file"]      # the case records the first clause as failed
+
+
+def test_a_print_attributed_to_another_object_is_refused(tmp_path):
+    # whole in itself and in place; only the name it prints belongs to no object of the saved project
+    result = refused(tmp_path, ["printed_objects_are_saved_objects"], gcode=export._renamed(plate_gcode()))
+    assert result["checks"]["oracle_accepts_export"]
+
+
+def test_the_footprint_reading_is_live_and_an_edited_or_older_record_is_told_apart(tmp_path):
+    folder, prefix = write_run(tmp_path)
+    readings = export._read(folder, prefix)[1]["oracle_footprint"]
+    assert readings["checks"] and all(readings["checks"].values())
+    assert readings["max_excursion_mm"]["model"] <= readings["allowances_mm"]["model"] == 1.0
+    # the record's footprint is held against the file's
+    refused(tmp_path, ["recorded_footprint_matches_file"], record=lambda default: dict(
+        default, footprint=dict(default["footprint"], max_excursion_mm={"model": 9.0})))
+    # a run from before the case kept the footprint has no such entry: that alone is no refusal
+    older = write_run(tmp_path, record=lambda default: {key: value for key, value in default.items()
+                                                       if key != "footprint"})
+    assert all(value is True for value in export.replay(*older)["checks"].values())
+    # the formal runs were recorded by an earlier oracle under the plain file name: it had no plate
+    # keys yet, and what it did hold comes out the same from the file
+    earlier = lambda default: dict(default, footprint={key: value for key, value in default["footprint"].items()  # noqa: E731
+                                                       if key not in ("plate", "plate_count")})
+    place = write_run(tmp_path, record=earlier)
+    held = json.loads((place[0] / f"{PREFIX}-analysis.json").read_text("utf-8"))["footprint"]
+    assert held["file_name"] == "plate.gcode" and "plate" not in held and "plate_count" not in held
+    assert all(value is True for value in export.replay(*place)["checks"].values())
+    # a record that shares nothing with the reading, or whose checks differ, agrees to nothing
+    refused(tmp_path, ["recorded_footprint_matches_file"], record=lambda default: dict(default, footprint={}))
+    refused(tmp_path, ["recorded_footprint_matches_file"], record=lambda default: dict(
+        default, footprint=dict(default["footprint"], checks=dict(
+            default["footprint"]["checks"], model_on_objects=False))))
+    # a flattering record over a print that misses the object: the footprint is what gives the lie
+    flattering = lambda default: dict(  # noqa: E731
+        default, results={clause: "PASS" for clause in export.CLAUSES},
+        expectation_gaps={clause: [] for clause in export.CLAUSES})
+    refused(tmp_path, ["recorded_verdict_matches_file", "oracle_locates_the_extrusion_on_the_objects",
+                       "extrusion_lies_on_the_objects"],
+            gcode=export._shifted(plate_gcode(), 3.0, 0.0), record=flattering)
 
 
 def test_a_project_that_is_not_the_fixture_is_refused(tmp_path):
@@ -267,7 +323,7 @@ def test_a_project_that_is_not_the_fixture_is_refused(tmp_path):
     raised = refused(tmp_path, ["saved_project_is_the_fixture"], project=project_3mf(transform="1 0 0 0 1 0 0 0 1 0 0 5"))
     assert raised["checks"]["extrusion_lies_on_the_objects"]      # the footprint is still printed
     refused(tmp_path, ["saved_project_is_the_fixture", "config_matches_sliced_project"],
-            project=project_3mf(settings=dict(SETTINGS, layer_height="0.3")))
+            project=project_3mf(settings=dict(SETTINGS, **BED, layer_height="0.3")))
 
 
 def test_a_record_that_claims_more_than_the_file_shows_is_refused(tmp_path):
@@ -439,8 +495,6 @@ from plate_reserve_oracle import verify_f3d_image
 from tools import replay_merged_stl as merged
 
 MERGE_PREFIX = "be234567-run1"
-BED = {"printable_area": ["0.5x1", "270.5x1", "270.5x271", "0.5x271"], "printable_height": "270.05",
-       "bed_exclude_area": ["0x0"]}
 VERSION_LOG = b"F3D 4.0.1\r\n\r\nF3D - A fast and minimalist 3D viewer\r\nVersion: 4.0.1.\r\n"
 BROKEN = b"not an STL mesh\n"
 # where Arrange leaves the two: the cube's low corner and the ball's centre, a plate's width apart in Y

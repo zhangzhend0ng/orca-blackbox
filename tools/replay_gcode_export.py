@@ -1,11 +1,15 @@
 """Recheck Feishu #236's exported G-code from a verified harvest.
 
 The manifest's byte count and SHA-256 are checked for every artifact first.
-The G-code is then read twice, by tests/export_io_oracle.py and by the
-independent reader in tests/file_io_replay_support.py, and tied to the project
-that was sliced and to the standard cube fixture. Last, each counterexample
-of the row is stood in for a harvested part on a temporary copy of the run
-and must be refused.
+The G-code is then read three times: by tests/export_io_oracle.py, by the
+same oracle's footprint reading against the project that was sliced, and by
+the independent reader in tests/file_io_replay_support.py. The last ties the
+file to the run: its configuration must equal the sliced project's settings,
+its layer schedule must fit the object's height, its extrusion must lie over
+the object, and the saved project must be the standard cube fixture by
+content. What analysis.json records may not outrun those readings. Last, each
+counterexample of the row is stood in for a harvested part on a temporary
+copy of the run and must be refused.
 
     python tools/replay_case_evidence.py <prefix>-receipt.json
 """
@@ -20,9 +24,9 @@ from tools.replay_evidence_files import verified_part
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
-from export_io_oracle import gcode_checks, gcode_export_facts, gcode_expectation_gaps
-from file_io_replay_support import LAYER, MARKS, fan_off, flattering, gcode, head, heat_off, heat_on, manifest
-from file_io_replay_support import moved_project, png, project, refused, screenshots
+from export_io_oracle import gcode_checks, gcode_export_facts, gcode_expectation_gaps, gcode_footprint
+from file_io_replay_support import LAYER, MARKS, PRINTED, as_recorded, fan_off, flattering, gcode, head, heat_off, heat_on
+from file_io_replay_support import manifest, moved_project, png, project, refused, screenshots
 
 CASE = 236
 FIXTURE = ROOT / "fixtures" / "feishu_std_cube.3mf"
@@ -44,7 +48,8 @@ STRUCTURE = ("blocks_complete_and_ordered", "generated_by_snapmaker_orca", "laye
 TIES = ("printed_objects_are_saved_objects", "extrusion_lies_on_the_objects", "layer_schedule_matches_object_height",
         "config_matches_sliced_project", "saved_project_is_the_fixture")
 CLAIMS = ("recorded_hashes_match_file", "recorded_verdict_matches_file", "recorded_case_and_fixture",
-          "oracle_accepts_export")
+          "oracle_accepts_export", "oracle_locates_the_extrusion_on_the_objects",
+          "recorded_footprint_matches_file")
 POSITIVE = ("gcode_artifact_is_dot_gcode", "manifest_sizes_and_sha256_match", *STRUCTURE, *TIES, *CLAIMS,
             "screenshots_are_pictures", "dialog_picture_matches_record")
 
@@ -151,13 +156,34 @@ def _shape(state):
     return sorted((item["name"], item["triangles"]) for item in state["objects"])
 
 
-def _claims(analysis, name, raw, digest, facts):
+def _footprint(path, name, project):
+    """The oracle's reading of where the G-code deposits material, read under the name the case gave
+    the file (a harvest keeps it under the run's prefix), and kept as the case keeps it when the
+    oracle cannot read it."""
+    try:
+        reading = gcode_footprint(path, project)
+    except (ValueError, OSError, KeyError, TypeError) as exc:
+        return {"error": f"{type(exc).__name__}: {exc}", "checks": {"footprint_unreadable": False}}
+    reading["file_name"] = name
+    return reading
+
+
+def _agrees(recorded, again):
+    """Whether what the record holds of the footprint comes out the same from the files, key for key
+    where both have the key: the oracle may have learned a key since the run, but nothing the record
+    holds may differ from the file. A record that shares no key with the reading agrees to nothing."""
+    again = as_recorded(again)
+    shared = sorted(set(recorded) & set(again)) if isinstance(recorded, dict) else []
+    return bool(shared) and all(recorded[key] == again[key] for key in shared)
+
+
+def _claims(analysis, name, raw, digest, facts, footprint):
     """What the GUI recorded, held against the files: a recorded verdict cannot outrun the readings."""
     export, recorded = analysis.get("export"), analysis.get("gcode")
     results, gaps = analysis.get("results"), analysis.get("expectation_gaps")
     known = all(isinstance(part, dict) for part in (export, recorded, results, gaps))
     if known:
-        recomputed = gcode_expectation_gaps(facts, export.get("saved_extension"))
+        recomputed = gcode_expectation_gaps(facts, export.get("saved_extension"), footprint)
         verdict = (all(results.get(clause) == "PASS" for clause in CLAUSES) and gaps == recomputed
                    and not any(recomputed.values()))
     else:
@@ -170,7 +196,12 @@ def _claims(analysis, name, raw, digest, facts):
         "recorded_verdict_matches_file": verdict,
         "recorded_case_and_fixture": analysis.get("case") == CASE and analysis.get("fixture") == {
             "name": FIXTURE.name, "bytes": len(fixture), "sha256": sha256(fixture).hexdigest()},
+        # the oracle's own reading of the file, of its layers and of where it prints
         "oracle_accepts_export": all(gcode_checks(facts).values()),
+        "oracle_locates_the_extrusion_on_the_objects": bool(footprint["checks"])
+        and all(footprint["checks"].values()),
+        # a record from before the case kept the footprint has no such entry to hold against it
+        "recorded_footprint_matches_file": "footprint" not in analysis or _agrees(analysis["footprint"], footprint),
     }
 
 
@@ -201,9 +232,10 @@ def _read(directory, prefix):
         raise ValueError("analysis.json: expected an object")
     saved, fixture, plate = project(raw["before.3mf"]), project(_fixture()), gcode(raw[name])
     facts, digest = gcode_export_facts(paths[name]), sha256(raw[name]).hexdigest()
+    footprint = _footprint(paths[name], name, paths["before.3mf"])
     checks = {"gcode_artifact_is_dot_gcode": name.endswith(".gcode"), "manifest_sizes_and_sha256_match": True,
-              **_structure(plate), **_ties(plate, saved, fixture), **_claims(analysis, name, raw[name], digest, facts),
-              **_pictures(raw, analysis)}
+              **_structure(plate), **_ties(plate, saved, fixture),
+              **_claims(analysis, name, raw[name], digest, facts, footprint), **_pictures(raw, analysis)}
     report = {"exported": name, "bytes": len(raw[name]), "sha256": digest, "generator": plate["generator"],
               "application": saved["application"], "layers": plate["layer_count"], "z_first": plate["z"][:1],
               "z_last": plate["z"][-1:], "declared": plate["declared"], "object_names": plate["object_names"],
@@ -212,6 +244,7 @@ def _read(directory, prefix):
               "end_evidence": [code for code in plate["after_last_extrusion"] if fan_off(code) or heat_off(code) or head(code) == "PRINT_END"][:4],
               "oracle": {key: facts[key] for key in ("layer_count", "layer_marker", "z_first", "z_last", "blocks",
                                                      "declared_layer_counts", "config_lines")},
+              "oracle_footprint": {key: footprint.get(key) for key in ("max_excursion_mm", "allowances_mm", "checks")},
               "failed": [key for key in POSITIVE if not checks[key]]}
     return checks, report, raw, name
 
@@ -280,6 +313,15 @@ def _shifted(raw, dx=40.0, dy=0.0):
     return _join(out)
 
 
+def _renamed(raw):
+    """The same print attributed to an object the saved project does not hold."""
+    out = []
+    for line in raw.decode("utf-8").split("\n"):
+        found = PRINTED.fullmatch(line.strip())
+        out.append(line.replace(found.group(1), "another object", 1) if found else line)
+    return _join(out)
+
+
 def _controls(directory, prefix, raw, name, plate):
     """Each counterexample of the row, stood in on a copy whose manifest agrees with it."""
     lines, count = raw[name].decode("utf-8").split("\n"), plate["layer_count"]
@@ -294,6 +336,8 @@ def _controls(directory, prefix, raw, name, plate):
         "foreign_gcode_rejected": _shifted(raw[name]),
         # a short move along Y only leaves the footprint test: every count, block and total still holds
         "print_moved_off_the_object_rejected": _shifted(raw[name], dx=0.0, dy=3.0),
+        # the file is whole and prints where the object lies; only the name it prints is not a saved object's
+        "another_object_printed_rejected": _renamed(raw[name]),
     }
     checks = {label: refused(_read, POSITIVE, directory, prefix, {name: replacement})
               for label, replacement in stand_ins.items()}
