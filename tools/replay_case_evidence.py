@@ -29,11 +29,9 @@ ADAPTERS = {
     "m7x_244_add_model": replay_plate_import.replay,
     "m7x_245_clone_fill": replay_plate_layout.replay_clone,
     "m7x_247_split_shells": replay_plate_layout.replay_split,
-    "m7x_247_split_shells": replay_plate_layout.replay_split,
     "m7x_248_delete_object": replay_delete_object.replay,
     "m7x_249_add_part": replay_part_attachment.replay,
     "m7x_250_negative_part": replay_negative_part.replay,
-    "m7x_252_export_stl_viewer": replay_plate_layout.replay_stl_viewer,
     "m7x_252_export_stl_viewer": replay_plate_layout.replay_stl_viewer,
     "m7x_254_sphere_layer_pair": replay_sphere_layer_pair.replay,
 }

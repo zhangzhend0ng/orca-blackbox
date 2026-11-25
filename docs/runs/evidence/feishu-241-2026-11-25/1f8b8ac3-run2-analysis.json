@@ -1,0 +1,55 @@
+{
+  "case": 241,
+  "results": {
+    "initial fixture geometry preserved": "PASS",
+    "same_two_objects": "PASS",
+    "each_orientation_changed": "PASS",
+    "each_contact_area_increased": "PASS",
+    "each_grounded_and_in_printable_volume": "PASS"
+  },
+  "phase_seconds": {
+    "baseline": 57.5,
+    "auto_rotate_and_save": 19.469,
+    "total": 78.485
+  },
+  "geometry": {
+    "checks": {
+      "same_two_objects": true,
+      "each_orientation_changed": true,
+      "each_contact_area_increased": true,
+      "each_grounded_and_in_printable_volume": true
+    },
+    "objects": {
+      "Alpha": {
+        "before_plate_normal_in_model_axes": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "after_plate_normal_in_model_axes": [
+          1.0,
+          0.0,
+          2.22044605e-16
+        ],
+        "tilt_deg": 89.99999999999999,
+        "before_contact_mm2": 263.17499950499996,
+        "after_contact_mm2": 1815.0
+      },
+      "Bravo": {
+        "before_plate_normal_in_model_axes": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "after_plate_normal_in_model_axes": [
+          1.0,
+          0.0,
+          2.22044605e-16
+        ],
+        "tilt_deg": 89.99999999999999,
+        "before_contact_mm2": 424.12500157500006,
+        "after_contact_mm2": 2418.0
+      }
+    }
+  }
+}

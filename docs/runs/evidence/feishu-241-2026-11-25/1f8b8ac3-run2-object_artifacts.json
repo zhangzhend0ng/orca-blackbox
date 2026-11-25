@@ -1,0 +1,32 @@
+﻿[
+    {
+        "part":  "after.3mf",
+        "bytes":  35928,
+        "sha256":  "D88FF90A743E007AAE9288902F53132DC0615C23672F01BBA52540EA5B04B16A"
+    },
+    {
+        "part":  "after.png",
+        "bytes":  286801,
+        "sha256":  "2D34EA9652C0CF0938E7056E092A492106B9AF180FD89CE4ABC51DF3D234C994"
+    },
+    {
+        "part":  "analysis.json",
+        "bytes":  1375,
+        "sha256":  "FCD0C5997A938E14076E0722926DAC965D3E0FBD0873A4C0B0277E887F55E35A"
+    },
+    {
+        "part":  "before.3mf",
+        "bytes":  34885,
+        "sha256":  "743F7B90107BD672EE789E1EF27DC7A07E1F294EAAFD081D2DA985C57796693F"
+    },
+    {
+        "part":  "before.png",
+        "bytes":  292086,
+        "sha256":  "DB99C9B75B092FE2A4E763640A7F738BDA8378F55CAC3ECA3C2D483D5B4FC03E"
+    },
+    {
+        "part":  "fixture.3mf",
+        "bytes":  32798,
+        "sha256":  "4BBC90401FEAB08D1896EB3E64D8B52F222A426E6FDD82C169CD90BEB956944D"
+    }
+]

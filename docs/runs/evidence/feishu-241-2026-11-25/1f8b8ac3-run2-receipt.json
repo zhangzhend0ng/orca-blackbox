@@ -1,0 +1,13 @@
+﻿{
+    "commit":  "1f8b8ac35e4fec4bd513e415cd130461cdaa7432",
+    "case":  "m7x_241_orient",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "summary":  "SUMMARY: PASS=1 FAIL=0",
+    "dispatched_at":  "2026-11-25T21:28:43.9989794+08:00",
+    "scenario_completed_at":  "2026-11-25T21:30:20.8516024+08:00",
+    "suite_completed_at":  "2026-11-25T21:30:21.0251425+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_241_orient.log",
+    "log_sha256":  "870EE09514EFD209D4AD2D71A5D65640AC5C2D0E76E2ADCB7722FBC48DD7656E"
+}

@@ -1,0 +1,37 @@
+﻿[m7x241] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\241\run-9y6g6vnu
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\241\run-9y6g6vnu\profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\241\run-9y6g6vnu\profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\241\run-9y6g6vnu\fixture.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x59d0826, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x559067e, WM_CLOSE)
+[launcher] pid=10204 hwnd=0x56d09a4 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.74%, gate 0.10%)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x2df0594 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[model context] desktop hit-test did not resolve to canvas at (1437,505)
+[model context] message right-click @(1437,505) on 0x5331008
+[model context] menu hwnd=0x47a0458: [(0, 'Select All', 0), (1, 'Delete All', 0), (2, 'Arrange', 0), (3, 'Reload All', 0), (4, 'Auto Rotate', 0), (5, 'Delete Plate', 1), (6, '', 2051), (7, 'Add Primitive', 2576), (8, 'Add Handy models', 1808), (9, 'Add Models', 0), (10, 'Lock', 0), (11, 'Edit Plate Name', 0)]
+[m7x241] native highlighted row 4 in menu 0x4315032b
+[m7x241] activated context menu item 'Auto Rotate'
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x2df0594 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x241] analysis {"case": 241, "results": {"initial fixture geometry preserved": "PASS", "same_two_objects": "PASS", "each_orientation_changed": "PASS", "each_contact_area_increased": "PASS", "each_grounded_and_in_printable_volume": "PASS"}, "phase_seconds": {"baseline": 57.172, "auto_rotate_and_save": 19.546, "total": 78.266}, "geometry": {"checks": {"same_two_objects": true, "each_orientation_changed": true, "each_contact_area_increased": true, "each_grounded_and_in_printable_volume": true}, "objects": {"Alpha": {"before_plate_normal_in_model_axes": [0.0, 0.0, 1.0], "after_plate_normal_in_model_axes": [1.0, 0.0, 2.22044605e-16], "tilt_deg": 89.99999999999999, "before_contact_mm2": 263.17499950499996, "after_contact_mm2": 1815.0}, "Bravo": {"before_plate_normal_in_model_axes": [0.0, 0.0, 1.0], "after_plate_normal_in_model_axes": [1.0, 0.0, 2.22044605e-16], "tilt_deg": 89.99999999999999, "before_contact_mm2": 424.12500157500006, "after_contact_mm2": 2418.0}}}}
+
+[m7] === verdict ===
+  initial fixture geometry preserved: PASS
+  same_two_objects: PASS
+  each_orientation_changed: PASS
+  each_contact_area_increased: PASS
+  each_grounded_and_in_printable_volume: PASS
+[m7] GREEN
