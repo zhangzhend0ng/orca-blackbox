@@ -1,0 +1,19 @@
+{
+  "case": 247,
+  "results": {
+    "unfinished checks": "FAIL (ValueError: split did not preserve each original closed shell at its plate position)"
+  },
+  "shell_centers_px": {
+    "before": [
+      [
+        1172,
+        514
+      ],
+      [
+        1319,
+        521
+      ]
+    ]
+  },
+  "wall_seconds": 70.562
+}

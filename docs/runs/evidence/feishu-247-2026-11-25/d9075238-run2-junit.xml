@@ -1,0 +1,41 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T21:45:58" tests="1" failures="1" errors="0">
+    <testcase name="m7x_247_split_shells" classname="blackbox.m7x_247_split" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_247_split_shells.log" />
+        <property name="dim:unfinished checks" value="FAIL (ValueError: split did not preserve each original closed shell at its plate position)" />
+      </properties>
+      <failure type="RED" message="unfinished checks: FAIL (ValueError: split did not preserve each original closed shell at its plate position)">python.exe : Traceback (most recent call last):
+At C:\coil\run_suite.ps1:35 char:3
++   &amp; "C:\Python311\python.exe" (Case-File $c) 2&gt;&amp;1 | Out-File -FilePat ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\plate_reserve_case.py", line 35, in case_main
+    steps(session, work, analysis, args)
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\m7x_247_split_shells.py", line 63, in steps
+    analysis['split_geometry'] = verify_split(before, split)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\coil\orca-blackbox-v3-r1\tests\plate_reserve_oracle.py", line 217, in verify_split
+    raise ValueError('split did not preserve each original closed shell at its plate position')
+ValueError: split did not preserve each original closed shell at its plate position
+[model context] desktop hit-test did not resolve to canvas at (1172,528)
+[model context] message right-click @(1172,528) on 0x5870662
+[model context] menu hwnd=0x5c103c2: [(0, 'Clone\tCtrl+K', 0), (1, 'Simplify Model', 0), (2, '', 2051), (3, 'Mesh boolean', 0), (4, 'Center', 0), (5, 'Drop', 1), (6, 'Split', 528), (7, 'Mirror', 784), (8, 'Delete\tDel', 0), (9, '', 2051), (10, 'Add Part', 3088), (11, 'Add Negative Part', 3088), (12, 'Add Modifier', 3088), (13, 'Add Support Blocker', 2064), (14, 'Add Support Enforcer', 2064), (15, 'Height Range Modifier', 0), (16, '', 2051), (17, 'Printable', 8), (18, 'Edit Process Settings', 0), (19, 'Edit in Parameter Table', 0), (20, '', 2051), (21, 'Reload from disk', 0), (22, 'Replace with STL', 0), (23, 'Export as one STL...', 0), (24, 'Convert from Inches', 0), (25, 'Convert from Meters', 0), (26, 'Change Filament', 1808)]
+[m7x247] native highlighted row 6 in menu 0x133502ed
+[m7x247] visible Split submenu hwnd=0x5940b82 hmenu=0x4ab11a9: [(0, 'To Objects', 128), (1, 'To Parts', 0)]
+[m7x247] native highlighted row 0 in menu 0x4ab11a9
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5580c0e did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+
+[m7] === verdict ===
+  unfinished checks: FAIL (ValueError: split did not preserve each original closed shell at its plate position)
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

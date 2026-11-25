@@ -11,7 +11,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tests'))
 
-from plate_reserve_oracle import (MAIN, SETTINGS, _CORE, _connected_shells,  # noqa: E402
+from plate_reserve_oracle import (MAIN, SETTINGS, _CORE, _connected_shells, _max_facet_deviation,  # noqa: E402
                                   create_delete_plate_fixture, create_split_fixture,
                                   read_project, verify_delete_plate, verify_f3d_image,
                                   verify_split, verify_split_selection, verify_stl)
@@ -66,6 +66,21 @@ def test_split_rejects_two_shells_still_in_one_object(joined_shells):
     project, _ = joined_shells
     with pytest.raises(ValueError, match='two independently stored'):
         verify_split(project, project)
+
+
+def test_split_facet_comparison_accepts_serialization_roundoff_but_rejects_moved_geometry(joined_shells):
+    _, model = joined_shells
+    shell = _connected_shells(model)[1]
+
+    def translated(delta):
+        return [tuple((x + delta, y, z) for x, y, z in reversed(face))
+                for face in reversed(shell)]
+
+    assert _max_facet_deviation(shell, translated(0.00001)) == pytest.approx(0.00001)
+    with pytest.raises(ValueError, match='matching facet within'):
+        _max_facet_deviation(shell, translated(0.00006))
+    with pytest.raises(ValueError, match='facet counts differ'):
+        _max_facet_deviation(shell, shell[:-1])
 
 
 def test_split_color_check_rejects_changes_to_both_objects_on_first_selection(tmp_path):

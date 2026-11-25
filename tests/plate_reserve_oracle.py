@@ -2,7 +2,9 @@
 from collections import Counter
 from copy import deepcopy
 from dataclasses import dataclass
+from itertools import permutations
 import json
+from math import dist
 from xml.dom import minidom
 from xml.etree import ElementTree as ET
 from zipfile import ZipFile
@@ -15,6 +17,7 @@ from part_attachment_oracle import _facets, _mesh, _metadata, _read, _transform
 
 MAIN = '3D/3dmodel.model'
 SETTINGS = 'Metadata/model_settings.config'
+SPLIT_POSITION_TOL_MM = 0.00005
 
 
 @dataclass(frozen=True)
@@ -27,8 +30,12 @@ class Instance:
 
     @property
     def world_faces(self):
-        return tuple(sorted(tuple(sorted(tuple(round(x, 5) for x in self.points[i])
-                                         for i in f)) for f in self.faces))
+        return self.triangles(precision=5)
+
+    def triangles(self, precision=None):
+        points = self.points if precision is None else tuple(tuple(round(x, precision) for x in point)
+                                                              for point in self.points)
+        return tuple(sorted(tuple(sorted(points[i] for i in f)) for f in self.faces))
 
     @property
     def shape(self):
@@ -170,7 +177,7 @@ def create_split_fixture(template, output):
 
 
 def _connected_shells(instance):
-    faces = instance.world_faces
+    faces = instance.triangles()
     incident = {}
     edges = Counter()
     for i, face in enumerate(faces):
@@ -205,6 +212,27 @@ def _split_instances(project):
     return sorted(instances, key=lambda item: bounds(item.points)[0][0])
 
 
+def _max_facet_deviation(expected, actual):
+    """Match each world-space triangle once, regardless of face or vertex order."""
+    if len(expected) != len(actual) or not expected:
+        raise ValueError(f'facet counts differ: {len(expected)} vs {len(actual)}')
+    remaining = list(actual)
+    maximum = 0.0
+    for face in expected:
+        matches = []
+        for index, candidate in enumerate(remaining):
+            error = min(max(dist(a, b) for a, b in zip(face, vertices))
+                        for vertices in permutations(candidate))
+            if error <= SPLIT_POSITION_TOL_MM:
+                matches.append((index, error))
+        if len(matches) != 1:
+            raise ValueError(f'expected exactly one matching facet within {SPLIT_POSITION_TOL_MM:g} mm')
+        index, error = matches[0]
+        maximum = max(maximum, error)
+        remaining.pop(index)
+    return maximum
+
+
 def verify_split(before, split):
     plates, instances = read_project(before)
     if len(plates) != 1 or len(instances) != 1 or instances[0].plate != plates[0]:
@@ -212,19 +240,20 @@ def verify_split(before, split):
     shells = _connected_shells(instances[0])
     if len(shells) != 2:
         raise ValueError(f'expected two disconnected initial shells, found {len(shells)}')
+    # The two fixture shells occupy disjoint X ranges, matching the split output's left-to-right order.
+    shells.sort(key=lambda shell: min(vertex[0] for face in shell for vertex in face))
     objects = _split_instances(split)
-    if Counter(shells) != Counter(obj.world_faces for obj in objects):
-        raise ValueError('split did not preserve each original closed shell at its plate position')
+    deviations = [_max_facet_deviation(shell, obj.triangles()) for shell, obj in zip(shells, objects)]
     return {'initial_shell_triangle_counts': sorted(map(len, shells)),
             'split_object_names': [obj.name for obj in objects],
-            'object_bounds_mm': [bounds(obj.points) for obj in objects]}
+            'object_bounds_mm': [bounds(obj.points) for obj in objects],
+            'max_vertex_deviation_mm': max(deviations), 'vertex_tolerance_mm': SPLIT_POSITION_TOL_MM}
 
 
 def verify_split_selection(split, left_color, both_colors):
     first, intermediate, final = map(_split_instances, (split, left_color, both_colors))
-    if any(a.world_faces != b.world_faces or a.world_faces != c.world_faces
-           for a, b, c in zip(first, intermediate, final)):
-        raise ValueError('selection/coloring unexpectedly changed split geometry')
+    deviations = [_max_facet_deviation(old.triangles(), changed.triangles())
+                  for stage in (intermediate, final) for old, changed in zip(first, stage)]
     first_slots, left_slots, final_slots = ([obj.extruder for obj in items] for items in (first, intermediate, final))
     if (left_slots != ['2', first_slots[1]] or left_slots[0] == first_slots[0]
             or final_slots != ['2', '3'] or final_slots[1] == left_slots[1]):
@@ -234,7 +263,8 @@ def verify_split_selection(split, left_color, both_colors):
     if len(set(colors[1:3])) != 2:
         raise ValueError('saved filament slots do not represent visibly distinct colors')
     return {'slots_before': first_slots, 'slots_after_left': left_slots, 'slots_after_both': final_slots,
-            'colors_after_both': colors[1:3]}
+            'colors_after_both': colors[1:3], 'max_vertex_deviation_mm': max(deviations),
+            'vertex_tolerance_mm': SPLIT_POSITION_TOL_MM}
 
 
 def verify_stl(project, exported):

@@ -1,0 +1,10 @@
+﻿{
+    "verdict_class":  "SHADOW",
+    "commit":  "74b49b23df4304e2b4822be7bab9484bc3be2f1e",
+    "case":  "m7x_245_clone_fill",
+    "host":  "DESKTOP-FA706G3",
+    "user":  "admin",
+    "version":  "2.4.0",
+    "binary_sha256":  "5C48644D7DA18B50636CEEEE4EF9FD2EAF6D4E8AC05BD88752F40E3717FC47BF",
+    "started_at":  "2026-11-25T21:40:52.1839809+08:00"
+}
