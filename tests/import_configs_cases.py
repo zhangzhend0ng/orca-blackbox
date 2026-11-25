@@ -86,7 +86,10 @@ def choose_configs(session, path, work, analysis):
     analysis['choosers'].append({'title': title, 'entered': entered, 'file': path.name, 'filters': filters,
                                  'ini_in_filter': any('.ini' in item.casefold() for box in filters for item in box['items'])})
     print(f'[m7x232] chooser {analysis["choosers"][-1]!r}', flush=True)
-    if 'profile' not in title.lower() or not filters[-1]['items']:
+    # The chooser carries an extra, empty combo box the second time it opens (guest run
+    # dev232d-67abded0), so the filter is looked for in any box, not in the last one.
+    offered = [item.casefold() for box in filters for item in box['items']]
+    if 'profile' not in title.lower() or not any('*.zip' in item for item in offered):
         raise ValueError(f'unexpected config chooser: {title!r} {filters}')
     if entered != str(path):
         raise ValueError(f'wrong chooser filename: {entered}')
