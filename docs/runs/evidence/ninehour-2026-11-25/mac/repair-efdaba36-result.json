@@ -1,0 +1,132 @@
+{
+  "run_id": "efdaba36fb6946e9883270e5ca0a4045",
+  "verdict": "SHADOW",
+  "candidate": "1125-wall-readback-crop",
+  "goal": "walls",
+  "test_kind": "walls_comparison",
+  "started_at": "2026-11-25T04:44:59.872958+00:00",
+  "slices": {
+    "baseline": {
+      "layer_height": "0.4",
+      "first_layer_height": "0.4",
+      "layer_count": 68,
+      "first_z": "0.4",
+      "last_z": "27.2",
+      "positive_xy_e_moves": 1907,
+      "object_tools": [
+        0
+      ],
+      "sha256": "810e433cf1a4b1e80a1651492a354425527a9e022f460b9085b62f6656e6eb85",
+      "artifact": "baseline.gcode",
+      "origin": "gui_plate_temporary"
+    },
+    "edited": {
+      "layer_height": "0.4",
+      "first_layer_height": "0.4",
+      "layer_count": 68,
+      "first_z": "0.4",
+      "last_z": "27.2",
+      "positive_xy_e_moves": 2154,
+      "object_tools": [
+        0
+      ],
+      "sha256": "d8e791aa3091819b9622c962a62209cfde277b65d941d1c1fccfda4d92814304",
+      "artifact": "edited.gcode",
+      "origin": "gui_plate_temporary"
+    }
+  },
+  "native_save_as": "NOT_TESTED",
+  "gui_gcode_export": "NOT_TESTED",
+  "guest": {
+    "ok": true,
+    "run_id": "efdaba36fb6946e9883270e5ca0a4045",
+    "console_uid": 501,
+    "test_uid": 502,
+    "source_before": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+    "phases": {
+      "baseline": {
+        "pid": 37459,
+        "window": "baseline",
+        "layers": [
+          "0.4",
+          "0.4"
+        ],
+        "wall": "2"
+      },
+      "edit": {
+        "pid": 38069,
+        "window": "wall-3-copy",
+        "layers": [
+          "0.4",
+          "0.4"
+        ],
+        "wall": "3"
+      },
+      "reopen": {
+        "pid": 38920,
+        "window": "wall-3-copy",
+        "layers": [
+          "0.4",
+          "0.4"
+        ],
+        "wall": "3"
+      }
+    },
+    "slice_receipts": {
+      "baseline": {
+        "phase": "baseline",
+        "pid": 37459,
+        "window_id": 65603,
+        "source": "open_process_plate",
+        "plate_file": ".37459.0.gcode",
+        "inode": 41732038,
+        "size": 167992,
+        "sha256": "810e433cf1a4b1e80a1651492a354425527a9e022f460b9085b62f6656e6eb85",
+        "project_sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+        "export_enabled_before": false,
+        "export_enabled_after": true
+      },
+      "edited": {
+        "phase": "reopen",
+        "pid": 38920,
+        "window_id": 65805,
+        "source": "open_process_plate",
+        "plate_file": ".38920.0.gcode",
+        "inode": 41738301,
+        "size": 185781,
+        "sha256": "d8e791aa3091819b9622c962a62209cfde277b65d941d1c1fccfda4d92814304",
+        "project_sha256": "a6834df8eb74cb681530a9c2013489d7432d2f9e074752db2ad69cabbb3b6f0f",
+        "export_enabled_before": false,
+        "export_enabled_after": true
+      }
+    },
+    "sut": {
+      "version": "2.4.1",
+      "build": "sha256:a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd",
+      "bundle_build": "",
+      "build_source": "executable_sha256",
+      "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+    },
+    "saved_sha256": "a6834df8eb74cb681530a9c2013489d7432d2f9e074752db2ad69cabbb3b6f0f",
+    "source_after": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+    "cleanup_verified": true
+  },
+  "project": {
+    "sha256": "a6834df8eb74cb681530a9c2013489d7432d2f9e074752db2ad69cabbb3b6f0f",
+    "layer_height": "0.4",
+    "initial_layer_print_height": "0.4",
+    "vertices": 8,
+    "triangles": 12,
+    "geometry_unchanged": true,
+    "wall_loops": "3",
+    "preserved_settings": "differential vs committed control: only wall_loops 2->3"
+  },
+  "wall_loops_gcode_echo": [
+    "3"
+  ],
+  "walls_xy_moves": {
+    "baseline": 1907,
+    "edited": 2154
+  },
+  "finished_at": "2026-11-25T04:49:49.897817+00:00"
+}

@@ -1,0 +1,77 @@
+{
+  "run_id": "c6f52879097d43b1836b20ff71401dee",
+  "verdict": "NON_GREEN",
+  "candidate": "1125-wall-readback-ax",
+  "goal": "walls",
+  "test_kind": "walls_comparison",
+  "started_at": "2026-11-25T04:37:17.037976+00:00",
+  "slices": {},
+  "native_save_as": "NOT_TESTED",
+  "gui_gcode_export": "NOT_TESTED",
+  "guest": {
+    "ok": false,
+    "failure_stage": "reopen.wall",
+    "run_id": "c6f52879097d43b1836b20ff71401dee",
+    "console_uid": 501,
+    "test_uid": 502,
+    "source_before": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+    "phases": {
+      "baseline": {
+        "pid": 34242,
+        "window": "baseline",
+        "layers": [
+          "0.4",
+          "0.4"
+        ],
+        "wall": "2"
+      },
+      "edit": {
+        "pid": 34913,
+        "window": "wall-3-copy",
+        "layers": [
+          "0.4",
+          "0.4"
+        ],
+        "wall": "3"
+      },
+      "reopen": {
+        "pid": 35653,
+        "window": "wall-3-copy",
+        "layers": [
+          "0.4",
+          "0.4"
+        ],
+        "wall": "2"
+      }
+    },
+    "slice_receipts": {
+      "baseline": {
+        "phase": "baseline",
+        "pid": 34242,
+        "window_id": 65299,
+        "source": "open_process_plate",
+        "plate_file": ".34242.0.gcode",
+        "inode": 41719232,
+        "size": 167992,
+        "sha256": "e1690d935927715d9bc5d09c25a0ed71f349452e6489110fb5b1b90a7685a557",
+        "project_sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+        "export_enabled_before": false,
+        "export_enabled_after": true
+      }
+    },
+    "sut": {
+      "version": "2.4.1",
+      "build": "sha256:a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd",
+      "bundle_build": "",
+      "build_source": "executable_sha256",
+      "executable_sha256": "a994ff90ca373871f72da103f25d17db0ae6c235c12c8331835521c460fffdcd"
+    },
+    "saved_sha256": "33eb0d90243ff7e153e8cdac31d0a2b77650026d469bb8be63f7ab2124020a5a",
+    "error": "Traceback (most recent call last):\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.GgiTR6Iv/project_copy.py\", line 483, in run_worker\n    worker(report)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.GgiTR6Iv/project_copy.py\", line 446, in worker\n    require(entry[\"wall\"] == \"3\", f\"Reopened Wall loops AXValue was {entry['wall']!r}, expected '3'\")\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.GgiTR6Iv/project_copy.py\", line 37, in require\n    raise RuntimeError(message)\nRuntimeError: Reopened Wall loops AXValue was '2', expected '3'\n",
+    "cleanup_verified": true,
+    "remote_evidence": "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.GgiTR6Iv"
+  },
+  "failure_stage": "reopen.wall",
+  "error": "Traceback (most recent call last):\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.GgiTR6Iv/project_copy.py\", line 483, in run_worker\n    worker(report)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.GgiTR6Iv/project_copy.py\", line 446, in worker\n    require(entry[\"wall\"] == \"3\", f\"Reopened Wall loops AXValue was {entry['wall']!r}, expected '3'\")\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.GgiTR6Iv/project_copy.py\", line 37, in require\n    raise RuntimeError(message)\nRuntimeError: Reopened Wall loops AXValue was '2', expected '3'\n",
+  "finished_at": "2026-11-25T04:42:33.738574+00:00"
+}

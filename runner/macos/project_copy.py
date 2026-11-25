@@ -2,7 +2,6 @@
 import base64
 import contextlib
 import ctypes
-import fcntl
 import hashlib
 import json
 import os
@@ -216,8 +215,9 @@ def screen_capture(tag):
     return None
 
 
-def screen_ocr(tag, crop=None):
-    png = screen_capture(tag)
+def screen_ocr(tag, crop=None, *, png=None):
+    if png is None:
+        png = screen_capture(tag)
     require(png is not None, f"Screen capture failed for {tag}")
     args = ["/usr/bin/swift", str(WORK / "ocr.swift"), str(png)]
     if crop:
@@ -239,8 +239,14 @@ def screen_ocr(tag, crop=None):
 def go_strength(desktop, pid, root, window, origin, title):
     # The y~767 page band (Quality/Strength/Support/...) is self-drawn: no AX
     # candidates (the 03f21d11 "No Strength tab candidate" blocker). OCR names it.
-    rows = screen_ocr("strength-tab", (360, 700, 460, 190))
+    png = screen_capture("strength-tab")
+    require(png is not None, "Screen capture failed for strength-tab")
+    rows = screen_ocr("strength-tab", (360, 700, 460, 190), png=png)
     band = [r for r in rows if r["text"].lower() == "strength" and 750 <= r["y"] <= 790]
+    if not band:
+        # Vision can group Quality and Strength into a single observation.
+        rows = screen_ocr("strength-tab", (440, 748, 71, 44), png=png)
+        band = [r for r in rows if r["text"].lower() == "strength" and 750 <= r["y"] <= 790]
     require(band, "Strength tab label not found by OCR")
     tab = band[0]
     desktop.click_point(pid, root, window, title, tab["x"] + tab["w"] / 2 - origin.x,
@@ -248,14 +254,15 @@ def go_strength(desktop, pid, root, window, origin, title):
     time.sleep(1.2)
 
 
-def ocr_wall_rows():
-    return screen_ocr("strength-tree", (360, 700, 460, 190))
+def wall_row(rows):
+    labels = [row for row in rows if row["text"].casefold() == "wall loops"]
+    return labels[0] if len(labels) == 1 else None
 
 
 def ocr_wall_loops():
     """Return (label_row, number_token) for the Wall loops row, else (None, [])."""
-    rows = ocr_wall_rows()
-    label = next((r for r in rows if "wall loops" in r["text"].lower()), None)
+    rows = screen_ocr("strength-tree", (360, 700, 460, 190))
+    label = wall_row(rows)
     if label is None:
         return None, []
     same_line = [r for r in rows if abs(r["y"] - label["y"]) <= 9
@@ -286,21 +293,41 @@ def materialized_wall_field(desktop, window):
     return None
 
 
+def open_wall_field(desktop, pid, root, window, title, cell_x, row_y):
+    desktop.click_point(pid, root, window, title, cell_x, row_y)
+    return wait_for(lambda: materialized_wall_field(desktop, window),
+                    "Wall loops editor did not materialize after the cell click")
+
+
+def reopen_wall_value(origin):
+    # The modified row shows a reset glyph left of the spinner, and Vision
+    # joins those icons and the number ("5÷3"). Read just the numeral from
+    # the same frame. A click on the spinner would change the reopened value.
+    tag = "reopen-strength"
+    png = screen_capture(tag)
+    require(png is not None, f"Screen capture failed for {tag}")
+    label = wall_row(screen_ocr(tag, (origin.x, origin.y + 620, 460, 190), png=png))
+    if label is None:
+        return None
+    crop = (int(origin.x + 264), int(label["y"] - 5), 36, 25)
+    values = [row["text"] for row in screen_ocr(tag, crop, png=png)]
+    print(f"Reopened Wall loops OCR crop={crop}: {values!r}", flush=True)
+    return values[0] if len(values) == 1 and re.fullmatch(r"[0-9]+", values[0]) else None
+
+
 def edit_walls_and_save(desktop, pid, root, window, origin, title):
     import accessibility as ax
 
     def read_two():
         label, numbered = ocr_wall_loops()
-        return numbered if (label is not None and numbered
-                            and digits_of(numbered[0]["text"]) == "2") else None
+        return label if (label is not None and numbered
+                         and digits_of(numbered[0]["text"]) == "2") else None
 
-    numbered = wait_for(read_two, "Wall loops row did not OCR-read 2 before the edit", 30)
-    token = numbered[0]
-    desktop.click_point(pid, root, window, title,
-                        token["x"] + min(12, token["w"] / 2) - origin.x,
-                        token["y"] + token["h"] / 2 - origin.y)
-    field = wait_for(lambda: materialized_wall_field(desktop, window),
-                     "Wall loops editor did not materialize after the cell click")
+    label = wait_for(read_two, "Wall loops row did not OCR-read 2 before the edit", 30)
+    row_y = label["y"] + label["h"] / 2 - origin.y
+    # The edit box spans x=246..366 in this window; its left edge contains
+    # the spinner. Click inside the text area and confirm the exact AX field.
+    field = open_wall_field(desktop, pid, root, window, title, 300, row_y)
     desktop.act(pid, field, "AXFocused", ax.true_value)
     desktop.act(pid, field, "AXValue", desktop.string("3"))
     desktop.act(pid, field, "AXConfirm")
@@ -419,15 +446,13 @@ def worker(report):
                 if phase == "edit":
                     report["failure_stage"] = "edit.wall_save"
                     entry["wall"] = edit_walls_and_save(desktop, pid, root, window, origin, title)
+                elif phase == "reopen":
+                    entry["wall"] = wait_for(lambda: reopen_wall_value(origin),
+                                             "Reopened Wall loops value was not legible", 30)
+                    require(entry["wall"] == "3", f"Reopened Wall loops OCR value was {entry['wall']!r}, expected '3'")
                 else:
-                    wanted = "2" if phase == "baseline" else "3"
-
-                    def wanted_read():
-                        digits = ocr_wall_read()
-                        return digits if digits == wanted else None
-
-                    entry["wall"] = wait_for(wanted_read,
-                                             f"Strength wall-loops OCR value mismatch in {phase}", 30)
+                    entry["wall"] = wait_for(ocr_wall_read, "Strength Wall loops value was not visible", 30)
+                    require(entry["wall"] == "2", f"Baseline Wall loops OCR value was {entry['wall']!r}, expected '2'")
             elif phase == "edit":
                 if GOAL == "layer":
                     report["failure_stage"] = "edit.save"
@@ -454,6 +479,8 @@ def worker(report):
 
 
 def run_worker():
+    import fcntl
+
     report = {"ok": False, "failure_stage": "preflight", "run_id": (WORK / "run-id").read_text().strip()}
     try:
         # One case at a time per test login; SSH disconnects do not release the worker's lock.
