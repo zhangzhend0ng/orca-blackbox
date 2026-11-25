@@ -163,6 +163,31 @@ def slice_until_exportable(session, work, stage, results, analysis, timeout_s=EX
         time.sleep(1.5)
 
 
+def settled_frame(session, timeout_s=40.0, agree=3, pause_s=0.7, still=0.25):
+    """The first frame of the application that has stopped changing, and how long it took.
+
+    The target preview of the 2026-11-26 probe (run probe254b) was taken while the sphere was
+    still being drawn (half transparent, a "Slice complete" notice beside it); the two previews
+    then overlapped on 67.7% although the two G-code files were line-identical. A frame counts
+    as settled when `agree` captures `pause_s` apart differ from the one before by a mean of
+    less than `still` (0-255) and hold some chromatic content. The last frame is returned also
+    when the time is up, with the readings kept so that the wait can be told apart from a still."""
+    deadline = time.monotonic() + timeout_s
+    started = deadline - timeout_s
+    previous, same, fractions = None, 0, []
+    while True:
+        image = anchors.capture_bgr(session)
+        fractions.append(round(anchors.has_colored_content(image), 5))
+        if previous is not None and image.shape == previous.shape:
+            change = float(np.abs(image.astype(np.int16) - previous.astype(np.int16)).mean())
+            same = same + 1 if change < still else 0
+        previous = image
+        if (same >= agree - 1 and fractions[-1] > 0) or time.monotonic() >= deadline:
+            return image, {"seconds": round(time.monotonic() - started, 1), "frames": len(fractions),
+                           "same_in_a_row": same, "colored_fractions": fractions[-6:]}
+        time.sleep(pause_s)
+
+
 def slice_project(args, work, project, stage, results, analysis):
     private_temp = work / (stage + "-temp")
     private_temp.mkdir()
@@ -177,9 +202,10 @@ def slice_project(args, work, project, stage, results, analysis):
         if score < anchors.MATCH_THRESHOLD:
             ok, score = anchors.click_and_verify(session, "tab_preview_inactive", "tab_preview_active")
             require(ok, f"{stage} Preview did not open")
-        image = anchors.capture_bgr(session)
+        image, settled = settled_frame(session)
         require(cv2.imwrite(str(work / (stage + "-preview.png")), image), "Preview capture failed")
-        analysis[stage + "_preview"] = {"score": score, "colored_fraction": anchors.has_colored_content(image)}
+        analysis[stage + "_preview"] = {"score": score, "colored_fraction": anchors.has_colored_content(image),
+                                        "settled": settled}
         require(analysis[stage + "_preview"]["colored_fraction"] > 0, "Empty viewport")
     finally:
         session.close()

@@ -133,7 +133,9 @@ def test_the_stage_reads_the_plate_only_after_the_row_is_enabled(tmp_path, monke
     assert order == [("row", False), ("row", True), "retain_plate", "close"]
     assert results == {"baseline slice": "PASS"}
     assert analysis["baseline_slice"]["polls"] == 2 and analysis["baseline_plate"] == {"kept": True}
-    assert analysis["baseline_preview"] == {"score": 1.0, "colored_fraction": 0.5}
+    preview = analysis["baseline_preview"]
+    assert preview["score"] == 1.0 and preview["colored_fraction"] == 0.5
+    assert preview["settled"]["frames"] == 3 and preview["settled"]["same_in_a_row"] == 2
     assert (tmp_path / "baseline-preview.png").is_file() and (tmp_path / "baseline-temp").is_dir()
 
 
@@ -142,3 +144,49 @@ def test_the_old_completion_signal_is_no_longer_used():
     assert "wait_slicing_done" not in source and "timeout_s=120" not in source
     assert source.count("op_slice(") == 1 and "timeout_s=BUTTON_GLANCE_S" in source
     assert "inspect_enabled=True" in source and "answer_memory_guard" in source
+
+
+
+def still_clock(monkeypatch):
+    clock = [1000.0]
+    monkeypatch.setattr(case, "time", SimpleNamespace(
+        monotonic=lambda: clock[0], time_ns=lambda: 1,
+        sleep=lambda seconds: clock.__setitem__(0, clock[0] + seconds)))
+
+
+def frames_then(monkeypatch, values, fraction=0.5):
+    """capture_bgr hands out `values` in order (the last one repeats) and notes how often it was asked."""
+    asked = []
+
+    def capture(session):
+        shown = len(asked)
+        asked.append(shown)
+        return np.full((4, 4, 3), values[min(shown, len(values) - 1)], np.uint8)
+
+    monkeypatch.setattr(case.anchors, "capture_bgr", capture)
+    monkeypatch.setattr(case.anchors, "has_colored_content", lambda image: fraction)
+    return asked
+
+
+def test_the_preview_is_taken_once_three_frames_in_a_row_are_the_same(monkeypatch):
+    # The first frame still changes; the next three are alike, so the third of them is the one kept.
+    still_clock(monkeypatch)
+    asked = frames_then(monkeypatch, (10, 60, 60, 60, 60))
+    image, settled = case.settled_frame(None)
+    assert len(asked) == 4 and int(image[0, 0, 0]) == 60
+    assert settled["same_in_a_row"] == 2 and settled["frames"] == 4
+    assert settled["seconds"] == pytest.approx(2.1) and settled["colored_fractions"] == [0.5] * 4
+
+
+def test_a_preview_that_keeps_changing_is_returned_when_the_time_is_up(monkeypatch):
+    still_clock(monkeypatch)
+    asked = frames_then(monkeypatch, (10, 200, 10, 200, 10, 200, 10, 200, 10, 200, 10, 200))
+    _image, settled = case.settled_frame(None, timeout_s=5.0)
+    assert settled["same_in_a_row"] == 0 and settled["seconds"] >= 5.0 and len(asked) == 9
+
+
+def test_a_frame_without_coloured_content_is_never_taken_as_settled(monkeypatch):
+    still_clock(monkeypatch)
+    asked = frames_then(monkeypatch, (60,), fraction=0.0)
+    _image, settled = case.settled_frame(None, timeout_s=3.0)
+    assert settled["colored_fractions"][-1] == 0.0 and settled["seconds"] >= 3.0 and len(asked) == 6
