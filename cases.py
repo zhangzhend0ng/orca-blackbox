@@ -127,6 +127,7 @@ CASES: dict[str, dict] = {
     #     — GUI业务 #7-#24 原子 + 主流程-模板 O/M 链; mapping in FEISHU_MAINFLOW.md)
     "m7a_boot_shutdown": _r("m7", "A"),
     "m7b_new_project": _r("m7", "A"),
+    "m7x_199_new_project_title": _r("m7", "A"),
     "m7c_import_stl": _r("m7", "A"),
     "m7d_import_corrupt": _r("m7", "A"),
     "m7e_rotate45": _r("m7", "A"),
@@ -160,6 +161,7 @@ CASES: dict[str, dict] = {
     "m8_fit18_profile": _o("m8", "A", known_limitation=True),
     "m8_fit18_single": _o("m8", "A", known_limitation=True),
     "m8b_official_color": _r("m8", "A", known_limitation=True),
+    "m8x_46_color_confirm": _r("m8", "A"),
     "m8x_47_color_cancel": _r("m8", "A"),
     "m8c_temp_mix_gate": _r("m8", "A", known_limitation=True),
     "m8d_purifier_gcode": _r("m8", "A", known_limitation=True),
