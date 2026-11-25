@@ -1,0 +1,96 @@
+﻿[m7x234] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\234\run-k6yd8u_8
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\234\run-k6yd8u_8\simple-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\234\run-k6yd8u_8\simple-profile C:\coil\orca-blackbox-v3-r1\fixtures\feishu_std_cube.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x5b4093a, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x58f0c5c, WM_CLOSE)
+[launcher] pid=1396 hwnd=0x5ae1100 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.10%)
+[m7x249] started simple_open at 2026-11-25T17:39:04.500297+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x55c057e did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x249] finished simple_open in 9.203s
+[m7x249] started simple_slice at 2026-11-25T17:39:13.703213+00:00
+[m2] slicing started (button left idle, score 0.666)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x55c057e did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[export] 'Export plate sliced file' enabled 8.6s after the Slice click
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x55c057e did not complete
+[topbar] File opened at offset 10
+[export] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[export] Export menu: [(0, 'Export all objects as one STL...', True), (1, 'Export all objects as STLs...', True), (2, 'Export Generic 3MF...', True), (3, 'Export plate sliced file...\tCtrl+G', True), (4, 'Export all plate sliced file...', True), (5, 'Export G-code...', True), (6, 'Export Preset Bundle...', True)]
+[m7x249] finished simple_slice in 13.187s
+[m7x249] started simple_export at 2026-11-25T17:39:26.886693+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x55c057e did not complete
+[topbar] File opened at offset 10
+[export] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[export] Export menu: [(0, 'Export all objects as one STL...', True), (1, 'Export all objects as STLs...', True), (2, 'Export Generic 3MF...', True), (3, 'Export plate sliced file...\tCtrl+G', True), (4, 'Export all plate sliced file...', True), (5, 'Export G-code...', True), (6, 'Export Preset Bundle...', True)]
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x55c057e did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=327) sent, completed=True
+[export] Export plate sliced file -> plate.gcode.3mf (64532 bytes), extension '.gcode.3mf'
+[m7x249] finished simple_export in 12.422s
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\234\run-k6yd8u_8\complex-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\234\run-k6yd8u_8\complex-profile C:\coil\orca-blackbox-v3-r1\fixtures\feishu_std_sphere.3mf
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x6170ad4, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#2)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#4)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x5a50d36, WM_CLOSE)
+[launcher] pid=9280 hwnd=0x5c806fc rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.22%, gate 0.10%)
+[m7x249] started complex_open at 2026-11-25T17:40:29.934344+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x58609f6 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x249] finished complex_open in 9.000s
+[m7x249] started complex_slice at 2026-11-25T17:40:38.936769+00:00
+[m2] slicing started (button left idle, score 0.666)
+[export] memory guard dialog: ['Yes, Continue', 'No, Stop', 'htmlWindow']
+[export] memory guard answered: [{'how': 'message click', 'closed': False}, {'how': 'message click inside dialog', 'closed': True}]
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x58609f6 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[export] 'Export plate sliced file' enabled 10.8s after the Slice click
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x58609f6 did not complete
+[topbar] File opened at offset 10
+[export] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[export] Export menu: [(0, 'Export all objects as one STL...', True), (1, 'Export all objects as STLs...', True), (2, 'Export Generic 3MF...', True), (3, 'Export plate sliced file...\tCtrl+G', True), (4, 'Export all plate sliced file...', True), (5, 'Export G-code...', True), (6, 'Export Preset Bundle...', True)]
+[m7x249] finished complex_slice in 15.266s
+[m7x249] started complex_export at 2026-11-25T17:40:54.193031+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x58609f6 did not complete
+[topbar] File opened at offset 10
+[export] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[export] Export menu: [(0, 'Export all objects as one STL...', True), (1, 'Export all objects as STLs...', True), (2, 'Export Generic 3MF...', True), (3, 'Export plate sliced file...\tCtrl+G', True), (4, 'Export all plate sliced file...', True), (5, 'Export G-code...', True), (6, 'Export Preset Bundle...', True)]
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x58609f6 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=327) sent, completed=True
+[export] Export plate sliced file -> sphere.gcode.3mf (238816 bytes), extension '.gcode.3mf'
+[m7x249] finished complex_export in 11.984s
+[m7x234] file bytes 64532 -> 238816, G-code bytes 350616 -> 757765
+
+[m7] === verdict ===
+  鐢熸垚 .gcode.3mf 鏂囦欢: PASS
+  鍐呭惈 G-code 涓庨瑙堜俊鎭? PASS
+  鏂囦欢澶у皬闅忓垏鐗囧鏉傚害鍚堢悊澧炲ぇ: PASS
+[m7] GREEN

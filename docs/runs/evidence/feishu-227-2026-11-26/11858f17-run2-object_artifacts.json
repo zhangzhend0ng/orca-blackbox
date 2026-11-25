@@ -1,0 +1,72 @@
+﻿[
+    {
+        "part":  "analysis.json",
+        "bytes":  7423,
+        "sha256":  "8675F0894A3FB206365CE3D66633F7EEBEDFEFEA66C81DC7FB365F97DD4CE378"
+    },
+    {
+        "part":  "chooser.png",
+        "bytes":  98532,
+        "sha256":  "E3BEB06BD6D96CAF17532B356600D429E4BF706491DAE92B9301DD7221BF466B"
+    },
+    {
+        "part":  "cube_20mm.stl",
+        "bytes":  684,
+        "sha256":  "3F09D813EECC842C59960F2F76E22C038782B92CA8F294C6C3BB0BBC2BB5BFCD"
+    },
+    {
+        "part":  "imported.3mf",
+        "bytes":  34226,
+        "sha256":  "E353FD5E4620DBF91EFC3A1E0596E2D17760E4F0059CA3ACED8469471D6A60D0"
+    },
+    {
+        "part":  "imported.png",
+        "bytes":  289778,
+        "sha256":  "E1F5E68B3BF428A4CB28B742602C815ECB6498FF3A73C710E3F6EBA466E2B5A2"
+    },
+    {
+        "part":  "moved.3mf",
+        "bytes":  34229,
+        "sha256":  "92A826E77AB0F0966F97F9B7D56642F5CC08DEFDC6D9E085818DF4CC3E473DC7"
+    },
+    {
+        "part":  "moved.png",
+        "bytes":  289359,
+        "sha256":  "C0E87DC72584161AD8D14C10F965C3385B3DD61477F19C7C79D952949FD49F75"
+    },
+    {
+        "part":  "moved-before.png",
+        "bytes":  289584,
+        "sha256":  "9D2FFA364EDA6AA7EAF278DA3B867D2B2E97232F30E319F1F58EB7F6ABA0F71F"
+    },
+    {
+        "part":  "moved-selected.png",
+        "bytes":  289584,
+        "sha256":  "9D2FFA364EDA6AA7EAF278DA3B867D2B2E97232F30E319F1F58EB7F6ABA0F71F"
+    },
+    {
+        "part":  "new-project.3mf",
+        "bytes":  34347,
+        "sha256":  "28058377C5FB8EE692CD94A871428E9E6CF84E0052650C5C663C93E544B0C63A"
+    },
+    {
+        "part":  "rotated.3mf",
+        "bytes":  29562,
+        "sha256":  "41BDC195F675AA940FFA265A8967B1C6FE872EFBB31B46DCF172FE5ECD1BA40E"
+    },
+    {
+        "part":  "rotated.png",
+        "bytes":  290319,
+        "sha256":  "C1652BF26FF3A78CBCDB346B87C1D395D45BC3ECDE4915DB95EC0F93A91AEC44"
+    },
+    {
+        "part":  "rotated-before.png",
+        "bytes":  289194,
+        "sha256":  "227BD046574CC991A464BCDC57F10911967CD262A213569A2202EC172E28FEFA"
+    },
+    {
+        "part":  "rotated-selected.png",
+        "bytes":  289194,
+        "sha256":  "227BD046574CC991A464BCDC57F10911967CD262A213569A2202EC172E28FEFA"
+    }
+]

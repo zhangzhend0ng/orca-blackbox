@@ -147,14 +147,18 @@ CASES: dict[str, dict] = {
     "m7x_254_sphere_layer_pair": _o("m7", "A"),
     # 2026-11-26: Feishu file import/export rows. A row joins the regression suite only after two
     # independent guest sessions and the offline replay pass on one commit; the others are runnable.
-    "m7x_227_import_stl": _o("m7", "A"),            # File > Import, binary STL
     "m7x_230_import_project": _o("m7", "A"),        # File > Import, a saved two-plate project
     "m7x_232_import_configs": _o("m7", "A"),        # File > Import Configs
     "m7x_231_import_zip": _o("m7", "A"),            # File > Import Zip Archive
     # 6bdf66b: two guest sessions GREEN on 2026-11-26 and 43 offline checks each
     # (docs/runs/evidence/feishu-233-2026-11-26).
     "m7x_233_export_merged_stl": _r("m7", "A"),
-    "m7x_234_export_plate_slice": _o("m7", "A"),    # File > Export, the plate's sliced file
+    # 11858f1: two guest sessions GREEN on 2026-11-26 and 56 offline checks each
+    # (docs/runs/evidence/feishu-227-2026-11-26).
+    "m7x_227_import_stl": _r("m7", "A"),
+    # 48e3aa7: two guest sessions GREEN on 2026-11-26 and 97 offline checks each
+    # (docs/runs/evidence/feishu-234-2026-11-26).
+    "m7x_234_export_plate_slice": _r("m7", "A"),
     "m7x_235_export_all_plates": _o("m7", "A"),    # File > Export, every plate's sliced file
     # 81dbcf1 and again 48e3aa7 (which added the G-code footprint check): two guest sessions GREEN
     # each on 2026-11-26, 38 offline checks each (docs/runs/evidence/feishu-236-2026-11-26).
