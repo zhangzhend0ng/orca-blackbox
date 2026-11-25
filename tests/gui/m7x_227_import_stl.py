@@ -43,6 +43,9 @@ FIXTURE = HERE / 'fixtures' / 'agent_layer_cube.3mf'
 IDOK = 1
 RIGHT, PAGE_UP = 0x27, 0x21
 LOG = '[m7x227]'
+# Centre of the Rotate tool in the gizmo toolbar of a maximized 1920-pixel window, measured on the
+# guest's screenshots (the tooltip scan of m7_common.find_slot did not read this toolbar).
+ROTATE_TOOL_X = 1117
 
 
 def prepare_fixture(model, work):
@@ -154,33 +157,54 @@ def press_on_canvas(session, key, phase, analysis):
     print(f'[m7x227] {phase}: pressed 0x{key:02x} on the canvas', flush=True)
 
 
-def turn_with_gizmo(session, work, analysis):
-    """With the object selected, open the Rotate gizmo with PageUp and type 45 into its rightmost (Z) field.
+def rotate_fields(session):
+    return m7.gizmo_row_boxes(session, 'rotate') or m7.gizmo_row_boxes(session, 'rotation')
 
-    On tag sm-v2.4.0 PageUp opens this gizmo (GLCanvas3D.cpp,
-    `do_rotate(L("Tool Rotate"))`) and does not turn the object by itself: a
-    first run left the saved project unchanged. The gizmo window is drawn
-    inside the canvas, so its numeric fields are found by OCR on the row
-    labelled Rotate (X, Y, Z from left to right); m7e_rotate45 types into the
-    same fields. The saved project, not the read-back, is the judge."""
+
+def open_rotate_gizmo(session, work, analysis):
+    """With the object selected, get the Rotate gizmo to show its numeric fields.
+
+    Three ways are tried in turn and each one's picture and fields are kept:
+    a real click on the toolbar's Rotate tool, PageUp, and R. A sixth guest
+    run showed that PageUp with the object selected did not open the gizmo,
+    although on tag sm-v2.4.0 GLCanvas3D::on_key calls do_rotate("Tool Rotate")
+    for it; the reason was not found. The gizmo window is drawn inside the
+    canvas, so its fields are found by OCR on the row labelled Rotate (X, Y, Z
+    from left to right), as m7e_rotate45 does."""
+    attempts = []
+    for name, action in (('toolbar', lambda: m7.click_slot(session, ROTATE_TOOL_X, m7.BAR_Y)),
+                         ('page_up', lambda: press_on_canvas(session, PAGE_UP, f'rotate_{name}', analysis)),
+                         ('key_r', lambda: press_on_canvas(session, ord('R'), f'rotate_{name}', analysis))):
+        action()
+        time.sleep(1.0)
+        capture(session, work / f'rotated-gizmo-{name}.png')
+        boxes = rotate_fields(session)
+        attempts.append({'how': name, 'fields': [[round(x), round(y), text] for x, y, text in boxes]})
+        print(f'[m7x227] rotate gizmo after {name}: {attempts[-1]["fields"]!r}', flush=True)
+        if len(boxes) >= 3:
+            return boxes, attempts
+    return [], attempts
+
+
+def turn_with_gizmo(session, work, analysis):
+    """With the object selected, open the Rotate gizmo and type 45 into its rightmost (Z) field.
+
+    The gizmo does not turn the object by itself (a first run left the saved
+    project unchanged after PageUp); the angle goes into its Z field. The
+    saved project, not the read-back, is the judge."""
     # Saving the project clears the selection, so the object is selected again first.
     select_all(session, work, 'rotated', analysis)
-    press_on_canvas(session, PAGE_UP, 'rotate_gizmo', analysis)
-    capture(session, work / 'rotated-gizmo.png')
-    boxes = m7.gizmo_row_boxes(session, 'rotate') or m7.gizmo_row_boxes(session, 'rotation')
+    boxes, attempts = open_rotate_gizmo(session, work, analysis)
     record = analysis.setdefault('gizmo', {})['rotate'] = {
+        'opened_by': attempts[-1]['how'] if boxes else None, 'attempts': attempts,
         'fields': [[round(x), round(y), text] for x, y, text in boxes]}
-    print(f'[m7x227] rotate gizmo fields: {record["fields"]!r}', flush=True)
     if not boxes:
-        raise ValueError('the Rotate gizmo showed no numeric field')
-    if len(boxes) < 3:
-        raise ValueError(f'the Rotate gizmo shows {len(boxes)} numeric field(s), expected X, Y and Z')
+        raise ValueError('the Rotate gizmo showed no numeric field after a toolbar click, PageUp and R')
     if not bring_main_to_mouse(session.hwnd):
         raise ValueError('Orca did not acquire the guest foreground')
     m7.type_into_field(session, boxes[-1][:2], '45', old_len=len(boxes[-1][2]))
     time.sleep(1.0)
-    record['fields_after'] = [[round(x), round(y), text] for x, y, text in
-                              (m7.gizmo_row_boxes(session, 'rotate') or m7.gizmo_row_boxes(session, 'rotation'))]
+    record['fields_after'] = [[round(x), round(y), text] for x, y, text in rotate_fields(session)]
     capture(session, work / 'rotated-typed.png')
 
 
