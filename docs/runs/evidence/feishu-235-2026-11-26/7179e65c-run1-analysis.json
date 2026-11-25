@@ -1,0 +1,560 @@
+{
+  "case": 235,
+  "results": {
+    "\u6bcf\u4e2a\u76d8\u5404\u751f\u6210\u5bf9\u5e94\u5207\u7247\u6587\u4ef6": "PASS",
+    "\u5171 2 \u4e2a": "FAIL (1 sliced file(s) landed for 2 plates (plates.gcode.3mf); they hold the G-code of 2 plate(s))",
+    "\u5747\u542b\u6709\u6548 G-code": "PASS"
+  },
+  "timings": {
+    "open_plates": {
+      "started_utc": "2026-11-25T18:03:16.608758+00:00",
+      "duration_s": 13.625
+    },
+    "slice_all": {
+      "started_utc": "2026-11-25T18:03:30.234070+00:00",
+      "duration_s": 9.875
+    },
+    "export_all_plates": {
+      "started_utc": "2026-11-25T18:03:40.108965+00:00",
+      "duration_s": 12.203
+    },
+    "read_products": {
+      "started_utc": "2026-11-25T18:03:52.308257+00:00",
+      "duration_s": 0.172
+    }
+  },
+  "fixture": {
+    "name": "feishu_std_cubesfar.3mf",
+    "bytes": 30934,
+    "sha256": "ae4043bcbc9cf2c9662096f27eebae0f7bbb5de2e3fb4adc9c3793e2a9299561"
+  },
+  "plates": {
+    "names": [
+      "Keep",
+      "Remove"
+    ],
+    "objects": {
+      "Keep": [
+        "Alpha"
+      ],
+      "Remove": [
+        "Bravo"
+      ]
+    }
+  },
+  "presets": {
+    "printer_model": "Snapmaker U1",
+    "printer_settings_id": "Snapmaker U1 (0.4 nozzle)(two-plates.3mf)",
+    "print_settings_id": "0.20mm Standard @Snapmaker U1 (0.4 nozzle)(two-plates.3mf)",
+    "filament_settings_id": "Generic PLA @U1 0.4 nozzle(two-plates.3mf)",
+    "layer_height": "0.2",
+    "initial_layer_print_height": "0.25",
+    "print_sequence": "by layer"
+  },
+  "export_menu_before_slice": [
+    {
+      "index": 0,
+      "label": "Export all objects as one STL...",
+      "enabled": true,
+      "submenu": false
+    },
+    {
+      "index": 1,
+      "label": "Export all objects as STLs...",
+      "enabled": true,
+      "submenu": false
+    },
+    {
+      "index": 2,
+      "label": "Export Generic 3MF...",
+      "enabled": true,
+      "submenu": false
+    },
+    {
+      "index": 3,
+      "label": "Export plate sliced file...\tCtrl+G",
+      "enabled": false,
+      "submenu": false
+    },
+    {
+      "index": 4,
+      "label": "Export all plate sliced file...",
+      "enabled": false,
+      "submenu": false
+    },
+    {
+      "index": 5,
+      "label": "Export G-code...",
+      "enabled": false,
+      "submenu": false
+    },
+    {
+      "index": 6,
+      "label": "Export Preset Bundle...",
+      "enabled": true,
+      "submenu": false
+    }
+  ],
+  "topbar_before_slice": [
+    "panel",
+    "",
+    "Slice plate",
+    "",
+    "Print"
+  ],
+  "slice_all_clicks": [
+    {
+      "attempt": 0,
+      "click": "inside the popup",
+      "row": [
+        1660,
+        67,
+        1769,
+        95
+      ],
+      "hit": "0x3c1107a",
+      "label": "Slice all"
+    },
+    {
+      "button": [
+        1679,
+        37,
+        1769,
+        61
+      ],
+      "label": "Slice all",
+      "hit": "0x51b1118"
+    }
+  ],
+  "slice": {
+    "topbar_before": [
+      "panel",
+      "",
+      "Slice plate",
+      "",
+      "Print"
+    ],
+    "export_enabled_after_seconds": 5.3,
+    "polls": 1,
+    "topbar_after": [
+      "panel",
+      "",
+      "Slice all",
+      "",
+      "Print"
+    ],
+    "export_menu_after": [
+      {
+        "index": 0,
+        "label": "Export all objects as one STL...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 1,
+        "label": "Export all objects as STLs...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 2,
+        "label": "Export Generic 3MF...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 3,
+        "label": "Export plate sliced file...\tCtrl+G",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 4,
+        "label": "Export all plate sliced file...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 5,
+        "label": "Export G-code...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 6,
+        "label": "Export Preset Bundle...",
+        "enabled": true,
+        "submenu": false
+      }
+    ]
+  },
+  "memory_guard_dialogs": [],
+  "guard_failures": 0,
+  "topbar_after_slice": [
+    "panel",
+    "",
+    "Slice all",
+    "",
+    "Print"
+  ],
+  "export": {
+    "item": "Export all plate sliced file",
+    "export_rows": [
+      {
+        "index": 0,
+        "label": "Export all objects as one STL...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 1,
+        "label": "Export all objects as STLs...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 2,
+        "label": "Export Generic 3MF...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 3,
+        "label": "Export plate sliced file...\tCtrl+G",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 4,
+        "label": "Export all plate sliced file...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 5,
+        "label": "Export G-code...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 6,
+        "label": "Export Preset Bundle...",
+        "enabled": true,
+        "submenu": false
+      }
+    ],
+    "typed_name": "plates",
+    "title": "Save Sliced file as:",
+    "default_name": "Bravo_PLA_5m14s.gcode",
+    "types": [
+      {
+        "selected": -1,
+        "items": []
+      },
+      {
+        "selected": 0,
+        "items": [
+          "Gcode 3MF files (*.gcode.3mf)"
+        ]
+      },
+      {
+        "selected": -1,
+        "items": []
+      }
+    ],
+    "labels": [
+      "Namespace Tree Control",
+      "Namespace Tree Control",
+      "Navigation Pane",
+      "ShellView",
+      "&Save",
+      "Cancel",
+      "&Help",
+      "Navigation buttons",
+      "Up band",
+      "Address: C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\235\\run-zxpy05un",
+      "Address band"
+    ],
+    "directory": "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\235\\run-zxpy05un",
+    "filename_before_save": "plates",
+    "dialog_image": {
+      "width_px": 944,
+      "height_px": 501
+    },
+    "dialog_closed": true,
+    "saved_name": "plates.gcode.3mf",
+    "saved_extension": ".gcode.3mf",
+    "file_bytes": 95464,
+    "file_sha256": "2a45ede70af880fd57d262fe859cfa576b1565b0a4809842ca94e7c06b886237",
+    "app_alive": true
+  },
+  "products": [
+    {
+      "name": "plates.gcode.3mf",
+      "bytes": 95464,
+      "sha256": "2a45ede70af880fd57d262fe859cfa576b1565b0a4809842ca94e7c06b886237"
+    }
+  ],
+  "all_plates": {
+    "files": [
+      "plates.gcode.3mf"
+    ],
+    "plates": [
+      {
+        "index": 1,
+        "name": "Keep",
+        "objects": [
+          "Alpha"
+        ],
+        "file": "plates.gcode.3mf",
+        "member": "Metadata/plate_1.gcode",
+        "gcode_bytes": 240928,
+        "layers": 100,
+        "gcode_checks_failed": [],
+        "gcode_md5_consistent": true,
+        "footprint": {
+          "file_name": "Metadata/plate_1.gcode",
+          "plate": "Keep",
+          "plate_count": 2,
+          "tolerance_mm": 1.0,
+          "allowances_mm": {
+            "model": 1.0,
+            "support": 1.0,
+            "brim": 6.1,
+            "skirt": 3.0
+          },
+          "plate_objects": {
+            "Alpha": [
+              75.0,
+              95.0,
+              125.0,
+              145.0
+            ]
+          },
+          "plate_box_mm": [
+            75.0,
+            95.0,
+            125.0,
+            145.0
+          ],
+          "printable_area_mm": [
+            0.5,
+            270.5,
+            1.0,
+            271.0
+          ],
+          "names_in_gcode": [
+            "Alpha"
+          ],
+          "moves": {
+            "model": 3707,
+            "support": 0,
+            "brim": 0,
+            "skirt": 0,
+            "tower": 0,
+            "custom": 0,
+            "unassigned": 0,
+            "start_gcode": 1
+          },
+          "max_excursion_mm": {
+            "model": 0.0,
+            "support": 0.0,
+            "brim": 0.0,
+            "skirt": 0.0,
+            "tower": 0.0,
+            "custom": 0.0
+          },
+          "objects": {
+            "Alpha": {
+              "box_mm": [
+                75.0,
+                95.0,
+                125.0,
+                145.0
+              ],
+              "moves": 3707,
+              "model_moves": 3707,
+              "extruded_mm": [
+                75.21,
+                94.79,
+                125.21,
+                144.79
+              ],
+              "max_excursion_mm": 0.0
+            }
+          },
+          "checks": {
+            "objects_named": true,
+            "every_object_printed": true,
+            "model_inside_object_blocks": true,
+            "model_on_objects": true,
+            "support_on_objects": true,
+            "brim_near_objects": true,
+            "skirt_near_objects": true,
+            "ancillary_on_bed": true
+          }
+        },
+        "extruded_mm": [
+          75.21,
+          94.79,
+          125.21,
+          144.79
+        ]
+      },
+      {
+        "index": 2,
+        "name": "Remove",
+        "objects": [
+          "Bravo"
+        ],
+        "file": "plates.gcode.3mf",
+        "member": "Metadata/plate_2.gcode",
+        "gcode_bytes": 158494,
+        "layers": 60,
+        "gcode_checks_failed": [],
+        "gcode_md5_consistent": true,
+        "footprint": {
+          "file_name": "Metadata/plate_2.gcode",
+          "plate": "Remove",
+          "plate_count": 2,
+          "tolerance_mm": 1.0,
+          "allowances_mm": {
+            "model": 1.0,
+            "support": 1.0,
+            "brim": 6.1,
+            "skirt": 3.0
+          },
+          "plate_objects": {
+            "Bravo": [
+              127.0,
+              143.0,
+              128.0,
+              142.0
+            ]
+          },
+          "plate_box_mm": [
+            127.0,
+            143.0,
+            128.0,
+            142.0
+          ],
+          "printable_area_mm": [
+            0.5,
+            270.5,
+            1.0,
+            271.0
+          ],
+          "names_in_gcode": [
+            "Bravo"
+          ],
+          "moves": {
+            "model": 1974,
+            "support": 0,
+            "brim": 0,
+            "skirt": 0,
+            "tower": 0,
+            "custom": 0,
+            "unassigned": 0,
+            "start_gcode": 1
+          },
+          "max_excursion_mm": {
+            "model": 0.0,
+            "support": 0.0,
+            "brim": 0.0,
+            "skirt": 0.0,
+            "tower": 0.0,
+            "custom": 0.0
+          },
+          "objects": {
+            "Bravo": {
+              "box_mm": [
+                127.0,
+                143.0,
+                128.0,
+                142.0
+              ],
+              "moves": 1974,
+              "model_moves": 1974,
+              "extruded_mm": [
+                127.21,
+                142.79,
+                128.21,
+                141.79
+              ],
+              "max_excursion_mm": 0.0
+            }
+          },
+          "checks": {
+            "objects_named": true,
+            "every_object_printed": true,
+            "model_inside_object_blocks": true,
+            "model_on_objects": true,
+            "support_on_objects": true,
+            "brim_near_objects": true,
+            "skirt_near_objects": true,
+            "ancillary_on_bed": true
+          }
+        },
+        "extruded_mm": [
+          127.21,
+          142.79,
+          128.21,
+          141.79
+        ]
+      }
+    ],
+    "unexpected_plates": [],
+    "plate_objects": {
+      "Keep": [
+        "Alpha"
+      ],
+      "Remove": [
+        "Bravo"
+      ]
+    },
+    "plate_origins_mm": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        324.0,
+        0.0
+      ]
+    ],
+    "archives": {
+      "plates.gcode.3mf": {
+        "file_bytes": 95464,
+        "extension": ".gcode.3mf",
+        "plate_gcodes": [
+          "Metadata/plate_1.gcode",
+          "Metadata/plate_2.gcode"
+        ],
+        "previews": [
+          "Metadata/plate_1.png",
+          "Metadata/plate_1_small.png",
+          "Metadata/plate_2.png",
+          "Metadata/plate_2_small.png",
+          "Metadata/plate_no_light_1.png",
+          "Metadata/plate_no_light_2.png",
+          "Metadata/top_1.png",
+          "Metadata/pick_1.png",
+          "Metadata/top_2.png",
+          "Metadata/pick_2.png"
+        ]
+      }
+    }
+  },
+  "expectation_gaps": {
+    "\u6bcf\u4e2a\u76d8\u5404\u751f\u6210\u5bf9\u5e94\u5207\u7247\u6587\u4ef6": [],
+    "\u5171 2 \u4e2a": [
+      "1 sliced file(s) landed for 2 plates (plates.gcode.3mf); they hold the G-code of 2 plate(s)"
+    ],
+    "\u5747\u542b\u6709\u6548 G-code": []
+  },
+  "editor_after_export": {
+    "alive": true,
+    "dialog": null
+  },
+  "wall_seconds": 83.86
+}

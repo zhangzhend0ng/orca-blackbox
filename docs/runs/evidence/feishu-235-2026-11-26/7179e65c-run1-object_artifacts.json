@@ -1,0 +1,42 @@
+﻿[
+    {
+        "part":  "Alpha-Bravo.3mf",
+        "bytes":  30888,
+        "sha256":  "9C548679D672AC859369D9AF7FBEDDE0D555223280C699D70E5C72B277E00C16"
+    },
+    {
+        "part":  "analysis.json",
+        "bytes":  13406,
+        "sha256":  "DFF4B88DF56E8A79066D2A8FCCD74B5F0E15125BC359CB48929B0FE7FE4E035F"
+    },
+    {
+        "part":  "before.3mf",
+        "bytes":  47893,
+        "sha256":  "807693C432CFC078B5C17D48A4EE357BAD82BEACA99703D2965A923224DB1B98"
+    },
+    {
+        "part":  "before.png",
+        "bytes":  267472,
+        "sha256":  "0CDF0CDCCA0340D75EA4B709D5DC32C480EB977EBC4D4C71C6082F387169F841"
+    },
+    {
+        "part":  "export-dialog.png",
+        "bytes":  47137,
+        "sha256":  "9857C4CAD2A089310C9B1CA4BE8EF81452759F2FF246A46A93B757D9FBD37FF5"
+    },
+    {
+        "part":  "plates.gcode.3mf",
+        "bytes":  95464,
+        "sha256":  "2A45EDE70AF880FD57D262FE859CFA576B1565B0A4809842CA94E7C06B886237"
+    },
+    {
+        "part":  "sliced.png",
+        "bytes":  219473,
+        "sha256":  "50A373061555A3FD11297CCC0B7055CDEE14A0677DB100BA6515A5E8D69CEC2E"
+    },
+    {
+        "part":  "two-plates.3mf",
+        "bytes":  30910,
+        "sha256":  "0C5DBD978B969004CB94B54194782931D4085EEDC6A8B8684BA6C513C8E2D293"
+    }
+]

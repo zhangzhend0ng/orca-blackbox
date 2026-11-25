@@ -1,0 +1,14 @@
+﻿{
+    "commit":  "7179e65ce91ea230b0436923e1d07e4fbfdd0833",
+    "case":  "m7x_235_export_all_plates",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "orca_processes_after":  0,
+    "summary":  "SUMMARY: PASS=0 FAIL=1\r\nFAILED: m7x_235_export_all_plates",
+    "dispatched_at":  "2026-11-26T02:02:10.7815634+08:00",
+    "scenario_completed_at":  "2026-11-26T02:03:54.9935755+08:00",
+    "suite_completed_at":  "2026-11-26T02:03:55.1703376+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_235_export_all_plates.log",
+    "log_sha256":  "0F40194FB02CB46EC4437A2CA82CFD16CB612A58EBEDF0D59E6F14082493DCD2"
+}
