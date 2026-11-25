@@ -1,0 +1,72 @@
+﻿[
+    {
+        "part":  "after-missing.3mf",
+        "bytes":  34354,
+        "sha256":  "49A2D61649390BBDCA04E4101D0B1BA874F580D95CDD600799A544623C3B1AE6"
+    },
+    {
+        "part":  "after-missing.png",
+        "bytes":  303945,
+        "sha256":  "356833787430BFB5A5D0A691E61099ECA5EB1BB41A13EE74538E00045395D338"
+    },
+    {
+        "part":  "after-reload.3mf",
+        "bytes":  34354,
+        "sha256":  "0141D7F6CF402CEC5C52E02EB3EB78A64E4BDE51B615E50D80C4958E49D393C6"
+    },
+    {
+        "part":  "after-reload.png",
+        "bytes":  305236,
+        "sha256":  "00F74241A6C4947E15A9B176C679A7ABE999EF8E01B2EB352C4883B1A8AC9666"
+    },
+    {
+        "part":  "analysis.json",
+        "bytes":  5466,
+        "sha256":  "015C7D8425D9D945BD1E5C221C198B589D2CAEA4A2786E886B28831AB2509937"
+    },
+    {
+        "part":  "before-reload.3mf",
+        "bytes":  34231,
+        "sha256":  "181535F120909EB8A83575DD047C7E4EB4781C142E53596FFF0F53A162FEEA38"
+    },
+    {
+        "part":  "before-reload.png",
+        "bytes":  305145,
+        "sha256":  "3D578D2D8BF01612F26DAC1950670FDC8E11407190D20A05C13715CE0786F1CF"
+    },
+    {
+        "part":  "chooser.png",
+        "bytes":  98438,
+        "sha256":  "2829C56D8530127A9C860748904911E029B3E844E840190495C26D9E812AC895"
+    },
+    {
+        "part":  "missing-dialog.png",
+        "bytes":  70482,
+        "sha256":  "C8DF002933770135F691AFE8050991A162E35DC3C3D3D16F21081EE999E870F4"
+    },
+    {
+        "part":  "new-project.3mf",
+        "bytes":  34347,
+        "sha256":  "F446BBCE8AE39A8D02AEE00941EE573C8A31C5D5FFBBB61172F83294A5743336"
+    },
+    {
+        "part":  "prepare-import.png",
+        "bytes":  305198,
+        "sha256":  "A6B6405BF0EA298927F8F530D43A93B1F264DF1A1A152E4221096A9FC23AB066"
+    },
+    {
+        "part":  "prepare-reloaded.png",
+        "bytes":  303945,
+        "sha256":  "356833787430BFB5A5D0A691E61099ECA5EB1BB41A13EE74538E00045395D338"
+    },
+    {
+        "part":  "source-20mm.stl",
+        "bytes":  684,
+        "sha256":  "3F09D813EECC842C59960F2F76E22C038782B92CA8F294C6C3BB0BBC2BB5BFCD"
+    },
+    {
+        "part":  "source-30mm.stl",
+        "bytes":  684,
+        "sha256":  "1E8C68D2557DB9794E60A253E58A833B8405B8F05771C54B033FD244DB27457F"
+    }
+]

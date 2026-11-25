@@ -1,0 +1,42 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T03:17:41" tests="1" failures="1" errors="0">
+    <testcase name="m7x_251_reload_from_disk" classname="blackbox.m7x_251_reload_from" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_251_reload_from_disk.log" />
+        <property name="dim:瀵硅薄鎸夌鐩樻渶鏂版枃浠堕噸鏂板姞杞斤紝灏哄鍙樹负 30mm" value="PASS" />
+        <property name="dim:鏂囦欢琚垹鍒欐槑纭姤閿? FAIL (replacement file chooser 'Please select a file" value="' names no missing file)" />
+      </properties>
+      <failure type="RED" message="鏂囦欢琚垹鍒欐槑纭姤閿? FAIL (replacement file chooser 'Please select a file: ' names no missing file)">[m7x251] reloaded: {'dimensions_mm': [30.0, 30.0, 30.0], 'triangles': 12, 'source_file': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\251\\run-axavlano\\reload_cube.stl', 'same_source': True, 'object_names': ['reload_cube.stl'], 'placement_offset_mm': [120.5, 121.0, 0.0]}
+[m7x249] finished save_reloaded in 9.516s
+[m7x249] started delete_source at 2026-11-25T19:17:25.578205+00:00
+[m7x251] deleted source=C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\251\run-axavlano\reload_cube.stl, source still exists=False
+[m7x249] finished delete_source in 0.016s
+[m7x249] started reload_missing at 2026-11-25T19:17:25.593964+00:00
+[m7x251] central plate right-click candidates=[(1172, 511), (935, 331), (851, 759), (1531, 745), (1175, 516), (1175, 430)]
+[model context] desktop hit-test did not resolve to canvas at (1172,525)
+[model context] message right-click @(1172,525) on 0x5c508f2
+[model context] menu hwnd=0x5ec07ee: [(0, 'Clone\tCtrl+K', 0), (1, 'Simplify Model', 0), (2, '', 2051), (3, 'Mesh boolean', 1), (4, 'Center', 1), (5, 'Drop', 1), (6, 'Split', 529), (7, 'Mirror', 784), (8, 'Delete\tDel', 0), (9, '', 2051), (10, 'Add Part', 3088), (11, 'Add Negative Part', 3088), (12, 'Add Modifier', 3088), (13, 'Add Support Blocker', 2064), (14, 'Add Support Enforcer', 2064), (15, 'Height Range Modifier', 0), (16, '', 2051), (17, 'Printable', 8), (18, 'Edit Process Settings', 0), (19, 'Edit in Parameter Table', 0), (20, '', 2051), (21, 'Reload from disk', 0), (22, 'Replace with STL', 0), (23, 'Export as one STL...', 0), (24, 'Convert from Inches', 0), (25, 'Convert from Meters', 0), (26, 'Change Filament', 1808)]
+[topbar] WM_COMMAND(id=243) sent, completed=False
+[m7x251] missing-source dialog screenshot kept=True: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\251\run-axavlano\missing-dialog.png
+[m7x251] missing C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\251\run-axavlano\reload_cube.stl: replacement file chooser, title='Please select a file:', filename='reload_cube', body=''
+[m7x251] missing-source dialog closed=True
+[m7x249] finished reload_missing in 4.671s
+[m7x249] started save_after_missing at 2026-11-25T19:17:30.265156+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x56710c8 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x251] after_missing: {'dimensions_mm': [30.0, 30.0, 30.0], 'triangles': 12, 'source_file': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\251\\run-axavlano\\reload_cube.stl', 'same_source': True, 'object_names': ['reload_cube.stl'], 'placement_offset_mm': [120.5, 121.0, 0.0]}
+[m7x249] finished save_after_missing in 9.204s
+[m7x249] started read_results at 2026-11-25T19:17:39.462065+00:00
+[m7x249] finished read_results in 0.500s
+
+[m7] === verdict ===
+  瀵硅薄鎸夌鐩樻渶鏂版枃浠堕噸鏂板姞杞斤紝灏哄鍙樹负 30mm: PASS
+  鏂囦欢琚垹鍒欐槑纭姤閿? FAIL (replacement file chooser 'Please select a file:' names no missing file)
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>
