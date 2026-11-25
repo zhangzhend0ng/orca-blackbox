@@ -264,6 +264,36 @@ def list_rows(rows):
     return {'user': user, 'others': [text for text in rows if text not in user]}
 
 
+def _fold(text):
+    return ''.join(character for character in text.casefold() if character.isalnum())
+
+
+def arrow_steps(lines, current, name):
+    """How many Down presses (negative: Up) lead from the current row to the row named
+    `name` in a preset popup. `lines` are (y, text) top to bottom as read; section
+    headers are skipped. A gap wider than the row pitch is a row the reading missed (the
+    highlighted row is not always read, run 3f55a59a). The current row is the read line
+    that spells `current`; when no read line does, it is taken to be the first unread
+    row. `name` must be among the lines."""
+    read = sorted(lines)
+    gaps = [b[0] - a[0] for a, b in zip(read, read[1:]) if b[0] > a[0]]
+    pitch = min(gaps) if gaps else 1
+    rows = []
+    for index, (y, text) in enumerate(read):
+        if index:
+            rows += [None] * max(0, round((y - read[index - 1][0]) / pitch) - 1)
+        rows.append(text)
+    items = [text for text in rows if text is None or '---' not in text]
+    target = next((index for index, text in enumerate(items) if text and name.casefold() in text.casefold()), None)
+    if target is None:
+        return 0
+    now = next((index for index, text in enumerate(items)
+                 if text and _fold(text) and _fold(current).startswith(_fold(text))), None)
+    if now is None:
+        now = next((index for index, text in enumerate(items) if text is None), target)
+    return target - now
+
+
 def missing_from_lists(dropdowns, config):
     """The config presets whose name no row of their own preset popup carried."""
     missing = []

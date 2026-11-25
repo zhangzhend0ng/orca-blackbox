@@ -8,9 +8,9 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tests'))
-from import_configs_oracle import (ARCHIVE, DUPLICATES, EFFECTIVE_KINDS, IMPORTED, INI, NAMES, VENDOR, build_config,
-                                   bundle_presets, checkbox_rows, effective_preset, effective_report, list_rows,
-                                   missing_from_lists, normalize, profile_presets, project_settings,
+from import_configs_oracle import (ARCHIVE, DUPLICATES, EFFECTIVE_KINDS, IMPORTED, INI, NAMES, VENDOR, arrow_steps,
+                                   build_config, bundle_presets, checkbox_rows, effective_preset, effective_report,
+                                   list_rows, missing_from_lists, normalize, profile_presets, project_settings,
                                    standalone_preset, template_presets, verify_import, vendor_directory, write_ini)
 
 SAMPLES = ROOT / 'docs/runs/evidence/feishu-232-2026-11-26/dev-fc163e85'
@@ -289,6 +289,21 @@ def test_only_changed_effective_values_fail(guest):
     report = verify_import(config, [], imported, [RESULT], OPEN, untouched, base, 'ok')
     assert report[IMPORTED] == 'PASS'  # the three names are listed and no parameter differs
     assert sum(row['count'] for row in report['reading']['effective']['inert_keys'].values()) == 60
+
+
+def test_arrow_keys_from_the_rows_of_run_3f55a59a():
+    # The filament popup as its image shows it: the highlighted current row was not read,
+    # so its line is missing between the header and the next row.
+    filament = [(14, '------ Project-inside presets ------ |'), (68, 'Snapmaker PLA Silk @U1 0.8 nozz...'),
+                (92, '------ User presets ------'), (118, 'BB Test Filament'),
+                (142, '------ System presets ------'), (166, 'AliZ PA-CF')]
+    current = 'Generic PETG @U1 0.8 nozzle(agent_layer_cube.3mf)'
+    assert arrow_steps(filament, current, 'BB Test Filament') == 2
+    process = [(14, '------ User presets ------'), (40, 'BB Test Process'),
+               (64, '------ System presets ------'), (90, '~ Default Setting')]
+    assert arrow_steps(process, 'Default Setting', 'BB Test Process') == -1
+    assert arrow_steps(filament, current, 'AliZ PA-CF') == 3
+    assert arrow_steps(filament, current, 'No Such Preset') == 0
 
 
 def test_wrong_selection_is_rejected(guest):

@@ -11,9 +11,10 @@ import numpy as np
 import m7_common as m7
 from harness import export_util, winutil
 from harness import process_panel as pp
-from m8_common import combo_text, switch_filament_preset, wait_slots
+from m8_common import combo_text, wait_slots
 from repair_model_cases import IMAGE_ERRORS, dialog_texts
 from zip_import_cases import _comboboxes, shoot, wait_closed
+from import_configs_oracle import arrow_steps
 
 IMPORT_ROW = 'Import Configs'
 YES = ('Yes to all', '&Yes to all', 'Yes', '&Yes', 'OK', 'Confirm', 'Overwrite', 'Replace')
@@ -106,6 +107,111 @@ def read_popup(session, point, root, kind, work, record, pages=10):
     record['pages_read'] = page + 1
     print(f'[m7x232] {kind} list ({page + 1} pages): {rows!r}', flush=True)
     return popup_rect, popup_hwnd
+
+
+def real_click(x, y):
+    winutil.user32.SetCursorPos(x, y)
+    time.sleep(0.2)
+    winutil.real_click_screen(x, y)
+
+
+def _centre(rect):
+    return (rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2
+
+
+def settled(verify, name, timeout_s=3.0):
+    deadline = time.monotonic() + timeout_s
+    while True:
+        if name.casefold() in (verify() or '').casefold():
+            return True
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(0.5)
+
+
+def select_row(session, point, root, kind, name, work, record, verify, pages=6):
+    """Open the preset popup, keep every row it lists page by page, and select the row
+    named `name` on the page where it was read, without scrolling again.
+
+    `verify()` reads the preset row's own text and alone decides whether it took.
+
+    The row is clicked with a message click without a root window at its first word,
+    which is how m8_common and process_panel click a popup row; in run 3f55a59a that
+    click, sent four times, left the filament row unchanged, so the mouse is moved to
+    the row first. When the text still does not change, the row is clicked through the
+    input queue, and last the arrow keys and Enter are sent to the popup window."""
+    record['attempts'] = []
+    state = {'popup': (None, None), 'recorded': False}
+
+    def locate():
+        """(popup rect, popup hwnd, the first word of the row named `name`), or no word."""
+        if not state['popup'][1] or not winutil.user32.IsWindowVisible(state['popup'][1]):
+            state['popup'] = open_popup(session, point, root)
+            if not state['popup'][1]:
+                return None, None, None
+            x, y = _centre(state['popup'][0])
+            real_wheel(x, y, 40)  # the popup opens at the current selection: back to the top first
+            time.sleep(0.8)
+        popup_rect, popup_hwnd = state['popup']
+        x, y = _centre(popup_rect)
+        rows, before, page = [], None, 0
+        for page in range(pages):
+            image, words = popup_page(popup_rect, popup_hwnd)
+            if not state['recorded'] and page < 2:
+                cv2.imwrite(str(work / (f'{kind}-list.png' if not page else f'{kind}-list-2.png')), image)
+            lines = row_lines(words)
+            texts = [text for text, _word in lines]
+            rows += [text for text in texts if text not in rows]
+            hit = next((word for text, word in lines if name.casefold() in text.casefold()), None)
+            if hit is not None or texts == before:
+                break
+            before = texts
+            real_wheel(x, y, -8)
+            time.sleep(0.6)
+        if not state['recorded']:
+            record['rows'], record['pages_read'], state['recorded'] = rows, page + 1, True
+            record['lines'] = [[word[2] + word[4] // 2, text] for text, word in lines]
+            print(f'[m7x232] {kind} list ({page + 1} pages): {rows!r}', flush=True)
+        return popup_rect, popup_hwnd, hit
+
+    popup_rect, popup_hwnd, hit = locate()
+    record['listed'] = hit is not None
+    if hit is None:
+        if popup_hwnd:
+            pp.close_popup(session, popup_hwnd, point)
+        return False
+    for how in ('message click', 'real click', 'arrow keys'):
+        if how != 'message click':
+            popup_rect, popup_hwnd, hit = locate()  # the popup closed on the last try
+            if hit is None:
+                record['attempts'].append({'how': how, 'result': 'the row was not found again'})
+                break
+        sx = popup_rect[0] + hit[1] + hit[3] // 2
+        sy = popup_rect[1] + hit[2] + hit[4] // 2
+        steps = None
+        if how == 'message click':
+            under = winutil.window_from_screen_point(sx, sy)
+            winutil._send_msg(under, 0x0200, 0, winutil._lparam_from_screen(under, sx, sy))  # the hovered row
+            winutil.msg_click_screen(sx, sy)
+        elif how == 'real click':
+            real_click(sx, sy)
+        else:
+            steps = arrow_steps(record['lines'], record.get('before', ''), name)
+            keys = [0x28] * steps if steps > 0 else [0x26] * -steps
+            for key in keys + [0x0D]:
+                winutil._send_msg(popup_hwnd, 0x0100, key, 0)
+                winutil._send_msg(popup_hwnd, 0x0101, key, 0)
+                time.sleep(0.15)
+        record['attempts'].append({'how': how, 'point': [sx, sy], 'steps': steps})
+        if settled(verify, name):
+            record['attempts'][-1]['result'] = 'selected'
+            record['after'], record['selected'] = verify(), True
+            return True
+        record['attempts'][-1]['result'] = f'the preset row still reads {verify()!r}'
+        print(f'[m7x232] {kind} {how}: {record["attempts"][-1]["result"]}', flush=True)
+    if popup_hwnd and winutil.user32.IsWindowVisible(popup_hwnd):
+        pp.close_popup(session, popup_hwnd, point)
+    return False
 
 
 def answer_dialogs(session, work, analysis, tag, timeout_s=1.5):
