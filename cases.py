@@ -149,6 +149,9 @@ CASES: dict[str, dict] = {
     # (labels, enabled state before and after slicing, filter text, proposed file name). No Feishu
     # row: it is the reference the file import/export cases are written against.
     "diag_file_menu_census": _o("m7", "A"),
+    # Slices the cube and records what File > Export > Export G-code / Export plate sliced file put on disk
+    # when the typed name has no extension, and the runtime memory guard dialog if it appears. No Feishu row.
+    "diag_slice_export_probe": _o("m7", "A"),
     "m7c_import_stl": _r("m7", "A"),
     "m7d_import_corrupt": _r("m7", "A"),
     "m7e_rotate45": _r("m7", "A"),
