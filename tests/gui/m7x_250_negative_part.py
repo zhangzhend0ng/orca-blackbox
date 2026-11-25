@@ -135,14 +135,27 @@ def color_witness(before, after, centroid):
         return {'pass': False, 'reason': 'viewport geometry changed'}
     changed = np.max(np.abs(p - q), axis=2) >= 18
     body = (np.ptp(p, axis=2) >= 45) & (np.ptp(q, axis=2) >= 45) & ~changed
-    contrasting = (np.ptp(q, axis=2) <= 35) & changed & (np.ptp(p, axis=2) <= 35)
+    body_y, body_x = np.where(body)
+    if len(body_x) < 100:
+        return {'pass': False, 'reason': 'original colored cube could not be matched'}
+    luminance = q.mean(axis=2)
+    contrasting = ((np.ptp(q, axis=2) <= 35) & changed & (np.ptp(p, axis=2) <= 35)
+                   & (luminance >= 50) & (luminance <= 175))
     _, labels, stats, _ = cv2.connectedComponentsWithStats(contrasting.astype(np.uint8))
-    largest = int(np.argmax(stats[1:, cv2.CC_STAT_AREA]) + 1) if len(stats) > 1 else 0
+    right = int(body_x.max())
+    body_top, body_bottom = int(body_y.min()), int(body_y.max())
+    # The test prism protrudes past +X and is vertically adjacent to the body.
+    # Exclude other changed UI pixels and the near-white selection handles.
+    adjacent = [i for i, (left, top, width, height, _area) in enumerate(stats[1:], 1)
+                if left <= right + 5 < left + width
+                and min(top + height, body_bottom + 1) - max(top, body_top) >= 20]
+    largest = max(adjacent, key=lambda i: stats[i, cv2.CC_STAT_AREA], default=0)
     pixels = int(stats[largest, cv2.CC_STAT_AREA]) if largest else 0
-    body_bgr = np.median(q[body], axis=0).tolist() if np.count_nonzero(body) else []
+    body_bgr = np.median(q[body], axis=0).tolist()
     negative_bgr = np.median(q[labels == largest], axis=0).tolist() if largest else []
-    return {'pass': pixels >= 100 and np.count_nonzero(body) >= 100,
-            'negative_connected_pixels': pixels, 'body_bgr': body_bgr, 'negative_bgr': negative_bgr}
+    return {'pass': pixels >= 100, 'negative_connected_pixels': pixels,
+            'body_right_in_crop': right, 'negative_box_in_crop': stats[largest, :4].tolist() if largest else [],
+            'body_bgr': body_bgr, 'negative_bgr': negative_bgr}
 
 
 def load_fixture(args, work, profile_name, fixture):
@@ -152,6 +165,26 @@ def load_fixture(args, work, profile_name, fixture):
     arrived, amount = wait_arrival(session, timeout_s=30)
     print(f'[m7x250] {profile_name} fixture arrived={arrived}, foreground fraction={amount:.3%}')
     return session, arrived
+
+
+def slice_and_export(session, results, label, output):
+    if not m7.op_slice(session, results, key=label, timeout_s=120):
+        return False
+    sent, _ = m7.file_menu_dispatch(session, 'Export G-code', via='Export')
+    dialog = m7.wait_dialog(session.pid, timeout_s=12, title_substr='Save G-code file as') if sent else None
+    edit = export_util.find_edit(dialog[3]) if dialog else None
+    if not edit or winutil._window_pid(edit) != session.pid:
+        print(f'[m7x250] Export G-code chooser unavailable: {dialog!r}')
+        return False
+    winutil.select_all(edit)
+    winutil.msg_text(edit, str(output))
+    entered = winutil.edit_text(edit, size=260)
+    print(f'[m7x250] Export G-code chooser={dialog[1]!r}, filename={entered!r}')
+    if entered != str(output):
+        return False
+    winutil._send_msg(dialog[3], m7.WM_COMMAND_MSG, 1, 0)  # IDOK.
+    return (export_util.wait_file(output, timeout_s=40)
+            and not winutil.user32.IsWindowVisible(dialog[3]))
 
 
 def run_case(args, work):
@@ -195,7 +228,7 @@ def run_case(args, work):
             ('PASS' if attached else 'FAIL') + f' ({boxes})')
         if not attached:
             return results
-        if not m7.op_slice(session, results, key='negative slice', export_to=negative_gcode, timeout_s=120):
+        if not slice_and_export(session, results, 'negative slice', negative_gcode):
             results['negative G-code'] = 'FAIL'
             return results
         results['negative G-code'] = 'PASS'
@@ -204,8 +237,7 @@ def run_case(args, work):
 
     session, arrived = load_fixture(args, work, 'baseline-profile', baseline_project)
     try:
-        if not arrived or not m7.op_slice(session, results, key='baseline slice',
-                                         export_to=baseline_gcode, timeout_s=120):
+        if not arrived or not slice_and_export(session, results, 'baseline slice', baseline_gcode):
             results['baseline G-code'] = 'FAIL'
             return results
         results['baseline G-code'] = 'PASS'
