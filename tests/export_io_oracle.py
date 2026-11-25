@@ -336,6 +336,24 @@ def verify_gcode_export(path):
     return facts
 
 
+GCODE_EXPECTATIONS = (
+    ('生成 .gcode 文件', ('extension', 'gcode_extension')),
+    ('含起始/结束 G-code', ('header_block', 'config_block', 'executable_block', 'start_gcode', 'end_gcode',
+                           'trailer_notes')),
+    ('无空文件', ('non_empty', 'layers_present', 'extrusion_present', 'layers_printed')),
+    ('层命令连续', ('declared_layer_count', 'layer_numbers_consecutive', 'layer_z_monotonic')),
+)
+
+
+def gcode_expectation_gaps(facts, extension):
+    """{clause of the Feishu #236 expectation: [names of its failed checks]}.
+
+    `extension` is the one the application appended when saving; `facts` comes
+    from the file as it landed. Nothing raises: each clause reports its own gaps."""
+    checks = dict(gcode_checks(facts), extension=extension == '.gcode')
+    return {clause: [name for name in names if not checks[name]] for clause, names in GCODE_EXPECTATIONS}
+
+
 # --- merged STL (#233) --------------------------------------------------------
 
 def _triangles(points, faces):
@@ -437,6 +455,20 @@ def verify_merged_stl(project, exported):
             'triangle_count': len(faces), 'objects': objects,
             'max_vertex_deviation_mm': deviation, 'vertex_tolerance_mm': MERGED_VERTEX_TOL_MM,
             'stl_bounds_mm': bounds(points)}
+
+
+def project_presets(project):
+    """The printer and process a saved project names, read from its settings (no expectation attached)."""
+    import json
+    with ZipFile(Path(project)) as archive:
+        settings = json.loads(archive.read('Metadata/project_settings.config'))
+    filaments = settings.get('filament_settings_id') or []
+    return {'printer_model': settings.get('printer_model'), 'printer_settings_id': settings.get('printer_settings_id'),
+            'print_settings_id': settings.get('print_settings_id'),
+            'filament_settings_id': filaments[0] if isinstance(filaments, list) and filaments else filaments,
+            'layer_height': settings.get('layer_height'),
+            'initial_layer_print_height': settings.get('initial_layer_print_height'),
+            'print_sequence': settings.get('print_sequence')}
 
 
 def plate_object_layout(project):

@@ -515,3 +515,74 @@ def test_size_comparison_needs_the_complex_sample_to_be_larger(tmp_path):
         'complex_file_larger': False, 'complex_gcode_larger': False}
     assert sliced_3mf_facts(simple)['members'][0] == {'name': 'Metadata/plate_1.gcode',
                                                         'bytes': len(gcode_text().encode('utf-8'))}
+
+
+# --- helpers of the GUI cases that need no application (file_export_cases) ----
+
+EXPORT_ROWS = ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...',
+               'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...',
+               'Export Preset Bundle...']
+
+
+def test_export_rows_are_matched_by_exact_label_without_accelerator():
+    from file_export_cases import export_row_in, row_label
+    rows = [{'index': index, 'label': text, 'enabled': True, 'submenu': False}
+            for index, text in enumerate(EXPORT_ROWS)]
+    assert row_label('Export plate sliced file...\tCtrl+G') == 'Export plate sliced file'
+    # The plate row must not resolve to the all-plates row that shares its tail.
+    picked = [export_row_in(rows, item)['index'] for item in (
+        'Export all objects as one STL', 'Export plate sliced file', 'Export G-code')]
+    assert picked == [0, 3, 5]
+    assert export_row_in(rows, 'Export sliced file') is None
+    with pytest.raises(ValueError, match="names 2 Export rows"):
+        export_row_in(rows + [dict(rows[5])], 'Export G-code')
+
+
+def test_landed_file_must_be_new_complete_and_alone(tmp_path):
+    from file_export_cases import complete_file, wait_landed_file
+    good = write_gcode(tmp_path / 'plate.gcode', gcode_text())
+    assert complete_file(good, 'gcode')
+    assert wait_landed_file(tmp_path, 'plate', set(), 'gcode', timeout_s=5) == good
+    cut = write_gcode(tmp_path / 'cut.gcode', gcode_text()[:-20])
+    assert not complete_file(cut, 'gcode')
+    with pytest.raises(ValueError, match="no complete file for 'cut'"):
+        wait_landed_file(tmp_path, 'cut', set(), 'gcode', timeout_s=0.5)
+    # A file that was there before the export is never taken for the new one.
+    with pytest.raises(ValueError, match="no complete file for 'plate'"):
+        wait_landed_file(tmp_path, 'plate', {'plate.gcode'}, 'gcode', timeout_s=0.5)
+    stl = write_stl(tmp_path / 'pair.stl', [((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0))] * 3)
+    assert complete_file(stl, 'stl')
+    short = tmp_path / 'short.stl'
+    short.write_bytes(stl.read_bytes()[:-10])
+    assert not complete_file(short, 'stl')
+    archive = write_sliced(tmp_path / 'plate.gcode.3mf')
+    assert complete_file(archive, 'archive')
+    torn = tmp_path / 'torn.gcode.3mf'
+    torn.write_bytes(archive.read_bytes()[:-40])
+    assert not complete_file(torn, 'archive')
+    assert not complete_file(good, 'archive')
+
+
+def test_expectation_clauses_report_their_own_gaps(tmp_path):
+    from export_io_oracle import gcode_expectation_gaps, project_presets
+    facts = gcode_export_facts(write_gcode(tmp_path / 'plate.gcode', gcode_text()))
+    clauses = ('生成 .gcode 文件', '含起始/结束 G-code', '无空文件', '层命令连续')
+    assert gcode_expectation_gaps(facts, '.gcode') == {clause: [] for clause in clauses}
+    assert gcode_expectation_gaps(facts, '.txt')['生成 .gcode 文件'] == ['extension']
+    text = gcode_text()
+    header_only = gcode_export_facts(write_gcode(
+        tmp_path / 'head.gcode', text[:text.index('; EXECUTABLE_BLOCK_START')]))
+    gaps = gcode_expectation_gaps(header_only, '.gcode')
+    assert gaps['生成 .gcode 文件'] == []
+    assert gaps['含起始/结束 G-code'] == ['config_block', 'executable_block', 'start_gcode', 'end_gcode',
+                                          'trailer_notes']
+    assert gaps['无空文件'] == ['layers_present', 'extrusion_present', 'layers_printed']
+    assert gaps['层命令连续'] == ['declared_layer_count', 'layer_numbers_consecutive', 'layer_z_monotonic']
+    # Start commands present, nothing after them: the end G-code and notes are what is missing.
+    started = gcode_export_facts(write_gcode(tmp_path / 'started.gcode', text[:400]))
+    assert gcode_expectation_gaps(started, '.gcode')['含起始/结束 G-code'] == [
+        'config_block', 'executable_block', 'end_gcode', 'trailer_notes']
+    presets = project_presets(FIXTURES / 'feishu_std_cube.3mf')
+    assert (presets['printer_model'], presets['printer_settings_id']) == ('Snapmaker U1', 'Snapmaker U1 (0.4 nozzle)')
+    assert presets['print_settings_id'] == '0.20mm Standard @Snapmaker U1 (0.4 nozzle)'
+    assert presets['layer_height'] == '0.2' and presets['initial_layer_print_height'] == '0.25'

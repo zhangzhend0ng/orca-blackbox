@@ -1,0 +1,340 @@
+#!/usr/bin/env python3
+"""GUI helpers shared by the File > Export cases (Feishu #236, #233, #234).
+
+Everything here drives the application from outside: menus are read through
+their HMENU, dialogs through their child windows, and the result is whatever
+file lands in the run directory. Nothing in this module judges the product.
+
+Measured on the guest (Snapmaker Orca 2.4.0, en_US), see the coordinator's
+probes diag_file_menu_census and diag_slice_export_probe:
+
+* File > Export is a submenu. Its rows are ``Export all objects as one
+  STL...``, ``Export all objects as STLs...``, ``Export Generic 3MF...``,
+  ``Export plate sliced file...`` (Ctrl+G), ``Export all plate sliced
+  file...``, ``Export G-code...`` and ``Export Preset Bundle...``. The three
+  slice rows stay disabled until the plate has a slice result; the slice
+  button's done badge is NOT that signal, because the runtime memory guard can
+  hold the rows disabled while the badge already shows.
+* The file dialog's type filter is the selected entry of a ComboBox, not a
+  window text.
+* A directory path typed into the file name box plus IDOK navigates the dialog
+  and keeps it open; a name typed afterwards plus IDOK saves, and the
+  application appends the extension. A full path typed at once saves too
+  (m7x_250), but then the extension is the caller's, not the product's.
+* ``Memory Usage Warning`` (RichMessageDialog, #32770) pops when the guest
+  runs low on memory during slicing. Its default button is ``No, Stop``; the
+  only accepted answer is a click on the child whose text is exactly
+  ``Yes, Continue``. A message click without a root window does not close it;
+  the same click resolved inside the dialog's own window tree does
+  (runs hogprobe-f5572f61 against hogprobe2-e3ce6f8b). Never send Enter or a
+  default-button command here.
+"""
+import ctypes
+from ctypes import wintypes
+from hashlib import sha256
+from io import BytesIO
+from pathlib import Path
+import struct
+import time
+from zipfile import ZipFile
+
+import cv2
+import numpy as np
+
+import m7_common as m7
+from harness import export_util, topbar_util, winutil
+from m2_slice_chain import click_slice_start
+
+LOG = '[export]'
+GUARD_TITLE = 'Memory Usage Warning'
+GUARD_CONTINUE = 'Yes, Continue'
+GUARD_CLICK_TIERS = ('message click', 'message click inside dialog', 'real click')
+IDOK, IDCANCEL = 1, 2
+
+
+def descendants(hwnd):
+    """[(class name, window text, hwnd)] of every child of a dialog, top to bottom."""
+    out = []
+    callback = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+
+    def visit(child, _lp):
+        text = ctypes.create_unicode_buffer(4096)
+        winutil.user32.GetWindowTextW(child, text, 4096)
+        cls = ctypes.create_unicode_buffer(128)
+        winutil.user32.GetClassNameW(child, cls, 128)
+        out.append((cls.value, text.value, child))
+        return True
+
+    winutil.user32.EnumChildWindows(ctypes.c_void_p(hwnd), callback(visit), 0)
+    return out
+
+
+def combobox_items(combobox):
+    """Every list entry of a ComboBox child (CB_GETCOUNT / CB_GETLBTEXT); the selected text is not a window text."""
+    user32 = ctypes.WinDLL('user32', use_last_error=True)
+    user32.SendMessageW.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM]
+    user32.SendMessageW.restype = wintypes.LPARAM
+    items = []
+    for index in range(user32.SendMessageW(combobox, 0x0146, 0, 0)):
+        length = user32.SendMessageW(combobox, 0x0149, index, 0)
+        buffer = ctypes.create_unicode_buffer(length + 1)
+        user32.SendMessageW(combobox, 0x0148, index, ctypes.addressof(buffer))
+        items.append(buffer.value)
+    return {'selected': user32.SendMessageW(combobox, 0x0147, 0, 0), 'items': items}
+
+
+def row_label(text):
+    """A menu label without its accelerator and trailing dots."""
+    return text.partition('\t')[0].rstrip('. …').strip()
+
+
+def _rows(hmenu):
+    return [{'index': index, 'label': text, 'enabled': bool(hmenu) and not flags & 3, 'submenu': bool(flags & 0x10)}
+            for index, text, flags in topbar_util.menu_items(hmenu)]
+
+
+def read_export_menu(session):
+    """Every row of the live File menu and of its Export submenu, with the enabled state; the menus are closed."""
+    menu = topbar_util.open_file_menu(session)
+    if not menu:
+        raise ValueError('topbar File menu did not open')
+    _rect, _hwnd, hmenu = menu
+    file_rows = _rows(hmenu)
+    index = topbar_util.find_item(hmenu, 'Export')
+    submenu = topbar_util.item_info(hmenu, index)[1] if index is not None else None
+    export_rows = _rows(submenu)
+    topbar_util.close_menu_windows(session.pid)
+    print(f'{LOG} file menu: {[row["label"] for row in file_rows]}', flush=True)
+    print(f'{LOG} Export menu: {[(row["index"], row["label"], row["enabled"]) for row in export_rows]}', flush=True)
+    return {'file': file_rows, 'export': export_rows}
+
+
+def export_row_in(rows, item):
+    """The one Export submenu row whose label (without accelerator and dots) is `item`, or None."""
+    wanted = row_label(item).casefold()
+    found = [row for row in rows if row_label(row['label']).casefold() == wanted]
+    if len(found) > 1:
+        raise ValueError(f'{item!r} names {len(found)} Export rows')
+    return found[0] if found else None
+
+
+def topbar_labels(session):
+    return [text for text, _rect, _hwnd in export_util.topbar_buttons(session.hwnd)]
+
+
+def capture_window(hwnd, path):
+    """Keep a PrintWindow image of a native dialog."""
+    width, height, pixels = winutil.capture_window(hwnd)
+    frame = np.frombuffer(pixels, np.uint8).reshape(height, width, 4)
+    if not cv2.imwrite(str(path), cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)):
+        raise ValueError(f'could not keep the dialog image {Path(path).name}')
+    return {'width_px': width, 'height_px': height}
+
+
+def answer_memory_guard(session, work, analysis):
+    """Answer the runtime memory guard with its `Yes, Continue` button.
+
+    The dialog's text and image go to the analysis first. Only the child whose
+    text is exactly `Yes, Continue` is clicked, tier by tier; after two dialogs
+    that would not close the case stops with an error instead of guessing."""
+    dialog = m7.wait_dialog(session.pid, timeout_s=0.3, title_substr=GUARD_TITLE)
+    if not dialog:
+        return False
+    _cls, title, _rect, hwnd = dialog
+    dialogs = analysis.setdefault('memory_guard_dialogs', [])
+    record = {'title': title, 'at': time.strftime('%H:%M:%S'),
+              'texts': [text for _cls, text, _child in descendants(hwnd) if text],
+              'screenshot': f'memory-guard-{len(dialogs)}.png'}
+    dialogs.append(record)
+    try:
+        record['image'] = capture_window(hwnd, work / record['screenshot'])
+    except (OSError, RuntimeError, ValueError, cv2.error) as exc:
+        record['image'] = f'unavailable ({exc})'
+    print(f'{LOG} memory guard dialog: {record["texts"]!r}', flush=True)
+    yes = [(rect, child) for text, rect, child in export_util._children_texts(hwnd) if text.strip() == GUARD_CONTINUE]
+    if len(yes) != 1:
+        raise ValueError(f'expected one "{GUARD_CONTINUE}" button, found {len(yes)}: {record["texts"]!r}')
+    (left, top, right, bottom), _child = yes[0]
+    cx, cy = (left + right) // 2, (top + bottom) // 2
+    record['button'] = [left, top, right, bottom]
+    record['tiers'] = []
+    for how in GUARD_CLICK_TIERS:
+        if how == 'message click':
+            winutil.msg_click_screen(cx, cy)
+        elif how == 'message click inside dialog':
+            winutil.msg_click_screen(cx, cy, hwnd)
+        elif winutil._window_pid(winutil.window_from_screen_point(cx, cy)) == session.pid:
+            # A real click goes through the OS input queue: only when the point
+            # really is a window of the application under test.
+            winutil.user32.SetCursorPos(cx, cy)
+            time.sleep(0.2)
+            winutil.real_click_screen(cx, cy)
+        else:
+            record['tiers'].append({'how': how, 'skipped': 'another window covers the button'})
+            break
+        time.sleep(1.5)
+        record['tiers'].append({'how': how, 'closed': not winutil.user32.IsWindowVisible(hwnd)})
+        if not winutil.user32.IsWindowVisible(hwnd):
+            break
+    record['closed'] = not winutil.user32.IsWindowVisible(hwnd)
+    print(f'{LOG} memory guard answered: {record["tiers"]!r}', flush=True)
+    if not record['closed']:
+        analysis['guard_failures'] = analysis.get('guard_failures', 0) + 1
+        if analysis['guard_failures'] >= 2:
+            raise ValueError(f'"{GUARD_TITLE}" could not be answered with "{GUARD_CONTINUE}"')
+    return True
+
+
+def wait_export_enabled(session, work, analysis, item, timeout_s=150):
+    """Wait until the `item` row of File > Export is enabled, answering the memory guard on the way.
+
+    The row's enabled state is gated on the slice result being ready for
+    export (MainFrame::can_export_gcode), so it is the completion signal."""
+    started = analysis['slice']['clicked_at']
+    deadline = time.monotonic() + timeout_s
+    polls = 0
+    while time.monotonic() < deadline:
+        answer_memory_guard(session, work, analysis)
+        enabled, _ = m7.file_menu_dispatch(session, item, via='Export', inspect_enabled=True)
+        polls += 1
+        if enabled:
+            analysis['slice'].update(export_enabled_after_seconds=round(time.monotonic() - started, 1), polls=polls)
+            print(f'{LOG} {item!r} enabled {analysis["slice"]["export_enabled_after_seconds"]}s after the Slice click', flush=True)
+            return True
+        time.sleep(1.5)
+    try:
+        rows = read_export_menu(session)['export']
+    except ValueError as exc:
+        rows = f'unavailable ({exc})'
+    analysis['slice'].update(export_enabled_after_seconds=None, polls=polls, export_menu_at_timeout=rows)
+    raise ValueError(f'{item!r} stayed disabled {timeout_s}s after the Slice click')
+
+
+def slice_until_exportable(session, work, analysis, item, timeout_s=150):
+    """Click Slice once, then wait for the `item` export row; readings land in analysis['slice']."""
+    analysis['slice'] = {'topbar_before': topbar_labels(session), 'clicked_at': time.monotonic()}
+    try:
+        if not click_slice_start(session):
+            raise ValueError('the Slice click did not take')
+        wait_export_enabled(session, work, analysis, item, timeout_s)
+    finally:
+        analysis['slice'].pop('clicked_at', None)
+    slice_reading = analysis['slice']
+    slice_reading['topbar_after'] = topbar_labels(session)
+    slice_reading['export_menu_after'] = read_export_menu(session)['export']
+    return slice_reading
+
+
+def complete_file(path, kind):
+    """True once a landed file of `kind` ('gcode', 'stl' or 'archive') carries its end marker."""
+    raw = Path(path).read_bytes()
+    if kind == 'gcode':
+        return raw.rstrip().endswith(b'; CONFIG_BLOCK_END')
+    if kind == 'stl':
+        return len(raw) >= 84 and 84 + 50 * struct.unpack_from('<I', raw, 80)[0] == len(raw)
+    if kind == 'archive':
+        if raw[:2] != b'PK':
+            return False
+        try:
+            with ZipFile(BytesIO(raw)) as archive:
+                return archive.testzip() is None
+        except Exception:  # noqa: BLE001 - an unfinished archive is simply not readable yet
+            return False
+    raise ValueError(f'unknown file kind {kind!r}')
+
+
+def wait_landed_file(directory, name, known, kind, timeout_s=60):
+    """The one file the application wrote for `name`, once it is complete and its size has held still for a second."""
+    deadline = time.monotonic() + timeout_s
+    previous, stable_since, seen = None, None, []
+    while time.monotonic() < deadline:
+        seen = sorted(path for path in Path(directory).iterdir()
+                      if path.is_file() and path.name not in known
+                      and (path.name == name or path.name.startswith(name + '.')))
+        sizes = [path.stat().st_size for path in seen]
+        now = time.monotonic()
+        if len(seen) == 1 and sizes[0] and sizes[0] == previous and complete_file(seen[0], kind):
+            stable_since = stable_since or now
+            if now - stable_since >= 1.0:
+                return seen[0]
+        else:
+            stable_since = None
+        previous = sizes[0] if len(seen) == 1 else None
+        time.sleep(0.25)
+    raise ValueError(f'no complete file for {name!r} landed within {timeout_s}s; new files: {[p.name for p in seen]}')
+
+
+def _wait_closed(hwnd, timeout_s):
+    deadline = time.monotonic() + timeout_s
+    while winutil.user32.IsWindowVisible(hwnd) and time.monotonic() < deadline:
+        time.sleep(0.2)
+    return not winutil.user32.IsWindowVisible(hwnd)
+
+
+def cancel_dialog(hwnd):
+    """IDCANCEL on a native file dialog."""
+    winutil._send_msg(hwnd, m7.WM_COMMAND_MSG, IDCANCEL, 0)
+
+
+def export_via_file_menu(session, item, directory, name, work, analysis, title_substr, kind, timeout_s=60):
+    """File > Export > `item`: navigate the dialog to `directory`, save under `name`, return what landed.
+
+    The name is typed without an extension so that the application decides it.
+    The receipt carries the Export rows seen, the dialog title, the proposed
+    name, the type filter entries and the name and size of the file. A dialog
+    with another title is left untouched: it may be the memory guard."""
+    directory, name = Path(directory), str(name)
+    if not directory.is_dir():
+        raise ValueError(f'{directory} is not a directory')
+    rows = read_export_menu(session)['export']
+    row = export_row_in(rows, item)
+    if row is None:
+        raise ValueError(f'File > Export has no row {item!r}: {rows!r}')
+    if not row['enabled']:
+        raise ValueError(f'File > Export > {item} is disabled')
+    known = {path.name for path in directory.iterdir()}
+    if name in known or any(entry.startswith(name + '.') for entry in known):
+        raise ValueError(f'{name!r} already exists in {directory}')
+    receipt = analysis['export'] = {'item': item, 'export_rows': rows, 'typed_name': name}
+    dispatched, dialog = m7.file_menu_dispatch(session, item, expect_dialog=True, via='Export', timeout_s=10)
+    if not dispatched or not dialog:
+        raise ValueError(f'File > Export > {item} opened no dialog (dispatched={dispatched!r}, dialog={dialog!r})')
+    _cls, title, _rect, hwnd = dialog
+    receipt['title'] = title
+    if title_substr.casefold() not in title.casefold():
+        raise ValueError(f'File > Export > {item} opened {title!r}, expected a dialog titled {title_substr!r}')
+    children = descendants(hwnd)
+    edit = export_util.find_edit(hwnd)
+    if edit is None or winutil._window_pid(edit) != session.pid:
+        cancel_dialog(hwnd)
+        raise ValueError(f'{title!r} has no owned file name box')
+    receipt['default_name'] = winutil.edit_text(edit, size=1024)
+    receipt['types'] = [combobox_items(child) for cls, _text, child in children if cls == 'ComboBox']
+    receipt['labels'] = [text for _cls, text, _child in children if text]
+    # Step 1 (measured on the guest): a directory path plus IDOK navigates and keeps the dialog open.
+    winutil.select_all(edit)
+    winutil.msg_text(edit, str(directory))
+    winutil._send_msg(hwnd, 0x0111, IDOK, 0)
+    time.sleep(1.0)
+    if not winutil.user32.IsWindowVisible(hwnd):
+        raise ValueError(f'{title!r} closed after the directory was entered')
+    receipt['directory'] = str(directory)
+    # Step 2: the bare name plus IDOK saves; the application appends the extension.
+    edit = export_util.find_edit(hwnd)
+    winutil.select_all(edit)
+    winutil.msg_text(edit, name)
+    receipt['filename_before_save'] = winutil.edit_text(edit, size=1024)
+    if receipt['filename_before_save'] != name:
+        cancel_dialog(hwnd)
+        raise ValueError(f'{title!r} did not accept the name {name!r}: {receipt["filename_before_save"]!r}')
+    receipt['dialog_image'] = capture_window(hwnd, work / 'export-dialog.png')
+    winutil._send_msg(hwnd, 0x0111, IDOK, 0)
+    receipt['dialog_closed'] = _wait_closed(hwnd, 15)
+    if not receipt['dialog_closed']:
+        raise ValueError(f'{title!r} stayed open after the save; dialog texts {[t for t in receipt["labels"]][:24]!r}')
+    landed = wait_landed_file(directory, name, known, kind, timeout_s)
+    raw = landed.read_bytes()
+    receipt.update(saved_name=landed.name, saved_extension=''.join(landed.suffixes),
+                   file_bytes=len(raw), file_sha256=sha256(raw).hexdigest(), app_alive=session.alive())
+    print(f'{LOG} {item} -> {landed.name} ({len(raw)} bytes), extension {receipt["saved_extension"]!r}', flush=True)
+    return receipt
