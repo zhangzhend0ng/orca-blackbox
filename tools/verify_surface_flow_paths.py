@@ -11,9 +11,39 @@ FLOW_KEYS = ("top_solid_infill_flow_ratio", "bottom_solid_infill_flow_ratio", "p
 EXPECTED = {"Top surface": 1.1, "Bottom surface": 0.9}
 
 
+def _config_entries(text):
+    blocks = re.findall(r"^; CONFIG_BLOCK_START\r?\n(.*?)^; CONFIG_BLOCK_END\r?$", text, re.M | re.S)
+    if len(blocks) != 1:
+        raise ValueError("expected one emitted configuration block")
+    entries = defaultdict(list)
+    for key, value in re.findall(r"^; (\w+) = ([^\r\n]*)", blocks[0], re.M):
+        entries[key].append(value)
+    if any(len(entries.get(key, [])) != 1 for key in FLOW_KEYS):
+        raise ValueError("expected one emitted value for each flow setting")
+    return dict(entries)
+
+
+def _config_delta(before, after):
+    # Orca repeats some keys (including wipe_tower_x/y) in a single block. Compare
+    # every occurrence so an unrelated change cannot hide behind a later value.
+    changed = sorted(key for key in before.keys() | after.keys() if before.get(key) != after.get(key))
+    target_keys = set(FLOW_KEYS[:2])
+    dirty_key = "different_settings_to_system"
+    unexpected = [key for key in changed if key not in target_keys and key != dirty_key]
+    if dirty_key in changed:
+        def other_dirty_keys(entries):
+            return [[token for token in value.split(";") if token not in target_keys]
+                    for value in entries.get(dirty_key, [])]
+
+        if other_dirty_keys(before) != other_dirty_keys(after):
+            unexpected.append(dirty_key)
+    return {"pass": not unexpected, "key_counts": [len(before), len(after)],
+            "changed_keys": changed, "unexpected_changes": sorted(unexpected)}
+
+
 def _read(path):
     text = Path(path).read_text(encoding="utf-8-sig")
-    config = dict(re.findall(r"^; (\w+) = ([^\r\n]*)", text, re.M))
+    config = _config_entries(text)
     point = dict.fromkeys("XYZE")
     absolute = relative_e = active = None
     feature = ""
@@ -73,8 +103,11 @@ def _read(path):
 
 
 def verify(baseline, target):
-    a, first = _read(baseline)
-    b, last = _read(target)
+    baseline_entries, first = _read(baseline)
+    target_entries, last = _read(target)
+    effective_config = _config_delta(baseline_entries, target_entries)
+    a = {key: values[-1] for key, values in baseline_entries.items()}
+    b = {key: values[-1] for key, values in target_entries.items()}
     cfg = {k: [a.get(k), b.get(k)] for k in FLOW_KEYS}
     settings = all(math.isclose(float(a[k]), 1) and math.isclose(float(b[k]), want)
                    for k, want in zip(FLOW_KEYS, (1.1, 0.9, 1.0)))
@@ -102,11 +135,15 @@ def verify(baseline, target):
                         "extrusion_ratio": ratio, "segment_e_mismatches": mismatches}
     shape = report.get("Outer wall", {}).get("paths_identical", False)
     sufficient = all(k in first and k in last for k in (*EXPECTED, "Outer wall", "Inner wall"))
-    ok = settings and profiles_match and sufficient and shape and all(v["paths_identical"] and v["segment_e_mismatches"] == 0 and
-        math.isclose(v["extrusion_ratio"], EXPECTED.get(k, 1), abs_tol=0.005) for k, v in report.items())
+    extrusion_matches = all(
+        row["paths_identical"] and row["segment_e_mismatches"] == 0
+        and math.isclose(row["extrusion_ratio"], EXPECTED.get(name, 1), abs_tol=0.005)
+        for name, row in report.items()
+    )
+    ok = effective_config["pass"] and settings and profiles_match and sufficient and shape and extrusion_matches
     totals = [sum(row["extrusion_mm"][i] for row in report.values()) for i in range(2)]
     return {"pass": ok, "flow_config": cfg, "config_matches": settings, "profile_matches": profiles_match,
-            "outer_shell_paths_identical": shape,
+            "effective_config": effective_config, "outer_shell_paths_identical": shape,
             "all_labelled_features_extrusion_mm": totals, "all_labelled_features_ratio": totals[1] / totals[0],
             "feature_extrusion": report, "input_sha256": [hashlib.sha256(Path(p).read_bytes()).hexdigest()
                                                           for p in (baseline, target)]}
