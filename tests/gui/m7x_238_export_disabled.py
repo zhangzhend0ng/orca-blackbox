@@ -8,14 +8,14 @@ Steps (Feishu): 1. 观察导出菜单中切片类条目的状态; 2. 执行切�
 Expected (Feishu): 切片导出类条目置灰；切片完成后恢复可用.
 
 The standard cube is loaded and saved as `before` (a project without a plate
-G-code: nothing is sliced). File > Export is then opened on screen with its
-submenu expanded and a desktop picture of the two menus is kept; the rows
-are read from the open menu. The plate is sliced (the File > Export > Export
-G-code row is the completion signal, the memory guard is answered on the
-way) and the menu is shown and read a second time. The three slice export
-rows must be disabled before slicing and enabled after it; two rows that do
-not need a slice result must be enabled both times, which shows the menu
-was readable and only the slice rows were disabled.
+G-code: nothing is sliced). File > Export is then opened and its rows are
+read from the menus' handles; a desktop picture of the two menus on screen
+is tried as evidence and kept apart from the reading. The plate is sliced
+(the File > Export > Export G-code row is the completion signal, the memory
+guard is answered on the way) and the menu is read a second time. The three
+slice export rows must be disabled before slicing and enabled after it; two
+rows that do not need a slice result must be enabled both times, which shows
+the menu was readable and only the slice rows were disabled.
 """
 from hashlib import sha256
 from pathlib import Path
@@ -26,7 +26,7 @@ sys.path[:0] = [str(HERE), str(HERE / 'tests'), str(HERE / 'tests' / 'engine'), 
 
 import m7_common as m7  # noqa: E402
 from export_io_oracle import export_rows_expectation_gaps, project_has_gcode, project_presets  # noqa: E402
-from file_export_cases import show_export_menu, slice_until_exportable  # noqa: E402
+from file_export_cases import export_menu_reading, slice_until_exportable  # noqa: E402
 from m7x_249_add_part import capture, stage  # noqa: E402
 from plate_reserve_case import case_main, save_snapshot  # noqa: E402
 from plate_reserve_oracle import read_project
@@ -53,12 +53,12 @@ def steps(session, work, analysis, args):
             raise ValueError(f'the plate must hold a model and no slice result: {analysis["plate_objects"]!r}, '
                              f'sliced={analysis["before_is_sliced"]}')
     with stage(analysis, 'observe_before_slice'):
-        analysis['menu_before_slice'] = show_export_menu(session, work / 'menu-before.png')
+        analysis['menu_before_slice'] = export_menu_reading(session, work, 'menu-before.png')
     with stage(analysis, 'slice'):
         slice_until_exportable(session, work, analysis, 'Export G-code')
         capture(session, work / 'sliced.png')
     with stage(analysis, 'observe_after_slice'):
-        analysis['menu_after_slice'] = show_export_menu(session, work / 'menu-after.png')
+        analysis['menu_after_slice'] = export_menu_reading(session, work, 'menu-after.png')
     gaps = analysis['expectation_gaps'] = export_rows_expectation_gaps(
         analysis['menu_before_slice']['export'], analysis['menu_after_slice']['export'])
     for clause, failed in gaps.items():

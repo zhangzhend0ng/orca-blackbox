@@ -717,32 +717,69 @@ def test_open_menus_are_closed_with_real_escape_only_while_orca_is_the_foregroun
     assert cases.dismiss_menus(session) is False and keys == []
 
 
-def menus_rig(monkeypatch, tmp_path, *, opens=True, closes=True):
-    """A File menu at (100, 100)-(300, 300) whose Export submenu opens at (300, 180)-(560, 400)."""
+def menus_rig(monkeypatch, tmp_path, *, hover_opens=True, key_opens=True, wrong_submenu=False,
+              row_rect_known=True, closes=True, foreground=True, screen_fails=False):
+    """A File menu at (100, 100)-(300, 300) with two rows of even height; its Export row is the
+    lower one, (100, 200)-(300, 298), and leads to HMENU 9002. When the submenu shows it is the
+    window at (300, 180)-(560, 400). What opens it, and whether it is the right one, is set by
+    the flags; every move of the cursor and every key is recorded in `calls`."""
     import m8x_48_modal_color_header as header
-    calls, state = [], {'menus': [], 'closes': closes, 'foreground': True}
+    calls, state = [], {'menus': [], 'closes': closes, 'foreground': foreground}
     menus = {9001: [(0, 'New Project\tCtrl+N', 0), (1, 'Export', 16)],
-             9002: [(index, text, 3 if index in (3, 4, 5) else 0) for index, text in enumerate(ROWS)]}
+             9002: [(index, text, 3 if index in (3, 4, 5) else 0) for index, text in enumerate(ROWS)],
+             9009: [(0, 'Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 0)]}  # the Import submenu
+    windows = {501: (100, 100, 300, 300), 502: (300, 180, 560, 400), 509: (300, 120, 560, 160)}
+
+    def show(which=502):
+        if 502 not in state['menus'] and 509 not in state['menus']:
+            state['menus'].append(which)
 
     def open_file(session):
         calls.append(('open',))
-        state['menus'].append('file')
-        return (100, 100, 300, 300), 501, 9001
+        state['menus'].append(501)
+        return windows[501], 501, 9001
 
-    def wait_submenu(pid, known, timeout_s=5.0):
-        if opens:
-            state['menus'].append('export')
-            return (300, 180, 560, 400), 502, 9002
-        return None
+    def item_info(hmenu, index):
+        return 4242, 9002
 
-    def escape(pressed):
-        calls.append(('escape',))
-        if state['closes']:
-            state['menus'].clear()
+    def menu_hmenu(hwnd):
+        return {501: 9001, 502: 9002, 509: 9009}.get(hwnd, 0)
 
     def row_rect(menu_hwnd, hmenu, index, rect):
         box = ctypes.cast(rect, ctypes.POINTER(cases.wintypes.RECT)).contents
-        box.left, box.top, box.right, box.bottom = 300, 180 + 20 * index, 560, 200 + 20 * index
+        if menu_hwnd == 501 and index == 1 and row_rect_known:
+            box.left, box.top, box.right, box.bottom = 100, 200, 300, 298
+        elif menu_hwnd == 502:
+            box.left, box.top, box.right, box.bottom = 300, 180 + 20 * index, 560, 200 + 20 * index
+        else:
+            return 0
+        return 1
+
+    def set_cursor(x, y):
+        calls.append(('cursor', x, y))
+        if hover_opens and foreground and state['menus'] == [501] and 200 <= y <= 298:
+            show(509 if wrong_submenu else 502)
+
+    def key(pressed):
+        calls.append(('key', pressed[0][0]))
+        if pressed[0][0] == 0x1B:  # Escape closes the submenu first, then the File menu
+            if state['closes']:
+                if len(state['menus']) > 1:
+                    state['menus'].pop()
+                else:
+                    state['menus'].clear()
+        elif key_opens and foreground and state['menus'] == [501]:
+            show(509 if wrong_submenu else 502)
+
+    def grab():
+        if screen_fails:
+            raise cases.winutil.CaptureError('BitBlt failed')
+        return 640, 480, frame.tobytes()
+
+    def cursor_pos(point):
+        last = [call for call in calls if call[0] == 'cursor'][-1]
+        contents = ctypes.cast(point, ctypes.POINTER(cases.wintypes.POINT)).contents
+        contents.x, contents.y = last[1], last[2]
         return 1
 
     frame = np.zeros((480, 640, 4), np.uint8)
@@ -752,56 +789,95 @@ def menus_rig(monkeypatch, tmp_path, *, opens=True, closes=True):
     monkeypatch.setattr(header, 'bring_main_to_mouse', lambda hwnd: state['foreground'])
     monkeypatch.setattr(cases.topbar_util, 'open_file_menu', open_file)
     monkeypatch.setattr(cases.topbar_util, 'find_item', lambda hmenu, text: 1)
-    monkeypatch.setattr(cases.topbar_util, 'hover_row',
-                        lambda rect, count, index: calls.append(('hover', rect, count, index)))
-    monkeypatch.setattr(cases.topbar_util, 'wait_submenu', wait_submenu)
+    monkeypatch.setattr(cases.topbar_util, 'item_info', item_info)
+    monkeypatch.setattr(cases.topbar_util, 'menu_hmenu', menu_hmenu)
     monkeypatch.setattr(cases.topbar_util, 'menu_items', lambda hmenu: list(menus[hmenu]))
-    monkeypatch.setattr(cases.topbar_util, '_enum_menu_windows', lambda pid: list(state['menus']))
+    monkeypatch.setattr(cases.topbar_util, '_enum_menu_windows',
+                        lambda pid: [(*windows[handle], handle) for handle in state['menus']])
     monkeypatch.setattr(cases.topbar_util, 'close_menu_windows', lambda pid: None)
     monkeypatch.setattr(cases.winutil.user32, 'GetForegroundWindow', lambda: 11)
     monkeypatch.setattr(cases.winutil.user32, 'GetMenuItemRect', row_rect)
+    monkeypatch.setattr(cases.winutil.user32, 'SetCursorPos', set_cursor)
+    monkeypatch.setattr(cases.winutil.user32, 'GetCursorPos', cursor_pos)
     monkeypatch.setattr(cases.winutil, '_window_pid', lambda hwnd: SESSION_PID)
-    monkeypatch.setattr(cases.m7.mdu, '_send_keys', escape)
-    monkeypatch.setattr(cases.winutil, 'screen_grab', lambda: (640, 480, frame.tobytes()))
+    monkeypatch.setattr(cases.m7.mdu, '_send_keys', key)
+    monkeypatch.setattr(cases.winutil, 'screen_grab', grab)
     ticking(monkeypatch)
-    return calls, state, tmp_path / 'menu.png'
+    return calls, state
 
 
-def test_export_menu_is_shown_with_its_submenu_and_kept_as_a_desktop_picture(monkeypatch, tmp_path):
+def read_menu(monkeypatch, tmp_path, **flags):
+    calls, state = menus_rig(monkeypatch, tmp_path, **flags)
+    reading = cases.export_menu_reading(SimpleNamespace(pid=SESSION_PID, hwnd=4242), tmp_path, 'menu.png')
+    return reading, calls, state
+
+
+def test_export_rows_are_read_from_the_menus_whether_or_not_the_submenu_shows_on_screen(monkeypatch, tmp_path):
+    reading, calls, state = read_menu(monkeypatch, tmp_path, hover_opens=False, key_opens=False)
+    assert [row['label'] for row in reading['file']] == ['New Project\tCtrl+N', 'Export']
+    assert [row['label'] for row in reading['export']] == ROWS
+    assert [row['enabled'] for row in reading['export']] == [True, True, True, False, False, False, True]
+    picture = reading['menu_picture']
+    # No picture: the reason is written out with where the cursor went and which menus were open.
+    assert picture['image'] is None and picture['unavailable'] == 'the Export submenu did not open on screen'
+    assert picture['file_menu_px'] == [100, 100, 300, 300] and picture['foreground'] is True
+    assert picture['tried'][0] == {'how': 'row rectangle', 'point': [200, 249]}
+    assert picture['tried'][-1] == {'how': 'Right arrow key'}  # the key was sent and did not open it either
+    assert len(picture['tried']) == 8  # the row's rectangle, six places around it, then the key
+    assert picture['pointer'] == {'cursor': [200, 231], 'foreground_is_orca': True}  # the cursor stayed where it last went
+    assert picture['menu_windows'] == [[100, 100, 300, 300]]
+    assert not (tmp_path / 'menu.png').exists() and state['menus'] == []
+    assert ('key', 0x27) in calls and ('key', 0x1B) in calls
+    # Without the foreground nothing is sent: the rows are still read, and no picture is tried.
+    reading, calls, state = read_menu(monkeypatch, tmp_path, foreground=False)
+    assert [row['enabled'] for row in reading['export']] == [True, True, True, False, False, False, True]
+    assert reading['menu_picture'] == {'image': None, 'file_menu_px': [100, 100, 300, 300], 'foreground': False,
+                                      'unavailable': 'Orca could not come to the foreground; the submenu was not opened for a picture'}
+    assert calls == [('open',), ('key', 0x1B)] and state['menus'] == []  # only the menu was closed
+    # Another submenu (Import's) is never taken for Export, even when the key opens it.
+    reading, calls, state = read_menu(monkeypatch, tmp_path, wrong_submenu=True)
+    assert reading['menu_picture']['image'] is None and reading['menu_picture']['unavailable'] == (
+        'the Export submenu did not open on screen')
+    assert all('opened' not in entry for entry in reading['menu_picture']['tried'])
+
+
+def test_export_menu_picture_is_kept_when_the_submenu_shows(monkeypatch, tmp_path):
     import cv2
-    calls, state, picture = menus_rig(monkeypatch, tmp_path)
-    shown = cases.show_export_menu(SimpleNamespace(pid=SESSION_PID, hwnd=4242), picture)
-    assert [call[0] for call in calls] == ['open', 'hover', 'escape']
-    assert calls[1] == ('hover', (100, 100, 300, 300), 2, 1)  # the cursor is parked on the Export row
+    reading, calls, state = read_menu(monkeypatch, tmp_path)
+    picture = reading['menu_picture']
+    assert picture['image'] == 'menu.png' and picture['screen_px'] == [640, 480]
+    assert picture['menus_px'] == {'file': [100, 100, 300, 300], 'export': [300, 180, 560, 400]}
+    assert picture['opened_by'] == [{'how': 'row rectangle', 'point': [200, 249], 'opened': True}]
+    assert ('cursor', 200, 245) in calls and calls[-2:] == [('key', 0x1B), ('key', 0x1B)]
     assert state['menus'] == []
     # The picture is the desktop around both menus with a margin: 88..572 across, 88..412 down.
-    kept = cv2.imread(str(picture))
+    kept = cv2.imread(str(tmp_path / 'menu.png'))
     assert kept.shape[:2] == (324, 484)
     assert kept[100:108, 228:382].min() == 230  # text of the first row
     assert kept[160:168, 228:382].max() == 110  # dim text of the first disabled row
-    assert shown['image'] == 'menu.png' and shown['screen_px'] == [640, 480]
-    assert shown['menus_px'] == {'file': [100, 100, 300, 300], 'export': [300, 180, 560, 400]}
-    assert [row['label'] for row in shown['file']] == ['New Project\tCtrl+N', 'Export']
-    assert [row['label'] for row in shown['export']] == ROWS
     # What the picture shows agrees with what the menu reports.
-    assert [row['enabled'] for row in shown['export']] == [True, True, True, False, False, False, True]
-    assert [row['text_luminance'] for row in shown['export']] == [230, 230, 230, 110, 110, 110, 230]
+    assert [row['enabled'] for row in reading['export']] == [True, True, True, False, False, False, True]
+    assert [row['text_luminance'] for row in reading['export']] == [230, 230, 230, 110, 110, 110, 230]
+    # Without the row's rectangle the cursor is parked where an even row pitch puts the row.
+    reading, calls, state = read_menu(monkeypatch, tmp_path, row_rect_known=False)
+    assert reading['menu_picture']['opened_by'] == [{'how': 'even pitch', 'point': [200, 249], 'opened': True}]
+    # Only the key opens it: the pointer is tried first, each time on the row.
+    reading, calls, state = read_menu(monkeypatch, tmp_path, hover_opens=False, key_opens=True)
+    assert [entry['how'] for entry in reading['menu_picture']['opened_by']][0] == 'row rectangle'
+    assert reading['menu_picture']['opened_by'][-1] == {'how': 'Right arrow key', 'opened': True}
+    assert ('key', 0x27) in calls and reading['menu_picture']['image'] == 'menu.png'
+    # A desktop picture that cannot be taken is reported with the rows intact.
+    reading, calls, state = read_menu(monkeypatch, tmp_path, screen_fails=True)
+    assert reading['menu_picture']['image'] is None
+    assert reading['menu_picture']['unavailable'] == 'the desktop picture failed (BitBlt failed)'
+    assert [row['enabled'] for row in reading['export']] == [True, True, True, False, False, False, True]
 
 
-def test_export_menu_that_does_not_open_or_stay_closed_is_an_error_that_leaves_nothing_open(monkeypatch, tmp_path):
-    calls, state, picture = menus_rig(monkeypatch, tmp_path, opens=False)
-    with pytest.raises(ValueError, match='the Export submenu did not open on screen'):
-        cases.show_export_menu(SimpleNamespace(pid=SESSION_PID, hwnd=4242), picture)
-    assert state['menus'] == [] and picture.exists() is False
-    calls, state, picture = menus_rig(monkeypatch, tmp_path, closes=False)
-    with pytest.raises(ValueError, match='the File menu stayed open'):
-        cases.show_export_menu(SimpleNamespace(pid=SESSION_PID, hwnd=4242), picture)
-    assert picture.is_file() and calls.count(('escape',)) == 3
-    calls, state, picture = menus_rig(monkeypatch, tmp_path)
-    state['foreground'] = False
-    with pytest.raises(ValueError, match='could not come to the foreground'):
-        cases.show_export_menu(SimpleNamespace(pid=SESSION_PID, hwnd=4242), picture)
-    assert calls == []
+def test_only_a_menu_that_refuses_to_close_fails_the_reading(monkeypatch, tmp_path):
+    calls, state = menus_rig(monkeypatch, tmp_path, closes=False)
+    with pytest.raises(ValueError, match=r'the File menu stayed open: \[\[100, 100, 300, 300\], \[300, 180, 560, 400\]\]'):
+        cases.export_menu_reading(SimpleNamespace(pid=SESSION_PID, hwnd=4242), tmp_path, 'menu.png')
+    assert calls.count(('key', 0x1B)) == 3
 
 
 def export_rows(disabled):
@@ -823,13 +899,14 @@ def disabled_case(monkeypatch, tmp_path, before, after):
         target.write_bytes(case.FIXTURE.read_bytes())
         return target
 
-    def show(session, path):
-        shown.append(Path(path).name)
-        Path(path).write_bytes(b'picture of the open menus')
-        return {'image': Path(path).name, 'export': before if len(shown) == 1 else after}
+    def read(session, work, image):
+        shown.append(image)
+        # The rows are read; the picture is the one thing that did not work on the guest.
+        return {'export': before if len(shown) == 1 else after, 'file': [],
+                'menu_picture': {'image': None, 'unavailable': 'the Export submenu did not open on screen'}}
 
     monkeypatch.setattr(case, 'save_snapshot', snapshot)
-    monkeypatch.setattr(case, 'show_export_menu', show)
+    monkeypatch.setattr(case, 'export_menu_reading', read)
     monkeypatch.setattr(case, 'slice_until_exportable',
                         lambda session, work, analysis, item: analysis.__setitem__('slice', {'item': item}))
     monkeypatch.setattr(case, 'capture', lambda session, path: Image.new('RGB', (4, 4), (9, 9, 9)).save(path))
@@ -841,8 +918,8 @@ def disabled_case(monkeypatch, tmp_path, before, after):
     assert analysis['before_is_sliced'] is False and analysis['plate_objects'] == ['立方体']
     assert analysis['slice']['item'] == 'Export G-code'
     assert set(analysis['timings']) == {'open_unsliced_plate', 'observe_before_slice', 'slice', 'observe_after_slice'}
-    assert sorted(path.name for path in tmp_path.iterdir()) == [
-        'before.3mf', 'before.png', 'menu-after.png', 'menu-before.png', 'sliced.png']
+    # The verdict came from the rows; with no picture on disk there is nothing else to show.
+    assert sorted(path.name for path in tmp_path.iterdir()) == ['before.3mf', 'before.png', 'sliced.png']
     return analysis
 
 

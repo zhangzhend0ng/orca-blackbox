@@ -143,53 +143,149 @@ def _row_ink(frame, menu_hwnd, hmenu, index):
         return None
 
 
-def show_export_menu(session, path, margin=12):
-    """Open File > Export on screen with its submenu expanded and keep a desktop picture of both.
+def _menu_row_rect(menu_hwnd, hmenu, index):
+    """Screen rectangle of one row of an open popup menu, or None. The popup's own window has to
+    be passed: with a NULL window the call fails on the guest (PITFALLS 20)."""
+    rect = wintypes.RECT()
+    if winutil.user32.GetMenuItemRect(menu_hwnd, hmenu, index, ctypes.byref(rect)):
+        return (rect.left, rect.top, rect.right, rect.bottom)
+    return None
 
-    A popup menu is not part of the application's window, so PrintWindow cannot show it: the
-    picture is cut from the desktop around the two menus. The submenu opens for the real cursor
-    alone, so the window is brought to the foreground first: the real Escape keys that close the
-    menus again would otherwise reach another window. Returns the rows of both menus as they
-    stood while the picture was taken."""
+
+def _wait_submenu(pid, known, expected, timeout_s):
+    """(rect, hwnd, hmenu) of the popup menu whose HMENU is `expected`, among the menus of `pid`
+    that are not in `known`; other new menus are noted in `known` and passed over."""
+    deadline = time.monotonic() + timeout_s
+    while time.monotonic() < deadline:
+        for left, top, right, bottom, hwnd in topbar_util._enum_menu_windows(pid):
+            if hwnd in known:
+                continue
+            if topbar_util.menu_hmenu(hwnd) == expected:
+                return (left, top, right, bottom), hwnd, expected
+            known.add(hwnd)
+        time.sleep(0.2)
+    return None
+
+
+def expand_submenu(session, menu_hwnd, hmenu, rect, count, index, record=None):
+    """Open the submenu of a native menu row; returns (rect, hwnd, hmenu) of the submenu or None.
+
+    A native menu follows the real pointer: the cursor is parked on the row and jogged so that
+    the menu sees it arrive. The row's own rectangle is tried first, then the places an even row
+    pitch puts it at and a few pixels around them (separators are lower than rows), then the
+    Right arrow key, which opens the submenu of the highlighted row and is sent only while the
+    application under test has the keyboard. The submenu is accepted only when its HMENU is the
+    one the row leads to, so Import is never taken for Export. What was tried goes to `record`."""
+    record = [] if record is None else record
+    expected = topbar_util.item_info(hmenu, index)[1]
+    left, top, right, bottom = rect
+    even = top + 2 + int((index + 0.5) * (bottom - top - 4) / max(count, 1))
+    tried = []
+    row = _menu_row_rect(menu_hwnd, hmenu, index)
+    if row:
+        tried.append(('row rectangle', (row[0] + row[2]) // 2, (row[1] + row[3]) // 2))
+    for step in (0, 6, -6, 12, -12, 18, -18):
+        if top < even + step < bottom and all(abs(even + step - y) > 2 for _how, _x, y in tried):
+            tried.append(('even pitch' if not step else f'even pitch {step:+d}', (left + right) // 2, even + step))
+    known = {menu_hwnd}
+    for how, x, y in tried:
+        winutil.user32.SetCursorPos(x, y - 4)
+        time.sleep(0.08)
+        winutil.user32.SetCursorPos(x, y)
+        entry = {'how': how, 'point': [x, y]}
+        record.append(entry)
+        sub = _wait_submenu(session.pid, known, expected, timeout_s=2.5)
+        if sub:
+            entry['opened'] = True
+            return sub
+    entry = {'how': 'Right arrow key'}
+    record.append(entry)
+    if winutil._window_pid(winutil.user32.GetForegroundWindow()) == session.pid:
+        m7.mdu._send_keys([(0x27, False), (0x27, True)])
+        sub = _wait_submenu(session.pid, known, expected, timeout_s=3.0)
+        if sub:
+            entry['opened'] = True
+            return sub
+    else:
+        entry['skipped'] = 'another window has the keyboard'
+    return None
+
+
+def _pointer_state(session):
+    """Where the real cursor is and whether the application under test has the keyboard."""
+    point = wintypes.POINT()
+    winutil.user32.GetCursorPos(ctypes.byref(point))
+    foreground = winutil.user32.GetForegroundWindow()
+    return {'cursor': [point.x, point.y],
+            'foreground_is_orca': winutil._window_pid(foreground) == session.pid}
+
+
+def export_menu_reading(session, work, image, margin=12):
+    """Read File > Export, then try to keep a picture of the two menus open on screen.
+
+    The rows are read from the menus' handles while the File menu is open. That needs no
+    pointer and is what a case judges by. The picture is tried afterwards and never decides
+    anything: the window is brought to the foreground (so the real keys that close the menus
+    again reach it), the real cursor is parked on the Export row, and the picture is cut from
+    the desktop around both menus once the submenu shows. When it does not show, `menu_picture`
+    says so together with where the cursor went, which menu windows were open and who had the
+    keyboard. The menus are closed before returning; only a menu that refuses to close raises.
+    #238's first guest run had the picture decide and said no more than that."""
     from m8x_48_modal_color_header import bring_main_to_mouse
 
-    if not bring_main_to_mouse(session.hwnd):
-        raise ValueError('Orca could not come to the foreground to show the File menu')
     menu = topbar_util.open_file_menu(session)
     if not menu:
         raise ValueError('topbar File menu did not open')
     rect, hwnd, hmenu = menu
     file_rows = _rows(hmenu)
     index = topbar_util.find_item(hmenu, 'Export')
-    if index is None:
-        dismiss_menus(session)
-        raise ValueError('the File menu has no Export row')
+    sub_menu = topbar_util.item_info(hmenu, index)[1] if index is not None else None
+    if not sub_menu:
+        topbar_util.close_menu_windows(session.pid)
+        raise ValueError('the File menu has no Export submenu')
+    export_rows = _rows(sub_menu)
+    picture = {'image': None, 'file_menu_px': list(rect)}
     try:
-        topbar_util.hover_row(rect, len(file_rows), index)
-        sub = topbar_util.wait_submenu(session.pid, {hwnd}, timeout_s=5.0)
-        if not sub:
-            raise ValueError('the Export submenu did not open on screen')
-        sub_rect, sub_hwnd, sub_menu = sub
-        time.sleep(0.5)  # let the submenu finish painting
-        width, height, pixels = winutil.screen_grab()
-        frame = np.frombuffer(pixels, np.uint8).reshape(height, width, 4)
-        left, top = max(0, min(rect[0], sub_rect[0]) - margin), max(0, min(rect[1], sub_rect[1]) - margin)
-        right = min(width, max(rect[2], sub_rect[2]) + margin)
-        bottom = min(height, max(rect[3], sub_rect[3]) + margin)
-        picture = cv2.cvtColor(frame[top:bottom, left:right], cv2.COLOR_BGRA2BGR)
-        if right <= left or bottom <= top or not cv2.imwrite(str(path), picture):
-            raise ValueError(f'could not keep a picture of the open menus as {Path(path).name}')
-        export_rows = _rows(sub_menu)
-        for row in export_rows:
-            row['text_luminance'] = _row_ink(frame, sub_hwnd, sub_menu, row['index'])
+        foreground = bring_main_to_mouse(session.hwnd)
+        picture['foreground'] = bool(foreground)
+        if not foreground:
+            picture['unavailable'] = 'Orca could not come to the foreground; the submenu was not opened for a picture'
+        else:
+            time.sleep(0.2)  # let the menu finish opening
+            record = []
+            sub = expand_submenu(session, hwnd, hmenu, rect, len(file_rows), index, record)
+            if not sub:
+                picture.update(unavailable='the Export submenu did not open on screen', tried=record,
+                               pointer=_pointer_state(session),
+                               menu_windows=[list(found[:4]) for found in topbar_util._enum_menu_windows(session.pid)])
+            else:
+                sub_rect, sub_hwnd, sub_menu = sub
+                try:
+                    time.sleep(0.5)  # let the submenu finish painting
+                    width, height, pixels = winutil.screen_grab()
+                    frame = np.frombuffer(pixels, np.uint8).reshape(height, width, 4)
+                    left = max(0, min(rect[0], sub_rect[0]) - margin)
+                    top = max(0, min(rect[1], sub_rect[1]) - margin)
+                    right = min(width, max(rect[2], sub_rect[2]) + margin)
+                    bottom = min(height, max(rect[3], sub_rect[3]) + margin)
+                    crop = cv2.cvtColor(frame[top:bottom, left:right], cv2.COLOR_BGRA2BGR)
+                    if right <= left or bottom <= top or not cv2.imwrite(str(Path(work) / image), crop):
+                        raise ValueError(f'could not keep a picture of the open menus as {image}')
+                except (OSError, RuntimeError, ValueError, cv2.error) as exc:
+                    picture['unavailable'] = f'the desktop picture failed ({exc})'
+                else:
+                    picture.update(image=image, screen_px=[width, height], opened_by=record,
+                                   menus_px={'file': list(rect), 'export': list(sub_rect)})
+                    for row in export_rows:
+                        row['text_luminance'] = _row_ink(frame, sub_hwnd, sub_menu, row['index'])
     finally:
         closed = dismiss_menus(session)
     if not closed:
-        raise ValueError('the File menu stayed open')
-    print(f'{LOG} File > Export on screen: {[(row["index"], row["label"], row["enabled"], row["text_luminance"]) for row in export_rows]}',
-          flush=True)
-    return {'image': Path(path).name, 'screen_px': [width, height],
-            'menus_px': {'file': list(rect), 'export': list(sub_rect)}, 'file': file_rows, 'export': export_rows}
+        raise ValueError(f'the File menu stayed open: '
+                         f'{[list(found[:4]) for found in topbar_util._enum_menu_windows(session.pid)]!r}')
+    print(f'{LOG} File > Export read: {[(row["index"], row["label"], row["enabled"]) for row in export_rows]}; '
+          f'picture {picture.get("image") or "unavailable: " + picture.get("unavailable", "?")}', flush=True)
+    return {'file': file_rows, 'export': export_rows, 'menu_picture': picture}
 
 
 def export_row_in(rows, item):
