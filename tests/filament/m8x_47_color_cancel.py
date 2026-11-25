@@ -22,20 +22,31 @@ def main():
         def open_slot_color(tag):
             # The fixture carries Generic PETG in slot 1. The numbered chip's
             # GetWindowRect is already in screen coordinates.
+            winutil.force_set_foreground(session.hwnd)
             hit = next((row for row in m8.wait_slots(session) if row["slot"] == 1), None)
             if not hit or not hit["combo"] or "Generic PETG" not in hit["combo"][0]:
+                print(f"[m8x47] {tag}: missing the expected slot, detected={hit!r}")
                 return None
             x0, y0, x1, y1 = hit["swatch"]
             x, y = (x0 + x1) // 2, (y0 + y1) // 2
-            winutil.real_click_screen(x, y)
+            target = winutil.window_from_screen_point(x, y)
+            if not target or winutil._window_pid(target) != session.pid:
+                print(f"[m8x47] {tag}: slot=1 chip={hit['swatch']} is obscured")
+                return None
+            winutil.user32.SetCursorPos(x, y)
+            sent = winutil.real_click_screen(x, y)
+            print(f"[m8x47] {tag}: slot=1 preset={hit['combo'][0]!r} "
+                  f"chip={hit['swatch']} target={winutil.window_class(target)!r} input={sent}")
             deadline = time.monotonic() + 8.0
+            observed = set()
             while time.monotonic() < deadline:
                 for dialog in m8._visible_toplevels(session.pid):
                     if dialog[0] == "#32770" and is_native_picker(dialog):
-                        print(f"[m8x47] {tag}: slot=1 preset={hit['combo'][0]!r} "
-                              f"chip={hit['swatch']} picker={dialog[1]!r}")
+                        print(f"[m8x47] {tag}: slot=1 picker={dialog[1]!r}")
                         return dialog
+                    observed.add(dialog[:2])
                 time.sleep(0.25)
+            print(f"[m8x47] {tag}: native picker absent, windows={sorted(observed)}")
             return None
 
         result = check_cancel_keeps_color(session, open_slot_color)
