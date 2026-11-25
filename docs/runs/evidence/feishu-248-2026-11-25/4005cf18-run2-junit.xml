@@ -1,0 +1,22 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T19:44:28" tests="1" failures="0" errors="0">
+    <testcase name="m7x_248_delete_object" classname="blackbox.m7x_248_delete" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_248_delete_object.log" />
+        <property name="dim:only Alpha removed; exact Bravo and restored world triangles" value="PASS" />
+        <property name="dim:visible object list agrees before/after Delete and Ctrl+Z" value="PASS" />
+      </properties>
+      <system-out>[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x248] restored saved objects: ['Alpha', 'Bravo']
+
+[m7] === verdict ===
+  only Alpha removed; exact Bravo and restored world triangles: PASS
+  visible object list agrees before/after Delete and Ctrl+Z: PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

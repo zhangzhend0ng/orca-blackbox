@@ -1,0 +1,13 @@
+﻿{
+    "commit":  "4005cf1862d57638a525cc8decdc115fbd279f3b",
+    "case":  "m7x_248_delete_object",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "summary":  "SUMMARY: PASS=1 FAIL=0",
+    "dispatched_at":  "2026-11-25T19:40:50.7393997+08:00",
+    "scenario_completed_at":  "2026-11-25T19:42:36.2928043+08:00",
+    "suite_completed_at":  "2026-11-25T19:42:36.5292295+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_248_delete_object.log",
+    "log_sha256":  "F6D823271D81D1769A3AB9B786CA7F0E65D4D92F2160E42BA6AF1FCAB065155B"
+}

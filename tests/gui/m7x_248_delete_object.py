@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# m7x_248_delete_object.py — Feishu #248: delete only Alpha and restore it with Ctrl+Z.
 # feishu: baseline#248
 """Delete only the selected object and restore its geometry with Ctrl+Z."""
 import argparse

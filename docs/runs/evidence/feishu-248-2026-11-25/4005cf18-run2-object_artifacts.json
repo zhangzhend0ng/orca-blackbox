@@ -1,0 +1,42 @@
+﻿[
+    {
+        "part":  "Alpha-Bravo.3mf",
+        "bytes":  30888,
+        "sha256":  "9C548679D672AC859369D9AF7FBEDDE0D555223280C699D70E5C72B277E00C16"
+    },
+    {
+        "part":  "before.3mf",
+        "bytes":  32727,
+        "sha256":  "760D399F986A9766118974D9F519EBA06F7C7AA86A408C41C2C869CD012A1A4E"
+    },
+    {
+        "part":  "deleted.3mf",
+        "bytes":  34133,
+        "sha256":  "880FD9767C1673E55CB8B23A76E993C9CE2798D37560FD2E98F40AFA841FD84F"
+    },
+    {
+        "part":  "restored.3mf",
+        "bytes":  32727,
+        "sha256":  "FC9A9833854C00058F710F38776610FD87208038DF39992C892C86DA308E4C3C"
+    },
+    {
+        "part":  "before.png",
+        "bytes":  283524,
+        "sha256":  "D0C5D818146EDBE3C0618A2EE7FE4FC2FF76991394E636B93CD60A006BF1E577"
+    },
+    {
+        "part":  "deleted.png",
+        "bytes":  280372,
+        "sha256":  "8688464F8E9EB37A54E65CF39E643069523776A03789B4A2FFB6DF0536F92688"
+    },
+    {
+        "part":  "restored.png",
+        "bytes":  290493,
+        "sha256":  "2328667A7F73E13A0F468693815026D9540AE246908EC60F73B3280B8F53AE1D"
+    },
+    {
+        "part":  "analysis.json",
+        "bytes":  6455,
+        "sha256":  "3B1AACBD88D7142DB5A2C4456BE221CF24FF1FDAB4BAF4C289CF683429EB4801"
+    }
+]
