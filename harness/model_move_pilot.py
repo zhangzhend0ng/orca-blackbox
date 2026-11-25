@@ -181,6 +181,19 @@ def source_models(raw):
         return files
 
 
+def geometry_unchanged(saved, original):
+    """Compare indexed faces and bed-space coordinates after Orca recenters a mesh."""
+    def geometry(raw):
+        points, faces, build = mesh_3mf(source_models(raw), lambda: False)
+        matrix = tuple(map(float, build))
+        return [transform_point(point, matrix) for point in points], faces
+
+    a, a_faces = geometry(saved)
+    b, b_faces = geometry(original)
+    return (a_faces == b_faces and len(a) == len(b)
+            and all(abs(x - y) <= 0.00001 for p, q in zip(a, b) for x, y in zip(p, q)))
+
+
 def prepare_mesh(raw, model_format, carrier):
     _require(0 < len(raw) <= LIMIT and digest(carrier) == LAYER_FIXTURE_SHA256, "model_input_or_context")
     if model_format == "stl":
