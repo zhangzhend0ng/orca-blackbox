@@ -1,6 +1,6 @@
-"""Feishu #236, #233 and #227 replayed offline: synthetic harvests for tools/replay_gcode_export.py,
-tools/replay_merged_stl.py and tools/replay_import_stl.py, and the independent readers of
-tests/file_io_replay_support.py against real archived bytes.
+"""Feishu #236, #233, #227 and #238 replayed offline: synthetic harvests for tools/replay_gcode_export.py,
+tools/replay_merged_stl.py, tools/replay_import_stl.py and tools/replay_export_rows.py, and the
+independent readers of tests/file_io_replay_support.py against real archived bytes.
 
 The #236 run is built here with zipfile, string templates and Pillow: a project equal to the
 standard cube fixture by content, a G-code that prints it, two screenshots and the record the GUI
@@ -9,7 +9,9 @@ render with an opaque body in a transparent frame, and the viewer's logs. The #2
 from what the application really wrote for #244 (the same cube_20mm.stl imported the same way); its
 moved and turned projects are those bytes with the instance transform rewritten. The readings on a
 real move and a real turn by the application were checked on the green guest run of 0d7222e7 and on
-the two formal sessions of 11858f17, which live outside the repository.
+the two formal sessions of 11858f17, which live outside the repository. The #238 run holds the
+standard cube as the application saves it and the record the case writes for the File > Export menu
+it read before and after slicing, with a case log that prints each reading.
 """
 from hashlib import sha256
 from io import BytesIO
@@ -1168,3 +1170,255 @@ def test_transform_helpers_and_project_edits():
     assert not support.on_the_bed(state["settings"], dict(item, box=(125.5, 145.5, 126.0, 146.0, 5.0, 25.0)))
     assert not support.on_the_bed(state["settings"], dict(item, box=(265.5, 285.5, 226.0, 246.0, 0.0, 20.0)))
     assert not support.on_the_bed(state["settings"], dict(item, box=(125.5, 145.5, 126.0, 146.0, 0.0, 300.0)))
+
+
+# --- Feishu #238: the slice export rows disabled until the plate is sliced -----------------------
+#
+# The standard cube as the application saves it when opened, two screenshots, and the record the case
+# writes for them: the File > Export rows read before and after slicing, the slice wait's own reading,
+# the oracle's gaps and the verdict. The case log prints each reading as it was taken.
+
+from export_io_oracle import export_rows_expectation_gaps, project_has_gcode, project_presets
+from tools import replay_export_rows as rows_replay
+
+ROWS_PREFIX = "9a8b7c6d-run1"
+RUN_238 = r"C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\238\run-rows001"
+FILE_ROWS = [{"index": 0, "label": "New Project\tCtrl+N", "enabled": True, "submenu": False},
+             {"index": 1, "label": "Open Project...\tCtrl+O", "enabled": True, "submenu": False},
+             {"index": 6, "label": "Import", "enabled": True, "submenu": True},
+             {"index": 7, "label": "Export", "enabled": True, "submenu": True},
+             {"index": 9, "label": "Quit", "enabled": True, "submenu": False}]
+EXPORT_LABELS = ("Export all objects as one STL...", "Export all objects as STLs...", "Export Generic 3MF...",
+                 "Export plate sliced file...\tCtrl+G", "Export all plate sliced file...", "Export G-code...",
+                 "Export Preset Bundle...")
+GUARD_SHOT = "memory-guard-0.png"
+
+
+def as_saved(fixture: bytes, suffix: str) -> bytes:
+    """What the application saves for a fixture it opened: its own name as the application and the
+    file's name appended to every preset ID."""
+
+    def renamed(root):
+        root.find(CORE + 'metadata[@name="Application"]').text = "Snapmaker_Orca-2.4.0"
+
+    def appended(settings):
+        for key in ("printer_settings_id", "print_settings_id", "filament_settings_id"):
+            held = settings.get(key)
+            if isinstance(held, list) and held:
+                held[0] += suffix
+            elif isinstance(held, str):
+                settings[key] = held + suffix
+
+    return support.with_project_settings(support.with_model(fixture, renamed), appended)
+
+
+def export_rows(sliced: bool) -> list:
+    """The File > Export rows as the case reads them for a plate with a model: the slice export rows
+    disabled until the plate is sliced, the other rows enabled."""
+    return [{"index": index, "label": label, "submenu": False,
+             "enabled": sliced or not any(label.startswith(name) for name in rows_replay.SLICE_ROWS)}
+            for index, label in enumerate(EXPORT_LABELS)]
+
+
+def printed(rows: list) -> str:
+    """A menu reading as the case log prints it."""
+    return repr([(row["index"], row["label"], row["enabled"]) for row in rows])
+
+
+def write_rows_run(folder, prefix=ROWS_PREFIX, *, parts=None, record=None, log_lines=None, guard=False):
+    """A #238 harvest in the shape the collector leaves. `record` may be a callable that edits what the
+    case would have written; with `guard` the case answered one guard dialog and kept its picture."""
+    folder.mkdir(parents=True, exist_ok=True)
+    cube = FIXTURE.read_bytes()
+    files = {"before.3mf": as_saved(cube, "(feishu_std_cube.3mf)"), "before.png": picture(seed=21),
+             "sliced.png": picture(seed=22), **(parts or {})}
+    if guard:
+        files.setdefault(GUARD_SHOT, picture(796, 216, seed=23))
+    for part, raw in files.items():
+        (folder / f"{prefix}-{part}").write_bytes(raw)
+    (folder / "plain").mkdir(exist_ok=True)      # the oracle reads a project by its path
+    plain = folder / "plain" / "before.3mf"
+    plain.write_bytes(files["before.3mf"])
+    first, second = export_rows(False), export_rows(True)
+    gaps = export_rows_expectation_gaps(first, second)
+    dialog = {"title": "Memory Usage Warning", "texts": ["Yes, Continue", "No, Stop", "htmlWindow"],
+              "screenshot": GUARD_SHOT, "image": {"width_px": 796, "height_px": 216}, "closed": True}
+    default = {
+        "case": 238, "fixture": {"name": FIXTURE.name, "bytes": len(cube), "sha256": sha256(cube).hexdigest()},
+        "presets": project_presets(plain), "before_is_sliced": project_has_gcode(plain), "plate_objects": ["立方体"],
+        "menu_before_slice": {"file": FILE_ROWS, "export": first},
+        "slice": {"export_enabled_after_seconds": 8.6, "export_menu_after": second},
+        "memory_guard_dialogs": [dialog] if guard else [], "guard_failures": 0,
+        "menu_after_slice": {"file": FILE_ROWS, "export": second},
+        "expectation_gaps": gaps, "editor_after_case": {"alive": True, "dialog": None},
+        "results": {clause: "PASS" if not failed else f"FAIL ({'; '.join(failed)[:400]})"
+                    for clause, failed in gaps.items()},
+        "timings": {"observe_before_slice": {"started_utc": "2026-11-26T00:00:10+00:00", "duration_s": 27.1},
+                    "slice": {"started_utc": "2026-11-26T00:00:40+00:00", "duration_s": 13.2},
+                    "observe_after_slice": {"started_utc": "2026-11-26T00:00:55+00:00", "duration_s": 28.1}}}
+    files["analysis.json"] = json.dumps(record(default) if callable(record) else default, ensure_ascii=False,
+                                        indent=2).encode("utf-8")
+    (folder / f"{prefix}-analysis.json").write_bytes(files["analysis.json"])
+    (folder / f"{prefix}-object_artifacts.json").write_text(json.dumps(
+        [{"part": part, "bytes": len(raw), "sha256": sha256(raw).hexdigest()} for part, raw in files.items()],
+        indent=1), encoding="utf-8")
+    unreadable = "; picture unavailable: the Export submenu did not open on screen"
+    lines = [f"[m7x238] retained work directory: {RUN_238}",
+             f"[export] File > Export read: {printed(first)}{unreadable}"]
+    if guard:
+        lines += ["[export] memory guard dialog: ['Yes, Continue', 'No, Stop', 'htmlWindow']",
+                  "[export] memory guard answered: [{'how': 'message click inside dialog', 'closed': True}]"]
+    lines = (lines + [f"[m7] Export menu: {list(EXPORT_LABELS)!r}",
+                      "[export] 'Export G-code' enabled 8.6s after the Slice click",
+                      f"[export] Export menu: {printed(second)}",
+                      f"[export] File > Export read: {printed(second)}{unreadable}",
+                      f"[m7x238] gaps {gaps!r}"]) if log_lines is None else log_lines
+    log = ("\n".join(lines) + "\n").encode("utf-8")
+    (folder / f"{prefix}-case.log").write_bytes(log)
+    (folder / f"{prefix}-receipt.json").write_text(json.dumps({
+        "case": "m7x_238_export_disabled", "commit": "0" * 40, "summary": "SUMMARY: PASS=1 FAIL=0",
+        "dispatched_at": "2026-11-26T00:00:00+00:00", "scenario_completed_at": "2026-11-26T00:02:00+00:00",
+        "log_sha256": sha256(log).hexdigest()}), encoding="utf-8")
+    return folder, prefix
+
+
+def rows_refused(tmp_path, failed, **changes):
+    """A run whose parts or record differ: the replay names `failed` among its readings."""
+    folder, prefix = write_rows_run(tmp_path, **changes)
+    result = rows_replay.replay(folder, prefix)
+    assert set(failed) <= set(result["export_rows"]["failed"]), result["export_rows"]["failed"]
+    assert not all(value is True for value in result["checks"].values())
+    return result
+
+
+# every stand-in of the #238 replay with the readings that own it
+ROWS_REFUSED_BY = {
+    "slice_row_enabled_before_slicing_rejected": ["slice_rows_disabled_before_slicing", "oracle_accepts_the_menus",
+                                                  "recorded_gaps_match_recomputation", "recorded_verdict_matches_gaps"],
+    "slice_row_still_disabled_after_slicing_rejected": ["slice_rows_enabled_after_slicing", "oracle_accepts_the_menus",
+                                                        "recorded_gaps_match_recomputation"],
+    "menu_after_slice_missing_rejected": ["slice_rows_enabled_after_slicing", "same_menu_both_times",
+                                          "oracle_accepts_the_menus"],
+    "menu_rows_incomplete_rejected": ["slice_rows_enabled_after_slicing", "same_menu_both_times",
+                                      "oracle_accepts_the_menus"],
+    "slice_row_duplicated_rejected": ["slice_rows_disabled_before_slicing", "same_menu_both_times",
+                                      "oracle_accepts_the_menus"],
+    "control_row_disabled_rejected": ["control_rows_enabled_throughout", "oracle_accepts_the_menus"],
+    "menus_differ_between_reads_rejected": ["same_menu_both_times", "slice_reading_agrees_with_after_menu"],
+    "file_menu_without_export_rejected": ["file_menu_offers_export_both_times"],
+    "slice_reading_disagrees_rejected": ["slice_reading_agrees_with_after_menu"],
+    "flattering_record_rejected": ["slice_rows_disabled_before_slicing", "oracle_accepts_the_menus",
+                                   "recorded_verdict_matches_gaps"],
+    "gaps_edited_rejected": ["recorded_gaps_match_recomputation", "recorded_verdict_matches_gaps"],
+    "stage_order_reversed_rejected": ["menus_were_read_around_the_slice"],
+    "editor_left_broken_rejected": ["editor_left_running"],
+    "fixture_edited_rejected": ["recorded_fixture_matches_file"],
+    "presets_edited_rejected": ["recorded_presets_match_project"],
+    "guard_left_open_rejected": ["guard_dialogs_answered"],
+    "sliced_project_as_before_rejected": ["before_project_is_not_sliced"],
+    "empty_plate_rejected": ["plate_holds_a_model", "before_project_is_the_fixture"],
+    "record_says_sliced_rejected": ["before_is_sliced_as_recorded"],
+    "another_project_rejected": ["before_project_is_the_fixture"],
+    "sliced_picture_copied_from_before_rejected": ["sliced_view_differs_from_before"],
+    "blank_screenshot_rejected": ["screenshots_are_pictures"],
+    "manifest_mismatch_rejected": UNOPENABLE,
+}
+
+
+def test_rows_run_passes_every_reading_and_every_counterexample(tmp_path):
+    folder, prefix = write_rows_run(tmp_path)
+    result = rows_replay.replay(folder, prefix)
+    not_true = [key for key, value in result["checks"].items() if value is not True]
+    assert not not_true, not_true
+    # every reading the replay names is produced, and every counterexample has a label of its own
+    assert set(rows_replay.POSITIVE) == set(result["checks"]) - set(ROWS_REFUSED_BY) - {"menu_log_line_edited_rejected"}
+    report = result["export_rows"]
+    assert [(label.partition("\t")[0], enabled) for label, enabled in report["menu"]["before"]][3:6] == [
+        ("Export plate sliced file...", False), ("Export all plate sliced file...", False), ("Export G-code...", False)]
+    assert all(enabled for _label, enabled in report["menu"]["after"]) and report["export_enabled_after_seconds"] == 8.6
+
+
+def test_rows_run_goes_through_the_shared_driver_like_the_other_replays(tmp_path, monkeypatch):
+    folder, prefix = write_rows_run(tmp_path)
+    monkeypatch.setitem(ADAPTERS, "m7x_238_export_disabled", rows_replay.replay)
+    assert replay_receipt(folder / f"{prefix}-receipt.json")["offline_checks_passed"]
+    (folder / f"{prefix}-case.log").write_bytes(b"another log\n")
+    assert not replay_receipt(folder / f"{prefix}-receipt.json")["offline_checks_passed"]
+
+
+@pytest.mark.parametrize("label,failed", sorted(ROWS_REFUSED_BY.items()))
+def test_each_rows_counterexample_is_refused_by_the_reading_that_owns_it(tmp_path, label, failed):
+    folder, prefix = write_rows_run(tmp_path)
+    raw = rows_replay._read(folder, prefix)[2]
+    stand_ins = dict(rows_replay._stand_ins(raw["analysis.json"], raw))
+    stand_ins["stage_order_reversed_rejected"] = {"replace": {
+        "analysis.json": rows_replay._reversed_stages(raw["analysis.json"])}}
+    with copy_of(folder, prefix, **stand_ins[label]) as (other, altered):
+        if failed is UNOPENABLE:
+            with pytest.raises(ValueError):
+                rows_replay._read(other, altered)
+            return
+        readings = rows_replay._read(other, altered)[1]
+    assert set(failed) <= set(readings["failed"]), readings["failed"]
+
+
+def test_replay_reads_every_rows_counterexample_on_a_temporary_copy(tmp_path, monkeypatch):
+    folder, prefix = write_rows_run(tmp_path)
+    reads, real = [], rows_replay._read
+    monkeypatch.setattr(rows_replay, "_read", lambda place, pre: reads.append(place.name) or real(place, pre))
+    result = rows_replay.replay(folder, prefix)
+    assert all(value is True for value in result["checks"].values())
+    # the run itself, twenty-three copies for the stand-ins and one copy with another case log
+    assert len(reads) == 25 and sum(name.startswith("replay-") for name in reads) == 24
+
+
+def test_the_case_log_is_what_ties_the_menu_readings_to_the_run(tmp_path):
+    folder, prefix = write_rows_run(tmp_path)
+    lines = (folder / f"{prefix}-case.log").read_text(encoding="utf-8").splitlines()
+    reads = [line for line in lines if line.startswith("[export] File > Export read:")]
+
+    def without(*starts):
+        return [line for line in lines if not line.startswith(starts)]
+
+    # one reading of the menu in the log only: the other is the record's word alone
+    rows_refused(tmp_path, ["menus_are_in_the_case_log"],
+                 log_lines=[line for line in lines if line != reads[1]])
+    # the log tells of another wait than the record does
+    rows_refused(tmp_path, ["slice_signal_is_in_the_case_log"],
+                 log_lines=[line.replace("enabled 8.6s", "enabled 4.2s") for line in lines])
+    # the log's gaps line lists a failure the record does not
+    clauses = rows_replay.CLAUSES
+    rows_refused(tmp_path, ["gaps_line_is_in_the_case_log"], log_lines=(
+        without("[m7x238] gaps") + [f"[m7x238] gaps {{{clauses[0]!r}: ['before slicing: x'], {clauses[1]!r}: []}}"]))
+    # no retained work directory named
+    rows_refused(tmp_path, ["work_directory_named_in_the_case_log"], log_lines=without("[m7x238] retained"))
+
+
+def test_a_guard_dialog_and_the_plate_records_are_held_against_the_run(tmp_path):
+    assert all(value is True for value in rows_replay.replay(*write_rows_run(tmp_path, guard=True))["checks"].values())
+    rows_refused(tmp_path, ["guard_dialogs_answered"], guard=True,
+                 parts={GUARD_SHOT: picture(796, 216, blank=True)})
+    rows_refused(tmp_path, ["recorded_objects_match_project"], record=lambda default: dict(
+        default, plate_objects=["another cube"]))                                  # the plate is read from the project
+    rows_refused(tmp_path, ["recorded_case"], record=lambda default: dict(default, case=227))
+    # an answered dialog the record lists twice is told of once in the log
+    rows_refused(tmp_path, ["guard_dialogs_answered"], guard=True, record=lambda default: dict(
+        default, memory_guard_dialogs=default["memory_guard_dialogs"] * 2))
+
+
+def test_the_menu_reader_tells_a_whole_reading_from_a_dropped_or_malformed_one():
+    whole = export_rows(False)
+    assert [name for name, _enabled in rows_replay._menu(whole)] == [rows_replay._name(label)
+                                                                      for label in EXPORT_LABELS]
+    assert rows_replay._name("Export plate sliced file...\tCtrl+G") == "export plate sliced file"
+    assert rows_replay._menu(None) is None and rows_replay._menu({"export": whole}) is None
+    assert rows_replay._menu(whole[:-1] + [{"index": 6, "label": "Export Preset Bundle...", "enabled": 1}]) is None
+    assert rows_replay._menu(whole[:-1] + [{"index": 6, "label": "Export Preset Bundle..."}]) is None
+    # the stage order is read from the start times, and only from them
+    ordered = {"observe_before_slice": {"started_utc": "2026-11-26T00:00:10+00:00"},
+               "slice": {"started_utc": "2026-11-26T00:00:40+00:00"},
+               "observe_after_slice": {"started_utc": "2026-11-26T00:00:55+00:00"}}
+    assert rows_replay._ordered(ordered)
+    # a slice that began only after the menu was read "after" it
+    assert not rows_replay._ordered(dict(ordered, slice={"started_utc": "2026-11-26T00:01:40+00:00"}))
+    assert not rows_replay._ordered({}) and not rows_replay._ordered({"slice": "later"})
