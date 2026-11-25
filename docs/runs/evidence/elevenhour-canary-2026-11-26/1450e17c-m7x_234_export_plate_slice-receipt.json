@@ -1,0 +1,14 @@
+﻿{
+    "commit":  "1450e17cf94afe68a1da63d930aa04b21d273560",
+    "case":  "m7x_234_export_plate_slice",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "orca_processes_after":  0,
+    "summary":  "SUMMARY: PASS=1 FAIL=0",
+    "dispatched_at":  "2026-11-26T04:21:52.2651569+08:00",
+    "scenario_completed_at":  "2026-11-26T04:25:03.3124675+08:00",
+    "suite_completed_at":  "2026-11-26T04:25:03.5268870+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_234_export_plate_slice.log",
+    "log_sha256":  "18E89BE1867B43FB0A522563C63A61C06C3C7F4AF5675EF199EF2AD8B8009201"
+}

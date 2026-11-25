@@ -1,0 +1,22 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T04:12:58" tests="1" failures="0" errors="0">
+    <testcase name="m7x_244_add_model" classname="blackbox.m7x_244_add" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_244_add_model.log" />
+        <property name="dim:blank plate Add Models opens format-aware file chooser" value="PASS" />
+        <property name="dim:single imported object on current plate matches the 20mm STL" value="PASS" />
+      </properties>
+      <system-out>[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x244] saved {'source_file': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\244\\run-hk1dpd38\\cube_20mm.stl', 'dimensions_mm': [20.0, 20.0, 20.0], 'printer': {'model': 'Snapmaker U1', 'profile': 'Snapmaker U1 (0.8 nozzle)(agent_layer_cube.3mf)'}, 'triangles': 12, 'printable_object_id': '2'}
+[m7x249] finished save_and_verify in 8.344s
+
+[m7] === verdict ===
+  blank plate Add Models opens format-aware file chooser: PASS
+  single imported object on current plate matches the 20mm STL: PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

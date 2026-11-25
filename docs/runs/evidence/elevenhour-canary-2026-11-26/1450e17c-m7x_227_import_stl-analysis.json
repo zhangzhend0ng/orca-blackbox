@@ -1,0 +1,388 @@
+{
+  "case": 227,
+  "results": {
+    "\u5f39\u51fa\u6587\u4ef6\u9009\u62e9\u5bf9\u8bdd\u6846\uff0c\u683c\u5f0f\u7b5b\u9009\u542b *.stl": "PASS",
+    "\u6a21\u578b\u51fa\u73b0\u5728\u76d8\u4e0a\uff0c\u5c3a\u5bf8\u663e\u793a 20\u00d720\u00d720mm": "PASS",
+    "\u5bf9\u8c61\u5217\u8868\u65b0\u589e 1 \u4e2a\u5bf9\u8c61": "PASS",
+    "\u53ef\u9009\u4e2d/\u5e73\u79fb": "PASS",
+    "\u53ef\u65cb\u8f6c": "PASS"
+  },
+  "timings": {
+    "write_stl": {
+      "started_utc": "2026-11-25T20:18:16.219302+00:00",
+      "duration_s": 0.0
+    },
+    "empty_plate": {
+      "started_utc": "2026-11-25T20:18:16.219302+00:00",
+      "duration_s": 11.718
+    },
+    "import_chooser": {
+      "started_utc": "2026-11-25T20:18:27.930028+00:00",
+      "duration_s": 12.407
+    },
+    "observe_import": {
+      "started_utc": "2026-11-25T20:18:40.342568+00:00",
+      "duration_s": 2.64
+    },
+    "save_imported": {
+      "started_utc": "2026-11-25T20:18:42.983556+00:00",
+      "duration_s": 9.188
+    },
+    "select_and_move": {
+      "started_utc": "2026-11-25T20:18:52.171615+00:00",
+      "duration_s": 14.422
+    },
+    "select_and_rotate": {
+      "started_utc": "2026-11-25T20:19:06.588405+00:00",
+      "duration_s": 14.531
+    },
+    "read_results": {
+      "started_utc": "2026-11-25T20:19:21.126964+00:00",
+      "duration_s": 0.984
+    }
+  },
+  "sidebar": {
+    "imported": [
+      "c",
+      "co",
+      "File",
+      "&",
+      "us",
+      "Calibration",
+      "a",
+      "Prepare",
+      "Preview",
+      "Devic",
+      "Printer",
+      "~",
+      "Snapmaker",
+      "U1",
+      "(0.8",
+      "nozzle)(agent_layer...",
+      "[7",
+      "~",
+      "Textured",
+      "PEI",
+      "Plate",
+      "Bed",
+      "type",
+      "Nozzle",
+      "3",
+      "Nozzle",
+      "4",
+      "Nozzle",
+      "2",
+      "Diameter",
+      "~",
+      "0.8mm",
+      "Flow",
+      "~",
+      "Standard",
+      "(@",
+      "Filament",
+      "Management",
+      "Flushing",
+      "volumes",
+      "Color",
+      "Mixing",
+      "((",
+      "Filaments",
+      "(FG",
+      "~",
+      "Generic",
+      "PETG",
+      "@U...",
+      "\u00a9",
+      "~",
+      "Snapmaker",
+      "PLA",
+      "Silk...",
+      "\u00a9",
+      "B",
+      "~",
+      "Snapmaker",
+      "PLA",
+      "Si...",
+      "\u00a9",
+      "4",
+      "~",
+      "Snapmaker",
+      "PLA",
+      "Silk...",
+      "\u00a9",
+      "~",
+      "Snapmaker",
+      "PLA",
+      "Si...",
+      "\u00a9",
+      "\u00a9",
+      "Color",
+      "Mixing",
+      "50%",
+      "\u00a9",
+      "AS",
+      "&",
+      "Process",
+      "Global",
+      "Advanced",
+      "(9",
+      "=",
+      "Q",
+      "Search",
+      "plate,",
+      "object",
+      "and",
+      "part.",
+      "wv",
+      "cube_20mm.stl",
+      "default",
+      ">",
+      "Outside",
+      "Multimaterial",
+      "C",
+      "Frequent",
+      "Quality",
+      "Strength",
+      "Support",
+      "Layer",
+      "height",
+      "04",
+      "mm",
+      "Sparse",
+      "infill",
+      "density",
+      "15",
+      "%",
+      "~",
+      "2",
+      "Wall",
+      "loops",
+      "Enable",
+      "support"
+    ]
+  },
+  "source": {
+    "name": "cube_20mm.stl",
+    "bytes": 684,
+    "sha256": "3f09d813eecc842c59960f2f76e22c038782b92ca8f294c6c3bb0bbc2bb5bfcd"
+  },
+  "bed_point": [
+    1172,
+    514
+  ],
+  "initial_printer": {
+    "model": "Snapmaker U1",
+    "profile": "Snapmaker U1 (0.8 nozzle)(agent_layer_cube.3mf)"
+  },
+  "empty_plate": {
+    "fraction": 0.0010439742316604283,
+    "candidate_centroids": [
+      [
+        935,
+        331
+      ],
+      [
+        851,
+        759
+      ]
+    ]
+  },
+  "chooser": {
+    "import_rows": [
+      {
+        "label": "Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I",
+        "enabled": true
+      },
+      {
+        "label": "Import Zip Archive...",
+        "enabled": true
+      },
+      {
+        "label": "Import Configs...",
+        "enabled": true
+      }
+    ],
+    "row": "Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I",
+    "title": "Choose one or more files (3mf/step/stl/svg/obj/amf):",
+    "labels": [
+      "Namespace Tree Control",
+      "Navigation Pane",
+      "ShellView",
+      "File &name:",
+      "Files of &type:",
+      "&Open",
+      "Cancel",
+      "Navigation buttons",
+      "Up band",
+      "Address: C:\\coil\\orca-blackbox-v3-r1\\fixtures",
+      "Address band"
+    ],
+    "types": [
+      {
+        "selected": -1,
+        "items": []
+      },
+      {
+        "selected": 0,
+        "items": [
+          "Supported files (*.3mf, *.stl, *.oltp, *.stp, *.step, *.svg, *.amf, *.obj)"
+        ]
+      },
+      {
+        "selected": -1,
+        "items": []
+      }
+    ],
+    "image": {
+      "width_px": 944,
+      "height_px": 501
+    },
+    "stl_filter": "Supported files (*.3mf, *.stl, *.oltp, *.stp, *.step, *.svg, *.amf, *.obj)",
+    "entered": "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\227\\run-qe3p814b\\cube_20mm.stl",
+    "dialog_closed": true
+  },
+  "import_fraction": 0.0010439742316604283,
+  "imported": {
+    "object_names": [
+      "cube_20mm.stl"
+    ],
+    "source_file": "cube_20mm.stl",
+    "dimensions_mm": [
+      20.0,
+      20.0,
+      20.0
+    ],
+    "world_box_mm": [
+      [
+        125.5,
+        145.5
+      ],
+      [
+        126.0,
+        146.0
+      ],
+      [
+        0.0,
+        20.0
+      ]
+    ],
+    "placement_offset_mm": [
+      125.5,
+      126.0,
+      0.0
+    ],
+    "triangles": 12,
+    "printer": {
+      "model": "Snapmaker U1",
+      "profile": "Snapmaker U1 (0.8 nozzle)(agent_layer_cube.3mf)"
+    },
+    "plates": 1
+  },
+  "selection": {
+    "moved": {
+      "menu": "Select All",
+      "panel_words": [
+        "Plate",
+        "plate,",
+        "object",
+        "cube_20mm.stl",
+        "default",
+        "Outside"
+      ]
+    },
+    "rotated": {
+      "menu": "Select All",
+      "panel_words": [
+        "Plate",
+        "plate,",
+        "object",
+        "cube_20mm.stl",
+        "default",
+        "Outside"
+      ]
+    }
+  },
+  "keys": {
+    "move": "0x27",
+    "turn": "0x21"
+  },
+  "moved": {
+    "delta_mm": [
+      10.0,
+      0.0,
+      0.0
+    ],
+    "before_box_mm": [
+      [
+        125.5,
+        145.5
+      ],
+      [
+        126.0,
+        146.0
+      ],
+      [
+        0.0,
+        20.0
+      ]
+    ],
+    "after_box_mm": [
+      [
+        135.5,
+        155.5
+      ],
+      [
+        126.0,
+        146.0
+      ],
+      [
+        0.0,
+        20.0
+      ]
+    ]
+  },
+  "rotated": {
+    "degrees_about_z": 45.0,
+    "pivot_shift_mm": [
+      138.782486,
+      -63.050559,
+      0.0
+    ],
+    "before_box_mm": [
+      [
+        135.5,
+        155.5
+      ],
+      [
+        126.0,
+        146.0
+      ],
+      [
+        0.0,
+        20.0
+      ]
+    ],
+    "after_box_mm": [
+      [
+        131.35786438,
+        159.64213562
+      ],
+      [
+        121.85786438,
+        150.14213562
+      ],
+      [
+        0.0,
+        20.0
+      ]
+    ]
+  },
+  "object_list_name": [
+    "cube_20mm.stl"
+  ],
+  "editor_at_end": {
+    "alive": true,
+    "dialog": null
+  },
+  "wall_seconds": 114.25
+}

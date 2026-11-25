@@ -1,0 +1,407 @@
+{
+  "case": 233,
+  "results": {
+    "\u751f\u6210 .stl \u6587\u4ef6": "PASS",
+    "\u5305\u542b\u4e24\u4e2a\u6a21\u578b\u7684\u5408\u5e76\u51e0\u4f55": "PASS",
+    "\u6587\u4ef6\u975e 0 \u5b57\u8282": "PASS",
+    "\u53ef\u6b63\u5e38\u6253\u5f00": "PASS"
+  },
+  "timings": {
+    "add_sphere": {
+      "started_utc": "2026-11-25T20:20:44.875236+00:00",
+      "duration_s": 5.453
+    },
+    "separate_objects": {
+      "started_utc": "2026-11-25T20:20:50.405801+00:00",
+      "duration_s": 25.594
+    },
+    "arrange": {
+      "started_utc": "2026-11-25T20:21:00.032880+00:00",
+      "duration_s": 2.391
+    },
+    "export_merged_stl": {
+      "started_utc": "2026-11-25T20:21:16.123576+00:00",
+      "duration_s": 14.953
+    },
+    "read_merged_stl": {
+      "started_utc": "2026-11-25T20:21:31.078164+00:00",
+      "duration_s": 1.672
+    },
+    "open_in_viewer": {
+      "started_utc": "2026-11-25T20:21:32.812357+00:00",
+      "duration_s": 4.547
+    }
+  },
+  "fixture": {
+    "name": "feishu_std_cube.3mf",
+    "bytes": 30270,
+    "sha256": "36389ec3d26c54fc8d3e6bfccac3097fb080a12ab8fab0f2b7f8038cfc278d94"
+  },
+  "add_sphere": {
+    "candidates": [
+      [
+        1345,
+        514
+      ],
+      [
+        999,
+        514
+      ],
+      [
+        1172,
+        639
+      ],
+      [
+        1172,
+        389
+      ],
+      [
+        1383,
+        600
+      ],
+      [
+        961,
+        600
+      ]
+    ],
+    "primitive_rows": [
+      {
+        "index": 0,
+        "label": "Cube",
+        "enabled": true
+      },
+      {
+        "index": 1,
+        "label": "Cylinder",
+        "enabled": true
+      },
+      {
+        "index": 2,
+        "label": "Sphere",
+        "enabled": true
+      },
+      {
+        "index": 3,
+        "label": "Cone",
+        "enabled": true
+      },
+      {
+        "index": 4,
+        "label": "Disc",
+        "enabled": true
+      },
+      {
+        "index": 5,
+        "label": "Torus",
+        "enabled": true
+      },
+      {
+        "index": 6,
+        "label": "",
+        "enabled": false
+      },
+      {
+        "index": 7,
+        "label": "Text",
+        "enabled": true
+      },
+      {
+        "index": 8,
+        "label": "",
+        "enabled": false
+      },
+      {
+        "index": 9,
+        "label": "SVG",
+        "enabled": true
+      }
+    ]
+  },
+  "layouts": [
+    {
+      "two_objects": true,
+      "cube_and_sphere": true,
+      "disjoint": false,
+      "inside_bed": true
+    },
+    {
+      "two_objects": true,
+      "cube_and_sphere": true,
+      "disjoint": true,
+      "inside_bed": true
+    }
+  ],
+  "plate": {
+    "objects": [
+      {
+        "name": "\u7acb\u65b9\u4f53",
+        "triangles": 12,
+        "bounds_mm": [
+          [
+            122.0,
+            149.0
+          ],
+          [
+            137.0,
+            164.0
+          ],
+          [
+            0.0,
+            27.0
+          ]
+        ],
+        "shape": "cube"
+      },
+      {
+        "name": "Sphere",
+        "triangles": 32040,
+        "bounds_mm": [
+          [
+            122.0,
+            149.0
+          ],
+          [
+            108.0,
+            135.0
+          ],
+          [
+            0.0,
+            27.0
+          ]
+        ],
+        "shape": "sphere"
+      }
+    ],
+    "pairs": [
+      {
+        "objects": [
+          "\u7acb\u65b9\u4f53",
+          "Sphere"
+        ],
+        "overlap": false
+      }
+    ],
+    "checks": {
+      "two_objects": true,
+      "cube_and_sphere": true,
+      "disjoint": true,
+      "inside_bed": true
+    }
+  },
+  "arranged": true,
+  "export": {
+    "item": "Export all objects as one STL",
+    "export_rows": [
+      {
+        "index": 0,
+        "label": "Export all objects as one STL...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 1,
+        "label": "Export all objects as STLs...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 2,
+        "label": "Export Generic 3MF...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 3,
+        "label": "Export plate sliced file...\tCtrl+G",
+        "enabled": false,
+        "submenu": false
+      },
+      {
+        "index": 4,
+        "label": "Export all plate sliced file...",
+        "enabled": false,
+        "submenu": false
+      },
+      {
+        "index": 5,
+        "label": "Export G-code...",
+        "enabled": false,
+        "submenu": false
+      },
+      {
+        "index": 6,
+        "label": "Export Preset Bundle...",
+        "enabled": true,
+        "submenu": false
+      }
+    ],
+    "typed_name": "all-objects",
+    "title": "Export STL file:",
+    "default_name": "before",
+    "types": [
+      {
+        "selected": -1,
+        "items": []
+      },
+      {
+        "selected": 0,
+        "items": [
+          "STL files (*.stl)"
+        ]
+      },
+      {
+        "selected": -1,
+        "items": []
+      }
+    ],
+    "labels": [
+      "Namespace Tree Control",
+      "Namespace Tree Control",
+      "Navigation Pane",
+      "ShellView",
+      "&Save",
+      "Cancel",
+      "&Help",
+      "Navigation buttons",
+      "Up band",
+      "Address: C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\233\\run-y29_xosq",
+      "Address band"
+    ],
+    "directory": "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\233\\run-y29_xosq",
+    "filename_before_save": "all-objects",
+    "dialog_image": {
+      "width_px": 944,
+      "height_px": 501
+    },
+    "dialog_closed": true,
+    "saved_name": "all-objects.stl",
+    "saved_extension": ".stl",
+    "file_bytes": 1602684,
+    "file_sha256": "e2f7cbe248764d496e515cc8c463bbedae040c9fecb16df87a69955e72ba1da9",
+    "app_alive": true
+  },
+  "expectation_gaps": {
+    "\u751f\u6210 .stl \u6587\u4ef6": [],
+    "\u5305\u542b\u4e24\u4e2a\u6a21\u578b\u7684\u5408\u5e76\u51e0\u4f55": [],
+    "\u6587\u4ef6\u975e 0 \u5b57\u8282": [],
+    "\u53ef\u6b63\u5e38\u6253\u5f00": []
+  },
+  "merged_geometry": {
+    "file_bytes": 1602684,
+    "file_sha256": "e2f7cbe248764d496e515cc8c463bbedae040c9fecb16df87a69955e72ba1da9",
+    "format": "binary",
+    "triangle_count": 32052,
+    "objects": [
+      {
+        "name": "\u7acb\u65b9\u4f53",
+        "triangles": 12,
+        "matched": 12,
+        "plate_bounds_mm": [
+          [
+            122.0,
+            149.0
+          ],
+          [
+            137.0,
+            164.0
+          ],
+          [
+            0.0,
+            27.0
+          ]
+        ],
+        "stl_bounds_mm": [
+          [
+            122.0,
+            149.0
+          ],
+          [
+            137.0,
+            164.0
+          ],
+          [
+            0.0,
+            27.0
+          ]
+        ]
+      },
+      {
+        "name": "Sphere",
+        "triangles": 32040,
+        "matched": 32040,
+        "plate_bounds_mm": [
+          [
+            122.0,
+            149.0
+          ],
+          [
+            108.0,
+            135.0
+          ],
+          [
+            0.0,
+            27.0
+          ]
+        ],
+        "stl_bounds_mm": [
+          [
+            122.0,
+            149.0
+          ],
+          [
+            108.0,
+            135.0
+          ],
+          [
+            0.0,
+            27.0
+          ]
+        ]
+      }
+    ],
+    "max_vertex_deviation_mm": 7.676562489677963e-06,
+    "vertex_tolerance_mm": 0.0001,
+    "stl_bounds_mm": [
+      [
+        122.0,
+        149.0
+      ],
+      [
+        108.0,
+        164.0
+      ],
+      [
+        0.0,
+        27.0
+      ]
+    ]
+  },
+  "viewer": {
+    "path": "C:\\coil\\tools\\orca-bb-f3d\\bin\\f3d-console.exe",
+    "version": "F3D 4.0.1\n\nF3D - A fast and minimalist 3D viewer\nVersion: 4.0.1.\nBuild date: 2026-10-31 14:50:16.\nBuild system: Windows 64-bits.\nCompiler: MSVC 19.44.35229.0.\nModule FFmpeg: ON.\nModule ImGui: ON.\nModule OpenEXR: ON.\nModule Raytracing: OFF.\nModule WebP: ON.\nVTK version: 9.7.1-1746-gdbb73e9cc8 (date: 20261016).\nCopyright (C) 2019-2021 Kitware SAS.\nCopyright (C) 2021-2025 Michael Migliore, Mathieu Westphal.\nCopyright (C) 2025-2026 F3D-APP Foundation.\nLicense BSD-3-Clause.",
+    "version_rc": 0,
+    "source_sha256": "e2f7cbe248764d496e515cc8c463bbedae040c9fecb16df87a69955e72ba1da9",
+    "positive_rc": 0,
+    "image": {
+      "width_px": 800,
+      "height_px": 600,
+      "visible_mesh_pixels": 163108,
+      "mesh_bbox_px": [
+        133,
+        5,
+        785,
+        583
+      ],
+      "shaded_colors": 347
+    },
+    "output_sha256": "3f2b3a5c2146b9dadce6406289aeb3e2c4624ceb434d9e301786fc5bb1e20cd8",
+    "negative_rc": 1,
+    "negative_rejected": true,
+    "same_bytes_as_export": true
+  },
+  "editor_after_export": {
+    "alive": true,
+    "dialog": null
+  },
+  "wall_seconds": 101.781
+}
