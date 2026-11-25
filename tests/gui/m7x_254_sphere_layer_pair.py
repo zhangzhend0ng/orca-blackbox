@@ -10,6 +10,7 @@ from pathlib import Path
 import sys
 import tempfile
 import time
+from types import SimpleNamespace
 
 import cv2
 
@@ -20,8 +21,9 @@ import m7_common as m7
 from harness import anchors, process_panel as panel, winutil
 from harness.agent_protocol import MODEL_FIXTURES
 from harness.pilot_param_layer_pair import verify_business
-from m3_common import add_common_args
-from m7x_250_negative_part import load_fixture, slice_and_export
+from m3_common import add_common_args, boot_session
+from m7x_250_negative_part import slice_and_export
+from m8_common import wait_arrival
 from harness.model_move_pilot import geometry_unchanged
 
 FIXTURE = HERE / "fixtures" / "feishu_std_sphere.3mf"
@@ -31,6 +33,20 @@ TARGET = ("0.20", "0.25")
 def require(check, message):
     if not check:
         raise ValueError(message)
+
+
+def load_sphere(args, work, profile, project):
+    session = boot_session(SimpleNamespace(exe=args.exe, datadir=work / profile), model=project)
+    try:
+        m7.ensure_maximized(session)
+        # A 20 mm sphere occupies 0.216% of the guest viewport. The positive
+        # object extrusion and mesh checks below independently identify it.
+        arrived, fraction = wait_arrival(session, timeout_s=30, min_frac=0.001)
+        require(arrived, f"Sphere did not appear in {profile} ({fraction:.3%})")
+        return session
+    except BaseException:
+        session.close()
+        raise
 
 
 def fields(session, expected):
@@ -65,9 +81,8 @@ def set_pair(session, current, wanted, edits_log):
 
 
 def slice_project(args, work, project, stage, results, analysis):
-    session, arrived = load_fixture(args, work, stage + "-profile", project)
+    session = load_sphere(args, work, stage + "-profile", project)
     try:
-        require(arrived, f"{stage} sphere did not appear")
         quality(session)
         require(slice_and_export(session, results, stage + " slice", work / (stage + ".gcode")),
                 f"{stage} G-code export failed")
@@ -92,9 +107,8 @@ def run(args, work, results, analysis):
     source = work / "edit-source.3mf"
     source.write_bytes(original)
     saved = work / "sphere-edited.3mf"
-    session, arrived = load_fixture(args, work, "editor-profile", source)
+    session = load_sphere(args, work, "editor-profile", source)
     try:
-        require(arrived, "Edit source missing")
         quality(session)
         other = ("0.24", "0.30")
         set_pair(session, TARGET, other, analysis["edits"])
