@@ -10,7 +10,8 @@ business step through its command line, so that the business criteria can be rea
             its own, and with the template's printer, process and filament preset files
             (--load-settings, --load-filaments)
   gcode236  feishu_std_cube.3mf  -> --slice 1 --export-3mf plate.gcode.3mf, then --export-slicedata
-  stl233    the standard cube and the standard sphere  -> --export-stl (one STL per object) and --export-3mf
+  stl233    the standard sphere -> --export-stl, then the standard cube and that sphere STL
+            -> --export-stl (one STL per object) and --export-3mf
 
 The profile is seeded as project_copy.seed does for the GUI (the app's bundled Snapmaker and BBL
 vendor profiles, its printers, the run's Snapmaker_Orca.conf) under a private --datadir.
@@ -92,6 +93,8 @@ def run(label, arguments):
 
 
 def commands(report):
+    """[(step, builder)]: the builder gives the argv when its turn comes, so a later command can
+    use what an earlier one wrote."""
     common = ["--datadir", str(PROFILE)]
     if CASE == "stl227":
         stl = str(WORK / "import" / "cube_20mm.stl")
@@ -99,20 +102,32 @@ def commands(report):
         settings = ";".join(str(preset_file(kind, wanted[key], report))
                             for kind, key in (("machine", "machine"), ("process", "process")))
         filament = str(preset_file("filament", wanted["filament"], report))
-        return [("export-3mf-default", common + ["--export-3mf", str(WORK / "imported.3mf"), stl]),
-                ("export-3mf-template-presets", common + ["--load-settings", settings, "--load-filaments", filament,
-                                                          "--export-3mf", str(WORK / "imported-u1.3mf"), stl])]
+        return [("export-3mf-default", lambda: common + ["--export-3mf", str(WORK / "imported.3mf"), stl]),
+                ("export-3mf-template-presets", lambda: common + [
+                    "--load-settings", settings, "--load-filaments", filament,
+                    "--export-3mf", str(WORK / "imported-u1.3mf"), stl])]
     if CASE == "gcode236":
-        return [("slice-export-3mf", common + ["--slice", "1", "--export-3mf", str(WORK / "plate.gcode.3mf"),
-                                               str(WORK / "baseline.3mf")]),
-                ("slice-export-slicedata", common + ["--slice", "1", "--export-slicedata", str(WORK / "slicedata"),
-                                                     str(WORK / "baseline.3mf")])]
+        return [("slice-export-3mf", lambda: common + [
+                    "--slice", "1", "--export-3mf", str(WORK / "plate.gcode.3mf"), str(WORK / "baseline.3mf")]),
+                ("slice-export-slicedata", lambda: common + [
+                    "--slice", "1", "--export-slicedata", str(WORK / "slicedata"), str(WORK / "baseline.3mf")])]
     if CASE == "stl233":
-        # --export-stl takes no value: it writes one STL per object into <outputdir>/stl/ as
-        # obj_<n>_<name>.stl (CLI::export_models), before the plate is arranged or sliced.
-        return [("export-stl-and-3mf", common + ["--outputdir", str(WORK / "out"), "--export-stl",
-                                                 "--export-3mf", str(WORK / "exported.3mf"),
-                                                 str(WORK / "cube.3mf"), str(WORK / "sphere.3mf")])]
+        # A second 3MF is refused (CLI_FILELIST_INVALID_ORDER, exit 252: only the first file may
+        # be a project), so the sphere is turned into an STL first. --export-stl takes no value
+        # and writes obj_<n>_<name>.stl into <outputdir>/stl, which has to exist.
+        for folder in (WORK / "sphere-out" / "stl", WORK / "out" / "stl"):
+            folder.mkdir(parents=True, exist_ok=True)
+
+        def sphere_stl():
+            found = sorted((WORK / "sphere-out" / "stl").glob("*.stl"))
+            if len(found) != 1:
+                raise RuntimeError(f"{len(found)} STL files under sphere-out/stl, expected the sphere")
+            return str(found[0])
+        return [("export-sphere-stl", lambda: common + ["--outputdir", str(WORK / "sphere-out"), "--export-stl",
+                                                        str(WORK / "sphere.3mf")]),
+                ("export-cube-and-sphere", lambda: common + [
+                    "--outputdir", str(WORK / "out"), "--export-stl", "--export-3mf", str(WORK / "exported.3mf"),
+                    str(WORK / "cube.3mf"), sphere_stl()])]
     raise ValueError(f"Unexpected case {CASE!r}")
 
 
@@ -156,8 +171,8 @@ def main():
         report["seed"] = {"profile": PROFILE.name, "conf_sha256": pc.digest(PROFILE / "Snapmaker_Orca.conf"),
                           "system_vendors": sorted(p.name for p in (PROFILE / "system").iterdir() if p.is_dir())}
         report["orca_processes_before"] = sorted(pc.processes())
-        for label, arguments in commands(report):
-            reading = run(label, arguments)
+        for label, build in commands(report):
+            reading = run(label, build())
             report["commands"].append(reading)
             if reading["exit"] != 0:
                 break
