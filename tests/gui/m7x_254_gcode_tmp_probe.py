@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # m7x_254_gcode_tmp_probe.py — Record how the plate's temporary G-code grows, and whether a low-memory dialog is what leaves it half written.
-# feishu: #254 (single-column follow-up; a record, never a verdict)
+# feishu: none  (#254 follow-up probe: a record, never a verdict, so it claims no baseline row)
 """Feishu #254 follow-up: slice the standard sphere once and watch, once a
 second, until the plate file is complete or has stopped growing:
 
