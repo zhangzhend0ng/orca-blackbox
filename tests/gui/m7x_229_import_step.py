@@ -33,18 +33,22 @@ into multiple objects`` that is not ticked. With it as it came, the three
 cubes were saved as one object with one part of 36 triangles in the first
 filament. A user who wants the parts apart ticks that box, so the case
 does: it records the check box, its neighbours and its state, then
-tries three ways to tick it, reading the state back after each (a
-BM_CLICK to the box; the dialog brought to the foreground and a real
-click on the box; BM_SETCHECK followed by the WM_COMMAND a click sends),
-and only a ticked box leads on to OK. A message click inside the dialog
-did not tick it on the guest (run dev229b-21fa17bd). The deflections are
-left as they are and recorded, before and after the tick. Whether a tick gives three objects or one object
+tries three ways to tick it, reading it back after each by BM_GETCHECK
+and by a picture of its square against the square before (a BM_CLICK to
+the box; the dialog brought to the foreground and a real click on the
+square; BM_SETCHECK followed by the WM_COMMAND a click sends), and only
+a box that shows a tick either way leads on to OK. A message click
+inside the dialog did not tick it (run dev229b-21fa17bd), and BM_SETCHECK
+read back 0 there (run dev229c), so the state is not trusted to
+BM_GETCHECK alone. The deflections are left as they are and recorded,
+before and after the tick. Whether a tick gives three objects or one object
 with three parts, and where the colours land, is read from the saved project.
 """
 import ctypes
 from ctypes import wintypes
 
 import cv2
+import numpy as np
 from hashlib import sha256
 from pathlib import Path
 import shutil
@@ -74,6 +78,12 @@ STEP_DIALOG = 'Step file import parameters'
 SPLIT_OPTION = 'Split compound and compsolid into multiple objects'
 BM_GETCHECK, BM_SETCHECK, BM_CLICK = 0x00F0, 0x00F1, 0x00F5  # what a native button answers to
 WM_COMMAND, BN_CLICKED = 0x0111, 0  # the notification a dialog gets when a control is clicked
+COVERED_WAIT_S = 15  # the dispatcher closes a system dialog that covers the desktop within this time
+BOX_PX, BOX_INSET = 13, 1  # the square of a check box in the dialog picture, and its inset from the control
+# What the square must show to count as ticked: interior darker than 200 by this share, or changed from its
+# first picture by more than 32 in luminance on this share. The unticked squares of guest runs dev229a and
+# dev229c show 0.0 of both.
+INK_LUMA, INK_SHARE, CHANGE_LUMA, CHANGE_SHARE = 200, 0.04, 32, 0.10
 UNCHECKED, CHECKED = 0, 1  # what BM_GETCHECK answers for a native check box (2 is the third state)
 WORDS_KEPT = 400  # the object list is read below the printer panel, well past the first words
 
@@ -125,39 +135,66 @@ def _neighbours(children, child):
     return [{'class': other['class'], 'rect': other['rect'], 'text': other['text'][:60]} for other in around]
 
 
-def run_tick_steps(read, steps, checked=CHECKED):
-    """Give a check box `steps`, one after the other: [(how, act)]. `read()` tells the state
-    before and after each step, and the first step after which the box reads `checked` is the
-    last. A step may return a note and leave the box alone. Returns (what was tried, as
-    [{'how', 'before', 'after', 'note'}], and the last state read); assert_ticked() judges it.
-    Nothing here touches a window: `read` and the steps do."""
-    records, state = [], read()
+def pixel_reading(square, reference):
+    """What the square of a check box looks like: ``ink`` is the share of its interior darker
+    than INK_LUMA (an unticked box is an outline on a light ground; a tick or a fill is ink)
+    and ``changed`` the share of the square that differs from `reference`, the square as it
+    looked before any way was tried, by more than CHANGE_LUMA. Either past its share means
+    ticked. `square` and `reference` are the luminances (0-255) of the square, row by row."""
+    interior = [value for row in square[2:-2] for value in row[2:-2]]
+    ink = sum(value < INK_LUMA for value in interior) / len(interior)
+    changed = sum(abs(value - other) > CHANGE_LUMA for row, before in zip(square, reference)
+                  for value, other in zip(row, before)) / (len(square) * len(square[0]))
+    return {'ink': round(ink, 4), 'changed': round(changed, 4),
+            'ticked': ink >= INK_SHARE or changed >= CHANGE_SHARE}
+
+
+def shows_ticked(reading, checked=CHECKED):
+    """Whether a reading of a check box says it is ticked: the control says so (BM_GETCHECK),
+    or the picture of its square does."""
+    return reading.get('check') == checked or bool(reading.get('pixels', {}).get('ticked'))
+
+
+def _brief(reading):
+    pixels = reading['pixels']
+    return f"check {reading['check']}, ink {pixels['ink']}, changed {pixels['changed']}"
+
+
+def run_tick_steps(read, steps, is_ticked=shows_ticked):
+    """Give a check box `steps`, one after the other: [(how, act)]. `read()` tells the box
+    before and after each step (BM_GETCHECK and the picture together), and the first step
+    after which `is_ticked()` holds is the last. A step may return a note and leave the box
+    alone. Returns (what was tried, as [{'how', 'before', 'after', 'note'}], and the last
+    reading); assert_ticked() judges it. Nothing here touches a window: `read` and the steps
+    do."""
+    records, reading = [], read()
     for how, act in steps:
-        if state == checked:
+        if is_ticked(reading):
             break
-        record = {'how': how, 'before': state}
+        record = {'how': how, 'before': reading}
         note = act(record)
-        state = record['after'] = read()
+        reading = record['after'] = read()
         if note:
             record['note'] = note
         records.append(record)
-    return records, state
+    return records, reading
 
 
-def assert_ticked(records, state, checked=CHECKED):
-    """Raises ValueError, naming every step with what the box read before and after it, when the
-    box did not come to `checked`."""
-    if state != checked:
-        raise ValueError(f'the check box reads {state} after {len(records)} step(s), {checked} is ticked: '
-                         + '; '.join(f'{record["how"]}: {record["before"]} -> {record["after"]}' for record in records))
+def assert_ticked(records, reading, is_ticked=shows_ticked):
+    """Raises ValueError, naming every way with both readings before and after it, when no way
+    made the box show that it is ticked."""
+    if not is_ticked(reading):
+        raise ValueError(f'the check box shows itself unticked after {len(records)} way(s): '
+                         + '; '.join(f'{record["how"]}: {_brief(record["before"])} -> {_brief(record["after"])}'
+                                     for record in records))
 
 
-def _tick_steps(session, dialog, child):
-    """The three ways to tick a native check box of a dialog, in the order they are tried. They
-    are built here and touch a window only when run."""
+def _tick_steps(session, dialog, child, wait_s=COVERED_WAIT_S):
+    """The three ways to tick a check box of a dialog, in the order they are tried. They are
+    built here and touch a window only when run."""
     box = child['hwnd']
     left, top, _right, bottom = child['rect']
-    x, y = left + 7, (top + bottom) // 2  # the box at the left end of a native check box
+    x, y = left + 7, (top + bottom) // 2  # the square at the left end of the control
 
     def bm_click(_record):
         _user32.SendMessageW(box, BM_CLICK, 0, 0)
@@ -165,9 +202,15 @@ def _tick_steps(session, dialog, child):
 
     def real_click(_record):
         winutil.force_set_foreground(dialog)
-        time.sleep(0.3)
-        if winutil._window_pid(winutil.window_from_screen_point(x, y)) != session.pid:
-            # A real click goes through the OS input queue: never onto a window of another program.
+        deadline = time.monotonic() + wait_s
+        while time.monotonic() < deadline:
+            # A real click goes through the OS input queue: only onto a window of the application
+            # under test. A system dialog that covers the desktop is closed by the dispatcher
+            # within wait_s (guest run dev229c), so the point is waited for.
+            if winutil._window_pid(winutil.window_from_screen_point(x, y)) == session.pid:
+                break
+            time.sleep(0.5)
+        else:
             return 'skipped: another window covers the box'
         winutil.user32.SetCursorPos(x, y)
         time.sleep(0.2)
@@ -181,8 +224,25 @@ def _tick_steps(session, dialog, child):
         time.sleep(0.6)
 
     return [('BM_CLICK sent to the check box', bm_click),
-            ('dialog brought to the foreground, real click on the box', real_click),
+            ('dialog brought to the foreground, real click on the square', real_click),
             ('BM_SETCHECK, then WM_COMMAND BN_CLICKED sent to the dialog', set_and_notify)]
+
+
+def box_region(client, control_rect):
+    """(x0, y0, x1, y1) of the square of a check box in the dialog's picture. The picture is the
+    client area of the dialog, whose screen corner is `client`; the square is BOX_PX wide and
+    BOX_INSET in from the corner of the control (the dialog pictures of guest runs dev229a and
+    dev229c)."""
+    x0, y0 = control_rect[0] - client[0] + BOX_INSET, control_rect[1] - client[1] + BOX_INSET
+    return (x0, y0, x0 + BOX_PX, y0 + BOX_PX)
+
+
+def _luminances(dialog, region):
+    """The luminances (0-255) of a rectangle of the dialog's picture, row by row."""
+    width, height, pixels = winutil.capture_window(dialog)
+    grey = cv2.cvtColor(np.frombuffer(pixels, np.uint8).reshape(height, width, 4), cv2.COLOR_BGRA2GRAY)
+    x0, y0, x1, y1 = region
+    return grey[y0:y1, x0:x1].tolist()
 
 
 def _picture(work, hwnd, name):
@@ -196,20 +256,40 @@ def _picture(work, hwnd, name):
 
 def tick_option(session, work, dialog, record, text):
     """Tick the check box `text` of a surveyed dialog and see it ticked: run_tick_steps() over
-    the three ways of _tick_steps(). The record keeps the check box with its class, rectangle
-    and neighbours, every way with the state before and after it, a picture once they are done
-    (``import-dialog-ticked.png``) and the dialog's numbers read again. When the box will not
-    tick, all of that stays in the record and the error follows."""
+    the three ways of _tick_steps(), each read back two ways, by BM_GETCHECK and by the picture
+    of the square against its picture before the first way (a drawn check box keeps its state
+    out of the control: on the guest BM_SETCHECK read back 0, run dev229c). The record keeps
+    the square with its class, rectangle, place in the picture and neighbours, the first
+    picture, every way with both readings before and after it, a picture of the dialog once
+    they are done (``import-dialog-ticked.png``) and the dialog's numbers read again. When no
+    way makes it show a tick, all of that stays in the record and the error follows."""
     child = find_checkbox(record['children'], text)
     option = record['option'] = {'text': text}
     if child is None:
         option['error'] = 'no single check box with that text'
         raise ValueError(f'{record["title"]!r}: {option["error"]}')
     left, top, _right, bottom = child['rect']
+    region = box_region(winutil.client_to_screen(dialog, 0, 0), child['rect'])
+    reference = _luminances(dialog, region)
     option.update({'class': child['class'], 'rect': child['rect'], 'at': [left + 7, (top + bottom) // 2],
+                   'square_in_picture': list(region), 'first_picture': pixel_reading(reference, reference),
                    'neighbours': _neighbours(record['children'], child)})
-    option['steps'], option['after'] = run_tick_steps(lambda: check_state(child['hwnd']),
-                                                      _tick_steps(session, dialog, child))
+    if option['first_picture']['ticked']:
+        # Before any way is tried the square must look unticked (0.0 of ink on the guest). Ink
+        # there means the square is not where this code looks in the picture, and every reading
+        # below would be that mistake; so the picture is kept and the case stops.
+        option['image'] = _picture(work, dialog, 'import-dialog-ticked.png')
+        option['error'] = f"the square already shows ink before any way was tried: {option['first_picture']}"
+        raise ValueError(f'{record["title"]!r}: {option["error"]}')
+
+    def read():
+        try:
+            pixels = pixel_reading(_luminances(dialog, region), reference)
+        except (OSError, RuntimeError, ValueError, cv2.error) as exc:
+            pixels = {'ink': None, 'changed': None, 'ticked': False, 'error': f'unavailable ({exc})'}
+        return {'check': check_state(child['hwnd']), 'pixels': pixels}
+
+    option['steps'], option['after'] = run_tick_steps(read, _tick_steps(session, dialog, child))
     option['before'] = option['steps'][0]['before'] if option['steps'] else option['after']
     option['image'] = _picture(work, dialog, 'import-dialog-ticked.png')
     record['readings_after_tick'] = readings_of([dict(other, text=winutil.window_title(other['hwnd']))

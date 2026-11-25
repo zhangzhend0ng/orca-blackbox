@@ -22,7 +22,8 @@ from step_import_oracle import (  # noqa: E402
     CLAUSES, CLAUSE_COLOUR, CLAUSE_COMPLETE, CLAUSE_ENTITIES, CLAUSE_LIST, recorded_results_match,
     step_import_readings, verdicts, verify_step_import)
 from m7x_229_import_step import (  # noqa: E402  (helpers of the case; none of these touches a window)
-    SPLIT_OPTION, _tick_steps, assert_ticked, find_checkbox, notification_wparam, readings_of, run_tick_steps)
+    CHANGE_SHARE, INK_SHARE, SPLIT_OPTION, _tick_steps, assert_ticked, box_region, find_checkbox,
+    notification_wparam, pixel_reading, readings_of, run_tick_steps, shows_ticked)
 
 REAL_227 = ROOT / 'docs/runs/evidence/feishu-227-2026-11-26/11858f17-run1-imported.3mf'
 MAIN, MESH = '3D/3dmodel.model', '3D/Objects/cube_20mm.stl_2.model'
@@ -346,25 +347,31 @@ def test_the_dialog_readings_are_the_deflections_and_the_facet_count():
 
 
 class _Box:
-    """A check box for run_tick_steps without a window: read() tells its state and each step sets
-    the next state given here (or, given a note, leaves the state alone)."""
+    """A check box for run_tick_steps without a window: read() tells BM_GETCHECK and the picture
+    of the square, and each step sets the next reading given here (or, given a note, leaves it)."""
 
     def __init__(self, start, *after):
-        self.state, self.after, self.run = start, list(after), []
+        self.reading, self.after, self.run = start, list(after), []
 
     def read(self):
-        return self.state
+        return {'check': self.reading['check'], 'pixels': dict(self.reading['pixels'])}
 
     def step(self, how, note=None):
         def act(_record):
             self.run.append(how)
-            return note if note else self._set()
+            if note:
+                return note
+            self.reading = self.after.pop(0)
         return how, act
 
-    def _set(self):
-        self.state = self.after.pop(0)
+
+def _reading(check=0, ink=0.0, changed=0.0):
+    return {'check': check, 'pixels': {'ink': ink, 'changed': changed,
+                                       'ticked': ink >= INK_SHARE or changed >= CHANGE_SHARE}}
 
 
+UNTICKED = _reading()
+BY_CONTROL, BY_PICTURE = _reading(check=1), _reading(ink=0.0741)
 FIRST, SECOND, THIRD = 'first way', 'second way', 'third way'
 
 
@@ -373,51 +380,105 @@ def _steps(box):
 
 
 def test_the_first_way_that_ticks_the_box_ends_the_run():
-    box = _Box(0, 1, 0, 0)
-    records, state = run_tick_steps(box.read, _steps(box))
-    assert state == 1 and [record['how'] for record in records] == [FIRST]
-    assert records[0] == {'how': FIRST, 'before': 0, 'after': 1} and box.run == [FIRST]
-    assert_ticked(records, state)
+    box = _Box(UNTICKED, BY_CONTROL, UNTICKED, UNTICKED)
+    records, reading = run_tick_steps(box.read, _steps(box))
+    assert reading['check'] == 1 and [record['how'] for record in records] == [FIRST]
+    assert records[0] == {'how': FIRST, 'before': UNTICKED, 'after': BY_CONTROL} and box.run == [FIRST]
+    assert_ticked(records, reading)
 
 
-def test_a_box_that_still_reads_zero_is_given_the_next_way():
-    box = _Box(0, 0, 1, 0)
-    records, state = run_tick_steps(box.read, _steps(box))
-    assert state == 1 and [record['how'] for record in records] == [FIRST, SECOND]
-    assert [(record['before'], record['after']) for record in records] == [(0, 0), (0, 1)]
-    box = _Box(0, 0, 0, 1)
-    records, state = run_tick_steps(box.read, _steps(box))
-    assert state == 1 and len(records) == 3 and records[-1]['after'] == 1
+def test_a_tick_only_the_picture_shows_ends_the_run():
+    """BM_GETCHECK stays at 0 (as on the guest) while the square shows a tick: that is enough."""
+    box = _Box(UNTICKED, UNTICKED, BY_PICTURE, UNTICKED)
+    records, reading = run_tick_steps(box.read, _steps(box))
+    assert reading['check'] == 0 and reading['pixels']['ticked']
+    assert [record['how'] for record in records] == [FIRST, SECOND] and box.run == [FIRST, SECOND]
+    assert [(record['before']['check'], record['after']['check']) for record in records] == [(0, 0), (0, 0)]
+    assert [(record['before']['pixels']['ink'], record['after']['pixels']['ink']) for record in records] == [(0.0, 0.0), (0.0, 0.0741)]
+    assert_ticked(records, reading)
 
 
-def test_a_box_that_is_ticked_already_is_left_alone():
-    box = _Box(1)
-    records, state = run_tick_steps(box.read, _steps(box))
-    assert state == 1 and records == [] and box.run == []
+def test_a_box_that_shows_no_tick_is_given_every_way_until_one_shows_it():
+    box = _Box(UNTICKED, UNTICKED, UNTICKED, _reading(check=1, ink=1.0))
+    records, reading = run_tick_steps(box.read, _steps(box))
+    assert len(records) == 3 and reading['check'] == 1 and reading['pixels']['ticked'] and THIRD in box.run
+
+
+def test_a_box_that_shows_a_tick_already_is_left_alone():
+    box = _Box(BY_PICTURE, UNTICKED, UNTICKED)
+    records, reading = run_tick_steps(box.read, _steps(box))
+    assert reading['pixels']['ticked'] and records == [] and box.run == []
 
 
 def test_a_step_that_is_skipped_is_recorded_and_the_next_one_is_tried():
-    box = _Box(0, 1)
-    records, state = run_tick_steps(box.read, [box.step(SECOND, note='skipped: another window covers the box'),
-                                               box.step(THIRD)])
-    assert state == 1 and [record['how'] for record in records] == [SECOND, THIRD]
-    assert records[0] == {'how': SECOND, 'before': 0, 'after': 0, 'note': 'skipped: another window covers the box'}
+    box = _Box(UNTICKED, BY_CONTROL)
+    records, reading = run_tick_steps(box.read, [box.step(SECOND, note='skipped: another window covers the box'),
+                                                 box.step(THIRD)])
+    assert reading['check'] == 1 and [record['how'] for record in records] == [SECOND, THIRD]
+    assert records[0] == {'how': SECOND, 'before': UNTICKED, 'after': UNTICKED,
+                          'note': 'skipped: another window covers the box'}
 
 
-def test_three_ways_that_do_not_tick_the_box_raise_naming_each():
-    box = _Box(0, 0, 0, 0)
-    records, state = run_tick_steps(box.read, _steps(box))
-    assert state == 0 and len(records) == 3 and box.run == [FIRST, SECOND, THIRD]
-    with pytest.raises(ValueError, match='reads 0 after 3 step') as caught:
-        assert_ticked(records, state)
+def test_three_ways_without_a_tick_raise_naming_both_readings():
+    box = _Box(UNTICKED, UNTICKED, UNTICKED, UNTICKED)
+    records, reading = run_tick_steps(box.read, _steps(box))
+    assert not reading['pixels']['ticked'] and len(records) == 3 and box.run == [FIRST, SECOND, THIRD]
+    with pytest.raises(ValueError, match='unticked after 3 way') as caught:
+        assert_ticked(records, reading)
     for how in (FIRST, SECOND, THIRD):
-        assert f'{how}: 0 -> 0' in str(caught.value)
+        assert f'{how}: check 0, ink 0.0, changed 0.0 -> check 0, ink 0.0, changed 0.0' in str(caught.value)
+
+
+def test_shows_ticked_needs_the_control_or_the_picture():
+    assert not shows_ticked(UNTICKED)
+    assert shows_ticked(BY_CONTROL) and shows_ticked(BY_PICTURE)
+    assert shows_ticked({'check': 0, 'pixels': {'ink': None, 'changed': None, 'ticked': False}}) is False
+    assert shows_ticked({'check': 1, 'pixels': {}}), 'the control alone is enough when there is no picture'
+
+
+def _square(inked=(), fill=None):
+    """A 13 px square as the dialog pictures show an unticked check box: a grey outline (104)
+    around a white interior, with some interior pixels darkened or the whole interior filled."""
+    square = [[104 if row in (0, 12) or column in (0, 12) else 255 for column in range(13)] for row in range(13)]
+    for row, column in inked:
+        square[row][column] = 30
+    if fill is not None:
+        for row in range(1, 12):
+            for column in range(1, 12):
+                square[row][column] = fill
+    return square
+
+
+def test_an_unticked_square_shows_no_ink_and_no_change():
+    empty = _square()
+    assert pixel_reading(empty, empty) == {'ink': 0.0, 'changed': 0.0, 'ticked': False}
+    assert pixel_reading(_square(), empty) == {'ink': 0.0, 'changed': 0.0, 'ticked': False}
+
+
+def test_a_tick_mark_in_the_square_is_ink():
+    empty, marked = _square(), _square(inked=[(4, 3), (4, 4), (5, 5), (6, 6), (6, 7), (7, 8), (3, 4), (3, 5)])
+    reading = pixel_reading(marked, empty)
+    assert reading == {'ink': round(8 / 81, 4), 'changed': round(8 / 169, 4), 'ticked': True}
+
+
+def test_a_filled_square_is_ink_and_change():
+    empty, filled = _square(), _square(fill=120)
+    reading = pixel_reading(filled, empty)
+    assert reading == {'ink': 1.0, 'changed': round(121 / 169, 4), 'ticked': True}
+    # The outline itself is not ink: one dark pixel in the interior of 81 is under the share.
+    assert pixel_reading(_square(inked=[(5, 5)]), empty) == {'ink': round(1 / 81, 4), 'changed': round(1 / 169, 4), 'ticked': False}
+
+
+def test_the_square_is_found_where_the_guest_pictures_show_it():
+    """The dialog census of the guest (control at [788, 594, 1089, 609]) with the client corner of
+    the dialog at (768, 422): the outline lies in columns 21-33 and rows 173-185 of its picture."""
+    assert box_region((768, 422), [788, 594, 1089, 609]) == (21, 173, 34, 186)
 
 
 def test_the_three_ways_are_the_prescribed_ones_in_order():
     ways = [how for how, _act in _tick_steps(None, 0, {'hwnd': 0, 'id': -30284, 'rect': [788, 594, 1089, 609]})]
     assert ways == ['BM_CLICK sent to the check box',
-                    'dialog brought to the foreground, real click on the box',
+                    'dialog brought to the foreground, real click on the square',
                     'BM_SETCHECK, then WM_COMMAND BN_CLICKED sent to the dialog']
 
 
