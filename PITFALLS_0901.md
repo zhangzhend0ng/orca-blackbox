@@ -628,13 +628,13 @@ run 编号是 `artifacts/windows_mcp_harvest/<编号>`；叙述与决策见运�
   `<前缀>-*` 找件）。
 - **交互桌面预检**：提权中继里 PS Direct 进程的桌面指标是默认值（§18.7），派发前读
   计划任务 `Ready`、Orca 与驱动进程数、分辨率。
-- **`Windows Security` 防火墙提示会在运行中途冒出来盖住应用**：被测构建的
-  `snapmaker-orca.exe` 一开始监听端口就弹（提示里显示的程序名是 `Snapmaker Control`），
-  接走真实输入，表现为「开关点不动」「菜单关不上」。04:03 #237 的整屏截图里它压在应用
-  上面（`docs/runs/evidence/feishu-237-2026-11-26/a09a0662-run1-preset-before.png`）。
-  原因是它只有两条「Allow | Public」规则，别的网络配置下每次都问。2026-11-26 04:36 给它加了
-  `OrcaBlackbox-MainBuild-BlockInbound-Any`（入站 Block、所有配置，等同于点 Cancel；撤销用
-  `Remove-NetFirewallRule -DisplayName` 同名）。步骤莫名点不动时先存整屏截图。
+- **`Windows Security` 防火墙提示会在运行中途冒出来盖住应用**：提示里的程序名是 `Snapmaker Control`，
+  即设备代理 `snapmaker_control_windows_x64.exe`（被测构建目录里没有它，客机上另有两份拷贝）。
+  它接走真实输入，表现为「开关点不动」「菜单关不上」。#237 的三轮里它压在应用上面
+  （`docs/runs/evidence/feishu-237-2026-11-26/*-preset-before.png`），由谁触发没有定位；
+  2026-11-26 04:36 给被测的 `snapmaker-orca.exe` 加了 `OrcaBlackbox-MainBuild-BlockInbound-Any`
+  （入站 Block、所有配置，等同于点 Cancel；撤销用 `Remove-NetFirewallRule -DisplayName` 同名）
+  之后提示仍在。步骤莫名点不动时先存整屏截图，再判断。
 - **`wait_arrival` 在空盘的 U1 模板上立即返回**：模板本身的彩色占比 0.104% 已经过了
   0.1% 的门，随后另存工程撞上还没关的 Loading 框（#251 第一轮）。导入后要等的是
   「盘上有模型候选且应用没有对话框」，不是彩色占比。
