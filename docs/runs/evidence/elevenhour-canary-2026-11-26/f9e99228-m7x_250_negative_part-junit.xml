@@ -1,0 +1,28 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T05:33:03" tests="1" failures="0" errors="0">
+    <testcase name="m7x_250_negative_part" classname="blackbox.m7x_250_negative" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_250_negative_part.log" />
+        <property name="dim:Add negative part opens its second-level menu" value="PASS" />
+        <property name="dim:negative part has a distinct canvas color" value="PASS ({'pass': True, 'negative_connected_pixels': 278, 'body_right_in_crop': 166, 'negative_box_in_crop': [148, 119, 31, 68], 'body_bgr': [48.0, 136.0, 178.0], 'negative_bgr': [96.0, 97.0, 95.0]})" />
+        <property name="dim:negative part saved on the same object" value="PASS ({'normal_part': [[122.0, 149.0], [122.5, 149.5], [0.0, 27.0]], 'negative_part': [[141.5, 153.5], [118.0, 130.0], [-2.5, 29.5]]})" />
+        <property name="dim:negative slice" value="PASS" />
+        <property name="dim:negative G-code" value="PASS" />
+        <property name="dim:baseline slice" value="PASS" />
+        <property name="dim:baseline G-code" value="PASS" />
+        <property name="dim:slice locally subtracts only where cutter intersects" value="PASS" />
+      </properties>
+      <system-out>[m7] === verdict ===
+  Add negative part opens its second-level menu: PASS
+  negative part has a distinct canvas color: PASS ({'pass': True, 'negative_connected_pixels': 278, 'body_right_in_crop': 166, 'negative_box_in_crop': [148, 119, 31, 68], 'body_bgr': [48.0, 136.0, 178.0], 'negative_bgr': [96.0, 97.0, 95.0]})
+  negative part saved on the same object: PASS ({'normal_part': [[122.0, 149.0], [122.5, 149.5], [0.0, 27.0]], 'negative_part': [[141.5, 153.5], [118.0, 130.0], [-2.5, 29.5]]})
+  negative slice: PASS
+  negative G-code: PASS
+  baseline slice: PASS
+  baseline G-code: PASS
+  slice locally subtracts only where cutter intersects: PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

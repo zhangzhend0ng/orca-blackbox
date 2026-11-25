@@ -1,0 +1,25 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T05:25:44" tests="1" failures="0" errors="0">
+    <testcase name="m7x_241_orient" classname="blackbox.m7x_241" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_241_orient.log" />
+        <property name="dim:initial fixture geometry preserved" value="PASS" />
+        <property name="dim:same_two_objects" value="PASS" />
+        <property name="dim:each_orientation_changed" value="PASS" />
+        <property name="dim:each_contact_area_increased" value="PASS" />
+        <property name="dim:each_grounded_and_in_printable_volume" value="PASS" />
+      </properties>
+      <system-out>[m3g] save dialog 'Save file as'
+[m7x241] analysis {"case": 241, "results": {"initial fixture geometry preserved": "PASS", "same_two_objects": "PASS", "each_orientation_changed": "PASS", "each_contact_area_increased": "PASS", "each_grounded_and_in_printable_volume": "PASS"}, "phase_seconds": {"baseline": 57.656, "auto_rotate_and_save": 19.61, "total": 78.781}, "geometry": {"checks": {"same_two_objects": true, "each_orientation_changed": true, "each_contact_area_increased": true, "each_grounded_and_in_printable_volume": true}, "objects": {"Alpha": {"before_plate_normal_in_model_axes": [0.0, 0.0, 1.0], "after_plate_normal_in_model_axes": [1.0, 0.0, 2.22044605e-16], "tilt_deg": 89.99999999999999, "before_contact_mm2": 263.17499950499996, "after_contact_mm2": 1815.0}, "Bravo": {"before_plate_normal_in_model_axes": [0.0, 0.0, 1.0], "after_plate_normal_in_model_axes": [1.0, 0.0, 2.22044605e-16], "tilt_deg": 89.99999999999999, "before_contact_mm2": 424.12500157500006, "after_contact_mm2": 2418.0}}}}
+
+[m7] === verdict ===
+  initial fixture geometry preserved: PASS
+  same_two_objects: PASS
+  each_orientation_changed: PASS
+  each_contact_area_increased: PASS
+  each_grounded_and_in_printable_volume: PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>
