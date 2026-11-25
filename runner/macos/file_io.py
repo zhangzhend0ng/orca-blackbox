@@ -537,10 +537,29 @@ def import_stl(desktop, report):
         report["shots"] = {"before": shot(desktop, pid, window, "before")}
         stage(report, "prepare.delete")
         # The template cube loads centred on the bed (project_copy.pan_and_save): the canvas
-        # click selects it, the Delete key of the main block removes the selection.
+        # click selects it and gives it the keyboard. Select All from the Edit menu then makes
+        # the selection independent of where the click landed; the Delete key removes it.
         desktop.click_point(pid, root, window, title, 490, 420)
-        desktop.post_key(pid, root, window, title, 51, 1)
-        wait_for(lambda: desktop.text(window, "AXTitle") == "*" + title, "Delete did not mark the project modified", 10)
+        opened = False
+        try:
+            bar = desktop.attr(root, "AXMenuBar")
+            edit_menu = exactly_one(e for e in desktop.children(bar) if desktop.text(e, "AXTitle") == "Edit")
+            select_all = find_item(desktop, edit_menu, "Select All")
+            opened = True
+            desktop.act(pid, edit_menu, "AXPress")
+            desktop.act(pid, select_all, "AXPress")
+            report["select"] = "canvas click, then Edit > Select All"
+        except Exception as error:
+            report["select"] = f"canvas click only ({type(error).__name__}: {error})"
+            if opened:
+                desktop.post_key(pid, root, window, title, 53, 1)
+        for key_code in (51, 117):  # the Delete key of the main block, then forward delete
+            desktop.post_key(pid, root, window, title, key_code, 1)
+            if wait_soft(lambda: desktop.text(window, "AXTitle") == "*" + title, 5):
+                report["delete_key_code"] = key_code
+                break
+        require(report.get("delete_key_code"), "Delete did not mark the project modified")
+        log(f"deleted the template: {report['select']} key={report['delete_key_code']}")
         stage(report, "prepare.save")
         report["empty"] = save_in_place(desktop, pid, root, window, pc.BASELINE)
         report["empty"].update(model_facts(pc.BASELINE))
@@ -606,6 +625,7 @@ def import_stl(desktop, report):
             return
         wait_for(lambda: desktop.text(window, "AXTitle") == "*" + title, "The import did not mark the project modified", 30)
         time.sleep(2.0)
+        trace["windows_after_import"] = window_titles(desktop, root)
         report["shots"]["imported"] = shot(desktop, pid, window, "imported")
         stage(report, "import.save")
         report["saved"] = save_in_place(desktop, pid, root, window, pc.BASELINE)
