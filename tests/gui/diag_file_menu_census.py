@@ -564,6 +564,9 @@ def bundle_census(session, work, analysis):
         time.sleep(1.0)
     out['app_alive'] = session.alive()
     return out
+
+
+def run(args, work, analysis):
     # hv_go launches a case without arguments: the host runner leaves option files under C:\coil.
     open_zip = Path(r'C:\coil\diag_open_zip.txt').is_file()
     experiments = Path(r'C:\coil\diag_zip_experiments.txt').is_file()

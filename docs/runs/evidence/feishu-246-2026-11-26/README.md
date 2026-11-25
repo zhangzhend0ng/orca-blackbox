@@ -15,7 +15,7 @@
 
 对着开洞立方体读到的 27 行：`Clone`、`Simplify Model`、`Mesh boolean`（灰）、`Center`（灰）、`Drop`（灰）、`Split`（灰）、`Mirror`、`Delete`、`Add Part`、`Add Negative Part`、`Add Modifier`、`Add Support Blocker`、`Add Support Enforcer`、`Height Range Modifier`、`Printable`、`Edit Process Settings`、`Edit in Parameter Table`、`Reload from disk`、`Replace with STL`、`Export as one STL...`、`Convert from Inches`、`Convert from Meters`、`Change Filament`（另 3 行分隔线）。和完好的立方体读到的菜单相同。
 
-**原因没有定位。** 用例作者按 tag `sm-v2.4.0` 读到：这一行由 `GUI_Factories.cpp:882` 的 `append_menu_item_fix_through_netfabb` 追加，条件是 `is_windows10()`；而 `Utils/FixModelByWin10.cpp:195` 的 `is_windows10()` 读的是注册表 `ProductName` 是否以 `Windows 10` 开头。这台客机是 Windows 11（内部版本 26200），注册表里的 `ProductName` 却是 `Windows 10 Pro`，按这段源码条件应当成立、这一行应当出现（至多是置灰）。它没有出现，所以要么被测构建与这个 tag 不一致，要么另有条件；本轮没有继续查。
+**原因没有定位，有一个候选。** 用例作者按 tag `sm-v2.4.0` 读到：这一行由 `GUI_Factories.cpp:882` 的 `append_menu_item_fix_through_netfabb` 追加，条件是 `is_windows10()`；而 `Utils/FixModelByWin10.cpp:195` 的 `is_windows10()` 读的是注册表 `ProductName` 是否以 `Windows 10` 开头。这台客机是 Windows 11（内部版本 26200），注册表里的 `ProductName` 却是 `Windows 10 Pro`，按这段源码条件应当成立、这一行应当出现（至多是置灰）。它没有出现。候选原因是编译开关：`FixModelByWin10.hpp:15-27` 只在定义了 `HAS_WIN10SDK` 时才编译真函数，否则是恒返回假的桩；`CMakeLists.txt:319-324` 只在 Windows SDK 里有 `winrt/windows.graphics.printing3d.h` 时才定义它。若被测构建是后一种配置，注册表写什么都不会有这一行。构建日志本轮没有查，所以仍是候选。
 
 给测试同事：这一行在当前 Windows 11 测试机上无法执行，需要确认它在哪种系统或构建上存在，或改用别的修复入口。
 
