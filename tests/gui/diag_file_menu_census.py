@@ -140,6 +140,111 @@ def probe_submenu(session, work, submenu, phase, serial):
     return out, serial
 
 
+def toplevels(pid):
+    """Visible top-level windows of the process: class, title, screen rect and handle."""
+    import ctypes.wintypes as wintypes
+
+    user32 = ctypes.WinDLL('user32', use_last_error=True)
+    out = []
+    callback = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+
+    def visit(hwnd, _lp):
+        owner = wintypes.DWORD()
+        user32.GetWindowThreadProcessId(hwnd, ctypes.byref(owner))
+        if owner.value == pid and user32.IsWindowVisible(hwnd):
+            cls = ctypes.create_unicode_buffer(128)
+            user32.GetClassNameW(hwnd, cls, 128)
+            text = ctypes.create_unicode_buffer(512)
+            user32.GetWindowTextW(hwnd, text, 512)
+            rect = wintypes.RECT()
+            user32.GetWindowRect(hwnd, ctypes.byref(rect))
+            out.append({'hwnd': hwnd, 'class': cls.value, 'title': text.value,
+                        'rect': [rect.left, rect.top, rect.right, rect.bottom]})
+        return True
+
+    user32.EnumWindows(callback(visit), 0)
+    return out
+
+
+def describe(hwnd):
+    """Every descendant with class, text, visibility and screen rect (custom-drawn wx controls)."""
+    import ctypes.wintypes as wintypes
+
+    user32 = ctypes.WinDLL('user32', use_last_error=True)
+    out = []
+    callback = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+
+    def visit(child, _lp):
+        cls = ctypes.create_unicode_buffer(128)
+        user32.GetClassNameW(child, cls, 128)
+        text = ctypes.create_unicode_buffer(4096)
+        user32.GetWindowTextW(child, text, 4096)
+        rect = wintypes.RECT()
+        user32.GetWindowRect(child, ctypes.byref(rect))
+        out.append({'class': cls.value, 'text': text.value, 'visible': bool(user32.IsWindowVisible(child)),
+                    'rect': [rect.left, rect.top, rect.right, rect.bottom]})
+        return True
+
+    user32.EnumChildWindows(ctypes.c_void_p(hwnd), callback(visit), 0)
+    return out
+
+
+def zip_dialog_census(session, work, analysis):
+    """Import Zip Archive shows an application-drawn file list before anything is loaded: record and close it."""
+    from zipfile import ZipFile
+
+    from m7x_251_reload_from_disk import write_cube
+
+    archive = work / 'models.zip'
+    with ZipFile(archive, 'w') as bundle:
+        for name, size in (('cube_10mm.stl', 10), ('cube_20mm.stl', 20), ('cube_30mm.stl', 30)):
+            member = work / name
+            write_cube(member, size)
+            bundle.write(member, name)
+    known = {window['hwnd'] for window in toplevels(session.pid)}
+    entry = {'item': 'Import Zip Archive'}
+    dispatched, dialog = m7.file_menu_dispatch(session, 'Import Zip Archive', expect_dialog=True, via='Import', timeout_s=8)
+    entry['dispatched'] = bool(dispatched)
+    if not dialog:
+        entry['file_dialog'] = None
+        return entry
+    entry['file_dialog'] = dialog[1]
+    hwnd = dialog[3]
+    edit = export_util.find_edit(hwnd)
+    winutil.select_all(edit)
+    winutil.msg_text(edit, str(archive))
+    winutil._send_msg(hwnd, 0x0111, 1, 0)  # IDOK
+    fresh = []
+    deadline = time.monotonic() + 15
+    while time.monotonic() < deadline:
+        fresh = [window for window in toplevels(session.pid)
+                 if window['hwnd'] not in known and window['hwnd'] != hwnd and window['class'] != '#32768']
+        if fresh:
+            break
+        time.sleep(0.5)
+    entry['new_windows'] = fresh
+    if not fresh:
+        entry['app_alive'] = session.alive()
+        return entry
+    target = max(fresh, key=lambda window: (window['rect'][2] - window['rect'][0]) * (window['rect'][3] - window['rect'][1]))
+    time.sleep(1.0)
+    entry['dialog'] = target
+    entry['children'] = describe(target['hwnd'])
+    width, height, pixels = winutil.capture_window(target['hwnd'])
+    frame = np.frombuffer(pixels, np.uint8).reshape(height, width, 4)
+    entry['screenshot'] = 'zip-dialog.png'
+    cv2.imwrite(str(work / entry['screenshot']), cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR))
+    winutil._send_msg(target['hwnd'], 0x0010, 0, 0)  # WM_CLOSE
+    deadline = time.monotonic() + 8
+    while winutil.user32.IsWindowVisible(target['hwnd']) and time.monotonic() < deadline:
+        time.sleep(0.2)
+    entry['dialog_closed'] = not winutil.user32.IsWindowVisible(target['hwnd'])
+    entry['app_alive'] = session.alive()
+    entry['windows_after_close'] = [window for window in toplevels(session.pid) if window['hwnd'] not in known]
+    print('[census] zip dialog', json.dumps(entry, ensure_ascii=False)[:3000], flush=True)
+    return entry
+
+
 def run(args, work, analysis):
     session = boot_session(SimpleNamespace(exe=args.exe, datadir=work / 'profile'), model=args.model)
     try:
@@ -154,6 +259,7 @@ def run(args, work, analysis):
         export_submenu = next((v for k, v in before['submenus'].items() if k.lower().startswith('export')), [])
         analysis['import_dialogs'], serial = probe_submenu(session, work, import_submenu, 'Import', serial)
         analysis['export_dialogs_before_slice'], serial = probe_submenu(session, work, export_submenu, 'Export', serial)
+        analysis['zip_dialog'] = zip_dialog_census(session, work, analysis)
         if not click_slice_start(session):
             raise ValueError('slice click did not take')
         done, score = wait_slicing_done(session, timeout_s=150)
