@@ -1,0 +1,48 @@
+{
+  "case": 252,
+  "results": {
+    "native menu exported all triangles of the selected object to the chosen STL path": "PASS",
+    "third-party F3D opened and rendered the exact STL, rejecting the malformed control": "PASS"
+  },
+  "export_geometry": {
+    "file_bytes": 1284,
+    "triangle_count": 24,
+    "bounds_mm": [
+      [
+        122.0,
+        211.3000030517578
+      ],
+      [
+        122.5,
+        149.5
+      ],
+      [
+        0.0,
+        27.0
+      ]
+    ]
+  },
+  "viewer": {
+    "path": "C:\\coil\\tools\\orca-bb-f3d\\bin\\f3d-console.exe",
+    "version": "F3D 4.0.1\n\nF3D - A fast and minimalist 3D viewer\nVersion: 4.0.1.\nBuild date: 2026-10-31 14:50:16.\nBuild system: Windows 64-bits.\nCompiler: MSVC 19.44.35229.0.\nModule FFmpeg: ON.\nModule ImGui: ON.\nModule OpenEXR: ON.\nModule Raytracing: OFF.\nModule WebP: ON.\nVTK version: 9.7.1-1746-gdbb73e9cc8 (date: 20261016).\nCopyright (C) 2019-2021 Kitware SAS.\nCopyright (C) 2021-2025 Michael Migliore, Mathieu Westphal.\nCopyright (C) 2025-2026 F3D-APP Foundation.\nLicense BSD-3-Clause.",
+    "version_rc": 0,
+    "source_sha256": "a68adcd76940963f78f3b24017e8dfa3bf844d3c40c9fa160420f3f34c3b46fa",
+    "positive_rc": 0,
+    "image": {
+      "width_px": 800,
+      "height_px": 600,
+      "visible_mesh_pixels": 129400,
+      "mesh_bbox_px": [
+        103,
+        5,
+        787,
+        587
+      ],
+      "shaded_colors": 147
+    },
+    "output_sha256": "c429ba62dda7592a71bd94002992143a39b7c03c9c604ed6a5c37afe41f2fcf7",
+    "negative_rc": 1,
+    "negative_rejected": true
+  },
+  "wall_seconds": 67.375
+}

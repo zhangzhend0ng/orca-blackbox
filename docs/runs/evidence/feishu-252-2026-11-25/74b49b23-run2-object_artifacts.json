@@ -1,0 +1,52 @@
+﻿[
+    {
+        "part":  "analysis.json",
+        "bytes":  1633,
+        "sha256":  "DCCB28F14AA0D6FADE20DB102001F852AD143B27752CFE50EB9080B6EADCB7D0"
+    },
+    {
+        "part":  "before.3mf",
+        "bytes":  34865,
+        "sha256":  "AE350F411FABC9CAC1621EFB6252CA0A3FF2B5B108414A72ACC927948E41B878"
+    },
+    {
+        "part":  "before.png",
+        "bytes":  288793,
+        "sha256":  "E61B24EB24DAC9CF9CE247A5934C390519032A035DCAEF840EEDEE4BF55344D9"
+    },
+    {
+        "part":  "f3d-invalid.log",
+        "bytes":  276,
+        "sha256":  "6761402C08BDFCC41BC449B342652B147E95B13896A1A8E30574F221E5AFFB9E"
+    },
+    {
+        "part":  "f3d-version.log",
+        "bytes":  491,
+        "sha256":  "D0A275C28AE20F6A49E525F5E6C1D4C52F56685F4AC65A4652E32F979E64D204"
+    },
+    {
+        "part":  "f3d-view.log",
+        "bytes":  170,
+        "sha256":  "0AB85CEB7B4229A34C6161B6D9901F86EF6BAA1AA33C7ADB43C93551243C67D2"
+    },
+    {
+        "part":  "f3d-view.png",
+        "bytes":  247080,
+        "sha256":  "C429BA62DDA7592A71BD94002992143A39B7C03C9C604ED6A5C37AFE41F2FCF7"
+    },
+    {
+        "part":  "invalid.stl",
+        "bytes":  16,
+        "sha256":  "9176EB9C155713B6E324B21D86AD48F314B8CF7C2A7DDC4CAE38108ADC2D3931"
+    },
+    {
+        "part":  "selected-object.stl",
+        "bytes":  1284,
+        "sha256":  "A68ADCD76940963F78F3B24017E8DFA3BF844D3C40C9FA160420F3F34C3B46FA"
+    },
+    {
+        "part":  "twin-shell.3mf",
+        "bytes":  30327,
+        "sha256":  "ED101728087DB0D331A3ABFD30F8AA2391855BB899F1888C76CFD555ACAD537F"
+    }
+]

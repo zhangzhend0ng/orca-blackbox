@@ -1,0 +1,22 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T21:42:19" tests="1" failures="0" errors="0">
+    <testcase name="m7x_252_export_stl_viewer" classname="blackbox.m7x_252_export_stl" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_252_export_stl_viewer.log" />
+        <property name="dim:native menu exported all triangles of the selected object to the chosen STL path" value="PASS" />
+        <property name="dim:third-party F3D opened and rendered the exact STL, rejecting the malformed control" value="PASS" />
+      </properties>
+      <system-out>[m3g] save dialog 'Save file as'
+[model context] desktop hit-test did not resolve to canvas at (1172,528)
+[model context] message right-click @(1172,528) on 0x5730840
+[model context] menu hwnd=0x60b0d2c: [(0, 'Clone\tCtrl+K', 0), (1, 'Simplify Model', 0), (2, '', 2051), (3, 'Mesh boolean', 0), (4, 'Center', 0), (5, 'Drop', 1), (6, 'Split', 528), (7, 'Mirror', 784), (8, 'Delete\tDel', 0), (9, '', 2051), (10, 'Add Part', 3088), (11, 'Add Negative Part', 3088), (12, 'Add Modifier', 3088), (13, 'Add Support Blocker', 2064), (14, 'Add Support Enforcer', 2064), (15, 'Height Range Modifier', 0), (16, '', 2051), (17, 'Printable', 8), (18, 'Edit Process Settings', 0), (19, 'Edit in Parameter Table', 0), (20, '', 2051), (21, 'Reload from disk', 0), (22, 'Replace with STL', 0), (23, 'Export as one STL...', 0), (24, 'Convert from Inches', 0), (25, 'Convert from Meters', 0), (26, 'Change Filament', 1808)]
+[m7x252] native highlighted row 23 in menu 0x3f250309
+
+[m7] === verdict ===
+  native menu exported all triangles of the selected object to the chosen STL path: PASS
+  third-party F3D opened and rendered the exact STL, rejecting the malformed control: PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

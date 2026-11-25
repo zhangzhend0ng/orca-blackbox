@@ -143,7 +143,7 @@ CASES: dict[str, dict] = {
     "m7x_249_add_part": _r("m7", "A"),
     "m7x_250_negative_part": _r("m7", "A"),
     "m7x_251_reload_from_disk": _o("m7", "A", known_limitation=True),  # missing source opens a chooser
-    "m7x_252_export_stl_viewer": _o("m7", "A"),
+    "m7x_252_export_stl_viewer": _r("m7", "A"),
     "m7x_254_sphere_layer_pair": _o("m7", "A"),
     "m7c_import_stl": _r("m7", "A"),
     "m7d_import_corrupt": _r("m7", "A"),

@@ -1,0 +1,13 @@
+﻿{
+    "commit":  "74b49b23df4304e2b4822be7bab9484bc3be2f1e",
+    "case":  "m7x_252_export_stl_viewer",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "summary":  "SUMMARY: PASS=1 FAIL=0",
+    "dispatched_at":  "2026-11-25T21:39:19.1421818+08:00",
+    "scenario_completed_at":  "2026-11-25T21:40:45.8770567+08:00",
+    "suite_completed_at":  "2026-11-25T21:40:46.0104350+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_252_export_stl_viewer.log",
+    "log_sha256":  "94B0DD7A56FD6B6138B3915BA02A2B659672CE25F5F3A32FA97A65A2C157E9B9"
+}

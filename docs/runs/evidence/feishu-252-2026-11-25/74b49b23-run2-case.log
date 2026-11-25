@@ -1,0 +1,27 @@
+﻿[m7x252] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\252\run-vdkyd9f7
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\252\run-vdkyd9f7\profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\252\run-vdkyd9f7\profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\252\run-vdkyd9f7\twin-shell.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x2961182, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x5800b9e, WM_CLOSE)
+[launcher] pid=10152 hwnd=0x52803bc rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.73%, gate 0.10%)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x24207dc did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[model context] desktop hit-test did not resolve to canvas at (1172,528)
+[model context] message right-click @(1172,528) on 0x5730840
+[model context] menu hwnd=0x60b0d2c: [(0, 'Clone\tCtrl+K', 0), (1, 'Simplify Model', 0), (2, '', 2051), (3, 'Mesh boolean', 0), (4, 'Center', 0), (5, 'Drop', 1), (6, 'Split', 528), (7, 'Mirror', 784), (8, 'Delete\tDel', 0), (9, '', 2051), (10, 'Add Part', 3088), (11, 'Add Negative Part', 3088), (12, 'Add Modifier', 3088), (13, 'Add Support Blocker', 2064), (14, 'Add Support Enforcer', 2064), (15, 'Height Range Modifier', 0), (16, '', 2051), (17, 'Printable', 8), (18, 'Edit Process Settings', 0), (19, 'Edit in Parameter Table', 0), (20, '', 2051), (21, 'Reload from disk', 0), (22, 'Replace with STL', 0), (23, 'Export as one STL...', 0), (24, 'Convert from Inches', 0), (25, 'Convert from Meters', 0), (26, 'Change Filament', 1808)]
+[m7x252] native highlighted row 23 in menu 0x3f250309
+
+[m7] === verdict ===
+  native menu exported all triangles of the selected object to the chosen STL path: PASS
+  third-party F3D opened and rendered the exact STL, rejecting the malformed control: PASS
+[m7] GREEN
