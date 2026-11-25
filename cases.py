@@ -147,6 +147,7 @@ CASES: dict[str, dict] = {
     "m7x_254_sphere_layer_pair": _o("m7", "A"),
     # 2026-11-26: Feishu file import/export rows. A row joins the regression suite only after two
     # independent guest sessions and the offline replay pass on one commit; the others are runnable.
+    "m7x_228_import_colored_obj": _o("m7", "A"),   # File > Import, an OBJ with two MTL colours
     "m7x_230_import_project": _o("m7", "A"),        # File > Import, a saved two-plate project
     "m7x_232_import_configs": _o("m7", "A"),        # File > Import Configs
     "m7x_231_import_zip": _o("m7", "A"),            # File > Import Zip Archive
