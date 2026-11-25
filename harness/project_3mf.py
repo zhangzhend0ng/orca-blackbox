@@ -13,6 +13,11 @@ from .script_verify import _check_cancel, _json
 _CORE = "{http://schemas.microsoft.com/3dmanufacturing/core/2015/02}"
 _PROD = "{http://schemas.microsoft.com/3dmanufacturing/production/2015/06}"
 _PRINTER_IDS = {"Snapmaker U1 (0.8 nozzle)", "Snapmaker U1 (0.8 nozzle)(fixture.3mf)"}
+# Bounds of one XML member. The standard sphere the application adds through Add Primitive is a
+# 2.5 MB mesh member with about 30,000 elements (Feishu #233, guest run dev233a on 2026-11-26);
+# the earlier 2 MB / 10,000 refused it as project_xml_size. 16 MB is the member limit of _archive.
+XML_MEMBER_LIMIT = 16 * 1024 * 1024
+XML_ELEMENT_LIMIT = 200_000
 
 
 def _numbers(text, count):
@@ -23,14 +28,14 @@ def _numbers(text, count):
 
 
 def _xml(raw, *, allow_colour_paint=False):
-    _require(len(raw) <= 2 * 1024 * 1024 and b"\0" not in raw, "project_xml_size")
+    _require(len(raw) <= XML_MEMBER_LIMIT and b"\0" not in raw, "project_xml_size")
     text = raw.decode("utf-8", errors="strict")
     _require("<!DOCTYPE" not in text.upper() and "<!ENTITY" not in text.upper(), "project_xml_entities")
     root = ET.fromstring(text)
     pending, count = [(root, 0)], 0
     while pending:
         item, depth = pending.pop(); count += 1
-        _require(depth <= 16 and count <= 10000 and all(
+        _require(depth <= 16 and count <= XML_ELEMENT_LIMIT and all(
             len(value) <= (32768 if allow_colour_paint and key == "paint_color" and item.tag == _CORE + "triangle" else 4096)
             for key, value in item.attrib.items()), "project_xml_complexity")
         pending.extend((child, depth + 1) for child in item)

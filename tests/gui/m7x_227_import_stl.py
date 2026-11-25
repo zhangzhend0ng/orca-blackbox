@@ -13,9 +13,9 @@ minus its cube, the same start as #244). The one Import row that names STL
 opens the native chooser: its title, visible texts, type filter entries and a
 picture are kept, then the STL's path is given to it. The plate is saved and
 read offline; the object is then clicked once and moved with the Right key
-(+10 mm in world X) and once more and turned with PageUp (45° about the
-vertical axis, GUI/GLCanvas3D.cpp on tag sm-v2.4.0), each time saving the
-project again. tests/import_stl_oracle.py judges every saved file.
+(+10 mm in world X), saving again, and finally turned 45° about the vertical
+axis through the Rotate gizmo's Z field, saving once more.
+tests/import_stl_oracle.py judges every saved file.
 """
 from hashlib import sha256
 from pathlib import Path
@@ -39,7 +39,7 @@ from plate_reserve_case import case_main, save_snapshot  # noqa: E402
 
 FIXTURE = HERE / 'fixtures' / 'agent_layer_cube.3mf'
 IDOK = 1
-RIGHT, PAGE_UP = 0x27, 0x21
+RIGHT = 0x27
 
 
 def prepare_fixture(model, work):
@@ -153,6 +153,35 @@ def click_object_then_key(session, work, phase, key, analysis):
     return record
 
 
+def turn_with_gizmo(session, work, analysis):
+    """Open the Rotate gizmo on the selected object and type 45 into its rightmost (Z) field.
+
+    On tag sm-v2.4.0 the PageUp key only opens this gizmo (GLCanvas3D.cpp,
+    `do_rotate(L("Tool Rotate"))`); it does not turn the object by itself,
+    which a first run showed: the saved project was unchanged. The gizmo
+    window is drawn inside the canvas, so its numeric fields are found by OCR
+    on the row labelled Rotate (X, Y, Z from left to right); m7e_rotate45
+    uses the same fields. The saved project, not the read-back, is the judge."""
+    slot, _tip = m7.find_slot(session, lambda text: 'rotate' in text.lower())
+    if slot is None:
+        raise ValueError('the toolbar does not offer a Rotate tool')
+    m7.click_slot(session, slot)
+    capture(session, work / 'rotated-gizmo.png')
+    boxes = m7.gizmo_row_boxes(session, 'rotate') or m7.gizmo_row_boxes(session, 'rotation')
+    record = analysis.setdefault('gizmo', {})['rotate'] = {
+        'fields': [[round(x), round(y), text] for x, y, text in boxes]}
+    print(f'[m7x227] rotate gizmo fields: {record["fields"]!r}', flush=True)
+    if not boxes:
+        raise ValueError('the Rotate gizmo showed no numeric field')
+    if len(boxes) < 3:
+        raise ValueError(f'the Rotate gizmo shows {len(boxes)} numeric field(s), expected X, Y and Z')
+    m7.type_into_field(session, boxes[-1][:2], '45', old_len=len(boxes[-1][2]))
+    time.sleep(1.0)
+    record['fields_after'] = [[round(x), round(y), text] for x, y, text in
+                              (m7.gizmo_row_boxes(session, 'rotate') or m7.gizmo_row_boxes(session, 'rotation'))]
+    capture(session, work / 'rotated.png')
+
+
 def steps(session, work, analysis, args):
     analysis.setdefault('timings', {})
     analysis['sidebar'] = {}
@@ -184,7 +213,7 @@ def steps(session, work, analysis, args):
         moved = save_snapshot(session, work, 'moved')
         analysis['moved'] = verify_moved(imported, moved)
     with stage(analysis, 'select_and_rotate'):
-        click_object_then_key(session, work, 'rotated', PAGE_UP, analysis)
+        turn_with_gizmo(session, work, analysis)
         rotated = save_snapshot(session, work, 'rotated')
         analysis['rotated'] = verify_rotated(moved, rotated)
     with stage(analysis, 'read_results'):
