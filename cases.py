@@ -145,14 +145,16 @@ CASES: dict[str, dict] = {
     "m7x_251_reload_from_disk": _o("m7", "A", known_limitation=True),  # missing source opens a chooser
     "m7x_252_export_stl_viewer": _r("m7", "A"),
     "m7x_254_sphere_layer_pair": _o("m7", "A"),
-    # 2026-11-26: Feishu file import/export rows. Runnable, not yet in the suite: each joins the
-    # regression suite only after two independent guest sessions and the offline replay pass on one commit.
+    # 2026-11-26: Feishu file import/export rows. A row joins the regression suite only after two
+    # independent guest sessions and the offline replay pass on one commit; the others are runnable.
     "m7x_227_import_stl": _o("m7", "A"),            # File > Import, binary STL
     "m7x_230_import_project": _o("m7", "A"),        # File > Import, a saved two-plate project
     "m7x_231_import_zip": _o("m7", "A"),            # File > Import Zip Archive
     "m7x_233_export_merged_stl": _o("m7", "A"),     # File > Export, all objects as one STL
     "m7x_234_export_plate_slice": _o("m7", "A"),    # File > Export, the plate's sliced file
-    "m7x_236_export_gcode": _o("m7", "A"),          # File > Export, plain G-code
+    # 81dbcf1: two guest sessions GREEN on 2026-11-26 and 38 offline checks each
+    # (docs/runs/evidence/feishu-236-2026-11-26).
+    "m7x_236_export_gcode": _r("m7", "A"),
     "m7x_246_repair_model": _o("m7", "A"),         # model context menu, Fix model
     # #254 follow-up probe: a record of how the plate's temporary G-code grows under the memory guard,
     # never a verdict.

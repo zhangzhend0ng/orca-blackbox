@@ -1,0 +1,23 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T00:57:27" tests="1" failures="0" errors="0">
+    <testcase name="m7x_236_export_gcode" classname="blackbox.m7x_236_export" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_236_export_gcode.log" />
+        <property name="dim:鐢熸垚 .gcode 鏂囦欢" value="PASS" />
+        <property name="dim:鍚捣濮?缁撴潫 G-code" value="PASS" />
+        <property name="dim:鏃犵┖鏂囦欢" value="PASS" />
+      </properties>
+      <system-out>[m7x249] started read_gcode at 2026-11-25T16:57:25.264469+00:00
+[m7x249] finished read_gcode in 0.016s
+[m7x236] plate.gcode: 135 layers, gaps {'鐢熸垚 .gcode 鏂囦欢': [], '鍚捣濮?缁撴潫 G-code': [], '鏃犵┖鏂囦欢': [], '灞傚懡浠よ繛缁?: []}
+
+[m7] === verdict ===
+  鐢熸垚 .gcode 鏂囦欢: PASS
+  鍚捣濮?缁撴潫 G-code: PASS
+  鏃犵┖鏂囦欢: PASS
+  灞傚懡浠よ繛缁? PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>
