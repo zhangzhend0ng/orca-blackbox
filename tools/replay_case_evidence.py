@@ -15,13 +15,15 @@ from zipfile import BadZipFile
 from xml.etree.ElementTree import ParseError
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from tools import replay_delete_object, replay_export_rows, replay_gcode_export, replay_import_stl, replay_merged_stl, replay_negative_part, replay_part_attachment, replay_plate_context, replay_plate_import, replay_plate_layout, replay_plate_slice, replay_project_save
+from tools import replay_colored_obj, replay_delete_object, replay_export_rows, replay_gcode_export, replay_import_configs, replay_import_stl, replay_merged_stl, replay_negative_part, replay_part_attachment, replay_plate_context, replay_plate_import, replay_plate_layout, replay_plate_slice, replay_project_save
 from tools import replay_sphere_layer_pair
 
 
 ADAPTERS = {
     "m7x_201_save_project_reopen": replay_project_save.replay,
     "m7x_227_import_stl": replay_import_stl.replay,
+    "m7x_228_import_colored_obj": replay_colored_obj.replay,
+    "m7x_232_import_configs": replay_import_configs.replay,
     "m7x_233_export_merged_stl": replay_merged_stl.replay,
     "m7x_234_export_plate_slice": replay_plate_slice.replay,
     "m7x_236_export_gcode": replay_gcode_export.replay,

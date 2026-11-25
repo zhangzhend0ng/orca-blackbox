@@ -1,0 +1,63 @@
+﻿[m7x232] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\232\run-yfua0nu5
+[m7x249] started build_config at 2026-11-25T19:32:35.408764+00:00
+[m7x249] finished build_config in 0.047s
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\232\run-yfua0nu5\import-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\232\run-yfua0nu5\import-profile C:\coil\orca-blackbox-v3-r1\fixtures\agent_layer_cube.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x57b1130, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x5af0b90, WM_CLOSE)
+[launcher] pid=3096 hwnd=0x5c6079c rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.10%)
+[m7x249] started ini_attempt at 2026-11-25T19:33:26.212426+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x59d05ce did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=322) sent, completed=False
+[m7x232] chooser {'title': 'Select profile to load:', 'entered': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\232\\run-yfua0nu5\\bb_three.ini', 'file': 'bb_three.ini', 'filters': [{'selected': -1, 'items': []}, {'selected': 0, 'items': ['Config files (*.json;*.zip;*.orca_printer;*.orca_filament)']}], 'ini_in_filter': False}
+[m7x232] dialog {'title': 'Import result', 'texts': ['OK', 'htmlWindow'], 'screenshot': 'ini-dialog-1.png', 'message': '& There are 0 configs imported. (Only non-system and compatible configs) Hint: Make sure you have added the corresponding printer before importing the configs.'}
+[m7x249] finished ini_attempt in 8.765s
+[m7x249] started first_import at 2026-11-25T19:33:34.980988+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x59d05ce did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=322) sent, completed=False
+[m7x232] chooser {'title': 'Select profile to load:', 'entered': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\232\\run-yfua0nu5\\inputs\\bb_three.zip', 'file': 'bb_three.zip', 'filters': [{'selected': -1, 'items': []}, {'selected': 0, 'items': ['Config files (*.json;*.zip;*.orca_printer;*.orca_filament)']}, {'selected': -1, 'items': []}], 'ini_in_filter': False}
+[m7x232] dialog {'title': 'Import result', 'texts': ['OK', 'htmlWindow'], 'screenshot': 'zip1-dialog-1.png', 'message': 'There are 3 configs imported. (Only non-system and compatible configs) S'}
+[m7x249] finished first_import in 10.031s
+[m7x249] started preset_lists_and_selection at 2026-11-25T19:33:45.014752+00:00
+[m7x232] machine list: ['------ Project-inside presets ------', '------ User presets ------', 'BB Test Printer', '------ Select/Remove printers (system presets) ------', '------ Create printer ------']
+[m7x232] filament list: ['------ Project-inside presets ------ |', 'Snapmaker PLA Silk @U1 0.8 nozz...', '------ System presets ------', 'AliZ PA-CF', 'AliZ PETG', 'AliZ PETG-CF', 'AliZ PETG-Metal', 'AliZ PLA', 'Bambu ABS', 'Bambu ABS-GF', 'Bambu ASA', 'Bambu ASA-Aero', 'Bambu ASA-CF', 'Bambu PA-CF', 'Ar']
+[m7x232] process list: ['------ System presets ------', '~ Default Setting']
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x59d05ce did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x249] finished preset_lists_and_selection in 20.954s
+[m7x249] started second_import at 2026-11-25T19:34:05.960080+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x59d05ce did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=322) sent, completed=False
+[m7x232] chooser {'title': 'Select profile to load:', 'entered': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\232\\run-yfua0nu5\\inputs\\bb_three.zip', 'file': 'bb_three.zip', 'filters': [{'selected': -1, 'items': []}, {'selected': 0, 'items': ['Config files (*.json;*.zip;*.orca_printer;*.orca_filament)']}, {'selected': -1, 'items': []}], 'ini_in_filter': False}
+[m7x232] dialog {'title': 'Overwrite config', 'texts': ['Yes', 'No', 'htmlWindow', 'Yes to All', 'No to All'], 'screenshot': 'zip2-dialog-1.png', 'message': 'A config exists with the same name: BB Test Printer. Do you want to overwrite it? 2 S No Yes to All | | No to All'}
+[m7x232] dialog {'title': 'Overwrite config', 'texts': ['Yes', 'No', 'htmlWindow', 'Yes to All', 'No to All'], 'screenshot': 'zip2-dialog-2.png', 'message': 'A config exists with the same name: BB Test Filament. Do you want to overwrite it? 2 S No Yes to All | | No to All'}
+[m7x232] dialog {'title': 'Overwrite config', 'texts': ['Yes', 'No', 'htmlWindow', 'Yes to All', 'No to All'], 'screenshot': 'zip2-dialog-3.png', 'message': 'A config exists with the same name: BB Test Process. Do you want to overwrite it? 2 S No Yes to All | | No to All'}
+[m7x232] dialog {'title': 'Import result', 'texts': ['OK', 'htmlWindow'], 'screenshot': 'zip2-dialog-4.png', 'message': 'There are 3 configs imported. (Only non-system and compatible configs) S'}
+[m7x249] finished second_import in 10.718s
+[m7x249] started verify at 2026-11-25T19:34:26.684568+00:00
+[m7x232] {'瀵煎叆鎴愬姛锛? 涓璁惧嚭鐜板湪瀵瑰簲鍒楄〃涓斿弬鏁版纭?: 'FAIL (2 presets are not in their preset lists: [\'filament/BB Test Filament\', \'process/BB Test Process\']; the imported presets were not the selected ones: {\'machine\': \'Snapmaker U1 (0.8 nozzle)(agent_layer_cube.3mf)\', \'process\': \'Default Setting\', \'filament\': \'Generic PETG @U1 0.8 nozzle(agent_layer_cube.3mf)\'}; filament/BB Test Filament: 1 effective values changed (filament_settings_id: ["BB Test Filament"] -> ["Generic PETG @U1 0.8 nozzle(agent_laye); machine/BB Test Printer: 1 effective values changed (printer_settings_id: "BB Test Printer" -> "Snapmaker U1 (0.8 nozzle)(agent_layer_c); process/BB Test Process: 68 effective values changed (print_settings_id: "BB Test Process" -> "Default Setting", bridge_flow: "0.8" -> "1", bridge_speed: "30" -> ["25"], brim_width: "5" -> "0"))', '鍚屽悕閲嶅鏃舵寜浜у搧鏃㈡湁绛栫暐鎻愮ず锛堣鐩?閲嶅懡鍚嶏級': 'PASS'}
+[m7x249] finished verify in 0.235s
+
+[m7] === verdict ===
+  瀵煎叆鎴愬姛锛? 涓璁惧嚭鐜板湪瀵瑰簲鍒楄〃涓斿弬鏁版纭? FAIL (2 presets are not in their preset lists: ['filament/BB Test Filament', 'process/BB Test Process']; the imported presets were not the selected ones: {'machine': 'Snapmaker U1 (0.8 nozzle)(agent_layer_cube.3mf)', 'process': 'Default Setting', 'filament': 'Generic PETG @U1 0.8 nozzle(agent_layer_cube.3mf)'}; filament/BB Test Filament: 1 effective values changed (filament_settings_id: ["BB Test Filament"] -> ["Generic PETG @U1 0.8 nozzle(agent_laye); machine/BB Test Printer: 1 effective values changed (printer_settings_id: "BB Test Printer" -> "Snapmaker U1 (0.8 nozzle)(agent_layer_c); process/BB Test Process: 68 effective values changed (print_settings_id: "BB Test Process" -> "Default Setting", bridge_flow: "0.8" -> "1", bridge_speed: "30" -> ["25"], brim_width: "5" -> "0"))
+  鍚屽悕閲嶅鏃舵寜浜у搧鏃㈡湁绛栫暐鎻愮ず锛堣鐩?閲嶅懡鍚嶏級: PASS
+[m7] RED
