@@ -1,0 +1,42 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T21:50:31" tests="1" failures="1" errors="0">
+    <testcase name="m7x_247_split_shells" classname="blackbox.m7x_247_split" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_247_split_shells.log" />
+        <property name="dim:Split &gt; To objects retained both closed shells as independent objects" value="PASS" />
+        <property name="dim:unfinished checks" value="FAIL (ValueError: object was not selectable with an individual filament menu)" />
+      </properties>
+      <failure type="RED" message="unfinished checks: FAIL (ValueError: object was not selectable with an individual filament menu)">[m3g] save dialog 'Save file as'
+[m7x247] split centers: [(1172, 514), (1319, 520)]
+python.exe : Traceback (most recent call last):
+At C:\coil\run_suite.ps1:35 char:3
++   &amp; "C:\Python311\python.exe" (Case-File $c) 2&gt;&amp;1 | Out-File -FilePat ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\plate_reserve_case.py", line 35, in case_main
+    steps(session, work, analysis, args)
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\m7x_247_split_shells.py", line 66, in steps
+    set_color(session, left, 2)
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\m7x_247_split_shells.py", line 37, in set_color
+    raise ValueError('object was not selectable with an individual filament menu')
+ValueError: object was not selectable with an individual filament menu
+[model context] desktop hit-test did not resolve to canvas at (1172,528)
+[model context] message right-click @(1172,528) on 0x55808fa
+[model context] menu hwnd=0x5840c76: [(0, 'Assemble', 0), (1, 'Center', 0), (2, 'Drop', 1), (3, 'Delete\tDel', 0), (4, '', 2051), (5, 'Printable', 8), (6, 'Edit Process Settings', 0), (7, '', 2051), (8, 'Convert from Inches', 0), (9, 'Convert from Meters', 0), (10, 'Set Filament for selected items', 1808), (11, '', 2051), (12, 'Export as one STL...', 0), (13, 'Export as STLs...', 0)]
+[model context] desktop hit-test did not resolve to canvas at (1172,514)
+[model context] message right-click @(1172,514) on 0x55808fa
+[model context] menu hwnd=0x18211b0: [(0, 'Assemble', 0), (1, 'Center', 0), (2, 'Drop', 1), (3, 'Delete\tDel', 0), (4, '', 2051), (5, 'Printable', 8), (6, 'Edit Process Settings', 0), (7, '', 2051), (8, 'Convert from Inches', 0), (9, 'Convert from Meters', 0), (10, 'Set Filament for selected items', 1808), (11, '', 2051), (12, 'Export as one STL...', 0), (13, 'Export as STLs...', 0)]
+[model context] desktop hit-test did not resolve to canvas at (1172,540)
+[model context] message right-click @(1172,540) on 0x55808fa
+[model context] menu hwnd=0x59b0bca: [(0, 'Assemble', 0), (1, 'Center', 0), (2, 'Drop', 1), (3, 'Delete\tDel', 0), (4, '', 2051), (5, 'Printable', 8), (6, 'Edit Process Settings', 0), (7, '', 2051), (8, 'Convert from Inches', 0), (9, 'Convert from Meters', 0), (10, 'Set Filament for selected items', 1808), (11, '', 2051), (12, 'Export as one STL...', 0), (13, 'Export as STLs...', 0)]
+
+[m7] === verdict ===
+  Split &gt; To objects retained both closed shells as independent objects: PASS
+  unfinished checks: FAIL (ValueError: object was not selectable with an individual filament menu)
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

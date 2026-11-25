@@ -1,0 +1,72 @@
+{
+  "case": 247,
+  "results": {
+    "Split > To objects retained both closed shells as independent objects": "PASS",
+    "unfinished checks": "FAIL (ValueError: object was not selectable with an individual filament menu)"
+  },
+  "shell_centers_px": {
+    "before": [
+      [
+        1172,
+        514
+      ],
+      [
+        1319,
+        521
+      ]
+    ],
+    "split": [
+      [
+        1172,
+        514
+      ],
+      [
+        1319,
+        520
+      ]
+    ]
+  },
+  "split_geometry": {
+    "initial_shell_triangle_counts": [
+      12,
+      12
+    ],
+    "split_object_names": [
+      "TwinShell_1",
+      "TwinShell_2"
+    ],
+    "object_bounds_mm": [
+      [
+        [
+          122.0,
+          149.0
+        ],
+        [
+          122.5,
+          149.5
+        ],
+        [
+          0.0,
+          27.0
+        ]
+      ],
+      [
+        [
+          189.7000028,
+          211.3000051
+        ],
+        [
+          123.8500004,
+          148.1499996
+        ],
+        [
+          0.0,
+          18.90000057
+        ]
+      ]
+    ],
+    "max_vertex_deviation_mm": 1.6676030608939842e-06,
+    "vertex_tolerance_mm": 5e-05
+  },
+  "wall_seconds": 74.391
+}

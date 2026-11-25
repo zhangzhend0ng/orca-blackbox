@@ -1,0 +1,59 @@
+﻿[m7x247] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\247\run-menl8ol7
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\247\run-menl8ol7\profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\247\run-menl8ol7\profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\247\run-menl8ol7\twin-shell.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x5550fe4, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x5520aac, WM_CLOSE)
+[launcher] pid=10548 hwnd=0x50a07bc rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.73%, gate 0.10%)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5970c4c did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x247] before centers: [(1172, 514), (1319, 521)]
+[model context] desktop hit-test did not resolve to canvas at (1172,528)
+[model context] message right-click @(1172,528) on 0x55808fa
+[model context] menu hwnd=0x5820c76: [(0, 'Clone\tCtrl+K', 0), (1, 'Simplify Model', 0), (2, '', 2051), (3, 'Mesh boolean', 0), (4, 'Center', 0), (5, 'Drop', 1), (6, 'Split', 528), (7, 'Mirror', 784), (8, 'Delete\tDel', 0), (9, '', 2051), (10, 'Add Part', 3088), (11, 'Add Negative Part', 3088), (12, 'Add Modifier', 3088), (13, 'Add Support Blocker', 2064), (14, 'Add Support Enforcer', 2064), (15, 'Height Range Modifier', 0), (16, '', 2051), (17, 'Printable', 8), (18, 'Edit Process Settings', 0), (19, 'Edit in Parameter Table', 0), (20, '', 2051), (21, 'Reload from disk', 0), (22, 'Replace with STL', 0), (23, 'Export as one STL...', 0), (24, 'Convert from Inches', 0), (25, 'Convert from Meters', 0), (26, 'Change Filament', 1808)]
+[m7x247] native highlighted row 6 in menu 0x288403e9
+[m7x247] visible Split submenu hwnd=0x59e046a hmenu=0x23ff10a1: [(0, 'To Objects', 128), (1, 'To Parts', 0)]
+[m7x247] native highlighted row 0 in menu 0x23ff10a1
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5970c4c did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x247] split centers: [(1172, 514), (1319, 520)]
+python.exe : Traceback (most recent call last):
+At C:\coil\run_suite.ps1:35 char:3
++   & "C:\Python311\python.exe" (Case-File $c) 2>&1 | Out-File -FilePat ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\plate_reserve_case.py", line 35, in case_main
+    steps(session, work, analysis, args)
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\m7x_247_split_shells.py", line 66, in steps
+    set_color(session, left, 2)
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\m7x_247_split_shells.py", line 37, in set_color
+    raise ValueError('object was not selectable with an individual filament menu')
+ValueError: object was not selectable with an individual filament menu
+[model context] desktop hit-test did not resolve to canvas at (1172,528)
+[model context] message right-click @(1172,528) on 0x55808fa
+[model context] menu hwnd=0x5840c76: [(0, 'Assemble', 0), (1, 'Center', 0), (2, 'Drop', 1), (3, 'Delete\tDel', 0), (4, '', 2051), (5, 'Printable', 8), (6, 'Edit Process Settings', 0), (7, '', 2051), (8, 'Convert from Inches', 0), (9, 'Convert from Meters', 0), (10, 'Set Filament for selected items', 1808), (11, '', 2051), (12, 'Export as one STL...', 0), (13, 'Export as STLs...', 0)]
+[model context] desktop hit-test did not resolve to canvas at (1172,514)
+[model context] message right-click @(1172,514) on 0x55808fa
+[model context] menu hwnd=0x18211b0: [(0, 'Assemble', 0), (1, 'Center', 0), (2, 'Drop', 1), (3, 'Delete\tDel', 0), (4, '', 2051), (5, 'Printable', 8), (6, 'Edit Process Settings', 0), (7, '', 2051), (8, 'Convert from Inches', 0), (9, 'Convert from Meters', 0), (10, 'Set Filament for selected items', 1808), (11, '', 2051), (12, 'Export as one STL...', 0), (13, 'Export as STLs...', 0)]
+[model context] desktop hit-test did not resolve to canvas at (1172,540)
+[model context] message right-click @(1172,540) on 0x55808fa
+[model context] menu hwnd=0x59b0bca: [(0, 'Assemble', 0), (1, 'Center', 0), (2, 'Drop', 1), (3, 'Delete\tDel', 0), (4, '', 2051), (5, 'Printable', 8), (6, 'Edit Process Settings', 0), (7, '', 2051), (8, 'Convert from Inches', 0), (9, 'Convert from Meters', 0), (10, 'Set Filament for selected items', 1808), (11, '', 2051), (12, 'Export as one STL...', 0), (13, 'Export as STLs...', 0)]
+
+[m7] === verdict ===
+  Split > To objects retained both closed shells as independent objects: PASS
+  unfinished checks: FAIL (ValueError: object was not selectable with an individual filament menu)
+[m7] RED
