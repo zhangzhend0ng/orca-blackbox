@@ -1,0 +1,34 @@
+﻿[m7x242] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\242\run-_ai9whnx
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\242\run-_ai9whnx\profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\242\run-_ai9whnx\profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\242\run-_ai9whnx\two-plates.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x5850602, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x53509f2, WM_CLOSE)
+[launcher] pid=5076 hwnd=0x4af03da rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.13%, gate 0.10%)
+[m8x48] SetFocus(0x57a0616): return=0x57a0616, Win32 error=0, (active, focus) before=(78578650, 91883030), after=(78578650, 91883030)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x562054a did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[model context] desktop hit-test did not resolve to canvas at (1386,555)
+[model context] message right-click @(1386,555) on 0x57a0616
+[model context] menu hwnd=0x57f03dc: [(0, 'Select All', 0), (1, 'Delete All', 0), (2, 'Arrange', 0), (3, 'Reload All', 0), (4, 'Auto Rotate', 0), (5, 'Delete Plate', 0), (6, '', 2051), (7, 'Add Primitive', 2576), (8, 'Add Handy models', 1808), (9, 'Add Models', 0), (10, 'Lock', 0), (11, 'Edit Plate Name', 0)]
+[m7x242] native highlighted row 5 in menu 0x50881149
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x562054a did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+
+[m7] === verdict ===
+  two occupied plates retained before the action: PASS
+  Delete Plate chosen from blank plate menu: PASS
+  target plate gone, both original meshes retained, no modal error: PASS
+[m7] GREEN

@@ -1,0 +1,32 @@
+[
+  {
+    "path": "case.log",
+    "part": "case.log",
+    "bytes": 5104,
+    "sha256": "FF7B1659C7ED78BE2C0E1A363A466DC7187546ADEE88D8FDC9CE38FCF02D39F8"
+  },
+  {
+    "path": "done.json",
+    "part": "done.json",
+    "bytes": 492,
+    "sha256": "662ABA0523E64FF070F9E83C1C6FE1C4B77E19D7395A03E9B64D90728D76DE21"
+  },
+  {
+    "path": "execution_host.json",
+    "part": "execution_host.json",
+    "bytes": 369,
+    "sha256": "6F057937B4DC66C512552830D81C9CB4B8293B81AA23F0CE4874E807AE409390"
+  },
+  {
+    "path": "feishu-object-cases/247/run-pzn2q6g2/analysis.json",
+    "part": "analysis.json",
+    "bytes": 158,
+    "sha256": "EA47AC963BE589FE8BCBDF3E1F99A221908FBFB5FAA94FB2A2A4A4E7EE377F0B"
+  },
+  {
+    "path": "feishu-object-cases/247/run-pzn2q6g2/twin-shell.3mf",
+    "part": "twin-shell.3mf",
+    "bytes": 30327,
+    "sha256": "ED101728087DB0D331A3ABFD30F8AA2391855BB899F1888C76CFD555ACAD537F"
+  }
+]

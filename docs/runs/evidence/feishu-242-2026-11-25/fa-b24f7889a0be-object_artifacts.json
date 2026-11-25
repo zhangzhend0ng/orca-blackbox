@@ -1,0 +1,38 @@
+[
+  {
+    "path": "case.log",
+    "part": "case.log",
+    "bytes": 5102,
+    "sha256": "B576093B1B895C0F1F79F49216AAA376EE38883EEA4C4BFFF96D34FD436FB67B"
+  },
+  {
+    "path": "done.json",
+    "part": "done.json",
+    "bytes": 484,
+    "sha256": "BFF25ECDB13D09642C481963F9A8BC4CD5E9C9F558F4FFA0D432CA77CB536619"
+  },
+  {
+    "path": "execution_host.json",
+    "part": "execution_host.json",
+    "bytes": 369,
+    "sha256": "37132FD39247812592B1652536067C708C687272E51BE0B0D6F782558DD9CA76"
+  },
+  {
+    "path": "feishu-object-cases/242/run-jijm3_uj/Alpha-Bravo.3mf",
+    "part": "Alpha-Bravo.3mf",
+    "bytes": 30888,
+    "sha256": "9C548679D672AC859369D9AF7FBEDDE0D555223280C699D70E5C72B277E00C16"
+  },
+  {
+    "path": "feishu-object-cases/242/run-jijm3_uj/analysis.json",
+    "part": "analysis.json",
+    "bytes": 158,
+    "sha256": "15870D4CF966DE1123E5E7508EB27BECDCFC0416FAFEA6B02815603ABE87762D"
+  },
+  {
+    "path": "feishu-object-cases/242/run-jijm3_uj/two-plates.3mf",
+    "part": "two-plates.3mf",
+    "bytes": 30910,
+    "sha256": "0C5DBD978B969004CB94B54194782931D4085EEDC6A8B8684BA6C513C8E2D293"
+  }
+]

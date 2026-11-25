@@ -1,0 +1,7 @@
+{
+  "case": 242,
+  "results": {
+    "unfinished checks": "FAIL (ValueError: could not focus an occupied fixture canvas)"
+  },
+  "wall_seconds": 45.546
+}

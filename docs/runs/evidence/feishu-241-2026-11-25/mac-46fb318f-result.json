@@ -1,0 +1,47 @@
+{
+  "run_id": "46fb318f5ea84cf7a0bfa461c5322f58",
+  "candidate": "07bab89ba1ec9fb2b9903ebec5e1280102e818b6",
+  "goal": "orient241",
+  "started_at": "2026-11-25T13:33:40.601228+00:00",
+  "verdict": "NON_GREEN",
+  "baseline_source": "project opened in the test session",
+  "guest": {
+    "ok": false,
+    "failure_stage": "orient.context_menu",
+    "run_id": "46fb318f5ea84cf7a0bfa461c5322f58",
+    "console_uid": 501,
+    "test_uid": 502,
+    "source_before": "b4ffffe1b7f75f6a2228a520cbf0dc18f8124625d782b5f8efee97b485db84d7",
+    "sut": {
+      "version": "2.4.2",
+      "build": "sha256:8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75",
+      "bundle_build": "",
+      "build_source": "executable_sha256",
+      "executable_sha256": "8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75"
+    },
+    "pid": 63540,
+    "before_screenshot": true,
+    "context_menu_attempts": [
+      {
+        "window_point": [
+          800,
+          550
+        ],
+        "menus": []
+      },
+      {
+        "window_point": [
+          865,
+          575
+        ],
+        "menus": []
+      }
+    ],
+    "error": "Traceback (most recent call last):\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.ZVkGwBEG/project_copy.py\", line 599, in run_worker\n    worker(report)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.ZVkGwBEG/project_copy.py\", line 483, in worker\n    return orient_plate(report, console_uid)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.ZVkGwBEG/project_copy.py\", line 579, in orient_plate\n    choose_auto_rotate(desktop, pid, root, window, COPY.stem, report)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.ZVkGwBEG/plate_orient.py\", line 57, in choose_auto_rotate\n    raise RuntimeError(\"Blank-plate context menu did not expose a unique enabled Auto Rotate item\")\nRuntimeError: Blank-plate context menu did not expose a unique enabled Auto Rotate item\n",
+    "cleanup_verified": true,
+    "remote_evidence": "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.ZVkGwBEG"
+  },
+  "failure_stage": "orient.context_menu",
+  "error": "Traceback (most recent call last):\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.ZVkGwBEG/project_copy.py\", line 599, in run_worker\n    worker(report)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.ZVkGwBEG/project_copy.py\", line 483, in worker\n    return orient_plate(report, console_uid)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.ZVkGwBEG/project_copy.py\", line 579, in orient_plate\n    choose_auto_rotate(desktop, pid, root, window, COPY.stem, report)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.ZVkGwBEG/plate_orient.py\", line 57, in choose_auto_rotate\n    raise RuntimeError(\"Blank-plate context menu did not expose a unique enabled Auto Rotate item\")\nRuntimeError: Blank-plate context menu did not expose a unique enabled Auto Rotate item\n",
+  "finished_at": "2026-11-25T13:35:04.368326+00:00"
+}

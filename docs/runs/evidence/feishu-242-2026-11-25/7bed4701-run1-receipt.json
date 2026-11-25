@@ -1,0 +1,13 @@
+﻿{
+    "commit":  "7bed4701ca6709d455da7f40f98e6d60b779b1d8",
+    "case":  "m7x_242_delete_plate",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "summary":  "SUMMARY: PASS=1 FAIL=0",
+    "dispatched_at":  "2026-11-25T21:35:18.2898151+08:00",
+    "scenario_completed_at":  "2026-11-25T21:36:48.3009097+08:00",
+    "suite_completed_at":  "2026-11-25T21:36:48.4271922+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_242_delete_plate.log",
+    "log_sha256":  "3FEC09B5155160BCB9ACE2C01B11A7B95990AB9E016A61A02F6F715004D82A39"
+}

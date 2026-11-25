@@ -1,0 +1,23 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T21:36:48" tests="1" failures="0" errors="0">
+    <testcase name="m7x_242_delete_plate" classname="blackbox.m7x_242_delete" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_242_delete_plate.log" />
+        <property name="dim:two occupied plates retained before the action" value="PASS" />
+        <property name="dim:Delete Plate chosen from blank plate menu" value="PASS" />
+        <property name="dim:target plate gone, both original meshes retained, no modal error" value="PASS" />
+      </properties>
+      <system-out>[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+
+[m7] === verdict ===
+  two occupied plates retained before the action: PASS
+  Delete Plate chosen from blank plate menu: PASS
+  target plate gone, both original meshes retained, no modal error: PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

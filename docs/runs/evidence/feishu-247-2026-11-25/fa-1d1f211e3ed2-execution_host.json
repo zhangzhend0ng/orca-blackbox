@@ -1,0 +1,10 @@
+﻿{
+    "verdict_class":  "SHADOW",
+    "commit":  "7bed4701ca6709d455da7f40f98e6d60b779b1d8",
+    "case":  "m7x_247_split_shells",
+    "host":  "DESKTOP-FA706G3",
+    "user":  "admin",
+    "version":  "2.4.0",
+    "binary_sha256":  "5C48644D7DA18B50636CEEEE4EF9FD2EAF6D4E8AC05BD88752F40E3717FC47BF",
+    "started_at":  "2026-11-25T21:34:13.9595673+08:00"
+}

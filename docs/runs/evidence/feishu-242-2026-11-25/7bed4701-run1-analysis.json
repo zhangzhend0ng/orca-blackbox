@@ -1,0 +1,64 @@
+{
+  "case": 242,
+  "results": {
+    "two occupied plates retained before the action": "PASS",
+    "Delete Plate chosen from blank plate menu": "PASS",
+    "target plate gone, both original meshes retained, no modal error": "PASS"
+  },
+  "object_centers_px": [
+    [
+      952,
+      541
+    ],
+    [
+      1338,
+      541
+    ]
+  ],
+  "blank_candidates_px": [
+    [
+      1386,
+      541
+    ],
+    [
+      1290,
+      541
+    ],
+    [
+      1338,
+      493
+    ]
+  ],
+  "plates_and_membership": {
+    "before": [
+      "Keep",
+      "Remove"
+    ],
+    "after": [
+      "Keep"
+    ],
+    "objects_before": {
+      "Alpha": "Keep",
+      "Bravo": "Remove"
+    },
+    "objects_after": {
+      "Alpha": "Keep",
+      "Bravo": "unassigned"
+    },
+    "bravo_bounds_mm": [
+      [
+        451.0,
+        467.0
+      ],
+      [
+        128.0,
+        142.0
+      ],
+      [
+        0.0,
+        12.0
+      ]
+    ]
+  },
+  "wall_seconds": 70.766
+}

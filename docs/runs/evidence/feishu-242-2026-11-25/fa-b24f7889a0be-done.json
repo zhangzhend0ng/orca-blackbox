@@ -1,0 +1,13 @@
+﻿{
+    "verdict_class":  "SHADOW",
+    "commit":  "1f8b8ac35e4fec4bd513e415cd130461cdaa7432",
+    "case":  "m7x_242_delete_plate",
+    "host":  "DESKTOP-FA706G3",
+    "user":  "admin",
+    "version":  "2.4.0",
+    "binary_sha256":  "5C48644D7DA18B50636CEEEE4EF9FD2EAF6D4E8AC05BD88752F40E3717FC47BF",
+    "started_at":  "2026-11-25T21:37:31.6728569+08:00",
+    "exit_code":  1,
+    "completed_at":  "2026-11-25T21:38:18.5982170+08:00",
+    "case_seconds":  46.9273605
+}

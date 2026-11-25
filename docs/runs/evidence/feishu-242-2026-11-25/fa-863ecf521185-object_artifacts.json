@@ -1,0 +1,62 @@
+[
+  {
+    "path": "case.log",
+    "part": "case.log",
+    "bytes": 5504,
+    "sha256": "AEC3AB74D0228419BD0C2B854816211D57F7D3954EB619B6651A99A8E03C95F9"
+  },
+  {
+    "path": "done.json",
+    "part": "done.json",
+    "bytes": 484,
+    "sha256": "A3CE5DF2F96E4479E5333C7ECC3E0D31E69683B1AAAE6CCDEC29EF5F3D8C5B86"
+  },
+  {
+    "path": "execution_host.json",
+    "part": "execution_host.json",
+    "bytes": 369,
+    "sha256": "1BFB08B02F6AC90B1380C3C41413CFEDBC5772567FAF277C776BC60451BAFE7E"
+  },
+  {
+    "path": "feishu-object-cases/242/run-vsyqrwky/after.3mf",
+    "part": "after.3mf",
+    "bytes": 34956,
+    "sha256": "FFC60D31FCB6763C48017C0F9CAAC180175A9A2E5BEDE838BA36A6EB93C8A90D"
+  },
+  {
+    "path": "feishu-object-cases/242/run-vsyqrwky/after.png",
+    "part": "after.png",
+    "bytes": 233716,
+    "sha256": "31B11DFFAF8288CF4C1269B2B552E358FCA3709A9E5A0AA033D3964A0F19E7CD"
+  },
+  {
+    "path": "feishu-object-cases/242/run-vsyqrwky/Alpha-Bravo.3mf",
+    "part": "Alpha-Bravo.3mf",
+    "bytes": 30888,
+    "sha256": "9C548679D672AC859369D9AF7FBEDDE0D555223280C699D70E5C72B277E00C16"
+  },
+  {
+    "path": "feishu-object-cases/242/run-vsyqrwky/analysis.json",
+    "part": "analysis.json",
+    "bytes": 1003,
+    "sha256": "5D1786FA509EB8D9BB148B990CB543691F6F617FE8CD4A4060A9DA20F9CAB231"
+  },
+  {
+    "path": "feishu-object-cases/242/run-vsyqrwky/before.3mf",
+    "part": "before.3mf",
+    "bytes": 47875,
+    "sha256": "E25704FE67160828DE47EA3C42CF70922015AAA70163E4D2D213AAC8E0D1D694"
+  },
+  {
+    "path": "feishu-object-cases/242/run-vsyqrwky/before.png",
+    "part": "before.png",
+    "bytes": 285624,
+    "sha256": "A20AB4CCBDFB89C52CC1DAAF4718F48E1FA49835DFB7431AB58118695034E375"
+  },
+  {
+    "path": "feishu-object-cases/242/run-vsyqrwky/two-plates.3mf",
+    "part": "two-plates.3mf",
+    "bytes": 30910,
+    "sha256": "0C5DBD978B969004CB94B54194782931D4085EEDC6A8B8684BA6C513C8E2D293"
+  }
+]

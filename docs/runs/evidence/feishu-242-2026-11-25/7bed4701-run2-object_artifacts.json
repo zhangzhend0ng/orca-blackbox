@@ -1,0 +1,37 @@
+﻿[
+    {
+        "part":  "after.3mf",
+        "bytes":  34971,
+        "sha256":  "3E38F1592EE19BDF3DF52B60EFBCBF7D4BA02EEFC5D8E6BB6B3907A5403B8E97"
+    },
+    {
+        "part":  "after.png",
+        "bytes":  242017,
+        "sha256":  "79B05FCC6EECF1C766C8B3B86D7CF924CFE3B7A804379B0D4A5118DBA1B2856F"
+    },
+    {
+        "part":  "Alpha-Bravo.3mf",
+        "bytes":  30888,
+        "sha256":  "9C548679D672AC859369D9AF7FBEDDE0D555223280C699D70E5C72B277E00C16"
+    },
+    {
+        "part":  "analysis.json",
+        "bytes":  1003,
+        "sha256":  "8A9F9D5083C94763564F4121A8312C69D473A45AAF12D844649FE8247AA6AC69"
+    },
+    {
+        "part":  "before.3mf",
+        "bytes":  47892,
+        "sha256":  "E10CE004C6ADEC543CA26B33E7714AEA5F6A3BC3CB5A7CA84E2CD57B42722F15"
+    },
+    {
+        "part":  "before.png",
+        "bytes":  304176,
+        "sha256":  "FAE8A974A00C845341BDFD8767A30118374C4B006B4155C53AA60B679560B1A7"
+    },
+    {
+        "part":  "two-plates.3mf",
+        "bytes":  30910,
+        "sha256":  "0C5DBD978B969004CB94B54194782931D4085EEDC6A8B8684BA6C513C8E2D293"
+    }
+]

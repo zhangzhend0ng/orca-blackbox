@@ -1,0 +1,20 @@
+[
+  {
+    "path": "case.log",
+    "part": "case.log",
+    "bytes": 3892,
+    "sha256": "F8E05EC9464A970C8F3D3D09BC9295C4A6322665408678A0579CB03405564D1C"
+  },
+  {
+    "path": "done.json",
+    "part": "done.json",
+    "bytes": 483,
+    "sha256": "10D1D42F3CD5BF066DA8BDC39F78651EEA44B6383A0B791C888839592D6D5FBD"
+  },
+  {
+    "path": "execution_host.json",
+    "part": "execution_host.json",
+    "bytes": 369,
+    "sha256": "F231B028A8ABFBC5F1EA4A06EE27EB2EFDBAD891F810107EDD5DC6CD1AC1C6F3"
+  }
+]
