@@ -11,17 +11,19 @@ def _label(text):
     return text.partition('\t')[0].replace('&', '').rstrip('. …').strip().casefold()
 
 
-def open_model_menu(session, exact_label):
+def open_model_menu(session, exact_label, *, candidates=None):
     """Return the visible menu and exact enabled item, using a model hit point."""
     if not bring_main_to_mouse(session.hwnd):
         print('[model context] Orca could not own the guest foreground')
         return None
-    center = m7.find_centroid(session)
-    if center is None:
-        print('[model context] fixture model centroid missing')
-        return None
-    x, y = center
-    for point in ((x, y + 14), center, (x, y + 26)):
+    if candidates is None:
+        center = m7.find_centroid(session)
+        if center is None:
+            print('[model context] fixture model centroid missing')
+            return None
+        candidates = [center]
+    points = ((x, y + shift) for x, y in candidates for shift in (14, 0, 26))
+    for point in points:
         sx, sy = m7.client(session, *point)
         canvas = winutil.deepest_child_at(session.hwnd, sx, sy)
         if winutil.window_class(canvas) != 'wxGLCanvas' or winutil._window_pid(canvas) != session.pid:

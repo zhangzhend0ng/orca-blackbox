@@ -78,8 +78,24 @@ def observe_mesh(session, project, source):
     return dimensions if source_matches else None
 
 
-def reload_selected(session):
-    opened = open_model_menu(session, MENU)
+def reload_selected(session, screenshot):
+    image = m7.capture_bgr(session)
+    cv2.imwrite(str(screenshot), image)
+    height, width = image.shape[:2]
+    viewport_left = m7.VIEWPORT_X0
+    viewport_width = width - viewport_left
+    center = viewport_left + viewport_width // 2, height // 2
+    # The single STL is auto-centered on the plate. Plate-side widgets also
+    # carry saturated colors, so reserve the search for the central plate area.
+    candidates = [
+        (x, y) for x, y in m7.model_candidates(session, limit=10)
+        if viewport_left + 0.2 * viewport_width < x < viewport_left + 0.8 * viewport_width
+        and 0.24 * height < y < 0.74 * height
+    ]
+    candidates.sort(key=lambda point: (point[0] - center[0]) ** 2 + (point[1] - center[1]) ** 2)
+    candidates.extend((center, (center[0], center[1] - height // 12)))
+    print(f"{LOG} central plate right-click candidates={candidates}")
+    opened = open_model_menu(session, MENU, candidates=candidates)
     if opened is None:
         return False
     _, hmenu, index = opened
@@ -157,7 +173,7 @@ def main():
 
         shutil.copyfile(modified, source)
         print(f"{LOG} updated exact source path={source}, 30 mm STL SHA-256={digest_file(source)}")
-        invoked = reload_selected(session)
+        invoked = reload_selected(session, workspace / "prepare-import.png")
         second = observe_mesh(session, project_after, source) if invoked else None
         updated = second == (30, 30, 30)
         results["#251 context reload reads 30 mm XYZ from disk"] = "PASS" if updated else "FAIL"
@@ -166,7 +182,7 @@ def main():
 
         source.unlink()
         print(f"{LOG} deleted isolated source={source}, source still exists={source.exists()}")
-        missing_invoked = reload_selected(session)
+        missing_invoked = reload_selected(session, workspace / "prepare-reloaded.png")
         explicit, closed = (
             observe_missing_dialog(session, source, workspace / "missing-dialog.png")
             if missing_invoked else (False, False)
