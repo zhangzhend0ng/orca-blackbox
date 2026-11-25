@@ -60,7 +60,9 @@ def steps(session, work, analysis, args):
         analysis['export_menu_before_slice'] = read_export_menu(session)['export']
         analysis['topbar_before_slice'] = topbar_labels(session)
     with stage(analysis, 'slice_all'):
-        slice_until_exportable(session, work, analysis, ITEM, click=click_slice_all)
+        clicks = analysis['slice_all_clicks'] = []
+        slice_until_exportable(session, work, analysis, ITEM,
+                               click=lambda session: click_slice_all(session, clicks))
         analysis['topbar_after_slice'] = topbar_labels(session)
         capture(session, work / 'sliced.png')
     present = {path.name for path in work.iterdir()}

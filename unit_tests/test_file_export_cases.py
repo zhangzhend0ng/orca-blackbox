@@ -501,8 +501,9 @@ def all_plates_case(monkeypatch, tmp_path, landed):
     analysis = {'results': {}, 'timings': {}}
     case.steps(SimpleNamespace(pid=SESSION_PID, alive=lambda: True), tmp_path, analysis,
                SimpleNamespace(model=gcode.FIXTURES / 'feishu_std_cubesfar.3mf'))
-    # Both plates are sliced in one go, and the wait is for the row of every plate.
-    assert started == [('Export all plate sliced file', case.click_slice_all)]
+    # Both plates are sliced in one go by the Slice all click, and the wait is for the row of every plate.
+    assert [item for item, _click in started] == ['Export all plate sliced file']
+    assert analysis['slice_all_clicks'] == []
     assert analysis['topbar_before_slice'][-1] == 'Print' and analysis['topbar_after_slice'][2] == 'Slice all'
     assert analysis['plates'] == {'names': ['Keep', 'Remove'], 'objects': {'Keep': ['Alpha'], 'Remove': ['Bravo']}}
     assert set(analysis['timings']) == {'open_plates', 'slice_all', 'export_all_plates', 'read_products'}
@@ -560,35 +561,108 @@ def test_all_plates_case_fails_the_plate_whose_gcode_misses_its_object(monkeypat
     assert analysis['all_plates']['plates'][1]['footprint']['max_excursion_mm']['model'] == pytest.approx(2.79)
 
 
-def test_slice_all_chooses_the_dropdown_row_and_then_presses_the_button(monkeypatch):
-    import m3f_multi_plate
+def slice_popup_rig(monkeypatch, *, rooted_takes=True, unrooted_takes=False, popup_survives=True,
+                    row='Slice all', opens=True, enabled=True, label='Slice plate'):
+    """A slice button whose dropdown opens a popup at (1660, 60)-(1769, 130) with two rows.
+
+    A click on a row takes only as the flags say; a swallowed click leaves the popup open or
+    closes it. What each click did is recorded in `state['clicks']`."""
+    state = {'label': label, 'popup': None, 'clicks': [], 'enabled': enabled}
+    popup_rows = [(row, (1660, 67, 1769, 95), 11), ('Slice plate', (1660, 95, 1769, 123), 12)]
+
+    def find_slice_buttons(hwnd):
+        return ('', (1600, 40, 1650, 60), 5), (state['label'], (1660, 40, 1800, 90), 6)
+
+    def click(x, y, root_hwnd=None):
+        state['clicks'].append((x, y, root_hwnd))
+        if root_hwnd == 4242 and (1600, 40, 1650, 60)[0] <= x <= 1650:
+            state['popup'] = 505 if opens else None
+            return 505 if opens else None
+        if root_hwnd == 4242 and (1660, 40, 1800, 90)[0] <= x <= 1800:
+            return 6  # the slice button itself
+        if root_hwnd == 505:
+            takes = rooted_takes
+        elif root_hwnd is None:
+            takes = unrooted_takes
+        else:
+            return None
+        if takes:
+            state['label'] = 'Slice all'
+            state['popup'] = None
+            return 11
+        if not popup_survives:
+            state['popup'] = None
+        return None if root_hwnd is None else 505
+
+    ticking(monkeypatch)
+    monkeypatch.setattr(cases.export_util, 'find_slice_buttons', find_slice_buttons)
+    monkeypatch.setattr(cases.export_util, 'wait_popup',
+                        lambda pid, timeout_s=5.0: ('wxWindowNR', 'panel', (1660, 60, 1769, 130), state['popup'])
+                        if state['popup'] else None)
+    monkeypatch.setattr(cases.export_util, '_children_texts', lambda hwnd: list(popup_rows))
+    monkeypatch.setattr(cases.winutil, 'msg_click_screen', click)
+    monkeypatch.setattr(cases.winutil.user32, 'IsWindow', lambda hwnd: hwnd == state['popup'])
+    monkeypatch.setattr(cases.winutil.user32, 'IsWindowEnabled', lambda hwnd: state['enabled'])
+    monkeypatch.setattr(cases.winutil, 'close_window', lambda hwnd: state.__setitem__('popup', None))
+    return state
+
+
+def test_slice_all_row_is_clicked_inside_the_popup_and_confirmed_by_the_buttons_label(monkeypatch):
     import m7x_235_export_all_plates as case
-    calls = []
+    state = slice_popup_rig(monkeypatch)
+    record = []
+    assert case.click_slice_all(SimpleNamespace(pid=SESSION_PID, hwnd=4242), record) is True
+    row = (1660 + 1769) // 2, (67 + 95) // 2
+    # Dropdown, the row with the popup as the root of the hit test, then the button once it reads Slice all.
+    assert state['clicks'] == [(1625, 50, 4242), (*row, 505), (1730, 65, 4242)]
+    assert record == [{'attempt': 0, 'click': 'inside the popup', 'row': [1660, 67, 1769, 95], 'hit': '0xb',
+                       'label': 'Slice all'},
+                      {'button': [1660, 40, 1800, 90], 'label': 'Slice all', 'hit': '0x6'}]
+    assert callable(case.click_slice_all)
 
-    def choose(session):
-        calls.append('choose Slice all')
-        return True
 
-    monkeypatch.setattr(m3f_multi_plate, 'switch_to_slice_all', choose)
-    button = ('Slice all', (10, 10, 110, 40), 77)
-    monkeypatch.setattr(cases.export_util, 'find_slice_buttons', lambda hwnd: (None, button))
-    monkeypatch.setattr(cases.winutil.user32, 'IsWindowEnabled', lambda hwnd: True)
-    monkeypatch.setattr(cases.winutil, 'msg_click_screen',
-                        lambda x, y, root_hwnd=None: calls.append(('press', x, y, root_hwnd)))
-    session = SimpleNamespace(hwnd=4242)
-    assert case.click_slice_all(session) is True
-    assert calls == ['choose Slice all', ('press', 60, 25, 4242)]
-    # No Slice all row in the dropdown, or a button that is disabled: nothing is pressed.
-    calls.clear()
-    monkeypatch.setattr(m3f_multi_plate, 'switch_to_slice_all', lambda session: False)
-    assert case.click_slice_all(session) is False and calls == []
-    monkeypatch.setattr(m3f_multi_plate, 'switch_to_slice_all', choose)
-    monkeypatch.setattr(cases.winutil.user32, 'IsWindowEnabled', lambda hwnd: False)
-    assert case.click_slice_all(session) is False and calls == ['choose Slice all']
-    monkeypatch.setattr(cases.winutil.user32, 'IsWindowEnabled', lambda hwnd: True)
-    monkeypatch.setattr(cases.export_util, 'find_slice_buttons',
-                        lambda hwnd: (None, ('Slice plate', (10, 10, 110, 40), 77)))
-    assert case.click_slice_all(session) is False and calls[-1] == 'choose Slice all'
+def test_slice_all_row_falls_back_to_the_un_rooted_click_and_to_a_reopened_dropdown(monkeypatch):
+    import m7x_235_export_all_plates as case
+    row = (1660 + 1769) // 2, (67 + 95) // 2
+    # The click inside the popup is swallowed and the popup stays: the un-rooted click is tried next.
+    state = slice_popup_rig(monkeypatch, rooted_takes=False, unrooted_takes=True)
+    record = []
+    assert case.click_slice_all(SimpleNamespace(pid=SESSION_PID, hwnd=4242), record) is True
+    assert state['clicks'] == [(1625, 50, 4242), (*row, 505), (*row, None), (1730, 65, 4242)]
+    assert [(entry.get('attempt'), entry.get('click'), entry.get('label')) for entry in record] == [
+        (0, 'inside the popup', 'Slice plate'), (0, 'un-rooted', 'Slice all'),
+        (None, None, 'Slice all')]
+    # A swallowed click that also closes the popup: the dropdown is opened again, not clicked where it was.
+    state = slice_popup_rig(monkeypatch, rooted_takes=False, unrooted_takes=False, popup_survives=False)
+    state['label'] = 'Slice plate'
+    record = []
+    assert case.click_slice_all(SimpleNamespace(pid=SESSION_PID, hwnd=4242), record) is False
+    assert state['clicks'] == [(1625, 50, 4242), (*row, 505)] * 2
+    assert [entry.get('error', entry.get('click')) for entry in record] == ['inside the popup'] * 2
+    assert all('Slice plate' == entry['label'] for entry in record)
+
+
+def test_slice_all_is_refused_when_the_row_or_an_enabled_button_is_missing(monkeypatch):
+    import m7x_235_export_all_plates as case
+    state = slice_popup_rig(monkeypatch, row='Slice everything')
+    record = []
+    assert case.click_slice_all(SimpleNamespace(pid=SESSION_PID, hwnd=4242), record) is False
+    assert state['popup'] is None and len(state['clicks']) == 2  # opened twice, no row pressed
+    assert all(entry['error'] == 'the dropdown shows Slice all 0 times' for entry in record)
+    state = slice_popup_rig(monkeypatch, opens=False)
+    record = []
+    assert case.click_slice_all(SimpleNamespace(pid=SESSION_PID, hwnd=4242), record) is False
+    assert all(entry['error'] == 'the slice dropdown did not open' for entry in record)
+    state = slice_popup_rig(monkeypatch, enabled=False)
+    record = []
+    assert case.click_slice_all(SimpleNamespace(pid=SESSION_PID, hwnd=4242), record) is False
+    assert record[-1] == {'error': 'the slice button is not an enabled Slice all button', 'label': 'Slice all'}
+    assert not any(root == 4242 and x == 1730 for x, y, root in state['clicks'])
+    # Already in the Slice all mode: the button is pressed at once.
+    state = slice_popup_rig(monkeypatch, label='Slice all')
+    record = []
+    assert case.click_slice_all(SimpleNamespace(pid=SESSION_PID, hwnd=4242), record) is True
+    assert state['clicks'] == [(1730, 65, 4242)] and record[-1]['label'] == 'Slice all'
 
 
 def test_slice_wait_can_be_started_by_another_click_and_keeps_its_default(monkeypatch, tmp_path):

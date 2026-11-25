@@ -318,22 +318,78 @@ def slice_until_exportable(session, work, analysis, item, timeout_s=150, key='sl
     return slice_reading
 
 
-def click_slice_all(session):
+def choose_slice_all(session, record):
+    """Select `Slice all` in the slice dropdown; True once the slice button reads `Slice all`.
+
+    The dropdown is a SidePopup: a top-level window of its own, outside the main window tree.
+    Its row is clicked with the popup as the root of the hit test, so that the click lands on
+    the row whatever transparent layer sits above the popup; the un-rooted click that
+    m3f_multi_plate uses is the second try. #235's first guest run stopped here: the rows were
+    read and the un-rooted click left the button reading `Slice plate`. Every click, where it
+    landed and which label followed goes to `record`."""
+    def label():
+        _opt, main = export_util.find_slice_buttons(session.hwnd)
+        return main[0] if main else None
+
+    for attempt in range(2):
+        if 'Slice all' in (label() or ''):
+            return True
+        opt, _main = export_util.find_slice_buttons(session.hwnd)
+        if not opt:
+            record.append({'attempt': attempt, 'error': 'the slice button has no dropdown'})
+            return False
+        x0, y0, x1, y1 = opt[1]
+        winutil.msg_click_screen((x0 + x1) // 2, (y0 + y1) // 2, session.hwnd)
+        popup = export_util.wait_popup(session.pid, timeout_s=5.0)
+        if not popup:
+            record.append({'attempt': attempt, 'error': 'the slice dropdown did not open'})
+            continue
+        popup_hwnd = popup[3]
+        time.sleep(0.3)  # let the popup finish opening
+        shown = export_util._children_texts(popup_hwnd)
+        rows = [row for row in shown if 'Slice all' in row[0]]
+        if len(rows) != 1:
+            record.append({'attempt': attempt, 'error': f'the dropdown shows Slice all {len(rows)} times',
+                           'rows': [[text, rect] for text, rect, _child in shown]})
+            winutil.close_window(popup_hwnd)
+            continue
+        _text, (left, top, right, bottom), _child = rows[0]
+        x, y = (left + right) // 2, (top + bottom) // 2
+        for how, root in (('inside the popup', popup_hwnd), ('un-rooted', None)):
+            if not winutil.user32.IsWindow(popup_hwnd):
+                break  # the popup is gone: open it again rather than click where it was
+            hit = winutil.msg_click_screen(x, y, root)
+            entry = {'attempt': attempt, 'click': how, 'row': [left, top, right, bottom],
+                     'hit': hex(hit) if hit else None}
+            record.append(entry)
+            deadline = time.monotonic() + 4
+            while time.monotonic() < deadline:
+                if 'Slice all' in (label() or ''):
+                    entry['label'] = label()
+                    return True
+                time.sleep(0.3)
+            entry['label'] = label()
+    return False
+
+
+def click_slice_all(session, record=None):
     """Choose Slice all in the slice dropdown and press the slice button once.
 
     Returns True when the button read `Slice all` and took the click. Whether
     slicing then finished is for the export row to say: the application slices
     the plates one after another, and File > Export > Export all plate sliced
     file stays disabled until every plate has its result."""
-    from m3f_multi_plate import switch_to_slice_all
-
-    if not switch_to_slice_all(session):
+    record = [] if record is None else record
+    if not choose_slice_all(session, record):
         return False
     _opt, main = export_util.find_slice_buttons(session.hwnd)
     if not main or 'Slice all' not in main[0] or not winutil.user32.IsWindowEnabled(main[2]):
+        record.append({'error': 'the slice button is not an enabled Slice all button',
+                       'label': main[0] if main else None})
         return False
     x0, y0, x1, y1 = main[1]
-    winutil.msg_click_screen((x0 + x1) // 2, (y0 + y1) // 2, session.hwnd)
+    hit = winutil.msg_click_screen((x0 + x1) // 2, (y0 + y1) // 2, session.hwnd)
+    record.append({'button': [x0, y0, x1, y1], 'label': main[0], 'hit': hex(hit) if hit else None})
     return True
 
 
