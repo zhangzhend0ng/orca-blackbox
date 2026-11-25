@@ -1414,6 +1414,15 @@ def test_the_case_log_is_what_ties_the_menu_readings_to_the_run(tmp_path):
         without("[m7x238] gaps") + [f"[m7x238] gaps {{{clauses[0]!r}: ['before slicing: x'], {clauses[1]!r}: []}}"]))
     # no retained work directory named
     rows_refused(tmp_path, ["work_directory_named_in_the_case_log"], log_lines=without("[m7x238] retained"))
+    # with the submenu open for the real cursor the case keeps a picture and prints its name after
+    # the reading (first on the guest 2026-11-26 07:03): the line still carries the menu
+    none = "; picture unavailable: the Export submenu did not open on screen"
+    named = [line.replace(none, "; picture menu-before.png") if line == reads[0]
+             else line.replace(none, "; picture menu-after.png") for line in lines]
+    assert all(value is True for value in rows_replay.replay(*write_rows_run(tmp_path, log_lines=named))["checks"].values())
+    # anything else after the reading is not the case's line
+    rows_refused(tmp_path, ["menus_are_in_the_case_log"],
+                 log_lines=[line.replace(none, "; edited") for line in lines])
 
 
 def test_a_guard_dialog_and_the_plate_records_are_held_against_the_run(tmp_path):

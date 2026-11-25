@@ -56,7 +56,9 @@ CONTROL_ROWS = ("Export all objects as one STL", "Export Generic 3MF")
 # the slice, and the menu read after it
 STAGES = ("observe_before_slice", "slice", "observe_after_slice")
 CHANGED = 0.01     # slicing repaints a fifth of the window on the archived runs; a copied screenshot changes none
-READ_LINE = re.compile(r"^\[export\] File > Export read: (\[.*\])(?:; picture unavailable:.*)?$", re.M)
+# The line ends with the picture's name, or with why there is none (until 2026-11-26 07:03 the guest
+# had only ever printed the second: real input did not reach the Export row there).
+READ_LINE = re.compile(r"^\[export\] File > Export read: (\[.*\])(?:; picture .*)?$", re.M)
 SIGNAL_LINE = re.compile(r"^\[export\] 'Export G-code' enabled (\S+?)s after the Slice click$", re.M)
 GAPS_LINE = re.compile(r"^\[m7x238\] gaps (\{.*\})\s*$", re.M)
 LIST = re.compile(r"\[[^\]]*\]")
