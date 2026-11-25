@@ -210,17 +210,19 @@ def wait_export_enabled(session, work, analysis, item, timeout_s=150):
     raise ValueError(f'{item!r} stayed disabled {timeout_s}s after the Slice click')
 
 
-def slice_until_exportable(session, work, analysis, item, timeout_s=150, key='slice'):
+def slice_until_exportable(session, work, analysis, item, timeout_s=150, key='slice', click=None):
     """Click Slice once, then wait for the `item` export row.
 
     The readings land in analysis[key]; the memory guard records stay in the
-    analysis itself so that a case which slices twice keeps both sets."""
+    analysis itself so that a case which slices twice keeps both sets.
+    `click` replaces the plate's own Slice button (click_slice_start), for
+    example with click_slice_all."""
     analysis['slice'] = {'topbar_before': topbar_labels(session), 'clicked_at': time.monotonic()}
     # Every run records whether the guest's memory guard came up, also when it did not.
     analysis.setdefault('memory_guard_dialogs', [])
     analysis.setdefault('guard_failures', 0)
     try:
-        if not click_slice_start(session):
+        if not (click or click_slice_start)(session):
             raise ValueError('the Slice click did not take')
         wait_export_enabled(session, work, analysis, item, timeout_s)
     finally:
@@ -231,6 +233,25 @@ def slice_until_exportable(session, work, analysis, item, timeout_s=150, key='sl
     slice_reading['topbar_after'] = topbar_labels(session)
     slice_reading['export_menu_after'] = read_export_menu(session)['export']
     return slice_reading
+
+
+def click_slice_all(session):
+    """Choose Slice all in the slice dropdown and press the slice button once.
+
+    Returns True when the button read `Slice all` and took the click. Whether
+    slicing then finished is for the export row to say: the application slices
+    the plates one after another, and File > Export > Export all plate sliced
+    file stays disabled until every plate has its result."""
+    from m3f_multi_plate import switch_to_slice_all
+
+    if not switch_to_slice_all(session):
+        return False
+    _opt, main = export_util.find_slice_buttons(session.hwnd)
+    if not main or 'Slice all' not in main[0] or not winutil.user32.IsWindowEnabled(main[2]):
+        return False
+    x0, y0, x1, y1 = main[1]
+    winutil.msg_click_screen((x0 + x1) // 2, (y0 + y1) // 2, session.hwnd)
+    return True
 
 
 def complete_file(path, kind):

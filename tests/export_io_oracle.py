@@ -42,11 +42,12 @@ from pathlib import Path
 import re
 import struct
 from zipfile import BadZipFile, ZipFile
+import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import ParseError
 
 from harness.model_move_pilot import bounds, stl_mesh
 from part_attachment_oracle import _read
-from plate_layout_oracle import _pairs, _project
+from plate_layout_oracle import _pairs, _polygon, _project
 from plate_reserve_oracle import read_project
 
 HEADER = ('header', '; HEADER_BLOCK_START', '; HEADER_BLOCK_END')
@@ -597,7 +598,12 @@ def _png_colors(data):
 
 
 def sliced_3mf_facts(path):
-    """What a ``.gcode.3mf`` archive holds: the plate G-code, the previews and the records."""
+    """What a ``.gcode.3mf`` archive holds: every plate's G-code, the previews and the records.
+
+    ``plate_gcodes`` lists the ``Metadata/plate_<n>.gcode`` members in plate order, each with its
+    own readings. An archive of one plate (File > Export > Export plate sliced file) also has them
+    under the short names ``gcode_member``, ``plate``, ``gcode`` and ``gcode_md5_*``; an archive of
+    several plates (Export all plate sliced file) leaves those empty."""
     path = Path(path)
     raw = _read(path)
     facts = {'file_name': path.name, 'extension': ''.join(path.suffixes[-2:]).lower(),
@@ -606,12 +612,14 @@ def sliced_3mf_facts(path):
         with ZipFile(BytesIO(raw)) as archive:
             members = [(info.filename, info.file_size) for info in archive.infolist()]
             names = [name for name, _size in members]
-            plates = sorted(name for name in names if PLATE_GCODE.match(name))
-            gcode, recorded = b'', b''
-            if len(plates) == 1:
-                gcode = archive.read(plates[0])
-                if plates[0] + '.md5' in names:
-                    recorded = archive.read(plates[0] + '.md5').strip()
+            found = sorted(((int(PLATE_GCODE.match(name).group(1)), name) for name in names if PLATE_GCODE.match(name)))
+            plate_gcodes = []
+            for index, member in found:
+                gcode = archive.read(member)
+                recorded = archive.read(member + '.md5').strip() if member + '.md5' in names else b''
+                plate_gcodes.append({'index': index, 'member': member, 'gcode': _gcode_facts(gcode, member),
+                                     'gcode_md5_recorded': recorded.decode('ascii', errors='replace').lower(),
+                                     'gcode_md5_computed': md5(gcode).hexdigest()})
             previews = []
             for name, size in members:
                 if name.startswith('Metadata/') and name.lower().endswith('.png'):
@@ -621,14 +629,17 @@ def sliced_3mf_facts(path):
                                      'colors': image[2] if image else None})
     except (BadZipFile, KeyError, OSError, struct.error, ValueError) as exc:
         raise ValueError(f'{path.name}: not a readable sliced-file archive ({exc})') from exc
+    only = plate_gcodes[0] if len(plate_gcodes) == 1 else None
     facts.update({
         'members': [{'name': name, 'bytes': size} for name, size in members],
-        'gcode_member': plates[0] if len(plates) == 1 else None,
-        'plate': plates[0][:-len('.gcode')] if len(plates) == 1 else None,
-        'gcode': _gcode_facts(gcode, plates[0]) if len(plates) == 1 else None,
+        'gcode_members': [plate['member'] for plate in plate_gcodes],
+        'plate_gcodes': plate_gcodes,
+        'gcode_member': only['member'] if only else None,
+        'plate': only['member'][:-len('.gcode')] if only else None,
+        'gcode': only['gcode'] if only else None,
         'previews': previews,
-        'gcode_md5_recorded': recorded.decode('ascii', errors='replace').lower(),
-        'gcode_md5_computed': md5(gcode).hexdigest() if len(plates) == 1 else '',
+        'gcode_md5_recorded': only['gcode_md5_recorded'] if only else '',
+        'gcode_md5_computed': only['gcode_md5_computed'] if only else '',
         'has_slice_info': 'Metadata/slice_info.config' in names,
         'has_project_settings': 'Metadata/project_settings.config' in names,
     })
@@ -871,24 +882,54 @@ def _setting(settings, key, default=0.0):
         return default
 
 
-def _footprint(raw, name, project):
-    """The readings and checks of one G-code file against the plate of a saved project."""
+def _plate_boxes(project, plate):
+    """(boxes, printable area, project settings, plate label, plate count) of one plate of a project.
+
+    `boxes` maps each object of the plate to ((x0, x1), (y0, y1)). They are measured in the
+    plate's own coordinates, which is what the slicer writes for each plate: the first plate
+    sits at the world origin, any other one at the origin 2.4.0 computes for it (plate_origins).
+    A project of one plate is read as before; `plate` is only needed for several."""
     project = Path(project)
     try:
-        bed, items = _project(project)
         with ZipFile(project) as archive:
             settings = json.loads(archive.read('Metadata/project_settings.config'))
+            count = len(ET.fromstring(archive.read('Metadata/model_settings.config')).findall('plate'))
+        polygon = _polygon(settings['printable_area'])
+        area = ((min(p[0] for p in polygon), max(p[0] for p in polygon)),
+                (min(p[1] for p in polygon), max(p[1] for p in polygon)))
+        if count == 1:
+            _bed, items = _project(project)
+            boxes = {item.name: ((min(v[0] for v in item.vertices), max(v[0] for v in item.vertices)),
+                                 (min(v[1] for v in item.vertices), max(v[1] for v in item.vertices)))
+                     for item in items}
+            return boxes, area, settings, None, 1
+        plates, instances = read_project(project)
+        index = plate if isinstance(plate, int) and not isinstance(plate, bool) else (
+            list(plates).index(plate) if plate in plates else -1)
+        if not 0 <= index < len(plates):
+            raise LookupError(f'the project holds {len(plates)} plates; {plate!r} is not one of them')
+        origin = plate_origins(settings['printable_area'], len(plates))[index]
+        boxes = {}
+        for instance in instances:
+            if instance.plate == plates[index]:
+                xs = [point[0] - origin[0] for point in instance.points]
+                ys = [point[1] - origin[1] for point in instance.points]
+                boxes[instance.name] = ((min(xs), max(xs)), (min(ys), max(ys)))
+        return boxes, area, settings, plates[index], count
+    except LookupError as exc:
+        raise ValueError(f'{project.name}: {exc}') from exc
     except (OSError, ValueError, KeyError, TypeError, BadZipFile, ParseError) as exc:
         raise ValueError(f'{project.name}: unreadable project ({exc})') from exc
-    boxes = {item.name: ((min(v[0] for v in item.vertices), max(v[0] for v in item.vertices)),
-                         (min(v[1] for v in item.vertices), max(v[1] for v in item.vertices))) for item in items}
+
+
+def _footprint(raw, name, project, plate=None):
+    """The readings and checks of one G-code file against a plate of a saved project."""
+    boxes, area, settings, plate_label, count = _plate_boxes(project, plate)
 
     def flat(axis):
         return min(box[axis][0] for box in boxes.values()), max(box[axis][1] for box in boxes.values())
 
     union = (flat(0), flat(1)) if boxes else ((0.0, 0.0), (0.0, 0.0))
-    area = ((min(p[0] for p in bed.polygon), max(p[0] for p in bed.polygon)),
-            (min(p[1] for p in bed.polygon), max(p[1] for p in bed.polygon)))
     line_width = _setting(settings, 'line_width', 0.42)
     raft = 0.0
     if _setting(settings, 'raft_layers') > 0:
@@ -944,6 +985,8 @@ def _footprint(raw, name, project):
     }
     return {
         'file_name': name,
+        'plate': plate_label,
+        'plate_count': count,
         'tolerance_mm': FOOTPRINT_TOL_MM,
         'allowances_mm': allowances,
         'plate_objects': {label: record['box_mm'] for label, record in objects.items()},
@@ -957,22 +1000,124 @@ def _footprint(raw, name, project):
     }
 
 
-def gcode_footprint(path, project):
+def gcode_footprint(path, project, plate=None):
     """Where the G-code deposits material, against the objects of the saved plate. Nothing here judges
-    beyond `checks`; `project` is the project as it was on the plate when the plate was sliced."""
+    beyond `checks`; `project` is the project as it was on the plate when the plate was sliced, and
+    `plate` names the plate when the project holds more than one (its position, 0-based, or its name)."""
     path = Path(path)
     try:
         raw = path.read_bytes()
     except OSError as exc:
         raise ValueError(_reason(path, exc) + ': unreadable G-code') from exc
-    return _footprint(raw, path.name, project)
+    return _footprint(raw, path.name, project, plate)
 
 
-def verify_gcode_footprint(path, project):
+def verify_gcode_footprint(path, project, plate=None):
     """Raises ValueError naming the failed footprint checks; returns the readings."""
-    footprint = gcode_footprint(path, project)
+    footprint = gcode_footprint(path, project, plate)
     failed = [check for check, passed in footprint['checks'].items() if not passed]
     if failed:
         raise ValueError(f'{footprint["file_name"]}: {failed}; excursions {footprint["max_excursion_mm"]} mm '
                          f'against allowances {footprint["allowances_mm"]} mm')
     return footprint
+
+
+# --- every plate of a project (#235) ------------------------------------------
+
+def plate_origins(printable_area, count):
+    """World origin of every plate of a project, as 2.4.0 lays them out.
+
+    Plates fill rows from the front with ceil(sqrt(count)) columns, each stride 1.2 times the
+    bed's own width or depth (PartPlate.hpp compute_colum_count; PartPlate.cpp compute_origin,
+    plate_stride_x and plate_stride_y; LOGICAL_PART_PLATE_GAP = 1/5). The slicer works from
+    that origin (Print.cpp get_plate_origin), so each plate's G-code is in its own coordinates."""
+    corners = [tuple(float(value) for value in corner.lower().split('x')) for corner in printable_area]
+    columns = math.ceil(math.sqrt(count))
+    width = max(corner[0] for corner in corners) - min(corner[0] for corner in corners)
+    depth = max(corner[1] for corner in corners) - min(corner[1] for corner in corners)
+    return [[(index % columns) * 1.2 * width, -(index // columns) * 1.2 * depth] for index in range(count)]
+
+
+ALL_PLATES_EXPECTATIONS = ('每个盘各生成对应切片文件', '共 2 个', '均含有效 G-code')
+
+
+def all_plates_expectation_gaps(project, products):
+    """({clause of the Feishu #235 expectation: [what failed]}, readings) for what the one
+    export of every plate left on disk.
+
+    `products` are the sliced files that landed, as the application saved them. A plate has its
+    sliced file when some landed file holds that plate's G-code, the G-code passes its checks
+    and its material lies on that plate's objects. "共 2 个" is read as written: one sliced
+    file per plate of the project. A single archive that holds every plate's G-code therefore
+    fails that clause, with what it holds written out. Nothing raises."""
+    project, products = Path(project), [Path(product) for product in products]
+    gaps = {clause: [] for clause in ALL_PLATES_EXPECTATIONS}
+    readings = {'files': [product.name for product in products], 'plates': [], 'unexpected_plates': []}
+    try:
+        with ZipFile(project) as archive:
+            settings = json.loads(archive.read('Metadata/project_settings.config'))
+        plates, instances = read_project(project)
+    except (OSError, ValueError, KeyError, TypeError, BadZipFile, ParseError) as exc:
+        for clause in gaps:
+            gaps[clause].append(f'{project.name}: unreadable project ({exc})')
+        return gaps, readings
+    readings['plate_objects'] = {plate: sorted(i.name for i in instances if i.plate == plate) for plate in plates}
+    readings['plate_origins_mm'] = plate_origins(settings['printable_area'], len(plates))
+    holders = {}
+    for product in products:
+        try:
+            facts = sliced_3mf_facts(product)
+        except ValueError as exc:
+            for clause in gaps:
+                gaps[clause].append(_reason(product, exc))
+            continue
+        readings.setdefault('archives', {})[product.name] = {
+            'file_bytes': facts['file_bytes'], 'extension': facts['extension'],
+            'plate_gcodes': [plate['member'] for plate in facts['plate_gcodes']],
+            'previews': [preview['name'] for preview in facts['previews']]}
+        for member in facts['plate_gcodes']:
+            if 1 <= member['index'] <= len(plates):
+                holders.setdefault(member['index'], []).append((product, member))
+            else:
+                readings['unexpected_plates'].append(f'{product.name}: {member["member"]}')
+    for index, label in enumerate(plates, 1):
+        row = {'index': index, 'name': label, 'objects': readings['plate_objects'][label],
+               'file': None, 'member': None}
+        readings['plates'].append(row)
+        found = holders.get(index, [])
+        if not found:
+            gaps['每个盘各生成对应切片文件'].append(f'plate {index} ({label}): no landed file holds its G-code')
+            gaps['均含有效 G-code'].append(f'plate {index} ({label}): no G-code')
+            continue
+        if len(found) > 1:
+            gaps['每个盘各生成对应切片文件'].append(f'plate {index} ({label}): its G-code is in {len(found)} landed files')
+        product, member = found[0]
+        row.update(file=product.name, member=member['member'], gcode_bytes=member['gcode']['file_bytes'],
+                   layers=member['gcode']['layer_count'])
+        failed = [check for check, passed in gcode_checks(member['gcode']).items() if not passed]
+        row['gcode_checks_failed'] = failed
+        row['gcode_md5_consistent'] = member['gcode_md5_recorded'] in ('', member['gcode_md5_computed'])
+        if failed:
+            gaps['均含有效 G-code'].append(f'plate {index} ({label}): {failed}')
+        if not row['gcode_md5_consistent']:
+            gaps['均含有效 G-code'].append(f'plate {index} ({label}): gcode_checksum_consistent')
+        try:
+            with ZipFile(product) as archive:
+                footprint = _footprint(archive.read(member['member']), member['member'], project, label)
+        except ValueError as exc:
+            row['footprint'] = {'error': str(exc)}
+            gaps['每个盘各生成对应切片文件'].append(f'plate {index} ({label}): {exc}')
+        else:
+            row['footprint'] = footprint
+            spans = [record['extruded_mm'] for record in footprint['objects'].values() if record['extruded_mm']]
+            if spans:
+                row['extruded_mm'] = [min(s[0] for s in spans), max(s[1] for s in spans),
+                                      min(s[2] for s in spans), max(s[3] for s in spans)]
+            failed = [check for check, passed in footprint['checks'].items() if not passed]
+            if failed:
+                gaps['每个盘各生成对应切片文件'].append(f'plate {index} ({label}): its G-code does not land on this plate {failed}')
+    if len(products) != len(plates):
+        held = sorted(number for number, found in holders.items() if found)
+        gaps['共 2 个'].append(f'{len(products)} sliced file(s) landed for {len(plates)} plates '
+                              f'({", ".join(readings["files"])}); they hold the G-code of {len(held)} plate(s)')
+    return gaps, readings

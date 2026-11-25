@@ -15,13 +15,14 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tests'))
 
-from export_io_oracle import (FOOTPRINT_TOL_MM, MERGED_VERTEX_TOL_MM, compare_sliced_sizes,  # noqa: E402
-                              gcode_checks, gcode_expectation_gaps, gcode_export_facts, gcode_footprint,
+from export_io_oracle import (FOOTPRINT_TOL_MM, MERGED_VERTEX_TOL_MM, all_plates_expectation_gaps,  # noqa: E402
+                              compare_sliced_sizes, gcode_checks, gcode_expectation_gaps, gcode_export_facts,
+                              gcode_footprint, plate_origins,
                               harvested_readings, merged_stl_expectation_gaps, plate_object_layout,
                               sliced_3mf_checks, sliced_3mf_facts, sliced_expectation_gaps,
                               verify_gcode_export, verify_gcode_footprint, verify_merged_stl,
                               verify_sliced_3mf, viewer_gaps)
-from plate_reserve_oracle import _CORE, read_project, verify_f3d_image  # noqa: E402
+from plate_reserve_oracle import _CORE, create_delete_plate_fixture, read_project, verify_f3d_image  # noqa: E402
 
 FIXTURES = ROOT / 'fixtures'
 # A real guest export of the standard cube (scenario uia_param_std_save_only). The harvest
@@ -959,3 +960,200 @@ def test_real_guest_export_of_the_cube_lands_on_the_cube_and_a_3_mm_shift_does_n
     cube = footprint['objects']['立方体']
     assert cube['model_moves'] == 6122 and cube['extruded_mm'] == pytest.approx([122.21, 148.79, 122.71, 149.29])
     assert cube['max_excursion_mm'] == 0.0 and footprint['moves']['start_gcode'] == 1
+
+
+
+
+# --- every plate of a project (#235) ------------------------------------------
+
+PLATE_CLAUSES = ('每个盘各生成对应切片文件', '共 2 个', '均含有效 G-code')
+BED = ['0.5x1', '270.5x1', '270.5x271', '0.5x271']
+ALPHA_BOX = ((75.0, 95.0), (125.0, 145.0))    # on plate Keep, where the world coordinates put it
+BRAVO_BOX = ((127.0, 143.0), (128.0, 142.0))  # on plate Remove, in that plate's own coordinates
+
+
+def two_plate_project(folder):
+    """The two-plate project of #242: the cube Alpha on plate Keep, the box Bravo on plate Remove."""
+    project = folder / 'two-plates.3mf'
+    create_delete_plate_fixture(FIXTURES / 'feishu_std_cubesfar.3mf', project)
+    return project
+
+
+def write_plates(path, plates, members_extra=None):
+    """A sliced archive holding the G-code of the given plates: {plate number: G-code text}.
+
+    Plate 1 replaces the one that write_sliced() writes; every further plate brings its own
+    G-code, checksum record and two previews. A plate that is not listed has no member."""
+    members = {}
+    for number, text in plates.items():
+        data = text.encode('utf-8')
+        members.update({f'Metadata/plate_{number}.gcode': data,
+                        f'Metadata/plate_{number}.gcode.md5': md5(data).hexdigest().upper().encode('ascii')})
+        if number > 1:
+            members.update({f'Metadata/plate_{number}.png': png(), f'Metadata/plate_{number}_small.png': png(16)})
+    members.update(members_extra or {})  # what a test wants to corrupt comes last
+    dropped = tuple(f'Metadata/plate_1{tail}' for tail in ('.gcode', '.gcode.md5', '.png', '_small.png'))
+    return write_sliced(path, drop=() if 1 in plates else dropped, members=members)
+
+
+@pytest.mark.parametrize('count, expected', [
+    (1, [[0.0, 0.0]]),
+    (2, [[0.0, 0.0], [324.0, 0.0]]),
+    (3, [[0.0, 0.0], [324.0, 0.0], [0.0, -324.0]]),
+    (4, [[0.0, 0.0], [324.0, 0.0], [0.0, -324.0], [324.0, -324.0]]),
+    (5, [[0.0, 0.0], [324.0, 0.0], [648.0, 0.0], [0.0, -324.0], [324.0, -324.0]]),
+])
+def test_plate_origins_follow_the_layout_of_the_build(count, expected):
+    assert plate_origins(BED, count) == expected
+
+
+def test_plate_origins_scale_with_the_bed():
+    assert plate_origins(['0x0', '200x0', '200x300', '0x300'], 3) == [[0.0, 0.0], [240.0, 0.0], [0.0, -360.0]]
+    assert plate_origins(BED, 9)[8] == [648.0, -648.0]
+    assert plate_origins(BED, 10)[9] == [324.0, -648.0]  # ten plates fill four columns
+
+
+def test_each_plate_is_measured_in_its_own_coordinates(tmp_path):
+    project = two_plate_project(tmp_path)
+    moved = write_gcode(tmp_path / 'bravo.gcode', gcode_text(box=BRAVO_BOX, name='Bravo'))
+    by_name = verify_gcode_footprint(moved, project, 'Remove')
+    assert by_name['plate'] == 'Remove' and by_name['plate_count'] == 2
+    assert by_name['plate_objects'] == {'Bravo': [127.0, 143.0, 128.0, 142.0]}
+    assert by_name['objects']['Bravo']['extruded_mm'] == [127.21, 142.79, 128.21, 141.79]
+    assert by_name['names_in_gcode'] == ['Bravo'] and by_name['printable_area_mm'] == [0.5, 270.5, 1.0, 271.0]
+    assert gcode_footprint(moved, project, 1)['plate'] == 'Remove'
+    # The same material is not plate Keep's: that plate holds Alpha somewhere else.
+    other = gcode_footprint(moved, project, 'Keep')
+    assert only(FOOTPRINT_CHECKS, 'objects_named', 'model_inside_object_blocks',
+                'model_on_objects') == other['checks']
+    assert other['plate_objects'] == {'Alpha': [75.0, 95.0, 125.0, 145.0]}
+    for plate in (None, 'Nope', 5, -1):
+        with pytest.raises(ValueError, match='two-plates.3mf: the project holds 2 plates; '):
+            gcode_footprint(moved, project, plate)
+    # A project of one plate needs no plate and reads as before.
+    single = FIXTURES / 'feishu_std_cube.3mf'
+    plain = write_gcode(tmp_path / 'cube.gcode', gcode_text(box=CUBE_BOX))
+    assert gcode_footprint(plain, single)['plate'] is None and gcode_footprint(plain, single)['plate_count'] == 1
+
+
+def test_sliced_archive_lists_every_plate(tmp_path):
+    both = write_plates(tmp_path / 'plates.gcode.3mf',
+                        {1: gcode_text(box=ALPHA_BOX, name='Alpha'), 2: gcode_text(20, box=BRAVO_BOX, name='Bravo')})
+    facts = sliced_3mf_facts(both)
+    assert facts['gcode_members'] == ['Metadata/plate_1.gcode', 'Metadata/plate_2.gcode']
+    assert [(plate['index'], plate['gcode']['layer_count'], plate['gcode']['file_name']) for plate in facts['plate_gcodes']] == [
+        (1, 5, 'Metadata/plate_1.gcode'), (2, 20, 'Metadata/plate_2.gcode')]
+    assert all(plate['gcode_md5_recorded'] == plate['gcode_md5_computed'] for plate in facts['plate_gcodes'])
+    # The short names belong to an archive of one plate alone.
+    assert facts['gcode'] is None and facts['gcode_member'] is None and facts['plate'] is None
+    assert facts['gcode_md5_recorded'] == '' and facts['gcode_md5_computed'] == ''
+    assert [preview['name'] for preview in facts['previews']
+            if re.fullmatch(r'Metadata/plate_\d+(_small)?\.png', preview['name'])] == [
+        'Metadata/plate_1.png', 'Metadata/plate_1_small.png', 'Metadata/plate_2.png', 'Metadata/plate_2_small.png']
+    assert not sliced_3mf_checks(facts)['single_plate_gcode']
+    one = write_plates(tmp_path / 'second.gcode.3mf', {2: gcode_text(box=BRAVO_BOX, name='Bravo')})
+    facts = sliced_3mf_facts(one)
+    assert facts['gcode_members'] == ['Metadata/plate_2.gcode'] and facts['gcode']['layer_count'] == 5
+    assert facts['plate'] == 'Metadata/plate_2' and facts['gcode_md5_recorded'] == facts['gcode_md5_computed']
+
+
+def test_one_archive_holding_both_plates_fails_only_the_clause_about_their_number(tmp_path):
+    project = two_plate_project(tmp_path)
+    (tmp_path / 'plates.gcode.3mf').write_bytes(b'')
+    write_plates(tmp_path / 'plates.gcode.3mf',
+                 {1: gcode_text(box=ALPHA_BOX, name='Alpha'), 2: gcode_text(20, box=BRAVO_BOX, name='Bravo')})
+    gaps, readings = all_plates_expectation_gaps(project, [tmp_path / 'plates.gcode.3mf'])
+    assert gaps == {
+        '每个盘各生成对应切片文件': [],
+        '共 2 个': ['1 sliced file(s) landed for 2 plates (plates.gcode.3mf); they hold the G-code of 2 plate(s)'],
+        '均含有效 G-code': []}
+    assert readings['files'] == ['plates.gcode.3mf'] and readings['unexpected_plates'] == []
+    assert readings['plate_objects'] == {'Keep': ['Alpha'], 'Remove': ['Bravo']}
+    assert readings['plate_origins_mm'] == [[0.0, 0.0], [324.0, 0.0]]
+    keep, remove = readings['plates']
+    assert (keep['name'], keep['file'], keep['member'], keep['layers']) == ('Keep', 'plates.gcode.3mf', 'Metadata/plate_1.gcode', 5)
+    assert (remove['name'], remove['member'], remove['layers']) == ('Remove', 'Metadata/plate_2.gcode', 20)
+    # Each G-code lies on its own plate's object, the second one in that plate's coordinates.
+    assert keep['extruded_mm'] == [75.21, 94.79, 125.21, 144.79]
+    assert remove['extruded_mm'] == [127.21, 142.79, 128.21, 141.79]
+    assert keep['footprint']['plate'] == 'Keep' and remove['footprint']['plate'] == 'Remove'
+    assert all(row['footprint']['checks'].values() for row in (keep, remove))
+    assert readings['archives']['plates.gcode.3mf']['plate_gcodes'] == ['Metadata/plate_1.gcode', 'Metadata/plate_2.gcode']
+
+
+def test_one_sliced_file_per_plate_passes_every_clause(tmp_path):
+    project = two_plate_project(tmp_path)
+    write_plates(tmp_path / 'plate.gcode.3mf', {1: gcode_text(box=ALPHA_BOX, name='Alpha')})
+    write_plates(tmp_path / 'other.gcode.3mf', {2: gcode_text(box=BRAVO_BOX, name='Bravo')})
+    gaps, readings = all_plates_expectation_gaps(
+        project, [tmp_path / 'plate.gcode.3mf', tmp_path / 'other.gcode.3mf'])
+    assert gaps == dict.fromkeys(PLATE_CLAUSES, [])
+    assert [row['file'] for row in readings['plates']] == ['plate.gcode.3mf', 'other.gcode.3mf']
+    assert [row['extruded_mm'] for row in readings['plates']] == [[75.21, 94.79, 125.21, 144.79],
+                                                                 [127.21, 142.79, 128.21, 141.79]]
+
+
+def test_a_plate_left_out_or_printed_somewhere_else_fails(tmp_path):
+    project = two_plate_project(tmp_path)
+    (tmp_path / 'one').mkdir()
+    (tmp_path / 'two').mkdir()
+    alpha = gcode_text(box=ALPHA_BOX, name='Alpha')
+    write_plates(tmp_path / 'one' / 'plates.gcode.3mf', {1: alpha})
+    gaps, readings = all_plates_expectation_gaps(project, [tmp_path / 'one' / 'plates.gcode.3mf'])
+    assert gaps == {
+        '每个盘各生成对应切片文件': ['plate 2 (Remove): no landed file holds its G-code'],
+        '共 2 个': ['1 sliced file(s) landed for 2 plates (plates.gcode.3mf); they hold the G-code of 1 plate(s)'],
+        '均含有效 G-code': ['plate 2 (Remove): no G-code']}
+    assert readings['plates'][1]['file'] is None and 'footprint' not in readings['plates'][1]
+
+    def judged(label, second, extra=None):
+        write_plates(tmp_path / 'two' / f'{label}.gcode.3mf', {1: alpha, 2: second}, extra)
+        return all_plates_expectation_gaps(project, [tmp_path / 'two' / f'{label}.gcode.3mf'])[0]
+
+    moved = judged('moved', shifted(gcode_text(box=BRAVO_BOX, name='Bravo'), 3, 0))
+    assert moved['每个盘各生成对应切片文件'] == [
+        "plate 2 (Remove): its G-code does not land on this plate ['model_on_objects']"]
+    assert moved['均含有效 G-code'] == []
+    # Plate Remove's object stands at x = 451..467 in the world; its G-code is not written there.
+    world = judged('world', gcode_text(box=((451.0, 467.0), (128.0, 142.0)), name='Bravo'))
+    assert world['每个盘各生成对应切片文件'] == [
+        "plate 2 (Remove): its G-code does not land on this plate ['model_on_objects']"]
+    # Plate Keep's G-code in the member of plate Remove does not count as plate Remove's sliced file.
+    swapped = judged('swapped', alpha)
+    assert swapped['每个盘各生成对应切片文件'] == [
+        "plate 2 (Remove): its G-code does not land on this plate ['objects_named', "
+        "'model_inside_object_blocks', 'model_on_objects']"]
+    cut = gcode_text(box=BRAVO_BOX, name='Bravo')[:-20]
+    torn = judged('torn', cut)
+    assert torn['每个盘各生成对应切片文件'] == []
+    failed = [check for check, passed in gcode_checks(gcode_export_facts(
+        write_gcode(tmp_path / 'cut.gcode', cut))).items() if not passed]
+    assert failed and torn['均含有效 G-code'] == [f'plate 2 (Remove): {failed}']
+    wrong_sum = judged('wrong-sum', gcode_text(box=BRAVO_BOX, name='Bravo'),
+                       {'Metadata/plate_2.gcode.md5': md5(b'another plate').hexdigest().encode()})
+    assert wrong_sum['均含有效 G-code'] == ['plate 2 (Remove): gcode_checksum_consistent']
+    twice = write_plates(tmp_path / 'two' / 'again.gcode.3mf', {1: alpha, 2: gcode_text(box=BRAVO_BOX, name='Bravo')})
+    gaps, _readings = all_plates_expectation_gaps(
+        project, [tmp_path / 'two' / 'again.gcode.3mf', tmp_path / 'two' / 'again.gcode.3mf'])
+    assert gaps['每个盘各生成对应切片文件'] == ['plate 1 (Keep): its G-code is in 2 landed files',
+                                          'plate 2 (Remove): its G-code is in 2 landed files']
+    stray = write_plates(tmp_path / 'two' / 'stray.gcode.3mf', {2: gcode_text(box=BRAVO_BOX, name='Bravo'),
+                                                               3: gcode_text(box=BRAVO_BOX, name='Bravo')})
+    gaps, readings = all_plates_expectation_gaps(project, [stray])
+    assert readings['unexpected_plates'] == ['stray.gcode.3mf: Metadata/plate_3.gcode']
+    assert gaps['每个盘各生成对应切片文件'] == ['plate 1 (Keep): no landed file holds its G-code']
+    broken = tmp_path / 'two' / 'broken.gcode.3mf'
+    broken.write_bytes(b'not an archive')
+    gaps, readings = all_plates_expectation_gaps(project, [broken])
+    unreadable = 'broken.gcode.3mf: not a readable sliced-file archive (File is not a zip file)'
+    assert gaps == {
+        '每个盘各生成对应切片文件': [unreadable, 'plate 1 (Keep): no landed file holds its G-code',
+                                  'plate 2 (Remove): no landed file holds its G-code'],
+        '共 2 个': [unreadable,
+                  '1 sliced file(s) landed for 2 plates (broken.gcode.3mf); they hold the G-code of 0 plate(s)'],
+        '均含有效 G-code': [unreadable, 'plate 1 (Keep): no G-code', 'plate 2 (Remove): no G-code']}
+    assert readings['files'] == ['broken.gcode.3mf'] and 'archives' not in readings
+    (tmp_path / 'loose.3mf').write_bytes(b'not a project')
+    gaps, readings = all_plates_expectation_gaps(tmp_path / 'loose.3mf', [])
+    assert gaps == {clause: ['loose.3mf: unreadable project (File is not a zip file)'] for clause in PLATE_CLAUSES}
+    assert readings['plates'] == []

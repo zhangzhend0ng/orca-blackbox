@@ -461,3 +461,145 @@ def test_gcode_case_fails_the_first_clause_when_the_export_misses_the_cube(monke
                                 '无空文件': 'PASS', '层命令连续': 'PASS'}
     assert moved['footprint']['max_excursion_mm']['model'] == pytest.approx(2.79)
     assert m7.m7_verdict(moved['results']) == 1
+
+
+def all_plates_case(monkeypatch, tmp_path, landed):
+    """The #235 case's steps with every window call faked; `landed(work, name)` writes what the
+    application saved and returns the name of one landed file."""
+    sys.path.insert(0, str(ROOT / 'tests' / 'gui'))
+    import m7x_235_export_all_plates as case
+    from PIL import Image
+    started = []
+
+    def snapshot(session, work, phase):
+        Image.new('RGB', (4, 4), (9, 9, 9)).save(work / f'{phase}.png')
+        return gcode.two_plate_project(work)
+
+    def export(session, item, directory, name, work, analysis, title_substr, kind):
+        assert (item, title_substr, kind) == ('Export all plate sliced file', 'Save Sliced file as', 'archive')
+        Image.new('RGB', (4, 4), (9, 9, 9)).save(work / 'export-dialog.png')
+        saved = landed(Path(directory), name)
+        analysis['export'] = {'typed_name': name, 'saved_name': saved, 'saved_extension': '.gcode.3mf'}
+        return analysis['export']
+
+    def slice_all(session, work, analysis, item, timeout_s=150, key='slice', click=None):
+        started.append((item, click))
+        analysis['slice'] = {'item': item, 'polls': 3}
+        return analysis['slice']
+
+    monkeypatch.setattr(case, 'save_snapshot', snapshot)
+    monkeypatch.setattr(case, 'read_export_menu', lambda session: {'file': [], 'export': gcode.EXPORT_ROWS})
+    monkeypatch.setattr(case, 'slice_until_exportable', slice_all)
+    monkeypatch.setattr(case, 'capture', lambda session, path: Image.new('RGB', (4, 4), (9, 9, 9)).save(path))
+    monkeypatch.setattr(case, 'topbar_labels', lambda session: ['panel', '', 'Slice all', '', 'Print'])
+    monkeypatch.setattr(case, 'export_via_file_menu', export)
+    monkeypatch.setattr(case.m7, 'wait_dialog', lambda pid, timeout_s=15.0, title_substr='': None)
+    analysis = {'results': {}, 'timings': {}}
+    case.steps(SimpleNamespace(pid=SESSION_PID, alive=lambda: True), tmp_path, analysis,
+               SimpleNamespace(model=gcode.FIXTURES / 'feishu_std_cubesfar.3mf'))
+    # Both plates are sliced in one go, and the wait is for the row of every plate.
+    assert started == [('Export all plate sliced file', case.click_slice_all)]
+    assert analysis['topbar_before_slice'][-1] == 'Print' and analysis['topbar_after_slice'][2] == 'Slice all'
+    assert analysis['plates'] == {'names': ['Keep', 'Remove'], 'objects': {'Keep': ['Alpha'], 'Remove': ['Bravo']}}
+    assert set(analysis['timings']) == {'open_plates', 'slice_all', 'export_all_plates', 'read_products'}
+    # Only what the export left counts as a product, not the project files this case made itself.
+    assert [product['name'] for product in analysis['products']] == sorted(
+        path.name for path in tmp_path.iterdir() if path.name.endswith('.gcode.3mf'))
+    return analysis
+
+
+def plate_texts(second=None):
+    return (gcode.gcode_text(box=gcode.ALPHA_BOX, name='Alpha'),
+            second if second is not None else gcode.gcode_text(box=gcode.BRAVO_BOX, name='Bravo'))
+
+
+def test_all_plates_case_reports_one_archive_for_two_plates_as_it_is(monkeypatch, tmp_path):
+    alpha, bravo = plate_texts()
+
+    def one_archive(work, name):
+        return gcode.write_plates(work / f'{name}.gcode.3mf', {1: alpha, 2: bravo}).name
+
+    analysis = all_plates_case(monkeypatch, tmp_path, one_archive)
+    assert analysis['results'] == {
+        '每个盘各生成对应切片文件': 'PASS',
+        '共 2 个': 'FAIL (1 sliced file(s) landed for 2 plates (plates.gcode.3mf); they hold the G-code of 2 plate(s))',
+        '均含有效 G-code': 'PASS'}
+    assert m7.m7_verdict(analysis['results']) == 1
+    assert [row['member'] for row in analysis['all_plates']['plates']] == [
+        'Metadata/plate_1.gcode', 'Metadata/plate_2.gcode']
+
+
+def test_all_plates_case_passes_when_each_plate_has_its_own_file(monkeypatch, tmp_path):
+    alpha, bravo = plate_texts()
+
+    def separate(work, name):
+        gcode.write_plates(work / f'{name}-remove.gcode.3mf', {2: bravo})
+        return gcode.write_plates(work / f'{name}-keep.gcode.3mf', {1: alpha}).name
+
+    analysis = all_plates_case(monkeypatch, tmp_path, separate)
+    assert analysis['results'] == dict.fromkeys(gcode.PLATE_CLAUSES, 'PASS')
+    assert m7.m7_verdict(analysis['results']) == 0
+    assert [row['file'] for row in analysis['all_plates']['plates']] == ['plates-keep.gcode.3mf', 'plates-remove.gcode.3mf']
+
+
+def test_all_plates_case_fails_the_plate_whose_gcode_misses_its_object(monkeypatch, tmp_path):
+    alpha, bravo = plate_texts(gcode.shifted(gcode.gcode_text(box=gcode.BRAVO_BOX, name='Bravo'), 3, 3))
+
+    def one_archive(work, name):
+        return gcode.write_plates(work / f'{name}.gcode.3mf', {1: alpha, 2: bravo}).name
+
+    analysis = all_plates_case(monkeypatch, tmp_path, one_archive)
+    assert analysis['results'] == {
+        '每个盘各生成对应切片文件': "FAIL (plate 2 (Remove): its G-code does not land on this plate ['model_on_objects'])",
+        '共 2 个': 'FAIL (1 sliced file(s) landed for 2 plates (plates.gcode.3mf); they hold the G-code of 2 plate(s))',
+        '均含有效 G-code': 'PASS'}
+    assert analysis['all_plates']['plates'][1]['footprint']['max_excursion_mm']['model'] == pytest.approx(2.79)
+
+
+def test_slice_all_chooses_the_dropdown_row_and_then_presses_the_button(monkeypatch):
+    import m3f_multi_plate
+    import m7x_235_export_all_plates as case
+    calls = []
+
+    def choose(session):
+        calls.append('choose Slice all')
+        return True
+
+    monkeypatch.setattr(m3f_multi_plate, 'switch_to_slice_all', choose)
+    button = ('Slice all', (10, 10, 110, 40), 77)
+    monkeypatch.setattr(cases.export_util, 'find_slice_buttons', lambda hwnd: (None, button))
+    monkeypatch.setattr(cases.winutil.user32, 'IsWindowEnabled', lambda hwnd: True)
+    monkeypatch.setattr(cases.winutil, 'msg_click_screen',
+                        lambda x, y, root_hwnd=None: calls.append(('press', x, y, root_hwnd)))
+    session = SimpleNamespace(hwnd=4242)
+    assert case.click_slice_all(session) is True
+    assert calls == ['choose Slice all', ('press', 60, 25, 4242)]
+    # No Slice all row in the dropdown, or a button that is disabled: nothing is pressed.
+    calls.clear()
+    monkeypatch.setattr(m3f_multi_plate, 'switch_to_slice_all', lambda session: False)
+    assert case.click_slice_all(session) is False and calls == []
+    monkeypatch.setattr(m3f_multi_plate, 'switch_to_slice_all', choose)
+    monkeypatch.setattr(cases.winutil.user32, 'IsWindowEnabled', lambda hwnd: False)
+    assert case.click_slice_all(session) is False and calls == ['choose Slice all']
+    monkeypatch.setattr(cases.winutil.user32, 'IsWindowEnabled', lambda hwnd: True)
+    monkeypatch.setattr(cases.export_util, 'find_slice_buttons',
+                        lambda hwnd: (None, ('Slice plate', (10, 10, 110, 40), 77)))
+    assert case.click_slice_all(session) is False and calls[-1] == 'choose Slice all'
+
+
+def test_slice_wait_can_be_started_by_another_click_and_keeps_its_default(monkeypatch, tmp_path):
+    rig = Rig(monkeypatch, tmp_path)
+    monkeypatch.setattr(m7, 'wait_dialog', lambda pid, timeout_s=15.0, title_substr='': None)
+    monkeypatch.setattr(m7, 'file_menu_dispatch', lambda *a, **k: (True, None))
+    monkeypatch.setattr(cases, 'read_export_menu', lambda session: {'file': [], 'export': ROWS})
+    monkeypatch.setattr(cases, 'topbar_labels', lambda session: [])
+    pressed = []
+    reading = cases.slice_until_exportable(
+        rig.session, tmp_path, {}, 'Export all plate sliced file', click=lambda session: pressed.append('all') or True)
+    assert reading['polls'] == 1 and pressed == ['all']
+    monkeypatch.setattr(cases, 'click_slice_start', lambda session: pressed.append('plate') or True)
+    cases.slice_until_exportable(rig.session, tmp_path, {}, 'Export G-code')
+    assert pressed == ['all', 'plate']
+    monkeypatch.setattr(cases, 'click_slice_start', lambda session: False)
+    with pytest.raises(ValueError, match='the Slice click did not take'):
+        cases.slice_until_exportable(rig.session, tmp_path, {}, 'Export G-code')
