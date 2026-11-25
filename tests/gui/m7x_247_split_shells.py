@@ -16,7 +16,7 @@ from m7x_250_negative_part import highlight_menu_item, open_part_submenu, send_m
 from m8x_48_modal_color_header import bring_main_to_mouse
 from model_context_cases import open_model_menu
 from plate_reserve_case import activate, case_main, save_snapshot
-from plate_reserve_oracle import create_split_fixture, verify_split, verify_split_selection
+from plate_reserve_oracle import _split_instances, create_split_fixture, verify_split, verify_split_selection
 
 
 def prepare_fixture(template, work):
@@ -95,10 +95,16 @@ def steps(session, work, analysis, _args):
     split = save_snapshot(session, work, 'split')
     analysis['split_geometry'] = verify_split(before, split)
     analysis['results']['Split > To objects retained both closed shells as independent objects'] = 'PASS'
-    left, _ = object_centers(session, 'split', analysis)
+    # Capture both points before the first color change adds new chromatic UI pixels.
+    left, right = object_centers(session, 'split', analysis)
     set_color(session, left, 2)
     left_color = save_snapshot(session, work, 'left-color')
-    _, right = object_centers(session, 'left-color', analysis)
+    original_slots = [obj.extruder for obj in _split_instances(split)]
+    left_slots = [obj.extruder for obj in _split_instances(left_color)]
+    analysis['first_color_readback'] = {'before': original_slots, 'after': left_slots}
+    if original_slots[0] == '2' or left_slots != ['2', original_slots[1]]:
+        raise ValueError(f'first color change did not affect the left object alone: {original_slots} -> {left_slots}')
+    analysis['results']['the first color change updated only the left object'] = 'PASS'
     set_color(session, right, 3)
     both_colors = save_snapshot(session, work, 'both-colors')
     analysis['split_selection'] = verify_split_selection(split, left_color, both_colors)
