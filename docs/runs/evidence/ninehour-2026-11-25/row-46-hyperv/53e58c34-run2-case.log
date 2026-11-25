@@ -1,0 +1,25 @@
+﻿[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile C:\coil\orca-blackbox-v3-r1\fixtures\mixed_filament_test.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x4d91016, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x4e00e2a, WM_CLOSE)
+[launcher] pid=4032 hwnd=0x4ca10b6 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.80%, gate 0.25%)
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x5120aaa did not complete
+[m8x46] before confirm: slot=1 preset='Generic PETG @U1 0.8 nozzle(mixed_filament_test.3mf)' chip=(13, 415, 33, 435)
+[m8x46] before confirm: picker='Please choose the filament color' hwnd=0x5190790
+[m8b] native picker derived HSL: ('27', '162', '129') -> ('94', '240', '78')
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x5120aaa did not complete
+[m8x46] after confirm: slot=1 preset='Generic PETG @U1 0.8 nozzle(mixed_filament_test.3mf)' chip=(13, 415, 33, 435)
+[m8x46] after confirm: picker='Please choose the filament color' hwnd=0x51a0790
+
+[m7] === verdict ===
+  #46 color selection updates: PASS (before=(217, 166, 58), selected=(0, 166, 58), hsl_changed=True)
+  #46 OK closes the picker: PASS (ok_clicked=True, old_hwnd=0x5190790, closed=True)
+  #46 filament keeps the selected color: PASS (slot=1, fresh_picker=True, selected=(0, 166, 58), reopened=(0, 166, 58))
+[m7] GREEN

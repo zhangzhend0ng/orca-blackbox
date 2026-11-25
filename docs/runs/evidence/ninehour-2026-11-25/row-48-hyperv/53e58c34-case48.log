@@ -1,0 +1,22 @@
+﻿[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile C:\coil\orca-blackbox-v3-r1\fixtures\mixed_filament_test.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x4f208d8, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x4dc0f50, WM_CLOSE)
+[launcher] pid=7712 hwnd=0x523043e rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.80%, gate 0.25%)
+[m8x48] official preset='Snapmaker PLA Silk @U1 0.8 nozzle(mixed_filament_test.3mf)', opener=(221, 425), background=(23, 425), owner initially enabled=True
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x4e80ebe did not complete
+[m8x48] visible dialog labels=[('panel', (428, 408, 808, 784)), ('mint lemonade', (516, 436, 637, 456)), ('sku 34205', (516, 462, 589, 482)), ('official filaments', (444, 516, 563, 536)), ('panel', (444, 556, 792, 646)), ('panel', (444, 556, 474, 586)), ('panel', (479, 556, 509, 586)), ('panel', (514, 556, 544, 586)), ('panel', (549, 556, 579, 586)), ('panel', (584, 556, 614, 586)), ('panel', (619, 556, 649, 586)), ('panel', (654, 556, 684, 586)), ('panel', (689, 556, 719, 586)), ('panel', (724, 556, 754, 586)), ('panel', (759, 556, 789, 586)), ('panel', (444, 586, 474, 616)), ('panel', (479, 586, 509, 616)), ('panel', (514, 586, 544, 616)), ('panel', (549, 586, 579, 616)), ('panel', (584, 586, 614, 616)), ('panel', (619, 586, 649, 616)), ('panel', (654, 586, 684, 616)), ('panel', (689, 586, 719, 616)), ('panel', (724, 586, 754, 616)), ('panel', (759, 586, 789, 616)), ('panel', (444, 616, 474, 646)), ('panel', (444, 666, 792, 706)), ('panel', (428, 722, 808, 723)), ('panel', (428, 723, 808, 784)), ('cancel', (448, 735, 614, 773)), ('ok', (622, 735, 788, 773))]
+[m8x48] cleanup: dialog visible=False, owner enabled=True
+
+[m7] === verdict ===
+  #48 official color dialog opens: PASS (('#32770', '', (428, 408, 808, 784)))
+  #48 modal dialog blocks background chip: FAIL (outside=True, real mouse events=2, foreground before=True, dialog foreground after=False, same dialog visible=True, owner disabled before/after=True/True, new Orca windows=0)
+  #48 header has color card, name and SKU: FAIL (name='Mint Lemonade' at (516, 436, 637, 456), 'sku 34205' at (516, 462, 589, 482), preview=(434, 432, 512, 502), catalog pixel shares=(0.0, 0.0))
+[m7] RED

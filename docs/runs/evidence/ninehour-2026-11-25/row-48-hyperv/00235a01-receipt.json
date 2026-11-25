@@ -1,0 +1,13 @@
+﻿{
+    "commit":  "00235a01a656e3a310f303893f746398da9d3d27",
+    "case":  "m8x_48_modal_color_header",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "summary":  "SUMMARY: PASS=0 FAIL=1\r\nFAILED: m8x_48_modal_color_header",
+    "dispatched_at":  "2026-11-25T13:46:42.8355354+08:00",
+    "scenario_completed_at":  "2026-11-25T13:48:00.5766268+08:00",
+    "suite_completed_at":  "2026-11-25T13:48:00.6843235+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m8x_48_modal_color_header.log",
+    "log_sha256":  "648C2E852A3BA1AA9B173287B809FA0B8E217A1BA3F638C9E618A7CF265838E6"
+}

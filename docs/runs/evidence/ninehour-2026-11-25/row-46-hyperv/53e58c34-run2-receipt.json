@@ -1,0 +1,13 @@
+﻿{
+    "commit":  "53e58c34e4b8ae9b2dc8484954ba44631a7036c4",
+    "case":  "m8x_46_color_confirm",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "summary":  "SUMMARY: PASS=1 FAIL=0",
+    "dispatched_at":  "2026-11-25T13:24:15.6685127+08:00",
+    "scenario_completed_at":  "2026-11-25T13:25:39.8799145+08:00",
+    "suite_completed_at":  "2026-11-25T13:25:40.0493862+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m8x_46_color_confirm.log",
+    "log_sha256":  "3D35B7E05507338C33FEFF3B46C49A9D134190828F653C86E48509161098F55B"
+}

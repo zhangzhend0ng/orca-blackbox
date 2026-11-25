@@ -1,0 +1,24 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T13:34:07" tests="1" failures="0" errors="0">
+    <testcase name="m8x_48_modal_color_header" classname="blackbox.m8x_48_modal_color" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m8x_48_modal_color_header.log" />
+        <property name="dim:#48 official color dialog opens" value="PASS (('#32770', '', (428, 408, 808, 784)))" />
+        <property name="dim:#48 modal dialog blocks background chip" value="PASS (outside=True, real mouse events=2, foreground before=True, cursor=(22, 424), desktop hit=0x4cf0518, foreground after=0x0 (pid=None, dialog=0x4f50692), same dialog visible=True, owner disabled be" />
+        <property name="dim:#48 header has color card, name and SKU" value="PASS (name='Mint Lemonade' at (516, 436, 637, 456), 'sku 34205' at (516, 462, 589, 482), preview=(434, 432, 512, 502), surface=dialog client, catalog pixel shares=(0.33, 0.33))" />
+        <property name="dim:#48 same background chip works after Cancel" value="PASS (same background chip=0x51d0532, click=Orca window tree, native picker RGB=('217', '166', '58'))" />
+      </properties>
+      <system-out>[m8x48] after Cancel: clicked=True, closed=True, owner enabled=True, same chip=True
+[m8x48] enabled background at (23, 425): desktop hit=0x4cf0518, chip=0x51d0532
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x51d0532 did not complete
+
+[m7] === verdict ===
+  #48 official color dialog opens: PASS (('#32770', '', (428, 408, 808, 784)))
+  #48 modal dialog blocks background chip: PASS (outside=True, real mouse events=2, foreground before=True, cursor=(22, 424), desktop hit=0x4cf0518, foreground after=0x0 (pid=None, dialog=0x4f50692), same dialog visible=True, owner disabled before/after=True/True, same background preset=True, new Orca windows=0)
+  #48 header has color card, name and SKU: PASS (name='Mint Lemonade' at (516, 436, 637, 456), 'sku 34205' at (516, 462, 589, 482), preview=(434, 432, 512, 502), surface=dialog client, catalog pixel shares=(0.33, 0.33))
+  #48 same background chip works after Cancel: PASS (same background chip=0x51d0532, click=Orca window tree, native picker RGB=('217', '166', '58'))
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

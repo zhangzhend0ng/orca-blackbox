@@ -1,0 +1,41 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T13:31:39" tests="1" failures="1" errors="0">
+    <testcase name="m7x_199_new_project_title" classname="blackbox.m7x_199_new_project" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_199_new_project_title.log" />
+        <property name="dim:edit model" value="FAIL (could not verify unsaved STL import)" />
+      </properties>
+      <failure type="RED" message="edit model: FAIL (could not verify unsaved STL import)">[m7x199] before edit: title='mixed_filament_test - Snapmaker Orca', topbar='mixed_filament_test', model fraction=0.801%
+[m7] object-shaped blobs: [(4840, (907, 360, 71, 73)), (5316, (1142, 472, 62, 86))]
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x13202d2 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=320) sent, completed=False
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7] object-shaped blobs: [(8729, (900, 307, 83, 126)), (10059, (1070, 472, 206, 86))]
+[m7x199] could not confirm additional Prusa.stl geometry
+
+[m7] === verdict ===
+  edit model: FAIL (could not verify unsaved STL import)
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

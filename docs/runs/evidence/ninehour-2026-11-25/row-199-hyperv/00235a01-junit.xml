@@ -1,0 +1,25 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T13:45:05" tests="1" failures="0" errors="0">
+    <testcase name="m7x_199_new_project_title" classname="blackbox.m7x_199_new_project" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_199_new_project_title.log" />
+        <property name="dim:unsaved changes prompt" value="PASS" />
+        <property name="dim:discard closes prompt" value="PASS" />
+        <property name="dim:empty new project" value="PASS" />
+        <property name="dim:default project title" value="PASS" />
+        <property name="dim:app alive" value="PASS" />
+      </properties>
+      <system-out>[m7x199] clicked No from dialog control, target=0x47c030e
+[m7x199] after confirmation: title='Untitled - Snapmaker Orca', topbar='*Untitled', model fraction=0.121%, empty threshold=0.400%, prompt_closed=True
+
+[m7] === verdict ===
+  unsaved changes prompt: PASS
+  discard closes prompt: PASS
+  empty new project: PASS
+  default project title: PASS
+  app alive: PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

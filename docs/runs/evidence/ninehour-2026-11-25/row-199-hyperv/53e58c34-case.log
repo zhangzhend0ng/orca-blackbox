@@ -1,0 +1,24 @@
+﻿[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile C:\coil\orca-blackbox-v3-r1\fixtures\mixed_filament_test.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x4c21156, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x5310bba, WM_CLOSE)
+[launcher] pid=11620 hwnd=0x41c0de4 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m7x199] before edit: title='mixed_filament_test - Snapmaker Orca', model fraction=0.801%
+[m7] object-shaped blobs: [(4840, (907, 360, 71, 73)), (5316, (1142, 472, 62, 86))]
+[m7] bed right-click @(490,872) try1: no menu (menu windows seen: [])
+[m7] bed right-click @(490,872) try2: no menu (menu windows seen: [])
+[m7] bed right-click @(570,772) try1: no menu (menu windows seen: [])
+[m7] bed right-click @(570,772) try2: no menu (menu windows seen: [])
+[m7] bed right-click @(510,672) try1: no menu (menu windows seen: [])
+[m7] bed right-click @(510,672) try2: no menu (menu windows seen: [])
+[m7x199] Add Primitive > Cube invoked: False
+
+[m7] === verdict ===
+  edit model: FAIL (could not invoke Add Cube)
+[m7] RED

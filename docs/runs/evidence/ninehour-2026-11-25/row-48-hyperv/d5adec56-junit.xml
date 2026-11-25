@@ -1,0 +1,40 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T13:50:43" tests="1" failures="1" errors="0">
+    <testcase name="m8x_48_modal_color_header" classname="blackbox.m8x_48_modal_color" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m8x_48_modal_color_header.log" />
+        <property name="dim:#48 official color dialog opens" value="PASS (('#32770', '', (428, 408, 808, 784)))" />
+        <property name="dim:#48 modal dialog blocks background chip" value="FAIL (outside=True, real mouse events=2, foreground before=True, cursor=(22, 424), desktop hit=0x4cf0518, foreground after=0x0 (pid=None, dialog=0x563073e), same dialog visible=True, owner disabled be" />
+        <property name="dim:#48 header has color card, name and SKU" value="PASS (name='Mint Lemonade' at (516, 436, 637, 456), 'sku 34205' at (516, 462, 589, 482), preview=(434, 432, 512, 502), surface=dialog client, catalog pixel shares=(0.33, 0.33))" />
+        <property name="dim:#48 same background chip works after Cancel" value="PASS (same background chip=0x5100674, desktop hit=0x4cf0518, main foreground=True, active/focus=(84215712, 84936308), click=Orca window tree, native picker RGB=('217', '166', '58'))" />
+      </properties>
+      <failure type="RED" message="#48 modal dialog blocks background chip: FAIL (outside=True, real mouse events=2, foreground before=True, cursor=(22, 424), desktop hit=0x4cf0518, foreground after=0x0 (pid=None, dialog=0x563073e), same dialog visible=True, owner disabled before/after=True/True, same background preset=True, new Orca windows=0, background active/focus request=(84215712, 84215712), modal retains focus=False)">[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile C:\coil\orca-blackbox-v3-r1\fixtures\mixed_filament_test.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x51b0750, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x4f10684, WM_CLOSE)
+[launcher] pid=2736 hwnd=0x50507a0 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.80%, gate 0.25%)
+[m8x48] official preset='Snapmaker PLA Silk @U1 0.8 nozzle(mixed_filament_test.3mf)', opener=(221, 425), background=(23, 425), owner initially enabled=True
+[m8x48] enabled background desktop hit=0x4cf0518 class='Shell_SystemDim' pid=1856, Orca chip=0x5100674, main foreground=True
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x4d40f70 did not complete
+[m8x48] visible dialog labels=[('mint lemonade', (516, 436, 637, 456)), ('sku 34205', (516, 462, 589, 482)), ('official filaments', (444, 516, 563, 536)), ('cancel', (448, 735, 614, 773)), ('ok', (622, 735, 788, 773))]
+[m8x48] surface=dialog client, catalog pixel shares=(0.33, 0.33)
+[m8x48] after Cancel: clicked=True, closed=True, owner enabled=True, same chip=True
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x5100674 did not complete
+
+[m7] === verdict ===
+  #48 official color dialog opens: PASS (('#32770', '', (428, 408, 808, 784)))
+  #48 modal dialog blocks background chip: FAIL (outside=True, real mouse events=2, foreground before=True, cursor=(22, 424), desktop hit=0x4cf0518, foreground after=0x0 (pid=None, dialog=0x563073e), same dialog visible=True, owner disabled before/after=True/True, same background preset=True, new Orca windows=0, background active/focus request=(84215712, 84215712), modal retains focus=False)
+  #48 header has color card, name and SKU: PASS (name='Mint Lemonade' at (516, 436, 637, 456), 'sku 34205' at (516, 462, 589, 482), preview=(434, 432, 512, 502), surface=dialog client, catalog pixel shares=(0.33, 0.33))
+  #48 same background chip works after Cancel: PASS (same background chip=0x5100674, desktop hit=0x4cf0518, main foreground=True, active/focus=(84215712, 84936308), click=Orca window tree, native picker RGB=('217', '166', '58'))
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

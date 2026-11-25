@@ -1,0 +1,45 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T13:42:04" tests="1" failures="1" errors="0">
+    <testcase name="m7x_199_new_project_title" classname="blackbox.m7x_199_new_project" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_199_new_project_title.log" />
+        <property name="dim:unsaved changes prompt" value="PASS" />
+        <property name="dim:discard closes prompt" value="PASS" />
+        <property name="dim:empty new project" value="PASS" />
+        <property name="dim:default project title" value="FAIL" />
+        <property name="dim:app alive" value="PASS" />
+      </properties>
+      <failure type="RED" message="default project title: FAIL">[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile C:\coil\orca-blackbox-v3-r1\fixtures\mixed_filament_test.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x50f0a20, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x4e907a8, WM_CLOSE)
+[launcher] pid=5356 hwnd=0x13502cc rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m7x199] before edit: title='mixed_filament_test - Snapmaker Orca', topbar='mixed_filament_test', model fraction=0.801%
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5060d06 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=320) sent, completed=False
+[m7x199] Imported Prusa.stl: colored fraction 0.801% -&gt; 1.577%
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5060d06 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[topbar] WM_COMMAND(id=315) sent, completed=False
+[m7x199] dialog='Snapmaker Orca - Save' body='The current project has unsaved changes. Would you like to save before continuing? 2 S Remember my choice. No Cancel'
+[m7x199] clicked No from dialog control, target=0x4f70dd4
+[m7x199] after confirmation: title='Untitled - Snapmaker Orca', topbar='*Untitled', model fraction=0.121%, empty threshold=0.400%, prompt_closed=True
+
+[m7] === verdict ===
+  unsaved changes prompt: PASS
+  discard closes prompt: PASS
+  empty new project: PASS
+  default project title: FAIL
+  app alive: PASS
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

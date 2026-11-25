@@ -1,0 +1,23 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T13:23:13" tests="1" failures="0" errors="0">
+    <testcase name="m8x_46_color_confirm" classname="blackbox.m8x_46_color" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m8x_46_color_confirm.log" />
+        <property name="dim:#46 color selection updates" value="PASS (before=(217, 166, 58), selected=(0, 166, 58), hsl_changed=True)" />
+        <property name="dim:#46 OK closes the picker" value="PASS (ok_clicked=True, old_hwnd=0x51204d2, closed=True)" />
+        <property name="dim:#46 filament keeps the selected color" value="PASS (slot=1, fresh_picker=True, selected=(0, 166, 58), reopened=(0, 166, 58))" />
+      </properties>
+      <system-out>[m8b] native picker derived HSL: ('27', '162', '129') -&gt; ('94', '240', '78')
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0xda11ce did not complete
+[m8x46] after confirm: slot=1 preset='Generic PETG @U1 0.8 nozzle(mixed_filament_test.3mf)' chip=(13, 415, 33, 435)
+[m8x46] after confirm: picker='Please choose the filament color' hwnd=0x51304d2
+
+[m7] === verdict ===
+  #46 color selection updates: PASS (before=(217, 166, 58), selected=(0, 166, 58), hsl_changed=True)
+  #46 OK closes the picker: PASS (ok_clicked=True, old_hwnd=0x51204d2, closed=True)
+  #46 filament keeps the selected color: PASS (slot=1, fresh_picker=True, selected=(0, 166, 58), reopened=(0, 166, 58))
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

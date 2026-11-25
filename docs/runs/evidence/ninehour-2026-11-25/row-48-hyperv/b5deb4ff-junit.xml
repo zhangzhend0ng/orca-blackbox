@@ -1,0 +1,29 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T13:40:20" tests="1" failures="1" errors="0">
+    <testcase name="m8x_48_modal_color_header" classname="blackbox.m8x_48_modal_color" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m8x_48_modal_color_header.log" />
+        <property name="dim:#48 unblocked mouse target is the background chip" value="FAIL" />
+      </properties>
+      <failure type="RED" message="#48 unblocked mouse target is the background chip: FAIL">[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile C:\coil\orca-blackbox-v3-r1\fixtures\mixed_filament_test.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x219118a, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x51c1168, WM_CLOSE)
+[launcher] pid=10828 hwnd=0x4bf0558 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.80%, gate 0.25%)
+[m8x48] official preset='Snapmaker PLA Silk @U1 0.8 nozzle(mixed_filament_test.3mf)', opener=(221, 425), background=(23, 425), owner initially enabled=True
+[m8x48] enabled background desktop hit=0x4cf0518, Orca chip=0x51103cc, main foreground=True
+
+[m7] === verdict ===
+  #48 unblocked mouse target is the background chip: FAIL
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>
