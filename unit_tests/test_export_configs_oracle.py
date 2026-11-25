@@ -175,8 +175,10 @@ def test_package_facts_reads_the_package_member_by_member(tmp_path):
     assert 'BadZipFile' in facts['error'] and facts['members'] == {}
     foreign = tmp_path / 'foreign' / 'Process presets.zip'
     foreign.parent.mkdir()
-    foreign.write_bytes(zip_bytes({'someone.json': json.dumps(dict(USER[HF], name='someone else')).encode()}))
-    assert oracle.package_facts(foreign, table)['members']['someone.json']['error'] == 'no such user preset in the profile'
+    foreign.write_bytes(zip_bytes({'someone.json': json.dumps(dict(USER[HF], name='someone else',
+                                                                  compatible_printers=['other printer'])).encode()}))
+    assert oracle.package_facts(foreign, table, kind=KIND, rows=[PRINTER])['members']['someone.json']['error'] == (
+        "made for ['other printer'], not for a printer that was ticked ['Snapmaker U1 (0.4 nozzle)']")
 
 
 def imported_profile(root, datadir, names=None, changes=None, system=None):
@@ -196,7 +198,8 @@ def test_export_and_import_that_behave_leave_no_gap(tmp_path):
     gaps = oracle.configs_expectation_gaps(at_export, after, attempts)
     assert gaps == {CLAUSE_PACKAGE: [], CLAUSE_IMPORT: []}
     readings = oracle.import_readings(at_export, after, attempts)
-    assert readings[HF] == {'compared': 8, 'changed': [], 'unchanged': 8, 'spelled_out_only_after': 0, 'keys_after': 8}
+    assert readings[HF] == {'compared': 8, 'changed': [], 'unchanged': 8, 'spelled_out_only_after': 0, 'keys_after': 8,
+                       'baseline': 'as stored in the profile before the export'}
     # Keys the import spells out without there being a record of them are counted, not judged.
     spelled = imported_profile(tmp_path / 'spelled', datadir, changes={HF: {'wall_loops': '2', 'skirt_loops': 1}})
     after = oracle.preset_table(spelled)
@@ -258,7 +261,10 @@ def test_export_that_lands_nothing_or_a_broken_package_fails_the_first_clause(tm
     broken = Path(tmp_path / 'packages' / 'broken')
     broken.mkdir(parents=True)
     (broken / 'Process presets.zip').write_bytes(b'')
-    gaps = fails([attempt(broken / 'Process presets.zip', at_export, result_words='add file fail')],
+    gaps = fails([attempt(broken / 'Process presets.zip', at_export, result_words='add file fail',
+                         app_log={'failed_to_add': ['2026-11-26 02:52:40.9 [info] X.json Failed to add file to ZIP archive']})],
+                 "the dialog reported 'add file fail'",
+                 'the application log could not add X.json to the ZIP archive',
                  'is not a readable package: BadZipFile')
     assert gaps[CLAUSE_IMPORT] == ['not exercised: no package holding a preset was imported']
     # A package whose member is not the preset the profile stores.
@@ -304,3 +310,124 @@ def test_importable_selects_what_holds_a_preset(tmp_path, count):
     empty.write_bytes(zip_bytes({'readme.txt': b'nothing here'}))
     ready = oracle.importable([good, attempt(empty, at_export), {'kind': KIND, 'row': PRINTER, 'package': None}])
     assert ready == [good['package']]
+
+
+def test_a_package_of_a_filament_row_holds_the_presets_of_that_name(tmp_path):
+    datadir = profile(tmp_path)  # process presets only: no filament preset is a file of this profile
+    tables = {'process': oracle.preset_table(datadir)}
+    inside = {'type': 'filament', 'name': 'Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf)', 'filament_type': 'PLA'}
+    other = dict(inside, name='Snapmaker PLA Basic @U1 0.4 nozzle(cube.3mf)')
+    path = tmp_path / 'p' / 'Filament presets.zip'
+    path.parent.mkdir()
+    path.write_bytes(zip_bytes({'a.json': json.dumps(inside).encode(), 'b.json': json.dumps(other).encode()}))
+    facts = oracle.package_facts(path, tables, kind='Filament presets(.zip)', rows=['Generic PLA'])
+    assert facts['preset_kind'] == 'filament' and facts['rows'] == ['Generic PLA']
+    kept, stranger = facts['members']['a.json'], facts['members']['b.json']
+    # A preset the project keeps has no file to hold it against; it counts when it is of the name ticked.
+    assert kept['stored'] is False and kept['matches_preset'] and 'error' not in kept
+    assert stranger['error'] == "'Snapmaker PLA Basic' is not a filament name that was ticked ['Generic PLA']"
+    gaps = oracle.package_gaps(facts)
+    assert len(gaps) == 1 and gaps[0].endswith(stranger['error'])
+    both = oracle.package_facts(path, tables, kind='Filament presets(.zip)', rows=['Generic PLA', 'Snapmaker PLA Basic'])
+    assert oracle.package_gaps(both) == []
+    wrong = tmp_path / 'wrong' / 'Filament presets.zip'
+    wrong.parent.mkdir()
+    wrong.write_bytes(zip_bytes({'hf.json': user_file(datadir, HF).read_bytes()}))
+    gaps = oracle.package_gaps(oracle.package_facts(wrong, tables, kind='Filament presets(.zip)', rows=[HF]))
+    assert len(gaps) == 1 and "a 'process' preset, not a filament one" in gaps[0]
+    assert oracle.filament_name('Generic PLA @U1 0.4 nozzle(x.3mf)') == 'Generic PLA'
+    assert oracle.filament_name('no at sign') == 'no at sign'
+
+
+def test_a_process_member_must_be_for_a_printer_that_was_ticked(tmp_path):
+    datadir = profile(tmp_path)
+    table = oracle.preset_table(datadir)
+    elsewhere = tmp_path / 'elsewhere' / 'Process presets.zip'
+    elsewhere.parent.mkdir()
+    own = dict(USER[FLOW], compatible_printers=['Snapmaker U1 (0.6 nozzle)'])
+    elsewhere.write_bytes(zip_bytes({'flow.json': json.dumps(own).encode()}))
+    member = oracle.package_facts(elsewhere, table, kind=KIND, rows=[PRINTER])['members']['flow.json']
+    assert member['error'] == "made for ['Snapmaker U1 (0.6 nozzle)'], not for a printer that was ticked ['Snapmaker U1 (0.4 nozzle)']"
+    good = package(tmp_path / 'good' / 'Process presets.zip', datadir)
+    facts = oracle.package_facts(good, table, kind=KIND, rows=[PRINTER])
+    assert oracle.package_gaps(facts) == [] and all(m['stored'] for m in facts['members'].values())
+
+
+def test_the_application_log_is_read_by_its_own_words(tmp_path):
+    profile_dir = tmp_path / 'profile'
+    log = profile_dir / 'log'
+    log.mkdir(parents=True)
+    (log / 'a.log').write_text(
+        '2026-11-26 02:52:20.1 [info] load config successful and preset name is:X - TEST\n'
+        '2026-11-26 02:52:20.2 [info] set_visible_from_appconfig: name Snapmaker U1 (0.4 nozzle), is_visible set to 0\n'
+        '2026-11-26 02:52:20.3 [info] set_visible_from_appconfig: name Other printer, is_visible set to 1\n'
+        '2026-11-26 02:52:20.4 [info] nothing of interest here\n', encoding='utf-8')
+    mark = oracle.app_log_mark(profile_dir)
+    with open(log / 'a.log', 'a', encoding='utf-8') as handle:
+        handle.write('2026-11-26 02:52:40.9 [info] Generic PLA @U1.json Failed to add file to ZIP archive\n'
+                     '2026-11-26 02:52:41.0 [info] archive_filament_preset_to_filestart exprot filament presets\n'
+                     '2026-11-26 02:52:41.1 [info] Export filament preset: Y skip because of the filament file path is empty.\n'
+                     '2026-11-26 02:52:41.2 [info] Printer preset json add successful: Z\n')
+    since = oracle.app_log_lines(profile_dir, mark)
+    assert since == [
+        '2026-11-26 02:52:40.9 [info] Generic PLA @U1.json Failed to add file to ZIP archive',
+        '2026-11-26 02:52:41.0 [info] archive_filament_preset_to_filestart exprot filament presets',
+        '2026-11-26 02:52:41.1 [info] Export filament preset: Y skip because of the filament file path is empty.',
+        '2026-11-26 02:52:41.2 [info] Printer preset json add successful: Z']
+    assert oracle.failed_to_add(since) == since[:1]
+    everything = oracle.app_log_lines(profile_dir, extra=oracle.APP_LOG_LOADING, names=('Snapmaker U1', 'X - TEST'))
+    assert everything[:2] == [
+        '2026-11-26 02:52:20.1 [info] load config successful and preset name is:X - TEST',
+        '2026-11-26 02:52:20.2 [info] set_visible_from_appconfig: name Snapmaker U1 (0.4 nozzle), is_visible set to 0']
+    assert everything[2:] == since
+    text = oracle.app_log_text(profile_dir, [('export 1', since)])
+    assert text.startswith('# application log of profile') and 'json add successful (either case)' in text
+    assert '# source: log/a.log (' in text and f'## export 1 (4 lines)\n{since[0]}' in text
+    assert oracle.app_log_section('the import', ['a']) == ['', '## the import (1 lines)', 'a']
+    assert oracle.app_log_lines(tmp_path / 'nowhere') == [] and oracle.app_log_mark(tmp_path / 'nowhere') == {}
+
+
+def test_what_the_product_said_about_a_failed_export_leads_the_gap():
+    attempt = {'kind': 'Filament presets(.zip)', 'row': 'Generic PLA', 'result_words': 'add file fail',
+               'package': {'name': 'Filament presets.zip', 'extension': '.zip', 'members': {},
+                           'error': 'BadZipFile: File is not a zip file'},
+               'app_log': {'failed_to_add': ['2026-11-26 02:52:40.9 [info] G.json Failed to add file to ZIP archive']}}
+    assert oracle.export_gaps([attempt]) == [
+        "Filament presets(.zip)/Generic PLA: the dialog reported 'add file fail'",
+        'Filament presets(.zip)/Generic PLA: the application log could not add G.json to the ZIP archive',
+        "Filament presets(.zip)/Generic PLA: 'Filament presets.zip' is not a readable package: BadZipFile: File is not a zip file"]
+    # A success box without a failed line says nothing; a file that is no package still fails.
+    attempt.update(result_words='Export successful', app_log={})
+    assert oracle.export_gaps([attempt]) == [
+        "Filament presets(.zip)/Generic PLA: 'Filament presets.zip' is not a readable package: BadZipFile: File is not a zip file"]
+
+
+def test_a_preset_of_the_project_is_held_against_what_the_package_holds(tmp_path):
+    datadir = profile(tmp_path)
+    before = {'process': oracle.preset_table(datadir)}  # the filament preset was not a file of the profile
+    inside = {'type': 'filament', 'name': 'Generic PLA @U1(x.3mf)', 'filament_type': 'PLA', 'nozzle_temperature': ['220', '220']}
+    path = tmp_path / 'p' / 'Filament presets.zip'
+    path.parent.mkdir()
+    path.write_bytes(zip_bytes({'a.json': json.dumps(inside).encode()}))
+    attempt = {'kind': 'Filament presets(.zip)', 'row': 'Generic PLA',
+               'package': oracle.package_facts(path, before, kind='Filament presets(.zip)', rows=['Generic PLA']),
+               '_members': {'Generic PLA @U1(x.3mf)': inside}}
+    landed = tmp_path / 'import-profile'
+    write_json(Path(landed, 'user', 'default', 'filament', 'a.json'),
+               dict(inside, nozzle_temperature=['220', '220', '220', '220'], sparse_infill_density='15%'))
+    after = {'filament': oracle.preset_table(landed, 'filament')}
+    assert oracle.import_gaps(before, after, [attempt]) == []
+    reading = oracle.import_readings(before, after, [attempt])['Generic PLA @U1(x.3mf)']
+    assert reading == {'compared': 2, 'changed': [], 'unchanged': 2, 'spelled_out_only_after': 1, 'keys_after': 3,
+                       'baseline': 'as the package holds it, the preset not being a file of the profile'}
+    write_json(Path(landed, 'user', 'default', 'filament', 'a.json'), dict(inside, filament_type='PETG'))
+    after = oracle.preset_table(landed, 'filament')
+    gaps = oracle.import_gaps(before, after, [attempt])
+    assert gaps == ['Generic PLA @U1(x.3mf): 1 parameters differ after the import: filament_type: PLA -> PETG']
+    assert oracle.import_gaps(before, {'filament': {'kind': 'filament', 'presets': {}}}, [attempt]) == [
+        'Generic PLA @U1(x.3mf): not a user preset of the profile after the import']
+    without = dict(attempt, _members={})
+    assert oracle.import_gaps(before, after, [without]) == [
+        'Generic PLA @U1(x.3mf): the package holds a preset that was not a user preset before the export']
+    public = oracle.public_attempts([attempt])
+    assert '_members' not in public[0] and attempt['_members'] and public[0]['package'] is attempt['package']

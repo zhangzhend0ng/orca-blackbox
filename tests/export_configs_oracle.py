@@ -2,20 +2,24 @@
 
 Everything here reads files; nothing drives the GUI. The shapes come from the product's
 source (CreatePresetsDialog.cpp, PresetBundle.cpp import_presets and import_json_presets,
-Preset.cpp load_preset and save) and from the preset files the harness seeds into a fresh
-profile:
+Preset.cpp load_preset and save) and from what was measured on the guest (run da4ecd60):
 
-* ``File > Export > Export Preset Bundle`` with ``Process presets(.zip)`` writes
-  ``<directory>/Process presets.zip`` holding one ``<preset name>.json`` per user process
-  preset of each printer whose box was ticked, and that member is the preset's own file in
-  the profile. A failed export leaves a file that is no zip.
+* ``File > Export > Export Preset Bundle`` with a zip type writes
+  ``<directory>/<type>.zip`` holding one ``<preset name>.json`` per preset of each row whose
+  box was ticked. A row of ``Filament presets(.zip)`` is a filament name and holds every
+  preset of that name, those kept inside the project included; a row of
+  ``Process presets(.zip)`` is a printer and holds the user process presets made for it.
+  A failed export leaves a file that is no zip and reports "add file fail"; the application's
+  own log then says which file it could not add (``<name> Failed to add file to ZIP archive``).
 * ``File > Import > Import Configs`` loads every JSON of the zip. The imported preset's
   config is its parent's whole config with the file's own keys applied over it, and it is
   saved at once into the user presets folder: as what differs from the parent when the
   parent it names is there, as the whole config otherwise.
-* A user preset therefore is compared by what it means: its effective parameters, which are
-  the parameters of the preset it inherits from, overridden key by key by its own
-  (``inherits`` names a system preset of ``<datadir>/system``, which may inherit in turn).
+* A preset is compared by what it means: its effective parameters, which are the parameters
+  of the preset it inherits from, overridden key by key by its own (``inherits`` names a
+  system preset of ``<datadir>/system``, which may inherit in turn). A preset that was a
+  file of the profile before the export is compared with that file; a preset that lived in
+  the project is compared with what the package holds, as there is no other record of it.
   Only keys on record before the export are compared; keys a file spells out only after the
   import are counted apart.
 
@@ -40,7 +44,18 @@ IDENTITY_KEYS = frozenset((
     'default_print_profile', 'default_filament_profile'))
 PACKAGE_SUFFIXES = ('.zip', '.ini')
 PRESET_KINDS = ('process', 'filament', 'machine')
+# The preset type each zip type of the export dialog holds (the "type" key of its JSON files).
+MEMBER_TYPES = {'Process presets(.zip)': 'process', 'Printer presets(.zip)': 'machine',
+                'Filament presets(.zip)': 'filament'}
 LISTED_DIFFERENCES = 12
+# What the application's own log says about an export, and what says which presets it loaded
+# and which printers it can see (CreatePresetsDialog.cpp, Preset.cpp).
+APP_LOG_KEYWORDS = ('zip', 'failed', 'export', 'filament preset', 'json add successful')
+APP_LOG_LOADING = ('can not find parent', 'load config successful', 'load preset: ', 'incorrect keys',
+                   'parse config')
+APP_LOG_VISIBILITY = 'is_visible set to'
+APP_LOG_FAILED = 'failed to add file to zip archive'
+APP_LOG_KEEP = 2000
 
 
 def _token(value):
@@ -79,6 +94,13 @@ def same_value(first, second):
 
 def value_text(value):
     return ','.join(str(item).strip() for item in value) if isinstance(value, list) else str(value)
+
+
+def filament_name(preset_name):
+    """The name a filament preset is listed under in the export dialog: what comes before the
+    last " @" (CreatePresetsDialog.cpp get_filament_name)."""
+    at = preset_name.rfind('@')
+    return preset_name[:at - 1] if at > 0 else preset_name
 
 
 def _read_json(path):
@@ -147,6 +169,13 @@ def preset_table(datadir, kind='process'):
     return table
 
 
+def _table(tables, kind):
+    """The preset table of one kind out of {kind: table}, or the one table that was given."""
+    if 'presets' in tables:
+        return tables
+    return tables.get(kind) or {'kind': kind, 'presets': {}}
+
+
 def differing_keys(first, second):
     """Keys whose values differ between two mappings of preset values, the identity keys that
     are only recorded left out."""
@@ -154,13 +183,34 @@ def differing_keys(first, second):
             if key not in IDENTITY_KEYS and not same_value(first.get(key), second.get(key))]
 
 
-def package_facts(path, table):
+def _member_problem(own, expected, rows):
+    """Why a member of a package is not a preset of the rows that were ticked, or None."""
+    if not isinstance(own, dict) or not str(own.get('name') or ''):
+        return 'not a JSON preset'
+    if expected and own.get('type') != expected:
+        return f'a {own.get("type")!r} preset, not a {expected} one'
+    name = str(own['name'])
+    if not rows:
+        return None
+    if expected == 'filament' and filament_name(name) not in rows:
+        return f'{filament_name(name)!r} is not a filament name that was ticked {sorted(rows)}'
+    if expected == 'machine' and name not in rows:
+        return f'not a printer that was ticked {sorted(rows)}'
+    printers = own.get('compatible_printers')
+    if expected == 'process' and isinstance(printers, list) and printers and not set(printers) & set(rows):
+        return f'made for {printers}, not for a printer that was ticked {sorted(rows)}'
+    return None
+
+
+def package_facts(path, table=None, kind=None, rows=None):
     """What a landed package holds: its bytes, its SHA-256 and, for every member, whether it is
-    the preset file of the same name as stored in the profile (byte for byte, or as JSON)."""
+    the JSON of a preset of the ticked `rows` of the zip `kind`, and, when that preset is a
+    file of the profile (`table`), the file as it was stored."""
     path = Path(path)
     raw = path.read_bytes()
+    expected = MEMBER_TYPES.get(kind)
     facts = {'name': path.name, 'extension': ''.join(path.suffixes[-1:]).lower(), 'bytes': len(raw),
-             'sha256': sha256(raw).hexdigest(), 'members': {}}
+             'sha256': sha256(raw).hexdigest(), 'preset_kind': expected, 'rows': list(rows or []), 'members': {}}
     try:
         with ZipFile(BytesIO(raw)) as archive:
             for info in archive.infolist():
@@ -168,31 +218,56 @@ def package_facts(path, table):
                     continue
                 data = archive.read(info)
                 member = {'bytes': len(data), 'sha256': sha256(data).hexdigest(), 'preset': None,
-                          'byte_identical': False, 'matches_preset': False, 'differs_in': []}
+                          'stored': False, 'byte_identical': False, 'matches_preset': False, 'differs_in': []}
                 try:
                     own = json.loads(data.decode('utf-8-sig'))
                 except (UnicodeDecodeError, ValueError):
                     member['error'] = 'not a JSON preset'
                 else:
-                    member['preset'] = str(own.get('name') or Path(info.filename).stem)
-                    stored = table['presets'].get(member['preset'])
-                    if stored is None:
-                        member['error'] = 'no such user preset in the profile'
+                    member['preset'] = str(own.get('name') or Path(info.filename).stem) if isinstance(own, dict) \
+                        else None
+                    problem = _member_problem(own, expected, rows) if expected or rows else None
+                    if problem:
+                        member['error'] = problem
                     else:
-                        member['byte_identical'] = member['sha256'] == stored['sha256']
-                        member['differs_in'] = differing_keys(own, stored['own']) + [
-                            key for key in ('name', 'inherits') if key in own and key in stored['own']
-                            and own[key] != stored['own'][key]]
-                        member['matches_preset'] = member['byte_identical'] or not member['differs_in']
+                        stored = _table(table, expected)['presets'].get(member['preset']) if table is not None \
+                            else None
+                        if stored is not None:
+                            member['stored'] = True
+                            member['byte_identical'] = member['sha256'] == stored['sha256']
+                            member['differs_in'] = differing_keys(own, stored['own']) + [
+                                key for key in ('name', 'inherits') if key in own and key in stored['own']
+                                and own[key] != stored['own'][key]]
+                            member['matches_preset'] = member['byte_identical'] or not member['differs_in']
+                        else:
+                            member['matches_preset'] = True  # a preset of the project: nothing on disk to hold against
                 facts['members'][info.filename] = member
     except (BadZipFile, EOFError, OSError, ValueError, struct.error) as exc:
         facts['error'] = f'{type(exc).__name__}: {exc}'
     return facts
 
 
+def member_configs(path):
+    """{preset name: what its JSON in the package says}; the record a re-import is held against
+    when the preset was not a file of the profile."""
+    configs = {}
+    try:
+        with ZipFile(Path(path)) as archive:
+            for info in archive.infolist():
+                try:
+                    own = json.loads(archive.read(info).decode('utf-8-sig'))
+                except (UnicodeDecodeError, ValueError):
+                    continue
+                if isinstance(own, dict) and own.get('name'):
+                    configs[str(own['name'])] = own
+    except (BadZipFile, EOFError, OSError, ValueError, struct.error):
+        pass
+    return configs
+
+
 def package_gaps(package):
-    """[what failed] for one landed package: a .zip or .ini whose members are the user presets
-    as they were stored in the profile."""
+    """[what failed] for one landed package: a .zip or .ini whose members are the JSON of the
+    presets of the rows that were ticked."""
     name = package.get('name')
     gaps = []
     if package.get('extension') not in PACKAGE_SUFFIXES:
@@ -205,7 +280,7 @@ def package_gaps(package):
     for filename, member in package['members'].items():
         if member.get('error'):
             gaps.append(f'{name!r}: {filename}: {member["error"]}')
-        elif not member['matches_preset']:
+        elif member['stored'] and not member['matches_preset']:
             shown = ', '.join(member['differs_in'][:LISTED_DIFFERENCES])
             gaps.append(f'{name!r}: {member["preset"]} is not the preset as stored in the profile; it '
                         f'differs in {len(member["differs_in"])} keys: {shown}')
@@ -221,6 +296,24 @@ def _reported(attempt):
     return f' (the dialog reported: {words})' if words else ''
 
 
+def _could_not_add(line):
+    """The file a "Failed to add file to ZIP archive" line names, without the log's own prefix."""
+    head = line[:line.casefold().index(APP_LOG_FAILED)].strip()
+    return head.rsplit('] ', 1)[-1] if '] ' in head else head
+
+
+def _said(attempt):
+    """What the product itself said about the export: the words of its result box and the files
+    its log says it could not add."""
+    said = []
+    words = attempt.get('result_words')
+    if words and 'fail' in words.casefold():
+        said.append(f'the dialog reported {words!r}')
+    said += [f'the application log could not add {_could_not_add(line)[-120:]} to the ZIP archive'
+             for line in (attempt.get('app_log') or {}).get('failed_to_add', [])[:3]]
+    return said
+
+
 def importable(attempts):
     """The packages of the attempts that hold at least one preset."""
     return [attempt['package'] for attempt in attempts
@@ -230,9 +323,10 @@ def importable(attempts):
 
 def export_gaps(attempts, nothing_listed=None):
     """[what failed] for 生成配置包文件（.ini/.zip）: every export asked for produced a package
-    of the presets as stored. `attempts` are the case's records, one per exported row:
-    {'kind', 'row', 'error' or None, 'package': package_facts or None, 'result_words'}.
-    `nothing_listed` is the sentence for a dialog that offered no row at all."""
+    of the JSON of the presets that were ticked. `attempts` are the case's records, one per
+    exported row: {'kind', 'row', 'error' or None, 'package': package_facts or None,
+    'result_words', 'app_log': {'failed_to_add': [lines]}}. `nothing_listed` is the sentence
+    for a dialog that offered no row at all."""
     gaps = []
     if not attempts:
         return [nothing_listed or 'no preset was listed to export, so no package was asked for']
@@ -244,71 +338,160 @@ def export_gaps(attempts, nothing_listed=None):
             if not attempt.get('error'):  # the error already says that nothing landed
                 gaps.append(f'{_where(attempt)}: no package file landed{_reported(attempt)}')
             continue
+        gaps.extend(f'{_where(attempt)}: {said}' for said in _said(attempt))
         gaps.extend(f'{_where(attempt)}: {gap}' for gap in package_gaps(package))
     return gaps
 
 
+def _baseline(attempt, name, old_table):
+    """(parameters before the export, where they come from) for a preset of a package."""
+    old = old_table['presets'].get(name)
+    if old is not None:
+        return old['effective'], 'as stored in the profile before the export', old
+    exported = (attempt.get('_members') or {}).get(name)
+    if exported is None:
+        return None, None, None
+    return ({key: value for key, value in exported.items() if key not in IDENTITY_KEYS},
+            'as the package holds it, the preset not being a file of the profile', None)
+
+
 def import_readings(before, after, attempts):
-    """{preset: {'compared', 'unchanged', 'changed', 'spelled_out_only_after', 'keys_after'}}:
-    what the import did to each preset of the packages."""
+    """{preset: {'compared', 'unchanged', 'changed', 'spelled_out_only_after', 'keys_after',
+    'baseline'}}: what the import did to each preset of the packages."""
     readings = {}
-    for package in importable(attempts):
+    for attempt in attempts:
+        package = attempt.get('package')
+        if not package or package not in importable(attempts):
+            continue
+        kind = package.get('preset_kind')
         for member in package['members'].values():
             name = member['preset']
             if not name or name in readings:
                 continue
-            old, new = before['presets'].get(name), after['presets'].get(name)
-            if old is None or new is None:
+            baseline, source, _old = _baseline(attempt, name, _table(before, kind))
+            new = _table(after, kind)['presets'].get(name)
+            if baseline is None or new is None:
                 continue
-            changed = [key for key in sorted(old['effective'])
-                       if not same_value(old['effective'][key], new['effective'].get(key))]
-            readings[name] = {'compared': len(old['effective']), 'changed': changed,
-                              'unchanged': len(old['effective']) - len(changed),
-                              'spelled_out_only_after': len(set(new['effective']) - set(old['effective'])),
-                              'keys_after': len(new['effective'])}
+            changed = [key for key in sorted(baseline) if not same_value(baseline[key], new['effective'].get(key))]
+            readings[name] = {'compared': len(baseline), 'changed': changed, 'unchanged': len(baseline) - len(changed),
+                              'spelled_out_only_after': len(set(new['effective']) - set(baseline)),
+                              'keys_after': len(new['effective']), 'baseline': source}
     return readings
 
 
 def import_gaps(before, after, attempts):
     """[what failed] for 重新导入后预设参数与导出前一致: every preset of every package is a
-    user preset of the importing profile again and means what it meant before the export."""
-    packages = importable(attempts)
-    if not packages:
+    user preset of the importing profile again and means what it meant before the export.
+    `before` and `after` are preset tables or {kind: table}."""
+    if not importable(attempts):
         return ['not exercised: no package holding a preset was imported']
     gaps, seen = [], set()
-    for package in packages:
+    for attempt in attempts:
+        package = attempt.get('package')
+        if not package or package not in importable(attempts):
+            continue
+        kind = package.get('preset_kind')
+        old_table, new_table = _table(before, kind), _table(after, kind)
         for member in package['members'].values():
             name = member['preset']
             if not name or name in seen:
                 continue
             seen.add(name)
-            old, new = before['presets'].get(name), after['presets'].get(name)
-            if old is None:
+            baseline, _source, old = _baseline(attempt, name, old_table)
+            new = new_table['presets'].get(name)
+            if baseline is None:
                 gaps.append(f'{name}: the package holds a preset that was not a user preset before the export')
                 continue
             if new is None:
                 gaps.append(f'{name}: not a user preset of the profile after the import')
                 continue
-            if new.get('inherits') != old.get('inherits'):
+            if old is not None and new.get('inherits') != old.get('inherits'):
                 gaps.append(f'{name}: inherits {new.get("inherits")!r} after the import, '
                             f'{old.get("inherits")!r} before')
-            if old.get('unresolved'):
+            if old is not None and old.get('unresolved'):
                 gaps.append(f'{name}: the preset it inherits from is not among the system presets '
                             f'({", ".join(old["unresolved"])}), so its parameters cannot be followed')
             if new.get('unresolved'):
                 gaps.append(f'{name}: the preset it inherits from is not among the system presets after '
                             f'the import ({", ".join(new["unresolved"])})')
-            changed = [key for key in sorted(old['effective'])
-                       if not same_value(old['effective'][key], new['effective'].get(key))]
+            changed = [key for key in sorted(baseline) if not same_value(baseline[key], new['effective'].get(key))]
             if changed:
-                shown = ', '.join(f'{key}: {value_text(old["effective"][key])} -> '
+                shown = ', '.join(f'{key}: {value_text(baseline[key])} -> '
                                   f'{value_text(new["effective"].get(key))}' for key in changed[:LISTED_DIFFERENCES])
                 gaps.append(f'{name}: {len(changed)} parameters differ after the import: {shown}')
     return gaps
 
 
 def configs_expectation_gaps(before, after, attempts, nothing_listed=None):
-    """{clause of the Feishu #237 expectation: [what failed]}, from the two preset tables and
-    the export attempts. Nothing raises."""
+    """{clause of the Feishu #237 expectation: [what failed]}, from the preset tables before
+    and after and the export attempts. Nothing raises."""
     return {CONFIGS_CLAUSES[0]: export_gaps(attempts, nothing_listed),
             CONFIGS_CLAUSES[1]: import_gaps(before, after, attempts)}
+
+
+def public_attempts(attempts):
+    """The attempts as they go into the analysis: without the preset files the package holds."""
+    return [{key: value for key, value in attempt.items() if not key.startswith('_')} for attempt in attempts]
+
+
+# --- the application's own log ---------------------------------------------------------------
+
+def app_log_files(datadir):
+    """[(path, bytes)] of the application's own logs under ``<datadir>/log``, by name."""
+    folder = Path(datadir, 'log')
+    if not folder.is_dir():
+        return []
+    return [(path, path.stat().st_size) for path in sorted(folder.glob('*.log')) if path.is_file()]
+
+
+def app_log_mark(datadir):
+    """How far each log was written when this was taken (app_log_lines reads on from there)."""
+    return {path: size for path, size in app_log_files(datadir)}
+
+
+def app_log_lines(datadir, mark=None, keywords=APP_LOG_KEYWORDS, extra=(), names=()):
+    """Lines of the application's own log, each with the timestamp it was written with.
+
+    Kept are the lines with any of `keywords` or `extra` in them (either case), and the lines
+    that say whether a preset is visible, for the printers and presets named in `names`. `mark`
+    limits the reading to what was written since it was taken."""
+    wanted = tuple(word.casefold() for word in tuple(keywords) + tuple(extra))
+    lines = []
+    for path, size in app_log_files(datadir):
+        start = (mark or {}).get(path, 0)
+        try:
+            with open(path, 'rb') as handle:
+                if size >= start:
+                    handle.seek(start)
+                text = handle.read().decode('utf-8', errors='replace')
+        except OSError:
+            continue
+        for line in text.splitlines():
+            low = line.casefold()
+            keep = any(word in low for word in wanted)
+            if not keep and APP_LOG_VISIBILITY in low:
+                keep = any(str(name).casefold() in low for name in names)
+            if keep:
+                lines.append(line.strip())
+    return lines
+
+
+def failed_to_add(lines):
+    """The log lines that name a file the application could not put into the package."""
+    return [line for line in lines if APP_LOG_FAILED in line.casefold()]
+
+
+def app_log_section(heading, lines):
+    """One part of ``app-log.log``: its heading and the lines under it."""
+    return ['', f'## {heading} ({len(lines)} lines)', *lines]
+
+
+def app_log_text(profile, sections):
+    """What goes into ``app-log.log`` at first: the sources, then each (heading, lines) in turn."""
+    out = [f'# application log of {Path(profile).name}: the lines with {", ".join(APP_LOG_KEYWORDS)} (either case),',
+           '# those that say which presets were loaded and which printers are visible, and what each',
+           '# export wrote. Every line keeps the timestamp the application gave it.']
+    out += [f'# source: log/{path.name} ({size} bytes)' for path, size in app_log_files(profile)]
+    for heading, lines in sections:
+        out += app_log_section(heading, lines)
+    return '\n'.join(out) + '\n'

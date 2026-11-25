@@ -1303,9 +1303,20 @@ def test_import_refuses_a_file_that_is_not_there_before_touching_the_menu(monkey
     assert rig.calls == []
 
 
-def configs_case(monkeypatch, tmp_path, *, rows=(PRINTER,), export='package', change=None):
-    """The #237 case with both of its sessions and every window call faked. `export` is what the
-    export lands ('package', 'junk' or 'nothing'); `change` rewrites each imported preset."""
+FILAMENT_ROW = 'Generic PLA'
+FALLBACK = cases.BUNDLE_KINDS[3]
+# A filament preset the project keeps, as the export of a filament name hands it over.
+PROJECT_FILAMENT = {'type': 'filament', 'name': 'Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf)',
+                    'from': 'Project', 'filament_settings_id': ['Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf)'],
+                    'filament_type': 'PLA', 'filament_vendor': 'Generic', 'nozzle_temperature': ['220', '220', '220', '220']}
+
+
+def configs_case(monkeypatch, tmp_path, *, rows=(PRINTER,), filament_rows=(FILAMENT_ROW, 'Snapmaker PLA Basic'),
+                 export='package', change=None):
+    """The #237 case with both of its sessions and every window call faked. `rows` and
+    `filament_rows` are what the dialog lists for the process and the filament type; `export`
+    is what the export lands ('package', 'junk' or 'nothing'); `change` rewrites each imported
+    preset."""
     sys.path.insert(0, str(ROOT / 'tests' / 'gui'))
     import m7x_237_export_configs as case
     import test_export_configs_oracle as profiles
@@ -1316,7 +1327,17 @@ def configs_case(monkeypatch, tmp_path, *, rows=(PRINTER,), export='package', ch
         seeds.append({'datadir': dest.name, 'fresh': fresh, 'conf_extra': conf_extra})
         profiles.profile(dest)  # the system presets and the seeded user presets, on disk
         (dest / 'Snapmaker_Orca.conf').write_text(json.dumps({'app': {}, **(conf_extra or {})}), encoding='utf-8')
+        (dest / 'log').mkdir(exist_ok=True)
+        (dest / 'log' / 'snapmaker-orca.log').write_text(
+            '2026-11-26 02:52:20.101 [0x1234] [info  ] load config successful and preset name is:0.20mm Standard - HF-TEST\n'
+            '2026-11-26 02:52:20.102 [0x1234] [info  ] set_visible_from_appconfig: name Snapmaker U1 (0.4 nozzle), is_visible set to 1\n'
+            '2026-11-26 02:52:20.103 [0x1234] [info  ] set_visible_from_appconfig: name Other Printer, is_visible set to 1\n'
+            '2026-11-26 02:52:20.104 [0x1234] [info  ] nothing of interest here\n', encoding='utf-8')
         return dest
+
+    def log_line(text):
+        with open(tmp_path / 'export-profile' / 'log' / 'snapmaker-orca.log', 'a', encoding='utf-8') as handle:
+            handle.write(f'2026-11-26 02:52:40.999 [0x1234] [info  ] {text}\n')
 
     def launch(exe=None, datadir=None, model=None, **options):
         launches.append((Path(datadir).name, Path(model).name, options))
@@ -1324,32 +1345,37 @@ def configs_case(monkeypatch, tmp_path, *, rows=(PRINTER,), export='package', ch
                                close=lambda: closed.append(Path(datadir).name))
 
     def survey(session, work, analysis):
-        kinds = {kind: {'items': [{'label': label} for label in rows] if kind == case.KIND else [], 'hint': 'hint'}
+        listed = {case.KIND: rows, case.FALLBACK: filament_rows}
+        kinds = {kind: {'items': [{'label': label} for label in listed.get(kind, ())], 'hint': 'hint'}
                  for kind in cases.BUNDLE_KINDS}
         analysis['bundle_survey'] = {'kinds': kinds, 'closed': True}
         return analysis['bundle_survey']
 
     def export_bundle(session, kind, folder, work, analysis, tick='all', key='preset_export'):
-        assert kind == case.KIND
-        exported.append(list(tick))
+        exported.append((kind, list(tick)))
         if export == 'nothing':
             analysis[key] = {'landed': False, 'dialog_closed': True}
+            return analysis[key]
+        target = Path(folder) / cases.BUNDLE_FILES[kind]
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if export == 'package' and kind == case.KIND:
+            profiles.package(target, work / 'export-profile')
+            log_line('ZIP archive created successfully')
+        elif export == 'package':  # a filament name: the preset the project keeps under that name
+            target.write_bytes(zipped({f'{PROJECT_FILAMENT["name"]}.json': json.dumps(PROJECT_FILAMENT).encode()}))
+            log_line(f'Filament preset json add successful: {PROJECT_FILAMENT["name"]}')
         else:
-            target = Path(folder) / cases.BUNDLE_FILES[kind]
-            if export == 'package':
-                profiles.package(target, work / 'export-profile')
-            else:
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_bytes(b'')
-            analysis[key] = {'landed': True, 'dialog_closed': export == 'package',
-                             'result': {'words': 'Export successful' if export == 'package' else 'add file fail'}}
+            target.write_bytes(b'')  # what a failed export leaves behind
+            log_line(f'{PROJECT_FILAMENT["name"]}.json Failed to add file to ZIP archive')
+        analysis[key] = {'landed': True, 'dialog_closed': export == 'package',
+                         'result': {'words': 'Export successful' if export == 'package' else 'add file fail'}}
         return analysis[key]
 
     def imported(session, package, work, analysis, key='config_import'):
         with ZipFile(package) as archive:
             for member in archive.infolist():
                 own = json.loads(archive.read(member).decode('utf-8-sig'))
-                profiles.write_json(Path(work, 'import-profile', 'user', 'default', 'process', member.filename),
+                profiles.write_json(Path(work, 'import-profile', 'user', 'default', own['type'], member.filename),
                                     change(own) if change else own)
         analysis[key] = {'dialogs': [{'title': 'Import result', 'pressed': {'text': 'OK'}}]}
         return analysis[key]
@@ -1372,12 +1398,18 @@ def configs_case(monkeypatch, tmp_path, *, rows=(PRINTER,), export='package', ch
     return analysis, seeds, launches, closed, exported
 
 
+def profiles_user_names():
+    import test_export_configs_oracle as profiles
+    return sorted(profiles.USER)
+
+
 def test_configs_case_passes_when_the_exported_presets_come_back_unchanged(monkeypatch, tmp_path):
     analysis, seeds, launches, closed, exported = configs_case(monkeypatch, tmp_path)
+    package, imported = configs.CONFIGS_CLAUSES
     assert analysis['results'] == dict.fromkeys(configs.CONFIGS_CLAUSES, 'PASS')
     assert m7.m7_verdict(analysis['results']) == 0
     # One export per listed row, each row ticked by its own label.
-    assert exported == [[PRINTER]]
+    assert exported == [(KIND, [PRINTER])]
     # Both profiles are seeded with the printer installed in the application config; the second
     # one starts without any user preset, and both open the same fixture.
     installed = {'models': [{'vendor': 'Snapmaker', 'model': 'Snapmaker U1', 'nozzle_diameter': '0.4'}]}
@@ -1388,39 +1420,71 @@ def test_configs_case_passes_when_the_exported_presets_come_back_unchanged(monke
     assert closed == ['export-profile', 'import-profile']
     assert analysis['import_session']['seeded_user_presets_removed'] == 2
     assert analysis['import_session']['presets_at_start'] == {'process': 0, 'filament': 0, 'machine': 0}
-    assert analysis['export_session']['custom_presets_on_disk']['process'] == 2
-    assert analysis['export_session']['editor_after_export'] == {'alive': True, 'dialog': None}
-    assert analysis['export_session']['presets_rewritten_while_open'] == []
+    reading = analysis['export_session']
+    assert reading['custom_presets_on_disk'] == {'process': 2, 'filament': 0, 'machine': 0}
+    assert reading['custom_presets']['process'] == profiles_user_names()
+    assert reading['export_plan'] == [{'kind': KIND, 'row': PRINTER, 'why': 'a printer with custom process presets'}]
+    assert reading['editor_after_export'] == {'alive': True, 'dialog': None}
+    assert reading['presets_rewritten_while_open'] == []
     # The zip is not harvested, so what it holds is written into the analysis.
     attempt = analysis['exports'][0]
     assert attempt['row'] == PRINTER and attempt['package']['path'].endswith('/Process presets.zip')
-    assert all(member['byte_identical'] for member in attempt['package']['members'].values())
-    assert sorted(analysis['import_readings']) == sorted(profiles_user_names())
+    assert attempt['package']['rows'] == [PRINTER] and attempt['package']['preset_kind'] == 'process'
+    assert all(member['stored'] and member['byte_identical'] for member in attempt['package']['members'].values())
+    assert '_members' not in attempt  # the preset files themselves stay out of the analysis
+    assert sorted(analysis['import_readings']) == profiles_user_names()
     assert analysis['import_readings'][profiles_user_names()[0]]['unchanged'] == 8
     assert (tmp_path / 'presets-before.json').is_file() and (tmp_path / 'presets-after.json').is_file()
+    # What the application wrote about the presets it loaded and the printers it can see is kept.
+    log = reading['app_log']
+    assert log['lines_kept'] == 3 and log['failed_to_add'] == []
+    assert log['loaded_user_presets'] == ['2026-11-26 02:52:20.101 [0x1234] [info  ] load config successful and preset name is:0.20mm Standard - HF-TEST']
+    assert log['printer_visibility'] == ['2026-11-26 02:52:20.102 [0x1234] [info  ] set_visible_from_appconfig: name Snapmaker U1 (0.4 nozzle), is_visible set to 1']
+    kept = (tmp_path / 'app-log.log').read_text(encoding='utf-8')
+    assert kept.startswith('# application log of export-profile') and '# source: log/snapmaker-orca.log (' in kept
+    assert '## the whole log, as far as it matters here (3 lines)' in kept
+    assert f'## export 1: {KIND} / {PRINTER} (1 lines)' in kept and 'ZIP archive created successfully' in kept
+    assert '## the import (' in kept and 'Other Printer' not in kept
 
 
-def profiles_user_names():
-    import test_export_configs_oracle as profiles
-    return sorted(profiles.USER)
+def test_configs_case_passes_when_a_project_filament_is_exported_and_imported(monkeypatch, tmp_path):
+    analysis, _seeds, _launches, _closed, exported = configs_case(monkeypatch, tmp_path, rows=())
+    package, imported = configs.CONFIGS_CLAUSES
+    assert analysis['results'] == dict.fromkeys(configs.CONFIGS_CLAUSES, 'PASS')
+    # The process type listing nothing, the first filament name that is listed is exported instead.
+    assert exported == [(FALLBACK, [FILAMENT_ROW])]
+    assert analysis['export_session']['export_plan'] == [
+        {'kind': FALLBACK, 'row': FILAMENT_ROW,
+         'why': '"Process presets(.zip)" lists no row: the first filament name that is listed'}]
+    attempt = analysis['exports'][0]
+    assert attempt['kind'] == FALLBACK and attempt['package']['path'].endswith('/Filament presets.zip')
+    member = attempt['package']['members'][f'{PROJECT_FILAMENT["name"]}.json']
+    assert member['stored'] is False and member['matches_preset'] and 'error' not in member
+    reading = analysis['import_readings'][PROJECT_FILAMENT['name']]
+    assert reading['baseline'].startswith('as the package holds it') and reading['unchanged'] == 3
+    assert analysis['exports'][0]['result_words'] == 'Export successful'
 
 
 def test_configs_case_fails_both_clauses_when_the_dialog_lists_nothing(monkeypatch, tmp_path):
-    analysis, _seeds, launches, _closed, exported = configs_case(monkeypatch, tmp_path, rows=())
+    analysis, _seeds, launches, _closed, exported = configs_case(monkeypatch, tmp_path, rows=(), filament_rows=())
     package, imported = configs.CONFIGS_CLAUSES
-    assert analysis['results'][package].startswith('FAIL ("Process presets(.zip)" lists no row in this profile, although 2 custom')
+    assert analysis['results'][package].startswith(
+        'FAIL (the dialog lists no row to export, although the profile holds custom presets on disk '
+        "({'process': 2, 'filament': 0, 'machine': 0}); it lists Printer config bundle(.orca_printer): nothing")
+    assert 'Process presets(.zip): nothing' in analysis['results'][package]
     assert analysis['results'][imported] == 'FAIL (not exercised: no package holding a preset was imported)'
     assert m7.m7_verdict(analysis['results']) == 1
     assert exported == [] and analysis['exports'] == []
     assert [name for name, _model, _options in launches] == ['export-profile']  # nothing to import: no second session
-    assert analysis['import_session']['note'] == 'not run: no package holding a preset was exported'
 
 
 def test_configs_case_fails_the_first_clause_when_the_export_lands_no_package(monkeypatch, tmp_path):
     analysis, _seeds, _launches, _closed, _exported = configs_case(monkeypatch, tmp_path, export='junk')
     package, imported = configs.CONFIGS_CLAUSES
-    assert analysis['results'][package] == ("FAIL (Process presets(.zip)/Snapmaker U1 (0.4 nozzle): 'Process presets.zip' "
-                                            "is not a readable package: BadZipFile: File is not a zip file)")
+    assert analysis['results'][package] == (
+        f"FAIL ({KIND}/{PRINTER}: the dialog reported 'add file fail'; {KIND}/{PRINTER}: the application log could not add "
+        'Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).json to the ZIP archive; '
+        f"{KIND}/{PRINTER}: 'Process presets.zip' is not a readable package: BadZipFile: File is not a zip file)")
     assert analysis['results'][imported] == 'FAIL (not exercised: no package holding a preset was imported)'
     assert analysis['exports'][0]['result_words'] == 'add file fail'
 
@@ -1428,7 +1492,7 @@ def test_configs_case_fails_the_first_clause_when_the_export_lands_no_package(mo
 def test_configs_case_fails_the_first_clause_when_nothing_lands_at_all(monkeypatch, tmp_path):
     analysis, _seeds, _launches, _closed, _exported = configs_case(monkeypatch, tmp_path, export='nothing')
     package, imported = configs.CONFIGS_CLAUSES
-    assert analysis['results'][package] == f'FAIL (Process presets(.zip)/{PRINTER}: no package file landed)'
+    assert analysis['results'][package] == f'FAIL ({KIND}/{PRINTER}: no package file landed)'
     assert analysis['results'][imported] == 'FAIL (not exercised: no package holding a preset was imported)'
 
 
@@ -1438,5 +1502,6 @@ def test_configs_case_fails_the_second_clause_when_the_import_changes_a_value(mo
     package, imported = configs.CONFIGS_CLAUSES
     assert analysis['results'][package] == 'PASS'
     assert analysis['results'][imported].startswith(
-        'FAIL (0.20mm Standard @Snapmaker U1 (0.4 nozzle) - HF-TEST: 1 parameters differ after the import: line_width: 0.45 -> 0.9')
+        'FAIL (0.20mm Standard @Snapmaker U1 (0.4 nozzle) - HF-TEST: 1 parameters differ after the import: '
+        'line_width: 0.45 -> 0.9')
     assert m7.m7_verdict(analysis['results']) == 1

@@ -9,18 +9,21 @@ Steps (Feishu): 1. 点击「文件→导出→导出配置包…」; 2. 选择�
 Expected (Feishu): 生成配置包文件（.ini/.zip），重新导入后预设参数与导出前一致.
 
 The custom presets are the process presets the harness seeds into every fresh
-profile (<datadir>/user/default/process). A profile seeded the usual way has no
-printer installed in its application config; the product then sees none of its
-system printers and its export dialog lists nothing to export for them
-(measured: census 0d7222e7 and the #232 dev runs a2aafd3d, c378dee). Both
-sessions of this case therefore start from a profile whose config also has the
-printer those presets were made for installed.
+profile (<datadir>/user/default/process). Both sessions start from a profile
+whose config also has the printer those presets were made for installed; with
+the usual seed the export dialog lists nothing for any printer (measured: census
+0d7222e7, #232 dev runs) and with the printer installed too it listed no process
+row (measured: run da4ecd60).
 
 Session 1 opens the standard cube, records what each custom preset means (its
-own values over the presets it inherits from), reads what every package type
-of File > Export > Export Preset Bundle lists, and exports each row listed for
-"Process presets(.zip)" into a folder of its own; the zip is read back and its
-bytes and SHA-256 are recorded, as a zip is not among the harvested files.
+own values over the presets it inherits from), reads what every package type of
+File > Export > Export Preset Bundle lists, and exports each row listed for
+"Process presets(.zip)". When that type lists nothing, it exports the first
+filament name that "Filament presets(.zip)" lists instead, so that the export is
+really walked; which row that was is written down. The zip is read back, its
+bytes and SHA-256 recorded, the words of the result box are read from pixels,
+and the lines the application wrote to its own log are kept as ``app-log.log``
+(a zip and the application's log are not among the harvested files).
 Session 2 starts from a profile without any user preset, imports the packages
 through File > Import > Import Configs and is closed. The presets it then has
 on disk are compared with the recorded ones, parameter by parameter.
@@ -39,8 +42,10 @@ HERE = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(HERE), str(HERE / 'tests'), str(HERE / 'tests' / 'engine'), str(HERE / 'tests' / 'gui')]
 
 import m7_common as m7  # noqa: E402
-from export_configs_oracle import (PRESET_KINDS, configs_expectation_gaps, import_readings,  # noqa: E402
-                                    importable, package_facts, preset_table)
+from export_configs_oracle import (APP_LOG_KEEP, APP_LOG_KEYWORDS, APP_LOG_LOADING, PRESET_KINDS,  # noqa: E402
+                                    app_log_files, app_log_lines, app_log_mark, app_log_section, app_log_text,
+                                    configs_expectation_gaps, failed_to_add, import_readings, importable,
+                                    member_configs, package_facts, preset_table, public_attempts)
 from file_export_cases import BUNDLE_FILES, BUNDLE_KINDS, bundle_survey, export_preset_bundle, import_configs  # noqa: E402
 from harness import launcher, profile, winutil  # noqa: E402
 from m3_common import add_common_args, ensure_gl_ready  # noqa: E402
@@ -51,7 +56,7 @@ FIXTURE = HERE / 'fixtures/feishu_std_cube.3mf'
 LOG = '[m7x237]'
 # The custom process presets of the seeded profile were made for this printer.
 KIND = 'Process presets(.zip)'
-PRESET_KIND = 'process'
+FALLBACK = 'Filament presets(.zip)'
 INSTALLED = {'vendor': 'Snapmaker', 'model': 'Snapmaker U1', 'nozzle_diameter': '0.4'}
 
 
@@ -82,118 +87,170 @@ def boot(args, datadir, model):
     return session
 
 
-def custom_counts(datadir):
-    return {kind: len(preset_table(datadir, kind)['presets']) for kind in PRESET_KINDS}
+def custom_counts(tables):
+    return {kind: len(table['presets']) for kind, table in tables.items()}
 
 
 def write_json(path, payload):
     Path(path).write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding='utf-8')
 
 
+def export_plan(listed):
+    """[(zip type, row)]: every row the process type lists, or else the first filament name the
+    filament type lists, so that something is exported whenever the dialog offers anything."""
+    if listed[KIND]:
+        return [(KIND, label, 'a printer with custom process presets') for label in listed[KIND]]
+    if listed[FALLBACK]:
+        return [(FALLBACK, listed[FALLBACK][0], f'"{KIND}" lists no row: the first filament name that is listed')]
+    return []
+
+
+def _failed_lines(attempt, failed, attempts):
+    """The log lines about files that could not be added, for one export."""
+    if len(attempts) == 1 or attempt['kind'] != FALLBACK:
+        return list(failed)
+    return [line for line in failed if attempt['row'] in line]
+
+
 def export_session(args, work, analysis):
-    """Session 1: record the custom presets, read the export dialog, export each listed row of the
-    process type. Returns (the presets as seeded, the presets as they were at the export, the
-    export attempts)."""
+    """Session 1: record the custom presets, read the export dialog, export what it lists, and
+    keep what the application said about it. Returns (the presets as seeded, the presets as
+    they were at the export, the export attempts)."""
     datadir = work / 'export-profile'
     seed(datadir)
+    seeded = {kind: preset_table(datadir, kind) for kind in PRESET_KINDS}
     reading = analysis['export_session'] = {'installed_printer': dict(INSTALLED),
-                                            'custom_presets_on_disk': custom_counts(datadir)}
-    seeded = preset_table(datadir, PRESET_KIND)
-    if not seeded['presets']:
-        raise ValueError('precondition not met: the profile holds no custom process preset')
-    reading['custom_process_presets'] = sorted(seeded['presets'])
+                                            'custom_presets_on_disk': custom_counts(seeded)}
+    if not any(seeded[kind]['presets'] for kind in PRESET_KINDS):
+        raise ValueError('precondition not met: the profile holds no custom preset')
+    reading['custom_presets'] = {kind: sorted(seeded[kind]['presets']) for kind in PRESET_KINDS}
+    attempts, state = [], None
     session = boot(args, datadir, args.model)
-    attempts = []
     try:
         m7.ensure_maximized(session)
         if not wait_arrival(session, timeout_s=30, min_frac=0.001)[0]:
             raise ValueError('the fixture did not render')
         with stage(analysis, 'read_export_dialog'):
             survey = bundle_survey(session, work, analysis)
-        listed = {kind: survey['kinds'][kind]['items'] for kind in BUNDLE_KINDS}
+        listed = {kind: [row['label'] for row in survey['kinds'][kind]['items']] for kind in BUNDLE_KINDS}
         reading['listed'] = listed
-        rows = [row['label'] for row in listed[KIND]]
-        for label in rows:
-            folder = work / 'packages' / re.sub(r'[^A-Za-z0-9._-]+', '_', label)
+        reading['export_plan'] = [{'kind': kind, 'row': row, 'why': why} for kind, row, why in export_plan(listed)]
+        for kind, label, _why in export_plan(listed):
+            folder = work / 'packages' / re.sub(r'[^A-Za-z0-9._-]+', '_', f'{kind} {label}')
             folder.mkdir(parents=True)
-            attempt = {'kind': KIND, 'row': label, 'directory': folder.relative_to(work).as_posix()}
+            attempt = {'kind': kind, 'row': label, 'directory': folder.relative_to(work).as_posix(),
+                       'app_log': {'lines': []}}
+            mark = app_log_mark(datadir)
             try:
                 with stage(analysis, f'export_{len(attempts) + 1}'):
-                    receipt = export_preset_bundle(session, KIND, folder, work, analysis, tick=[label],
+                    receipt = export_preset_bundle(session, kind, folder, work, analysis, tick=[label],
                                                    key=f'export_{len(attempts) + 1}')
                     for name in ('result', 'refusal'):
                         if receipt.get(name):
                             attempt[f'{name}_words'] = receipt[name].get('words')
+                            attempt[f'{name}_words_error'] = receipt[name].get('words_error')
                     attempt['dialog_closed'] = receipt.get('dialog_closed')
                     attempt['landed'] = receipt['landed']
             except Exception as exc:  # noqa: BLE001 - recorded; the verdict turns red on it
                 attempt['error'] = f'{type(exc).__name__}: {exc}'
                 traceback.print_exc()
+            attempt['app_log']['lines'] = app_log_lines(datadir, mark)[-60:]
             attempts.append(attempt)
             if attempt.get('error'):
                 break
-        attempts.extend({'kind': KIND, 'row': label, 'error': 'not attempted: the row before it failed'}
-                        for label in rows[len(attempts):])
-        at_export = preset_table(datadir, PRESET_KIND)
+        attempts.extend({'kind': kind, 'row': label, 'directory': '', 'app_log': {'lines': []},
+                         'error': 'not attempted: the row before it failed'}
+                        for kind, label, _why in export_plan(listed)[len(attempts):])
+        at_export = {kind: preset_table(datadir, kind) for kind in PRESET_KINDS}
         for attempt in attempts:
             if not attempt.get('landed'):
                 continue
-            package = Path(work, attempt['directory']) / BUNDLE_FILES[KIND]
-            attempt['package'] = package_facts(package, at_export)
+            package = Path(work, attempt['directory']) / BUNDLE_FILES[attempt['kind']]
+            attempt['package'] = package_facts(package, at_export, kind=attempt['kind'], rows=[attempt['row']])
             attempt['package']['path'] = package.relative_to(work).as_posix()
+            attempt['_members'] = member_configs(package)
         reading['presets_rewritten_while_open'] = sorted(
-            name for name in seeded['presets']
-            if name not in at_export['presets'] or at_export['presets'][name] != seeded['presets'][name])
-        write_json(work / 'presets-before.json', {'kind': PRESET_KIND, 'seeded': seeded, 'at_export': at_export})
+            (kind, name) for kind in PRESET_KINDS for name in seeded[kind]['presets']
+            if at_export[kind]['presets'].get(name) != seeded[kind]['presets'][name])
+        write_json(work / 'presets-before.json', {'seeded': seeded, 'at_export': at_export})
         leftover = m7.wait_dialog(session.pid, timeout_s=0.5)
         state = reading['editor_after_export'] = {'alive': session.alive(), 'dialog': leftover[1] if leftover else None}
     finally:
         session.close()
+    # What the application itself wrote: which presets it loaded, which printers it can see, and
+    # what it did about the export. Kept as a file, as the log itself is not harvested.
+    names = (INSTALLED['model'],) + tuple(name for kind in PRESET_KINDS for name in seeded[kind]['presets'])
+    lines = app_log_lines(datadir, keywords=APP_LOG_KEYWORDS, extra=APP_LOG_LOADING, names=names)
+    failed = failed_to_add(lines)
+    for attempt in attempts:
+        attempt['app_log']['failed_to_add'] = _failed_lines(attempt, failed, attempts)
+    reading['app_log'] = {
+        'file': 'app-log.log', 'lines_kept': len(lines),
+        'sources': [f'log/{path.name} ({size} bytes)' for path, size in app_log_files(datadir)],
+        'loaded_user_presets': [line[-200:] for line in lines if 'load config successful' in line.casefold()][-12:],
+        'parents_not_found': [line[-200:] for line in lines if 'can not find parent' in line.casefold()][-12:],
+        'printer_visibility': [line[-200:] for line in lines if 'is_visible set to' in line.casefold()][-12:],
+        'failed_to_add': [line[-240:] for line in failed[-6:]],
+        'added': [line[-200:] for line in lines if 'json add successful' in line.casefold()][-12:]}
+    (work / 'app-log.log').write_text(app_log_text(datadir, [
+        ('the whole log, as far as it matters here', lines[-APP_LOG_KEEP:]),
+        *[(f'export {number}: {attempt["kind"]} / {attempt["row"]}', attempt['app_log']['lines'])
+          for number, attempt in enumerate(attempts, 1)]]), encoding='utf-8')
     if state != {'alive': True, 'dialog': None}:
         raise ValueError(f'the editor was left in an unexpected state after the exports: {state!r}')
-    return seeded, at_export, attempts
+    return seeded, at_export, attempts, listed
 
 
 def import_session(args, work, analysis, attempts):
     """Session 2: a profile without user presets imports every package that holds a preset; the
-    presets on disk after the editor is closed are returned."""
+    presets on disk after the editor is closed are returned, by kind."""
     ready = importable(attempts)
-    packages = [Path(work, attempt['directory']) / BUNDLE_FILES[KIND] for attempt in attempts
+    packages = [Path(work, attempt['directory']) / BUNDLE_FILES[attempt['kind']] for attempt in attempts
                 if attempt.get('package') in ready]
     datadir = work / 'import-profile'
     reading = analysis['import_session'] = {'installed_printer': dict(INSTALLED),
                                             'sources': [package.relative_to(work).as_posix() for package in packages]}
     if not packages:
         reading['note'] = 'not run: no package holding a preset was exported'
-        return preset_table(datadir, PRESET_KIND)
+        return {kind: preset_table(datadir, kind) for kind in PRESET_KINDS}
     reading['seeded_user_presets_removed'] = seed(datadir, with_presets=False)
-    reading['presets_at_start'] = custom_counts(datadir)
-    session = boot(args, datadir, args.model)
+    reading['presets_at_start'] = custom_counts({kind: preset_table(datadir, kind) for kind in PRESET_KINDS})
+    session, mark, state = None, None, None
     try:
+        session = boot(args, datadir, args.model)
         m7.ensure_maximized(session)
         if not wait_arrival(session, timeout_s=30, min_frac=0.001)[0]:
             raise ValueError('the fixture did not render')
+        mark = app_log_mark(datadir)  # the import's own lines, apart from what the start-up wrote
         for number, package in enumerate(packages, 1):
             with stage(analysis, f'import_{number}'):
                 import_configs(session, package, work, analysis, key=f'import_{number}')
         leftover = m7.wait_dialog(session.pid, timeout_s=0.5)
         state = reading['editor_after_import'] = {'alive': session.alive(), 'dialog': leftover[1] if leftover else None}
     finally:
-        session.close()
+        if session is not None:
+            session.close()
+    lines = app_log_lines(datadir, mark, keywords=(), extra=('import', 'can not find parent', 'failed'))[-120:]
+    reading['app_log'] = {'lines': len(lines),
+                         'presets_skipped': [line[-200:] for line in lines if 'skip' in line.casefold()][-12:]}
+    with open(work / 'app-log.log', 'a', encoding='utf-8') as handle:
+        handle.write('\n' + '\n'.join(app_log_section('the import', lines)) + '\n')
     if state != {'alive': True, 'dialog': None}:
         raise ValueError(f'the editor was left in an unexpected state after the import: {state!r}')
-    return preset_table(datadir, PRESET_KIND)
+    return {kind: preset_table(datadir, kind) for kind in PRESET_KINDS}
 
 
 def run(args, work, analysis):
-    seeded, at_export, attempts = export_session(args, work, analysis)
-    analysis['exports'] = attempts  # what was asked of the export dialog and what each row landed
+    seeded, at_export, attempts, listed = export_session(args, work, analysis)
+    analysis['exports'] = public_attempts(attempts)  # what was asked of the export dialog and what each row landed
     analysis['fixture'] = {'name': args.model.name, 'bytes': args.model.stat().st_size,
                            'sha256': sha256(args.model.read_bytes()).hexdigest()}
     after = import_session(args, work, analysis, attempts)
-    write_json(work / 'presets-after.json', {'kind': PRESET_KIND, 'after': after})
-    nothing = (f'"{KIND}" lists no row in this profile, although {len(seeded["presets"])} custom process '
-               f'presets are on disk; the dialog lists {analysis["export_session"]["listed"]!r}')
+    write_json(work / 'presets-after.json', {'after': after})
+    offered = '; '.join(f'{kind}: {labels or "nothing"}' for kind, labels in listed.items())
+    custom = analysis['export_session']['custom_presets_on_disk']
+    nothing = (f'the dialog lists no row to export, although the profile holds custom presets on disk '
+               f'({custom}); it lists {offered}')
     gaps = analysis['expectation_gaps'] = configs_expectation_gaps(at_export, after, attempts, nothing_listed=nothing)
     analysis['import_readings'] = import_readings(at_export, after, attempts)
     for clause, failed in gaps.items():
