@@ -1,0 +1,77 @@
+﻿[
+    {
+        "part":  "analysis.json",
+        "bytes":  36312,
+        "sha256":  "34CCE6F6C4CFA62830E1BE3539F6BC64249BA0C3C0097E26F39E8B3DE3C55D09"
+    },
+    {
+        "part":  "chooser.png",
+        "bytes":  98344,
+        "sha256":  "64E3FEAEA529742625F84C29ED0EA929D45E1621CA7A31EA44A2199E95E7A541"
+    },
+    {
+        "part":  "control.3mf",
+        "bytes":  35003,
+        "sha256":  "C77294638D4684253926B3B331D9650C683075805CFA6F95B346AAF1C80DDE72"
+    },
+    {
+        "part":  "control.png",
+        "bytes":  343688,
+        "sha256":  "A78613A656733557CB81E6BB19BF0C3BEB3B84548785FEC0B871CB8EF34F6947"
+    },
+    {
+        "part":  "control-chooser.png",
+        "bytes":  65368,
+        "sha256":  "0256A571630C6039529583761FEDF313A84C0D78237214C5450596AB37141EA9"
+    },
+    {
+        "part":  "control-export-dialog.png",
+        "bytes":  50875,
+        "sha256":  "BAD2ECF0F2949E9301A39C2213C767315944C088FEB339B41F3476678C280333"
+    },
+    {
+        "part":  "control-gcode.gcode",
+        "bytes":  909786,
+        "sha256":  "C3D00134BB59D12FF8CE74F65A67352AC56664A9B6658528183410549241D69A"
+    },
+    {
+        "part":  "export-dialog.png",
+        "bytes":  46243,
+        "sha256":  "CFC9857A5692F6BD602AC222E3D823FD727796BD3B67D3F0A558A4861E8E3BF0"
+    },
+    {
+        "part":  "import-dialog-0.png",
+        "bytes":  37280,
+        "sha256":  "37545E0AC93B1227BADAD76E30F5554EA04F24352B96D4F630016A847E961E3A"
+    },
+    {
+        "part":  "imported.3mf",
+        "bytes":  33855,
+        "sha256":  "7A86CBD44489ED66C761B65E1311EE1ADC190401C2F27145AA26D96FE4B83124"
+    },
+    {
+        "part":  "imported.png",
+        "bytes":  304490,
+        "sha256":  "49CDECA2082053167DA60EFC596D92836D60DC9568ED3249F226E929D8CF00C3"
+    },
+    {
+        "part":  "new-project.3mf",
+        "bytes":  34368,
+        "sha256":  "C59266A3BC8F1EFEE9015C3F4851CD53EE31FDE200B776F39F363C006E3151F7"
+    },
+    {
+        "part":  "plate.gcode",
+        "bytes":  125804,
+        "sha256":  "8FEA146BF49408A2100D67DC08AB25F1E6C016227B9C8B575341EFE789A0AE33"
+    },
+    {
+        "part":  "sliced.png",
+        "bytes":  499092,
+        "sha256":  "17B21E0084CD458F14C880EFD4626F6287418FE15D7D853D2F66903AE3E0C976"
+    },
+    {
+        "part":  "texture.png",
+        "bytes":  79,
+        "sha256":  "204F864F62153665A75F20ECE9F0FD4ECE67DE16F87A63690A96898EBB1EEF9C"
+    }
+]

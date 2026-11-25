@@ -1,0 +1,67 @@
+﻿[
+    {
+        "part":  "analysis.json",
+        "bytes":  32708,
+        "sha256":  "09C1A3EC283D3C762947E18299DE383D20B6EF8278835846B0E2CB40B34AABAC"
+    },
+    {
+        "part":  "chooser.png",
+        "bytes":  98421,
+        "sha256":  "7F94ACAF8B812ED2BCD665778E034CEF83D1C8A5D37C87F830571CA6E6C55D76"
+    },
+    {
+        "part":  "control.3mf",
+        "bytes":  35009,
+        "sha256":  "FC203DFE42F692081F961FD7A701D8AA79F6E741B69D534C6099F09E1CD4B894"
+    },
+    {
+        "part":  "control.png",
+        "bytes":  343915,
+        "sha256":  "652F53F7AE0A3D044FAD6A5C979E3C72255B652CBD9397871CC7961D9E156DAF"
+    },
+    {
+        "part":  "control-chooser.png",
+        "bytes":  65479,
+        "sha256":  "82D20F411E808DECE0B1A79ED22608CA45CA1F022E9D27EC70B777971DF34FF6"
+    },
+    {
+        "part":  "export-dialog.png",
+        "bytes":  46492,
+        "sha256":  "374E24EA06C8F0C0D69750170365098C31F4698CD0128095B69A5839AF5EC8F9"
+    },
+    {
+        "part":  "import-dialog-0.png",
+        "bytes":  37280,
+        "sha256":  "37545E0AC93B1227BADAD76E30F5554EA04F24352B96D4F630016A847E961E3A"
+    },
+    {
+        "part":  "imported.3mf",
+        "bytes":  33857,
+        "sha256":  "EF1D79E011446027B9DD2D9AAA1401CE44FCBE8E51C5124331964EC1D755EF63"
+    },
+    {
+        "part":  "imported.png",
+        "bytes":  304490,
+        "sha256":  "49CDECA2082053167DA60EFC596D92836D60DC9568ED3249F226E929D8CF00C3"
+    },
+    {
+        "part":  "new-project.3mf",
+        "bytes":  34368,
+        "sha256":  "BFF5F6FC9C7918D5B00AF0BEA3C30C6BE902B02C7E5D206DBF13F07C8853F455"
+    },
+    {
+        "part":  "plate.gcode",
+        "bytes":  127004,
+        "sha256":  "2B5F09AD994C745E799D8BF9DF435EC42BBB5A40E448276ED041021FC442CCBD"
+    },
+    {
+        "part":  "sliced.png",
+        "bytes":  498698,
+        "sha256":  "0DE1CDD3CD33EF888E14BD73A3666589DE19B018A026409DA740B5BFB969B6D8"
+    },
+    {
+        "part":  "texture.png",
+        "bytes":  79,
+        "sha256":  "204F864F62153665A75F20ECE9F0FD4ECE67DE16F87A63690A96898EBB1EEF9C"
+    }
+]

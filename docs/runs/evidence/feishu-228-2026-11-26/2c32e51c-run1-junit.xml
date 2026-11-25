@@ -1,0 +1,42 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T03:31:59" tests="1" failures="1" errors="0">
+    <testcase name="m7x_228_import_colored_obj" classname="blackbox.m7x_228_import_colored" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_228_import_colored_obj.log" />
+        <property name="dim:妯″瀷瀵煎叆鎴愬姛锛屼袱绉嶉鑹叉寜闈㈢墖姝ｇ‘鏄剧ず" value="FAIL (first_material_one_filament, second_material_one_filament, different_filaments, different_filament_colours)" />
+        <property name="dim:鍒囩墖鍚庢寜棰滆壊鐢熸垚瀵瑰簲鑰楁潗/鎹㈡枡" value="FAIL (two_filaments_print, change_between_them, filaments_have_distinct_colours)" />
+      </properties>
+      <failure type="RED" message="妯″瀷瀵煎叆鎴愬姛锛屼袱绉嶉鑹叉寜闈㈢墖姝ｇ‘鏄剧ず: FAIL (first_material_one_filament, second_material_one_filament, different_filaments, different_filament_colours); 鍒囩墖鍚庢寜棰滆壊鐢熸垚瀵瑰簲鑰楁潗/鎹㈡枡: FAIL (two_filaments_print, change_between_them, filaments_have_distinct_colours)">[m8] arrival: True (2.23%, gate 0.10%)
+[m8] arrival: True (2.23%, gate 0.10%)
+[m8] arrival: True (2.23%, gate 0.10%)
+[m8] arrival: True (2.23%, gate 0.10%)
+[m8] arrival: True (2.23%, gate 0.10%)
+[m8] arrival: True (2.23%, gate 0.10%)
+[m8] arrival: True (2.23%, gate 0.10%)
+[m8] arrival: True (2.23%, gate 0.10%)
+[m8] arrival: True (2.23%, gate 0.10%)
+[m8] arrival: True (2.23%, gate 0.10%)
+[m8] arrival: True (2.23%, gate 0.10%)
+[m7x249] finished control_import in 133.032s
+python.exe : Traceback (most recent call last):
+At C:\coil\run_suite.ps1:35 char:3
++   &amp; "C:\Python311\python.exe" (Case-File $c) 2&gt;&amp;1 | Out-File -FilePat ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\m7x_228_import_colored_obj.py", line 96, in control_import
+    arrived, fraction = wait_import(session, work, control, stem='control-dialog')
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\coil\orca-blackbox-v3-r1\tests\colored_obj_cases.py", line 243, in wait_import
+    raise ValueError(f'the OBJ did not appear on the plate within {timeout_s}s; dialogs met '
+ValueError: the OBJ did not appear on the plate within 120s; dialogs met ['Obj file Import color']
+
+[m7] === verdict ===
+  妯″瀷瀵煎叆鎴愬姛锛屼袱绉嶉鑹叉寜闈㈢墖姝ｇ‘鏄剧ず: FAIL (first_material_one_filament, second_material_one_filament, different_filaments, different_filament_colours)
+  鍒囩墖鍚庢寜棰滆壊鐢熸垚瀵瑰簲鑰楁潗/鎹㈡枡: FAIL (two_filaments_print, change_between_them, filaments_have_distinct_colours)
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

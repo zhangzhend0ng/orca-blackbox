@@ -1,0 +1,14 @@
+﻿{
+    "commit":  "2c32e51c41a016c958c50f6e157ba56fdb6a2efb",
+    "case":  "m7x_228_import_colored_obj",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "orca_processes_after":  0,
+    "summary":  "SUMMARY: PASS=0 FAIL=1\r\nFAILED: m7x_228_import_colored_obj",
+    "dispatched_at":  "2026-11-26T03:27:23.9062635+08:00",
+    "scenario_completed_at":  "2026-11-26T03:31:57.7445112+08:00",
+    "suite_completed_at":  "2026-11-26T03:31:59.0662978+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_228_import_colored_obj.log",
+    "log_sha256":  "373FDDF5CD11E47F668872FB91ADC79952D55FD1A07C2621A491816C70C6427A"
+}
