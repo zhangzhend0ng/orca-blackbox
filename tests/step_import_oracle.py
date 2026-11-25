@@ -24,9 +24,10 @@ How each clause is read:
   of a 10 mm cube moves its box volume by at most 0.3 mm3, so 1 mm3 is a
   bound on rounding and nothing else.
 * ``对象列表可见对应零件（或拆分为多对象）``: the project holds three
-  entities in at least one object, and every object name it holds is read in
-  the object list once (``import_stl_oracle.listed_object_names``: a
-  misread character is tolerated).
+  entities, and every object name it holds is read in the object list (a
+  whole OCR word, one misread character tolerated). Whether each part has
+  a row of its own under the object is written down next to it (``parts``)
+  and not judged.
 * ``颜色保留``: each entity prints with one filament of its own (a face with
   its paint, a face without with its part's extruder), the three filaments
   differ, and their colours in ``filament_colour`` differ. That covers a
@@ -41,7 +42,7 @@ How each clause is read:
 from pathlib import Path
 
 from colored_obj_oracle import DEFAULT_EXTRUDER, _colour, _extents, _prints_with, read_colored_project
-from import_stl_oracle import listed_object_names
+from import_stl_oracle import _compact, _distance
 
 CLAUSE_ENTITIES = '3 个实体均被导入'
 CLAUSE_LIST = '对象列表可见对应零件（或拆分为多对象）'
@@ -97,12 +98,10 @@ def step_import_readings(project, object_words):
     except (OSError, ValueError) as exc:
         return {'checks': dict.fromkeys(CLAUSES, False), 'error': str(exc)}
     colours = saved['filament_colour']
-    named = []
-    try:
-        named = listed_object_names(object_words, saved['object_names'])
-        listed = True
-    except ValueError:
-        listed = False
+    names = list(saved['object_names'])
+    named = [name for name in names if _listed(object_words, name)]
+    missing = [name for name in names if name not in named]
+    listed = bool(names) and not missing
     filaments = [entity['filament'] for entity in entities]
     one_each = (len(entities) == ENTITIES and None not in filaments
                 and len(set(filaments)) == ENTITIES and len({_colour(colours, value) for value in filaments}) == ENTITIES)
@@ -123,8 +122,20 @@ def step_import_readings(project, object_words):
             'filament_colour': colours, 'printer': saved['printer'],
             'triangle_attribute_names': saved['triangle_attribute_names'],
             'side_by_side': _side_by_side(entities),
-            'object_list': {'names': saved['object_names'], 'found': named, 'listed': listed,
+            'object_list': {'names': names, 'found': named, 'missing': missing, 'listed': listed,
+                            # What the list shows under the object: each part's own row, read, not judged.
+                            'parts': {entity['part']: _listed(object_words, entity['part']) for entity in entities},
                             'words': [str(word[0]) for word in object_words][:400]}}
+
+
+def _listed(words, name):
+    """Whether the object list spells `name`: a whole OCR word within one misread character of it.
+    The #227 helper also joins neighbouring words, to read a name the OCR split in two; here the
+    object row starts with an icon that the OCR reads as a letter, and `y` joined to
+    `assembly.step` then spelled the name a second time (run dev229d-55e44162: the name was on
+    the list and the clause read FAIL)."""
+    wanted = _compact(name)
+    return any(_distance(_compact(str(word[0])).removesuffix('stl'), wanted) <= 1 for word in words)
 
 
 def _why(readings, clause):
@@ -134,7 +145,9 @@ def _why(readings, clause):
         return (f'{readings["entity_count"]} entities, boxes '
                 f'{[round(entity["box_volume_mm3"], 3) for entity in readings["entities"]]} mm3')
     if clause == CLAUSE_LIST:
-        return f'object names {readings["object_names"]}, read {readings["object_list"]["found"]}'
+        return (f'object names {readings["object_list"]["names"]}, read {readings["object_list"]["found"]}'
+                + (f', not read {readings["object_list"]["missing"]}' if readings['object_list']['missing'] else '')
+                + f'; {readings["entity_count"]} entities')
     if clause == CLAUSE_COLOUR:
         return f'filaments {[entity["filament"] for entity in readings["entities"]]}, colours {readings["filament_colours"]}'
     if len(readings['entities']) == 1 and readings['triangles_total'] == ENTITIES * FACES_PER_CUBE:

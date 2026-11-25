@@ -24,6 +24,7 @@ from step_import_oracle import (  # noqa: E402
 from m7x_229_import_step import (  # noqa: E402  (helpers of the case; none of these touches a window)
     CHANGE_SHARE, INK_SHARE, SPLIT_OPTION, _tick_steps, assert_ticked, box_region, find_checkbox,
     notification_wparam, pixel_reading, readings_of, run_tick_steps, shows_ticked)
+from import_stl_oracle import listed_object_names
 
 REAL_227 = ROOT / 'docs/runs/evidence/feishu-227-2026-11-26/11858f17-run1-imported.3mf'
 MAIN, MESH = '3D/3dmodel.model', '3D/Objects/cube_20mm.stl_2.model'
@@ -250,6 +251,30 @@ def test_a_name_missing_from_the_object_list_is_refused(tmp_path):
         'one misread character is tolerated'
 
 
+ROW = [('y', 40, 470, 8, 8), ('assembly', 52, 470, 70, 12), ('default', 130, 470, 40, 12)]  # one row of the guest's list
+
+
+def test_the_icon_read_as_a_letter_beside_the_name_is_not_a_second_reading(tmp_path):
+    """The fourth guest run (dev229d-55e44162) read the object row as `y`, `assembly.step`: the icon
+    before the name. Joining the two spells the name once more, and the #227 helper, which wants
+    it exactly once, refused it. Here the name is read and the clause holds."""
+    with pytest.raises(ValueError, match='2 times'):
+        listed_object_names(ROW, ['assembly'])
+    readings = step_import_readings(step_project(tmp_path / 'split.3mf'), ROW)
+    assert readings['checks'][CLAUSE_LIST] and readings['object_list']['found'] == ['assembly']
+    assert readings['object_list']['missing'] == [] and readings['object_list']['listed']
+    assert readings['object_list']['parts'] == {f'{name}_part': False for name in NAMES}, \
+        'the parts have no row in these words: written down, not judged'
+
+
+def test_the_part_rows_are_written_down_when_the_list_shows_them(tmp_path):
+    project = step_project(tmp_path / 'split.3mf')
+    rows = [('y', 40, 470, 8, 8), ('assembly', 52, 470, 70, 12)] + [
+        (f'{name}_part', 70, 490 + 20 * index, 90, 12) for index, name in enumerate(NAMES)]
+    readings = step_import_readings(project, rows)
+    assert readings['checks'][CLAUSE_LIST] and readings['object_list']['parts'] == {f'{name}_part': True for name in NAMES}
+
+
 def test_a_record_that_says_pass_is_not_taken_at_its_word(tmp_path):
     readings = step_import_readings(step_project(tmp_path / 'same.3mf', extruders=(1, 1, 1)), _words('assembly'))
     flat = {'case': 229, 'results': dict.fromkeys(CLAUSES, 'PASS')}
@@ -294,7 +319,7 @@ def test_option_unticked_one_part_of_36_faces_fails_every_clause(tmp_path):
     readings = step_import_readings(project, _words('assembly.step'))
     assert verdicts(readings) == {
         CLAUSE_ENTITIES: 'FAIL (1 entities, boxes [5000.0] mm3)',
-        CLAUSE_LIST: 'FAIL (object names [\'assembly.step\'], read [\'assembly.step\'])',
+        CLAUSE_LIST: "FAIL (object names ['assembly.step'], read ['assembly.step']; 1 entities)",
         CLAUSE_COLOUR: "FAIL (filaments [1], colours {'1': '#ff0000'})",
         CLAUSE_COMPLETE: 'FAIL (1 个实体，36 个三角面：三个立方体并成了一个部件)'}
     assert not recorded_results_match({'case': 229, 'results': dict.fromkeys(CLAUSES, 'PASS')}, readings)

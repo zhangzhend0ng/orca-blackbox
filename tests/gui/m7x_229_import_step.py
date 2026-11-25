@@ -62,7 +62,7 @@ import m7_common as m7  # noqa: E402
 from colored_obj_cases import _accept, affirmative, app_dialogs, survey_dialog  # noqa: E402
 from file_export_cases import capture_window  # noqa: E402
 from harness import winutil  # noqa: E402
-from m7x_227_import_stl import import_stl, show_objects_tab, sidebar  # noqa: E402
+from m7x_227_import_stl import import_stl, show_objects_tab  # noqa: E402
 from m7x_244_add_model import prepare_plate  # noqa: E402
 from m7x_249_add_part import stage  # noqa: E402
 from plate_reserve_case import case_main, save_snapshot  # noqa: E402
@@ -376,11 +376,18 @@ def steps(session, work, analysis, args):
     with stage(analysis, 'save_imported'):
         imported = save_snapshot(session, work, 'imported')
         show_objects_tab(session)
-        words = sidebar(session)
-        analysis['object_list'] = {'words': [word[0] for word in words][:WORDS_KEPT]}
+        # The picture the words were read from is kept, and where each word was, so the reading
+        # can be made again from the harvest.
+        frame = m7.capture_bgr(session)
+        cv2.imwrite(str(work / 'object-list.png'), frame)
+        words = m7.mdu.ocr_words_img(frame[:, :410], scale=2, psm=11)
+        analysis['object_list'] = {'image': 'object-list.png', 'words': [str(word[0]) for word in words][:WORDS_KEPT],
+                                   'places': [[str(word[0]), *(int(value) for value in word[1:5])] for word in words][:WORDS_KEPT]}
         analysis['imported'] = step_import_readings(imported, words)
         analysis['object_list'].update({key: (analysis['imported'].get('object_list') or {}).get(key)
-                                        for key in ('names', 'found', 'listed')})
+                                        for key in ('names', 'found', 'missing', 'listed', 'parts')})
+        print(f'{LOG} object list: {analysis["object_list"]["found"]!r} read, {analysis["object_list"]["missing"]!r} not read, '
+              f'parts {analysis["object_list"]["parts"]!r}', flush=True)
         print(f'{LOG} imported: {analysis["imported"].get("entity_count")} entities '
               f'{[entity["part"] for entity in analysis["imported"].get("entities", [])]!r}', flush=True)
     with stage(analysis, 'read_results'):
