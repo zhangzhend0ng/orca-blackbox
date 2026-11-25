@@ -28,9 +28,9 @@ from m7x_249_add_part import capture, stage
 from m8_common import wait_arrival
 from zip_import_cases import wait_closed
 from zip_import_oracle import digest
-from import_configs_cases import (BUNDLE_TYPE, ZIP_TYPES, choose_configs, collect_import_dialogs,
-                                  export_bundle)
-from import_configs_oracle import bundle_presets, profile_presets, verify_import
+from import_configs_cases import (BUNDLE_TYPE, PRINTER_NAME, ZIP_TYPES, choose_configs, collect_import_dialogs,
+                                  export_bundle, keep_app_log, save_user_printer, wait_preset)
+from import_configs_oracle import bundle_presets, export_failed, profile_presets, verify_import
 
 TEMPLATE = HERE / 'fixtures/agent_layer_cube.3mf'
 LOG = '[m7x232]'
@@ -50,25 +50,36 @@ def keep(path, rows):
 
 def run(args, work, analysis):
     inputs = work / 'inputs'
+    files, message = [], None
     # Session 1 exports the config files with the product itself.
     with stage(analysis, 'export_bundle'):
         session = boot(args, work, 'export-profile')
         try:
             analysis['dialogs'] = []
-            files = export_bundle(session, BUNDLE_TYPE, inputs, work, analysis)
+            # A user printer preset is what lets the bundle type list a printer.
+            with stage(analysis, 'save_user_printer'):
+                save_user_printer(session, PRINTER_NAME, work, analysis)
+                analysis['saved_printer']['on_disk'] = wait_preset(work / 'export-profile', 'machine', PRINTER_NAME)
+            files, message = export_bundle(session, BUNDLE_TYPE, inputs, work, analysis)
             if files:
                 analysis['export_path'] = BUNDLE_TYPE
-            else:
-                # No printer is listed for the bundle in this profile: one zip per preset kind.
+            elif message is None:
+                # No printer is listed for the bundle: one zip per preset kind.
                 analysis['export_path'] = 'fallback: ' + ', '.join(ZIP_TYPES)
                 for kind in ZIP_TYPES:
-                    files += export_bundle(session, kind, inputs, work, analysis)
-            if not files:
-                raise ValueError('no preset file could be exported')
+                    more, message = export_bundle(session, kind, inputs, work, analysis)
+                    files += more
+            else:
+                analysis['export_path'] = f'{BUNDLE_TYPE}: refused by the product'
             analysis['config_files'] = [{'file': f'inputs/{path.name}', 'not_harvested': True, **digest(path)}
                                         for path in files]
         finally:
+            analysis['app_log_lines'] = keep_app_log(work / 'export-profile', work)
             session.close()
+    if not files:
+        with stage(analysis, 'export_failed'):
+            analysis['results'].update(export_failed(message))
+        return
     # Session 2 starts from a seeded profile and imports those files.
     with stage(analysis, 'import_configs'):
         datadir = work / 'import-profile'
