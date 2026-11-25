@@ -3,6 +3,7 @@
 The Export Preset Bundle dialog is no longer driven by this case: on the guest the
 product reported "add file fail" for its own export (runs c378dee0 and 8d20f5b),
 and the config file is a precondition of the Feishu case, not a step of it."""
+import re
 import time
 
 import cv2
@@ -48,10 +49,25 @@ def open_popup(session, point, root):
     return None, None
 
 
+DIVIDER = re.compile(r'^\s*[-—=~_]{2,}')  # `------ User presets ------`, as the OCR prints a section divider
+
+
+def dividers_only(words):
+    """Whether a reading holds nothing but section dividers."""
+    texts = [text for text, _word in row_lines(words)]
+    return bool(texts) and all(DIVIDER.match(text) for text in texts)
+
+
 def popup_page(popup_rect, popup_hwnd):
     """The popup window as an image and its words: OCR at scale 3 with psm 6, the reading
     that sees the rows beside the section dividers (PITFALLS 17.7, m5g). When the window
-    cannot be captured a screen crop is read instead (m8_common)."""
+    cannot be captured a screen crop is read instead (m8_common).
+
+    A page that comes back as dividers only is read a second time, from the inverted picture
+    with psm 4, and both readings are returned. The row that has the keyboard focus has a
+    thin rectangle drawn around it, and the default reading then skips it and the highlighted
+    row: run dev232m-4999edf0 kept a picture of the printer list with `BB Test Printer` in it
+    and read four dividers."""
     try:
         width, height, pixels = winutil.capture_window(popup_hwnd)
         image = cv2.cvtColor(np.frombuffer(pixels, np.uint8).reshape(height, width, 4), cv2.COLOR_BGRA2BGR)
@@ -60,7 +76,11 @@ def popup_page(popup_rect, popup_hwnd):
         frame = np.frombuffer(pixels, np.uint8).reshape(screen_h, screen_w, 4)
         left, top, right, bottom = popup_rect
         image = cv2.cvtColor(frame[max(top, 0):bottom, max(left, 0):right], cv2.COLOR_BGRA2BGR)
-    return image, m7.mdu.ocr_words_img(image, scale=3, psm=6)
+    words = m7.mdu.ocr_words_img(image, scale=3, psm=6)
+    if dividers_only(words):
+        inverted = cv2.cvtColor(255 - cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), cv2.COLOR_GRAY2BGR)
+        words = words + m7.mdu.ocr_words_img(inverted, scale=3, psm=4)
+    return image, words
 
 
 def row_lines(words):

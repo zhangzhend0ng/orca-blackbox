@@ -24,7 +24,7 @@ HERE = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(HERE), str(HERE / 'tests')]
 
 import m7_common as m7
-from harness import process_panel as pp, profile
+from harness import process_panel as pp, profile, winutil
 from m3_common import add_common_args, boot_session
 from m7x_249_add_part import capture, stage
 from m8_common import combo_text, switch_filament_preset, wait_arrival, wait_slots
@@ -99,10 +99,6 @@ def run(args, work, analysis):
                     hit = next((s for s in wait_slots(session, timeout_s=3) if s['slot'] == 1 and s['combo']), None)
                     return combo_text(hit['combo'][2]) if hit else ''
 
-                def process_text():
-                    found = pp.find_process_preset_combo(session)
-                    return found[2] if found and found[1] else ''
-
                 def unselected(kind, record):
                     where = 'is in the list but could not be selected' if record.get('listed') else 'is not in the list'
                     return ValueError(f'{record["target"]} {where}: {kind}; tried {record.get("attempts")}')
@@ -120,6 +116,17 @@ def run(args, work, analysis):
                 if not process[1]:
                     raise ValueError('the process preset list control was not found')
                 rect, control = process[0], process[1]
+
+                def process_text():
+                    """What the process preset row reads now: the control found above, or the visible
+                    control that took its rectangle when the selection rebuilt it. (Run dev232m-4999edf0:
+                    the row read `BB Test Process` on screen and the reading looked the control up by
+                    its old text, `@Snapmaker` or `Default Setting`, and so read ''.)"""
+                    current = control
+                    if not winutil.user32.IsWindow(current):
+                        current = next((c for _t, c, r, *_rest in pp.kids(session)
+                                        if list(r) == list(rect) and winutil.user32.IsWindowVisible(c)), None)
+                    return combo_text(current) if current else ''
                 point = ((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2)
                 step = analysis['dropdowns']['process'] = {'target': NAMES['process'], 'before': combo_text(control)}
                 if not select_row(session, point, session.hwnd, 'process', NAMES['process'], work, step, process_text):
