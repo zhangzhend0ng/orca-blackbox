@@ -153,6 +153,7 @@ CASES: dict[str, dict] = {
     "m7x_233_export_merged_stl": _o("m7", "A"),     # File > Export, all objects as one STL
     "m7x_234_export_plate_slice": _o("m7", "A"),    # File > Export, the plate's sliced file
     "m7x_236_export_gcode": _o("m7", "A"),          # File > Export, plain G-code
+    "m7x_246_repair_model": _o("m7", "A"),         # model context menu, Fix model
     # #254 follow-up probe: a record of how the plate's temporary G-code grows under the memory guard,
     # never a verdict.
     "m7x_254_gcode_tmp_probe": _o("m7", "A"),
