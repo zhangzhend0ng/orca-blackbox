@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 # feishu: baseline#232
-# m7x_232_import_configs.py — Feishu #232: export a preset bundle, import it through File > Import and compare the presets.
-"""Export one preset bundle from the U1 template project (File > Export > Export Preset Bundle..., type
-Printer config bundle; one zip per preset kind when no printer is listed for it), import the files into a
-fresh profile through File > Import > Import Configs..., and compare the presets the profile stores
-before and after with the presets inside the files.
+# m7x_232_import_configs.py — Feishu #232: import a preset config file through File > Import, then import it again.
+"""Build a config file holding one printer, one filament and one process preset (the parameters of the
+template printer's system presets under names of their own), import it into a fresh profile through
+File > Import > Import Configs..., then import the same file again to see what the product does about
+the name clash. Presets are compared through the JSON files the profile stores.
 
-The Feishu precondition names an exported .ini file. The chooser of this build
-offers *.json, *.zip, *.orca_printer and *.orca_filament only (MainFrame.cpp:3466-3468,
-sm-v2.4.0); .ini is not offered, so the config files are ones the product exports
-itself. The Import result box is MainFrame.cpp:3497-3503; a name clash asks
-through ConfigsOverwriteConfirmDialog (MainFrame.cpp:3479-3484)."""
+The Feishu precondition names an exported .ini file. The import only loads preset
+JSON files, plain or inside a zip, at sync/softfever-20261010 (PresetBundle.cpp:1926,
+1930, 2083-2086) and likewise at sm-v2.4.0 (944-948, 1032-1035): an .ini is ignored and
+the chooser does not offer it. So the config file here is a zip of three preset JSON
+files; the .ini is still offered to the chooser once and what happens is recorded,
+without taking part in the verdict."""
 import argparse
 import json
 import sys
@@ -23,25 +24,17 @@ HERE = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(HERE), str(HERE / 'tests')]
 
 import m7_common as m7
+from harness import profile
 from m3_common import add_common_args, boot_session
 from m7x_249_add_part import capture, stage
 from m8_common import wait_arrival
-from zip_import_cases import wait_closed
 from zip_import_oracle import digest
-from import_configs_cases import (BUNDLE_TYPE, PRINTER_NAME, ZIP_TYPES, choose_configs, collect_import_dialogs,
-                                  export_bundle, keep_app_log, save_user_printer, wait_preset)
-from import_configs_oracle import bundle_presets, export_failed, profile_presets, verify_import
+from import_configs_cases import import_once
+from import_configs_oracle import (ARCHIVE, DUPLICATES, IMPORTED, INI, VENDOR, build_config, bundle_presets,
+                                   profile_presets, template_presets, verify_import, vendor_directory, write_ini)
 
 TEMPLATE = HERE / 'fixtures/agent_layer_cube.3mf'
 LOG = '[m7x232]'
-
-
-def boot(args, work, profile):
-    session = boot_session(SimpleNamespace(exe=args.exe, datadir=work / profile), model=TEMPLATE)
-    m7.ensure_maximized(session)
-    if not wait_arrival(session, timeout_s=30, min_frac=0.001)[0]:
-        raise ValueError('fixture did not render')
-    return session
 
 
 def keep(path, rows):
@@ -49,58 +42,54 @@ def keep(path, rows):
 
 
 def run(args, work, analysis):
-    inputs = work / 'inputs'
-    files, message = [], None
-    # Session 1 exports the config files with the product itself.
-    with stage(analysis, 'export_bundle'):
-        session = boot(args, work, 'export-profile')
-        try:
-            analysis['dialogs'] = []
-            # A user printer preset is what lets the bundle type list a printer.
-            with stage(analysis, 'save_user_printer'):
-                save_user_printer(session, PRINTER_NAME, work, analysis)
-                analysis['saved_printer']['on_disk'] = wait_preset(work / 'export-profile', 'machine', PRINTER_NAME)
-            files, message = export_bundle(session, BUNDLE_TYPE, inputs, work, analysis)
-            if files:
-                analysis['export_path'] = BUNDLE_TYPE
-            elif message is None:
-                # No printer is listed for the bundle: one zip per preset kind.
-                analysis['export_path'] = 'fallback: ' + ', '.join(ZIP_TYPES)
-                for kind in ZIP_TYPES:
-                    more, message = export_bundle(session, kind, inputs, work, analysis)
-                    files += more
-            else:
-                analysis['export_path'] = f'{BUNDLE_TYPE}: refused by the product'
-            analysis['config_files'] = [{'file': f'inputs/{path.name}', 'not_harvested': True, **digest(path)}
-                                        for path in files]
-        finally:
-            analysis['app_log_lines'] = keep_app_log(work / 'export-profile', work)
-            session.close()
-    if not files:
-        with stage(analysis, 'export_failed'):
-            analysis['results'].update(export_failed(message))
-        return
-    # Session 2 starts from a seeded profile and imports those files.
-    with stage(analysis, 'import_configs'):
-        datadir = work / 'import-profile'
-        session = boot(args, work, 'import-profile')
-        try:
-            analysis['choosers'] = []
-            before = profile_presets(datadir)
-            for path in files:
-                chooser = choose_configs(session, path, work, analysis)
-                if not wait_closed(chooser, 10):
-                    raise ValueError(f'{path.name}: chooser did not close after Open')
-                collect_import_dialogs(session, work, analysis)
-            after = profile_presets(datadir)
+    archive, datadir = work / 'inputs' / ARCHIVE, work / 'import-profile'
+    with stage(analysis, 'build_config'):
+        sources = template_presets(TEMPLATE)
+        analysis['sources'] = sources
+        vendor = vendor_directory([HERE / 'resources', profile.default_presets_dir()], sources)
+        analysis['vendor_directory'] = str(vendor)
+        built = build_config(vendor, sources, work, archive)
+        write_ini(work, built['presets'])
+        analysis['inheritance'] = built['chains']
+        analysis['config_file'] = {'file': f'inputs/{ARCHIVE}', 'not_harvested': True, **digest(archive)}
+        config = [row for path in sorted(work.glob('bb_test_*.json')) for row in bundle_presets(path)]
+        analysis['config'] = [[row['kind'], row['name']] for row in config]
+    session = boot_session(SimpleNamespace(exe=args.exe, datadir=datadir), model=TEMPLATE)
+    try:
+        m7.ensure_maximized(session)
+        if not wait_arrival(session, timeout_s=30, min_frac=0.001)[0]:
+            raise ValueError('fixture did not render')
+        analysis['choosers'] = []
+        with stage(analysis, 'ini_attempt'):
+            # The Feishu text names an .ini file. What the chooser and the product do with it is
+            # recorded only; the source shows that no code path loads it.
+            try:
+                analysis['ini_attempt'] = import_once(session, work / INI, work, analysis, 'ini')
+            except (OSError, RuntimeError, ValueError) as exc:
+                analysis['ini_attempt'] = {'error': f'{type(exc).__name__}: {exc}'}
+        with stage(analysis, 'first_import'):
+            start = profile_presets(datadir)
+            analysis['first'] = import_once(session, archive, work, analysis, 'zip1')
+            first = profile_presets(datadir)
             capture(session, work / 'imported.png')
-        finally:
-            session.close()
+        with stage(analysis, 'second_import'):
+            # The same file again: every preset now exists, so a name clash is certain.
+            analysis['second'] = import_once(session, archive, work, analysis, 'zip2')
+            second = profile_presets(datadir)
+            capture(session, work / 'imported-again.png')
+    finally:
+        session.close()
     with stage(analysis, 'verify'):
-        keep(work / 'presets-before.json', before)
-        keep(work / 'presets-after.json', after)
-        config = [row for path in files for row in bundle_presets(path)]
-        analysis['results'].update(verify_import(config, before, after, analysis['dialogs']))
+        keep(work / 'presets-start.json', start)
+        keep(work / 'presets-first.json', first)
+        keep(work / 'presets-second.json', second)
+        ini_added = sorted({'/'.join((row['kind'], row['name'])) for row in start})
+        analysis['ini_attempt']['presets_in_profile_after'] = ini_added
+        one = verify_import(config, start, first, analysis['first']['dialogs'])
+        two = verify_import(config, first, second, analysis['second']['dialogs'])
+        analysis['first_import'], analysis['second_import'] = one['reading'], two['reading']
+        analysis['results'][IMPORTED] = one[IMPORTED]
+        analysis['results'][DUPLICATES] = two[DUPLICATES]
         print(LOG, analysis['results'], flush=True)
 
 
