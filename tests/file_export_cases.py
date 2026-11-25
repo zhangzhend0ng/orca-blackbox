@@ -42,7 +42,7 @@ import cv2
 import numpy as np
 
 import m7_common as m7
-from harness import export_util, topbar_util, winutil
+from harness import export_util, mixing_util, topbar_util, winutil
 from m2_slice_chain import click_slice_start
 
 LOG = '[export]'
@@ -286,6 +286,400 @@ def export_menu_reading(session, work, image, margin=12):
     print(f'{LOG} File > Export read: {[(row["index"], row["label"], row["enabled"]) for row in export_rows]}; '
           f'picture {picture.get("image") or "unavailable: " + picture.get("unavailable", "?")}', flush=True)
     return {'file': file_rows, 'export': export_rows, 'menu_picture': picture}
+
+
+# --- the application's own dialogs: preset packages ----------------------------
+
+# File > Export > Export Preset Bundle... opens the application's own #32770 dialog "Export
+# Preset Bundle" (CreatePresetsDialog.cpp). Measured on the guest (census 0d7222e7 and the
+# #232 dev runs a2aafd3d and c378dee):
+# * A package type is a text-less native Button of 18 x 18 with its Static label 5 px to the
+#   right; a click on the label chooses the type.
+# * What can be exported is listed under the types: a text-less check box with its Static
+#   label to the right on the same row, and only the box takes the click. The list depends on
+#   the type and on the profile; a type with nothing to list shows no control at all.
+# * OK with nothing ticked brings "Snapmaker Orca - Info" ("Please select at least one
+#   printer or filament.") whose one button reads "Yes". OK with a box ticked opens "Choose a
+#   directory" (a "Folder:" box and "Select Folder"); the package lands in that directory
+#   under a name the application picks, and an Info box reports the outcome in an html window,
+#   which has no window text: its words are in pixels only.
+# * A failed export leaves the dialog open. WM_CLOSE is what closes it; IDCANCEL is not.
+BUNDLE_ROW = 'Export Preset Bundle'
+BUNDLE_DIALOG = 'Export Preset Bundle'
+BUNDLE_KINDS = ('Printer config bundle(.orca_printer)', 'Filament bundle(.orca_filament)',
+                'Printer presets(.zip)', 'Filament presets(.zip)', 'Process presets(.zip)')
+BUNDLE_FILES = {'Printer presets(.zip)': 'Printer presets.zip', 'Filament presets(.zip)': 'Filament presets.zip',
+                'Process presets(.zip)': 'Process presets.zip'}
+BUNDLE_BUTTONS = ('wxWindowNR', 'Button')
+DIRECTORY_DIALOG = 'Choose a directory'
+IMPORT_ROW = 'Import Configs'
+IMPORT_DIALOG = 'Select profile to load:'
+OVERWRITE_DIALOG = 'Overwrite config'
+IMPORT_RESULT = 'Import result'
+INFO_BUTTONS = ('Yes', 'OK')
+WM_CLOSE = 0x0010
+
+
+def dialog_controls(hwnd):
+    """Every child of a dialog in enumeration order: class, text, rectangle, handle, visibility."""
+    classes = {child: cls for cls, _text, child in descendants(hwnd)}
+    return [{'cls': classes.get(child, ''), 'text': text, 'rect': [left, top, right, bottom], 'hwnd': child,
+             'visible': bool(winutil.user32.IsWindowVisible(child))}
+            for text, (left, top, right, bottom), child in export_util._children_texts(hwnd)]
+
+
+def plain(text):
+    """Window text as it is shown: the ampersands of accelerators dropped."""
+    return text.replace('&', '').strip()
+
+
+def click_dialog_text(hwnd, text, classes=('wxWindowNR', 'Button')):
+    """Click the one control of a dialog whose text is `text` as shown.
+
+    The click is a window message to the control under the point, looked up inside the
+    dialog's own window tree (the dialog is the root of the hit test), so a layer above the
+    dialog cannot take it. Returns what was clicked; raises when the text is not there exactly
+    once. No key and no default-button command is ever sent."""
+    wanted = plain(text).casefold()
+    controls = dialog_controls(hwnd)
+    found = [control for control in controls
+             if plain(control['text']).casefold() == wanted and control['cls'] in classes]
+    if len(found) != 1:
+        shown = [control['text'] for control in controls if control['text']]
+        raise ValueError(f'the control {text!r} is in the dialog {len(found)} times; it shows {shown!r}')
+    left, top, right, bottom = found[0]['rect']
+    hit = winutil.msg_click_screen((left + right) // 2, (top + bottom) // 2, hwnd)
+    return {'text': found[0]['text'], 'class': found[0]['cls'], 'rect': [left, top, right, bottom],
+            'hit': hex(hit) if hit else None}
+
+
+def _picture(hwnd, work, image):
+    """A PrintWindow picture of a dialog under `image`, or why there is none."""
+    try:
+        return {'image': capture_window(hwnd, Path(work) / image), 'image_name': image}
+    except (OSError, RuntimeError, ValueError, cv2.error) as exc:
+        return {'image': f'unavailable ({exc})', 'image_name': image}
+
+
+def dialog_receipt(hwnd, work=None, image=None):
+    """A dialog's title, its controls with class and rectangle, and a PrintWindow picture."""
+    controls = dialog_controls(hwnd)
+    receipt = {'title': winutil.window_title(hwnd),
+               'texts': [control['text'] for control in controls if control['text']],
+               'controls': [[control['cls'], control['text'], list(control['rect'])] for control in controls]}
+    if image:
+        receipt.update(_picture(hwnd, work, image))
+    return receipt
+
+
+def press_dialog_button(hwnd, buttons, receipt):
+    """Press the first of `buttons` the dialog shows exactly once, by its text. Returns whether
+    one was pressed; what was pressed goes to receipt['pressed']. Nothing is ever sent as a
+    default key."""
+    for text in buttons:
+        try:
+            receipt['pressed'] = click_dialog_text(hwnd, text)
+        except ValueError:
+            continue
+        return True
+    receipt['pressed'] = None
+    return False
+
+
+def _wait_other_dialog(pid, exclude, timeout_s):
+    """The next #32770 of the application other than the windows in `exclude`, or None.
+
+    Every visible top-level window is looked at on every poll: a wait for the first dialog
+    of a class would hand back the dialog that is already open and known, over and over."""
+    deadline = time.monotonic() + timeout_s
+    while True:
+        found = next((window for window in mixing_util.toplevel(pid)
+                      if window[0] == '#32770' and window[3] not in exclude), None)
+        if found or time.monotonic() >= deadline:
+            return found
+        time.sleep(0.25)
+
+
+def _read_pixels(hwnd):
+    """(the words a window shows in pixels, why they could not be read or None). The Info
+    boxes of the application write their message into an html window, which carries no
+    window text. The reading is evidence; no step depends on it."""
+    try:
+        from harness import ocr_util
+        return ' '.join(ocr_util.ocr_hwnd(hwnd).split()) or None, None
+    except Exception as exc:  # noqa: BLE001 - a reading in pixels is extra evidence only
+        return None, f'{type(exc).__name__}: {exc}'
+
+
+def _leave_dialog(hwnd, button='Cancel'):
+    """Close one of the application's dialogs by its own `button`; WM_CLOSE when it stays."""
+    try:
+        click_dialog_text(hwnd, button)
+    except ValueError:
+        pass
+    if _wait_closed(hwnd, 5):
+        return True
+    winutil._send_msg(hwnd, WM_CLOSE, 0, 0)
+    return _wait_closed(hwnd, 5)
+
+
+def bundle_rows(controls):
+    """The check boxes of the Export Preset Bundle dialog, each paired with its label.
+
+    A box is a small text-less control with a Static written to its right on the same row. A
+    box whose label is a package type is a type ('types'); every other one is something to
+    export ('items'). 'hint' is the line the dialog writes under the list; 'rows' keeps the
+    rectangles of both."""
+    boxes = [control for control in controls
+             if control['cls'] in BUNDLE_BUTTONS and not control['text'] and control['visible']
+             and control['rect'][2] - control['rect'][0] <= 24 and control['rect'][3] - control['rect'][1] <= 24]
+    labels = [control for control in controls if control['cls'] == 'Static' and control['text'] and control['visible']]
+    rows, paired = [], set()
+    for box in boxes:
+        left, top, right, bottom = box['rect']
+        middle = (top + bottom) / 2
+        beside = [label for label in labels if label['hwnd'] not in paired and label['rect'][0] >= right - 2
+                  and label['rect'][1] - 4 <= middle <= label['rect'][3] + 4]
+        if not beside:
+            continue
+        label = min(beside, key=lambda candidate: candidate['rect'][0])
+        paired.add(label['hwnd'])
+        rows.append({'label': label['text'], 'group': 'type' if label['text'] in BUNDLE_KINDS else 'item',
+                     'box': list(box['rect']), 'box_class': box['cls'], 'label_rect': list(label['rect'])})
+    rest = [control for control in labels if control['hwnd'] not in paired
+            and 'shared with others' not in control['text'].casefold()]
+    hint = max(rest, key=lambda control: control['rect'][3])['text'] if rest else None
+    return {'types': [row['label'] for row in rows if row['group'] == 'type'],
+            'items': [row['label'] for row in rows if row['group'] == 'item'], 'hint': hint, 'rows': rows}
+
+
+def _choose_bundle_kind(hwnd, kind, hint_before, work=None, image=None):
+    """Click the label of the package type `kind` and read what the dialog lists afterwards."""
+    entry = {'clicked': click_dialog_text(hwnd, kind, classes=('Static', 'wxWindowNR', 'Button'))}
+    started = time.monotonic()
+    rows = bundle_rows(dialog_controls(hwnd))
+    while not rows['items'] and time.monotonic() - started < 6:
+        if rows['hint'] != hint_before and time.monotonic() - started >= 1.0:
+            break  # the dialog answered with a new hint, and the list under it is empty
+        time.sleep(0.25)
+        rows = bundle_rows(dialog_controls(hwnd))
+    time.sleep(0.5)  # the list finishes its layout after the hint changes
+    rows = bundle_rows(dialog_controls(hwnd))
+    entry['hint'] = rows['hint']
+    entry['items'] = [{'label': row['label'], 'box': row['box'], 'box_class': row['box_class']}
+                      for row in rows['rows'] if row['group'] == 'item']
+    if work is not None and image:
+        entry.update(_picture(hwnd, work, image))
+    return entry
+
+
+def bundle_survey(session, work, analysis, key='bundle_survey'):
+    """Open File > Export > Export Preset Bundle once and read, for every package type, what it
+    lists; then close the dialog without exporting.
+
+    The receipt goes to analysis[key] and is returned: the dialog as opened, and per type the
+    rows listed, the hint under the list and a picture. Raises when the dialog does not open,
+    is not the one measured, or will not close."""
+    receipt = analysis[key] = {'order': list(BUNDLE_KINDS), 'kinds': {}}
+    dispatched, dialog = m7.file_menu_dispatch(session, BUNDLE_ROW, expect_dialog=True, via='Export', timeout_s=10)
+    if not dispatched or not dialog:
+        raise ValueError(f'File > Export > {BUNDLE_ROW} opened no dialog (dispatched={dispatched!r})')
+    _cls, title, _rect, hwnd = dialog
+    if BUNDLE_DIALOG.casefold() not in title.casefold():
+        raise ValueError(f'File > Export > {BUNDLE_ROW} opened {title!r}')
+    receipt['title'] = title
+    try:
+        receipt['dialog'] = dialog_receipt(hwnd, work, 'bundle-dialog.png')
+        hint = bundle_rows(dialog_controls(hwnd))['hint']
+        for number, kind in enumerate(BUNDLE_KINDS, 1):
+            receipt['kinds'][kind] = _choose_bundle_kind(hwnd, kind, hint, work, f'bundle-type-{number}.png')
+    finally:
+        receipt['closed'] = _leave_dialog(hwnd)
+    if not receipt['closed']:
+        raise ValueError('the Export Preset Bundle dialog would not close')
+    return receipt
+
+
+def _box_beside(dialog, labels):
+    """The Edit to the right of the Static that names it (`labels`, without the colon), else the
+    first Edit of the dialog. A file chooser has more than one Edit; the one the confirmation
+    reads is the one with the label."""
+    wanted = {label.casefold() for label in labels}
+    controls = dialog_controls(dialog)
+    marks = [control for control in controls
+             if control['cls'] == 'Static' and plain(control['text']).rstrip(':').casefold() in wanted]
+    edits = [control for control in controls if control['cls'] == 'Edit']
+    for mark in marks:
+        for edit in edits:
+            if edit['rect'][0] >= mark['rect'][2] - 4 and edit['rect'][1] < mark['rect'][3] \
+                    and edit['rect'][3] > mark['rect'][1]:
+                return edit['hwnd']
+    return export_util.find_edit(dialog)
+
+
+def _give_directory(session, chooser, directory, entry):
+    """Type `directory` into the folder box of a directory chooser and confirm; the chooser's own
+    select button ends it when the confirmation only moved it."""
+    edit = _box_beside(chooser, ('Folder',))
+    if edit is None or winutil._window_pid(edit) != session.pid:
+        raise ValueError('the directory chooser has no owned folder box')
+    winutil.select_all(edit)
+    winutil.msg_text(edit, str(directory))
+    entry['typed'] = winutil.edit_text(edit, size=1024)
+    if entry['typed'] != str(directory):
+        raise ValueError(f'the directory chooser did not take the directory: {entry["typed"]!r}')
+    winutil._send_msg(chooser, 0x0111, IDOK, 0)
+    if _wait_closed(chooser, 8):
+        return
+    entry['select_pressed'] = click_dialog_text(chooser, 'Select Folder')
+    if not _wait_closed(chooser, 10):
+        raise ValueError('the directory chooser stayed open')
+
+
+def export_preset_bundle(session, kind, directory, work, analysis, tick='all', key='preset_export'):
+    """File > Export > Export Preset Bundle: choose the zip `kind`, tick the listed rows named in
+    `tick` ('all' for every row), press OK, give `directory` to the chooser and answer the
+    result box.
+
+    `kind` is one of the three zip types by its exact row text (BUNDLE_FILES). The receipt
+    goes to analysis[key] and is returned: the rows listed and ticked, the chooser, the result
+    box with its words read from pixels, and what landed (`landed`, and for a landed file its
+    path, name, bytes and SHA-256). A step that does not behave as measured raises ValueError
+    with the receipt kept and leaves no dialog open. Whether what landed is a package of the
+    presets is not judged here."""
+    if BUNDLE_FILES.get(kind) is None:
+        raise ValueError(f'{kind!r} is not one of the zip types this helper exports: {sorted(BUNDLE_FILES)}')
+    directory = Path(directory)
+    target = directory / BUNDLE_FILES[kind]
+    receipt = analysis[key] = {'kind': kind, 'directory': str(directory), 'package_name': target.name}
+    if target.exists():
+        receipt['error'] = 'a file of that name is already in the directory'
+        raise ValueError(f'{target} exists: the application would ask whether to replace it')
+    directory.mkdir(parents=True, exist_ok=True)  # the chooser only accepts a directory that is there
+    dispatched, dialog = m7.file_menu_dispatch(session, BUNDLE_ROW, expect_dialog=True, via='Export', timeout_s=10)
+    if not dispatched or not dialog:
+        raise ValueError(f'File > Export > {BUNDLE_ROW} opened no dialog (dispatched={dispatched!r})')
+    _cls, title, _rect, hwnd = dialog
+    if BUNDLE_DIALOG.casefold() not in title.casefold():
+        raise ValueError(f'File > Export > {BUNDLE_ROW} opened {title!r}')
+    receipt['title'] = title
+    try:
+        receipt['dialog'] = dialog_receipt(hwnd, work, 'export-dialog.png')
+        hint = bundle_rows(dialog_controls(hwnd))['hint']
+        receipt['listed'] = _choose_bundle_kind(hwnd, kind, hint)
+        listed = receipt['listed']['items']
+        wanted = [row['label'] for row in listed] if tick in (None, 'all') else list(tick)
+        unknown = [label for label in wanted if label not in [row['label'] for row in listed]]
+        if unknown:
+            raise ValueError(f'{kind!r} does not list {unknown!r}; it lists {[row["label"] for row in listed]!r}')
+        if not wanted:
+            raise ValueError(f'{kind!r} lists nothing to export in this profile '
+                             f'(hint: {receipt["listed"]["hint"]!r})')
+        receipt['ticked'] = []
+        for row in listed:
+            if row['label'] not in wanted:
+                continue
+            left, top, right, bottom = row['box']
+            hit = winutil.msg_click_screen((left + right) // 2, (top + bottom) // 2, hwnd)
+            receipt['ticked'].append({'label': row['label'], 'box': list(row['box']), 'hit': hex(hit) if hit else None})
+        receipt['after_ticking'] = dialog_receipt(hwnd, work, 'export-dialog-ticked.png')
+        receipt['ok'] = click_dialog_text(hwnd, 'OK')
+        following = _wait_other_dialog(session.pid, {hwnd}, 20)
+        if not following:
+            raise ValueError('pressing OK opened neither a directory chooser nor a message')
+        if DIRECTORY_DIALOG.casefold() not in following[1].casefold():
+            refusal = receipt['refusal'] = dialog_receipt(following[3], work, 'result-dialog.png')
+            refusal['words'], refusal['words_error'] = _read_pixels(following[3])
+            press_dialog_button(following[3], INFO_BUTTONS, refusal)
+            raise ValueError(f'pressing OK did not open a directory chooser but {following[1]!r}: '
+                             f'{refusal["words"] or refusal["texts"]!r}')
+        chooser = following[3]
+        receipt['directory_dialog'] = dialog_receipt(chooser, work, 'directory-dialog.png')
+        _give_directory(session, chooser, directory, receipt['directory_dialog'])
+        result = _wait_other_dialog(session.pid, {hwnd}, 60)
+        if result:
+            box = receipt['result'] = dialog_receipt(result[3], work, 'result-dialog.png')
+            box['words'], box['words_error'] = _read_pixels(result[3])
+            press_dialog_button(result[3], INFO_BUTTONS, box)
+            if not _wait_closed(result[3], 10):
+                raise ValueError('the result message stayed open')
+        receipt['dialog_closed'] = _wait_closed(hwnd, 15)
+    finally:
+        if winutil.user32.IsWindowVisible(hwnd):
+            winutil._send_msg(hwnd, WM_CLOSE, 0, 0)  # a failed export leaves the dialog open
+    receipt['landed'] = target.is_file()
+    if receipt['landed']:
+        raw = target.read_bytes()
+        receipt.update(saved_path=str(target), saved_name=target.name, bytes=len(raw),
+                       sha256=sha256(raw).hexdigest())
+        print(f'{LOG} {target.name} of kind {kind!r}: {len(raw)} bytes in {directory}', flush=True)
+    return receipt
+
+
+def import_configs(session, sources, work, analysis, key='config_import'):
+    """File > Import > Import Configs: give the file chooser the path(s), then answer by their
+    text the dialogs that follow.
+
+    An "Overwrite config" question gets its Yes (it only comes for a preset of the same name);
+    the "Import result" message gets OK. Both are read in pixels as well, as their text may be
+    an html window. Any other dialog is closed and raised. The receipt in analysis[key] lists
+    every dialog; a step that does not behave that way raises ValueError and leaves no dialog
+    open."""
+    sources = [Path(source) for source in (sources if isinstance(sources, (list, tuple)) else [sources])]
+    for source in sources:
+        if not source.is_file():
+            raise ValueError(f'{source} is not a file to import')
+    receipt = analysis[key] = {'sources': [source.name for source in sources], 'dialogs': []}
+    dispatched, dialog = m7.file_menu_dispatch(session, IMPORT_ROW, expect_dialog=True, via='Import', timeout_s=10)
+    if not dispatched or not dialog:
+        raise ValueError(f'File > Import > {IMPORT_ROW} opened no dialog (dispatched={dispatched!r})')
+    _cls, title, _rect, hwnd = dialog
+    if IMPORT_DIALOG.casefold() not in title.casefold():
+        raise ValueError(f'File > Import > {IMPORT_ROW} opened {title!r}')
+    typed = ' '.join(f'"{source}"' for source in sources) if len(sources) > 1 else str(sources[0])
+    seen = {hwnd}
+    try:
+        receipt['dialog'] = dialog_receipt(hwnd, work, 'import-dialog.png')
+        edit = _box_beside(hwnd, ('File name',))
+        if edit is None or winutil._window_pid(edit) != session.pid:
+            raise ValueError(f'{title!r} has no owned file name box')
+        winutil.select_all(edit)
+        winutil.msg_text(edit, typed)
+        receipt['typed'] = winutil.edit_text(edit, size=2048)
+        if receipt['typed'] != typed:
+            raise ValueError(f'{title!r} did not take the path: {receipt["typed"]!r}')
+        winutil._send_msg(hwnd, 0x0111, IDOK, 0)
+        if not _wait_closed(hwnd, 15):
+            raise ValueError(f'{title!r} stayed open')
+        for number in range(1, 9):
+            current = _wait_other_dialog(session.pid, seen, 40)
+            if not current:
+                raise ValueError('nothing followed the file chooser: no "Import result" message')
+            seen.add(current[3])
+            entry = dialog_receipt(current[3], work, f'import-{number}-dialog.png')
+            entry['words'], entry['words_error'] = _read_pixels(current[3])
+            receipt['dialogs'].append(entry)
+            heading = entry['title'].casefold()
+            if IMPORT_RESULT.casefold() in heading:
+                if not press_dialog_button(current[3], ('OK',), entry):
+                    raise ValueError(f'the "Import result" message shows no OK: {entry["texts"]!r}')
+                if not _wait_closed(current[3], 10):
+                    raise ValueError(f'{entry["title"]!r} stayed open')
+                break
+            if OVERWRITE_DIALOG.casefold() not in heading:
+                raise ValueError(f'an unexpected dialog followed the import: {entry["title"]!r} '
+                                 f'{entry["words"] or entry["texts"]!r}')
+            if not press_dialog_button(current[3], ('Yes',), entry):
+                raise ValueError(f'the overwrite question shows no Yes: {entry["texts"]!r}')
+            if not _wait_closed(current[3], 10):
+                raise ValueError(f'{entry["title"]!r} stayed open')
+        else:
+            raise ValueError('the import ended without an "Import result" message')
+    finally:
+        for handle in seen:  # after a failure nothing of this flow may stay over the editor
+            if winutil.user32.IsWindowVisible(handle):
+                winutil._send_msg(handle, WM_CLOSE, 0, 0)
+    return receipt
 
 
 def export_row_in(rows, item):

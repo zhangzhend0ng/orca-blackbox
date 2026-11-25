@@ -4,10 +4,14 @@ The helpers drive real Win32 objects on the guest; here every window call is
 replaced by a recording fake so that the order of the actions, the refusal
 paths and the receipt are pinned without a GUI."""
 import ctypes
+from hashlib import sha256
+from io import BytesIO
 from itertools import count
+import json
 from pathlib import Path
 import sys
 from types import SimpleNamespace
+from zipfile import ZipFile
 
 import numpy as np
 
@@ -17,6 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tests'))
 sys.path.insert(0, str(ROOT / 'unit_tests'))
 
+import export_configs_oracle as configs  # noqa: E402
 import file_export_cases as cases  # noqa: E402
 import m7_common as m7  # noqa: E402
 import test_export_io_oracle as gcode  # noqa: E402
@@ -937,4 +942,501 @@ def test_disabled_rows_case_fails_the_clause_that_does_not_hold(monkeypatch, tmp
     assert analysis['results'] == {
         '切片导出类条目置灰': "FAIL (before slicing: 'Export G-code' is enabled)",
         '切片完成后恢复可用': "FAIL (after slicing: 'Export G-code' is disabled)"}
+    assert m7.m7_verdict(analysis['results']) == 1
+
+
+# --- the application's own dialogs: Export Preset Bundle and Import Configs -------------
+# Rectangles are the ones of the guest census 0d7222e7 (dialog 760,391 - 1332,761) and of the
+# #232 dev run c378dee0 (directory chooser, result box).
+BUNDLE, CHOOSER, IMPORT_BOX, FOLDER_BOX = 500, 501, 503, 510
+TYPE_ROWS = dict(zip(cases.BUNDLE_KINDS, (443, 506, 563, 591, 619)))
+KIND, PRINTER = cases.BUNDLE_KINDS[4], 'Snapmaker U1 (0.4 nozzle)'
+BUNDLE_HINTS = {
+    cases.BUNDLE_KINDS[0]: 'Only display printers with changes to printer, filament, and process presets are displayed.',
+    cases.BUNDLE_KINDS[1]: 'Only display the filament names with changes to filament presets.',
+    cases.BUNDLE_KINDS[2]: 'Only printer names with user printer presets will be displayed, and each preset you choose will be exported as a ZIP archive.',
+    cases.BUNDLE_KINDS[3]: 'Only the filament names with user filament presets will be displayed, \nand all user filament presets in each filament name you select will be exported as a ZIP archive.',
+    cases.BUNDLE_KINDS[4]: 'Only printer names with changed process presets will be displayed, \nand all user process presets in each printer name you select will be exported as a ZIP archive.'}
+TITLES = {BUNDLE: 'Export Preset Bundle', CHOOSER: 'Choose a directory', IMPORT_BOX: cases.IMPORT_DIALOG}
+
+
+def zipped(files):
+    out = BytesIO()
+    with ZipFile(out, 'w') as archive:
+        for name, raw in files.items():
+            archive.writestr(name, raw)
+    return out.getvalue()
+
+
+class Bundle:
+    """The Export Preset Bundle dialog as measured, the dialogs it brings and what an export
+    writes. `lists` is {package type: [labels listed]}; `outcome` is what the application
+    reports once the directory is confirmed."""
+
+    def __init__(self, monkeypatch, tmp_path, lists=None, outcome='Export successful', chooser_closes=True,
+                 refuse=False):
+        self.tmp_path, self.lists, self.outcome = tmp_path, lists or {}, outcome
+        self.chooser_closes, self.refuse = chooser_closes, refuse
+        self.visible, self.calls, self.editing, self.images = set(), [], {}, []
+        self.words, self.folder, self.kind, self.ticked, self.extra = {}, None, None, set(), {}
+        self.flow_shown = set()
+        self.import_flow = [('Overwrite config', 'A config exists with the same name: 0.20mm. Do you want to overwrite it?', 'Yes'),
+                            ('Import result', 'There are 1 configs imported. (Only non-system and compatible configs)', 'OK')]
+        ticking(monkeypatch)
+        monkeypatch.setattr(cases, 'descendants', lambda hwnd: [(c['cls'], c['text'], c['hwnd']) for c in self.controls(hwnd)])
+        monkeypatch.setattr(cases.export_util, '_children_texts',
+                            lambda hwnd: [(c['text'], tuple(c['rect']), c['hwnd']) for c in self.controls(hwnd)])
+        monkeypatch.setattr(cases.export_util, 'find_edit',
+                            lambda hwnd: next((c['hwnd'] for c in self.controls(hwnd) if c['cls'] == 'Edit'), None))
+        monkeypatch.setattr(cases.mixing_util, 'toplevel', self.windows)
+        monkeypatch.setattr(cases.winutil.user32, 'IsWindowVisible', self.is_visible)
+        monkeypatch.setattr(cases.winutil, 'window_title', lambda hwnd: self.title(hwnd))
+        monkeypatch.setattr(cases.winutil, '_window_pid', lambda hwnd: SESSION_PID)
+        monkeypatch.setattr(cases.winutil, 'select_all', lambda hwnd: self.calls.append(('select_all',)))
+        monkeypatch.setattr(cases.winutil, 'msg_text', self.type)
+        monkeypatch.setattr(cases.winutil, 'edit_text', lambda hwnd, size=64: self.editing.get(hwnd, ''))
+        monkeypatch.setattr(cases.winutil, '_send_msg', self.send)
+        monkeypatch.setattr(cases.winutil, 'msg_click_screen', self.click)
+        monkeypatch.setattr(cases, 'capture_window', lambda hwnd, path: self.images.append(Path(path).name)
+                            or {'width_px': 572, 'height_px': 370})
+        monkeypatch.setattr(cases, '_read_pixels', lambda hwnd: (self.words.get(hwnd), None))
+        monkeypatch.setattr(m7, 'file_menu_dispatch', self.dispatch)
+        self.session = SimpleNamespace(pid=SESSION_PID, alive=lambda: True)
+
+    def controls(self, hwnd):
+        if hwnd in self.extra:
+            entry = self.extra[hwnd]
+            return [{'cls': 'Static', 'text': '', 'rect': [863, 539, 927, 603], 'hwnd': 710},
+                    {'cls': 'htmlWindow', 'text': '', 'rect': [947, 539, 1255, 603], 'hwnd': 712},
+                    {'cls': 'wxWindowNR', 'text': entry['button'], 'rect': [1133, 603, 1233, 635], 'hwnd': 711}]
+        if hwnd == BUNDLE:
+            out = [{'cls': 'wxWindowNR', 'text': 'panel', 'rect': [768, 422, 1324, 423], 'hwnd': 600},
+                   {'cls': 'Static', 'text': 'Presets', 'rect': [783, 443, 883, 459], 'hwnd': 601}]
+            for number, (kind, top) in enumerate(TYPE_ROWS.items()):
+                out += [{'cls': 'Button', 'text': '', 'rect': [903, top, 921, top + 18], 'hwnd': 610 + 2 * number},
+                        {'cls': 'Static', 'text': kind, 'rect': [926, top, 1120, top + 18], 'hwnd': 611 + 2 * number}]
+            hint = BUNDLE_HINTS[self.kind] if self.kind else 'Please select a preset type you want to export'
+            out += [{'cls': 'Static', 'text': 'Printer and all the filament&&process presets that belongs to the '
+                                              'printer.\nCan be shared with others.', 'rect': [925, 467, 1309, 496], 'hwnd': 630},
+                    {'cls': 'Static', 'text': "User's filament preset set.\nCan be shared with others.",
+                     'rect': [925, 524, 1309, 553], 'hwnd': 631},
+                    {'cls': 'Static', 'text': hint, 'rect': [783, 662, 1309, 678], 'hwnd': 632}]
+            for number, label in enumerate(self.lists.get(self.kind, [])):
+                top = 700 + 28 * number
+                out += [{'cls': 'Button', 'text': '', 'rect': [793, top, 806, top + 13], 'hwnd': 640 + number},
+                        {'cls': 'Static', 'text': label, 'rect': [813, top, 1000, top + 13], 'hwnd': 660 + number}]
+            return out + [{'cls': 'wxWindowNR', 'text': 'panel', 'rect': [783, 696, 1309, 696], 'hwnd': 602},
+                           {'cls': 'wxWindowNR', 'text': 'panel', 'rect': [783, 696, 783, 696], 'hwnd': 603},
+                           {'cls': 'wxWindowNR', 'text': 'panel', 'rect': [768, 701, 1324, 753], 'hwnd': 604},
+                           {'cls': 'wxWindowNR', 'text': 'OK', 'rect': [1104, 711, 1204, 743], 'hwnd': 680},
+                           {'cls': 'wxWindowNR', 'text': 'Cancel', 'rect': [1214, 711, 1314, 743], 'hwnd': 681}]
+        if hwnd == CHOOSER:
+            return [{'cls': 'Edit', 'text': '', 'rect': [730, 12, 910, 34], 'hwnd': 511},
+                    {'cls': 'Static', 'text': 'Folder:', 'rect': [130, 434, 170, 450], 'hwnd': 700},
+                    {'cls': 'Edit', 'text': self.editing.get(FOLDER_BOX, ''), 'rect': [175, 432, 925, 450], 'hwnd': FOLDER_BOX},
+                    {'cls': 'Button', 'text': '&Help', 'rect': [600, 459, 680, 481], 'hwnd': 703},
+                    {'cls': 'Button', 'text': 'Select Folder', 'rect': [722, 459, 826, 481], 'hwnd': 701},
+                    {'cls': 'Button', 'text': 'Cancel', 'rect': [842, 459, 925, 481], 'hwnd': 702}]
+        return [{'cls': 'Edit', 'text': self.editing.get(513, ''), 'rect': [730, 12, 910, 34], 'hwnd': 513},  # search box first
+                {'cls': 'Static', 'text': 'File &name:', 'rect': [100, 434, 170, 450], 'hwnd': 730},
+                {'cls': 'Edit', 'text': self.editing.get(512, ''), 'rect': [175, 432, 925, 450], 'hwnd': 512},
+                {'cls': 'Button', 'text': '&Open', 'rect': [722, 459, 826, 481], 'hwnd': 720},
+                {'cls': 'Button', 'text': 'Cancel', 'rect': [842, 459, 925, 481], 'hwnd': 721}]
+
+    def title(self, hwnd):
+        return self.extra[hwnd]['title'] if hwnd in self.extra else TITLES.get(hwnd, '')
+
+    def is_visible(self, hwnd):
+        """A dialog that is up, and any control of one that is up."""
+        if hwnd in self.visible:
+            return True
+        if 600 <= hwnd < 700:
+            return BUNDLE in self.visible
+        if hwnd in (510, 511) or 700 <= hwnd < 710:
+            return CHOOSER in self.visible
+        if 710 <= hwnd < 720:
+            return any(handle in self.visible for handle in self.extra)
+        return 720 <= hwnd < 740 and IMPORT_BOX in self.visible
+
+    def message(self, title, words, button, **more):
+        hwnd = 800 + len(self.extra)
+        self.extra[hwnd] = {'title': title, 'button': button, **more}
+        self.words[hwnd] = words
+        self.visible.add(hwnd)
+        return hwnd
+
+    def under(self, hwnd, x, y):
+        """The control a click at (x, y) lands on: the smallest one that holds the point, as the
+        message click is resolved to the deepest child inside the dialog's own window tree."""
+        holding = [control for control in self.controls(hwnd)
+                   if control['rect'][0] <= x < control['rect'][2] and control['rect'][1] <= y < control['rect'][3]]
+        return min(holding, key=lambda control: (control['rect'][2] - control['rect'][0]) * (control['rect'][3] - control['rect'][1])) if holding else None
+
+    def click(self, x, y, root_hwnd=None):
+        self.calls.append(('click', x, y, root_hwnd))
+        if root_hwnd not in self.visible:
+            return 0
+        control = self.under(root_hwnd, x, y)
+        if control is None:
+            return 0
+        if root_hwnd == BUNDLE:
+            self.hit_bundle(control)
+        elif root_hwnd == CHOOSER:
+            if control['text'] == 'Select Folder':
+                self.select_folder()
+        elif root_hwnd in self.extra:  # a message box: its own button is the only thing that closes it
+            if control['text'] == self.extra[root_hwnd]['button']:
+                self.visible.discard(root_hwnd)
+                if self.extra[root_hwnd].get('closes_bundle'):
+                    self.visible.discard(BUNDLE)
+                if root_hwnd in self.flow_shown:
+                    self.next_message()  # the import brings its next box once one is answered
+        return 1
+
+    def hit_bundle(self, control):
+        listed = dict(zip(range(640, 640 + len(self.lists.get(self.kind, []))), self.lists.get(self.kind, [])))
+        if control['cls'] == 'Static' and control['text'] in cases.BUNDLE_KINDS:
+            self.kind = control['text']
+        elif control['hwnd'] in listed:
+            self.ticked.add(listed[control['hwnd']])
+        elif control['text'] == 'OK':
+            if self.ticked and not self.refuse:
+                self.visible.add(CHOOSER)
+            else:
+                self.message('Snapmaker Orca - Info', 'Please select at least one printer or filament.', 'Yes')
+        elif control['text'] == 'Cancel':
+            self.visible.discard(BUNDLE)
+
+    def select_folder(self):
+        self.folder = self.editing.get(FOLDER_BOX)
+        self.visible.discard(CHOOSER)
+        target = Path(self.folder) / cases.BUNDLE_FILES[self.kind]
+        if self.outcome == 'Export successful':
+            target.write_bytes(zipped({f'{label}.json': b'{"type": "process"}' for label in self.ticked}))
+            self.message('Snapmaker Orca - Info', 'Export successful', 'Yes', closes_bundle=True)
+        else:
+            target.write_bytes(b'')  # what a failed export leaves behind
+            self.message('Snapmaker Orca - Info', self.outcome, 'Yes')
+
+    def type(self, hwnd, text):
+        self.calls.append(('type', text))
+        self.editing[hwnd] = text
+
+    def send(self, hwnd, msg, wparam, lparam):
+        self.calls.append(('send', hwnd, msg, wparam))
+        if msg == cases.WM_CLOSE:
+            self.visible.discard(hwnd)
+        elif msg == 0x0111 and wparam == 1 and hwnd == CHOOSER and self.chooser_closes:
+            self.select_folder()
+        elif msg == 0x0111 and wparam == 1 and hwnd == IMPORT_BOX:
+            self.visible.discard(hwnd)
+            self.next_message()
+
+    def next_message(self):
+        if self.import_flow:
+            self.flow_shown.add(self.message(*self.import_flow.pop(0)))
+
+    def windows(self, pid):
+        return [('#32770', self.title(hwnd), (0, 0, 1, 1), hwnd) for hwnd in sorted(self.visible)]
+
+    def dispatch(self, session, item, expect_dialog=False, via=None, timeout_s=12.0, *, inspect_enabled=False):
+        self.calls.append(('dispatch', item, via, expect_dialog))
+        if item == cases.BUNDLE_ROW:
+            self.kind, self.ticked = None, set()
+            self.visible.add(BUNDLE)
+            return True, ('#32770', TITLES[BUNDLE], (760, 391, 1332, 761), BUNDLE)
+        if item == cases.IMPORT_ROW:
+            self.visible.add(IMPORT_BOX)
+            return True, ('#32770', cases.IMPORT_DIALOG, (0, 0, 1, 1), IMPORT_BOX)
+        return False, None
+
+
+def clicks(rig, x, y):
+    return [call for call in rig.calls if call[:3] == ('click', x, y)]
+
+
+def test_bundle_survey_reads_every_type_and_leaves_without_exporting(monkeypatch, tmp_path):
+    rig = Bundle(monkeypatch, tmp_path, lists={KIND: [PRINTER], cases.BUNDLE_KINDS[3]: ['Generic PETG', 'Snapmaker PLA Silk']})
+    analysis = {}
+    survey = cases.bundle_survey(rig.session, tmp_path, analysis)
+    assert survey['closed'] is True and analysis['bundle_survey'] is survey
+    process = survey['kinds'][KIND]
+    assert process['items'] == [{'label': PRINTER, 'box': [793, 700, 806, 713], 'box_class': 'Button'}]
+    assert process['hint'].startswith('Only printer names with changed process presets')
+    assert survey['kinds'][cases.BUNDLE_KINDS[3]]['items'] == [
+        {'label': 'Generic PETG', 'box': [793, 700, 806, 713], 'box_class': 'Button'},
+        {'label': 'Snapmaker PLA Silk', 'box': [793, 728, 806, 741], 'box_class': 'Button'}]
+    # A type with nothing to list is an empty list, and the dialog says so under it.
+    assert survey['kinds'][cases.BUNDLE_KINDS[2]]['items'] == []
+    assert 'user printer presets' in survey['kinds'][cases.BUNDLE_KINDS[2]]['hint']
+    assert survey['dialog']['texts'][:2] == ['panel', 'Presets'] and len(survey['dialog']['controls']) == 20
+    # The five type labels by their centre with the dialog as the root, then Cancel: no OK, no key, no WM_CLOSE.
+    labels = [('click', 1023, top + 9, BUNDLE) for top in TYPE_ROWS.values()]
+    assert rig.calls == [('dispatch', cases.BUNDLE_ROW, 'Export', True), *labels, ('click', 1264, 727, BUNDLE)]
+    assert rig.ticked == set() and rig.folder is None and rig.visible == set()
+    assert rig.images == ['bundle-dialog.png'] + [f'bundle-type-{number}.png' for number in range(1, 6)]
+
+
+def test_export_ticks_the_listed_box_by_its_centre_and_answers_each_dialog_by_its_text(monkeypatch, tmp_path):
+    rig = Bundle(monkeypatch, tmp_path, lists={KIND: [PRINTER]})
+    analysis, out = {}, tmp_path / 'packages' / 'u1'
+    receipt = cases.export_preset_bundle(rig.session, KIND, out, tmp_path, analysis, tick=[PRINTER], key='export_1')
+    assert analysis['export_1'] is receipt and receipt['title'] == 'Export Preset Bundle'
+    assert receipt['landed'] is True and receipt['saved_name'] == 'Process presets.zip'
+    assert receipt['bytes'] == (out / 'Process presets.zip').stat().st_size > 0
+    assert receipt['sha256'] == sha256((out / 'Process presets.zip').read_bytes()).hexdigest()
+    assert receipt['ticked'] == [{'label': PRINTER, 'box': [793, 700, 806, 713], 'hit': '0x1'}]
+    assert receipt['result']['texts'] == ['Yes'] and receipt['result']['words'] == 'Export successful'
+    assert receipt['result']['pressed']['text'] == 'Yes' and receipt['dialog_closed'] is True
+    assert receipt['directory_dialog']['title'] == 'Choose a directory'
+    assert receipt['directory_dialog']['typed'] == str(out)
+    assert rig.folder == str(out) and rig.ticked == {PRINTER}
+    # The type's label, the box of the row and OK, each with the dialog as the root of the click.
+    assert rig.calls[0] == ('dispatch', cases.BUNDLE_ROW, 'Export', True)
+    assert clicks(rig, 1023, 628) == [('click', 1023, 628, BUNDLE)]     # "Process presets(.zip)"
+    assert clicks(rig, 799, 706) == [('click', 799, 706, BUNDLE)]      # the box, not the label
+    assert clicks(rig, 1154, 727) == [('click', 1154, 727, BUNDLE)]    # OK
+    # The directory goes into the Folder: box, not into the search box; IDOK goes to the chooser only.
+    assert ('type', str(out)) in rig.calls and rig.editing[FOLDER_BOX] == str(out)
+    assert [call for call in rig.calls if call[:2] == ('send', CHOOSER)] == [('send', CHOOSER, 0x0111, 1)]
+    assert not any(call[0] == 'send' and call[1] in rig.extra for call in rig.calls)
+    assert not any(call[0] == 'send' and call[2] == cases.WM_CLOSE for call in rig.calls)
+    # The result box is closed by its own Yes, addressed inside that box.
+    assert clicks(rig, 1183, 619) == [('click', 1183, 619, next(iter(rig.extra)))]
+    assert rig.visible == set()
+    assert rig.images == ['export-dialog.png', 'export-dialog-ticked.png', 'directory-dialog.png', 'result-dialog.png']
+
+
+def test_export_refuses_a_row_that_is_not_listed_before_touching_ok(monkeypatch, tmp_path):
+    rig = Bundle(monkeypatch, tmp_path, lists={KIND: [PRINTER]})
+    with pytest.raises(ValueError, match="'another printer'"):
+        cases.export_preset_bundle(rig.session, KIND, tmp_path, tmp_path, {}, tick=['another printer'])
+    assert rig.ticked == set() and clicks(rig, 1154, 727) == []
+    assert ('send', BUNDLE, cases.WM_CLOSE, 0) in rig.calls and rig.visible == set()  # closed on the way out
+
+
+def test_export_of_a_type_that_lists_nothing_says_so_and_closes_the_dialog(monkeypatch, tmp_path):
+    rig = Bundle(monkeypatch, tmp_path)
+    analysis = {}
+    with pytest.raises(ValueError, match='lists nothing to export'):
+        cases.export_preset_bundle(rig.session, KIND, tmp_path, tmp_path, analysis)
+    assert analysis['preset_export']['listed']['items'] == []
+    assert 'changed process presets' in analysis['preset_export']['listed']['hint']
+    assert clicks(rig, 1154, 727) == [] and rig.visible == set()
+
+
+def test_export_reports_a_refused_ok_by_the_words_of_the_box_and_closes_the_dialog(monkeypatch, tmp_path):
+    rig = Bundle(monkeypatch, tmp_path, lists={KIND: [PRINTER]}, refuse=True)
+    analysis = {}
+    with pytest.raises(ValueError, match='did not open a directory chooser but'):
+        cases.export_preset_bundle(rig.session, KIND, tmp_path, tmp_path, analysis)
+    refusal = analysis['preset_export']['refusal']
+    assert refusal['title'] == 'Snapmaker Orca - Info' and refusal['texts'] == ['Yes']
+    assert refusal['words'] == 'Please select at least one printer or filament.'
+    assert refusal['pressed']['text'] == 'Yes' and 'result-dialog.png' in rig.images
+    assert ('send', BUNDLE, cases.WM_CLOSE, 0) in rig.calls and rig.visible == set()
+
+
+def test_directory_chooser_that_stays_open_is_ended_by_its_own_select_button(monkeypatch, tmp_path):
+    rig = Bundle(monkeypatch, tmp_path, lists={KIND: [PRINTER]}, chooser_closes=False)
+    receipt = cases.export_preset_bundle(rig.session, KIND, tmp_path, tmp_path, {})
+    assert receipt['directory_dialog']['select_pressed']['text'] == 'Select Folder'
+    assert clicks(rig, 774, 470) == [('click', 774, 470, CHOOSER)] and receipt['landed'] is True
+
+
+def test_export_that_fails_in_the_product_is_returned_as_what_landed_and_not_judged(monkeypatch, tmp_path):
+    rig = Bundle(monkeypatch, tmp_path, lists={KIND: [PRINTER]}, outcome='add file fail')
+    receipt = cases.export_preset_bundle(rig.session, KIND, tmp_path, tmp_path, {})
+    assert receipt['landed'] is True and receipt['bytes'] == 0 and len(receipt['sha256']) == 64
+    assert receipt['result']['words'] == 'add file fail' and receipt['dialog_closed'] is False
+    assert ('send', BUNDLE, cases.WM_CLOSE, 0) in rig.calls and rig.visible == set()
+
+
+def test_export_never_asks_to_replace_a_package_that_is_already_there(monkeypatch, tmp_path):
+    rig = Bundle(monkeypatch, tmp_path, lists={KIND: [PRINTER]})
+    (tmp_path / 'Process presets.zip').write_bytes(b'x')
+    analysis = {}
+    with pytest.raises(ValueError, match='would ask whether to replace it'):
+        cases.export_preset_bundle(rig.session, KIND, tmp_path, tmp_path, analysis)
+    assert rig.calls == [] and 'error' in analysis['preset_export']
+
+
+def test_import_answers_the_overwrite_question_with_yes_and_the_result_with_ok(monkeypatch, tmp_path):
+    rig = Bundle(monkeypatch, tmp_path)
+    first, second = tmp_path / 'one.zip', tmp_path / 'two.zip'
+    first.write_bytes(b'PK'), second.write_bytes(b'PK')
+    analysis = {}
+    receipt = cases.import_configs(rig.session, [first, second], tmp_path, analysis)
+    assert analysis['config_import'] is receipt and receipt['sources'] == ['one.zip', 'two.zip']
+    assert receipt['typed'] == f'"{first}" "{second}"'
+    assert rig.editing[512] == receipt['typed'] and 513 not in rig.editing  # the File name box, not the search box
+    assert [entry['title'] for entry in receipt['dialogs']] == ['Overwrite config', 'Import result']
+    assert [entry['pressed']['text'] for entry in receipt['dialogs']] == ['Yes', 'OK']
+    assert 'A config exists with the same name' in receipt['dialogs'][0]['words']
+    assert receipt['dialogs'][1]['words'].startswith('There are 1 configs imported')
+    assert ('send', IMPORT_BOX, 0x0111, 1) in rig.calls
+    boxes = list(rig.extra)
+    assert clicks(rig, 1183, 619) == [('click', 1183, 619, boxes[0]), ('click', 1183, 619, boxes[1])]
+    # Nothing but their own buttons reached the two boxes: no key, no default command, no WM_CLOSE.
+    assert not any(call[0] == 'send' and call[1] in boxes for call in rig.calls)
+    assert rig.visible == set()
+    assert rig.images == ['import-dialog.png', 'import-1-dialog.png', 'import-2-dialog.png']
+
+
+def test_import_closes_and_reports_a_dialog_it_does_not_know(monkeypatch, tmp_path):
+    rig = Bundle(monkeypatch, tmp_path)
+    rig.import_flow = [('Snapmaker Orca', 'some other message', 'OK')]
+    source = tmp_path / 'one.zip'
+    source.write_bytes(b'PK')
+    analysis = {}
+    with pytest.raises(ValueError, match='an unexpected dialog followed the import'):
+        cases.import_configs(rig.session, source, tmp_path, analysis)
+    entry = analysis['config_import']['dialogs'][0]
+    assert entry['title'] == 'Snapmaker Orca' and entry['words'] == 'some other message'
+    assert ('send', next(iter(rig.extra)), cases.WM_CLOSE, 0) in rig.calls and rig.visible == set()
+
+
+def test_import_refuses_a_file_that_is_not_there_before_touching_the_menu(monkeypatch, tmp_path):
+    rig = Bundle(monkeypatch, tmp_path)
+    with pytest.raises(ValueError, match='is not a file to import'):
+        cases.import_configs(rig.session, tmp_path / 'missing.zip', tmp_path, {})
+    assert rig.calls == []
+
+
+def configs_case(monkeypatch, tmp_path, *, rows=(PRINTER,), export='package', change=None):
+    """The #237 case with both of its sessions and every window call faked. `export` is what the
+    export lands ('package', 'junk' or 'nothing'); `change` rewrites each imported preset."""
+    sys.path.insert(0, str(ROOT / 'tests' / 'gui'))
+    import m7x_237_export_configs as case
+    import test_export_configs_oracle as profiles
+    seeds, launches, closed, exported = [], [], [], []
+
+    def seed_profile(dest, source_conf=None, source_presets=None, source_printers=None, fresh=False, conf_extra=None):
+        dest = Path(dest)
+        seeds.append({'datadir': dest.name, 'fresh': fresh, 'conf_extra': conf_extra})
+        profiles.profile(dest)  # the system presets and the seeded user presets, on disk
+        (dest / 'Snapmaker_Orca.conf').write_text(json.dumps({'app': {}, **(conf_extra or {})}), encoding='utf-8')
+        return dest
+
+    def launch(exe=None, datadir=None, model=None, **options):
+        launches.append((Path(datadir).name, Path(model).name, options))
+        return SimpleNamespace(pid=SESSION_PID, hwnd=77, alive=lambda: True,
+                               close=lambda: closed.append(Path(datadir).name))
+
+    def survey(session, work, analysis):
+        kinds = {kind: {'items': [{'label': label} for label in rows] if kind == case.KIND else [], 'hint': 'hint'}
+                 for kind in cases.BUNDLE_KINDS}
+        analysis['bundle_survey'] = {'kinds': kinds, 'closed': True}
+        return analysis['bundle_survey']
+
+    def export_bundle(session, kind, folder, work, analysis, tick='all', key='preset_export'):
+        assert kind == case.KIND
+        exported.append(list(tick))
+        if export == 'nothing':
+            analysis[key] = {'landed': False, 'dialog_closed': True}
+        else:
+            target = Path(folder) / cases.BUNDLE_FILES[kind]
+            if export == 'package':
+                profiles.package(target, work / 'export-profile')
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(b'')
+            analysis[key] = {'landed': True, 'dialog_closed': export == 'package',
+                             'result': {'words': 'Export successful' if export == 'package' else 'add file fail'}}
+        return analysis[key]
+
+    def imported(session, package, work, analysis, key='config_import'):
+        with ZipFile(package) as archive:
+            for member in archive.infolist():
+                own = json.loads(archive.read(member).decode('utf-8-sig'))
+                profiles.write_json(Path(work, 'import-profile', 'user', 'default', 'process', member.filename),
+                                    change(own) if change else own)
+        analysis[key] = {'dialogs': [{'title': 'Import result', 'pressed': {'text': 'OK'}}]}
+        return analysis[key]
+
+    monkeypatch.setattr(case.profile, 'seed_profile', seed_profile)
+    monkeypatch.setattr(case.launcher, 'launch', launch)
+    monkeypatch.setattr(case.winutil.user32, 'ShowWindow', lambda hwnd, command: True)
+    monkeypatch.setattr(case.winutil, 'demote_window', lambda hwnd: None)
+    monkeypatch.setattr(case, 'ensure_gl_ready', lambda session: True)
+    monkeypatch.setattr(case.time, 'sleep', lambda seconds: None)
+    monkeypatch.setattr(case.m7, 'ensure_maximized', lambda session: None)
+    monkeypatch.setattr(case, 'wait_arrival', lambda session, timeout_s=30, min_frac=0.001: (True, 0.01))
+    monkeypatch.setattr(case.m7, 'wait_dialog', lambda pid, timeout_s=15.0, title_substr='': None)
+    monkeypatch.setattr(case, 'bundle_survey', survey)
+    monkeypatch.setattr(case, 'export_preset_bundle', export_bundle)
+    monkeypatch.setattr(case, 'import_configs', imported)
+    analysis = {'results': {}, 'timings': {}}
+    case.run(SimpleNamespace(exe=None, datadir=tmp_path / 'artifacts' / 'm3_profile',
+                             model=gcode.FIXTURES / 'feishu_std_cubesfar.3mf'), tmp_path, analysis)
+    return analysis, seeds, launches, closed, exported
+
+
+def test_configs_case_passes_when_the_exported_presets_come_back_unchanged(monkeypatch, tmp_path):
+    analysis, seeds, launches, closed, exported = configs_case(monkeypatch, tmp_path)
+    assert analysis['results'] == dict.fromkeys(configs.CONFIGS_CLAUSES, 'PASS')
+    assert m7.m7_verdict(analysis['results']) == 0
+    # One export per listed row, each row ticked by its own label.
+    assert exported == [[PRINTER]]
+    # Both profiles are seeded with the printer installed in the application config; the second
+    # one starts without any user preset, and both open the same fixture.
+    installed = {'models': [{'vendor': 'Snapmaker', 'model': 'Snapmaker U1', 'nozzle_diameter': '0.4'}]}
+    assert seeds == [{'datadir': 'export-profile', 'fresh': False, 'conf_extra': installed},
+                     {'datadir': 'import-profile', 'fresh': False, 'conf_extra': installed}]
+    assert [name for name, _model, _options in launches] == ['export-profile', 'import-profile']
+    assert {model for _name, model, _options in launches} == {'feishu_std_cubesfar.3mf'}
+    assert closed == ['export-profile', 'import-profile']
+    assert analysis['import_session']['seeded_user_presets_removed'] == 2
+    assert analysis['import_session']['presets_at_start'] == {'process': 0, 'filament': 0, 'machine': 0}
+    assert analysis['export_session']['custom_presets_on_disk']['process'] == 2
+    assert analysis['export_session']['editor_after_export'] == {'alive': True, 'dialog': None}
+    assert analysis['export_session']['presets_rewritten_while_open'] == []
+    # The zip is not harvested, so what it holds is written into the analysis.
+    attempt = analysis['exports'][0]
+    assert attempt['row'] == PRINTER and attempt['package']['path'].endswith('/Process presets.zip')
+    assert all(member['byte_identical'] for member in attempt['package']['members'].values())
+    assert sorted(analysis['import_readings']) == sorted(profiles_user_names())
+    assert analysis['import_readings'][profiles_user_names()[0]]['unchanged'] == 8
+    assert (tmp_path / 'presets-before.json').is_file() and (tmp_path / 'presets-after.json').is_file()
+
+
+def profiles_user_names():
+    import test_export_configs_oracle as profiles
+    return sorted(profiles.USER)
+
+
+def test_configs_case_fails_both_clauses_when_the_dialog_lists_nothing(monkeypatch, tmp_path):
+    analysis, _seeds, launches, _closed, exported = configs_case(monkeypatch, tmp_path, rows=())
+    package, imported = configs.CONFIGS_CLAUSES
+    assert analysis['results'][package].startswith('FAIL ("Process presets(.zip)" lists no row in this profile, although 2 custom')
+    assert analysis['results'][imported] == 'FAIL (not exercised: no package holding a preset was imported)'
+    assert m7.m7_verdict(analysis['results']) == 1
+    assert exported == [] and analysis['exports'] == []
+    assert [name for name, _model, _options in launches] == ['export-profile']  # nothing to import: no second session
+    assert analysis['import_session']['note'] == 'not run: no package holding a preset was exported'
+
+
+def test_configs_case_fails_the_first_clause_when_the_export_lands_no_package(monkeypatch, tmp_path):
+    analysis, _seeds, _launches, _closed, _exported = configs_case(monkeypatch, tmp_path, export='junk')
+    package, imported = configs.CONFIGS_CLAUSES
+    assert analysis['results'][package] == ("FAIL (Process presets(.zip)/Snapmaker U1 (0.4 nozzle): 'Process presets.zip' "
+                                            "is not a readable package: BadZipFile: File is not a zip file)")
+    assert analysis['results'][imported] == 'FAIL (not exercised: no package holding a preset was imported)'
+    assert analysis['exports'][0]['result_words'] == 'add file fail'
+
+
+def test_configs_case_fails_the_first_clause_when_nothing_lands_at_all(monkeypatch, tmp_path):
+    analysis, _seeds, _launches, _closed, _exported = configs_case(monkeypatch, tmp_path, export='nothing')
+    package, imported = configs.CONFIGS_CLAUSES
+    assert analysis['results'][package] == f'FAIL (Process presets(.zip)/{PRINTER}: no package file landed)'
+    assert analysis['results'][imported] == 'FAIL (not exercised: no package holding a preset was imported)'
+
+
+def test_configs_case_fails_the_second_clause_when_the_import_changes_a_value(monkeypatch, tmp_path):
+    analysis, _seeds, _launches, _closed, _exported = configs_case(
+        monkeypatch, tmp_path, change=lambda own: dict(own, line_width='0.9'))
+    package, imported = configs.CONFIGS_CLAUSES
+    assert analysis['results'][package] == 'PASS'
+    assert analysis['results'][imported].startswith(
+        'FAIL (0.20mm Standard @Snapmaker U1 (0.4 nozzle) - HF-TEST: 1 parameters differ after the import: line_width: 0.45 -> 0.9')
     assert m7.m7_verdict(analysis['results']) == 1
