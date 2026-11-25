@@ -35,6 +35,8 @@ def visible_project_title(session):
     image = m7.capture_bgr(session)
     width = image.shape[1]
     title_band = image[:bottom - top, width // 4:3 * width // 4]
+    # Keep the visible unsaved marker in the evidence. The name assertions
+    # remove one leading marker, which Orca draws separately from the name.
     return " ".join(word[0] for word in m7.mdu.ocr_words_img(title_band, scale=3, psm=7))
 
 
@@ -114,7 +116,7 @@ def main():
         original_label = visible_project_title(session)
         print(f"[m7x199] before edit: title={original_title!r}, topbar={original_label!r}, "
               f"model fraction={fraction:.3%}")
-        if args.model.stem != original_project or original_label.lstrip("*") != original_project:
+        if args.model.stem != original_project or original_label.removeprefix("*") != original_project:
             return m7.m7_verdict({"named project loaded": f"FAIL ({original_title!r})"})
 
         if not import_unsaved_model(session):
@@ -143,7 +145,7 @@ def main():
                 after = m7.model_colored_frac(session)
                 if current_project == "Untitled" and after < m7.EMPTY_BED_FLOOR:
                     current_label = visible_project_title(session)
-                    if current_label == current_project:
+                    if current_label.removeprefix("*") == current_project:
                         break
             time.sleep(0.5)
         print(f"[m7x199] after confirmation: title={current_title!r}, topbar={current_label!r}, "
@@ -154,7 +156,8 @@ def main():
             "discard closes prompt": "PASS" if clicked and closed else "FAIL",
             "empty new project": "PASS" if closed and after < m7.EMPTY_BED_FLOOR else "FAIL",
             "default project title": (
-                "PASS" if current_project == current_label == "Untitled" else "FAIL"),
+                "PASS" if current_project == current_label.removeprefix("*") == "Untitled"
+                else "FAIL"),
             "app alive": "PASS" if session.alive() else "FAIL",
         })
     finally:

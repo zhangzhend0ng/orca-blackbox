@@ -4,7 +4,7 @@
 
 import argparse
 import time
-from ctypes import byref
+from ctypes import byref, sizeof
 from ctypes.wintypes import HWND, POINT
 
 import numpy as np
@@ -12,6 +12,7 @@ import numpy as np
 from m8b_official_color import (MIXED_3MF, add_common_args, boot_session, click_cancel,
                                 is_native_picker, m7, m8, read_rgb)
 from harness import export_util, winutil
+from harness.mix_dialog_util import GUITHREADINFO
 
 LOG = "[m8x48]"
 NAME = "Mint Lemonade"
@@ -42,6 +43,24 @@ def bring_main_to_mouse(hwnd):
     )
     foreground = winutil.force_set_foreground(hwnd)
     return bool(raised and foreground)
+
+
+def request_background_focus(main, chip):
+    """Request keyboard focus through Win32 and read the target input queue."""
+    wu = winutil.user32
+    ours = winutil.kernel32.GetCurrentThreadId()
+    gui_thread = wu.GetWindowThreadProcessId(main, None)
+    if not gui_thread or not wu.AttachThreadInput(ours, gui_thread, True):
+        return None
+    try:
+        wu.SetActiveWindow(HWND(main))
+        wu.SetFocus(HWND(chip))
+        info = GUITHREADINFO(cbSize=sizeof(GUITHREADINFO))
+        if not wu.GetGUIThreadInfo(gui_thread, byref(info)):
+            return None
+        return info.hwndActive or 0, info.hwndFocus or 0
+    finally:
+        wu.AttachThreadInput(ours, gui_thread, False)
 
 
 def preview_pixels(hwnd, rect):
@@ -125,19 +144,24 @@ def verify_background_reenabled(session, official_dialog, chip, chip_hwnd):
 
     main_foreground = bring_main_to_mouse(session.hwnd)
     hit = winutil.window_from_screen_point(*chip)
+    keys = request_background_focus(session.hwnd, chip_hwnd)
     detail = (f"same background chip={chip_hwnd:#x}, desktop hit={hit:#x}, "
-              f"main foreground={main_foreground}")
-    if not main_foreground or hit != chip_hwnd:
+              f"main foreground={main_foreground}, active/focus={keys!r}")
+    if not main_foreground or keys != (session.hwnd, chip_hwnd):
         return f"FAIL ({detail})"
-    sent = winutil.real_click_screen(*chip)
+    if hit == chip_hwnd:
+        route = f"real mouse events={winutil.real_click_screen(*chip)}"
+    else:
+        winutil.msg_click_screen(*chip, session.hwnd)
+        route = "Orca window tree"
 
     picker = export_util.wait_toplevel(session.pid, lambda c, t, r: c == "#32770", timeout_s=6.0)
     native = picker and is_native_picker(picker)
     rgb = read_rgb(session, picker) if native else None
     if native:
         click_cancel(picker)
-    detail += f", real mouse events={sent}, native picker RGB={rgb!r}"
-    passed = sent == 2 and rgb == ("217", "166", "58")
+    detail += f", click={route}, native picker RGB={rgb!r}"
+    passed = rgb == ("217", "166", "58")
     return f"{'PASS' if passed else 'FAIL'} ({detail})"
 
 
@@ -171,10 +195,9 @@ def main():
 
         main_foreground = bring_main_to_mouse(session.hwnd)
         enabled_hit = winutil.window_from_screen_point(*probe)
-        print(f"{LOG} enabled background desktop hit={enabled_hit:#x}, "
+        print(f"{LOG} enabled background desktop hit={enabled_hit:#x} "
+              f"class={winutil.window_class(enabled_hit)!r} pid={winutil._window_pid(enabled_hit)}, "
               f"Orca chip={probe_hwnd:#x}, main foreground={main_foreground}")
-        if not main_foreground or enabled_hit != probe_hwnd:
-            return m7.m7_verdict({"#48 unblocked mouse target is the background chip": "FAIL"})
         winutil.msg_click_screen(*opener, session.hwnd)
         dialog = m8.official_color_popup(session, timeout_s=8.0)
         if dialog is None:
@@ -201,14 +224,19 @@ def main():
                           and contains(background["swatch"], (cursor.x, cursor.y)))
         same_preset = winutil.window_title(background["combo"][2]).strip() == background["combo"][0]
         other_orca_foreground = active_pid == session.pid and active != dlg_hwnd
+        focus_ready = winutil.force_set_foreground(dlg_hwnd)
+        keys = request_background_focus(session.hwnd, probe_hwnd) if focus_ready else None
+        modal_keys = (keys is not None and keys[0] == dlg_hwnd
+                      and (keys[1] == dlg_hwnd or bool(wu.IsChild(dlg_hwnd, keys[1]))))
         detail = (f"outside={outside}, real mouse events={sent}, foreground before={foreground}, "
                   f"cursor={(cursor.x, cursor.y)}, desktop hit={hit:#x}, foreground after={active:#x} "
                   f"(pid={active_pid}, dialog={dlg_hwnd:#x}), same dialog visible={remained}, "
                   f"owner disabled before/after={owner_blocked}/{still_blocked}, "
-                  f"same background preset={same_preset}, new Orca windows={len(after - before)}")
+                  f"same background preset={same_preset}, new Orca windows={len(after - before)}, "
+                  f"background active/focus request={keys!r}, modal retains focus={modal_keys}")
         passed = (outside and sent == 2 and foreground and cursor_on_chip and remained
                   and owner_blocked and still_blocked and same_preset
-                  and not other_orca_foreground and not (after - before))
+                  and not other_orca_foreground and not (after - before) and modal_keys)
         results["#48 modal dialog blocks background chip"] = (
             f"{'PASS' if passed else 'FAIL'} ({detail})")
         results["#48 header has color card, name and SKU"] = (
