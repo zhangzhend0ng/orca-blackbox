@@ -1,0 +1,36 @@
+﻿[m7x239] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\239\run-pf49iy7t
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\239\run-pf49iy7t\profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\239\run-pf49iy7t\profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\239\run-pf49iy7t\Alpha-Bravo.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x54006d2, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x51d0dcc, WM_CLOSE)
+[launcher] pid=7236 hwnd=0x5470a82 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.72%, gate 0.10%)
+[m7x248] before sidebar: ['co', 'cg', 'file', '&', 'calibration', 'prepare', 'preview', 'devic', 'printer', '=', '=', '=', '~', 'snapmaker', 'u1', '0.4', 'nozzle)(alpha-brav', 'bed', 'type', '~', 'textured', 'pei', 'plate', 'nozzle', '3', 'nozzle', '4', 'nozzle', '2', 'diameter', '~', '0.4mm', 'flow', '~', 'standard', '@', 'filament', 'management', 'flushing', 'volumes', 'color', 'mixing', 'matec', '0', 'filaments', 'fg', '~', 'generic', 'pla', '@u1', '漏', '', '~', 'snapmaker', 'pla', 'bas', '漏', 'b', '~', 'snapmaker', 'pla', 'b', '漏', '4', '~', 'snapmaker', 'pla', 'bas', '漏', '~', 'snapmaker', 'pla', 'b', '漏', '漏', 'color', 'mixing', '+', '漏', '50%', 'as', '&', 'process', 'global', 'advanced', '9', '=', 'q', 'search', 'plate', 'object', 'and', 'part', 'y', 'plate', '1', 'alpha', 'bravo', '>', 'outside', 'plate', 'settings', 'bed', 'type', '~', 'textured', 'pel', '135', '掳', 'skirt', 'start', 'point', 'print', 'sequence', '~', 'by', 'layer', 'spiral', 'vase', 'first', 'layer', 'filament', 'sequence', '~', 'auto', 'other', 'layers', 'filament', '~', 'auto', 'sequence']
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5040614 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x248] before saved objects: ['Alpha', 'Bravo']
+[model context] desktop hit-test did not resolve to canvas at (1171,538)
+[model context] message right-click @(1171,538) on 0x5510b1a
+[model context] menu hwnd=0x54210ec: [(0, 'Select All', 0), (1, 'Delete All', 0), (2, 'Arrange', 0), (3, 'Reload All', 0), (4, 'Auto Rotate', 0), (5, 'Delete Plate', 1), (6, '', 2051), (7, 'Add Primitive', 2576), (8, 'Add Handy models', 1808), (9, 'Add Models', 0), (10, 'Lock', 0), (11, 'Edit Plate Name', 0)]
+[m7x239] native highlighted row 1 in menu 0x112c1199
+[m8x48] SetFocus(0x5510b1a): return=0x5510b1a, Win32 error=0, (active, focus) before=(88541826, 89197338), after=(88541826, 89197338)
+[m7x248] restored sidebar: ['c', 'co', 'file', '&', 'us', 'calibration', 'a', 'prepare', 'preview', 'devic', 'printer', '~', 'snapmaker', 'u1', '0.4', 'nozzle)(alpha-brav', '~', 'textured', 'pei', 'plate', 'bed', 'type', 'nozzle', '3', 'nozzle', '4', 'nozzle', '2', 'diameter', '~', '0.4mm', 'flow', '~', 'standard', '@', 'filament', 'management', 'flushing', 'volumes', 'color', 'mixing', 'matec', '', 'filaments', 'fg', '~', 'generic', 'pla', '@u1', '漏', '', '~', 'snapmaker', 'pla', 'bas', '漏', 'b', '~', 'snapmaker', 'pla', 'b', '漏', '4', '~', 'snapmaker', 'pla', 'bas', '漏', '~', 'snapmaker', 'pla', 'b', '漏', '漏', 'color', 'mixing', '50%', '漏', 'as', '&', 'process', 'global', 'advanced', '9', 'q', 'search', 'plate', 'object', 'and', 'part', 'y', 'plate', '1', 'alpha', 'bravo', '>', 'outside', 'plate', 'settings', 'bed', 'type', '~', 'textured', 'pel', '掳', 'skirt', 'start', 'point', '135', 'print', 'sequence', '~', 'by', 'layer', 'spiral', 'vase', 'first', 'layer', 'filament', 'sequence', '~', 'auto', 'other', 'layers', 'filament', '~', 'auto', 'sequence']
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5040614 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x248] restored saved objects: ['Alpha', 'Bravo']
+
+[m7] === verdict ===
+  Delete All clears both objects from canvas and list; Ctrl+Z restores both meshes: PASS
+[m7] GREEN

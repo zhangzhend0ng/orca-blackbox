@@ -1,0 +1,55 @@
+{
+  "case": 243,
+  "results": {
+    "Cube from native Add Primitive submenu rests on plate and accepts X edit": "PASS"
+  },
+  "bed_point": [
+    1172,
+    514
+  ],
+  "initial_printer": {
+    "model": "Snapmaker U1",
+    "profile": "Snapmaker U1 (0.8 nozzle)(agent_layer_cube.3mf)"
+  },
+  "empty_plate": {
+    "fraction": 0.0010439742316604283,
+    "candidate_centroids": [
+      [
+        935,
+        331
+      ],
+      [
+        851,
+        759
+      ]
+    ]
+  },
+  "before_bounds_mm": [
+    [
+      122.0,
+      149.0
+    ],
+    [
+      122.5,
+      149.5
+    ],
+    [
+      0.0,
+      27.0
+    ]
+  ],
+  "after_bounds_mm": [
+    [
+      132.0,
+      159.0
+    ],
+    [
+      122.5,
+      149.5
+    ],
+    [
+      0.0,
+      27.0
+    ]
+  ]
+}

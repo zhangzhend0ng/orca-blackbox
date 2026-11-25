@@ -1,0 +1,37 @@
+﻿[
+    {
+        "part":  "Alpha-Bravo.3mf",
+        "bytes":  30888,
+        "sha256":  "9C548679D672AC859369D9AF7FBEDDE0D555223280C699D70E5C72B277E00C16"
+    },
+    {
+        "part":  "before.3mf",
+        "bytes":  32728,
+        "sha256":  "227AF9BB2FC2B14E29E6E0959E0764A9B29DED94DBD78ADD938D05A43D644C59"
+    },
+    {
+        "part":  "restored.3mf",
+        "bytes":  32728,
+        "sha256":  "2049A367567457B771468CA3F0CD644B5754551C116B0D0D60E28C2BA851C664"
+    },
+    {
+        "part":  "before.png",
+        "bytes":  283524,
+        "sha256":  "D0C5D818146EDBE3C0618A2EE7FE4FC2FF76991394E636B93CD60A006BF1E577"
+    },
+    {
+        "part":  "empty.png",
+        "bytes":  277761,
+        "sha256":  "733F473BF810C53AAF309CA060898BEE6D2788DDAC3AA0DD0B23F7091877C2C7"
+    },
+    {
+        "part":  "restored.png",
+        "bytes":  283562,
+        "sha256":  "FE299F830C715324936779F29D81E7069BC95068DD82E9555368302FAE2C87E2"
+    },
+    {
+        "part":  "analysis.json",
+        "bytes":  6462,
+        "sha256":  "CD641CAF88D1E0159DDE29FBCA61E242720DCAFA0DF2DBD591ABF3DE2DDC23ED"
+    }
+]

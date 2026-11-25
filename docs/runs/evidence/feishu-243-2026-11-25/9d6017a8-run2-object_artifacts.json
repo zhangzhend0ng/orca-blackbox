@@ -1,0 +1,37 @@
+﻿[
+    {
+        "part":  "new-project.3mf",
+        "bytes":  34347,
+        "sha256":  "49224B2613C379D9678E99411713F79CC026385A2C255871625C481DC9FF231D"
+    },
+    {
+        "part":  "cube.3mf",
+        "bytes":  34190,
+        "sha256":  "C979AA6E312A66C0883319D94FA554A0F2DF9F2E079F8B1B26C225C059D8ABD9"
+    },
+    {
+        "part":  "edited.3mf",
+        "bytes":  34198,
+        "sha256":  "85D0325AE1E690C68AA42E4B4B039719165A9EC09E6C42CBAFA10D75B3B084A2"
+    },
+    {
+        "part":  "empty.png",
+        "bytes":  288805,
+        "sha256":  "5A9AD89B34049478620E878A35DFD1FEDB471E6E2B62A64BA37BC3301DD10E2E"
+    },
+    {
+        "part":  "cube.png",
+        "bytes":  303174,
+        "sha256":  "3D28B627DC2695936ECF311714A13CC9B3889316C3C2E5544AD46105A6B751A3"
+    },
+    {
+        "part":  "edited.png",
+        "bytes":  302414,
+        "sha256":  "E9554F2C39DD5B912A30D9BF28EAB2C92797E4F74841864F964B07439644F0A6"
+    },
+    {
+        "part":  "analysis.json",
+        "bytes":  798,
+        "sha256":  "FF38344B29A70C0055A8FFB7A7C4D938DD0261DB03012DCEF7EA927F5F424DC7"
+    }
+]

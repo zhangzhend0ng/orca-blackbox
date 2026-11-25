@@ -1,0 +1,44 @@
+﻿[m7x243] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\243\run-3b0i5_1v
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\243\run-3b0i5_1v\profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\243\run-3b0i5_1v\profile C:\coil\orca-blackbox-v3-r1\fixtures\agent_layer_cube.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x564097a, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x5390f6e, WM_CLOSE)
+[launcher] pid=2604 hwnd=0x53a0922 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.25%)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5b20062 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[model context] desktop hit-test did not resolve to canvas at (1172,528)
+[model context] message right-click @(1172,528) on 0x5530ce0
+[model context] menu hwnd=0x568001e: [(0, 'Clone\tCtrl+K', 0), (1, 'Simplify Model', 0), (2, '', 2051), (3, 'Mesh boolean', 1), (4, 'Center', 1), (5, 'Drop', 1), (6, 'Split', 529), (7, 'Mirror', 784), (8, 'Delete\tDel', 0), (9, '', 2051), (10, 'Add Part', 3088), (11, 'Add Negative Part', 3088), (12, 'Add Modifier', 3088), (13, 'Add Support Blocker', 2064), (14, 'Add Support Enforcer', 2064), (15, 'Height Range Modifier', 0), (16, '', 2051), (17, 'Printable', 8), (18, 'Edit Process Settings', 0), (19, 'Edit in Parameter Table', 0), (20, '', 2051), (21, 'Reload from disk', 0), (22, 'Replace with STL', 0), (23, 'Export as one STL...', 0), (24, 'Convert from Inches', 0), (25, 'Convert from Meters', 0), (26, 'Change Filament', 1808)]
+[m7x244] native highlighted row 8 in menu 0x2f660445
+[model context] desktop hit-test did not resolve to canvas at (1172,528)
+[model context] message right-click @(1172,528) on 0x5530ce0
+[model context] menu hwnd=0x569001e: [(0, 'Select All', 1), (1, 'Delete All', 1), (2, 'Arrange', 1), (3, 'Reload All', 1), (4, 'Auto Rotate', 1), (5, 'Delete Plate', 1), (6, '', 2051), (7, 'Add Primitive', 2576), (8, 'Add Handy models', 1808), (9, 'Add Models', 0), (10, 'Lock', 0), (11, 'Edit Plate Name', 0)]
+[m7x243] native highlighted row 7 in menu 0x4a9406d1
+[m7x243] visible Add Primitive submenu hwnd=0x55a054c hmenu=0x2e9d0e67: [(0, 'Cube', 128), (1, 'Cylinder', 0), (2, 'Sphere', 0), (3, 'Cone', 0), (4, 'Disc', 0), (5, 'Torus', 0), (6, '', 2051), (7, 'Text', 0), (8, '', 2051), (9, 'SVG', 0)]
+[m7x243] native highlighted row 0 in menu 0x2e9d0e67
+[m8] arrival: True (0.58%, gate 0.10%)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5b20062 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m8x48] SetFocus(0x5530ce0): return=0x53a0922, Win32 error=0, (active, focus) before=(87689506, 87689506), after=(87689506, 89328864)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5b20062 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+
+[m7] === verdict ===
+  Cube from native Add Primitive submenu rests on plate and accepts X edit: PASS
+[m7] GREEN

@@ -1,0 +1,13 @@
+﻿{
+    "commit":  "9d6017a8861c4a81cbe33c405aebcbb6d8317db9",
+    "case":  "m7x_243_add_primitive",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "summary":  "SUMMARY: PASS=1 FAIL=0",
+    "dispatched_at":  "2026-11-25T19:53:56.3507494+08:00",
+    "scenario_completed_at":  "2026-11-25T19:55:39.3207623+08:00",
+    "suite_completed_at":  "2026-11-25T19:55:39.4932271+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_243_add_primitive.log",
+    "log_sha256":  "922AABCBC4600BA528A3EFB94700E7ECD4C977E5B316DD7FEC897897BFD500CE"
+}

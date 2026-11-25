@@ -18,6 +18,9 @@ IMPORT = EVIDENCE / "multi-244-254-2026-11-25/win11-test"
 @pytest.mark.parametrize("directory,prefix", [
     (SAVE, "1216dc9e-run1"), (CUT, "a7a65272-run2"), (PART, "dcadf798-run1"),
     (IMPORT, "e7ba1cd2-run1"),
+    (EVIDENCE / "feishu-239-2026-11-25", "9d6017a8-run1"),
+    (EVIDENCE / "feishu-243-2026-11-25", "9d6017a8-run1"),
+    (EVIDENCE / "feishu-248-2026-11-25", "4005cf18-run1"),
 ])
 def test_archived_evidence_and_negative_controls(directory, prefix):
     report = replay_receipt(directory / f"{prefix}-receipt.json")
@@ -53,3 +56,24 @@ def test_unmodified_baseline_cannot_stand_in_for_the_negative_export(tmp_path):
     report = replay_receipt(receipt)
     assert not report["offline_checks_passed"]
     assert not report["result"]["checks"]["local_subtraction_with_retained_extrusion"]
+
+
+@pytest.mark.parametrize("row,wrong,target,check", [
+    (239, "before.png", "empty.png", "both_objects_removed_from_view"),
+    (243, "cube.3mf", "edited.3mf", "actual_10_mm_cube_edit"),
+])
+def test_plate_actions_require_observable_changes(tmp_path, row, wrong, target, check):
+    prefix = "9d6017a8-run1-"
+    source = EVIDENCE / f"feishu-{row}-2026-11-25"
+    for path in source.glob(prefix + "*"):
+        shutil.copyfile(path, tmp_path / path.name)
+    raw = (tmp_path / (prefix + wrong)).read_bytes()
+    (tmp_path / (prefix + target)).write_bytes(raw)
+    manifest = tmp_path / (prefix + "object_artifacts.json")
+    entries = json.loads(manifest.read_text(encoding="utf-8-sig"))
+    entry = next(entry for entry in entries if entry["part"] == target)
+    entry.update(bytes=len(raw), sha256=hashlib.sha256(raw).hexdigest())
+    manifest.write_text(json.dumps(entries), encoding="utf-8")
+    report = replay_receipt(tmp_path / (prefix + "receipt.json"))
+    assert not report["offline_checks_passed"]
+    assert not report["result"]["checks"][check]
