@@ -6,7 +6,7 @@ verdict against a second reading of the same file. `copy_of` stands a
 counterexample in for a harvested part on a temporary copy of a run.
 """
 from contextlib import contextmanager
-from hashlib import sha256
+from hashlib import md5, sha256
 from io import BytesIO
 import json
 import math
@@ -224,6 +224,16 @@ def with_model(raw: bytes, edit) -> bytes:
     root = _xml(files[MAIN], MAIN)
     edit(root)
     files[MAIN] = _serialise(root)
+    return zipped(files)
+
+
+def with_project_settings(raw: bytes, edit) -> bytes:
+    """The project with its parsed `Metadata/project_settings.config` passed through `edit`, which
+    receives the dictionary and may change it in place."""
+    files = archive(raw)
+    settings = json.loads(files[SETTINGS].decode('utf-8-sig'))
+    edit(settings)
+    files[SETTINGS] = json.dumps(settings).encode('utf-8')
     return zipped(files)
 
 
@@ -529,6 +539,137 @@ def with_item_transform(raw: bytes, matrix) -> bytes:
 
 
 # --- pictures, manifests and copies ----------------------------------------------
+
+# --- sliced plate archive (.gcode.3mf) --------------------------------------------
+
+PLATE_GCODE = re.compile(r'Metadata/plate_(\d+)\.gcode')
+PNG_SIGNATURE = b'\x89PNG\r\n\x1a\n'
+TIME_NOTE = re.compile(r'(\d+)\s*([dhms])')
+CLOCK = {'d': 86400, 'h': 3600, 'm': 60, 's': 1}
+
+
+def _preview(raw: bytes):
+    """[width, height, colours covering at least 8 pixels each] of a picture, or None when it is no
+    decodable PNG."""
+    import numpy as np
+    from PIL import Image
+
+    if not (len(raw) >= 24 and raw[:8] == PNG_SIGNATURE and raw[12:16] == b'IHDR'):
+        return None
+    try:
+        with Image.open(BytesIO(raw)) as image:
+            pixels = np.asarray(image.convert('RGBA'))
+    except Exception:  # noqa: BLE001 - whatever keeps a picture from decoding leaves it no picture
+        return None
+    counts = np.unique(pixels[pixels[..., 3] == 255][:, :3], axis=0, return_counts=True)[1]
+    return [int(pixels.shape[1]), int(pixels.shape[0]), int((counts >= 8).sum())]
+
+
+def shows_picture(reading, side: int = 16, colours: int = 3) -> bool:
+    """Whether a preview is a picture: both sides of `side` pixels at least and `colours` colours that
+    cover 8 pixels each. The two plate previews of a real export carry 17 and 9 colours; a blank one 1."""
+    return reading is not None and min(reading[:2]) >= side and reading[2] >= colours
+
+
+def changed_share(first: bytes, second: bytes):
+    """The share of pixels that differ by 24 gray levels or more between two pictures of one size;
+    None when either is no picture or their sizes differ."""
+    import numpy as np
+    from PIL import Image
+
+    try:
+        with Image.open(BytesIO(first)) as one, Image.open(BytesIO(second)) as other:
+            pixels = [np.asarray(image.convert('L'), dtype=np.int16) for image in (one, other)]
+    except Exception:  # noqa: BLE001 - whatever keeps a picture from decoding leaves it no picture
+        return None
+    return float((np.abs(pixels[0] - pixels[1]) >= 24).mean()) if pixels[0].shape == pixels[1].shape else None
+
+
+def close(first, second, tolerance):
+    """Whether two readings of numbers, or lists of them of one shape, lie within `tolerance` everywhere."""
+    if isinstance(first, (list, tuple)) or isinstance(second, (list, tuple)):
+        return (isinstance(first, (list, tuple)) and isinstance(second, (list, tuple)) and len(first) == len(second)
+                and all(close(a, b, tolerance) for a, b in zip(first, second)))
+    return (isinstance(first, (int, float)) and not isinstance(first, bool)
+            and isinstance(second, (int, float)) and not isinstance(second, bool)
+            and abs(first - second) <= tolerance)
+
+
+def seconds(note: str):
+    """The seconds of a printing-time note such as '1h 2m 3s', read after the note's '='; None when it
+    names no time."""
+    found = TIME_NOTE.findall(note.partition('=')[2])
+    return sum(int(value) * CLOCK[unit] for value, unit in found) or None
+
+
+def filament_used(plate: dict) -> list:
+    """Millimetres of filament the trailer says each extruder used."""
+    for line in plate['trailer']:
+        if line.startswith('; filament used [mm]'):
+            values = line.partition('=')[2].split(',')
+            if all(re.fullmatch(r'\s*' + NUMBER + r'\s*', value) for value in values):
+                return [float(value) for value in values]
+    return []
+
+
+def first_layer(raw: bytes):
+    """The extruding moves of the first layer: how many there are and the box they cover; None when
+    the file has no layer. The file is read up to the second layer, so the modes the start G-code
+    set still hold."""
+    lines = raw.decode('utf-8', errors='replace').split('\n')
+    starts = [position for position, line in enumerate(lines) if LAYER.fullmatch(line.strip())]
+    if not starts:
+        return None
+    plate = gcode('\n'.join(lines[:starts[1] if len(starts) > 1 else len(lines)]).encode('utf-8'))
+    return {'moves': plate['layers'][0]['extruding'], 'box': plate['extrusion_box']}
+
+
+def sliced(raw: bytes) -> dict:
+    """What an archive holds as a sliced plate, read by itself: the plate G-code members with their
+    checksum records, the previews as pictures, the first layer's pattern box, the slice records, the
+    application and the project settings. Raises ValueError when the bytes are no readable archive;
+    what the archive lacks, the reading reports as missing."""
+    files = archive(raw)
+    found = sorted((int(match.group(1)), name) for name in files if (match := PLATE_GCODE.fullmatch(name)))
+    only = found[0][1] if len(found) == 1 else None
+
+    def xml(name):
+        try:
+            return ET.fromstring(files[name]) if name in files else None
+        except ET.ParseError:
+            return None
+
+    def member(name, default):
+        try:
+            return json.loads(files[name]) if name in files else default
+        except ValueError:
+            return default
+
+    model, rows, records = xml(MAIN), xml(OBJECT_SETTINGS), xml('Metadata/slice_info.config')
+    plate = records.find('plate') if records is not None else None
+    declared = rows.find('plate') if rows is not None else None
+    pattern = _metadata(declared, 'pattern_bbox_file') if declared is not None else None
+    prediction = _metadata(plate, 'prediction') if plate is not None else None
+    used = [(node.get('id'), node.get('used_m')) for node in plate.findall('filament')] if plate is not None else []
+    return {
+        'members': files,
+        'gcode_members': [name for _, name in found],
+        'gcode_member': only,
+        'gcode': files[only] if only else None,
+        'md5_recorded': files[only + '.md5'].strip().decode('ascii', 'replace').lower() if only and only + '.md5' in files else '',
+        'md5_computed': md5(files[only]).hexdigest() if only else '',
+        'previews': {name: _preview(data) for name, data in sorted(files.items())
+                     if name.startswith('Metadata/') and name.lower().endswith('.png')},
+        'settings': member(SETTINGS, None),
+        'application': model.findtext(CORE + 'metadata[@name="Application"]') if model is not None else None,
+        'declared_gcode': _metadata(declared, 'gcode_file') if declared is not None else None,
+        'has_slice_info': 'Metadata/slice_info.config' in files,
+        'objects': [node.get('name') for node in plate.findall('object')] if plate is not None else None,
+        'prediction_s': int(prediction) if prediction and prediction.isdigit() else None,
+        'filament_m': {key: float(value) for key, value in used if value and re.fullmatch(NUMBER, value)},
+        'pattern': member(pattern, None) if pattern else None,
+    }
+
 
 def png(raw: bytes) -> dict:
     """Size and tonal range of a picture. For one with an alpha channel, `solid` describes the fully

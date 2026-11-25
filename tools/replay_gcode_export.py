@@ -25,7 +25,8 @@ from tools.replay_evidence_files import verified_part
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from export_io_oracle import gcode_checks, gcode_export_facts, gcode_expectation_gaps, gcode_footprint
-from file_io_replay_support import LAYER, MARKS, PRINTED, as_recorded, fan_off, flattering, gcode, head, heat_off, heat_on
+from file_io_replay_support import (LAYER, MARKS, PRINTED, as_recorded, fan_off, flattering, gcode, head, heat_off,
+                                    heat_on, paired)
 from file_io_replay_support import manifest, moved_project, png, project, refused, screenshots
 
 CASE = 236
@@ -116,8 +117,9 @@ def _printed(saved, printed):
     return matching == [printed], [item for item in saved["objects"] if item["name"] in printed]
 
 
-def _ties(plate, saved, fixture):
-    """The G-code against the project that was sliced, and that project against the fixture."""
+def _ties(plate, saved, fixture, suffix=SOURCE_SUFFIX):
+    """The G-code against the project that was sliced, and that project against the fixture. `suffix`
+    is what the app appended to a preset ID: the name of the file the fixture was opened as."""
     settings, config, heights = saved["settings"], plate["config"], plate["z"]
     named, objects = _printed(saved, plate["object_names"])
     height, first = _number(settings.get("layer_height")), _number(settings.get("initial_layer_print_height"))
@@ -139,21 +141,37 @@ def _ties(plate, saved, fixture):
         "layer_schedule_matches_object_height": schedule,
         "config_matches_sliced_project": plate["config_lines"] > 0 and all(
             len(config.get(key, [])) == 1 and _same_setting(settings.get(key), config[key][0]) for key in TIED),
-        "saved_project_is_the_fixture": _shape(saved) == _shape(fixture) and all(
-            _as_loaded(saved["settings"].get(key)) == _as_loaded(fixture["settings"].get(key))
+        "saved_project_is_the_fixture": _same_shape(saved, fixture) and all(
+            _as_loaded(saved["settings"].get(key), suffix) == _as_loaded(fixture["settings"].get(key), suffix)
             for key in FROM_FIXTURE),
     }
 
 
-def _as_loaded(value):
-    """A setting as the fixture holds it, before the app appended the opened file's name to a preset ID."""
-    if isinstance(value, str) and value.endswith(SOURCE_SUFFIX):
-        return value[:-len(SOURCE_SUFFIX)]
+def _as_loaded(value, suffix=SOURCE_SUFFIX):
+    """A setting before the app appended the opened file's name to a preset ID."""
+    if isinstance(value, str) and value.endswith(suffix):
+        return value[:-len(suffix)]
     return value
 
 
-def _shape(state):
-    return sorted((item["name"], item["triangles"]) for item in state["objects"])
+SHAPE_TOL = 1e-4     # the application writes a mesh it loaded again with differences in its last digits
+
+
+def _same_shape(saved, fixture):
+    """Whether two projects hold the same objects: as many of each name, and every triangle of each
+    one within a ten-thousandth of a millimetre of one of the other's. A sphere the application
+    saved again differs from its fixture by a micron; a moved or resized object is told apart just
+    as it is by exact equality."""
+    names = sorted(item["name"] for item in saved["objects"])
+    if names != sorted(item["name"] for item in fixture["objects"]):
+        return False
+    for name in set(names):
+        mine = [triangle for item in saved["objects"] if item["name"] == name for triangle in item["triangles"]]
+        its = [triangle for item in fixture["objects"] if item["name"] == name for triangle in item["triangles"]]
+        pairs, _ = paired(its, mine, SHAPE_TOL)
+        if len(mine) != len(its) or None in pairs:
+            return False
+    return True
 
 
 def _footprint(path, name, project):
@@ -168,13 +186,24 @@ def _footprint(path, name, project):
     return reading
 
 
+def _same(recorded, again):
+    """Whether two readings agree where both have a key: a dictionary is compared key for key by what
+    both hold, anything else must be equal. A dictionary on one side only against more than nothing
+    on the other agrees to nothing."""
+    if isinstance(recorded, dict) and isinstance(again, dict):
+        if not recorded or not again:
+            return recorded == again
+        return all(_same(value, again[key]) for key, value in recorded.items() if key in again)
+    return recorded == again
+
+
 def _agrees(recorded, again):
     """Whether what the record holds of the footprint comes out the same from the files, key for key
     where both have the key: the oracle may have learned a key since the run, but nothing the record
     holds may differ from the file. A record that shares no key with the reading agrees to nothing."""
     again = as_recorded(again)
-    shared = sorted(set(recorded) & set(again)) if isinstance(recorded, dict) else []
-    return bool(shared) and all(recorded[key] == again[key] for key in shared)
+    shared = set(recorded) & set(again) if isinstance(recorded, dict) else set()
+    return bool(shared) and _same(recorded, again)
 
 
 def _claims(analysis, name, raw, digest, facts, footprint):
