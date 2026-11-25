@@ -390,14 +390,116 @@ def open_archive(session, work, preview):
     return out
 
 
+def watch(session, work, name, seconds=16):
+    """Sample the application for `seconds`; answer error dialogs with OK and a stuck Loading dialog with Cancel."""
+    known = {window['hwnd'] for window in toplevels(session.pid)}
+    seen, samples = {}, []
+    started = time.monotonic()
+    while time.monotonic() - started < seconds:
+        time.sleep(0.5)
+        for window in toplevels(session.pid):
+            if window['hwnd'] in known or window['class'] != '#32770':
+                continue
+            record = seen.get(window['hwnd'])
+            if record is None:
+                record = seen[window['hwnd']] = {'title': window['title'], 'at_s': round(time.monotonic() - started, 1),
+                                                 'ocr': None, 'answers': []}
+                try:
+                    record['ocr'] = shoot(window['hwnd'], work / f'{name}-dialog-{len(seen)}.png')
+                except (OSError, RuntimeError, ValueError) as exc:
+                    record['ocr'] = f'unavailable ({exc})'
+            if not winutil.user32.IsWindowVisible(window['hwnd']):
+                continue
+            count = len(record['answers'])
+            if time.monotonic() - started >= 3 + 2 * count and count < 3:
+                label = 'OK' if 'error' in window['title'].casefold() else 'Cancel'
+                try:
+                    record['answers'].append({'at_s': round(time.monotonic() - started, 1), 'pressed': label,
+                                              'point': press_in(window, label)})
+                except (ValueError, OSError) as exc:
+                    record['answers'].append({'at_s': round(time.monotonic() - started, 1), 'failed': str(exc)[:100]})
+                    winutil._send_msg(window['hwnd'], 0x0010, 0, 0)
+        samples.append({'at_s': round(time.monotonic() - started, 1),
+                        'model_fraction': round(m7.model_colored_frac(session), 5),
+                        'objects': len(m7.model_candidates(session) or []),
+                        'app_dialogs': [w['title'] for w in toplevels(session.pid) if w['class'] == '#32770']})
+    print(f'[census] {name}', json.dumps(samples[-1]), flush=True)
+    return {'dialogs': list(seen.values()), 'samples': samples[-4:],
+            'objects_at_end': len(m7.model_candidates(session) or [])}
+
+
+def give_chooser(session, hwnd, text):
+    edit = export_util.find_edit(hwnd)
+    winutil.select_all(edit)
+    winutil.msg_text(edit, text)
+    winutil._send_msg(hwnd, 0x0111, 1, 0)  # IDOK
+    time.sleep(1.0)
+
+
+def zip_experiments(session, work, analysis):
+    """Three ways to load several models, in one session, each followed by a watch of what the application shows.
+
+    (1) File > Import with three STL paths typed at once - the multi-file path without any archive;
+    (2) Import Zip Archive with an archive of one STL - the archive path with a single file;
+    (3) Import Zip Archive with an archive of three STLs - what Feishu #231 asks for."""
+    from zipfile import ZipFile
+
+    from m7x_251_reload_from_disk import write_cube
+
+    out = {'objects_at_start': len(m7.model_candidates(session) or [])}
+    loose = []
+    for name, size in (('exp1_a.stl', 10), ('exp1_b.stl', 20), ('exp1_c.stl', 30)):
+        path = work / name
+        write_cube(path, size)
+        loose.append(str(path))
+    dispatched, dialog = m7.file_menu_dispatch(session, 'Import 3MF/STL/STEP/SVG/OBJ/AMF', expect_dialog=True, via='Import', timeout_s=10)
+    if not dialog:
+        raise ValueError('the Import row opened no chooser')
+    give_chooser(session, dialog[3], ' '.join(f'"{path}"' for path in loose))
+    out['three_files_at_once'] = watch(session, work, 'exp1')
+    capture(session, work / 'exp1-after.png')
+
+    for number, members in ((2, ('solo_10mm.stl',)), (3, ('trio_10mm.stl', 'trio_20mm.stl', 'trio_30mm.stl'))):
+        archive = work / f'exp{number}.zip'
+        with ZipFile(archive, 'w') as bundle:
+            for index, name in enumerate(members, 1):
+                member = work / name
+                write_cube(member, index * 10)
+                bundle.write(member, name)
+        dispatched, dialog = m7.file_menu_dispatch(session, 'Import Zip Archive', expect_dialog=True, via='Import', timeout_s=10)
+        if not dialog:
+            raise ValueError('Import Zip Archive opened no chooser')
+        give_chooser(session, dialog[3], str(archive))
+        preview = m7.wait_dialog(session.pid, timeout_s=15, title_substr='Archive preview')
+        if not preview:
+            out[f'exp{number}'] = {'preview': None, **watch(session, work, f'exp{number}')}
+            continue
+        time.sleep(1.0)
+        entry = {'preview_rows': shoot(preview[3], work / f'exp{number}-preview.png'),
+                 'controls': [text for _cls, text, _child in descendants(preview[3]) if text]}
+        entry['all'] = press_in({'hwnd': preview[3]}, 'All')
+        time.sleep(1.0)
+        entry['rows_after_all'] = shoot(preview[3], work / f'exp{number}-all.png')
+        entry['open'] = press_in({'hwnd': preview[3]}, 'Open')
+        entry.update(watch(session, work, f'exp{number}'))
+        capture(session, work / f'exp{number}-after.png')
+        out[{2: 'one_file_archive', 3: 'three_file_archive'}[number]] = entry
+    out['app_alive'] = session.alive()
+    return out
+
+
 def run(args, work, analysis):
-    # hv_go launches a case without arguments: the host runner leaves this file to open the archive.
+    # hv_go launches a case without arguments: the host runner leaves option files under C:\coil.
     open_zip = Path(r'C:\coil\diag_open_zip.txt').is_file()
+    experiments = Path(r'C:\coil\diag_zip_experiments.txt').is_file()
     session = boot_session(SimpleNamespace(exe=args.exe, datadir=work / 'profile'), model=args.model)
     try:
         m7.ensure_maximized(session)
         if not wait_arrival(session, timeout_s=30, min_frac=0.001)[0]:
             raise ValueError('fixture did not render')
+        if experiments:
+            analysis['zip_experiments'] = zip_experiments(session, work, analysis)
+            return
         if open_zip:
             analysis['zip_dialog'] = zip_dialog_census(session, work, analysis, open_it=True)
             return
