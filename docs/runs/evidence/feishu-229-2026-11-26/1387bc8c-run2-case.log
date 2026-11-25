@@ -1,0 +1,57 @@
+﻿[m7x229] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\229\run-j0p1v7r3
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\229\run-j0p1v7r3\profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\229\run-j0p1v7r3\profile C:\coil\orca-blackbox-v3-r1\fixtures\agent_layer_redblue.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x5eb114a, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#2)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x6130fda, WM_CLOSE)
+[launcher] pid=11856 hwnd=0x5a00b14 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.49%, gate 0.10%)
+[m7x249] started copy_step at 2026-11-25T22:52:12.483766+00:00
+[m7x249] finished copy_step in 0.016s
+[m7x249] started empty_plate at 2026-11-25T22:52:12.499711+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5e50466 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[model context] real right-click @(1172,528) on 0x5ff059c: sent=2
+[model context] menu hwnd=0x60e0dfc: [(0, 'Clone\tCtrl+K', 0), (1, 'Simplify Model', 0), (2, '', 2051), (3, 'Mesh boolean', 1), (4, 'Center', 1), (5, 'Drop', 1), (6, 'Split', 529), (7, 'Mirror', 784), (8, 'Delete\tDel', 0), (9, '', 2051), (10, 'Add Part', 3088), (11, 'Add Negative Part', 3088), (12, 'Add Modifier', 3088), (13, 'Add Support Blocker', 2064), (14, 'Add Support Enforcer', 2064), (15, 'Height Range Modifier', 0), (16, '', 2051), (17, 'Printable', 8), (18, 'Edit Process Settings', 0), (19, 'Edit in Parameter Table', 0), (20, '', 2051), (21, 'Reload from disk', 0), (22, 'Replace with STL', 0), (23, 'Export as one STL...', 0), (24, 'Convert from Inches', 0), (25, 'Convert from Meters', 0), (26, 'Change Filament', 1808)]
+[m7x244] native highlighted row 8 in menu 0x38b3047b
+[m7x249] finished empty_plate in 11.953s
+[m7x249] started import_chooser at 2026-11-25T22:52:24.441084+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5e50466 did not complete
+[topbar] File opened at offset 10
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5e50466 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=320) sent, completed=False
+[m7x227] chooser 'Choose one or more files (3mf/step/stl/svg/obj/amf):': labels ['Namespace Tree Control', 'Navigation Pane', 'ShellView', 'File &name:', 'Files of &type:', '&Open', 'Cancel', 'Navigation buttons', 'Up band', 'Address: C:\\coil\\orca-blackbox-v3-r1\\fixtures', 'Address band'], types ['Supported files (*.3mf, *.stl, *.oltp, *.stp, *.step, *.svg, *.amf, *.obj)']
+[m7x249] finished import_chooser in 12.406s
+[m7x249] started observe_import at 2026-11-25T22:52:36.858755+00:00
+[m7x229] dialog 'Step file import parameters': ['Smaller linear and angular deflections result in higher-quality\ntransformations but increase the processing time.', 'View Wiki for more information', 'Linear Deflection: ', '0.003', 'Angle Deflection: ', '0.50', 'Split compound and compsolid into multiple objects', 'Number of triangular facets: ', '36', "Don't show again", 'panel', 'OK', 'Cancel']
+[m7x229] import settled: {'candidates': 7, 'baseline': 3, 'dialogs': []}
+[m7x249] finished observe_import in 6.438s
+[m7x249] started save_imported at 2026-11-25T22:52:43.296450+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5e50466 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x229] object list: ['assembly.step'] read, [] not read, parts {'assembly-SOLID-1': True, 'assembly-SOLID-2': True, 'assembly-SOLID-3': True}
+[m7x229] imported: 3 entities ['assembly-SOLID-1', 'assembly-SOLID-2', 'assembly-SOLID-3']
+[m7x249] finished save_imported in 11.437s
+[m7x249] started read_results at 2026-11-25T22:52:54.733948+00:00
+[m7x249] finished read_results in 0.516s
+
+[m7] === verdict ===
+  3 涓疄浣撳潎琚鍏? PASS
+  瀵硅薄鍒楄〃鍙瀵瑰簲闆朵欢锛堟垨鎷嗗垎涓哄瀵硅薄锛? PASS
+  棰滆壊淇濈暀: FAIL (filaments [1, 1, 1], colours {'1': '#ff0000'})
+  鏃犵己浠? PASS
+[m7] RED

@@ -628,17 +628,29 @@ run 编号是 `artifacts/windows_mcp_harvest/<编号>`；叙述与决策见运�
   `<前缀>-*` 找件）。
 - **交互桌面预检**：提权中继里 PS Direct 进程的桌面指标是默认值（§18.7），派发前读
   计划任务 `Ready`、Orca 与驱动进程数、分辨率。
-- **`Windows Security` 防火墙提示：真身、残影和没查清的部分**（2026-11-26）。提示里的程序名是
-  `Snapmaker Control`（设备代理 `snapmaker_control_windows_x64.exe`，被测构建目录里没有它）。
-  05:49 在客机交互桌面上枚举到过它一次：类名是 **`Shell_SystemDialogProxy`**、属于 PickerHost.exe，
-  没有 `#32770` 类名也没有子窗口——所以只认 `#32770` 的预检从来没看见过它；给它发 WM_CLOSE 就关掉。
-  但 #237 各轮整屏截图里那个提示是另一回事：整轮每 1.5 秒枚举一次顶层窗口的看门进程从没见过它
-  （心跳里只有 Orca、导出弹窗、目录框、终端），同一时刻截图上却画着它和早已关掉的弹窗——是一块
-  没被重绘的旧画面，fa706g3 上没有它时同一步照样失败。给被测的 `snapmaker-orca.exe` 加过
-  `OrcaBlackbox-MainBuild-BlockInbound-Any`（入站 Block、所有配置；撤销用
-  `Remove-NetFirewallRule -DisplayName` 同名），没有改变什么。谁触发它、残影为何不消，都没定位。
-  教训：**步骤莫名点不动时，先枚举顶层窗口（任意类名）再截屏，两样对得上才归因给弹窗**；
-  真实点击之前先把 Orca 主窗口置前并读回前台。
+- **`Windows Security` 防火墙提示：真身、挡住的是什么、没查清的部分**（2026-11-26）。提示里的
+  程序名是 `Snapmaker Control`（设备代理 `snapmaker_control_windows_x64.exe`，被测构建目录里
+  没有它；客机上有两份别的拷贝，在 `C:\coil\sut\SnapmakerOrca-2.4.2\resources\` 和
+  `C:\coil\work\z242_repro\app\resources\`）。它的真身是类名 **`Shell_SystemDialog`** 的顶层窗口
+  （标题 `Windows Security`，置顶，PickerHost.exe；05:49 另有一次枚举到同类的
+  `Shell_SystemDialogProxy`），外加一层铺满整屏的置顶 `Shell_SystemDim`：`WindowFromPoint`
+  在屏幕任何一点都回它，**真实鼠标点击全被吃掉**，消息点击不受影响。它没有 `#32770` 类名，
+  逐轮 `EnumWindows` 的看门进程多半也看不到它——只认 `#32770` 的预检从来没拦过它。找它用
+  `FindWindowEx` 按类名或 `WindowFromPoint`，发 WM_CLOSE 就关掉。#237 第四、五轮里我曾把
+  截图上的它说成「没被重绘的旧画面」，那是错的：06:21 用 `WindowFromPoint` 读到活的对话框和
+  整屏遮罩，它确实活着（关掉之后的各轮里清扫器没有再见到它，真实点击也都走通了；同几轮里
+  用例还加了置前和改判读，所以「挡住点击的只是它」没有单独分离出来）。谁触发它没有定位；
+  给被测的 `snapmaker-orca.exe`（04:36，`OrcaBlackbox-MainBuild-BlockInbound-Any`）和 2.4.2
+  目录下那份代理（06:26，`OrcaBlackbox-Agent-Sut2442-BlockInbound-Any`）各加过一条入站
+  Block、所有配置的规则，都没有可证明的效果；撤销用
+  `Remove-NetFirewallRule -DisplayName <同名>`。现在总控的直派脚本在派发期间每 1.5 秒按类名
+  关它一次，并在启动前关一次。
+  教训：**步骤莫名点不动时，先 `WindowFromPoint` / 按类名找窗口，再截屏；只枚举 `#32770`
+  不算查过**；真实点击之前先把 Orca 主窗口置前并读回前台和落点处的窗口。
+- **`obj_run.ps1` 的 `-Attempts` 是最后一个轮次号，不是列表**：`-Attempts 1,2` 经 `-File`
+  传进去被转成整数 12（靠「首轮 RED 即停」才没有连跑）；两轮写 `-Attempts 2`，只补第二轮写
+  `-Attempts 2 -StartAttempt 2`；按飞书原文判红的用例要连跑两轮得加 `-RepeatRed`。
+  `freeze.py` 要完整提交号。
 - **`wait_arrival` 在空盘的 U1 模板上立即返回**：模板本身的彩色占比 0.104% 已经过了
   0.1% 的门，随后另存工程撞上还没关的 Loading 框（#251 第一轮）。导入后要等的是
   「盘上有模型候选且应用没有对话框」，不是彩色占比。
@@ -689,7 +701,27 @@ run 编号是 `artifacts/windows_mcp_harvest/<编号>`；叙述与决策见运�
 - **导出预设包在这个构建上报 `add file fail`**：`Snapmaker Orca - Info`，按钮文本是
   `Yes`，正文自绘（窗口文本只有 `Yes`，要 OCR）。源码在 `mz_zip_writer_add_file`
   失败时返回 `ADD_FILE_FAIL`，并在应用日志里写一行 `<预设名> Failed to add file to ZIP
-  archive`——先读那一行。实测于 #232 第二轮（按类型导出耗材预设）。
+  archive`——先读那一行。实测于 #232 第二轮（按类型导出耗材预设）和 #237。
+- **应用自己另存出来的用户工艺预设，「导出配置包」里照样列不出**：打开带内嵌打印机预设的
+  工程，改层高 0.2→0.3，另存为 `BB Export Test`（`Save Process as` 框；文件
+  `user/default/process/BB Export Test.json` 落盘，侧栏预设行变成它），再打开
+  `Export Preset Bundle`，`Process presets(.zip)` 一行都没有（#237 第十轮起的客机会话）。
+- **Advanced 开关是「左蓝右蓝」才叫开**：读开关小矩形左右两半的色度，和大于 0.3 为开
+  （实测开 `[0.798, 0.426]`、关 `[0, 0]`）；`process_panel.ensure_advanced` 按「旋钮在右」
+  判断，在这个布局上读反了。消息点击和置前后的真实点击都能打开它（
+  `tests/gui/m7x_237_export_configs.py`）。
+- **STEP 导入参数框**（`Step file import parameters`）：Linear Deflection 0.003、Angle
+  Deflection 0.50、`Split compound and compsolid into multiple objects` **默认不勾**、
+  `Number of triangular facets`。不勾时三个实体并成一个零件；勾上后是同一对象下的三个零件
+  （`assembly-SOLID-1/2/3`）。勾选框是自绘的：`BM_CLICK` 就勾上，`BM_GETCHECK` 却一直是 0，
+  状态只能读方框里的像素（#229 第二、三轮按「没勾上」停下，其实第一下就勾上了）。
+- **STEP 的颜色不进工程**：红绿蓝三个实体导入后都在耗材 1，没有一面带涂色，三角形的属性
+  只有 `v1/v2/v3`（[#229](docs/runs/evidence/feishu-229-2026-11-26/README.md)）。产品的
+  命令行在 Windows 上对 STEP 直接拒绝（`Input file must have .stl, .obj, .amf(.xml)
+  extension`），对 STL 崩溃，装配体的读数只能从 GUI 另存的工程里取。
+- **对象列表一行的行首图标会被 OCR 读成一个字母**：`y` 紧挨着 `assembly.step`，
+  「把同一行的邻词拼起来」的 #227 判据把名字数成了两次（#229 第四轮）。读整词，别把
+  图标位置的单词拼进去；把读词用的截图和每个词的位置一起留下。
 
 ### 22.4 2.4.0 的对象驾驶事实
 - **另存工程后，消息点击对象不再选中它**：改走盘面右键菜单 `Select All`
@@ -716,8 +748,16 @@ run 编号是 `artifacts/windows_mcp_harvest/<编号>`；叙述与决策见运�
 - **fa706g3 的显示器 30 分钟无输入就休眠**，休眠后首个模型不渲染：任务开头唤醒显示
   （一动一回的像素移动）并在运行期间保持常亮（`execution_host.json` 的 `display_wake`）。
   #234 的前两次 SHADOW 因此是 RED。
-- **fa 上原生菜单可能关不上**：#238 的 SHADOW 两次菜单都读对了，收尾时 File 菜单窗口
-  没关上，用例按 RED 结束（§17.10 的同类现象）；客机上没出现过。
+- **原生菜单可能关不上，客机也一样**：#238 的 SHADOW 在 fa706g3 上两次菜单都读对了，收尾时
+  File 菜单窗口没关上，用例按 RED 结束（§17.10 的同类现象）。客机上头七个会话都没有出现，
+  最可能的原因不是客机更稳，而是那层铺满整屏的 `Shell_SystemDim` 挡着真实鼠标输入——
+  Export 子菜单在那七个会话里从来没有为真实光标展开过，`WM_CANCELMODE` 就够。06:21 关掉
+  它之后，同一条用例的子菜单第一次展开，第二次读菜单之后真实 Esc 键关不掉菜单，同一签名
+  连红三次（07:03–07:15）。
+  `dismiss_menus` 现在在真实 Esc 之后把 Esc **投递**（`PostMessage` WM_KEYDOWN/WM_KEYUP）给
+  每个还开着的菜单窗口：菜单循环读的是自己线程的队列，不管前台是谁（`39d9222`，客机验证
+  GREEN，日志 `Escape posted to the menu windows closed them`）。只投给菜单窗口，不投给主窗口
+  ——菜单循环不在时，主窗口会把它当成一次真的按键。
 - **Mac 日常账号 `coil` 锁屏时，后台 Aqua 会话（`coilwin`）读不到窗口**：整夜无法跑
   GUI；不许替用户解锁。开跑前读
   `ioreg -n Root -d1 | grep IOConsoleLocked`。

@@ -1,0 +1,20 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T07:21:28" tests="1" failures="0" errors="0">
+    <testcase name="m7x_238_export_disabled" classname="blackbox.m7x_238_export" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_238_export_disabled.log" />
+      </properties>
+      <system-out>[topbar] File opened at offset 10
+[export] the real Escape keys left the menus open; Escape posted to the menu windows closed them
+[export] File &gt; Export read: [(0, 'Export all objects as one STL...', True), (1, 'Export all objects as STLs...', True), (2, 'Export Generic 3MF...', True), (3, 'Export plate sliced file...\tCtrl+G', True), (4, 'Export all plate sliced file...', True), (5, 'Export G-code...', True), (6, 'Export Preset Bundle...', True)]; picture menu-after.png
+[m7x249] finished observe_after_slice in 12.578s
+[m7x238] gaps {'鍒囩墖瀵煎嚭绫绘潯鐩疆鐏?: [], '鍒囩墖瀹屾垚鍚庢仮澶嶅彲鐢?: []}
+
+[m7] === verdict ===
+  鍒囩墖瀵煎嚭绫绘潯鐩疆鐏? PASS
+  鍒囩墖瀹屾垚鍚庢仮澶嶅彲鐢? PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

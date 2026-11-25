@@ -1,0 +1,42 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T06:47:42" tests="1" failures="1" errors="0">
+    <testcase name="m7x_237_export_configs" classname="blackbox.m7x_237_export" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_237_export_configs.log" />
+        <property name="dim:鐢熸垚閰嶇疆鍖呮枃浠讹紙.ini/.zip锛? FAIL (&quot;Process presets(.zip)&quot; lists no row; the application loaded none of the 3 process presets the harness seeds (its log" value="&quot;can not find parent for config&quot;); the filament name &quot;Generic PLA&quot; exported with &quot;ae add file fail ai Yes&quot;, left a 0-byte zip, the log could not add Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).jso" />
+        <property name="dim:閲嶆柊瀵煎叆鍚庨璁惧弬鏁颁笌瀵煎嚭鍓嶄竴鑷? FAIL (not exercised" value="no package holding a preset was imported)" />
+      </properties>
+      <failure type="RED" message="鐢熸垚閰嶇疆鍖呮枃浠讹紙.ini/.zip锛? FAIL (&quot;Process presets(.zip)&quot; lists no row; the application loaded none of the 3 process presets the harness seeds (its log: &quot;can not find parent for config&quot;); the filament name &quot;Generic PLA&quot; exported with &quot;ae add file fail ai Yes&quot;, left a 0-byte zip, the log could not add Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).json; although it had just saved the user preset &quot;BB Export Test&quot; itself; it lists P); 閲嶆柊瀵煎叆鍚庨璁惧弬鏁颁笌瀵煎嚭鍓嶄竴鑷? FAIL (not exercised: no package holding a preset was imported)">[m7x249] finished read_export_dialog in 13.109s
+[m7x249] started make_user_preset at 2026-11-25T22:46:08.218693+00:00
+[panel] click_tab(Quality) poll0 strat0: '|= layer height layer height 0.2 mm first layer height 0.25 mm = line '
+[m5g] preset-row buttons: [(341, 644, 357, 670), (367, 644, 383, 670), (393, 644, 409, 670)]
+[m5g] btn (341, 644, 357, 670) tooltip='Save current Process'
+[m7x249] finished make_user_preset in 35.796s
+[m7x249] started read_export_dialog_again at 2026-11-25T22:46:44.011071+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5cd0400 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=330) sent, completed=False
+[m7x249] finished read_export_dialog_again in 13.157s
+[m7x249] started filament_reading at 2026-11-25T22:46:57.170544+00:00
+[m7x249] started export_1 at 2026-11-25T22:46:57.170544+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5cd0400 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=330) sent, completed=False
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x6780714 did not complete
+[export] Filament presets.zip of kind 'Filament presets(.zip)': 0 bytes in C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\run-8g1psg82\packages\Filament_presets_.zip_Generic_PLA\1
+[m7x249] finished export_1 in 34.734s
+[m7x249] finished filament_reading in 34.906s
+[m7x237] gaps {'鐢熸垚閰嶇疆鍖呮枃浠讹紙.ini/.zip锛?: ['"Process presets(.zip)" lists no row; the application loaded none of the 3 process presets the harness seeds (its log: "can not find parent for config"); the filament name "Generic PLA" exported with "ae add file fail ai Yes", left a 0-byte zip, the log could not add Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).json; although it had just saved the user preset "BB Export Test" itself; it lists Printer config bundle(.orca_printer): nothing; Filament bundle(.orca_filament): [\'Generic PLA\', \'Snapmaker PLA Basic\']; Printer presets(.zip): nothing; Filament presets(.zip): [\'Generic PLA\', \'Snapmaker PLA Basic\']; Process presets(.zip): nothing'], '閲嶆柊瀵煎叆鍚庨璁惧弬鏁颁笌瀵煎嚭鍓嶄竴鑷?: ['not exercised: no package holding a preset was imported']}
+
+[m7] === verdict ===
+  鐢熸垚閰嶇疆鍖呮枃浠讹紙.ini/.zip锛? FAIL ("Process presets(.zip)" lists no row; the application loaded none of the 3 process presets the harness seeds (its log: "can not find parent for config"); the filament name "Generic PLA" exported with "ae add file fail ai Yes", left a 0-byte zip, the log could not add Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).json; although it had just saved the user preset "BB Export Test" itself; it lists P)
+  閲嶆柊瀵煎叆鍚庨璁惧弬鏁颁笌瀵煎嚭鍓嶄竴鑷? FAIL (not exercised: no package holding a preset was imported)
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

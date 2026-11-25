@@ -1,0 +1,22 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T07:26:58" tests="1" failures="0" errors="0">
+    <testcase name="m7x_234_export_plate_slice" classname="blackbox.m7x_234_export_plate" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_234_export_plate_slice.log" />
+        <property name="dim:鐢熸垚 .gcode.3mf 鏂囦欢" value="PASS" />
+        <property name="dim:鏂囦欢澶у皬闅忓垏鐗囧鏉傚害鍚堢悊澧炲ぇ" value="PASS" />
+      </properties>
+      <system-out>[topbar] WM_COMMAND(id=327) sent, completed=True
+[export] Export plate sliced file -&gt; sphere.gcode.3mf (238818 bytes), extension '.gcode.3mf'
+[m7x249] finished complex_export in 11.859s
+[m7x234] file bytes 64543 -&gt; 238818, G-code bytes 353856 -&gt; 757765
+
+[m7] === verdict ===
+  鐢熸垚 .gcode.3mf 鏂囦欢: PASS
+  鍐呭惈 G-code 涓庨瑙堜俊鎭? PASS
+  鏂囦欢澶у皬闅忓垏鐗囧鏉傚害鍚堢悊澧炲ぇ: PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

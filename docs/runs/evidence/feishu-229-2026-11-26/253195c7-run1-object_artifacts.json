@@ -1,0 +1,32 @@
+﻿[
+    {
+        "part":  "analysis.json",
+        "bytes":  13310,
+        "sha256":  "D6D0B892EA32DB9BF3965FE5EA5F1AFC098C25A38B3190160FF0F9ACB94D198C"
+    },
+    {
+        "part":  "chooser.png",
+        "bytes":  97763,
+        "sha256":  "4F6704997D06394840679335FB8C7B0790E50B58A7588A65A229DA2B9BFACDE6"
+    },
+    {
+        "part":  "import-dialog-0.png",
+        "bytes":  27386,
+        "sha256":  "DA2524D34065D53E8D0F15BFC2D1D10078F083F4670212EC3D0EB0E37AE5E1B6"
+    },
+    {
+        "part":  "imported.3mf",
+        "bytes":  35368,
+        "sha256":  "83480E20BA49E402F5CDF5E7736F758B008721C43336EEAE4AE9DCF925FA8284"
+    },
+    {
+        "part":  "imported.png",
+        "bytes":  304901,
+        "sha256":  "EA2EF6DB1A97EE7867AAC73165C066B415AA19C1A6F187117935916444ED6319"
+    },
+    {
+        "part":  "new-project.3mf",
+        "bytes":  34368,
+        "sha256":  "0772A15F8D295F9AFE41E83132469A3772BB6EE22E4BD32C6AA0320E4F7BFCBE"
+    }
+]

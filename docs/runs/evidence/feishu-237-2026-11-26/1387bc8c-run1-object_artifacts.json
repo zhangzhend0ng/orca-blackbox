@@ -1,0 +1,137 @@
+﻿[
+    {
+        "part":  "advanced-after.png",
+        "bytes":  318457,
+        "sha256":  "299AD64FD6836A74E3FDEC018F00528E40B02113278181E120CAFB2D7C223281"
+    },
+    {
+        "part":  "advanced-before.png",
+        "bytes":  313539,
+        "sha256":  "78BC70544B7139DCC4E9BAC80E14FD1F1E4ADAC723E6140B53F5BFF47F385D51"
+    },
+    {
+        "part":  "after-bundle-dialog.png",
+        "bytes":  30872,
+        "sha256":  "4537571E7EED538C8183B2604DC9B9F41C6A75BC41640994CFBAB23956EEA74D"
+    },
+    {
+        "part":  "after-bundle-type-1.png",
+        "bytes":  33726,
+        "sha256":  "ADBFBFD25C9CA3FC812242EB5EA43F1BD7F44B26D671BA49BDF4ADE61D5597C9"
+    },
+    {
+        "part":  "after-bundle-type-2.png",
+        "bytes":  34971,
+        "sha256":  "DD75E4C7A961035312F495327F7FA53938095F5081671251394B52A341E8A289"
+    },
+    {
+        "part":  "after-bundle-type-3.png",
+        "bytes":  35332,
+        "sha256":  "6104C2820D1187A47317DBF25284FC3E797F41F456B1450524EAF0EE4B0472C1"
+    },
+    {
+        "part":  "after-bundle-type-4.png",
+        "bytes":  39275,
+        "sha256":  "19869EBEA7D4A44653D64322A18F31958EE2CE5137B9C99E07F411C0608D1CE6"
+    },
+    {
+        "part":  "after-bundle-type-5.png",
+        "bytes":  37147,
+        "sha256":  "27EF85EDA1A776DF93513A2CA4C2F10ABA10148FC678D16E0E9533BA2B1CF3A4"
+    },
+    {
+        "part":  "after-survey.png",
+        "bytes":  331943,
+        "sha256":  "182B89E630C633A6D7BD7489829F07D0D9558A0BD11C0A67B28ABC42E412F4A6"
+    },
+    {
+        "part":  "after-survey-2.png",
+        "bytes":  338814,
+        "sha256":  "EA7A71CE850D499D0A4DFC110A3A680389BB4C99515A062C3C83E67039FC839E"
+    },
+    {
+        "part":  "analysis.json",
+        "bytes":  54351,
+        "sha256":  "A3718237C54D438A8093B2FDE53B74A4E4105797381482A73763FF9E1C2E4D62"
+    },
+    {
+        "part":  "app-log.log",
+        "bytes":  553717,
+        "sha256":  "871FF22030DF29665760A0F67B1E55CA122D055826342F7856A9218F3D71839C"
+    },
+    {
+        "part":  "bundle-dialog.png",
+        "bytes":  30986,
+        "sha256":  "0E996EA448D158E47DF3666BF3072E16B3942E49575E65BAF0B229415FD1BA76"
+    },
+    {
+        "part":  "bundle-type-1.png",
+        "bytes":  33845,
+        "sha256":  "719461C68F801C11673D860AF701A9F877615687DBCBAB180BF0DA085F87E789"
+    },
+    {
+        "part":  "bundle-type-2.png",
+        "bytes":  35090,
+        "sha256":  "F744EB7EF0D161AC6BDDDA66AD543798A3335E42E4B5F3815C9FD0A9461DC60E"
+    },
+    {
+        "part":  "bundle-type-3.png",
+        "bytes":  35451,
+        "sha256":  "04793342CD66197AF1B14E418FB520A972076860563BA420AE21ED63DA4959F2"
+    },
+    {
+        "part":  "bundle-type-4.png",
+        "bytes":  39382,
+        "sha256":  "64E15B5320741626C9EFA8026E22A3A227293B8E9512346CA305E206E20D8AC5"
+    },
+    {
+        "part":  "bundle-type-5.png",
+        "bytes":  37240,
+        "sha256":  "F226054AD1EA0ED72F5AFC9C43D09EC4C146B38CF8F00DE18E7D1525CF2C8DE2"
+    },
+    {
+        "part":  "directory-dialog.png",
+        "bytes":  46273,
+        "sha256":  "29C458625DAB844FC9EB0B3E2CF46BE553C3C2A62D8A8DB4D9BF636825829C9A"
+    },
+    {
+        "part":  "export-dialog.png",
+        "bytes":  30872,
+        "sha256":  "4537571E7EED538C8183B2604DC9B9F41C6A75BC41640994CFBAB23956EEA74D"
+    },
+    {
+        "part":  "export-dialog-ticked.png",
+        "bytes":  39533,
+        "sha256":  "49DE1EB6AF9C0398FCBEE29D5D478C643A72563F89C5E57DB0BC8768F4987E1E"
+    },
+    {
+        "part":  "preset-before.png",
+        "bytes":  406378,
+        "sha256":  "12CC993C815A42F54F8CAF089F510C26CCDF6385339C8AF5248DBB6C234B4E21"
+    },
+    {
+        "part":  "presets-after.json",
+        "bytes":  243,
+        "sha256":  "052E0B21E208ECAFEB32320132FF1374666C4828EAD7777AE22D2AFE7B28BEE0"
+    },
+    {
+        "part":  "presets-before.json",
+        "bytes":  140995,
+        "sha256":  "93EBDC8816270EFB7171C6ED38783296EB33E267C145932778D46FD5FB6EA64B"
+    },
+    {
+        "part":  "result-dialog.png",
+        "bytes":  4241,
+        "sha256":  "9E0908142C50AB19970518EFE35572914A4E87EA5B24BE50F837E7CFF7FEFA79"
+    },
+    {
+        "part":  "save-preset-dialog.png",
+        "bytes":  17516,
+        "sha256":  "E869292DAE3562F91BE1EF5DD04F3A88CAD8777CC94A4AE95E05E7A3F339A6D2"
+    },
+    {
+        "part":  "save-preset-filled.png",
+        "bytes":  13042,
+        "sha256":  "BD722F1C8F09C31FC12B0FA5FB6F5F56ABA54F2A8E26401D7E34F9FE192B4B18"
+    }
+]

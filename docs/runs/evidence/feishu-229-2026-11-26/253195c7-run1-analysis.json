@@ -1,0 +1,612 @@
+{
+  "case": 229,
+  "results": {
+    "3 \u4e2a\u5b9e\u4f53\u5747\u88ab\u5bfc\u5165": "FAIL (1 entities, boxes [5000.0] mm3)",
+    "\u5bf9\u8c61\u5217\u8868\u53ef\u89c1\u5bf9\u5e94\u96f6\u4ef6\uff08\u6216\u62c6\u5206\u4e3a\u591a\u5bf9\u8c61\uff09": "FAIL (object names ['assembly.step'], read ['assembly.step'])",
+    "\u989c\u8272\u4fdd\u7559": "FAIL (filaments [1], colours {'1': '#ff0000'})",
+    "\u65e0\u7f3a\u4ef6": "FAIL (triangle counts [36])"
+  },
+  "timings": {
+    "copy_step": {
+      "started_utc": "2026-11-25T21:37:14.292072+00:00",
+      "duration_s": 0.015
+    },
+    "empty_plate": {
+      "started_utc": "2026-11-25T21:37:14.307853+00:00",
+      "duration_s": 11.953
+    },
+    "import_chooser": {
+      "started_utc": "2026-11-25T21:37:26.256266+00:00",
+      "duration_s": 12.313
+    },
+    "observe_import": {
+      "started_utc": "2026-11-25T21:37:38.580819+00:00",
+      "duration_s": 5.719
+    },
+    "save_imported": {
+      "started_utc": "2026-11-25T21:37:44.296277+00:00",
+      "duration_s": 11.593
+    },
+    "read_results": {
+      "started_utc": "2026-11-25T21:37:55.878317+00:00",
+      "duration_s": 0.5
+    }
+  },
+  "fixture": {
+    "name": "assembly.step",
+    "bytes": 13829,
+    "sha256": "60a0fdb7be4a78944e57e8d585a937b0d482b81b9fcd5c00204b4a7695025e24",
+    "template": {
+      "name": "agent_layer_redblue.3mf",
+      "bytes": 25471,
+      "sha256": "581568a9a1f2aad2984b472d137239d5fe572733f5c535004ec29e6ceb2c8a16"
+    }
+  },
+  "bed_point": [
+    1172,
+    514
+  ],
+  "initial_printer": {
+    "model": "Snapmaker U1",
+    "profile": "Snapmaker U1 (0.8 nozzle)(agent_layer_redblue.3mf)"
+  },
+  "empty_plate": {
+    "fraction": 0.0010439742316604283,
+    "candidate_centroids": [
+      [
+        935,
+        331
+      ],
+      [
+        851,
+        759
+      ]
+    ]
+  },
+  "empty_plate_candidates": 3,
+  "chooser": {
+    "import_rows": [
+      {
+        "label": "Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I",
+        "enabled": true
+      },
+      {
+        "label": "Import Zip Archive...",
+        "enabled": true
+      },
+      {
+        "label": "Import Configs...",
+        "enabled": true
+      }
+    ],
+    "row": "Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I",
+    "title": "Choose one or more files (3mf/step/stl/svg/obj/amf):",
+    "labels": [
+      "Namespace Tree Control",
+      "Navigation Pane",
+      "ShellView",
+      "File &name:",
+      "Files of &type:",
+      "&Open",
+      "Cancel",
+      "Navigation buttons",
+      "Up band",
+      "Address: C:\\coil\\orca-blackbox-v3-r1\\fixtures",
+      "Address band"
+    ],
+    "types": [
+      {
+        "selected": -1,
+        "items": []
+      },
+      {
+        "selected": 0,
+        "items": [
+          "Supported files (*.3mf, *.stl, *.oltp, *.stp, *.step, *.svg, *.amf, *.obj)"
+        ]
+      },
+      {
+        "selected": -1,
+        "items": []
+      }
+    ],
+    "image": {
+      "width_px": 944,
+      "height_px": 501
+    },
+    "stl_filter": "Supported files (*.3mf, *.stl, *.oltp, *.stp, *.step, *.svg, *.amf, *.obj)",
+    "entered": "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\229\\run-tim_t96x\\assembly.step",
+    "dialog_closed": true
+  },
+  "import_dialogs": [
+    {
+      "class": "#32770",
+      "title": "Step file import parameters",
+      "rect": [
+        760,
+        391,
+        1191,
+        758
+      ],
+      "children": [
+        {
+          "class": "Static",
+          "text": "Smaller linear and angular deflections result in higher-quality\ntransformations but increase the processing time.",
+          "hwnd": 107414502,
+          "id": -30294,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            788,
+            442,
+            1109,
+            473
+          ]
+        },
+        {
+          "class": "Static",
+          "text": "View Wiki for more information",
+          "hwnd": 44700148,
+          "id": -30293,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            788,
+            473,
+            964,
+            490
+          ]
+        },
+        {
+          "class": "Static",
+          "text": "Linear Deflection: ",
+          "hwnd": 102108230,
+          "id": -30292,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            788,
+            510,
+            883,
+            526
+          ]
+        },
+        {
+          "class": "msctls_trackbar32",
+          "text": "",
+          "hwnd": 109511786,
+          "id": -30291,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            888,
+            510,
+            1088,
+            535
+          ]
+        },
+        {
+          "class": "wxWindowNR",
+          "text": "",
+          "hwnd": 100795380,
+          "id": -30290,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            1093,
+            510,
+            1163,
+            536
+          ]
+        },
+        {
+          "class": "Edit",
+          "text": "0.003",
+          "hwnd": 100796146,
+          "id": -30289,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            1098,
+            514,
+            1153,
+            532
+          ]
+        },
+        {
+          "class": "Static",
+          "text": "Angle Deflection: ",
+          "hwnd": 41882030,
+          "id": -30288,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            788,
+            542,
+            882,
+            558
+          ]
+        },
+        {
+          "class": "msctls_trackbar32",
+          "text": "",
+          "hwnd": 102107366,
+          "id": -30287,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            888,
+            542,
+            1088,
+            567
+          ]
+        },
+        {
+          "class": "wxWindowNR",
+          "text": "",
+          "hwnd": 41357784,
+          "id": -30286,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            1093,
+            542,
+            1163,
+            568
+          ]
+        },
+        {
+          "class": "Edit",
+          "text": "0.50",
+          "hwnd": 94503088,
+          "id": -30285,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            1098,
+            546,
+            1153,
+            564
+          ]
+        },
+        {
+          "class": "Button",
+          "text": "Split compound and compsolid into multiple objects",
+          "hwnd": 38998450,
+          "id": -30284,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            788,
+            594,
+            1089,
+            609
+          ]
+        },
+        {
+          "class": "Static",
+          "text": "Number of triangular facets: ",
+          "hwnd": 52236786,
+          "id": -30283,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            788,
+            646,
+            940,
+            662
+          ]
+        },
+        {
+          "class": "Static",
+          "text": "36",
+          "hwnd": 43127228,
+          "id": -30282,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            940,
+            646,
+            1090,
+            662
+          ]
+        },
+        {
+          "class": "Button",
+          "text": "Don't show again",
+          "hwnd": 104137880,
+          "id": -30281,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            788,
+            716,
+            902,
+            731
+          ]
+        },
+        {
+          "class": "wxWindowNR",
+          "text": "panel",
+          "hwnd": 39850404,
+          "id": -30280,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            963,
+            698,
+            1183,
+            750
+          ]
+        },
+        {
+          "class": "wxWindowNR",
+          "text": "OK",
+          "hwnd": 102631762,
+          "id": 5100,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            963,
+            708,
+            1063,
+            740
+          ]
+        },
+        {
+          "class": "wxWindowNR",
+          "text": "Cancel",
+          "hwnd": 105516542,
+          "id": 5101,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            1073,
+            708,
+            1173,
+            740
+          ]
+        }
+      ],
+      "image": "import-dialog-0.png",
+      "pressed": {
+        "text": "OK",
+        "id": 5100,
+        "class": "wxWindowNR"
+      },
+      "tiers": [
+        {
+          "how": "message click inside dialog",
+          "at": [
+            1013,
+            724
+          ],
+          "closed": true
+        }
+      ],
+      "closed": true
+    }
+  ],
+  "loading_dialogs": [
+    "Loading..."
+  ],
+  "import_settled": {
+    "candidates": 7,
+    "baseline": 3,
+    "dialogs": []
+  },
+  "object_list": {
+    "words": [
+      "c",
+      "co",
+      "File",
+      "&",
+      "us",
+      "Calibration",
+      "a",
+      "Prepare",
+      "Preview",
+      "Devic",
+      "Printer",
+      "~",
+      "Snapmaker",
+      "U1",
+      "(0.8",
+      "nozzle)(agent_layer...",
+      "[7",
+      "~",
+      "Textured",
+      "PEI",
+      "Plate",
+      "Bed",
+      "type",
+      "Nozzle",
+      "3",
+      "Nozzle",
+      "4",
+      "Nozzle",
+      "2",
+      "Diameter",
+      "~",
+      "0.8mm",
+      "Flow",
+      "~",
+      "Standard",
+      "(@",
+      "Filament",
+      "Management",
+      "Flushing",
+      "volumes",
+      "Color",
+      "Mixing",
+      "Matec",
+      "((",
+      "Filaments",
+      "(FG",
+      "~",
+      "Generic",
+      "PETG",
+      "@U...",
+      "\u00a9",
+      "~",
+      "Snapmaker",
+      "PLA",
+      "Silk...",
+      "\u00a9",
+      "B",
+      "~",
+      "Snapmaker",
+      "PLA"
+    ],
+    "names": [
+      "assembly.step"
+    ],
+    "found": [
+      "assembly.step"
+    ],
+    "listed": true
+  },
+  "imported": {
+    "checks": {
+      "3 \u4e2a\u5b9e\u4f53\u5747\u88ab\u5bfc\u5165": false,
+      "\u5bf9\u8c61\u5217\u8868\u53ef\u89c1\u5bf9\u5e94\u96f6\u4ef6\uff08\u6216\u62c6\u5206\u4e3a\u591a\u5bf9\u8c61\uff09": false,
+      "\u989c\u8272\u4fdd\u7559": false,
+      "\u65e0\u7f3a\u4ef6": false
+    },
+    "object_names": [
+      "assembly.step"
+    ],
+    "entities": [
+      {
+        "object": "assembly.step",
+        "part": "assembly",
+        "subtype": "normal_part",
+        "triangles": 36,
+        "box_mm": [
+          [
+            110.5,
+            160.5
+          ],
+          [
+            131.0,
+            141.0
+          ],
+          [
+            0.0,
+            10.0
+          ]
+        ],
+        "box_volume_mm3": 5000.0,
+        "extruder": null,
+        "object_extruder": 0,
+        "faces_without_paint": 36,
+        "filaments": [
+          1
+        ],
+        "filament": 1
+      }
+    ],
+    "entity_count": 1,
+    "triangles_total": 36,
+    "triangle_counts": [
+      36
+    ],
+    "filament": {
+      "assembly": 1
+    },
+    "filament_colours": {
+      "1": "#ff0000"
+    },
+    "filament_colour": [
+      "#FF0000",
+      "#0000FF",
+      "#00C1AE",
+      "#F4E2C1",
+      "#ED1C24"
+    ],
+    "printer": "Snapmaker U1 (0.8 nozzle)(agent_layer_redblue.3mf)",
+    "triangle_attribute_names": [
+      "v1",
+      "v2",
+      "v3"
+    ],
+    "side_by_side": false,
+    "object_list": {
+      "names": [
+        "assembly.step"
+      ],
+      "found": [
+        "assembly.step"
+      ],
+      "listed": true,
+      "words": [
+        "c",
+        "co",
+        "File",
+        "&",
+        "us",
+        "Calibration",
+        "a",
+        "Prepare",
+        "Preview",
+        "Devic",
+        "Printer",
+        "~",
+        "Snapmaker",
+        "U1",
+        "(0.8",
+        "nozzle)(agent_layer...",
+        "[7",
+        "~",
+        "Textured",
+        "PEI",
+        "Plate",
+        "Bed",
+        "type",
+        "Nozzle",
+        "3",
+        "Nozzle",
+        "4",
+        "Nozzle",
+        "2",
+        "Diameter",
+        "~",
+        "0.8mm",
+        "Flow",
+        "~",
+        "Standard",
+        "(@",
+        "Filament",
+        "Management",
+        "Flushing",
+        "volumes",
+        "Color",
+        "Mixing",
+        "Matec",
+        "((",
+        "Filaments",
+        "(FG",
+        "~",
+        "Generic",
+        "PETG",
+        "@U...",
+        "\u00a9",
+        "~",
+        "Snapmaker",
+        "PLA",
+        "Silk...",
+        "\u00a9",
+        "B",
+        "~",
+        "Snapmaker",
+        "PLA"
+      ]
+    }
+  },
+  "recorded_results_match": true,
+  "editor_at_end": {
+    "alive": true,
+    "dialog": null
+  },
+  "wall_seconds": 89.765
+}

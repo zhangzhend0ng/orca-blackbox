@@ -1,0 +1,14 @@
+﻿{
+    "commit":  "8d5a55333b8c7bc130fcee2dcf367f947e96be6d",
+    "case":  "diag_step_cli_import",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "orca_processes_after":  0,
+    "summary":  "SUMMARY: PASS=1 FAIL=0",
+    "dispatched_at":  "2026-11-26T05:06:22.4083431+08:00",
+    "scenario_completed_at":  "2026-11-26T05:06:42.8869053+08:00",
+    "suite_completed_at":  "2026-11-26T05:06:42.9110062+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_diag_step_cli_import.log",
+    "log_sha256":  "502DAEBEF7500581A57E105421044DD77034E93F901024E9F3E07FE42DB4DF49"
+}

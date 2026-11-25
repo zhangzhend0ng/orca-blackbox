@@ -1,0 +1,41 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T07:15:16" tests="1" failures="1" errors="0">
+    <testcase name="m7x_238_export_disabled" classname="blackbox.m7x_238_export" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_238_export_disabled.log" />
+        <property name="dim:unfinished checks" value="FAIL (ValueError: the File menu stayed open: [[1, 29, 251, 229], [1, 29, 251, 229]])" />
+      </properties>
+      <failure type="RED" message="unfinished checks: FAIL (ValueError: the File menu stayed open: [[1, 29, 251, 229], [1, 29, 251, 229]])">[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[export] 'Export G-code' enabled 8.5s after the Slice click
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x60006b2 did not complete
+[topbar] File opened at offset 10
+[export] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[export] Export menu: [(0, 'Export all objects as one STL...', True), (1, 'Export all objects as STLs...', True), (2, 'Export Generic 3MF...', True), (3, 'Export plate sliced file...\tCtrl+G', True), (4, 'Export all plate sliced file...', True), (5, 'Export G-code...', True), (6, 'Export Preset Bundle...', True)]
+[m7x249] finished slice in 13.141s
+[m7x249] started observe_after_slice at 2026-11-25T23:14:53.469184+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x60006b2 did not complete
+[topbar] File opened at offset 10
+[m7x249] finished observe_after_slice in 12.250s
+python.exe : Traceback (most recent call last):
+At C:\coil\run_suite.ps1:35 char:3
++   &amp; "C:\Python311\python.exe" (Case-File $c) 2&gt;&amp;1 | Out-File -FilePat ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\plate_reserve_case.py", line 35, in case_main
+    steps(session, work, analysis, args)
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\m7x_238_export_disabled.py", line 61, in steps
+    analysis['menu_after_slice'] = export_menu_reading(session, work, 'menu-after.png')
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\coil\orca-blackbox-v3-r1\tests\file_export_cases.py", line 284, in export_menu_reading
+    raise ValueError(f'the File menu stayed open: '
+ValueError: the File menu stayed open: [[1, 29, 251, 229], [1, 29, 251, 229]]
+
+[m7] === verdict ===
+  unfinished checks: FAIL (ValueError: the File menu stayed open: [[1, 29, 251, 229], [1, 29, 251, 229]])
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

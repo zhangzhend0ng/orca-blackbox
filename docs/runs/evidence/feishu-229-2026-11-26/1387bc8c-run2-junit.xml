@@ -1,0 +1,41 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T06:52:57" tests="1" failures="1" errors="0">
+    <testcase name="m7x_229_import_step" classname="blackbox.m7x_229_import" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_229_import_step.log" />
+        <property name="dim:棰滆壊淇濈暀" value="FAIL (filaments [1, 1, 1], colours {'1': '#ff0000'})" />
+      </properties>
+      <failure type="RED" message="棰滆壊淇濈暀: FAIL (filaments [1, 1, 1], colours {'1': '#ff0000'})">[topbar] File opened at offset 10
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5e50466 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=320) sent, completed=False
+[m7x227] chooser 'Choose one or more files (3mf/step/stl/svg/obj/amf):': labels ['Namespace Tree Control', 'Navigation Pane', 'ShellView', 'File &amp;name:', 'Files of &amp;type:', '&amp;Open', 'Cancel', 'Navigation buttons', 'Up band', 'Address: C:\\coil\\orca-blackbox-v3-r1\\fixtures', 'Address band'], types ['Supported files (*.3mf, *.stl, *.oltp, *.stp, *.step, *.svg, *.amf, *.obj)']
+[m7x249] finished import_chooser in 12.406s
+[m7x249] started observe_import at 2026-11-25T22:52:36.858755+00:00
+[m7x229] dialog 'Step file import parameters': ['Smaller linear and angular deflections result in higher-quality\ntransformations but increase the processing time.', 'View Wiki for more information', 'Linear Deflection: ', '0.003', 'Angle Deflection: ', '0.50', 'Split compound and compsolid into multiple objects', 'Number of triangular facets: ', '36', "Don't show again", 'panel', 'OK', 'Cancel']
+[m7x229] import settled: {'candidates': 7, 'baseline': 3, 'dialogs': []}
+[m7x249] finished observe_import in 6.438s
+[m7x249] started save_imported at 2026-11-25T22:52:43.296450+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5e50466 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x229] object list: ['assembly.step'] read, [] not read, parts {'assembly-SOLID-1': True, 'assembly-SOLID-2': True, 'assembly-SOLID-3': True}
+[m7x229] imported: 3 entities ['assembly-SOLID-1', 'assembly-SOLID-2', 'assembly-SOLID-3']
+[m7x249] finished save_imported in 11.437s
+[m7x249] started read_results at 2026-11-25T22:52:54.733948+00:00
+[m7x249] finished read_results in 0.516s
+
+[m7] === verdict ===
+  3 涓疄浣撳潎琚鍏? PASS
+  瀵硅薄鍒楄〃鍙瀵瑰簲闆朵欢锛堟垨鎷嗗垎涓哄瀵硅薄锛? PASS
+  棰滆壊淇濈暀: FAIL (filaments [1, 1, 1], colours {'1': '#ff0000'})
+  鏃犵己浠? PASS
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

@@ -1,0 +1,37 @@
+﻿[diag229] work directory=C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\229\run-ytm25zdf, executable=C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe
+[diag229] stl: exit=3221225477 in 1.2 s, 3MF=False
+[diag229] stl | [2026-11-26 05:06:41.149167] [0x00001520] [trace]   Initializing StaticPrintConfigs
+[diag229] stl | sentry_init returned: 0
+[diag229] stl | sentry_init succeeded, init_success set to true
+[diag229] stl | Starting Sentry session and setting flags...
+[diag229] stl | [2026-11-26 05:06:41.504287] [0x00001520] [error]   Slic3r::GUI::PartPlate::calc_exclude_triangles:Unable to create exclude triangles
+[diag229] stl | 
+[diag229] stl | [2026-11-26 05:06:41.704074] [0x00001520] [error]   Couldn't open file: 'C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources/shaders/140/selection_mask.fs'
+[diag229] stl | [2026-11-26 05:06:41.704074] [0x00001520] [error]   Couldn't open file: 'C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources/shaders/140/selection_composite.fs'
+[diag229] stl | [2026-11-26 05:06:41.704074] [0x00001520] [error]   Couldn't open file: 'C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources/shaders/140/selection_edge.fs'
+[diag229] stl | [2026-11-26 05:06:41.704074] [0x00001520] [error]   Couldn't open file: 'C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources/shaders/140/selection_area_downsample.fs'
+[diag229] stl | [2026-11-26 05:06:41.704074] [0x00001520] [error]   Couldn't open file: 'C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources/shaders/140/selection_gaussian.fs'
+[diag229] stl | 
+[diag229] stl | MESA: error: ZINK: vkCreateInstance failed (VK_ERROR_INCOMPATIBLE_DRIVER)
+[diag229] shipped_step: exit=4294967290 in 0.4 s, 3MF=False
+[diag229] shipped_step | [2026-11-26 05:06:42.184937] [0x00002588] [trace]   Initializing StaticPrintConfigs
+[diag229] shipped_step | sentry_init returned: 0
+[diag229] shipped_step | sentry_init succeeded, init_success set to true
+[diag229] shipped_step | Starting Sentry session and setting flags...
+[diag229] shipped_step | Slic3r::CLI::run found error, exit
+[diag229] shipped_step | 
+[diag229] shipped_step | MESA: error: ZINK: vkCreateInstance failed (VK_ERROR_INCOMPATIBLE_DRIVER)
+[diag229] shipped_step | C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\calib\volumetric_speed\SpeedTestStructure.step: Unknown file format. Input file must have .stl, .obj, .amf(.xml) extension.
+[diag229] assembly: exit=4294967290 in 0.4 s, 3MF=False
+[diag229] assembly | [2026-11-26 05:06:42.549860] [0x00001798] [trace]   Initializing StaticPrintConfigs
+[diag229] assembly | sentry_init returned: 0
+[diag229] assembly | sentry_init succeeded, init_success set to true
+[diag229] assembly | Starting Sentry session and setting flags...
+[diag229] assembly | Slic3r::CLI::run found error, exit
+[diag229] assembly | 
+[diag229] assembly | MESA: error: ZINK: vkCreateInstance failed (VK_ERROR_INCOMPATIBLE_DRIVER)
+[diag229] assembly | C:\coil\orca-blackbox-v3-r1\fixtures\assembly.step: Unknown file format. Input file must have .stl, .obj, .amf(.xml) extension.
+
+[m7] === verdict ===
+  the command-line controls ran and were recorded: PASS
+[m7] GREEN

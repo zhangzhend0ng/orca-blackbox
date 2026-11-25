@@ -1,0 +1,1814 @@
+{
+  "case": 229,
+  "results": {
+    "3 \u4e2a\u5b9e\u4f53\u5747\u88ab\u5bfc\u5165": "PASS",
+    "\u5bf9\u8c61\u5217\u8868\u53ef\u89c1\u5bf9\u5e94\u96f6\u4ef6\uff08\u6216\u62c6\u5206\u4e3a\u591a\u5bf9\u8c61\uff09": "PASS",
+    "\u989c\u8272\u4fdd\u7559": "FAIL (filaments [1, 1, 1], colours {'1': '#ff0000'})",
+    "\u65e0\u7f3a\u4ef6": "PASS"
+  },
+  "timings": {
+    "copy_step": {
+      "started_utc": "2026-11-25T22:41:41.449911+00:00",
+      "duration_s": 0.015
+    },
+    "empty_plate": {
+      "started_utc": "2026-11-25T22:41:41.457410+00:00",
+      "duration_s": 11.125
+    },
+    "import_chooser": {
+      "started_utc": "2026-11-25T22:41:52.585883+00:00",
+      "duration_s": 12.063
+    },
+    "observe_import": {
+      "started_utc": "2026-11-25T22:42:04.659229+00:00",
+      "duration_s": 5.609
+    },
+    "save_imported": {
+      "started_utc": "2026-11-25T22:42:10.264496+00:00",
+      "duration_s": 10.844
+    },
+    "read_results": {
+      "started_utc": "2026-11-25T22:42:21.109547+00:00",
+      "duration_s": 0.516
+    }
+  },
+  "fixture": {
+    "name": "assembly.step",
+    "bytes": 13829,
+    "sha256": "60a0fdb7be4a78944e57e8d585a937b0d482b81b9fcd5c00204b4a7695025e24",
+    "template": {
+      "name": "agent_layer_redblue.3mf",
+      "bytes": 25471,
+      "sha256": "581568a9a1f2aad2984b472d137239d5fe572733f5c535004ec29e6ceb2c8a16"
+    }
+  },
+  "bed_point": [
+    1172,
+    518
+  ],
+  "initial_printer": {
+    "model": "Snapmaker U1",
+    "profile": "Snapmaker U1 (0.8 nozzle)(agent_layer_redblue.3mf)"
+  },
+  "empty_plate": {
+    "fraction": 0.0010345911155627756,
+    "candidate_centroids": [
+      [
+        935,
+        335
+      ],
+      [
+        851,
+        763
+      ]
+    ]
+  },
+  "empty_plate_candidates": 3,
+  "chooser": {
+    "import_rows": [
+      {
+        "label": "Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I",
+        "enabled": true
+      },
+      {
+        "label": "Import Zip Archive...",
+        "enabled": true
+      },
+      {
+        "label": "Import Configs...",
+        "enabled": true
+      }
+    ],
+    "row": "Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I",
+    "title": "Choose one or more files (3mf/step/stl/svg/obj/amf):",
+    "labels": [
+      "\u547d\u540d\u7a7a\u95f4\u6811\u72b6\u63a7\u5236\u9879",
+      "\u6811\u89c6\u56fe",
+      "ShellView",
+      "File &name:",
+      "Files of &type:",
+      "&Open",
+      "Cancel",
+      "\u5bfc\u822a\u6309\u94ae",
+      "\u5411\u4e0a\u4e00\u7ea7\u533a\u6bb5\u5de5\u5177\u680f",
+      "\u5730\u5740: C:\\coil\\fa706g3_runs\\orca-bb-62d7a8d29c02\\candidate\\fixtures",
+      "\u5730\u5740\u533a\u6bb5\u5de5\u5177\u680f"
+    ],
+    "types": [
+      {
+        "selected": -1,
+        "items": []
+      },
+      {
+        "selected": 0,
+        "items": [
+          "Supported files (*.3mf, *.stl, *.oltp, *.stp, *.step, *.svg, *.amf, *.obj)"
+        ]
+      },
+      {
+        "selected": -1,
+        "items": []
+      }
+    ],
+    "image": {
+      "width_px": 944,
+      "height_px": 501
+    },
+    "stl_filter": "Supported files (*.3mf, *.stl, *.oltp, *.stp, *.step, *.svg, *.amf, *.obj)",
+    "entered": "C:\\coil\\fa706g3_runs\\orca-bb-62d7a8d29c02\\feishu-object-cases\\229\\run-2o74j68r\\assembly.step",
+    "dialog_closed": true
+  },
+  "import_dialogs": [
+    {
+      "class": "#32770",
+      "title": "Step file import parameters",
+      "rect": [
+        760,
+        395,
+        1200,
+        763
+      ],
+      "children": [
+        {
+          "class": "Static",
+          "text": "Smaller linear and angular deflections result in higher-quality\ntransformations but increase the processing time.",
+          "hwnd": 33426854,
+          "id": -30294,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            788,
+            446,
+            1142,
+            481
+          ]
+        },
+        {
+          "class": "Static",
+          "text": "View Wiki for more information",
+          "hwnd": 42667514,
+          "id": -30293,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            788,
+            481,
+            998,
+            495
+          ]
+        },
+        {
+          "class": "Static",
+          "text": "Linear Deflection: ",
+          "hwnd": 38802032,
+          "id": -30292,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            788,
+            515,
+            892,
+            533
+          ]
+        },
+        {
+          "class": "msctls_trackbar32",
+          "text": "",
+          "hwnd": 48695268,
+          "id": -30291,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            897,
+            515,
+            1097,
+            540
+          ]
+        },
+        {
+          "class": "wxWindowNR",
+          "text": "",
+          "hwnd": 45549046,
+          "id": -30290,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            1102,
+            515,
+            1172,
+            541
+          ]
+        },
+        {
+          "class": "Edit",
+          "text": "0.003",
+          "hwnd": 25956436,
+          "id": -30289,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            1107,
+            519,
+            1162,
+            537
+          ]
+        },
+        {
+          "class": "Static",
+          "text": "Angle Deflection: ",
+          "hwnd": 39589480,
+          "id": -30288,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            788,
+            547,
+            890,
+            565
+          ]
+        },
+        {
+          "class": "msctls_trackbar32",
+          "text": "",
+          "hwnd": 40437064,
+          "id": -30287,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            897,
+            547,
+            1097,
+            572
+          ]
+        },
+        {
+          "class": "wxWindowNR",
+          "text": "",
+          "hwnd": 38538590,
+          "id": -30286,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            1102,
+            547,
+            1172,
+            573
+          ]
+        },
+        {
+          "class": "Edit",
+          "text": "0.50",
+          "hwnd": 38997066,
+          "id": -30285,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            1107,
+            551,
+            1162,
+            569
+          ]
+        },
+        {
+          "class": "Button",
+          "text": "Split compound and compsolid into multiple objects",
+          "hwnd": 7866148,
+          "id": -30284,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            788,
+            599,
+            1117,
+            616
+          ]
+        },
+        {
+          "class": "Static",
+          "text": "Number of triangular facets: ",
+          "hwnd": 40703208,
+          "id": -30283,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            788,
+            651,
+            957,
+            669
+          ]
+        },
+        {
+          "class": "Static",
+          "text": "36",
+          "hwnd": 39327264,
+          "id": -30282,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            957,
+            651,
+            1107,
+            669
+          ]
+        },
+        {
+          "class": "Button",
+          "text": "Don't show again",
+          "hwnd": 42668848,
+          "id": -30281,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            788,
+            720,
+            913,
+            737
+          ]
+        },
+        {
+          "class": "wxWindowNR",
+          "text": "panel",
+          "hwnd": 38866204,
+          "id": -30280,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            972,
+            703,
+            1192,
+            755
+          ]
+        },
+        {
+          "class": "wxWindowNR",
+          "text": "OK",
+          "hwnd": 34538724,
+          "id": 5100,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            972,
+            713,
+            1072,
+            745
+          ]
+        },
+        {
+          "class": "wxWindowNR",
+          "text": "Cancel",
+          "hwnd": 30479032,
+          "id": 5101,
+          "enabled": true,
+          "visible": true,
+          "rect": [
+            1082,
+            713,
+            1182,
+            745
+          ]
+        }
+      ],
+      "image": "import-dialog-0.png",
+      "readings": {
+        "linear_deflection": "0.003",
+        "angle_deflection": "0.50",
+        "triangular_facets": "36"
+      },
+      "option": {
+        "text": "Split compound and compsolid into multiple objects",
+        "class": "Button",
+        "rect": [
+          788,
+          599,
+          1117,
+          616
+        ],
+        "at": [
+          795,
+          607
+        ],
+        "square_in_picture": [
+          21,
+          174,
+          34,
+          187
+        ],
+        "first_picture": {
+          "ink": 0.0,
+          "changed": 0.0,
+          "ticked": false
+        },
+        "neighbours": [
+          {
+            "class": "Edit",
+            "rect": [
+              1107,
+              551,
+              1162,
+              569
+            ],
+            "text": "0.50"
+          },
+          {
+            "class": "Static",
+            "rect": [
+              788,
+              651,
+              957,
+              669
+            ],
+            "text": "Number of triangular facets: "
+          }
+        ],
+        "steps": [
+          {
+            "how": "BM_CLICK sent to the check box",
+            "before": {
+              "check": 0,
+              "pixels": {
+                "ink": 0.0,
+                "changed": 0.0,
+                "ticked": false
+              }
+            },
+            "after": {
+              "check": 0,
+              "pixels": {
+                "ink": 0.2099,
+                "changed": 0.1183,
+                "ticked": true
+              }
+            }
+          }
+        ],
+        "after": {
+          "check": 0,
+          "pixels": {
+            "ink": 0.2099,
+            "changed": 0.1183,
+            "ticked": true
+          }
+        },
+        "before": {
+          "check": 0,
+          "pixels": {
+            "ink": 0.0,
+            "changed": 0.0,
+            "ticked": false
+          }
+        },
+        "image": "import-dialog-ticked.png"
+      },
+      "readings_after_tick": {
+        "linear_deflection": "0.003",
+        "angle_deflection": "0.50",
+        "triangular_facets": "36"
+      },
+      "pressed": {
+        "text": "OK",
+        "id": 5100,
+        "class": "wxWindowNR"
+      },
+      "tiers": [
+        {
+          "how": "message click inside dialog",
+          "at": [
+            1022,
+            729
+          ],
+          "closed": true
+        }
+      ],
+      "closed": true
+    }
+  ],
+  "loading_dialogs": [
+    "Loading..."
+  ],
+  "import_settled": {
+    "candidates": 7,
+    "baseline": 3,
+    "dialogs": []
+  },
+  "object_list": {
+    "image": "object-list.png",
+    "words": [
+      "(",
+      "File",
+      "&",
+      ">)",
+      "Cc",
+      "\u00a333",
+      "Calibration",
+      "a",
+      "Prepare",
+      "Preview",
+      "Devic",
+      "Printer",
+      "~",
+      "Snapmaker",
+      "U1",
+      "(0.8",
+      "nozzle)(agent_layer...",
+      "[7",
+      "Bed",
+      "type",
+      "~",
+      "Textured",
+      "PEI",
+      "Plate",
+      "Nozzle",
+      "2",
+      "Nozzle",
+      "3",
+      "Nozzle",
+      "4",
+      "Diameter",
+      "~",
+      "0.8mm",
+      "Flow",
+      "~",
+      "Standard",
+      "(@",
+      "Filament",
+      "Management",
+      "Flushing",
+      "volumes",
+      "Color",
+      "Mixing",
+      "((",
+      "Filaments",
+      "(FG",
+      "~",
+      "Generic",
+      "PETG",
+      "@U...",
+      "\u00a9",
+      "~",
+      "Snapmaker",
+      "PLA",
+      "Silk...",
+      "\u00a9",
+      "B",
+      "~",
+      "Snapmaker",
+      "PLA",
+      "Si...",
+      "\u00a9",
+      "4",
+      "~",
+      "Snapmaker",
+      "PLA",
+      "Silk...",
+      "\u00a9",
+      "~",
+      "Snapmaker",
+      "PLA",
+      "Si...",
+      "\u00a9",
+      "\u00a9",
+      "Color",
+      "Mixing",
+      "50%+F2",
+      "50%",
+      "\u00a9",
+      "&",
+      "Process",
+      "=",
+      "AS",
+      "Global",
+      "Advanced",
+      "(9",
+      "Q",
+      "Search",
+      "plate,",
+      "object",
+      "and",
+      "part.",
+      "wv",
+      "default",
+      "y",
+      "assembly.step",
+      "@]",
+      "assembly-SOLID-1",
+      "default",
+      "@]",
+      "assembly-SOLID-2",
+      "default",
+      "default",
+      "@]",
+      "assembly-SOLID-3",
+      ">",
+      "Outside",
+      "Frequent",
+      "Quality",
+      "Strength",
+      "Support",
+      "Multimaterial",
+      "C",
+      "04",
+      "mm",
+      "Layer",
+      "height",
+      "Sparse",
+      "infill",
+      "density",
+      "15",
+      "%",
+      "~",
+      "Wall",
+      "loops",
+      "2",
+      "Enable",
+      "support"
+    ],
+    "places": [
+      [
+        "(",
+        13,
+        7,
+        8,
+        17
+      ],
+      [
+        "File",
+        35,
+        10,
+        17,
+        10
+      ],
+      [
+        "&",
+        76,
+        9,
+        13,
+        13
+      ],
+      [
+        ">)",
+        171,
+        9,
+        13,
+        13
+      ],
+      [
+        "Cc",
+        210,
+        9,
+        13,
+        13
+      ],
+      [
+        "\u00a333",
+        249,
+        9,
+        13,
+        13
+      ],
+      [
+        "Calibration",
+        268,
+        10,
+        61,
+        10
+      ],
+      [
+        "a",
+        11,
+        41,
+        17,
+        16
+      ],
+      [
+        "Prepare",
+        96,
+        43,
+        52,
+        14
+      ],
+      [
+        "Preview",
+        232,
+        43,
+        52,
+        11
+      ],
+      [
+        "Devic",
+        372,
+        43,
+        36,
+        11
+      ],
+      [
+        "Printer",
+        31,
+        94,
+        47,
+        11
+      ],
+      [
+        "~",
+        70,
+        157,
+        8,
+        3
+      ],
+      [
+        "Snapmaker",
+        90,
+        151,
+        78,
+        15
+      ],
+      [
+        "U1",
+        172,
+        152,
+        16,
+        11
+      ],
+      [
+        "(0.8",
+        196,
+        151,
+        24,
+        14
+      ],
+      [
+        "nozzle)(agent_layer...",
+        226,
+        151,
+        142,
+        16
+      ],
+      [
+        "[7",
+        378,
+        150,
+        14,
+        15
+      ],
+      [
+        "Bed",
+        16,
+        211,
+        25,
+        12
+      ],
+      [
+        "type",
+        46,
+        213,
+        31,
+        14
+      ],
+      [
+        "~",
+        94,
+        218,
+        8,
+        3
+      ],
+      [
+        "Textured",
+        108,
+        212,
+        61,
+        12
+      ],
+      [
+        "PEI",
+        175,
+        213,
+        20,
+        11
+      ],
+      [
+        "Plate",
+        201,
+        212,
+        34,
+        12
+      ],
+      [
+        "Nozzle",
+        98,
+        255,
+        40,
+        10
+      ],
+      [
+        "2",
+        142,
+        255,
+        7,
+        10
+      ],
+      [
+        "Nozzle",
+        177,
+        255,
+        40,
+        10
+      ],
+      [
+        "3",
+        222,
+        255,
+        6,
+        10
+      ],
+      [
+        "Nozzle",
+        256,
+        255,
+        40,
+        10
+      ],
+      [
+        "4",
+        300,
+        255,
+        7,
+        10
+      ],
+      [
+        "Diameter",
+        23,
+        292,
+        63,
+        11
+      ],
+      [
+        "~",
+        108,
+        297,
+        9,
+        3
+      ],
+      [
+        "0.8mm",
+        122,
+        293,
+        45,
+        11
+      ],
+      [
+        "Flow",
+        240,
+        291,
+        32,
+        12
+      ],
+      [
+        "~",
+        294,
+        297,
+        9,
+        3
+      ],
+      [
+        "Standard",
+        308,
+        292,
+        63,
+        11
+      ],
+      [
+        "(@",
+        9,
+        338,
+        16,
+        16
+      ],
+      [
+        "Filament",
+        34,
+        339,
+        58,
+        12
+      ],
+      [
+        "Management",
+        98,
+        340,
+        89,
+        15
+      ],
+      [
+        "Flushing",
+        212,
+        342,
+        40,
+        11
+      ],
+      [
+        "volumes",
+        257,
+        342,
+        40,
+        8
+      ],
+      [
+        "Color",
+        317,
+        342,
+        27,
+        8
+      ],
+      [
+        "Mixing",
+        348,
+        342,
+        32,
+        11
+      ],
+      [
+        "((",
+        21,
+        376,
+        14,
+        15
+      ],
+      [
+        "Filaments",
+        43,
+        377,
+        66,
+        12
+      ],
+      [
+        "(FG",
+        365,
+        376,
+        36,
+        15
+      ],
+      [
+        "~",
+        45,
+        424,
+        8,
+        3
+      ],
+      [
+        "Generic",
+        59,
+        419,
+        45,
+        10
+      ],
+      [
+        "PETG",
+        108,
+        419,
+        31,
+        10
+      ],
+      [
+        "@U...",
+        144,
+        419,
+        31,
+        12
+      ],
+      [
+        "\u00a9",
+        191,
+        416,
+        7,
+        15
+      ],
+      [
+        "~",
+        243,
+        424,
+        8,
+        3
+      ],
+      [
+        "Snapmaker",
+        257,
+        419,
+        67,
+        13
+      ],
+      [
+        "PLA",
+        328,
+        419,
+        23,
+        10
+      ],
+      [
+        "Silk...",
+        356,
+        419,
+        28,
+        10
+      ],
+      [
+        "\u00a9",
+        393,
+        416,
+        15,
+        15
+      ],
+      [
+        "B",
+        13,
+        449,
+        20,
+        20
+      ],
+      [
+        "~",
+        45,
+        458,
+        8,
+        3
+      ],
+      [
+        "Snapmaker",
+        59,
+        453,
+        67,
+        13
+      ],
+      [
+        "PLA",
+        130,
+        453,
+        23,
+        10
+      ],
+      [
+        "Si...",
+        158,
+        453,
+        18,
+        10
+      ],
+      [
+        "\u00a9",
+        183,
+        450,
+        15,
+        15
+      ],
+      [
+        "4",
+        216,
+        453,
+        7,
+        10
+      ],
+      [
+        "~",
+        243,
+        458,
+        8,
+        3
+      ],
+      [
+        "Snapmaker",
+        257,
+        453,
+        67,
+        13
+      ],
+      [
+        "PLA",
+        328,
+        453,
+        23,
+        10
+      ],
+      [
+        "Silk...",
+        356,
+        453,
+        28,
+        10
+      ],
+      [
+        "\u00a9",
+        393,
+        450,
+        15,
+        15
+      ],
+      [
+        "~",
+        45,
+        492,
+        8,
+        3
+      ],
+      [
+        "Snapmaker",
+        59,
+        487,
+        67,
+        13
+      ],
+      [
+        "PLA",
+        130,
+        487,
+        23,
+        10
+      ],
+      [
+        "Si...",
+        158,
+        487,
+        18,
+        10
+      ],
+      [
+        "\u00a9",
+        183,
+        484,
+        15,
+        15
+      ],
+      [
+        "\u00a9",
+        21,
+        524,
+        16,
+        16
+      ],
+      [
+        "Color",
+        42,
+        525,
+        37,
+        12
+      ],
+      [
+        "Mixing",
+        85,
+        526,
+        44,
+        15
+      ],
+      [
+        "50%+F2",
+        64,
+        570,
+        45,
+        9
+      ],
+      [
+        "50%",
+        115,
+        570,
+        24,
+        9
+      ],
+      [
+        "\u00a9",
+        183,
+        564,
+        15,
+        15
+      ],
+      [
+        "&",
+        9,
+        609,
+        15,
+        15
+      ],
+      [
+        "Process",
+        31,
+        610,
+        52,
+        11
+      ],
+      [
+        "=",
+        377,
+        620,
+        4,
+        1
+      ],
+      [
+        "AS",
+        397,
+        609,
+        13,
+        7
+      ],
+      [
+        "Global",
+        105,
+        612,
+        34,
+        9
+      ],
+      [
+        "Advanced",
+        254,
+        611,
+        55,
+        9
+      ],
+      [
+        "(9",
+        316,
+        609,
+        22,
+        15
+      ],
+      [
+        "Q",
+        10,
+        639,
+        14,
+        14
+      ],
+      [
+        "Search",
+        28,
+        641,
+        39,
+        10
+      ],
+      [
+        "plate,",
+        72,
+        641,
+        32,
+        13
+      ],
+      [
+        "object",
+        109,
+        641,
+        36,
+        13
+      ],
+      [
+        "and",
+        150,
+        641,
+        22,
+        9
+      ],
+      [
+        "part.",
+        177,
+        642,
+        26,
+        11
+      ],
+      [
+        "wv",
+        5,
+        671,
+        9,
+        5
+      ],
+      [
+        "default",
+        330,
+        689,
+        39,
+        10
+      ],
+      [
+        "y",
+        13,
+        693,
+        9,
+        5
+      ],
+      [
+        "assembly.step",
+        28,
+        689,
+        84,
+        13
+      ],
+      [
+        "@]",
+        36,
+        709,
+        14,
+        15
+      ],
+      [
+        "assembly-SOLID-1",
+        56,
+        711,
+        108,
+        13
+      ],
+      [
+        "default",
+        330,
+        711,
+        39,
+        10
+      ],
+      [
+        "@]",
+        36,
+        731,
+        14,
+        15
+      ],
+      [
+        "assembly-SOLID-2",
+        56,
+        733,
+        110,
+        13
+      ],
+      [
+        "default",
+        330,
+        733,
+        39,
+        10
+      ],
+      [
+        "default",
+        330,
+        755,
+        39,
+        10
+      ],
+      [
+        "@]",
+        36,
+        753,
+        14,
+        15
+      ],
+      [
+        "assembly-SOLID-3",
+        56,
+        755,
+        110,
+        13
+      ],
+      [
+        ">",
+        7,
+        779,
+        5,
+        9
+      ],
+      [
+        "Outside",
+        20,
+        777,
+        47,
+        10
+      ],
+      [
+        "Frequent",
+        18,
+        803,
+        63,
+        14
+      ],
+      [
+        "Quality",
+        93,
+        803,
+        49,
+        15
+      ],
+      [
+        "Strength",
+        155,
+        803,
+        61,
+        15
+      ],
+      [
+        "Support",
+        229,
+        803,
+        56,
+        14
+      ],
+      [
+        "Multimaterial",
+        299,
+        803,
+        91,
+        11
+      ],
+      [
+        "C",
+        401,
+        803,
+        8,
+        11
+      ],
+      [
+        "04",
+        254,
+        844,
+        20,
+        11
+      ],
+      [
+        "mm",
+        337,
+        850,
+        19,
+        6
+      ],
+      [
+        "Layer",
+        31,
+        844,
+        37,
+        15
+      ],
+      [
+        "height",
+        72,
+        843,
+        44,
+        15
+      ],
+      [
+        "Sparse",
+        30,
+        874,
+        47,
+        14
+      ],
+      [
+        "infill",
+        81,
+        873,
+        28,
+        12
+      ],
+      [
+        "density",
+        115,
+        873,
+        51,
+        15
+      ],
+      [
+        "15",
+        255,
+        874,
+        16,
+        11
+      ],
+      [
+        "%",
+        347,
+        877,
+        9,
+        9
+      ],
+      [
+        "~",
+        253,
+        902,
+        5,
+        2
+      ],
+      [
+        "Wall",
+        30,
+        903,
+        29,
+        11
+      ],
+      [
+        "loops",
+        64,
+        903,
+        37,
+        15
+      ],
+      [
+        "2",
+        270,
+        904,
+        8,
+        11
+      ],
+      [
+        "Enable",
+        31,
+        933,
+        46,
+        11
+      ],
+      [
+        "support",
+        81,
+        935,
+        54,
+        13
+      ]
+    ],
+    "names": [
+      "assembly.step"
+    ],
+    "found": [
+      "assembly.step"
+    ],
+    "missing": [],
+    "listed": true,
+    "parts": {
+      "assembly-SOLID-1": true,
+      "assembly-SOLID-2": true,
+      "assembly-SOLID-3": true
+    }
+  },
+  "imported": {
+    "checks": {
+      "3 \u4e2a\u5b9e\u4f53\u5747\u88ab\u5bfc\u5165": true,
+      "\u5bf9\u8c61\u5217\u8868\u53ef\u89c1\u5bf9\u5e94\u96f6\u4ef6\uff08\u6216\u62c6\u5206\u4e3a\u591a\u5bf9\u8c61\uff09": true,
+      "\u989c\u8272\u4fdd\u7559": false,
+      "\u65e0\u7f3a\u4ef6": true
+    },
+    "object_names": [
+      "assembly.step"
+    ],
+    "entities": [
+      {
+        "object": "assembly.step",
+        "part": "assembly-SOLID-1",
+        "subtype": "normal_part",
+        "triangles": 12,
+        "box_mm": [
+          [
+            110.5,
+            120.5
+          ],
+          [
+            131.0,
+            141.0
+          ],
+          [
+            0.0,
+            10.0
+          ]
+        ],
+        "box_volume_mm3": 1000.0,
+        "extruder": null,
+        "object_extruder": 0,
+        "faces_without_paint": 12,
+        "filaments": [
+          1
+        ],
+        "filament": 1
+      },
+      {
+        "object": "assembly.step",
+        "part": "assembly-SOLID-2",
+        "subtype": "normal_part",
+        "triangles": 12,
+        "box_mm": [
+          [
+            130.5,
+            140.5
+          ],
+          [
+            131.0,
+            141.0
+          ],
+          [
+            0.0,
+            10.0
+          ]
+        ],
+        "box_volume_mm3": 1000.0,
+        "extruder": null,
+        "object_extruder": 0,
+        "faces_without_paint": 12,
+        "filaments": [
+          1
+        ],
+        "filament": 1
+      },
+      {
+        "object": "assembly.step",
+        "part": "assembly-SOLID-3",
+        "subtype": "normal_part",
+        "triangles": 12,
+        "box_mm": [
+          [
+            150.5,
+            160.5
+          ],
+          [
+            131.0,
+            141.0
+          ],
+          [
+            0.0,
+            10.0
+          ]
+        ],
+        "box_volume_mm3": 1000.0,
+        "extruder": null,
+        "object_extruder": 0,
+        "faces_without_paint": 12,
+        "filaments": [
+          1
+        ],
+        "filament": 1
+      }
+    ],
+    "entity_count": 3,
+    "triangles_total": 36,
+    "triangle_counts": [
+      12,
+      12,
+      12
+    ],
+    "filament": {
+      "assembly-SOLID-1": 1,
+      "assembly-SOLID-2": 1,
+      "assembly-SOLID-3": 1
+    },
+    "filament_colours": {
+      "1": "#ff0000"
+    },
+    "filament_colour": [
+      "#FF0000",
+      "#0000FF",
+      "#00C1AE",
+      "#F4E2C1",
+      "#ED1C24"
+    ],
+    "printer": "Snapmaker U1 (0.8 nozzle)(agent_layer_redblue.3mf)",
+    "triangle_attribute_names": [
+      "v1",
+      "v2",
+      "v3"
+    ],
+    "side_by_side": true,
+    "object_list": {
+      "names": [
+        "assembly.step"
+      ],
+      "found": [
+        "assembly.step"
+      ],
+      "missing": [],
+      "listed": true,
+      "parts": {
+        "assembly-SOLID-1": true,
+        "assembly-SOLID-2": true,
+        "assembly-SOLID-3": true
+      },
+      "words": [
+        "(",
+        "File",
+        "&",
+        ">)",
+        "Cc",
+        "\u00a333",
+        "Calibration",
+        "a",
+        "Prepare",
+        "Preview",
+        "Devic",
+        "Printer",
+        "~",
+        "Snapmaker",
+        "U1",
+        "(0.8",
+        "nozzle)(agent_layer...",
+        "[7",
+        "Bed",
+        "type",
+        "~",
+        "Textured",
+        "PEI",
+        "Plate",
+        "Nozzle",
+        "2",
+        "Nozzle",
+        "3",
+        "Nozzle",
+        "4",
+        "Diameter",
+        "~",
+        "0.8mm",
+        "Flow",
+        "~",
+        "Standard",
+        "(@",
+        "Filament",
+        "Management",
+        "Flushing",
+        "volumes",
+        "Color",
+        "Mixing",
+        "((",
+        "Filaments",
+        "(FG",
+        "~",
+        "Generic",
+        "PETG",
+        "@U...",
+        "\u00a9",
+        "~",
+        "Snapmaker",
+        "PLA",
+        "Silk...",
+        "\u00a9",
+        "B",
+        "~",
+        "Snapmaker",
+        "PLA",
+        "Si...",
+        "\u00a9",
+        "4",
+        "~",
+        "Snapmaker",
+        "PLA",
+        "Silk...",
+        "\u00a9",
+        "~",
+        "Snapmaker",
+        "PLA",
+        "Si...",
+        "\u00a9",
+        "\u00a9",
+        "Color",
+        "Mixing",
+        "50%+F2",
+        "50%",
+        "\u00a9",
+        "&",
+        "Process",
+        "=",
+        "AS",
+        "Global",
+        "Advanced",
+        "(9",
+        "Q",
+        "Search",
+        "plate,",
+        "object",
+        "and",
+        "part.",
+        "wv",
+        "default",
+        "y",
+        "assembly.step",
+        "@]",
+        "assembly-SOLID-1",
+        "default",
+        "@]",
+        "assembly-SOLID-2",
+        "default",
+        "default",
+        "@]",
+        "assembly-SOLID-3",
+        ">",
+        "Outside",
+        "Frequent",
+        "Quality",
+        "Strength",
+        "Support",
+        "Multimaterial",
+        "C",
+        "04",
+        "mm",
+        "Layer",
+        "height",
+        "Sparse",
+        "infill",
+        "density",
+        "15",
+        "%",
+        "~",
+        "Wall",
+        "loops",
+        "2",
+        "Enable",
+        "support"
+      ]
+    }
+  },
+  "recorded_results_match": true,
+  "editor_at_end": {
+    "alive": true,
+    "dialog": null
+  },
+  "wall_seconds": 86.61
+}

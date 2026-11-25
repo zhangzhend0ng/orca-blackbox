@@ -1,0 +1,4736 @@
+{
+  "seeded": {
+    "process": {
+      "kind": "process",
+      "presets": {
+        "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - HF-TEST": {
+          "file": "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - HF-TEST.json",
+          "sha256": "83c5ca87100aa843bf0c526084ec839b2514a60b2d3b288cf62f5a9850df2f92",
+          "own": {
+            "accel_to_decel_factor": [
+              "50%",
+              "55%"
+            ],
+            "bridge_acceleration": [
+              "50%",
+              "55%"
+            ],
+            "bridge_speed": [
+              "50",
+              "55"
+            ],
+            "default_acceleration": [
+              "10000",
+              "9000"
+            ],
+            "default_jerk": [
+              "0",
+              "5"
+            ],
+            "extrusion_rate_smoothing_external_perimeter_only": [
+              "0",
+              "1"
+            ],
+            "from": "User",
+            "gap_infill_speed": [
+              "250",
+              "550"
+            ],
+            "infill_jerk": [
+              "9",
+              "11"
+            ],
+            "inherits": "0.20mm Standard @Snapmaker U1 (0.4 nozzle)",
+            "initial_layer_acceleration": [
+              "500",
+              "550"
+            ],
+            "initial_layer_infill_speed": [
+              "105",
+              "100"
+            ],
+            "initial_layer_jerk": [
+              "9",
+              "11"
+            ],
+            "initial_layer_speed": [
+              "50",
+              "60"
+            ],
+            "initial_layer_travel_speed": [
+              "100%",
+              "90%"
+            ],
+            "inner_wall_acceleration": [
+              "10000",
+              "9000"
+            ],
+            "inner_wall_jerk": [
+              "9",
+              "11"
+            ],
+            "inner_wall_speed": [
+              "300",
+              "550"
+            ],
+            "internal_bridge_speed": [
+              "150%",
+              "155%"
+            ],
+            "internal_solid_infill_acceleration": [
+              "100%",
+              "95%"
+            ],
+            "internal_solid_infill_speed": [
+              "250",
+              "550"
+            ],
+            "is_custom_defined": "0",
+            "max_volumetric_extrusion_rate_slope": [
+              "0",
+              "5"
+            ],
+            "max_volumetric_extrusion_rate_slope_segment_length": [
+              "3",
+              "5"
+            ],
+            "name": "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - HF-TEST",
+            "outer_wall_acceleration": [
+              "5000",
+              "6000"
+            ],
+            "outer_wall_jerk": [
+              "9",
+              "11"
+            ],
+            "outer_wall_speed": [
+              "200",
+              "550"
+            ],
+            "overhang_1_4_speed": [
+              "0",
+              "5"
+            ],
+            "overhang_2_4_speed": [
+              "50",
+              "55"
+            ],
+            "overhang_3_4_speed": [
+              "30",
+              "35"
+            ],
+            "overhang_4_4_speed": [
+              "10",
+              "15"
+            ],
+            "print_settings_id": "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - HF-TEST",
+            "process_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "slow_down_layers": [
+              "0",
+              "1"
+            ],
+            "slowdown_for_curled_perimeters": [
+              "0",
+              "1"
+            ],
+            "small_perimeter_speed": [
+              "50%",
+              "55%"
+            ],
+            "small_perimeter_threshold": [
+              "0",
+              "5"
+            ],
+            "sparse_infill_acceleration": [
+              "100%",
+              "95%"
+            ],
+            "sparse_infill_speed": [
+              "270",
+              "550"
+            ],
+            "top_surface_acceleration": [
+              "2000",
+              "2500"
+            ],
+            "top_surface_jerk": [
+              "9",
+              "11"
+            ],
+            "top_surface_speed": [
+              "200",
+              "550"
+            ],
+            "travel_acceleration": [
+              "10000",
+              "9000"
+            ],
+            "travel_jerk": [
+              "12",
+              "11"
+            ],
+            "travel_speed": [
+              "500",
+              "550"
+            ],
+            "version": "2.3.1.2"
+          },
+          "inherits": "0.20mm Standard @Snapmaker U1 (0.4 nozzle)",
+          "chain": [
+            "0.20mm Standard @Snapmaker U1 (0.4 nozzle)",
+            "fdm_process_U1_0.20",
+            "fdm_process_U1_common",
+            "fdm_process_U1"
+          ],
+          "unresolved": [],
+          "effective": {
+            "adaptive_layer_height": "0",
+            "reduce_crossing_wall": "0",
+            "bridge_flow": "0.8",
+            "bridge_speed": [
+              "50",
+              "55"
+            ],
+            "brim_width": "5",
+            "print_sequence": "by layer",
+            "default_acceleration": [
+              "10000",
+              "9000"
+            ],
+            "bridge_no_support": "0",
+            "elefant_foot_compensation": "0.15",
+            "outer_wall_line_width": "0.42",
+            "outer_wall_speed": [
+              "200",
+              "550"
+            ],
+            "line_width": "0.42",
+            "infill_direction": "45",
+            "sparse_infill_density": "15%",
+            "sparse_infill_pattern": "grid",
+            "initial_layer_line_width": "0.5",
+            "initial_layer_print_height": "0.25",
+            "initial_layer_speed": [
+              "50",
+              "60"
+            ],
+            "gap_infill_speed": [
+              "250",
+              "550"
+            ],
+            "infill_combination": "0",
+            "sparse_infill_line_width": "0.45",
+            "infill_wall_overlap": "15%",
+            "sparse_infill_speed": [
+              "270",
+              "550"
+            ],
+            "interface_shells": "0",
+            "detect_overhang_wall": "1",
+            "reduce_infill_retraction": "1",
+            "filename_format": "{input_filename_base}_{filament_type[0]}_{print_time}.gcode",
+            "wall_loops": "2",
+            "inner_wall_line_width": "0.45",
+            "inner_wall_speed": [
+              "300",
+              "550"
+            ],
+            "raft_layers": "0",
+            "seam_position": "aligned",
+            "skirt_distance": "2",
+            "skirt_height": "1",
+            "minimum_sparse_infill_area": "15",
+            "internal_solid_infill_line_width": "0.42",
+            "internal_solid_infill_speed": [
+              "250",
+              "550"
+            ],
+            "spiral_mode": "0",
+            "standby_temperature_delta": "-150",
+            "enable_support": "0",
+            "support_filament": "0",
+            "support_line_width": "0.42",
+            "support_interface_filament": "0",
+            "support_on_build_plate_only": "0",
+            "support_top_z_distance": "0.2",
+            "support_interface_loop_pattern": "0",
+            "support_interface_top_layers": "2",
+            "support_interface_spacing": "0.5",
+            "support_interface_speed": "80",
+            "support_interface_pattern": "auto",
+            "support_base_pattern": "default",
+            "support_base_pattern_spacing": "2.5",
+            "support_speed": "150",
+            "support_threshold_angle": "30",
+            "support_object_xy_distance": "0.35",
+            "detect_thin_wall": "0",
+            "top_surface_line_width": "0.42",
+            "top_surface_speed": [
+              "200",
+              "550"
+            ],
+            "travel_speed": [
+              "500",
+              "550"
+            ],
+            "enable_prime_tower": "1",
+            "prime_tower_width": "30",
+            "xy_hole_compensation": "0",
+            "xy_contour_compensation": "0",
+            "compatible_printers": [
+              "Snapmaker U1 (0.4 nozzle)"
+            ],
+            "smooth_coefficient": "150",
+            "overhang_totally_speed": "50",
+            "max_travel_detour_distance": "0",
+            "bottom_surface_pattern": "monotonic",
+            "bottom_shell_layers": "3",
+            "bottom_shell_thickness": "0",
+            "brim_object_gap": "0.1",
+            "compatible_printers_condition": "",
+            "draft_shield": "disabled",
+            "enable_arc_fitting": "0",
+            "outer_wall_acceleration": [
+              "5000",
+              "6000"
+            ],
+            "wall_infill_order": "inner wall/outer wall/infill",
+            "internal_bridge_support_thickness": "0.8",
+            "initial_layer_acceleration": [
+              "500",
+              "550"
+            ],
+            "ironing_flow": "10%",
+            "ironing_spacing": "0.15",
+            "ironing_speed": "30",
+            "ironing_type": "no ironing",
+            "layer_height": "0.2",
+            "overhang_1_4_speed": [
+              "0",
+              "5"
+            ],
+            "overhang_2_4_speed": [
+              "50",
+              "55"
+            ],
+            "overhang_3_4_speed": [
+              "30",
+              "35"
+            ],
+            "overhang_4_4_speed": [
+              "10",
+              "15"
+            ],
+            "only_one_wall_top": "1",
+            "skirt_loops": "0",
+            "initial_layer_infill_speed": [
+              "105",
+              "100"
+            ],
+            "resolution": "0.012",
+            "support_type": "tree(auto)",
+            "support_style": "default",
+            "support_bottom_z_distance": "0.2",
+            "support_interface_bottom_layers": "2",
+            "support_expansion": "0",
+            "tree_support_branch_diameter": "2",
+            "tree_support_branch_angle": "45",
+            "tree_support_wall_count": "0",
+            "top_surface_pattern": "monotonicline",
+            "top_surface_acceleration": [
+              "2000",
+              "2500"
+            ],
+            "top_shell_layers": "5",
+            "top_shell_thickness": "1.0",
+            "wipe_tower_no_sparse_layers": "0",
+            "wall_generator": "classic",
+            "exclude_object": "1",
+            "renamed_from": "0.20 Standard @Snapmaker U1 (0.4 nozzle);0.20 Strength @Snapmaker U1 (0.4 nozzle)",
+            "description": "It has a general layer height, and results in general layer lines and printing quality. It is suitable for most general printing cases.",
+            "ooze_prevention": "1",
+            "prime_volume": "45",
+            "slowdown_for_curled_perimeters": [
+              "0",
+              "1"
+            ],
+            "wipe_tower_filament": "0",
+            "preheat_time": "30",
+            "wipe_tower_cone_angle": "15",
+            "prime_tower_brim_width": "5",
+            "min_width_top_surface": "200%",
+            "wipe_tower_extra_spacing": "120%",
+            "precise_z_height": "0",
+            "bridge_density": "80%",
+            "internal_solid_infill_pattern": "rectilinear",
+            "precise_outer_wall": "0",
+            "seam_gap": "15%",
+            "wipe_speed": "50",
+            "wipe_tower_extra_rib_length": "8",
+            "wipe_tower_wall_type": "rib",
+            "gap_fill_target": "topbottom",
+            "process_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "accel_to_decel_factor": [
+              "50%",
+              "55%"
+            ],
+            "bridge_acceleration": [
+              "50%",
+              "55%"
+            ],
+            "default_jerk": [
+              "0",
+              "5"
+            ],
+            "extrusion_rate_smoothing_external_perimeter_only": [
+              "0",
+              "1"
+            ],
+            "infill_jerk": [
+              "9",
+              "11"
+            ],
+            "initial_layer_jerk": [
+              "9",
+              "11"
+            ],
+            "initial_layer_travel_speed": [
+              "100%",
+              "90%"
+            ],
+            "inner_wall_acceleration": [
+              "10000",
+              "9000"
+            ],
+            "inner_wall_jerk": [
+              "9",
+              "11"
+            ],
+            "internal_bridge_speed": [
+              "150%",
+              "155%"
+            ],
+            "internal_solid_infill_acceleration": [
+              "100%",
+              "95%"
+            ],
+            "max_volumetric_extrusion_rate_slope": [
+              "0",
+              "5"
+            ],
+            "max_volumetric_extrusion_rate_slope_segment_length": [
+              "3",
+              "5"
+            ],
+            "outer_wall_jerk": [
+              "9",
+              "11"
+            ],
+            "slow_down_layers": [
+              "0",
+              "1"
+            ],
+            "small_perimeter_speed": [
+              "50%",
+              "55%"
+            ],
+            "small_perimeter_threshold": [
+              "0",
+              "5"
+            ],
+            "sparse_infill_acceleration": [
+              "100%",
+              "95%"
+            ],
+            "top_surface_jerk": [
+              "9",
+              "11"
+            ],
+            "travel_acceleration": [
+              "10000",
+              "9000"
+            ],
+            "travel_jerk": [
+              "12",
+              "11"
+            ]
+          }
+        },
+        "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - STD-TEST": {
+          "file": "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - STD-TEST.json",
+          "sha256": "b8626f472ab1d10a0767ddb810bbb7438053b83a9ace78c106684d155e788bc5",
+          "own": {
+            "accel_to_decel_factor": [
+              "55%",
+              "50%"
+            ],
+            "bridge_acceleration": [
+              "55%",
+              "50%"
+            ],
+            "bridge_speed": [
+              "55",
+              "50"
+            ],
+            "default_acceleration": [
+              "9000",
+              "10000"
+            ],
+            "default_jerk": [
+              "5",
+              "0"
+            ],
+            "extrusion_rate_smoothing_external_perimeter_only": [
+              "1",
+              "0"
+            ],
+            "from": "User",
+            "gap_infill_speed": [
+              "550",
+              "250"
+            ],
+            "infill_jerk": [
+              "11",
+              "9"
+            ],
+            "inherits": "0.20mm Standard @Snapmaker U1 (0.4 nozzle)",
+            "initial_layer_acceleration": [
+              "550",
+              "500"
+            ],
+            "initial_layer_infill_speed": [
+              "100",
+              "105"
+            ],
+            "initial_layer_jerk": [
+              "11",
+              "9"
+            ],
+            "initial_layer_speed": [
+              "60",
+              "50"
+            ],
+            "initial_layer_travel_speed": [
+              "90%",
+              "100%"
+            ],
+            "inner_wall_acceleration": [
+              "9000",
+              "10000"
+            ],
+            "inner_wall_jerk": [
+              "11",
+              "9"
+            ],
+            "inner_wall_speed": [
+              "550",
+              "600"
+            ],
+            "internal_bridge_speed": [
+              "155%",
+              "150%"
+            ],
+            "internal_solid_infill_acceleration": [
+              "95%",
+              "100%"
+            ],
+            "internal_solid_infill_speed": [
+              "550",
+              "600"
+            ],
+            "is_custom_defined": "0",
+            "max_volumetric_extrusion_rate_slope": [
+              "5",
+              "0"
+            ],
+            "max_volumetric_extrusion_rate_slope_segment_length": [
+              "5",
+              "3"
+            ],
+            "name": "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - STD-TEST",
+            "outer_wall_acceleration": [
+              "6000",
+              "5000"
+            ],
+            "outer_wall_jerk": [
+              "11",
+              "9"
+            ],
+            "outer_wall_speed": [
+              "550",
+              "500"
+            ],
+            "overhang_1_4_speed": [
+              "5",
+              "0"
+            ],
+            "overhang_2_4_speed": [
+              "55",
+              "50"
+            ],
+            "overhang_3_4_speed": [
+              "35",
+              "30"
+            ],
+            "overhang_4_4_speed": [
+              "15",
+              "10"
+            ],
+            "print_settings_id": "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - STD-TEST",
+            "process_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "slow_down_layers": [
+              "1",
+              "0"
+            ],
+            "slowdown_for_curled_perimeters": [
+              "0",
+              "1"
+            ],
+            "small_perimeter_speed": [
+              "55%",
+              "50%"
+            ],
+            "small_perimeter_threshold": [
+              "5",
+              "0"
+            ],
+            "sparse_infill_acceleration": [
+              "95%",
+              "100%"
+            ],
+            "sparse_infill_speed": [
+              "550",
+              "600"
+            ],
+            "top_surface_acceleration": [
+              "2500",
+              "2000"
+            ],
+            "top_surface_jerk": [
+              "11",
+              "9"
+            ],
+            "top_surface_speed": [
+              "550",
+              "200"
+            ],
+            "travel_acceleration": [
+              "9000",
+              "10000"
+            ],
+            "travel_jerk": [
+              "11",
+              "12"
+            ],
+            "travel_speed": [
+              "550",
+              "500"
+            ],
+            "version": "2.3.1.2"
+          },
+          "inherits": "0.20mm Standard @Snapmaker U1 (0.4 nozzle)",
+          "chain": [
+            "0.20mm Standard @Snapmaker U1 (0.4 nozzle)",
+            "fdm_process_U1_0.20",
+            "fdm_process_U1_common",
+            "fdm_process_U1"
+          ],
+          "unresolved": [],
+          "effective": {
+            "adaptive_layer_height": "0",
+            "reduce_crossing_wall": "0",
+            "bridge_flow": "0.8",
+            "bridge_speed": [
+              "55",
+              "50"
+            ],
+            "brim_width": "5",
+            "print_sequence": "by layer",
+            "default_acceleration": [
+              "9000",
+              "10000"
+            ],
+            "bridge_no_support": "0",
+            "elefant_foot_compensation": "0.15",
+            "outer_wall_line_width": "0.42",
+            "outer_wall_speed": [
+              "550",
+              "500"
+            ],
+            "line_width": "0.42",
+            "infill_direction": "45",
+            "sparse_infill_density": "15%",
+            "sparse_infill_pattern": "grid",
+            "initial_layer_line_width": "0.5",
+            "initial_layer_print_height": "0.25",
+            "initial_layer_speed": [
+              "60",
+              "50"
+            ],
+            "gap_infill_speed": [
+              "550",
+              "250"
+            ],
+            "infill_combination": "0",
+            "sparse_infill_line_width": "0.45",
+            "infill_wall_overlap": "15%",
+            "sparse_infill_speed": [
+              "550",
+              "600"
+            ],
+            "interface_shells": "0",
+            "detect_overhang_wall": "1",
+            "reduce_infill_retraction": "1",
+            "filename_format": "{input_filename_base}_{filament_type[0]}_{print_time}.gcode",
+            "wall_loops": "2",
+            "inner_wall_line_width": "0.45",
+            "inner_wall_speed": [
+              "550",
+              "600"
+            ],
+            "raft_layers": "0",
+            "seam_position": "aligned",
+            "skirt_distance": "2",
+            "skirt_height": "1",
+            "minimum_sparse_infill_area": "15",
+            "internal_solid_infill_line_width": "0.42",
+            "internal_solid_infill_speed": [
+              "550",
+              "600"
+            ],
+            "spiral_mode": "0",
+            "standby_temperature_delta": "-150",
+            "enable_support": "0",
+            "support_filament": "0",
+            "support_line_width": "0.42",
+            "support_interface_filament": "0",
+            "support_on_build_plate_only": "0",
+            "support_top_z_distance": "0.2",
+            "support_interface_loop_pattern": "0",
+            "support_interface_top_layers": "2",
+            "support_interface_spacing": "0.5",
+            "support_interface_speed": "80",
+            "support_interface_pattern": "auto",
+            "support_base_pattern": "default",
+            "support_base_pattern_spacing": "2.5",
+            "support_speed": "150",
+            "support_threshold_angle": "30",
+            "support_object_xy_distance": "0.35",
+            "detect_thin_wall": "0",
+            "top_surface_line_width": "0.42",
+            "top_surface_speed": [
+              "550",
+              "200"
+            ],
+            "travel_speed": [
+              "550",
+              "500"
+            ],
+            "enable_prime_tower": "1",
+            "prime_tower_width": "30",
+            "xy_hole_compensation": "0",
+            "xy_contour_compensation": "0",
+            "compatible_printers": [
+              "Snapmaker U1 (0.4 nozzle)"
+            ],
+            "smooth_coefficient": "150",
+            "overhang_totally_speed": "50",
+            "max_travel_detour_distance": "0",
+            "bottom_surface_pattern": "monotonic",
+            "bottom_shell_layers": "3",
+            "bottom_shell_thickness": "0",
+            "brim_object_gap": "0.1",
+            "compatible_printers_condition": "",
+            "draft_shield": "disabled",
+            "enable_arc_fitting": "0",
+            "outer_wall_acceleration": [
+              "6000",
+              "5000"
+            ],
+            "wall_infill_order": "inner wall/outer wall/infill",
+            "internal_bridge_support_thickness": "0.8",
+            "initial_layer_acceleration": [
+              "550",
+              "500"
+            ],
+            "ironing_flow": "10%",
+            "ironing_spacing": "0.15",
+            "ironing_speed": "30",
+            "ironing_type": "no ironing",
+            "layer_height": "0.2",
+            "overhang_1_4_speed": [
+              "5",
+              "0"
+            ],
+            "overhang_2_4_speed": [
+              "55",
+              "50"
+            ],
+            "overhang_3_4_speed": [
+              "35",
+              "30"
+            ],
+            "overhang_4_4_speed": [
+              "15",
+              "10"
+            ],
+            "only_one_wall_top": "1",
+            "skirt_loops": "0",
+            "initial_layer_infill_speed": [
+              "100",
+              "105"
+            ],
+            "resolution": "0.012",
+            "support_type": "tree(auto)",
+            "support_style": "default",
+            "support_bottom_z_distance": "0.2",
+            "support_interface_bottom_layers": "2",
+            "support_expansion": "0",
+            "tree_support_branch_diameter": "2",
+            "tree_support_branch_angle": "45",
+            "tree_support_wall_count": "0",
+            "top_surface_pattern": "monotonicline",
+            "top_surface_acceleration": [
+              "2500",
+              "2000"
+            ],
+            "top_shell_layers": "5",
+            "top_shell_thickness": "1.0",
+            "wipe_tower_no_sparse_layers": "0",
+            "wall_generator": "classic",
+            "exclude_object": "1",
+            "renamed_from": "0.20 Standard @Snapmaker U1 (0.4 nozzle);0.20 Strength @Snapmaker U1 (0.4 nozzle)",
+            "description": "It has a general layer height, and results in general layer lines and printing quality. It is suitable for most general printing cases.",
+            "ooze_prevention": "1",
+            "prime_volume": "45",
+            "slowdown_for_curled_perimeters": [
+              "0",
+              "1"
+            ],
+            "wipe_tower_filament": "0",
+            "preheat_time": "30",
+            "wipe_tower_cone_angle": "15",
+            "prime_tower_brim_width": "5",
+            "min_width_top_surface": "200%",
+            "wipe_tower_extra_spacing": "120%",
+            "precise_z_height": "0",
+            "bridge_density": "80%",
+            "internal_solid_infill_pattern": "rectilinear",
+            "precise_outer_wall": "0",
+            "seam_gap": "15%",
+            "wipe_speed": "50",
+            "wipe_tower_extra_rib_length": "8",
+            "wipe_tower_wall_type": "rib",
+            "gap_fill_target": "topbottom",
+            "process_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "accel_to_decel_factor": [
+              "55%",
+              "50%"
+            ],
+            "bridge_acceleration": [
+              "55%",
+              "50%"
+            ],
+            "default_jerk": [
+              "5",
+              "0"
+            ],
+            "extrusion_rate_smoothing_external_perimeter_only": [
+              "1",
+              "0"
+            ],
+            "infill_jerk": [
+              "11",
+              "9"
+            ],
+            "initial_layer_jerk": [
+              "11",
+              "9"
+            ],
+            "initial_layer_travel_speed": [
+              "90%",
+              "100%"
+            ],
+            "inner_wall_acceleration": [
+              "9000",
+              "10000"
+            ],
+            "inner_wall_jerk": [
+              "11",
+              "9"
+            ],
+            "internal_bridge_speed": [
+              "155%",
+              "150%"
+            ],
+            "internal_solid_infill_acceleration": [
+              "95%",
+              "100%"
+            ],
+            "max_volumetric_extrusion_rate_slope": [
+              "5",
+              "0"
+            ],
+            "max_volumetric_extrusion_rate_slope_segment_length": [
+              "5",
+              "3"
+            ],
+            "outer_wall_jerk": [
+              "11",
+              "9"
+            ],
+            "slow_down_layers": [
+              "1",
+              "0"
+            ],
+            "small_perimeter_speed": [
+              "55%",
+              "50%"
+            ],
+            "small_perimeter_threshold": [
+              "5",
+              "0"
+            ],
+            "sparse_infill_acceleration": [
+              "95%",
+              "100%"
+            ],
+            "top_surface_jerk": [
+              "11",
+              "9"
+            ],
+            "travel_acceleration": [
+              "9000",
+              "10000"
+            ],
+            "travel_jerk": [
+              "11",
+              "12"
+            ]
+          }
+        },
+        "0.24mm Standard @Snapmaker U1 (0.4 nozzle) - FLOW-TEST": {
+          "file": "0.24mm Standard @Snapmaker U1 (0.4 nozzle) - FLOW-TEST.json",
+          "sha256": "fabe9606152c29bd4f07c07677253657890771e97050cd8c4fec8cbd56fa2748",
+          "own": {
+            "from": "User",
+            "inherits": "0.24mm Standard @Snapmaker U1 (0.4 nozzle)",
+            "initial_layer_speed": [
+              "60"
+            ],
+            "is_custom_defined": "0",
+            "name": "0.24mm Standard @Snapmaker U1 (0.4 nozzle) - FLOW-TEST",
+            "print_settings_id": "0.24mm Standard @Snapmaker U1 (0.4 nozzle) - FLOW-TEST",
+            "process_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "version": "2.3.1.2"
+          },
+          "inherits": "0.24mm Standard @Snapmaker U1 (0.4 nozzle)",
+          "chain": [
+            "0.24mm Standard @Snapmaker U1 (0.4 nozzle)",
+            "fdm_process_U1_0.24",
+            "fdm_process_U1_common",
+            "fdm_process_U1"
+          ],
+          "unresolved": [],
+          "effective": {
+            "adaptive_layer_height": "0",
+            "reduce_crossing_wall": "0",
+            "bridge_flow": "1",
+            "bridge_speed": "50",
+            "brim_width": "5",
+            "print_sequence": "by layer",
+            "default_acceleration": "10000",
+            "bridge_no_support": "0",
+            "elefant_foot_compensation": "0.15",
+            "outer_wall_line_width": "0.42",
+            "outer_wall_speed": "200",
+            "line_width": "0.42",
+            "infill_direction": "45",
+            "sparse_infill_density": "15%",
+            "sparse_infill_pattern": "grid",
+            "initial_layer_line_width": "0.5",
+            "initial_layer_print_height": "0.2",
+            "initial_layer_speed": [
+              "60"
+            ],
+            "gap_infill_speed": "230",
+            "infill_combination": "0",
+            "sparse_infill_line_width": "0.45",
+            "infill_wall_overlap": "15%",
+            "sparse_infill_speed": "230",
+            "interface_shells": "0",
+            "detect_overhang_wall": "1",
+            "reduce_infill_retraction": "1",
+            "filename_format": "{input_filename_base}_{filament_type[0]}_{print_time}.gcode",
+            "wall_loops": "2",
+            "inner_wall_line_width": "0.45",
+            "inner_wall_speed": "230",
+            "raft_layers": "0",
+            "seam_position": "aligned",
+            "skirt_distance": "2",
+            "skirt_height": "1",
+            "minimum_sparse_infill_area": "15",
+            "internal_solid_infill_line_width": "0.42",
+            "internal_solid_infill_speed": "230",
+            "spiral_mode": "0",
+            "standby_temperature_delta": "-150",
+            "enable_support": "0",
+            "support_filament": "0",
+            "support_line_width": "0.42",
+            "support_interface_filament": "0",
+            "support_on_build_plate_only": "0",
+            "support_top_z_distance": "0.2",
+            "support_interface_loop_pattern": "0",
+            "support_interface_top_layers": "2",
+            "support_interface_spacing": "0.5",
+            "support_interface_speed": "80",
+            "support_interface_pattern": "auto",
+            "support_base_pattern": "default",
+            "support_base_pattern_spacing": "2.5",
+            "support_speed": "150",
+            "support_threshold_angle": "35",
+            "support_object_xy_distance": "0.35",
+            "detect_thin_wall": "0",
+            "top_surface_line_width": "0.45",
+            "top_surface_speed": "200",
+            "travel_speed": "500",
+            "enable_prime_tower": "1",
+            "prime_tower_width": "30",
+            "xy_hole_compensation": "0",
+            "xy_contour_compensation": "0",
+            "compatible_printers": [
+              "Snapmaker U1 (0.4 nozzle)"
+            ],
+            "smooth_coefficient": "150",
+            "overhang_totally_speed": "50",
+            "max_travel_detour_distance": "0",
+            "bottom_surface_pattern": "monotonic",
+            "bottom_shell_layers": "3",
+            "bottom_shell_thickness": "0",
+            "brim_object_gap": "0.1",
+            "compatible_printers_condition": "",
+            "draft_shield": "disabled",
+            "enable_arc_fitting": "0",
+            "outer_wall_acceleration": "5000",
+            "wall_infill_order": "inner wall/outer wall/infill",
+            "internal_bridge_support_thickness": "0.8",
+            "initial_layer_acceleration": "500",
+            "ironing_flow": "10%",
+            "ironing_spacing": "0.15",
+            "ironing_speed": "30",
+            "ironing_type": "no ironing",
+            "layer_height": "0.24",
+            "overhang_1_4_speed": "0",
+            "overhang_2_4_speed": "50",
+            "overhang_3_4_speed": "30",
+            "overhang_4_4_speed": "10",
+            "only_one_wall_top": "1",
+            "skirt_loops": "0",
+            "initial_layer_infill_speed": "105",
+            "resolution": "0.012",
+            "support_type": "tree(auto)",
+            "support_style": "default",
+            "support_bottom_z_distance": "0.2",
+            "support_interface_bottom_layers": "2",
+            "support_expansion": "0",
+            "tree_support_branch_diameter": "2",
+            "tree_support_branch_angle": "45",
+            "tree_support_wall_count": "0",
+            "top_surface_pattern": "monotonicline",
+            "top_surface_acceleration": "2000",
+            "top_shell_layers": "4",
+            "top_shell_thickness": "1.0",
+            "wipe_tower_no_sparse_layers": "0",
+            "wall_generator": "classic",
+            "exclude_object": "1",
+            "renamed_from": "0.24 Draft @Snapmaker U1 (0.4 nozzle)",
+            "description": "Compared with the default profile of a 0.4 mm nozzle, it has a bigger layer height, and results in more apparent layer lines and lower printing quality, but slightly shorter printing time.",
+            "ooze_prevention": "1",
+            "prime_volume": "54",
+            "slowdown_for_curled_perimeters": "0",
+            "wipe_tower_filament": "0",
+            "prime_tower_brim_width": "5",
+            "wipe_tower_cone_angle": "15",
+            "wipe_tower_extra_spacing": "120%",
+            "precise_outer_wall": "0",
+            "wipe_tower_extra_rib_length": "8",
+            "wipe_tower_wall_type": "rib",
+            "gap_fill_target": "topbottom",
+            "process_flow_support": [
+              "standard",
+              "high_flow"
+            ]
+          }
+        }
+      }
+    },
+    "filament": {
+      "kind": "filament",
+      "presets": {
+        "Snapmaker PLA SnapSpeed @U1 - FLOW-TEST": {
+          "file": "Snapmaker PLA SnapSpeed @U1 - FLOW-TEST.json",
+          "sha256": "44d56f8f29350ebb834be939e55645fa40fee18c4c04a71788b73625b2c93783",
+          "own": {
+            "enable_pressure_advance": [
+              "1",
+              "1"
+            ],
+            "filament_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "filament_max_volumetric_speed": [
+              "40",
+              "40"
+            ],
+            "filament_multitool_ramming_flow": [
+              "40",
+              "40"
+            ],
+            "filament_settings_id": [
+              "Snapmaker PLA SnapSpeed @U1 - FLOW-TEST"
+            ],
+            "from": "User",
+            "inherits": "Snapmaker PLA SnapSpeed @U1",
+            "is_custom_defined": "0",
+            "name": "Snapmaker PLA SnapSpeed @U1 - FLOW-TEST",
+            "pressure_advance": [
+              "0.024",
+              "0.024"
+            ],
+            "version": "2.3.1.2"
+          },
+          "inherits": "Snapmaker PLA SnapSpeed @U1",
+          "chain": [
+            "Snapmaker PLA SnapSpeed @U1",
+            "Snapmaker PLA SnapSpeed @U1 base",
+            "fdm_filament_pla_hs_category",
+            "fdm_filament_common"
+          ],
+          "unresolved": [],
+          "effective": {
+            "activate_air_filtration": [
+              "0"
+            ],
+            "chamber_temperatures": [
+              "0"
+            ],
+            "close_fan_the_first_x_layers": [
+              "1"
+            ],
+            "complete_print_exhaust_fan_speed": [
+              "70"
+            ],
+            "cool_plate_temp": [
+              "60"
+            ],
+            "cool_plate_temp_initial_layer": [
+              "60"
+            ],
+            "during_print_exhaust_fan_speed": [
+              "70"
+            ],
+            "eng_plate_temp": [
+              "60"
+            ],
+            "eng_plate_temp_initial_layer": [
+              "60"
+            ],
+            "fan_cooling_layer_time": [
+              "100"
+            ],
+            "fan_max_speed": [
+              "100",
+              "100"
+            ],
+            "fan_min_speed": [
+              "100",
+              "100"
+            ],
+            "filament_cost": [
+              "20"
+            ],
+            "filament_density": [
+              "1.24"
+            ],
+            "filament_deretraction_speed": [
+              "nil"
+            ],
+            "filament_diameter": [
+              "1.75"
+            ],
+            "filament_flow_ratio": [
+              "0.966",
+              "0.966"
+            ],
+            "filament_is_support": [
+              "0"
+            ],
+            "filament_long_retractions_when_cut": [
+              "nil"
+            ],
+            "filament_max_volumetric_speed": [
+              "40",
+              "40"
+            ],
+            "filament_minimal_purge_on_wipe_tower": [
+              "15",
+              "15"
+            ],
+            "filament_retract_before_wipe": [
+              "nil"
+            ],
+            "filament_retract_restart_extra": [
+              "nil"
+            ],
+            "filament_retract_when_changing_layer": [
+              "nil"
+            ],
+            "filament_retraction_distances_when_cut": [
+              "nil"
+            ],
+            "filament_retraction_length": [
+              "1.2",
+              "1.2"
+            ],
+            "filament_retraction_minimum_travel": [
+              "nil"
+            ],
+            "filament_retraction_speed": [
+              "nil"
+            ],
+            "filament_soluble": [
+              "0"
+            ],
+            "filament_type": [
+              "PLA"
+            ],
+            "filament_vendor": [
+              "Snapmaker"
+            ],
+            "filament_wipe": [
+              "nil"
+            ],
+            "filament_wipe_distance": [
+              "nil"
+            ],
+            "filament_z_hop": [
+              "0.4"
+            ],
+            "filament_z_hop_types": [
+              "Slope Lift",
+              "Slope Lift"
+            ],
+            "full_fan_speed_layer": [
+              "0"
+            ],
+            "filament_scarf_seam_type": [
+              "none"
+            ],
+            "filament_scarf_height": [
+              "10%"
+            ],
+            "filament_scarf_gap": [
+              "0%"
+            ],
+            "filament_scarf_length": [
+              "10"
+            ],
+            "filament_shrink": [
+              "100%"
+            ],
+            "hot_plate_temp": [
+              "65"
+            ],
+            "hot_plate_temp_initial_layer": [
+              "65"
+            ],
+            "nozzle_temperature": [
+              "220",
+              "220"
+            ],
+            "nozzle_temperature_initial_layer": [
+              "220",
+              "220"
+            ],
+            "overhang_fan_speed": [
+              "100"
+            ],
+            "overhang_fan_threshold": [
+              "50%"
+            ],
+            "reduce_fan_stop_start_freq": [
+              "1"
+            ],
+            "required_nozzle_HRC": [
+              "0"
+            ],
+            "supertack_plate_temp": [
+              "40"
+            ],
+            "supertack_plate_temp_initial_layer": [
+              "40"
+            ],
+            "slow_down_for_layer_cooling": [
+              "1"
+            ],
+            "slow_down_layer_time": [
+              "4"
+            ],
+            "slow_down_min_speed": [
+              "20"
+            ],
+            "temperature_vitrification": [
+              "45"
+            ],
+            "textured_plate_temp": [
+              "65"
+            ],
+            "textured_plate_temp_initial_layer": [
+              "65"
+            ],
+            "compatible_printers": [
+              "Snapmaker U1 (0.4 nozzle)"
+            ],
+            "filament_start_gcode": [
+              "; filament start gcode\n"
+            ],
+            "filament_end_gcode": [
+              "; filament end gcode \n"
+            ],
+            "activate_chamber_temp_control": [
+              "0"
+            ],
+            "adaptive_pressure_advance": [
+              "0"
+            ],
+            "adaptive_pressure_advance_bridges": [
+              "0"
+            ],
+            "adaptive_pressure_advance_model": [
+              "0,0,0\n0,0,0"
+            ],
+            "adaptive_pressure_advance_overhangs": [
+              "0"
+            ],
+            "chamber_temperature": [
+              "0"
+            ],
+            "compatible_printers_condition": "",
+            "compatible_prints": [],
+            "compatible_prints_condition": "",
+            "default_filament_colour": [
+              ""
+            ],
+            "dont_slow_down_outer_wall": [
+              "0"
+            ],
+            "enable_overhang_bridge_fan": [
+              "1"
+            ],
+            "filament_is_high_temperature": [
+              "0"
+            ],
+            "filament_notes": [
+              ""
+            ],
+            "filament_ramming_parameters": [
+              "120 100 6.6 6.8 7.2 7.6 7.9 8.2 8.7 9.4 9.9 10.0| 0.05 6.6 0.45 6.8 0.95 7.8 1.45 8.3 1.95 9.7 2.45 10 2.95 7.6 3.45 7.6 3.95 7.6 4.45 7.6 4.95 7.6"
+            ],
+            "filament_retract_lift_above": [
+              "nil"
+            ],
+            "filament_retract_lift_below": [
+              "nil"
+            ],
+            "filament_retract_lift_enforce": [
+              "nil"
+            ],
+            "filament_retract_restart_extra_toolchange": [
+              "nil"
+            ],
+            "filament_shrinkage_compensation_z": [
+              "100%"
+            ],
+            "filament_toolchange_delay": [
+              "0"
+            ],
+            "filament_tower_ironing_area": [
+              "4"
+            ],
+            "filament_unloading_speed_start": [
+              "100"
+            ],
+            "idle_temperature": [
+              "0"
+            ],
+            "internal_bridge_fan_speed": [
+              "-1"
+            ],
+            "ironing_fan_speed": [
+              "-1"
+            ],
+            "nozzle_temperature_range_high": [
+              "240"
+            ],
+            "nozzle_temperature_range_low": [
+              "190"
+            ],
+            "support_material_interface_fan_speed": [
+              "-1"
+            ],
+            "textured_cool_plate_temp": [
+              "40"
+            ],
+            "textured_cool_plate_temp_initial_layer": [
+              "40"
+            ],
+            "filament_loading_speed_start": [
+              "50"
+            ],
+            "filament_loading_speed": [
+              "10"
+            ],
+            "filament_unloading_speed": [
+              "100"
+            ],
+            "filament_cooling_moves": [
+              "2"
+            ],
+            "filament_cooling_initial_speed": [
+              "10"
+            ],
+            "filament_cooling_final_speed": [
+              "3.5"
+            ],
+            "additional_cooling_fan_speed": [
+              "70",
+              "70"
+            ],
+            "enable_pressure_advance": [
+              "1",
+              "1"
+            ],
+            "filament_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "filament_multitool_ramming": [
+              "1",
+              "1"
+            ],
+            "filament_multitool_ramming_flow": [
+              "40",
+              "40"
+            ],
+            "filament_multitool_ramming_volume": [
+              "5",
+              "5"
+            ],
+            "filament_retract_length_toolchange": [
+              "5",
+              "5"
+            ],
+            "filament_stamping_distance": [
+              "45"
+            ],
+            "filament_stamping_loading_speed": [
+              "29"
+            ],
+            "graphic_effect_plate_temp": [
+              "65"
+            ],
+            "graphic_effect_plate_temp_initial_layer": [
+              "65"
+            ],
+            "pellet_flow_coefficient": [
+              "0.4157"
+            ],
+            "pressure_advance": [
+              "0.024",
+              "0.024"
+            ],
+            "filament_load_time": [
+              "2"
+            ],
+            "filament_unload_time": [
+              "2"
+            ]
+          }
+        },
+        "Snapmaker PLA SnapSpeed @U1 - HF-TEST": {
+          "file": "Snapmaker PLA SnapSpeed @U1 - HF-TEST.json",
+          "sha256": "997a6a5e005560e907b290a5de72006224ab8add7e7183cf1e0d1a76362e5d33",
+          "own": {
+            "additional_cooling_fan_speed": [
+              "70",
+              "80"
+            ],
+            "fan_max_speed": [
+              "100",
+              "90"
+            ],
+            "fan_min_speed": [
+              "100",
+              "90"
+            ],
+            "filament_deretraction_speed": [
+              "nil",
+              "31"
+            ],
+            "filament_flow_ratio": [
+              "0.966",
+              "0.95"
+            ],
+            "filament_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "filament_max_volumetric_speed": [
+              "20",
+              "30"
+            ],
+            "filament_minimal_purge_on_wipe_tower": [
+              "15",
+              "20"
+            ],
+            "filament_multitool_ramming_flow": [
+              "30",
+              "35"
+            ],
+            "filament_multitool_ramming_volume": [
+              "5",
+              "6"
+            ],
+            "filament_retract_length_toolchange": [
+              "5",
+              "6"
+            ],
+            "filament_retraction_length": [
+              "1.2",
+              "1.4"
+            ],
+            "filament_retraction_speed": [
+              "nil",
+              "31"
+            ],
+            "filament_settings_id": [
+              "Snapmaker PLA SnapSpeed @U1 - HF-TEST"
+            ],
+            "filament_wipe_distance": [
+              "nil",
+              "3"
+            ],
+            "filament_z_hop_types": [
+              "Slope Lift",
+              "Spiral Lift"
+            ],
+            "from": "User",
+            "inherits": "Snapmaker PLA SnapSpeed @U1",
+            "is_custom_defined": "0",
+            "name": "Snapmaker PLA SnapSpeed @U1 - HF-TEST",
+            "nozzle_temperature": [
+              "220",
+              "210"
+            ],
+            "nozzle_temperature_initial_layer": [
+              "220",
+              "210"
+            ],
+            "pressure_advance": [
+              "0.02",
+              "0.025"
+            ],
+            "version": "2.3.1.2"
+          },
+          "inherits": "Snapmaker PLA SnapSpeed @U1",
+          "chain": [
+            "Snapmaker PLA SnapSpeed @U1",
+            "Snapmaker PLA SnapSpeed @U1 base",
+            "fdm_filament_pla_hs_category",
+            "fdm_filament_common"
+          ],
+          "unresolved": [],
+          "effective": {
+            "activate_air_filtration": [
+              "0"
+            ],
+            "chamber_temperatures": [
+              "0"
+            ],
+            "close_fan_the_first_x_layers": [
+              "1"
+            ],
+            "complete_print_exhaust_fan_speed": [
+              "70"
+            ],
+            "cool_plate_temp": [
+              "60"
+            ],
+            "cool_plate_temp_initial_layer": [
+              "60"
+            ],
+            "during_print_exhaust_fan_speed": [
+              "70"
+            ],
+            "eng_plate_temp": [
+              "60"
+            ],
+            "eng_plate_temp_initial_layer": [
+              "60"
+            ],
+            "fan_cooling_layer_time": [
+              "100"
+            ],
+            "fan_max_speed": [
+              "100",
+              "90"
+            ],
+            "fan_min_speed": [
+              "100",
+              "90"
+            ],
+            "filament_cost": [
+              "20"
+            ],
+            "filament_density": [
+              "1.24"
+            ],
+            "filament_deretraction_speed": [
+              "nil",
+              "31"
+            ],
+            "filament_diameter": [
+              "1.75"
+            ],
+            "filament_flow_ratio": [
+              "0.966",
+              "0.95"
+            ],
+            "filament_is_support": [
+              "0"
+            ],
+            "filament_long_retractions_when_cut": [
+              "nil"
+            ],
+            "filament_max_volumetric_speed": [
+              "20",
+              "30"
+            ],
+            "filament_minimal_purge_on_wipe_tower": [
+              "15",
+              "20"
+            ],
+            "filament_retract_before_wipe": [
+              "nil"
+            ],
+            "filament_retract_restart_extra": [
+              "nil"
+            ],
+            "filament_retract_when_changing_layer": [
+              "nil"
+            ],
+            "filament_retraction_distances_when_cut": [
+              "nil"
+            ],
+            "filament_retraction_length": [
+              "1.2",
+              "1.4"
+            ],
+            "filament_retraction_minimum_travel": [
+              "nil"
+            ],
+            "filament_retraction_speed": [
+              "nil",
+              "31"
+            ],
+            "filament_soluble": [
+              "0"
+            ],
+            "filament_type": [
+              "PLA"
+            ],
+            "filament_vendor": [
+              "Snapmaker"
+            ],
+            "filament_wipe": [
+              "nil"
+            ],
+            "filament_wipe_distance": [
+              "nil",
+              "3"
+            ],
+            "filament_z_hop": [
+              "0.4"
+            ],
+            "filament_z_hop_types": [
+              "Slope Lift",
+              "Spiral Lift"
+            ],
+            "full_fan_speed_layer": [
+              "0"
+            ],
+            "filament_scarf_seam_type": [
+              "none"
+            ],
+            "filament_scarf_height": [
+              "10%"
+            ],
+            "filament_scarf_gap": [
+              "0%"
+            ],
+            "filament_scarf_length": [
+              "10"
+            ],
+            "filament_shrink": [
+              "100%"
+            ],
+            "hot_plate_temp": [
+              "65"
+            ],
+            "hot_plate_temp_initial_layer": [
+              "65"
+            ],
+            "nozzle_temperature": [
+              "220",
+              "210"
+            ],
+            "nozzle_temperature_initial_layer": [
+              "220",
+              "210"
+            ],
+            "overhang_fan_speed": [
+              "100"
+            ],
+            "overhang_fan_threshold": [
+              "50%"
+            ],
+            "reduce_fan_stop_start_freq": [
+              "1"
+            ],
+            "required_nozzle_HRC": [
+              "0"
+            ],
+            "supertack_plate_temp": [
+              "40"
+            ],
+            "supertack_plate_temp_initial_layer": [
+              "40"
+            ],
+            "slow_down_for_layer_cooling": [
+              "1"
+            ],
+            "slow_down_layer_time": [
+              "4"
+            ],
+            "slow_down_min_speed": [
+              "20"
+            ],
+            "temperature_vitrification": [
+              "45"
+            ],
+            "textured_plate_temp": [
+              "65"
+            ],
+            "textured_plate_temp_initial_layer": [
+              "65"
+            ],
+            "compatible_printers": [
+              "Snapmaker U1 (0.4 nozzle)"
+            ],
+            "filament_start_gcode": [
+              "; filament start gcode\n"
+            ],
+            "filament_end_gcode": [
+              "; filament end gcode \n"
+            ],
+            "activate_chamber_temp_control": [
+              "0"
+            ],
+            "adaptive_pressure_advance": [
+              "0"
+            ],
+            "adaptive_pressure_advance_bridges": [
+              "0"
+            ],
+            "adaptive_pressure_advance_model": [
+              "0,0,0\n0,0,0"
+            ],
+            "adaptive_pressure_advance_overhangs": [
+              "0"
+            ],
+            "chamber_temperature": [
+              "0"
+            ],
+            "compatible_printers_condition": "",
+            "compatible_prints": [],
+            "compatible_prints_condition": "",
+            "default_filament_colour": [
+              ""
+            ],
+            "dont_slow_down_outer_wall": [
+              "0"
+            ],
+            "enable_overhang_bridge_fan": [
+              "1"
+            ],
+            "filament_is_high_temperature": [
+              "0"
+            ],
+            "filament_notes": [
+              ""
+            ],
+            "filament_ramming_parameters": [
+              "120 100 6.6 6.8 7.2 7.6 7.9 8.2 8.7 9.4 9.9 10.0| 0.05 6.6 0.45 6.8 0.95 7.8 1.45 8.3 1.95 9.7 2.45 10 2.95 7.6 3.45 7.6 3.95 7.6 4.45 7.6 4.95 7.6"
+            ],
+            "filament_retract_lift_above": [
+              "nil"
+            ],
+            "filament_retract_lift_below": [
+              "nil"
+            ],
+            "filament_retract_lift_enforce": [
+              "nil"
+            ],
+            "filament_retract_restart_extra_toolchange": [
+              "nil"
+            ],
+            "filament_shrinkage_compensation_z": [
+              "100%"
+            ],
+            "filament_toolchange_delay": [
+              "0"
+            ],
+            "filament_tower_ironing_area": [
+              "4"
+            ],
+            "filament_unloading_speed_start": [
+              "100"
+            ],
+            "idle_temperature": [
+              "0"
+            ],
+            "internal_bridge_fan_speed": [
+              "-1"
+            ],
+            "ironing_fan_speed": [
+              "-1"
+            ],
+            "nozzle_temperature_range_high": [
+              "240"
+            ],
+            "nozzle_temperature_range_low": [
+              "190"
+            ],
+            "support_material_interface_fan_speed": [
+              "-1"
+            ],
+            "textured_cool_plate_temp": [
+              "40"
+            ],
+            "textured_cool_plate_temp_initial_layer": [
+              "40"
+            ],
+            "filament_loading_speed_start": [
+              "50"
+            ],
+            "filament_loading_speed": [
+              "10"
+            ],
+            "filament_unloading_speed": [
+              "100"
+            ],
+            "filament_cooling_moves": [
+              "2"
+            ],
+            "filament_cooling_initial_speed": [
+              "10"
+            ],
+            "filament_cooling_final_speed": [
+              "3.5"
+            ],
+            "additional_cooling_fan_speed": [
+              "70",
+              "80"
+            ],
+            "enable_pressure_advance": [
+              "0",
+              "1"
+            ],
+            "filament_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "filament_multitool_ramming": [
+              "1",
+              "1"
+            ],
+            "filament_multitool_ramming_flow": [
+              "30",
+              "35"
+            ],
+            "filament_multitool_ramming_volume": [
+              "5",
+              "6"
+            ],
+            "filament_retract_length_toolchange": [
+              "5",
+              "6"
+            ],
+            "filament_stamping_distance": [
+              "45"
+            ],
+            "filament_stamping_loading_speed": [
+              "29"
+            ],
+            "graphic_effect_plate_temp": [
+              "65"
+            ],
+            "graphic_effect_plate_temp_initial_layer": [
+              "65"
+            ],
+            "pellet_flow_coefficient": [
+              "0.4157"
+            ],
+            "pressure_advance": [
+              "0.02",
+              "0.025"
+            ],
+            "filament_load_time": [
+              "2"
+            ],
+            "filament_unload_time": [
+              "2"
+            ]
+          }
+        },
+        "Snapmaker PLA SnapSpeed @U1 - STD-TEST": {
+          "file": "Snapmaker PLA SnapSpeed @U1 - STD-TEST.json",
+          "sha256": "7327054a7d796e20751097e3b456aa09592879ee70cc93c549a6423141771c87",
+          "own": {
+            "additional_cooling_fan_speed": [
+              "80",
+              "70"
+            ],
+            "enable_pressure_advance": [
+              "1",
+              "1"
+            ],
+            "fan_max_speed": [
+              "90",
+              "100"
+            ],
+            "fan_min_speed": [
+              "90",
+              "100"
+            ],
+            "filament_deretraction_speed": [
+              "31",
+              "nil"
+            ],
+            "filament_flow_ratio": [
+              "0.95",
+              "0.966"
+            ],
+            "filament_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "filament_max_volumetric_speed": [
+              "30",
+              "40"
+            ],
+            "filament_minimal_purge_on_wipe_tower": [
+              "20",
+              "15"
+            ],
+            "filament_multitool_ramming_flow": [
+              "35",
+              "40"
+            ],
+            "filament_multitool_ramming_volume": [
+              "6",
+              "5"
+            ],
+            "filament_retract_length_toolchange": [
+              "6",
+              "5"
+            ],
+            "filament_retraction_length": [
+              "1.4",
+              "1.2"
+            ],
+            "filament_retraction_speed": [
+              "31",
+              "nil"
+            ],
+            "filament_settings_id": [
+              "Snapmaker PLA SnapSpeed @U1 - STD-TEST"
+            ],
+            "filament_wipe_distance": [
+              "3",
+              "nil"
+            ],
+            "filament_z_hop_types": [
+              "Spiral Lift",
+              "Slope Lift"
+            ],
+            "from": "User",
+            "inherits": "Snapmaker PLA SnapSpeed @U1",
+            "is_custom_defined": "0",
+            "name": "Snapmaker PLA SnapSpeed @U1 - STD-TEST",
+            "nozzle_temperature": [
+              "210",
+              "220"
+            ],
+            "nozzle_temperature_initial_layer": [
+              "210",
+              "220"
+            ],
+            "pressure_advance": [
+              "0.025",
+              "0.024"
+            ],
+            "version": "2.3.1.2"
+          },
+          "inherits": "Snapmaker PLA SnapSpeed @U1",
+          "chain": [
+            "Snapmaker PLA SnapSpeed @U1",
+            "Snapmaker PLA SnapSpeed @U1 base",
+            "fdm_filament_pla_hs_category",
+            "fdm_filament_common"
+          ],
+          "unresolved": [],
+          "effective": {
+            "activate_air_filtration": [
+              "0"
+            ],
+            "chamber_temperatures": [
+              "0"
+            ],
+            "close_fan_the_first_x_layers": [
+              "1"
+            ],
+            "complete_print_exhaust_fan_speed": [
+              "70"
+            ],
+            "cool_plate_temp": [
+              "60"
+            ],
+            "cool_plate_temp_initial_layer": [
+              "60"
+            ],
+            "during_print_exhaust_fan_speed": [
+              "70"
+            ],
+            "eng_plate_temp": [
+              "60"
+            ],
+            "eng_plate_temp_initial_layer": [
+              "60"
+            ],
+            "fan_cooling_layer_time": [
+              "100"
+            ],
+            "fan_max_speed": [
+              "90",
+              "100"
+            ],
+            "fan_min_speed": [
+              "90",
+              "100"
+            ],
+            "filament_cost": [
+              "20"
+            ],
+            "filament_density": [
+              "1.24"
+            ],
+            "filament_deretraction_speed": [
+              "31",
+              "nil"
+            ],
+            "filament_diameter": [
+              "1.75"
+            ],
+            "filament_flow_ratio": [
+              "0.95",
+              "0.966"
+            ],
+            "filament_is_support": [
+              "0"
+            ],
+            "filament_long_retractions_when_cut": [
+              "nil"
+            ],
+            "filament_max_volumetric_speed": [
+              "30",
+              "40"
+            ],
+            "filament_minimal_purge_on_wipe_tower": [
+              "20",
+              "15"
+            ],
+            "filament_retract_before_wipe": [
+              "nil"
+            ],
+            "filament_retract_restart_extra": [
+              "nil"
+            ],
+            "filament_retract_when_changing_layer": [
+              "nil"
+            ],
+            "filament_retraction_distances_when_cut": [
+              "nil"
+            ],
+            "filament_retraction_length": [
+              "1.4",
+              "1.2"
+            ],
+            "filament_retraction_minimum_travel": [
+              "nil"
+            ],
+            "filament_retraction_speed": [
+              "31",
+              "nil"
+            ],
+            "filament_soluble": [
+              "0"
+            ],
+            "filament_type": [
+              "PLA"
+            ],
+            "filament_vendor": [
+              "Snapmaker"
+            ],
+            "filament_wipe": [
+              "nil"
+            ],
+            "filament_wipe_distance": [
+              "3",
+              "nil"
+            ],
+            "filament_z_hop": [
+              "0.4"
+            ],
+            "filament_z_hop_types": [
+              "Spiral Lift",
+              "Slope Lift"
+            ],
+            "full_fan_speed_layer": [
+              "0"
+            ],
+            "filament_scarf_seam_type": [
+              "none"
+            ],
+            "filament_scarf_height": [
+              "10%"
+            ],
+            "filament_scarf_gap": [
+              "0%"
+            ],
+            "filament_scarf_length": [
+              "10"
+            ],
+            "filament_shrink": [
+              "100%"
+            ],
+            "hot_plate_temp": [
+              "65"
+            ],
+            "hot_plate_temp_initial_layer": [
+              "65"
+            ],
+            "nozzle_temperature": [
+              "210",
+              "220"
+            ],
+            "nozzle_temperature_initial_layer": [
+              "210",
+              "220"
+            ],
+            "overhang_fan_speed": [
+              "100"
+            ],
+            "overhang_fan_threshold": [
+              "50%"
+            ],
+            "reduce_fan_stop_start_freq": [
+              "1"
+            ],
+            "required_nozzle_HRC": [
+              "0"
+            ],
+            "supertack_plate_temp": [
+              "40"
+            ],
+            "supertack_plate_temp_initial_layer": [
+              "40"
+            ],
+            "slow_down_for_layer_cooling": [
+              "1"
+            ],
+            "slow_down_layer_time": [
+              "4"
+            ],
+            "slow_down_min_speed": [
+              "20"
+            ],
+            "temperature_vitrification": [
+              "45"
+            ],
+            "textured_plate_temp": [
+              "65"
+            ],
+            "textured_plate_temp_initial_layer": [
+              "65"
+            ],
+            "compatible_printers": [
+              "Snapmaker U1 (0.4 nozzle)"
+            ],
+            "filament_start_gcode": [
+              "; filament start gcode\n"
+            ],
+            "filament_end_gcode": [
+              "; filament end gcode \n"
+            ],
+            "activate_chamber_temp_control": [
+              "0"
+            ],
+            "adaptive_pressure_advance": [
+              "0"
+            ],
+            "adaptive_pressure_advance_bridges": [
+              "0"
+            ],
+            "adaptive_pressure_advance_model": [
+              "0,0,0\n0,0,0"
+            ],
+            "adaptive_pressure_advance_overhangs": [
+              "0"
+            ],
+            "chamber_temperature": [
+              "0"
+            ],
+            "compatible_printers_condition": "",
+            "compatible_prints": [],
+            "compatible_prints_condition": "",
+            "default_filament_colour": [
+              ""
+            ],
+            "dont_slow_down_outer_wall": [
+              "0"
+            ],
+            "enable_overhang_bridge_fan": [
+              "1"
+            ],
+            "filament_is_high_temperature": [
+              "0"
+            ],
+            "filament_notes": [
+              ""
+            ],
+            "filament_ramming_parameters": [
+              "120 100 6.6 6.8 7.2 7.6 7.9 8.2 8.7 9.4 9.9 10.0| 0.05 6.6 0.45 6.8 0.95 7.8 1.45 8.3 1.95 9.7 2.45 10 2.95 7.6 3.45 7.6 3.95 7.6 4.45 7.6 4.95 7.6"
+            ],
+            "filament_retract_lift_above": [
+              "nil"
+            ],
+            "filament_retract_lift_below": [
+              "nil"
+            ],
+            "filament_retract_lift_enforce": [
+              "nil"
+            ],
+            "filament_retract_restart_extra_toolchange": [
+              "nil"
+            ],
+            "filament_shrinkage_compensation_z": [
+              "100%"
+            ],
+            "filament_toolchange_delay": [
+              "0"
+            ],
+            "filament_tower_ironing_area": [
+              "4"
+            ],
+            "filament_unloading_speed_start": [
+              "100"
+            ],
+            "idle_temperature": [
+              "0"
+            ],
+            "internal_bridge_fan_speed": [
+              "-1"
+            ],
+            "ironing_fan_speed": [
+              "-1"
+            ],
+            "nozzle_temperature_range_high": [
+              "240"
+            ],
+            "nozzle_temperature_range_low": [
+              "190"
+            ],
+            "support_material_interface_fan_speed": [
+              "-1"
+            ],
+            "textured_cool_plate_temp": [
+              "40"
+            ],
+            "textured_cool_plate_temp_initial_layer": [
+              "40"
+            ],
+            "filament_loading_speed_start": [
+              "50"
+            ],
+            "filament_loading_speed": [
+              "10"
+            ],
+            "filament_unloading_speed": [
+              "100"
+            ],
+            "filament_cooling_moves": [
+              "2"
+            ],
+            "filament_cooling_initial_speed": [
+              "10"
+            ],
+            "filament_cooling_final_speed": [
+              "3.5"
+            ],
+            "additional_cooling_fan_speed": [
+              "80",
+              "70"
+            ],
+            "enable_pressure_advance": [
+              "1",
+              "1"
+            ],
+            "filament_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "filament_multitool_ramming": [
+              "1",
+              "1"
+            ],
+            "filament_multitool_ramming_flow": [
+              "35",
+              "40"
+            ],
+            "filament_multitool_ramming_volume": [
+              "6",
+              "5"
+            ],
+            "filament_retract_length_toolchange": [
+              "6",
+              "5"
+            ],
+            "filament_stamping_distance": [
+              "45"
+            ],
+            "filament_stamping_loading_speed": [
+              "29"
+            ],
+            "graphic_effect_plate_temp": [
+              "65"
+            ],
+            "graphic_effect_plate_temp_initial_layer": [
+              "65"
+            ],
+            "pellet_flow_coefficient": [
+              "0.4157"
+            ],
+            "pressure_advance": [
+              "0.025",
+              "0.024"
+            ],
+            "filament_load_time": [
+              "2"
+            ],
+            "filament_unload_time": [
+              "2"
+            ]
+          }
+        }
+      }
+    },
+    "machine": {
+      "kind": "machine",
+      "presets": {}
+    }
+  },
+  "at_export": {
+    "process": {
+      "kind": "process",
+      "presets": {
+        "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - HF-TEST": {
+          "file": "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - HF-TEST.json",
+          "sha256": "83c5ca87100aa843bf0c526084ec839b2514a60b2d3b288cf62f5a9850df2f92",
+          "own": {
+            "accel_to_decel_factor": [
+              "50%",
+              "55%"
+            ],
+            "bridge_acceleration": [
+              "50%",
+              "55%"
+            ],
+            "bridge_speed": [
+              "50",
+              "55"
+            ],
+            "default_acceleration": [
+              "10000",
+              "9000"
+            ],
+            "default_jerk": [
+              "0",
+              "5"
+            ],
+            "extrusion_rate_smoothing_external_perimeter_only": [
+              "0",
+              "1"
+            ],
+            "from": "User",
+            "gap_infill_speed": [
+              "250",
+              "550"
+            ],
+            "infill_jerk": [
+              "9",
+              "11"
+            ],
+            "inherits": "0.20mm Standard @Snapmaker U1 (0.4 nozzle)",
+            "initial_layer_acceleration": [
+              "500",
+              "550"
+            ],
+            "initial_layer_infill_speed": [
+              "105",
+              "100"
+            ],
+            "initial_layer_jerk": [
+              "9",
+              "11"
+            ],
+            "initial_layer_speed": [
+              "50",
+              "60"
+            ],
+            "initial_layer_travel_speed": [
+              "100%",
+              "90%"
+            ],
+            "inner_wall_acceleration": [
+              "10000",
+              "9000"
+            ],
+            "inner_wall_jerk": [
+              "9",
+              "11"
+            ],
+            "inner_wall_speed": [
+              "300",
+              "550"
+            ],
+            "internal_bridge_speed": [
+              "150%",
+              "155%"
+            ],
+            "internal_solid_infill_acceleration": [
+              "100%",
+              "95%"
+            ],
+            "internal_solid_infill_speed": [
+              "250",
+              "550"
+            ],
+            "is_custom_defined": "0",
+            "max_volumetric_extrusion_rate_slope": [
+              "0",
+              "5"
+            ],
+            "max_volumetric_extrusion_rate_slope_segment_length": [
+              "3",
+              "5"
+            ],
+            "name": "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - HF-TEST",
+            "outer_wall_acceleration": [
+              "5000",
+              "6000"
+            ],
+            "outer_wall_jerk": [
+              "9",
+              "11"
+            ],
+            "outer_wall_speed": [
+              "200",
+              "550"
+            ],
+            "overhang_1_4_speed": [
+              "0",
+              "5"
+            ],
+            "overhang_2_4_speed": [
+              "50",
+              "55"
+            ],
+            "overhang_3_4_speed": [
+              "30",
+              "35"
+            ],
+            "overhang_4_4_speed": [
+              "10",
+              "15"
+            ],
+            "print_settings_id": "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - HF-TEST",
+            "process_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "slow_down_layers": [
+              "0",
+              "1"
+            ],
+            "slowdown_for_curled_perimeters": [
+              "0",
+              "1"
+            ],
+            "small_perimeter_speed": [
+              "50%",
+              "55%"
+            ],
+            "small_perimeter_threshold": [
+              "0",
+              "5"
+            ],
+            "sparse_infill_acceleration": [
+              "100%",
+              "95%"
+            ],
+            "sparse_infill_speed": [
+              "270",
+              "550"
+            ],
+            "top_surface_acceleration": [
+              "2000",
+              "2500"
+            ],
+            "top_surface_jerk": [
+              "9",
+              "11"
+            ],
+            "top_surface_speed": [
+              "200",
+              "550"
+            ],
+            "travel_acceleration": [
+              "10000",
+              "9000"
+            ],
+            "travel_jerk": [
+              "12",
+              "11"
+            ],
+            "travel_speed": [
+              "500",
+              "550"
+            ],
+            "version": "2.3.1.2"
+          },
+          "inherits": "0.20mm Standard @Snapmaker U1 (0.4 nozzle)",
+          "chain": [
+            "0.20mm Standard @Snapmaker U1 (0.4 nozzle)",
+            "fdm_process_U1_0.20",
+            "fdm_process_U1_common",
+            "fdm_process_U1"
+          ],
+          "unresolved": [],
+          "effective": {
+            "adaptive_layer_height": "0",
+            "reduce_crossing_wall": "0",
+            "bridge_flow": "0.8",
+            "bridge_speed": [
+              "50",
+              "55"
+            ],
+            "brim_width": "5",
+            "print_sequence": "by layer",
+            "default_acceleration": [
+              "10000",
+              "9000"
+            ],
+            "bridge_no_support": "0",
+            "elefant_foot_compensation": "0.15",
+            "outer_wall_line_width": "0.42",
+            "outer_wall_speed": [
+              "200",
+              "550"
+            ],
+            "line_width": "0.42",
+            "infill_direction": "45",
+            "sparse_infill_density": "15%",
+            "sparse_infill_pattern": "grid",
+            "initial_layer_line_width": "0.5",
+            "initial_layer_print_height": "0.25",
+            "initial_layer_speed": [
+              "50",
+              "60"
+            ],
+            "gap_infill_speed": [
+              "250",
+              "550"
+            ],
+            "infill_combination": "0",
+            "sparse_infill_line_width": "0.45",
+            "infill_wall_overlap": "15%",
+            "sparse_infill_speed": [
+              "270",
+              "550"
+            ],
+            "interface_shells": "0",
+            "detect_overhang_wall": "1",
+            "reduce_infill_retraction": "1",
+            "filename_format": "{input_filename_base}_{filament_type[0]}_{print_time}.gcode",
+            "wall_loops": "2",
+            "inner_wall_line_width": "0.45",
+            "inner_wall_speed": [
+              "300",
+              "550"
+            ],
+            "raft_layers": "0",
+            "seam_position": "aligned",
+            "skirt_distance": "2",
+            "skirt_height": "1",
+            "minimum_sparse_infill_area": "15",
+            "internal_solid_infill_line_width": "0.42",
+            "internal_solid_infill_speed": [
+              "250",
+              "550"
+            ],
+            "spiral_mode": "0",
+            "standby_temperature_delta": "-150",
+            "enable_support": "0",
+            "support_filament": "0",
+            "support_line_width": "0.42",
+            "support_interface_filament": "0",
+            "support_on_build_plate_only": "0",
+            "support_top_z_distance": "0.2",
+            "support_interface_loop_pattern": "0",
+            "support_interface_top_layers": "2",
+            "support_interface_spacing": "0.5",
+            "support_interface_speed": "80",
+            "support_interface_pattern": "auto",
+            "support_base_pattern": "default",
+            "support_base_pattern_spacing": "2.5",
+            "support_speed": "150",
+            "support_threshold_angle": "30",
+            "support_object_xy_distance": "0.35",
+            "detect_thin_wall": "0",
+            "top_surface_line_width": "0.42",
+            "top_surface_speed": [
+              "200",
+              "550"
+            ],
+            "travel_speed": [
+              "500",
+              "550"
+            ],
+            "enable_prime_tower": "1",
+            "prime_tower_width": "30",
+            "xy_hole_compensation": "0",
+            "xy_contour_compensation": "0",
+            "compatible_printers": [
+              "Snapmaker U1 (0.4 nozzle)"
+            ],
+            "smooth_coefficient": "150",
+            "overhang_totally_speed": "50",
+            "max_travel_detour_distance": "0",
+            "bottom_surface_pattern": "monotonic",
+            "bottom_shell_layers": "3",
+            "bottom_shell_thickness": "0",
+            "brim_object_gap": "0.1",
+            "compatible_printers_condition": "",
+            "draft_shield": "disabled",
+            "enable_arc_fitting": "0",
+            "outer_wall_acceleration": [
+              "5000",
+              "6000"
+            ],
+            "wall_infill_order": "inner wall/outer wall/infill",
+            "internal_bridge_support_thickness": "0.8",
+            "initial_layer_acceleration": [
+              "500",
+              "550"
+            ],
+            "ironing_flow": "10%",
+            "ironing_spacing": "0.15",
+            "ironing_speed": "30",
+            "ironing_type": "no ironing",
+            "layer_height": "0.2",
+            "overhang_1_4_speed": [
+              "0",
+              "5"
+            ],
+            "overhang_2_4_speed": [
+              "50",
+              "55"
+            ],
+            "overhang_3_4_speed": [
+              "30",
+              "35"
+            ],
+            "overhang_4_4_speed": [
+              "10",
+              "15"
+            ],
+            "only_one_wall_top": "1",
+            "skirt_loops": "0",
+            "initial_layer_infill_speed": [
+              "105",
+              "100"
+            ],
+            "resolution": "0.012",
+            "support_type": "tree(auto)",
+            "support_style": "default",
+            "support_bottom_z_distance": "0.2",
+            "support_interface_bottom_layers": "2",
+            "support_expansion": "0",
+            "tree_support_branch_diameter": "2",
+            "tree_support_branch_angle": "45",
+            "tree_support_wall_count": "0",
+            "top_surface_pattern": "monotonicline",
+            "top_surface_acceleration": [
+              "2000",
+              "2500"
+            ],
+            "top_shell_layers": "5",
+            "top_shell_thickness": "1.0",
+            "wipe_tower_no_sparse_layers": "0",
+            "wall_generator": "classic",
+            "exclude_object": "1",
+            "renamed_from": "0.20 Standard @Snapmaker U1 (0.4 nozzle);0.20 Strength @Snapmaker U1 (0.4 nozzle)",
+            "description": "It has a general layer height, and results in general layer lines and printing quality. It is suitable for most general printing cases.",
+            "ooze_prevention": "1",
+            "prime_volume": "45",
+            "slowdown_for_curled_perimeters": [
+              "0",
+              "1"
+            ],
+            "wipe_tower_filament": "0",
+            "preheat_time": "30",
+            "wipe_tower_cone_angle": "15",
+            "prime_tower_brim_width": "5",
+            "min_width_top_surface": "200%",
+            "wipe_tower_extra_spacing": "120%",
+            "precise_z_height": "0",
+            "bridge_density": "80%",
+            "internal_solid_infill_pattern": "rectilinear",
+            "precise_outer_wall": "0",
+            "seam_gap": "15%",
+            "wipe_speed": "50",
+            "wipe_tower_extra_rib_length": "8",
+            "wipe_tower_wall_type": "rib",
+            "gap_fill_target": "topbottom",
+            "process_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "accel_to_decel_factor": [
+              "50%",
+              "55%"
+            ],
+            "bridge_acceleration": [
+              "50%",
+              "55%"
+            ],
+            "default_jerk": [
+              "0",
+              "5"
+            ],
+            "extrusion_rate_smoothing_external_perimeter_only": [
+              "0",
+              "1"
+            ],
+            "infill_jerk": [
+              "9",
+              "11"
+            ],
+            "initial_layer_jerk": [
+              "9",
+              "11"
+            ],
+            "initial_layer_travel_speed": [
+              "100%",
+              "90%"
+            ],
+            "inner_wall_acceleration": [
+              "10000",
+              "9000"
+            ],
+            "inner_wall_jerk": [
+              "9",
+              "11"
+            ],
+            "internal_bridge_speed": [
+              "150%",
+              "155%"
+            ],
+            "internal_solid_infill_acceleration": [
+              "100%",
+              "95%"
+            ],
+            "max_volumetric_extrusion_rate_slope": [
+              "0",
+              "5"
+            ],
+            "max_volumetric_extrusion_rate_slope_segment_length": [
+              "3",
+              "5"
+            ],
+            "outer_wall_jerk": [
+              "9",
+              "11"
+            ],
+            "slow_down_layers": [
+              "0",
+              "1"
+            ],
+            "small_perimeter_speed": [
+              "50%",
+              "55%"
+            ],
+            "small_perimeter_threshold": [
+              "0",
+              "5"
+            ],
+            "sparse_infill_acceleration": [
+              "100%",
+              "95%"
+            ],
+            "top_surface_jerk": [
+              "9",
+              "11"
+            ],
+            "travel_acceleration": [
+              "10000",
+              "9000"
+            ],
+            "travel_jerk": [
+              "12",
+              "11"
+            ]
+          }
+        },
+        "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - STD-TEST": {
+          "file": "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - STD-TEST.json",
+          "sha256": "b8626f472ab1d10a0767ddb810bbb7438053b83a9ace78c106684d155e788bc5",
+          "own": {
+            "accel_to_decel_factor": [
+              "55%",
+              "50%"
+            ],
+            "bridge_acceleration": [
+              "55%",
+              "50%"
+            ],
+            "bridge_speed": [
+              "55",
+              "50"
+            ],
+            "default_acceleration": [
+              "9000",
+              "10000"
+            ],
+            "default_jerk": [
+              "5",
+              "0"
+            ],
+            "extrusion_rate_smoothing_external_perimeter_only": [
+              "1",
+              "0"
+            ],
+            "from": "User",
+            "gap_infill_speed": [
+              "550",
+              "250"
+            ],
+            "infill_jerk": [
+              "11",
+              "9"
+            ],
+            "inherits": "0.20mm Standard @Snapmaker U1 (0.4 nozzle)",
+            "initial_layer_acceleration": [
+              "550",
+              "500"
+            ],
+            "initial_layer_infill_speed": [
+              "100",
+              "105"
+            ],
+            "initial_layer_jerk": [
+              "11",
+              "9"
+            ],
+            "initial_layer_speed": [
+              "60",
+              "50"
+            ],
+            "initial_layer_travel_speed": [
+              "90%",
+              "100%"
+            ],
+            "inner_wall_acceleration": [
+              "9000",
+              "10000"
+            ],
+            "inner_wall_jerk": [
+              "11",
+              "9"
+            ],
+            "inner_wall_speed": [
+              "550",
+              "600"
+            ],
+            "internal_bridge_speed": [
+              "155%",
+              "150%"
+            ],
+            "internal_solid_infill_acceleration": [
+              "95%",
+              "100%"
+            ],
+            "internal_solid_infill_speed": [
+              "550",
+              "600"
+            ],
+            "is_custom_defined": "0",
+            "max_volumetric_extrusion_rate_slope": [
+              "5",
+              "0"
+            ],
+            "max_volumetric_extrusion_rate_slope_segment_length": [
+              "5",
+              "3"
+            ],
+            "name": "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - STD-TEST",
+            "outer_wall_acceleration": [
+              "6000",
+              "5000"
+            ],
+            "outer_wall_jerk": [
+              "11",
+              "9"
+            ],
+            "outer_wall_speed": [
+              "550",
+              "500"
+            ],
+            "overhang_1_4_speed": [
+              "5",
+              "0"
+            ],
+            "overhang_2_4_speed": [
+              "55",
+              "50"
+            ],
+            "overhang_3_4_speed": [
+              "35",
+              "30"
+            ],
+            "overhang_4_4_speed": [
+              "15",
+              "10"
+            ],
+            "print_settings_id": "0.20mm Standard @Snapmaker U1 (0.4 nozzle) - STD-TEST",
+            "process_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "slow_down_layers": [
+              "1",
+              "0"
+            ],
+            "slowdown_for_curled_perimeters": [
+              "0",
+              "1"
+            ],
+            "small_perimeter_speed": [
+              "55%",
+              "50%"
+            ],
+            "small_perimeter_threshold": [
+              "5",
+              "0"
+            ],
+            "sparse_infill_acceleration": [
+              "95%",
+              "100%"
+            ],
+            "sparse_infill_speed": [
+              "550",
+              "600"
+            ],
+            "top_surface_acceleration": [
+              "2500",
+              "2000"
+            ],
+            "top_surface_jerk": [
+              "11",
+              "9"
+            ],
+            "top_surface_speed": [
+              "550",
+              "200"
+            ],
+            "travel_acceleration": [
+              "9000",
+              "10000"
+            ],
+            "travel_jerk": [
+              "11",
+              "12"
+            ],
+            "travel_speed": [
+              "550",
+              "500"
+            ],
+            "version": "2.3.1.2"
+          },
+          "inherits": "0.20mm Standard @Snapmaker U1 (0.4 nozzle)",
+          "chain": [
+            "0.20mm Standard @Snapmaker U1 (0.4 nozzle)",
+            "fdm_process_U1_0.20",
+            "fdm_process_U1_common",
+            "fdm_process_U1"
+          ],
+          "unresolved": [],
+          "effective": {
+            "adaptive_layer_height": "0",
+            "reduce_crossing_wall": "0",
+            "bridge_flow": "0.8",
+            "bridge_speed": [
+              "55",
+              "50"
+            ],
+            "brim_width": "5",
+            "print_sequence": "by layer",
+            "default_acceleration": [
+              "9000",
+              "10000"
+            ],
+            "bridge_no_support": "0",
+            "elefant_foot_compensation": "0.15",
+            "outer_wall_line_width": "0.42",
+            "outer_wall_speed": [
+              "550",
+              "500"
+            ],
+            "line_width": "0.42",
+            "infill_direction": "45",
+            "sparse_infill_density": "15%",
+            "sparse_infill_pattern": "grid",
+            "initial_layer_line_width": "0.5",
+            "initial_layer_print_height": "0.25",
+            "initial_layer_speed": [
+              "60",
+              "50"
+            ],
+            "gap_infill_speed": [
+              "550",
+              "250"
+            ],
+            "infill_combination": "0",
+            "sparse_infill_line_width": "0.45",
+            "infill_wall_overlap": "15%",
+            "sparse_infill_speed": [
+              "550",
+              "600"
+            ],
+            "interface_shells": "0",
+            "detect_overhang_wall": "1",
+            "reduce_infill_retraction": "1",
+            "filename_format": "{input_filename_base}_{filament_type[0]}_{print_time}.gcode",
+            "wall_loops": "2",
+            "inner_wall_line_width": "0.45",
+            "inner_wall_speed": [
+              "550",
+              "600"
+            ],
+            "raft_layers": "0",
+            "seam_position": "aligned",
+            "skirt_distance": "2",
+            "skirt_height": "1",
+            "minimum_sparse_infill_area": "15",
+            "internal_solid_infill_line_width": "0.42",
+            "internal_solid_infill_speed": [
+              "550",
+              "600"
+            ],
+            "spiral_mode": "0",
+            "standby_temperature_delta": "-150",
+            "enable_support": "0",
+            "support_filament": "0",
+            "support_line_width": "0.42",
+            "support_interface_filament": "0",
+            "support_on_build_plate_only": "0",
+            "support_top_z_distance": "0.2",
+            "support_interface_loop_pattern": "0",
+            "support_interface_top_layers": "2",
+            "support_interface_spacing": "0.5",
+            "support_interface_speed": "80",
+            "support_interface_pattern": "auto",
+            "support_base_pattern": "default",
+            "support_base_pattern_spacing": "2.5",
+            "support_speed": "150",
+            "support_threshold_angle": "30",
+            "support_object_xy_distance": "0.35",
+            "detect_thin_wall": "0",
+            "top_surface_line_width": "0.42",
+            "top_surface_speed": [
+              "550",
+              "200"
+            ],
+            "travel_speed": [
+              "550",
+              "500"
+            ],
+            "enable_prime_tower": "1",
+            "prime_tower_width": "30",
+            "xy_hole_compensation": "0",
+            "xy_contour_compensation": "0",
+            "compatible_printers": [
+              "Snapmaker U1 (0.4 nozzle)"
+            ],
+            "smooth_coefficient": "150",
+            "overhang_totally_speed": "50",
+            "max_travel_detour_distance": "0",
+            "bottom_surface_pattern": "monotonic",
+            "bottom_shell_layers": "3",
+            "bottom_shell_thickness": "0",
+            "brim_object_gap": "0.1",
+            "compatible_printers_condition": "",
+            "draft_shield": "disabled",
+            "enable_arc_fitting": "0",
+            "outer_wall_acceleration": [
+              "6000",
+              "5000"
+            ],
+            "wall_infill_order": "inner wall/outer wall/infill",
+            "internal_bridge_support_thickness": "0.8",
+            "initial_layer_acceleration": [
+              "550",
+              "500"
+            ],
+            "ironing_flow": "10%",
+            "ironing_spacing": "0.15",
+            "ironing_speed": "30",
+            "ironing_type": "no ironing",
+            "layer_height": "0.2",
+            "overhang_1_4_speed": [
+              "5",
+              "0"
+            ],
+            "overhang_2_4_speed": [
+              "55",
+              "50"
+            ],
+            "overhang_3_4_speed": [
+              "35",
+              "30"
+            ],
+            "overhang_4_4_speed": [
+              "15",
+              "10"
+            ],
+            "only_one_wall_top": "1",
+            "skirt_loops": "0",
+            "initial_layer_infill_speed": [
+              "100",
+              "105"
+            ],
+            "resolution": "0.012",
+            "support_type": "tree(auto)",
+            "support_style": "default",
+            "support_bottom_z_distance": "0.2",
+            "support_interface_bottom_layers": "2",
+            "support_expansion": "0",
+            "tree_support_branch_diameter": "2",
+            "tree_support_branch_angle": "45",
+            "tree_support_wall_count": "0",
+            "top_surface_pattern": "monotonicline",
+            "top_surface_acceleration": [
+              "2500",
+              "2000"
+            ],
+            "top_shell_layers": "5",
+            "top_shell_thickness": "1.0",
+            "wipe_tower_no_sparse_layers": "0",
+            "wall_generator": "classic",
+            "exclude_object": "1",
+            "renamed_from": "0.20 Standard @Snapmaker U1 (0.4 nozzle);0.20 Strength @Snapmaker U1 (0.4 nozzle)",
+            "description": "It has a general layer height, and results in general layer lines and printing quality. It is suitable for most general printing cases.",
+            "ooze_prevention": "1",
+            "prime_volume": "45",
+            "slowdown_for_curled_perimeters": [
+              "0",
+              "1"
+            ],
+            "wipe_tower_filament": "0",
+            "preheat_time": "30",
+            "wipe_tower_cone_angle": "15",
+            "prime_tower_brim_width": "5",
+            "min_width_top_surface": "200%",
+            "wipe_tower_extra_spacing": "120%",
+            "precise_z_height": "0",
+            "bridge_density": "80%",
+            "internal_solid_infill_pattern": "rectilinear",
+            "precise_outer_wall": "0",
+            "seam_gap": "15%",
+            "wipe_speed": "50",
+            "wipe_tower_extra_rib_length": "8",
+            "wipe_tower_wall_type": "rib",
+            "gap_fill_target": "topbottom",
+            "process_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "accel_to_decel_factor": [
+              "55%",
+              "50%"
+            ],
+            "bridge_acceleration": [
+              "55%",
+              "50%"
+            ],
+            "default_jerk": [
+              "5",
+              "0"
+            ],
+            "extrusion_rate_smoothing_external_perimeter_only": [
+              "1",
+              "0"
+            ],
+            "infill_jerk": [
+              "11",
+              "9"
+            ],
+            "initial_layer_jerk": [
+              "11",
+              "9"
+            ],
+            "initial_layer_travel_speed": [
+              "90%",
+              "100%"
+            ],
+            "inner_wall_acceleration": [
+              "9000",
+              "10000"
+            ],
+            "inner_wall_jerk": [
+              "11",
+              "9"
+            ],
+            "internal_bridge_speed": [
+              "155%",
+              "150%"
+            ],
+            "internal_solid_infill_acceleration": [
+              "95%",
+              "100%"
+            ],
+            "max_volumetric_extrusion_rate_slope": [
+              "5",
+              "0"
+            ],
+            "max_volumetric_extrusion_rate_slope_segment_length": [
+              "5",
+              "3"
+            ],
+            "outer_wall_jerk": [
+              "11",
+              "9"
+            ],
+            "slow_down_layers": [
+              "1",
+              "0"
+            ],
+            "small_perimeter_speed": [
+              "55%",
+              "50%"
+            ],
+            "small_perimeter_threshold": [
+              "5",
+              "0"
+            ],
+            "sparse_infill_acceleration": [
+              "95%",
+              "100%"
+            ],
+            "top_surface_jerk": [
+              "11",
+              "9"
+            ],
+            "travel_acceleration": [
+              "9000",
+              "10000"
+            ],
+            "travel_jerk": [
+              "11",
+              "12"
+            ]
+          }
+        },
+        "0.24mm Standard @Snapmaker U1 (0.4 nozzle) - FLOW-TEST": {
+          "file": "0.24mm Standard @Snapmaker U1 (0.4 nozzle) - FLOW-TEST.json",
+          "sha256": "fabe9606152c29bd4f07c07677253657890771e97050cd8c4fec8cbd56fa2748",
+          "own": {
+            "from": "User",
+            "inherits": "0.24mm Standard @Snapmaker U1 (0.4 nozzle)",
+            "initial_layer_speed": [
+              "60"
+            ],
+            "is_custom_defined": "0",
+            "name": "0.24mm Standard @Snapmaker U1 (0.4 nozzle) - FLOW-TEST",
+            "print_settings_id": "0.24mm Standard @Snapmaker U1 (0.4 nozzle) - FLOW-TEST",
+            "process_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "version": "2.3.1.2"
+          },
+          "inherits": "0.24mm Standard @Snapmaker U1 (0.4 nozzle)",
+          "chain": [
+            "0.24mm Standard @Snapmaker U1 (0.4 nozzle)",
+            "fdm_process_U1_0.24",
+            "fdm_process_U1_common",
+            "fdm_process_U1"
+          ],
+          "unresolved": [],
+          "effective": {
+            "adaptive_layer_height": "0",
+            "reduce_crossing_wall": "0",
+            "bridge_flow": "1",
+            "bridge_speed": "50",
+            "brim_width": "5",
+            "print_sequence": "by layer",
+            "default_acceleration": "10000",
+            "bridge_no_support": "0",
+            "elefant_foot_compensation": "0.15",
+            "outer_wall_line_width": "0.42",
+            "outer_wall_speed": "200",
+            "line_width": "0.42",
+            "infill_direction": "45",
+            "sparse_infill_density": "15%",
+            "sparse_infill_pattern": "grid",
+            "initial_layer_line_width": "0.5",
+            "initial_layer_print_height": "0.2",
+            "initial_layer_speed": [
+              "60"
+            ],
+            "gap_infill_speed": "230",
+            "infill_combination": "0",
+            "sparse_infill_line_width": "0.45",
+            "infill_wall_overlap": "15%",
+            "sparse_infill_speed": "230",
+            "interface_shells": "0",
+            "detect_overhang_wall": "1",
+            "reduce_infill_retraction": "1",
+            "filename_format": "{input_filename_base}_{filament_type[0]}_{print_time}.gcode",
+            "wall_loops": "2",
+            "inner_wall_line_width": "0.45",
+            "inner_wall_speed": "230",
+            "raft_layers": "0",
+            "seam_position": "aligned",
+            "skirt_distance": "2",
+            "skirt_height": "1",
+            "minimum_sparse_infill_area": "15",
+            "internal_solid_infill_line_width": "0.42",
+            "internal_solid_infill_speed": "230",
+            "spiral_mode": "0",
+            "standby_temperature_delta": "-150",
+            "enable_support": "0",
+            "support_filament": "0",
+            "support_line_width": "0.42",
+            "support_interface_filament": "0",
+            "support_on_build_plate_only": "0",
+            "support_top_z_distance": "0.2",
+            "support_interface_loop_pattern": "0",
+            "support_interface_top_layers": "2",
+            "support_interface_spacing": "0.5",
+            "support_interface_speed": "80",
+            "support_interface_pattern": "auto",
+            "support_base_pattern": "default",
+            "support_base_pattern_spacing": "2.5",
+            "support_speed": "150",
+            "support_threshold_angle": "35",
+            "support_object_xy_distance": "0.35",
+            "detect_thin_wall": "0",
+            "top_surface_line_width": "0.45",
+            "top_surface_speed": "200",
+            "travel_speed": "500",
+            "enable_prime_tower": "1",
+            "prime_tower_width": "30",
+            "xy_hole_compensation": "0",
+            "xy_contour_compensation": "0",
+            "compatible_printers": [
+              "Snapmaker U1 (0.4 nozzle)"
+            ],
+            "smooth_coefficient": "150",
+            "overhang_totally_speed": "50",
+            "max_travel_detour_distance": "0",
+            "bottom_surface_pattern": "monotonic",
+            "bottom_shell_layers": "3",
+            "bottom_shell_thickness": "0",
+            "brim_object_gap": "0.1",
+            "compatible_printers_condition": "",
+            "draft_shield": "disabled",
+            "enable_arc_fitting": "0",
+            "outer_wall_acceleration": "5000",
+            "wall_infill_order": "inner wall/outer wall/infill",
+            "internal_bridge_support_thickness": "0.8",
+            "initial_layer_acceleration": "500",
+            "ironing_flow": "10%",
+            "ironing_spacing": "0.15",
+            "ironing_speed": "30",
+            "ironing_type": "no ironing",
+            "layer_height": "0.24",
+            "overhang_1_4_speed": "0",
+            "overhang_2_4_speed": "50",
+            "overhang_3_4_speed": "30",
+            "overhang_4_4_speed": "10",
+            "only_one_wall_top": "1",
+            "skirt_loops": "0",
+            "initial_layer_infill_speed": "105",
+            "resolution": "0.012",
+            "support_type": "tree(auto)",
+            "support_style": "default",
+            "support_bottom_z_distance": "0.2",
+            "support_interface_bottom_layers": "2",
+            "support_expansion": "0",
+            "tree_support_branch_diameter": "2",
+            "tree_support_branch_angle": "45",
+            "tree_support_wall_count": "0",
+            "top_surface_pattern": "monotonicline",
+            "top_surface_acceleration": "2000",
+            "top_shell_layers": "4",
+            "top_shell_thickness": "1.0",
+            "wipe_tower_no_sparse_layers": "0",
+            "wall_generator": "classic",
+            "exclude_object": "1",
+            "renamed_from": "0.24 Draft @Snapmaker U1 (0.4 nozzle)",
+            "description": "Compared with the default profile of a 0.4 mm nozzle, it has a bigger layer height, and results in more apparent layer lines and lower printing quality, but slightly shorter printing time.",
+            "ooze_prevention": "1",
+            "prime_volume": "54",
+            "slowdown_for_curled_perimeters": "0",
+            "wipe_tower_filament": "0",
+            "prime_tower_brim_width": "5",
+            "wipe_tower_cone_angle": "15",
+            "wipe_tower_extra_spacing": "120%",
+            "precise_outer_wall": "0",
+            "wipe_tower_extra_rib_length": "8",
+            "wipe_tower_wall_type": "rib",
+            "gap_fill_target": "topbottom",
+            "process_flow_support": [
+              "standard",
+              "high_flow"
+            ]
+          }
+        },
+        "BB Export Test": {
+          "file": "BB Export Test.json",
+          "sha256": "68fb3bd060476d569b57273a4405d036c2ec7a1ec8cdebd5f34c6d4628da69b4",
+          "own": {
+            "from": "User",
+            "inherits": "0.20mm Standard @Snapmaker U1 (0.4 nozzle)(feishu_std_cube.3mf)",
+            "is_custom_defined": "0",
+            "layer_height": "0.3",
+            "mixed_filament_definitions": "3,2,1,1,50,0,g,w,m2,z0,xa0,xb0,d0,o0,u1,cm0",
+            "name": "BB Export Test",
+            "print_settings_id": "BB Export Test",
+            "version": "0.0.0.0"
+          },
+          "inherits": "0.20mm Standard @Snapmaker U1 (0.4 nozzle)(feishu_std_cube.3mf)",
+          "chain": [
+            "0.20mm Standard @Snapmaker U1 (0.4 nozzle)(feishu_std_cube.3mf)"
+          ],
+          "unresolved": [
+            "0.20mm Standard @Snapmaker U1 (0.4 nozzle)(feishu_std_cube.3mf)"
+          ],
+          "effective": {
+            "layer_height": "0.3",
+            "mixed_filament_definitions": "3,2,1,1,50,0,g,w,m2,z0,xa0,xb0,d0,o0,u1,cm0"
+          }
+        }
+      }
+    },
+    "filament": {
+      "kind": "filament",
+      "presets": {
+        "Snapmaker PLA SnapSpeed @U1 - FLOW-TEST": {
+          "file": "Snapmaker PLA SnapSpeed @U1 - FLOW-TEST.json",
+          "sha256": "44d56f8f29350ebb834be939e55645fa40fee18c4c04a71788b73625b2c93783",
+          "own": {
+            "enable_pressure_advance": [
+              "1",
+              "1"
+            ],
+            "filament_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "filament_max_volumetric_speed": [
+              "40",
+              "40"
+            ],
+            "filament_multitool_ramming_flow": [
+              "40",
+              "40"
+            ],
+            "filament_settings_id": [
+              "Snapmaker PLA SnapSpeed @U1 - FLOW-TEST"
+            ],
+            "from": "User",
+            "inherits": "Snapmaker PLA SnapSpeed @U1",
+            "is_custom_defined": "0",
+            "name": "Snapmaker PLA SnapSpeed @U1 - FLOW-TEST",
+            "pressure_advance": [
+              "0.024",
+              "0.024"
+            ],
+            "version": "2.3.1.2"
+          },
+          "inherits": "Snapmaker PLA SnapSpeed @U1",
+          "chain": [
+            "Snapmaker PLA SnapSpeed @U1",
+            "Snapmaker PLA SnapSpeed @U1 base",
+            "fdm_filament_pla_hs_category",
+            "fdm_filament_common"
+          ],
+          "unresolved": [],
+          "effective": {
+            "activate_air_filtration": [
+              "0"
+            ],
+            "activate_chamber_temp_control": [
+              "0"
+            ],
+            "adaptive_pressure_advance": [
+              "0"
+            ],
+            "adaptive_pressure_advance_bridges": [
+              "0"
+            ],
+            "adaptive_pressure_advance_model": [
+              "0,0,0\n0,0,0"
+            ],
+            "adaptive_pressure_advance_overhangs": [
+              "0"
+            ],
+            "chamber_temperature": [
+              "0"
+            ],
+            "close_fan_the_first_x_layers": [
+              "1"
+            ],
+            "compatible_printers_condition": "",
+            "compatible_prints": [],
+            "compatible_prints_condition": "",
+            "default_filament_colour": [
+              ""
+            ],
+            "dont_slow_down_outer_wall": [
+              "0"
+            ],
+            "enable_overhang_bridge_fan": [
+              "1"
+            ],
+            "filament_diameter": [
+              "1.75"
+            ],
+            "filament_is_high_temperature": [
+              "0"
+            ],
+            "filament_is_support": [
+              "0"
+            ],
+            "filament_long_retractions_when_cut": [
+              "nil"
+            ],
+            "filament_notes": [
+              ""
+            ],
+            "filament_ramming_parameters": [
+              "120 100 6.6 6.8 7.2 7.6 7.9 8.2 8.7 9.4 9.9 10.0| 0.05 6.6 0.45 6.8 0.95 7.8 1.45 8.3 1.95 9.7 2.45 10 2.95 7.6 3.45 7.6 3.95 7.6 4.45 7.6 4.95 7.6"
+            ],
+            "filament_retract_before_wipe": [
+              "nil"
+            ],
+            "filament_retract_lift_above": [
+              "nil"
+            ],
+            "filament_retract_lift_below": [
+              "nil"
+            ],
+            "filament_retract_lift_enforce": [
+              "nil"
+            ],
+            "filament_retract_restart_extra": [
+              "nil"
+            ],
+            "filament_retract_restart_extra_toolchange": [
+              "nil"
+            ],
+            "filament_retract_when_changing_layer": [
+              "nil"
+            ],
+            "filament_retraction_distances_when_cut": [
+              "nil"
+            ],
+            "filament_retraction_minimum_travel": [
+              "nil"
+            ],
+            "filament_shrink": [
+              "100%"
+            ],
+            "filament_shrinkage_compensation_z": [
+              "100%"
+            ],
+            "filament_soluble": [
+              "0"
+            ],
+            "filament_toolchange_delay": [
+              "0"
+            ],
+            "filament_tower_ironing_area": [
+              "4"
+            ],
+            "filament_type": [
+              "PLA"
+            ],
+            "filament_unloading_speed_start": [
+              "100"
+            ],
+            "filament_wipe": [
+              "nil"
+            ],
+            "filament_wipe_distance": [
+              "nil"
+            ],
+            "full_fan_speed_layer": [
+              "0"
+            ],
+            "idle_temperature": [
+              "0"
+            ],
+            "internal_bridge_fan_speed": [
+              "-1"
+            ],
+            "ironing_fan_speed": [
+              "-1"
+            ],
+            "nozzle_temperature_range_high": [
+              "240"
+            ],
+            "nozzle_temperature_range_low": [
+              "190"
+            ],
+            "overhang_fan_speed": [
+              "100"
+            ],
+            "reduce_fan_stop_start_freq": [
+              "1"
+            ],
+            "slow_down_for_layer_cooling": [
+              "1"
+            ],
+            "support_material_interface_fan_speed": [
+              "-1"
+            ],
+            "textured_cool_plate_temp": [
+              "40"
+            ],
+            "textured_cool_plate_temp_initial_layer": [
+              "40"
+            ],
+            "filament_end_gcode": [
+              "; filament end gcode \n"
+            ],
+            "filament_retraction_length": [
+              "1.2",
+              "1.2"
+            ],
+            "filament_loading_speed_start": [
+              "50"
+            ],
+            "filament_loading_speed": [
+              "10"
+            ],
+            "filament_unloading_speed": [
+              "100"
+            ],
+            "filament_cooling_moves": [
+              "2"
+            ],
+            "filament_cooling_initial_speed": [
+              "10"
+            ],
+            "filament_cooling_final_speed": [
+              "3.5"
+            ],
+            "fan_cooling_layer_time": [
+              "100"
+            ],
+            "filament_max_volumetric_speed": [
+              "40",
+              "40"
+            ],
+            "filament_density": [
+              "1.24"
+            ],
+            "filament_cost": [
+              "20"
+            ],
+            "cool_plate_temp": [
+              "60"
+            ],
+            "eng_plate_temp": [
+              "60"
+            ],
+            "hot_plate_temp": [
+              "65"
+            ],
+            "textured_plate_temp": [
+              "65"
+            ],
+            "cool_plate_temp_initial_layer": [
+              "60"
+            ],
+            "eng_plate_temp_initial_layer": [
+              "60"
+            ],
+            "hot_plate_temp_initial_layer": [
+              "65"
+            ],
+            "textured_plate_temp_initial_layer": [
+              "65"
+            ],
+            "nozzle_temperature_initial_layer": [
+              "220",
+              "220"
+            ],
+            "fan_max_speed": [
+              "100",
+              "100"
+            ],
+            "fan_min_speed": [
+              "100",
+              "100"
+            ],
+            "overhang_fan_threshold": [
+              "50%"
+            ],
+            "nozzle_temperature": [
+              "220",
+              "220"
+            ],
+            "temperature_vitrification": [
+              "45"
+            ],
+            "slow_down_min_speed": [
+              "20"
+            ],
+            "slow_down_layer_time": [
+              "4"
+            ],
+            "additional_cooling_fan_speed": [
+              "70",
+              "70"
+            ],
+            "filament_start_gcode": [
+              "; filament start gcode\n"
+            ],
+            "compatible_printers": [
+              "Snapmaker U1 (0.4 nozzle)"
+            ],
+            "complete_print_exhaust_fan_speed": [
+              "70"
+            ],
+            "during_print_exhaust_fan_speed": [
+              "70"
+            ],
+            "enable_pressure_advance": [
+              "1",
+              "1"
+            ],
+            "filament_deretraction_speed": [
+              "nil"
+            ],
+            "filament_flow_ratio": [
+              "0.966",
+              "0.966"
+            ],
+            "filament_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "filament_minimal_purge_on_wipe_tower": [
+              "15",
+              "15"
+            ],
+            "filament_multitool_ramming": [
+              "1",
+              "1"
+            ],
+            "filament_multitool_ramming_flow": [
+              "40",
+              "40"
+            ],
+            "filament_multitool_ramming_volume": [
+              "5",
+              "5"
+            ],
+            "filament_retract_length_toolchange": [
+              "5",
+              "5"
+            ],
+            "filament_retraction_speed": [
+              "nil"
+            ],
+            "filament_stamping_distance": [
+              "45"
+            ],
+            "filament_stamping_loading_speed": [
+              "29"
+            ],
+            "filament_vendor": [
+              "Snapmaker"
+            ],
+            "filament_z_hop": [
+              "0.4"
+            ],
+            "filament_z_hop_types": [
+              "Slope Lift",
+              "Slope Lift"
+            ],
+            "graphic_effect_plate_temp": [
+              "65"
+            ],
+            "graphic_effect_plate_temp_initial_layer": [
+              "65"
+            ],
+            "pellet_flow_coefficient": [
+              "0.4157"
+            ],
+            "pressure_advance": [
+              "0.024",
+              "0.024"
+            ],
+            "required_nozzle_HRC": [
+              "0"
+            ],
+            "supertack_plate_temp": [
+              "40"
+            ],
+            "supertack_plate_temp_initial_layer": [
+              "40"
+            ],
+            "filament_load_time": [
+              "2"
+            ],
+            "filament_unload_time": [
+              "2"
+            ]
+          }
+        },
+        "Snapmaker PLA SnapSpeed @U1 - HF-TEST": {
+          "file": "Snapmaker PLA SnapSpeed @U1 - HF-TEST.json",
+          "sha256": "997a6a5e005560e907b290a5de72006224ab8add7e7183cf1e0d1a76362e5d33",
+          "own": {
+            "additional_cooling_fan_speed": [
+              "70",
+              "80"
+            ],
+            "fan_max_speed": [
+              "100",
+              "90"
+            ],
+            "fan_min_speed": [
+              "100",
+              "90"
+            ],
+            "filament_deretraction_speed": [
+              "nil",
+              "31"
+            ],
+            "filament_flow_ratio": [
+              "0.966",
+              "0.95"
+            ],
+            "filament_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "filament_max_volumetric_speed": [
+              "20",
+              "30"
+            ],
+            "filament_minimal_purge_on_wipe_tower": [
+              "15",
+              "20"
+            ],
+            "filament_multitool_ramming_flow": [
+              "30",
+              "35"
+            ],
+            "filament_multitool_ramming_volume": [
+              "5",
+              "6"
+            ],
+            "filament_retract_length_toolchange": [
+              "5",
+              "6"
+            ],
+            "filament_retraction_length": [
+              "1.2",
+              "1.4"
+            ],
+            "filament_retraction_speed": [
+              "nil",
+              "31"
+            ],
+            "filament_settings_id": [
+              "Snapmaker PLA SnapSpeed @U1 - HF-TEST"
+            ],
+            "filament_wipe_distance": [
+              "nil",
+              "3"
+            ],
+            "filament_z_hop_types": [
+              "Slope Lift",
+              "Spiral Lift"
+            ],
+            "from": "User",
+            "inherits": "Snapmaker PLA SnapSpeed @U1",
+            "is_custom_defined": "0",
+            "name": "Snapmaker PLA SnapSpeed @U1 - HF-TEST",
+            "nozzle_temperature": [
+              "220",
+              "210"
+            ],
+            "nozzle_temperature_initial_layer": [
+              "220",
+              "210"
+            ],
+            "pressure_advance": [
+              "0.02",
+              "0.025"
+            ],
+            "version": "2.3.1.2"
+          },
+          "inherits": "Snapmaker PLA SnapSpeed @U1",
+          "chain": [
+            "Snapmaker PLA SnapSpeed @U1",
+            "Snapmaker PLA SnapSpeed @U1 base",
+            "fdm_filament_pla_hs_category",
+            "fdm_filament_common"
+          ],
+          "unresolved": [],
+          "effective": {
+            "activate_air_filtration": [
+              "0"
+            ],
+            "activate_chamber_temp_control": [
+              "0"
+            ],
+            "adaptive_pressure_advance": [
+              "0"
+            ],
+            "adaptive_pressure_advance_bridges": [
+              "0"
+            ],
+            "adaptive_pressure_advance_model": [
+              "0,0,0\n0,0,0"
+            ],
+            "adaptive_pressure_advance_overhangs": [
+              "0"
+            ],
+            "chamber_temperature": [
+              "0"
+            ],
+            "close_fan_the_first_x_layers": [
+              "1"
+            ],
+            "compatible_printers_condition": "",
+            "compatible_prints": [],
+            "compatible_prints_condition": "",
+            "default_filament_colour": [
+              ""
+            ],
+            "dont_slow_down_outer_wall": [
+              "0"
+            ],
+            "enable_overhang_bridge_fan": [
+              "1"
+            ],
+            "filament_diameter": [
+              "1.75"
+            ],
+            "filament_is_high_temperature": [
+              "0"
+            ],
+            "filament_is_support": [
+              "0"
+            ],
+            "filament_long_retractions_when_cut": [
+              "nil"
+            ],
+            "filament_notes": [
+              ""
+            ],
+            "filament_ramming_parameters": [
+              "120 100 6.6 6.8 7.2 7.6 7.9 8.2 8.7 9.4 9.9 10.0| 0.05 6.6 0.45 6.8 0.95 7.8 1.45 8.3 1.95 9.7 2.45 10 2.95 7.6 3.45 7.6 3.95 7.6 4.45 7.6 4.95 7.6"
+            ],
+            "filament_retract_before_wipe": [
+              "nil"
+            ],
+            "filament_retract_lift_above": [
+              "nil"
+            ],
+            "filament_retract_lift_below": [
+              "nil"
+            ],
+            "filament_retract_lift_enforce": [
+              "nil"
+            ],
+            "filament_retract_restart_extra": [
+              "nil"
+            ],
+            "filament_retract_restart_extra_toolchange": [
+              "nil"
+            ],
+            "filament_retract_when_changing_layer": [
+              "nil"
+            ],
+            "filament_retraction_distances_when_cut": [
+              "nil"
+            ],
+            "filament_retraction_minimum_travel": [
+              "nil"
+            ],
+            "filament_shrink": [
+              "100%"
+            ],
+            "filament_shrinkage_compensation_z": [
+              "100%"
+            ],
+            "filament_soluble": [
+              "0"
+            ],
+            "filament_toolchange_delay": [
+              "0"
+            ],
+            "filament_tower_ironing_area": [
+              "4"
+            ],
+            "filament_type": [
+              "PLA"
+            ],
+            "filament_unloading_speed_start": [
+              "100"
+            ],
+            "filament_wipe": [
+              "nil"
+            ],
+            "filament_wipe_distance": [
+              "nil",
+              "3"
+            ],
+            "full_fan_speed_layer": [
+              "0"
+            ],
+            "idle_temperature": [
+              "0"
+            ],
+            "internal_bridge_fan_speed": [
+              "-1"
+            ],
+            "ironing_fan_speed": [
+              "-1"
+            ],
+            "nozzle_temperature_range_high": [
+              "240"
+            ],
+            "nozzle_temperature_range_low": [
+              "190"
+            ],
+            "overhang_fan_speed": [
+              "100"
+            ],
+            "reduce_fan_stop_start_freq": [
+              "1"
+            ],
+            "slow_down_for_layer_cooling": [
+              "1"
+            ],
+            "support_material_interface_fan_speed": [
+              "-1"
+            ],
+            "textured_cool_plate_temp": [
+              "40"
+            ],
+            "textured_cool_plate_temp_initial_layer": [
+              "40"
+            ],
+            "filament_end_gcode": [
+              "; filament end gcode \n"
+            ],
+            "filament_retraction_length": [
+              "1.2",
+              "1.4"
+            ],
+            "filament_loading_speed_start": [
+              "50"
+            ],
+            "filament_loading_speed": [
+              "10"
+            ],
+            "filament_unloading_speed": [
+              "100"
+            ],
+            "filament_cooling_moves": [
+              "2"
+            ],
+            "filament_cooling_initial_speed": [
+              "10"
+            ],
+            "filament_cooling_final_speed": [
+              "3.5"
+            ],
+            "fan_cooling_layer_time": [
+              "100"
+            ],
+            "filament_max_volumetric_speed": [
+              "20",
+              "30"
+            ],
+            "filament_density": [
+              "1.24"
+            ],
+            "filament_cost": [
+              "20"
+            ],
+            "cool_plate_temp": [
+              "60"
+            ],
+            "eng_plate_temp": [
+              "60"
+            ],
+            "hot_plate_temp": [
+              "65"
+            ],
+            "textured_plate_temp": [
+              "65"
+            ],
+            "cool_plate_temp_initial_layer": [
+              "60"
+            ],
+            "eng_plate_temp_initial_layer": [
+              "60"
+            ],
+            "hot_plate_temp_initial_layer": [
+              "65"
+            ],
+            "textured_plate_temp_initial_layer": [
+              "65"
+            ],
+            "nozzle_temperature_initial_layer": [
+              "220",
+              "210"
+            ],
+            "fan_max_speed": [
+              "100",
+              "90"
+            ],
+            "fan_min_speed": [
+              "100",
+              "90"
+            ],
+            "overhang_fan_threshold": [
+              "50%"
+            ],
+            "nozzle_temperature": [
+              "220",
+              "210"
+            ],
+            "temperature_vitrification": [
+              "45"
+            ],
+            "slow_down_min_speed": [
+              "20"
+            ],
+            "slow_down_layer_time": [
+              "4"
+            ],
+            "additional_cooling_fan_speed": [
+              "70",
+              "80"
+            ],
+            "filament_start_gcode": [
+              "; filament start gcode\n"
+            ],
+            "compatible_printers": [
+              "Snapmaker U1 (0.4 nozzle)"
+            ],
+            "complete_print_exhaust_fan_speed": [
+              "70"
+            ],
+            "during_print_exhaust_fan_speed": [
+              "70"
+            ],
+            "enable_pressure_advance": [
+              "0",
+              "1"
+            ],
+            "filament_deretraction_speed": [
+              "nil",
+              "31"
+            ],
+            "filament_flow_ratio": [
+              "0.966",
+              "0.95"
+            ],
+            "filament_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "filament_minimal_purge_on_wipe_tower": [
+              "15",
+              "20"
+            ],
+            "filament_multitool_ramming": [
+              "1",
+              "1"
+            ],
+            "filament_multitool_ramming_flow": [
+              "30",
+              "35"
+            ],
+            "filament_multitool_ramming_volume": [
+              "5",
+              "6"
+            ],
+            "filament_retract_length_toolchange": [
+              "5",
+              "6"
+            ],
+            "filament_retraction_speed": [
+              "nil",
+              "31"
+            ],
+            "filament_stamping_distance": [
+              "45"
+            ],
+            "filament_stamping_loading_speed": [
+              "29"
+            ],
+            "filament_vendor": [
+              "Snapmaker"
+            ],
+            "filament_z_hop": [
+              "0.4"
+            ],
+            "filament_z_hop_types": [
+              "Slope Lift",
+              "Spiral Lift"
+            ],
+            "graphic_effect_plate_temp": [
+              "65"
+            ],
+            "graphic_effect_plate_temp_initial_layer": [
+              "65"
+            ],
+            "pellet_flow_coefficient": [
+              "0.4157"
+            ],
+            "pressure_advance": [
+              "0.02",
+              "0.025"
+            ],
+            "required_nozzle_HRC": [
+              "0"
+            ],
+            "supertack_plate_temp": [
+              "40"
+            ],
+            "supertack_plate_temp_initial_layer": [
+              "40"
+            ],
+            "filament_load_time": [
+              "2"
+            ],
+            "filament_unload_time": [
+              "2"
+            ]
+          }
+        },
+        "Snapmaker PLA SnapSpeed @U1 - STD-TEST": {
+          "file": "Snapmaker PLA SnapSpeed @U1 - STD-TEST.json",
+          "sha256": "7327054a7d796e20751097e3b456aa09592879ee70cc93c549a6423141771c87",
+          "own": {
+            "additional_cooling_fan_speed": [
+              "80",
+              "70"
+            ],
+            "enable_pressure_advance": [
+              "1",
+              "1"
+            ],
+            "fan_max_speed": [
+              "90",
+              "100"
+            ],
+            "fan_min_speed": [
+              "90",
+              "100"
+            ],
+            "filament_deretraction_speed": [
+              "31",
+              "nil"
+            ],
+            "filament_flow_ratio": [
+              "0.95",
+              "0.966"
+            ],
+            "filament_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "filament_max_volumetric_speed": [
+              "30",
+              "40"
+            ],
+            "filament_minimal_purge_on_wipe_tower": [
+              "20",
+              "15"
+            ],
+            "filament_multitool_ramming_flow": [
+              "35",
+              "40"
+            ],
+            "filament_multitool_ramming_volume": [
+              "6",
+              "5"
+            ],
+            "filament_retract_length_toolchange": [
+              "6",
+              "5"
+            ],
+            "filament_retraction_length": [
+              "1.4",
+              "1.2"
+            ],
+            "filament_retraction_speed": [
+              "31",
+              "nil"
+            ],
+            "filament_settings_id": [
+              "Snapmaker PLA SnapSpeed @U1 - STD-TEST"
+            ],
+            "filament_wipe_distance": [
+              "3",
+              "nil"
+            ],
+            "filament_z_hop_types": [
+              "Spiral Lift",
+              "Slope Lift"
+            ],
+            "from": "User",
+            "inherits": "Snapmaker PLA SnapSpeed @U1",
+            "is_custom_defined": "0",
+            "name": "Snapmaker PLA SnapSpeed @U1 - STD-TEST",
+            "nozzle_temperature": [
+              "210",
+              "220"
+            ],
+            "nozzle_temperature_initial_layer": [
+              "210",
+              "220"
+            ],
+            "pressure_advance": [
+              "0.025",
+              "0.024"
+            ],
+            "version": "2.3.1.2"
+          },
+          "inherits": "Snapmaker PLA SnapSpeed @U1",
+          "chain": [
+            "Snapmaker PLA SnapSpeed @U1",
+            "Snapmaker PLA SnapSpeed @U1 base",
+            "fdm_filament_pla_hs_category",
+            "fdm_filament_common"
+          ],
+          "unresolved": [],
+          "effective": {
+            "activate_air_filtration": [
+              "0"
+            ],
+            "activate_chamber_temp_control": [
+              "0"
+            ],
+            "adaptive_pressure_advance": [
+              "0"
+            ],
+            "adaptive_pressure_advance_bridges": [
+              "0"
+            ],
+            "adaptive_pressure_advance_model": [
+              "0,0,0\n0,0,0"
+            ],
+            "adaptive_pressure_advance_overhangs": [
+              "0"
+            ],
+            "chamber_temperature": [
+              "0"
+            ],
+            "close_fan_the_first_x_layers": [
+              "1"
+            ],
+            "compatible_printers_condition": "",
+            "compatible_prints": [],
+            "compatible_prints_condition": "",
+            "default_filament_colour": [
+              ""
+            ],
+            "dont_slow_down_outer_wall": [
+              "0"
+            ],
+            "enable_overhang_bridge_fan": [
+              "1"
+            ],
+            "filament_diameter": [
+              "1.75"
+            ],
+            "filament_is_high_temperature": [
+              "0"
+            ],
+            "filament_is_support": [
+              "0"
+            ],
+            "filament_long_retractions_when_cut": [
+              "nil"
+            ],
+            "filament_notes": [
+              ""
+            ],
+            "filament_ramming_parameters": [
+              "120 100 6.6 6.8 7.2 7.6 7.9 8.2 8.7 9.4 9.9 10.0| 0.05 6.6 0.45 6.8 0.95 7.8 1.45 8.3 1.95 9.7 2.45 10 2.95 7.6 3.45 7.6 3.95 7.6 4.45 7.6 4.95 7.6"
+            ],
+            "filament_retract_before_wipe": [
+              "nil"
+            ],
+            "filament_retract_lift_above": [
+              "nil"
+            ],
+            "filament_retract_lift_below": [
+              "nil"
+            ],
+            "filament_retract_lift_enforce": [
+              "nil"
+            ],
+            "filament_retract_restart_extra": [
+              "nil"
+            ],
+            "filament_retract_restart_extra_toolchange": [
+              "nil"
+            ],
+            "filament_retract_when_changing_layer": [
+              "nil"
+            ],
+            "filament_retraction_distances_when_cut": [
+              "nil"
+            ],
+            "filament_retraction_minimum_travel": [
+              "nil"
+            ],
+            "filament_shrink": [
+              "100%"
+            ],
+            "filament_shrinkage_compensation_z": [
+              "100%"
+            ],
+            "filament_soluble": [
+              "0"
+            ],
+            "filament_toolchange_delay": [
+              "0"
+            ],
+            "filament_tower_ironing_area": [
+              "4"
+            ],
+            "filament_type": [
+              "PLA"
+            ],
+            "filament_unloading_speed_start": [
+              "100"
+            ],
+            "filament_wipe": [
+              "nil"
+            ],
+            "filament_wipe_distance": [
+              "3",
+              "nil"
+            ],
+            "full_fan_speed_layer": [
+              "0"
+            ],
+            "idle_temperature": [
+              "0"
+            ],
+            "internal_bridge_fan_speed": [
+              "-1"
+            ],
+            "ironing_fan_speed": [
+              "-1"
+            ],
+            "nozzle_temperature_range_high": [
+              "240"
+            ],
+            "nozzle_temperature_range_low": [
+              "190"
+            ],
+            "overhang_fan_speed": [
+              "100"
+            ],
+            "reduce_fan_stop_start_freq": [
+              "1"
+            ],
+            "slow_down_for_layer_cooling": [
+              "1"
+            ],
+            "support_material_interface_fan_speed": [
+              "-1"
+            ],
+            "textured_cool_plate_temp": [
+              "40"
+            ],
+            "textured_cool_plate_temp_initial_layer": [
+              "40"
+            ],
+            "filament_end_gcode": [
+              "; filament end gcode \n"
+            ],
+            "filament_retraction_length": [
+              "1.4",
+              "1.2"
+            ],
+            "filament_loading_speed_start": [
+              "50"
+            ],
+            "filament_loading_speed": [
+              "10"
+            ],
+            "filament_unloading_speed": [
+              "100"
+            ],
+            "filament_cooling_moves": [
+              "2"
+            ],
+            "filament_cooling_initial_speed": [
+              "10"
+            ],
+            "filament_cooling_final_speed": [
+              "3.5"
+            ],
+            "fan_cooling_layer_time": [
+              "100"
+            ],
+            "filament_max_volumetric_speed": [
+              "30",
+              "40"
+            ],
+            "filament_density": [
+              "1.24"
+            ],
+            "filament_cost": [
+              "20"
+            ],
+            "cool_plate_temp": [
+              "60"
+            ],
+            "eng_plate_temp": [
+              "60"
+            ],
+            "hot_plate_temp": [
+              "65"
+            ],
+            "textured_plate_temp": [
+              "65"
+            ],
+            "cool_plate_temp_initial_layer": [
+              "60"
+            ],
+            "eng_plate_temp_initial_layer": [
+              "60"
+            ],
+            "hot_plate_temp_initial_layer": [
+              "65"
+            ],
+            "textured_plate_temp_initial_layer": [
+              "65"
+            ],
+            "nozzle_temperature_initial_layer": [
+              "210",
+              "220"
+            ],
+            "fan_max_speed": [
+              "90",
+              "100"
+            ],
+            "fan_min_speed": [
+              "90",
+              "100"
+            ],
+            "overhang_fan_threshold": [
+              "50%"
+            ],
+            "nozzle_temperature": [
+              "210",
+              "220"
+            ],
+            "temperature_vitrification": [
+              "45"
+            ],
+            "slow_down_min_speed": [
+              "20"
+            ],
+            "slow_down_layer_time": [
+              "4"
+            ],
+            "additional_cooling_fan_speed": [
+              "80",
+              "70"
+            ],
+            "filament_start_gcode": [
+              "; filament start gcode\n"
+            ],
+            "compatible_printers": [
+              "Snapmaker U1 (0.4 nozzle)"
+            ],
+            "complete_print_exhaust_fan_speed": [
+              "70"
+            ],
+            "during_print_exhaust_fan_speed": [
+              "70"
+            ],
+            "enable_pressure_advance": [
+              "1",
+              "1"
+            ],
+            "filament_deretraction_speed": [
+              "31",
+              "nil"
+            ],
+            "filament_flow_ratio": [
+              "0.95",
+              "0.966"
+            ],
+            "filament_flow_support": [
+              "standard",
+              "high_flow"
+            ],
+            "filament_minimal_purge_on_wipe_tower": [
+              "20",
+              "15"
+            ],
+            "filament_multitool_ramming": [
+              "1",
+              "1"
+            ],
+            "filament_multitool_ramming_flow": [
+              "35",
+              "40"
+            ],
+            "filament_multitool_ramming_volume": [
+              "6",
+              "5"
+            ],
+            "filament_retract_length_toolchange": [
+              "6",
+              "5"
+            ],
+            "filament_retraction_speed": [
+              "31",
+              "nil"
+            ],
+            "filament_stamping_distance": [
+              "45"
+            ],
+            "filament_stamping_loading_speed": [
+              "29"
+            ],
+            "filament_vendor": [
+              "Snapmaker"
+            ],
+            "filament_z_hop": [
+              "0.4"
+            ],
+            "filament_z_hop_types": [
+              "Spiral Lift",
+              "Slope Lift"
+            ],
+            "graphic_effect_plate_temp": [
+              "65"
+            ],
+            "graphic_effect_plate_temp_initial_layer": [
+              "65"
+            ],
+            "pellet_flow_coefficient": [
+              "0.4157"
+            ],
+            "pressure_advance": [
+              "0.025",
+              "0.024"
+            ],
+            "required_nozzle_HRC": [
+              "0"
+            ],
+            "supertack_plate_temp": [
+              "40"
+            ],
+            "supertack_plate_temp_initial_layer": [
+              "40"
+            ],
+            "filament_load_time": [
+              "2"
+            ],
+            "filament_unload_time": [
+              "2"
+            ]
+          }
+        }
+      }
+    },
+    "machine": {
+      "kind": "machine",
+      "presets": {}
+    }
+  }
+}

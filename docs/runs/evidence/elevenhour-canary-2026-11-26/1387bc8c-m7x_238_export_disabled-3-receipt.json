@@ -1,0 +1,14 @@
+﻿{
+    "commit":  "1387bc8cefde792ed3fe00e93e16623e1c5896e1",
+    "case":  "m7x_238_export_disabled",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "orca_processes_after":  0,
+    "summary":  "SUMMARY: PASS=0 FAIL=1\r\nFAILED: m7x_238_export_disabled",
+    "dispatched_at":  "2026-11-26T07:13:17.2196977+08:00",
+    "scenario_completed_at":  "2026-11-26T07:15:15.8435927+08:00",
+    "suite_completed_at":  "2026-11-26T07:15:16.2151299+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_238_export_disabled.log",
+    "log_sha256":  "605B20B0260E10F7819167456967ED97E6D744811DE6F681394AD5D055263D1C"
+}
