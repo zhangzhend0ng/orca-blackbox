@@ -6,11 +6,13 @@ import argparse
 from decimal import Decimal
 import hashlib
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
 import time
 from types import SimpleNamespace
+from unittest.mock import patch
 from zipfile import ZipFile
 
 import cv2
@@ -20,7 +22,7 @@ HERE = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE / "tests"))
 import m7_common as m7
-from harness import anchors, export_util, process_panel as panel, winutil
+from harness import anchors, process_panel as panel, winutil
 from harness.agent_protocol import MODEL_FIXTURES
 from harness.pilot_param_layer_pair import verify_business
 from m3_common import add_common_args, boot_session
@@ -90,40 +92,40 @@ def set_pair(session, current, wanted, edits_log):
         print(f"[m7x254] {row}", flush=True)
 
 
-def export_plate(session, output):
-    require(not output.exists(), "Export already exists")
-    sent, _ = m7.file_menu_dispatch(session, "Export G-code", via="Export")
-    require(sent, "Export G-code menu could not dispatch")
-    dialog = m7.wait_dialog(session.pid, timeout_s=15, title_substr="Save G-code file as")
-    require(dialog, "Export dialog did not appear")
-    hwnd = dialog[3]
-    edit = export_util.find_edit(hwnd)
-    require(edit and winutil._window_pid(edit) == session.pid, "Export filename unavailable")
-    winutil.select_all(edit)
-    winutil.msg_text(edit, str(output))
-    require(winutil.edit_text(edit, size=512) == str(output), "Wrong export filename")
-    # The native chooser sometimes ignores its first IDOK while it initializes.
-    # Retry only while this exact owned dialog still contains our unused path.
-    for attempt in range(3):
-        if not winutil.user32.IsWindowVisible(hwnd):
-            break
-        require(winutil._window_pid(hwnd) == session.pid and winutil.edit_text(edit, size=512) == str(output),
-                "Export dialog changed during confirmation")
-        winutil._send_msg(hwnd, m7.WM_COMMAND_MSG, 1, 0)
-        if export_util.wait_file(output, timeout_s=6):
-            break
-        print(f"[m7x254] export confirmation {attempt + 1}: visible={winutil.user32.IsWindowVisible(hwnd)} "
-              f"exists={output.exists()}", flush=True)
-    require(export_util.wait_file(output, timeout_s=30), f"Missing new GUI export: {output.name}")
-    require(not winutil.user32.IsWindowVisible(hwnd), "Export dialog remained open")
+def retain_plate(session, private_temp, project, output, started_ns):
+    # PartPlate uses a process-specific model directory and a per-plate PID filename.
+    # Read the slicer's own output while its process still owns the active Preview.
+    pattern = f"snapmaker_orca_model/*/*#{session.pid}#*/Metadata/.{session.pid}.*.gcode"
+    deadline = time.monotonic() + 25
+    while time.monotonic() < deadline and session.alive():
+        matches = list(private_temp.glob(pattern))
+        require(len(matches) <= 1, "Ambiguous GUI plate in the fresh session")
+        if matches:
+            path = matches[0]
+            info = path.stat()
+            if info.st_mtime_ns >= started_ns and 0 < info.st_size <= 10_000_000:
+                raw = path.read_bytes()
+                if (len(raw) == info.st_size and path.stat().st_mtime_ns == info.st_mtime_ns
+                        and b"; CONFIG_BLOCK_END" in raw and b"; EXECUTABLE_BLOCK_END" in raw):
+                    with output.open("xb") as stream:
+                        stream.write(raw)
+                    return {"pid": session.pid, "plate": str(path.relative_to(private_temp)),
+                            "slice_started_ns": started_ns, "modified_ns": info.st_mtime_ns,
+                            "sha256": hashlib.sha256(raw).hexdigest(),
+                            "project_sha256": hashlib.sha256(project.read_bytes()).hexdigest()}
+        time.sleep(0.4)
+    raise ValueError(f"No newly generated complete GUI plate for PID {session.pid} in {private_temp}")
 
 
 def slice_project(args, work, project, stage, results, analysis):
-    session = load_sphere(args, work, stage + "-profile", project)
+    private_temp = work / (stage + "-temp")
+    private_temp.mkdir()
+    with patch.dict(os.environ, {"TMP": str(private_temp), "TEMP": str(private_temp)}):
+        session = load_sphere(args, work, stage + "-profile", project)
     try:
         quality(session)
+        started_ns = time.time_ns()
         require(m7.op_slice(session, results, key=stage + " slice", timeout_s=120), f"{stage} slice failed")
-        export_plate(session, work / (stage + ".gcode"))
         score, *_ = anchors.wait_for(session, "tab_preview_active", timeout_s=2)
         if score < anchors.MATCH_THRESHOLD:
             ok, score = anchors.click_and_verify(session, "tab_preview_inactive", "tab_preview_active")
@@ -132,6 +134,7 @@ def slice_project(args, work, project, stage, results, analysis):
         require(cv2.imwrite(str(work / (stage + "-preview.png")), image), "Preview capture failed")
         analysis[stage + "_preview"] = {"score": score, "colored_fraction": anchors.has_colored_content(image)}
         require(analysis[stage + "_preview"]["colored_fraction"] > 0, "Empty viewport")
+        analysis[stage + "_plate"] = retain_plate(session, private_temp, project, work / (stage + ".gcode"), started_ns)
     finally:
         session.close()
 
