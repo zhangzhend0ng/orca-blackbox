@@ -43,6 +43,8 @@ Mac 后台工程编辑用例从原始立方体切片开始，以新名字编辑�
 
 #265 风扇、#276 流量的独立复算，以及 `win11-test` 上 GLM‑5.4 的后续编辑实测，见[三机复核记录](docs/runs/glm54-multimachine-2026-11-24.md)。 2026‑11‑25 九小时三机跑批的结论、逐项对照、各动作耗时、判据反例、复跑入口和证据包见[九小时运行记录](docs/runs/glm54-nine-hour-run-2026-11-25.md)。
 
+九小时跑批后的三机复验新增一条飞书原用例完整实证。[#47 色盘取消](docs/runs/evidence/ninehour-2026-11-25/row-47-hyperv/README.md)提供独立的客机复跑入口与逐步读数。[#264 实体机验收](docs/runs/evidence/ninehour-2026-11-25/row-264-fdm-followup.md)记录错误 G-code 的负对照和仍未满足的预期。[Mac 壁环重开](docs/runs/evidence/ninehour-2026-11-25/mac/repair-README.md)记录三个独立进程的壁环读值。
+
 三业务线并行探索入口见[业务pilot](docs/V3_BUSINESS_PILOTS.md)（下文的「87 条」是 11-17 时点的登记册数；11-21 冻结为 89 条登记，见[台账](docs/V3_MIGRATION_LEDGER.md)）
 
 首个真实 Script 的接入与验证方式见 [m0 Script adapter](docs/V3_SCRIPT_ADAPTER.md)，客机入口为 `runner/hv_go.ps1 -V3 -Cases m0_boot_check`；结果单独记 SHADOW，不进入发布 GREEN。
