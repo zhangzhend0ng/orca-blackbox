@@ -42,3 +42,11 @@ def replay_clone(directory: Path, prefix: str) -> dict:
     if filled is None:
         result["checks"]["fill_evidence_present"] = False
     return result
+
+
+def replay_delete_plate(directory: Path, prefix: str) -> dict:
+    from plate_reserve_oracle import verify_delete_plate
+
+    _, read = _projects(directory, prefix)
+    result = verify_delete_plate(read("before.3mf"), read("after.3mf"))
+    return {"checks": {"deleted_selected_plate_and_preserved_objects": True}, "plate_membership": result}

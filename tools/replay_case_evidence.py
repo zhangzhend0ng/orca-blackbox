@@ -24,6 +24,7 @@ ADAPTERS = {
     "m7x_239_delete_all": replay_plate_context.replay_delete_all,
     "m7x_240_arrange": replay_plate_layout.replay_arrange,
     "m7x_241_orient": replay_plate_layout.replay_orient,
+    "m7x_242_delete_plate": replay_plate_layout.replay_delete_plate,
     "m7x_243_add_primitive": replay_plate_context.replay_add_primitive,
     "m7x_244_add_model": replay_plate_import.replay,
     "m7x_245_clone_fill": replay_plate_layout.replay_clone,

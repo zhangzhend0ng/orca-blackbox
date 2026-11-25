@@ -18,7 +18,7 @@ def _box(width, depth, height, *, tipped=False):
         # Asymmetric taper in Y; the flat side at +X is narrower than the base.
         top = [(-x, -y*.55, height), (x, -y*.55, height),
                (x, y*.35, height), (-x, y*.35, height)]
-        return [(z-height/2, y, x*-1+width/2) for x, y, z in bottom + top]
+        return [(z-height/2, y, width/2-x) for x, y, z in bottom + top]
     return bottom + [(x, y, height) for x, y, _ in bottom]
 
 
@@ -29,7 +29,7 @@ def create_fixture(template, output, case):
               ('Charlie', (34, 29, 20), (142, 133))],
         241: [('Alpha', (55, 33, 11), (92, 132)),
               ('Bravo', (62, 39, 15), (176, 132))],
-        245: [('Alpha', (42, 38, 24), (135, 135))],
+        245: [('Alpha', (60, 60, 24), (135, 135))],
     }
     model_name = '3D/3dmodel.model'
     config_name = 'Metadata/model_settings.config'
@@ -48,12 +48,11 @@ def create_fixture(template, output, case):
         object_seed = config.getElementsByTagName('object')[0]
         # These are the template's per-instance tables. Preserve all plate
         # metadata, including the selected preset and thumbnail references.
-        for element in list(model.getElementsByTagName('object')) + list(build.getElementsByTagName('item')) + list(
-            config.getElementsByTagName('object')
-        ) + list(plate.getElementsByTagName('model_instance')) + list(assemble.getElementsByTagName('assemble_item')) + list(
-            rels.getElementsByTagName('Relationship')
-        ):
-            element.parentNode.removeChild(element)
+        for parent, tag in [(model_resources, 'object'), (build, 'item'),
+                            (config, 'object'), (plate, 'model_instance'),
+                            (assemble, 'assemble_item'), (rels, 'Relationship')]:
+            for element in list(parent.getElementsByTagName(tag)):
+                element.parentNode.removeChild(element)
 
         for index, (name, dimensions, (x, y)) in enumerate(specifications[case], 1):
             part_id = str(index)

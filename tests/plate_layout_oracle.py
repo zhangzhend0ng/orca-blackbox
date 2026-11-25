@@ -180,9 +180,22 @@ def _axis_lengths(item):
     return tuple(math.hypot(*axis) for axis in item.basis)
 
 
+def _dot(left, right):
+    return sum(a * b for a, b in zip(left, right))
+
+
 def _same_mesh(left, right):
-    return left.shape == right.shape and all(
-        abs(a - b) <= TOL_MM for a, b in zip(_axis_lengths(left), _axis_lengths(right)))
+    # Matching the Gram matrix also rejects changes such as shear with
+    # unchanged axis lengths. An XY move or a proper rotation preserves it.
+    def handedness(item):
+        a, b, c = item.basis
+        normal = (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
+        return _dot(normal, c)
+
+    return (left.shape == right.shape and handedness(left) * handedness(right) > TOL_MM
+            and all(abs(_dot(a, b) - _dot(c, d)) <= TOL_MM
+                    for a, c in zip(left.basis, right.basis)
+                    for b, d in zip(left.basis, right.basis)))
 
 
 def _aligned(before, after):
@@ -214,3 +227,145 @@ def verify_arrange(before, after):
         'before_bounds_mm': {item.name: item.box for item in first},
         'after_bounds_mm': {item.name: item.box for item in last},
     }
+
+
+def _plate_normal(item):
+    lengths = _axis_lengths(item)
+    if min(lengths) <= TOL_MM or any(
+        abs(_dot(a, b)) > TOL_MM for a, b in combinations(item.basis, 2)
+    ):
+        raise ValueError('cannot recover the plate direction from a singular or sheared transform')
+    return tuple(axis[2] / length for axis, length in zip(item.basis, lengths))
+
+
+def _contact_area(item):
+    return sum(abs(_cross(*triangle)) / 2 for triangle in item.contact_faces)
+
+
+def verify_orient(before, after):
+    first_bed, first = _project(before)
+    last_bed, last = _project(after)
+    aligned = _aligned(first, last)
+    readings = {}
+    for source, adjusted in aligned:
+        initial, final = _plate_normal(source), _plate_normal(adjusted)
+        tilt = math.degrees(math.acos(max(-1, min(1, _dot(initial, final)))))
+        area_before, area_after = _contact_area(source), _contact_area(adjusted)
+        readings[source.name] = {
+            'before_plate_normal_in_model_axes': initial, 'after_plate_normal_in_model_axes': final,
+            'tilt_deg': tilt, 'before_contact_mm2': area_before, 'after_contact_mm2': area_after,
+        }
+    return {
+        'checks': {
+            'same_two_objects': _same_named(first, last, 2)
+            and all(_same_mesh(a, b) for a, b in aligned),
+            'each_orientation_changed': len(readings) == 2
+            and all(row['tilt_deg'] > 0.1 for row in readings.values()),
+            'each_contact_area_increased': len(readings) == 2
+            and all(row['after_contact_mm2'] > row['before_contact_mm2'] + AREA_TOL
+                    for row in readings.values()),
+            'each_grounded_and_in_printable_volume': first_bed == last_bed and len(first) == len(last) == 2
+            and all(abs(item.box[2][0]) <= TOL_MM for item in first)
+            and all(abs(item.box[2][0]) <= TOL_MM and last_bed.contains(item) for item in last),
+        },
+        'objects': readings,
+    }
+
+
+def _rectangle(polygon):
+    if len(polygon) != 4:
+        return None
+    xs = sorted({point[0] for point in polygon})
+    ys = sorted({point[1] for point in polygon})
+    if len(xs) != 2 or len(ys) != 2:
+        return None
+    return xs[0], ys[0], xs[1], ys[1]
+
+
+def _find_square(home, obstacles, side):
+    # Forbidden centres are axis-aligned open rectangles. Test each X
+    # boundary and each open interval between boundaries, where the same
+    # set of rectangles block Y. Include boundaries to catch exact fits.
+    inset = side / 2 - TOL_MM
+    x0, y0, x1, y1 = home
+    x0, y0, x1, y1 = x0 + inset, y0 + inset, x1 - inset, y1 - inset
+    if x0 > x1 or y0 > y1:
+        return None
+    blocked = [(a - inset, b - inset, c + inset, d + inset) for a, b, c, d in obstacles]
+    cuts = sorted({x0, x1, *(v for a, _, c, _ in blocked for v in (a, c) if x0 < v < x1)})
+    samples = [*cuts, *((a + b) / 2 for a, b in zip(cuts, cuts[1:]))]
+    for x in samples:
+        y = y0
+        for low, high in sorted((b, d) for a, b, c, d in blocked if a < x < c):
+            if low >= y:
+                break
+            y = max(y, high)
+        if y <= y1:
+            return x, y
+    return None
+
+
+def _fill_measurement(bed, original, copies):
+    base = _rectangle(bed.polygon)
+    rectangles = [_rectangle(_hull(v[:2] for v in item.vertices)) for item in copies]
+    source = _rectangle(_hull(v[:2] for v in original.vertices))
+    if bed.exclusion or base is None or source is None or any(rect is None for rect in rectangles):
+        return {'status': 'unsupported_rectangular_fixture'}
+    for item, (x0, y0, x1, y1) in zip(copies, rectangles):
+        if abs(_contact_area(item) - (x1 - x0) * (y1 - y0)) > AREA_TOL:
+            return {'status': 'unsupported_rectangular_contact'}
+    x0, y0, x1, y1 = source
+    # At every yaw the source rectangle contains this axis-aligned square
+    # at its centre. If that smaller square cannot fit, no extra copy can
+    # fit, even with zero clearance and freely chosen yaw.
+    side = min(x1 - x0, y1 - y0) / math.sqrt(2)
+    empty = _find_square(base, rectangles, side)
+    return {'status': 'saturated' if empty is None else 'saturation_not_proven',
+            'necessary_square_side_mm': side, 'unblocked_square_center_mm': empty}
+
+
+def verify_clone(before, cloned, filled=None):
+    first_bed, first = _project(before)
+    cloned_bed, second = _project(cloned)
+    if len(first) != 1:
+        raise ValueError('expected one source object before cloning')
+    source, = first
+    count = len(second)
+    original = second[0] if count else None
+    copy = second[1] if count == 2 else None
+    same_original = original is not None and source.name == original.name and _same_mesh(source, original)
+    original_pose = same_original and all(math.dist(a, b) <= TOL_MM
+                                          for a, b in zip(source.basis, original.basis))
+    pairs = _pairs(second)
+    checks = {
+        'exactly_one_copy_added': count == 2 and first_bed == cloned_bed,
+        'original_geometry_and_pose_preserved': original_pose,
+        'copy_geometry_matches': copy is not None and _same_mesh(source, copy),
+        'clone_is_separately_placed': count == 2 and len(pairs) == 1 and not pairs[0]['overlap']
+        and all(cloned_bed.contains(item) for item in second),
+        'fill_adds_copies': False,
+        'fill_copies_match': False,
+        'fill_copies_nonoverlapping_and_in_bed': False,
+        'fill_saturation_verified': False,
+    }
+    result = {
+        'checks': checks, 'clone_count': count, 'clone_pairs': pairs,
+        'source_bounds_mm': source.box, 'cloned_bounds_mm': [item.box for item in second],
+        'fill': {'status': 'missing_saved_fill'},
+    }
+    if filled is not None:
+        final_bed, final = _project(filled)
+        checks['fill_adds_copies'] = len(final) > count == 2
+        checks['fill_copies_match'] = bool(final) and all(_same_mesh(source, item) for item in final)
+        checks['fill_copies_nonoverlapping_and_in_bed'] = (
+            final_bed == cloned_bed and len(final) > 2
+            and all(final_bed.contains(item) for item in final)
+            and not any(pair['overlap'] for pair in _pairs(final))
+        )
+        measurement = _fill_measurement(final_bed, source, final)
+        checks['fill_saturation_verified'] = (
+            checks['fill_copies_match'] and checks['fill_copies_nonoverlapping_and_in_bed']
+            and measurement['status'] == 'saturated'
+        )
+        result['fill'] = {'count': len(final), **measurement}
+    return result
