@@ -32,9 +32,10 @@ from tools.replay_evidence_files import verified_part
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from export_io_oracle import plate_object_layout, sliced_expectation_gaps
-from file_io_replay_support import (SETTINGS, as_recorded, changed_share, filament_used, first_layer,
-                                    flattering, gcode, manifest, moved_project, png, project, refused, seconds,
-                                    shows_picture, sliced, screenshots, work_directories, zipped)
+from file_io_replay_support import (SETTINGS, as_recorded, changed_share, close, filament_used, first_layer,
+                                    flattering, gcode, guard_dialogs, guard_parts, guards_answered, manifest,
+                                    moved_project, png, presets_match, project, refused, seconds, shows_picture,
+                                    sliced, screenshots, work_directories, zipped)
 # the readings the #236 replay gives an exported G-code, applied here to the one inside each archive
 from tools.replay_gcode_export import (STRUCTURE, TIES, _agrees, _join, _shifted, _structure, _ties, _totals,
                                        _without_layer)
@@ -101,12 +102,6 @@ def _inside(inner, outer, tolerance=1e-3):
             and inner[2] <= outer[2] + tolerance and inner[3] <= outer[3] + tolerance)
 
 
-def _near(first, second, tolerance):
-    """Whether two boxes of one shape, here the archive's [xmin, ymin, xmax, ymax] and the reader's
-    (xmin, ymin, xmax, ymax), lie within `tolerance` of each other on every side."""
-    return len(first) == len(second) == 4 and all(abs(a - b) <= tolerance for a, b in zip(first, second))
-
-
 def _notes(plate):
     """The time and filament notes of a G-code's trailer: the note, its seconds and the millimetres
     each extruder used."""
@@ -140,7 +135,8 @@ def _sample(box, plate, saved):
         and len(drawn) == len(objects) and all(
             isinstance(entry, dict) and entry.get("name") in objects
             and _inside(entry.get("bbox", []), _foot(objects[entry["name"]])) for entry in drawn)
-        and _near(pattern.get("bbox_all", []), first["box"], 1.0),
+        # the first layer's extrusion lies over the pattern the archive describes, a millimetre apart at most
+        and close(pattern.get("bbox_all"), first["box"], 1.0),
         "same_application_throughout": all(versions) and len(set(versions)) == 1,
     }
 
@@ -148,11 +144,6 @@ def _sample(box, plate, saved):
 def _foot(item):
     """An object's box on the bed as the archive writes one: [xmin, ymin, xmax, ymax]."""
     return [item["box"][0], item["box"][2], item["box"][1], item["box"][3]]
-
-
-def _dialogs(analysis):
-    dialogs = analysis.get("memory_guard_dialogs")
-    return dialogs if isinstance(dialogs, list) else []
 
 
 def _waited(block):
@@ -174,27 +165,6 @@ def _named_after_time(plate, receipt):
     return isinstance(default, str) and default.endswith(".gcode") and bool(token) and token in default
 
 
-def _presets(recorded, settings):
-    """Whether every preset the case recorded is the saved project's setting (the first of a list)."""
-    if not isinstance(recorded, dict) or not recorded:
-        return False
-    for key, value in recorded.items():
-        held = settings.get(key)
-        if isinstance(held, list):
-            held = held[0] if held else None
-        if key not in settings or held != value:
-            return False
-    return True
-
-
-def _close(first, second, tolerance):
-    """Whether two readings of numbers, or lists of them of one shape, lie within `tolerance` everywhere."""
-    if isinstance(first, (list, tuple)) or isinstance(second, (list, tuple)):
-        return (isinstance(first, (list, tuple)) and isinstance(second, (list, tuple)) and len(first) == len(second)
-                and all(_close(a, b, tolerance) for a, b in zip(first, second)))
-    return isinstance(first, (int, float)) and isinstance(second, (int, float)) and abs(first - second) <= tolerance
-
-
 def _layout(recorded, saved):
     """Whether the recorded plate objects are what the project holds, name for name, triangle count and
     bounds; the shape it names each is only asked to be a word."""
@@ -205,7 +175,7 @@ def _layout(recorded, saved):
     key = lambda row: (str(row.get("name")), row.get("triangles") if isinstance(row.get("triangles"), int) else -1)  # noqa: E731
     theirs = sorted(recorded, key=key)
     return (len(theirs) == len(mine) and all(
-        key(row) == (name, count) and _close(row.get("bounds_mm"), bounds, 1e-3)
+        key(row) == (name, count) and close(row.get("bounds_mm"), bounds, 1e-3)
         for row, (name, count, bounds) in zip(theirs, mine))
         and all(isinstance(row.get("shape"), str) and row["shape"] for row in recorded))
 
@@ -227,27 +197,6 @@ def _receipt(receipt, name, bare, raw, shown):
             and receipt.get("dialog_closed") is True and receipt.get("app_alive") is True
             and any(isinstance(group, dict) and FILTER in (group.get("items") or []) for group in types)
             and receipt.get("dialog_image") == shown)
-
-
-def _guards(analysis, raw, kept, log):
-    """Every guard dialog the case reports was answered and left closed, its picture was kept and is
-    a picture of the recorded size, and the receipt-hashed case log tells of as many as the record."""
-    dialogs = _dialogs(analysis)
-    told = log.count("memory guard dialog:")
-    if analysis.get("guard_failures", 0) != 0 or len(dialogs) != told or told != log.count("memory guard answered:"):
-        return False
-    for dialog in dialogs:
-        shot = dialog.get("screenshot") if isinstance(dialog, dict) else None
-        if not isinstance(dialog, dict) or dialog.get("closed") is not True or shot not in kept:
-            return False
-        try:
-            size = png(raw[shot])
-        except ValueError:
-            return False
-        if (not isinstance(dialog.get("image"), dict) or dialog["image"] != {
-                "width_px": size["width"], "height_px": size["height"]} or size["gray_levels"] < 32):
-            return False
-    return True
 
 
 def _extension(analysis, label):
@@ -280,7 +229,7 @@ def _record(analysis, raw, log, work, readings, gaps, comparison, layouts, boxes
         and [results.get(clause) for clause in CLAUSES] == ["PASS"] * len(CLAUSES)
         and recorded == gaps and not any(gaps.values()),
         "recorded_presets_match_projects": all(
-            _presets(blocks[label].get("presets"), saved[label]["settings"]) for label in SAMPLES),
+            presets_match(blocks[label].get("presets"), saved[label]["settings"]) for label in SAMPLES),
         "recorded_objects_match_projects": all(
             layouts[label] is not None and as_recorded(layouts[label]["objects"]) == blocks[label].get("plate_objects")
             and _layout(blocks[label].get("plate_objects"), saved[label]) for label in SAMPLES),
@@ -293,7 +242,7 @@ def _record(analysis, raw, log, work, readings, gaps, comparison, layouts, boxes
             _named_after_time(plates[label], exports[label]) for label in SAMPLES),
         "editor_left_running_after_each_export": all(
             blocks[label].get("editor_after_export") == {"alive": True, "dialog": None} for label in SAMPLES),
-        "guard_dialogs_answered": _guards(analysis, raw, kept, log),
+        "guard_dialogs_answered": guards_answered(analysis, raw, kept, log),
         "size_line_is_in_the_case_log": sizes == (
             len(raw[SAMPLES["simple"][1]]), len(raw[SAMPLES["complex"][1]]),
             len(boxes["simple"]["gcode"] or b""), len(boxes["complex"]["gcode"] or b"")),
@@ -316,9 +265,7 @@ def _read(directory, prefix):
     parts = [part for label in SAMPLES for part in (SAMPLES[label][0], SAMPLES[label][1])]
     parts += [SAMPLES[label][3] + part for label in SAMPLES for part in PICTURES]
     # a guard dialog's screenshot is read when the harvest kept it; one that is missing fails the reading
-    parts += [dialog["screenshot"] for dialog in _dialogs(analysis)
-              if isinstance(dialog, dict) and isinstance(dialog.get("screenshot"), str)
-              and dialog["screenshot"] in listed and dialog["screenshot"] not in parts]
+    parts += [part for part in guard_parts(analysis, listed) if part not in parts]
     try:
         paths = {part: verified_part(directory, prefix, entries, part) for part in parts}
         raw = {part: path.read_bytes() for part, path in paths.items()}
@@ -381,7 +328,7 @@ def _read(directory, prefix):
     if missing:
         raise ValueError(f"readings dropped: {missing}")
     report = {"samples": {}, "size_comparison": comparison, "screen_changes": changes,
-              "guard_dialogs": len(_dialogs(analysis)), "work_directories": work, "failed": list(_failed(checks))}
+              "guard_dialogs": len(guard_dialogs(analysis)), "work_directories": work, "failed": list(_failed(checks))}
     for label, (_, name, _, _) in SAMPLES.items():
         plate, box, facts = plates[label], boxes[label], readings[label] or {}
         report["samples"][label] = {

@@ -237,6 +237,22 @@ def with_project_settings(raw: bytes, edit) -> bytes:
     return zipped(files)
 
 
+def emptied(raw: bytes) -> bytes:
+    """The project with nothing on its plate: no build item, no object, no instance."""
+
+    def no_model(root):
+        root.find(CORE + 'build').clear()
+
+    def no_objects(root):
+        for row in root.findall('object'):
+            root.remove(row)
+        for plate in root.findall('plate'):
+            for row in plate.findall('model_instance'):
+                plate.remove(row)
+
+    return with_settings(with_model(raw, no_model), no_objects)
+
+
 def at_origin(item: dict) -> tuple:
     """An object's triangles moved so that its box starts at the origin: one mesh placed twice over
     compares equal this way, whatever the plate did to it."""
@@ -740,6 +756,56 @@ def screenshots(raw: dict, recorded, names: tuple, dialog: str) -> dict:
 def as_recorded(value):
     """A reading as the GUI's analysis.json holds it: tuples and other sequences become lists."""
     return json.loads(json.dumps(value))
+
+
+# --- what a case records of presets and of guard dialogs ---------------------------
+
+def guard_dialogs(analysis: dict) -> list:
+    """The guard dialogs a case recorded, as a list whatever it recorded."""
+    dialogs = analysis.get('memory_guard_dialogs')
+    return dialogs if isinstance(dialogs, list) else []
+
+
+def guard_parts(analysis: dict, listed) -> list:
+    """The screenshots of the recorded guard dialogs that the harvest lists, each once."""
+    return list(dict.fromkeys(dialog['screenshot'] for dialog in guard_dialogs(analysis)
+                              if isinstance(dialog, dict) and isinstance(dialog.get('screenshot'), str)
+                              and dialog['screenshot'] in listed))
+
+
+def presets_match(recorded, settings) -> bool:
+    """Whether every preset a case recorded is the saved project's setting (the first of a list)."""
+    if not isinstance(recorded, dict) or not recorded:
+        return False
+    for key, value in recorded.items():
+        held = settings.get(key)
+        if isinstance(held, list):
+            held = held[0] if held else None
+        if key not in settings or held != value:
+            return False
+    return True
+
+
+def guards_answered(analysis, raw: dict, kept, log: str) -> bool:
+    """Whether every guard dialog a case reports was answered and left closed, its picture was kept
+    and is a picture of the recorded size, and the receipt-hashed case log tells of as many as the
+    record. `raw` and `kept` are the verified parts by name and the names that were verified."""
+    dialogs = guard_dialogs(analysis)
+    told = log.count('memory guard dialog:')
+    if analysis.get('guard_failures', 0) != 0 or len(dialogs) != told or told != log.count('memory guard answered:'):
+        return False
+    for dialog in dialogs:
+        shot = dialog.get('screenshot') if isinstance(dialog, dict) else None
+        if not isinstance(dialog, dict) or dialog.get('closed') is not True or shot not in kept:
+            return False
+        try:
+            size = png(raw[shot])
+        except (ValueError, KeyError):
+            return False
+        if (not isinstance(dialog.get('image'), dict) or dialog['image'] != {
+                'width_px': size['width'], 'height_px': size['height']} or size['gray_levels'] < 32):
+            return False
+    return True
 
 
 def manifest(directory, prefix) -> list:

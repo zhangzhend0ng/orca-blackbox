@@ -43,9 +43,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from import_stl_oracle import listed_object_names, stl_filter_label, verify_imported, verify_moved, verify_rotated
 from file_io_replay_support import (CORE, as_recorded, at_origin, blank_png, box, changed_share, close, compose,
-                                    faces, flattering, grow, item_transform, manifest, moved_project, on_the_bed,
-                                    paired, png, project, refused, shift, stl, stl_bytes, with_item_transform,
-                                    with_model, with_project_settings, with_settings, work_directories)
+                                    emptied, faces, flattering, grow, item_transform, manifest, moved_project,
+                                    on_the_bed, paired, png, project, refused, shift, stl, stl_bytes,
+                                    with_item_transform, with_model, with_project_settings, with_settings,
+                                    work_directories)
 
 CASE = 227
 FIXTURE = ROOT / "fixtures" / "agent_layer_cube.3mf"      # the U1 0.8 template the run starts from
@@ -436,22 +437,6 @@ def _tetrahedron() -> bytes:
     return stl_bytes(bytes(80), [(a, c, b), (a, b, d), (a, d, c), (b, c, d)])
 
 
-def _emptied(raw: bytes) -> bytes:
-    """The project with nothing on its plate: no build item, no object, no instance."""
-    def clear_model(root):
-        for item in root.findall(f"{CORE}build/{CORE}item"):
-            root.find(f"{CORE}build").remove(item)
-
-    def clear_settings(root):
-        for row in root.findall("object"):
-            root.remove(row)
-        for plate in root.findall("plate"):
-            for row in plate.findall("model_instance"):
-                plate.remove(row)
-
-    return with_settings(with_model(raw, clear_model), clear_settings)
-
-
 def _twice(raw: bytes) -> bytes:
     """The project with a second copy of its only object beside it, as a second import would leave it."""
     second = "9"
@@ -527,7 +512,7 @@ def _stand_ins(raw) -> list:
     return [
         # the run did not start from the template: its first saved project already holds the import
         ("start_replaced_rejected", {"replace": {START: imported}}),
-        ("empty_plate_rejected", {"replace": {IMPORTED: _emptied(raw[START])}}),
+        ("empty_plate_rejected", {"replace": {IMPORTED: emptied(raw[START])}}),
         # a 30 mm cube that calls itself cube_20mm.stl, imported faithfully
         ("thirty_mm_cube_rejected", {"replace": {
             SOURCE: _cube_stl(30.0),
