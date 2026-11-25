@@ -53,7 +53,7 @@ class Rig:
         monkeypatch.setattr(cases, 'capture_window', lambda hwnd, path: self.images.append(Path(path).name)
                             or {'width_px': 800, 'height_px': 600})
         monkeypatch.setattr(cases.time, 'sleep', lambda seconds: None)
-        self.session = SimpleNamespace(pid=SESSION_PID, alive=lambda: True)
+        self.session = SimpleNamespace(pid=SESSION_PID, hwnd=77, alive=lambda: True)
 
     def dispatch(self, session, item, expect_dialog=False, via=None, timeout_s=12.0, *, inspect_enabled=False):
         self.calls.append(('dispatch', item, via, expect_dialog))
@@ -979,7 +979,7 @@ class Bundle:
         self.chooser_closes, self.refuse = chooser_closes, refuse
         self.visible, self.calls, self.editing, self.images = set(), [], {}, []
         self.words, self.folder, self.kind, self.ticked, self.extra = {}, None, None, set(), {}
-        self.flow_shown = set()
+        self.flow_shown, self.stubborn = set(), False
         self.import_flow = [('Overwrite config', 'A config exists with the same name: 0.20mm. Do you want to overwrite it?', 'Yes'),
                             ('Import result', 'There are 1 configs imported. (Only non-system and compatible configs)', 'OK')]
         ticking(monkeypatch)
@@ -1001,7 +1001,7 @@ class Bundle:
                             or {'width_px': 572, 'height_px': 370})
         monkeypatch.setattr(cases, '_read_pixels', lambda hwnd: (self.words.get(hwnd), None))
         monkeypatch.setattr(m7, 'file_menu_dispatch', self.dispatch)
-        self.session = SimpleNamespace(pid=SESSION_PID, alive=lambda: True)
+        self.session = SimpleNamespace(pid=SESSION_PID, hwnd=77, alive=lambda: True)
 
     def controls(self, hwnd):
         if hwnd in self.extra:
@@ -1104,7 +1104,7 @@ class Bundle:
                 self.visible.add(CHOOSER)
             else:
                 self.message('Snapmaker Orca - Info', 'Please select at least one printer or filament.', 'Yes')
-        elif control['text'] == 'Cancel':
+        elif control['text'] == 'Cancel' and not self.stubborn:  # a dialog that keeps refusing
             self.visible.discard(BUNDLE)
 
     def select_folder(self):
@@ -1124,7 +1124,7 @@ class Bundle:
 
     def send(self, hwnd, msg, wparam, lparam):
         self.calls.append(('send', hwnd, msg, wparam))
-        if msg == cases.WM_CLOSE:
+        if msg == cases.WM_CLOSE and not self.stubborn:
             self.visible.discard(hwnd)
         elif msg == 0x0111 and wparam == 1 and hwnd == CHOOSER and self.chooser_closes:
             self.select_folder()
@@ -1296,6 +1296,43 @@ def test_import_closes_and_reports_a_dialog_it_does_not_know(monkeypatch, tmp_pa
     assert ('send', next(iter(rig.extra)), cases.WM_CLOSE, 0) in rig.calls and rig.visible == set()
 
 
+def test_nothing_is_clicked_when_no_dialog_of_the_application_is_left(monkeypatch, tmp_path):
+    rig = Bundle(monkeypatch, tmp_path)
+    monkeypatch.setattr(cases.winutil.user32, 'IsWindowEnabled', lambda hwnd: True)
+    monkeypatch.setattr(cases.winutil, 'screen_grab', lambda: (4, 3, bytes(48)))
+    receipt = cases.leave_no_dialog(rig.session, tmp_path, {}, cases.BUNDLE_DIALOG, key='survey_dialog',
+                                    image='after-survey.png')
+    assert receipt['closed'] is True and receipt['found'] == [] and receipt['left'] == []
+    assert receipt['main_enabled'] is True and (tmp_path / 'after-survey.png').is_file()
+    assert rig.calls == []
+
+
+def test_a_leftover_export_dialog_is_closed_by_its_own_cancel_and_waited_for(monkeypatch, tmp_path):
+    rig = Bundle(monkeypatch, tmp_path)
+    rig.visible.add(BUNDLE)  # what run f9e9922 showed after the survey
+    monkeypatch.setattr(cases.winutil.user32, 'IsWindowEnabled', lambda hwnd: True)
+    monkeypatch.setattr(cases.winutil, 'screen_grab', lambda: (4, 3, bytes(48)))  # never the host's screen
+    analysis = {}
+    receipt = cases.leave_no_dialog(rig.session, tmp_path, analysis, cases.BUNDLE_DIALOG, key='survey_dialog')
+    assert analysis['survey_dialog'] is receipt and receipt['closed'] is True
+    assert receipt['found'] == [['Export Preset Bundle', [0, 0, 1, 1]]] and receipt['left'] == []
+    assert receipt['cancel']['text'] == 'Cancel' and 'wm_close' not in receipt
+    # Cancel, with the dialog as the root of the click, and nothing else.
+    assert rig.calls == [('click', 1264, 727, BUNDLE)] and BUNDLE not in rig.visible
+
+
+def test_a_dialog_that_refuses_to_close_is_written_down_as_left(monkeypatch, tmp_path):
+    rig = Bundle(monkeypatch, tmp_path)
+    rig.stubborn, _ = True, rig.visible.add(BUNDLE)
+    monkeypatch.setattr(cases.winutil.user32, 'IsWindowEnabled', lambda hwnd: False)
+    monkeypatch.setattr(cases.winutil, 'screen_grab', lambda: (4, 3, bytes(48)))  # never the host's screen
+    receipt = cases.leave_no_dialog(rig.session, tmp_path, {}, cases.BUNDLE_DIALOG)
+    assert receipt['closed'] is False and receipt['wm_close'] is False
+    assert receipt['left'] == [['Export Preset Bundle', [0, 0, 1, 1]]] and receipt['main_enabled'] is False
+    assert [call for call in rig.calls if call[0] == 'click'] == [('click', 1264, 727, BUNDLE)]
+    assert ('send', BUNDLE, cases.WM_CLOSE, 0) in rig.calls
+
+
 def test_import_refuses_a_file_that_is_not_there_before_touching_the_menu(monkeypatch, tmp_path):
     rig = Bundle(monkeypatch, tmp_path)
     with pytest.raises(ValueError, match='is not a file to import'):
@@ -1368,6 +1405,10 @@ class PresetMaker:
         monkeypatch.setattr(cases.winutil, 'msg_click_screen', self.click)
         monkeypatch.setattr(cases.winutil, 'screen_grab', lambda: (4, 3, bytes(48)))
         monkeypatch.setattr(cases, 'capture_window', lambda hwnd, path: {'width_px': 300, 'height_px': 200})
+        monkeypatch.setattr(cases.mixing_util, 'toplevel', lambda pid: self.open)
+        monkeypatch.setattr(cases.winutil.user32, 'IsWindowEnabled', lambda hwnd: True)
+        monkeypatch.setattr(cases.winutil.user32, 'GetForegroundWindow', lambda: 0)
+        self.open = []  # what the application has open: nothing, unless a test says otherwise
         ticking(monkeypatch)
         self.session = SimpleNamespace(pid=SESSION_PID, hwnd=MAIN, alive=lambda: True)
 
@@ -1473,6 +1514,18 @@ def test_when_the_process_page_stays_down_the_step_stops_with_the_sidebar_writte
                                                 ['wxWindowNR', 'Global', [96, 606, 146, 626]]]
 
 
+def test_nothing_is_clicked_for_a_preset_while_the_application_has_a_dialog_open(monkeypatch, tmp_path):
+    maker = PresetMaker(monkeypatch, tmp_path)
+    maker.open = [('#32770', 'Export Preset Bundle', (760, 391, 1332, 761), BOX)]
+    analysis = {}
+    with pytest.raises(ValueError, match='the application has a dialog open'):
+        cases.save_process_preset(maker.session, 'BB Export Test', tmp_path, analysis)
+    left = analysis['preset_saved']
+    assert left['dialogs'] == [['Export Preset Bundle', [760, 391, 1332, 761]]]
+    assert left['image_name'] == 'preset-dialog-open.png' and (tmp_path / 'preset-dialog-open.png').is_file()
+    assert maker.calls == [] and left['steps'] == {}  # not even the page was looked at
+
+
 def test_making_a_preset_sends_nothing_from_a_host_that_did_not_opt_in(monkeypatch, tmp_path):
     # 2026-11-26: the keys of a test run reached the host's foreground window once.
     import harness.host_guard
@@ -1517,12 +1570,13 @@ NOT_LISTED = ('"Process presets(.zip)" lists no row; the application loaded none
 
 
 def configs_case(monkeypatch, tmp_path, *, rows=(PRINTER,), after_rows=(PRINTER,), make='ok',
-                 filament_rows=(FILAMENT_ROW, 'Snapmaker PLA Basic'), filament='junk', change=None):
+                 filament_rows=(FILAMENT_ROW, 'Snapmaker PLA Basic'), filament='junk', change=None,
+                 survey_dialog_left=False):
     """The #237 case with both of its sessions and every window call faked. `rows` is what the
     dialog lists for the process type at first and `after_rows` what it lists once the case has
     made a user preset (`make`: 'ok' writes its file, 'error' fails); `filament` is what the
     export of the filament name lands ('package' or 'junk'); `change` rewrites each imported
-    preset."""
+    preset. With `survey_dialog_left` the export dialog stays open after the first survey."""
     sys.path.insert(0, str(ROOT / 'tests' / 'gui'))
     import m7x_237_export_configs as case
     import test_export_configs_oracle as profiles
@@ -1613,12 +1667,22 @@ def configs_case(monkeypatch, tmp_path, *, rows=(PRINTER,), after_rows=(PRINTER,
     monkeypatch.setattr(case, 'wait_arrival', lambda session, timeout_s=30, min_frac=0.001: (True, 0.01))
     monkeypatch.setattr(case.m7, 'wait_dialog', lambda pid, timeout_s=15.0, title_substr='': None)
     monkeypatch.setattr(case, 'bundle_survey', survey)
+    def leave(session, work, analysis, title, key='dialog_left', image='after-dialog.png'):
+        left = survey_dialog_left and key == 'survey_dialog'
+        analysis[key] = {'title': title, 'found': [[title, [1, 1, 2, 2]]] if left else [],
+                         'left': [[title, [1, 1, 2, 2]]] if left else [], 'closed': not left, 'image_name': image}
+        return analysis[key]
+
+    monkeypatch.setattr(case, 'leave_no_dialog', leave)
     monkeypatch.setattr(case, 'save_process_preset', save_preset)
     monkeypatch.setattr(case, 'export_preset_bundle', export_bundle)
     monkeypatch.setattr(case, 'import_configs', imported)
     analysis = {'results': {}, 'timings': {}}
-    case.run(SimpleNamespace(exe=None, datadir=tmp_path / 'artifacts' / 'm3_profile',
-                             model=gcode.FIXTURES / 'feishu_std_cubesfar.3mf'), tmp_path, analysis)
+    try:  # as the case's main does it
+        case.run(SimpleNamespace(exe=None, datadir=tmp_path / 'artifacts' / 'm3_profile',
+                                 model=gcode.FIXTURES / 'feishu_std_cubesfar.3mf'), tmp_path, analysis)
+    except Exception as exc:  # noqa: BLE001 - recorded; the verdict turns red on it
+        analysis['results']['unfinished checks'] = f'FAIL ({type(exc).__name__}: {exc})'
     return analysis, seeds, launches, closed, exported, made_calls
 
 
@@ -1667,7 +1731,8 @@ def test_configs_case_passes_when_the_made_preset_is_exported_and_the_filament_r
                                       'typed': 'BB Export Test', 'closed': True,
                                       'preset_row_before_save': None, 'preset_row_after_save': 'BB Export Test',
                                       'error': None, 'page_up': True, 'page': {'quality_tab': [1, 2, 3, 4]},
-                                      'before': None, 'sidebar_tree': 0}
+                                      'before': None, 'open_dialogs': None, 'sidebar_tree': 0,
+                                      'survey_dialog_closed': True}
     assert analysis['bundle_survey_after']['pictures'] == 'after-'
     assert exported == [(KIND, [PRINTER]), (FALLBACK, [FILAMENT_ROW])]
     assert [record['kind'] for record in analysis['exports']] == [KIND]  # the filament row is not judged
@@ -1718,13 +1783,27 @@ def test_configs_case_fails_the_first_clause_when_a_preset_the_product_saved_is_
     assert [name for name, _model, _options in launches] == ['export-profile']  # nothing to import: no second session
 
 
+def test_configs_case_stops_before_making_a_preset_while_the_survey_dialog_is_open(monkeypatch, tmp_path):
+    analysis, _seeds, launches, _closed, exported, made = configs_case(monkeypatch, tmp_path, rows=(),
+                                                                      survey_dialog_left=True)
+    assert analysis['survey_dialog']['closed'] is False
+    assert analysis['results']['unfinished checks'] == (
+        "FAIL (ValueError: the Export Preset Bundle dialog is still open after the survey: "
+        "[['Export Preset Bundle', [1, 1, 2, 2]]]; nothing else is touched)")
+    # No preset is made, no dialog of the export is opened, no second session: nothing else is touched.
+    assert made == [] and exported == [] and 'made_preset' not in analysis['export_session']
+    assert [name for name, _model, _options in launches] == ['export-profile']
+    assert m7.m7_verdict(analysis['results']) == 1
+
+
 def test_configs_case_names_it_when_making_the_preset_fails(monkeypatch, tmp_path):
     analysis, _seeds, _launches, _closed, _exported, _made = configs_case(monkeypatch, tmp_path, rows=(), make='error')
     package, imported = configs.CONFIGS_CLAUSES
     assert analysis['export_session']['made_preset'] == {
         'file': None, 'typed': None, 'closed': None, 'preset_row_before_save': None,
         'preset_row_after_save': None, 'error': 'ValueError: the preset row shows no button whose tooltip says save',
-        'page_up': None, 'page': None, 'before': None, 'sidebar_tree': 0}
+        'page_up': None, 'page': None, 'before': None, 'open_dialogs': None, 'sidebar_tree': 0,
+        'survey_dialog_closed': True}
     # Why there is no row, what the filament name came to, why making one failed, and then the lists.
     said = analysis['expectation_gaps'][package][0]  # the whole sentence; the verdict line shows its first 400
     assert said.startswith(

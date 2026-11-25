@@ -423,6 +423,60 @@ def _leave_dialog(hwnd, button='Cancel'):
     return _wait_closed(hwnd, 5)
 
 
+def app_dialogs(session, title=None):
+    """Visible #32770 top-level windows of the application: [(title, rectangle, handle)], only
+    those whose title contains `title` when it is given. Looked up anew on every call, so a
+    dialog is found whatever became of the handle it had before."""
+    found = [(text, rect, hwnd) for cls, text, rect, hwnd in mixing_util.toplevel(session.pid)
+             if cls == '#32770']
+    return [row for row in found if title is None or title.casefold() in (row[0] or '').casefold()]
+
+
+def leave_no_dialog(session, work, analysis, title, key='dialog_left', image='after-dialog.png'):
+    """Make sure no dialog of the application is left over, and write down what was done.
+
+    A dialog whose title contains `title` is closed by its own Cancel (a click resolved inside
+    that dialog), and by WM_CLOSE when it stays; then it is waited for until no dialog of the
+    application is visible any more. The receipt in analysis[key] keeps what was found, what
+    was pressed, what is left, whether the main window is enabled, and a picture of the whole
+    screen afterwards. Returns the receipt; 'closed' says whether nothing is left."""
+    receipt = analysis[key] = {'title': title}
+    handles = [row[2] for row in app_dialogs(session, title)]
+    receipt['found'] = [[text, list(rect)] for text, rect, _hwnd in app_dialogs(session, title)]
+    for hwnd in handles:
+        try:
+            receipt['cancel'] = click_dialog_text(hwnd, 'Cancel')
+        except ValueError as exc:
+            receipt['cancel'] = str(exc)
+        if not _gone(session, hwnd, 5):
+            winutil._send_msg(hwnd, WM_CLOSE, 0, 0)  # a failed export leaves the dialog open
+            receipt['wm_close'] = _gone(session, hwnd, 5)
+    receipt['left'] = [[text, list(rect)] for text, rect, _hwnd in app_dialogs(session)]
+    receipt['main_enabled'] = bool(winutil.user32.IsWindowEnabled(session.hwnd))
+    receipt.update(_screen_picture(work, image))
+    receipt['closed'] = not receipt['left']
+    return receipt
+
+
+def _gone(session, hwnd, timeout_s):
+    deadline = time.monotonic() + timeout_s
+    while hwnd in [row[2] for row in app_dialogs(session)] and time.monotonic() < deadline:
+        time.sleep(0.2)
+    return hwnd not in [row[2] for row in app_dialogs(session)]
+
+
+def open_dialog_record(session, work, image):
+    """What dialogs of the application are open now, with a picture of the whole screen and the
+    window in front: the record a step leaves when it must not click with a dialog open."""
+    front = winutil.user32.GetForegroundWindow()
+    record = {'dialogs': [[text, list(rect)] for text, rect, _hwnd in app_dialogs(session)],
+              'main_enabled': bool(winutil.user32.IsWindowEnabled(session.hwnd)),
+              'foreground': {'title': winutil.window_title(front) if front else None,
+                             'class': winutil.window_class(front) if front else None}}
+    record.update(_screen_picture(work, image) if image else {'image_name': None})
+    return record
+
+
 def bundle_rows(controls):
     """The check boxes of the Export Preset Bundle dialog, each paired with its label.
 
@@ -703,6 +757,13 @@ def save_process_preset(session, name, work, analysis, key='preset_saved', value
     from harness import process_panel as pp
     receipt = analysis[key] = {'name': name, 'value': value, 'steps': {}}
     steps = receipt['steps']
+    if app_dialogs(session):
+        # Nothing is clicked while one of the application's own dialogs is open: the dialog is
+        # modal, and a click meant for the sidebar lands nowhere (run f9e9922).
+        receipt.update(open_dialog_record(session, work, 'preset-dialog-open.png'))
+        raise ValueError(f'the application has a dialog open: {[row[0] for row in app_dialogs(session)]!r}; '
+                         'nothing is clicked while it is')
+    receipt['at_start'] = open_dialog_record(session, work, None)
     dialog = None
     try:
         if not show_process_page(session, work, receipt, pp):

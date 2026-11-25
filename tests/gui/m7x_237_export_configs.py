@@ -49,8 +49,8 @@ from export_configs_oracle import (APP_LOG_KEEP, APP_LOG_KEYWORDS, APP_LOG_LOADI
                                     configs_expectation_gaps, export_gaps, failed_to_add, import_readings,
                                     importable, log_severities, member_configs, package_facts, preset_table,
                                     public_attempts)
-from file_export_cases import (BUNDLE_FILES, BUNDLE_KINDS, bundle_survey, export_preset_bundle,  # noqa: E402
-                               import_configs, save_process_preset)
+from file_export_cases import (BUNDLE_DIALOG, BUNDLE_FILES, BUNDLE_KINDS, bundle_survey, export_preset_bundle,  # noqa: E402
+                               import_configs, leave_no_dialog, save_process_preset)
 from harness import launcher, profile, winutil  # noqa: E402
 from m3_common import add_common_args, ensure_gl_ready  # noqa: E402
 from m7x_249_add_part import stage  # noqa: E402
@@ -162,6 +162,19 @@ def attribute_log_lines(records, failed):
         record['app_log']['failed_to_add'] = own if own or len(records) > 1 else list(failed)
 
 
+def survey_dialog_closed(session, work, analysis, key, image):
+    """After a reading of the export dialog: make sure it is gone, and stop when it is not.
+
+    Run f9e9922 showed the dialog still open when the case went on to the sidebar, and the
+    Advanced switch did not move: a modal dialog takes every click. Returns True, or raises
+    with what is left on screen."""
+    receipt = leave_no_dialog(session, work, analysis, BUNDLE_DIALOG, key=key, image=image)
+    if not receipt['closed']:
+        raise ValueError(f'the Export Preset Bundle dialog is still open after the survey: '
+                         f'{receipt["left"]!r}; nothing else is touched')
+    return True
+
+
 def export_session(args, work, analysis):
     """Session 1: make the precondition true when it is not, read the export dialog, export
     what it lists, and keep what the application said about it. Returns (the presets as
@@ -180,6 +193,9 @@ def export_session(args, work, analysis):
             raise ValueError('the fixture did not render')
         with stage(analysis, 'read_export_dialog'):
             listed = listed_labels(bundle_survey(session, work, analysis))
+        # The dialog is modal: nothing of the sidebar can be driven while it is open.
+        reading['survey_dialog_closed'] = survey_dialog_closed(session, work, analysis, 'survey_dialog',
+                                                                'after-survey.png')
         reading['listed_before'] = listed
         if not listed[KIND]:
             # The presets the harness seeds are not the product's own: make one the way a user
@@ -194,12 +210,17 @@ def export_session(args, work, analysis):
                 traceback.print_exc()
             reading['made_preset'] = {key: made.get(key) for key in
                                       ('file', 'typed', 'closed', 'preset_row_before_save',
-                                       'preset_row_after_save', 'error', 'page_up', 'page', 'before')}
+                                       'preset_row_after_save', 'error', 'page_up', 'page', 'before',
+                                       'open_dialogs')}
             reading['made_preset']['sidebar_tree'] = len(made.get('sidebar_tree') or [])
+            # Whether the survey's dialog was gone before anything of the sidebar was touched.
+            reading['made_preset']['survey_dialog_closed'] = reading.get('survey_dialog_closed')
             if made.get('file'):
                 with stage(analysis, 'read_export_dialog_again'):
                     listed = listed_labels(bundle_survey(session, work, analysis, key='bundle_survey_after',
                                                          prefix='after-'))
+                    reading['survey_dialog_closed_again'] = survey_dialog_closed(
+                        session, work, analysis, 'survey_dialog_after', 'after-survey-2.png')
         reading['listed'] = listed
         for label in listed[KIND]:
             attempts.append(export_row(session, datadir, KIND, label, work, analysis, len(attempts) + 1))
