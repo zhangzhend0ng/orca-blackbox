@@ -6,22 +6,31 @@ Not the GUI action of the Feishu row and not its coverage. The same product bina
 business step through its command line, so that the business criteria can be read on macOS
 2.4.2 while the test session's windows cannot be driven (console locked, native panels).
 
-  stl227    cube_20mm.stl with the template's printer, process and filament selected
-            -> --export-3mf (the command line refuses an empty project file: "it's empty")
+  stl227    cube_20mm.stl -> --export-3mf, twice: with whatever the command line selects on
+            its own, and with the template's printer, process and filament preset files
+            (--load-settings, --load-filaments)
   gcode236  feishu_std_cube.3mf  -> --slice 1 --export-3mf plate.gcode.3mf, then --export-slicedata
   stl233    the standard cube and the standard sphere  -> --arrange 1 --export-3mf --export-stl
 
 The profile is seeded as project_copy.seed does for the GUI (the app's bundled Snapmaker and BBL
-vendor profiles, its printers, the run's Snapmaker_Orca.conf) under a private --datadir; presets.json
-selects the template's presets in that config. Every command is recorded with its argv, exit code,
-seconds and output; the reply carries the files the product wrote.
+vendor profiles, its printers, the run's Snapmaker_Orca.conf) under a private --datadir.
+
+Read off the 2.4.2 command line (2026-11-26): a project file without objects is refused ("The
+supplied file couldn't be read because it's empty", exit 250); an STL on its own is exported with
+the slicer's built-in defaults whatever presets the profile's config selects (0.4 mm nozzle,
+0.20 mm layers); the bundled vendor presets are one JSON file per preset under
+Contents/Resources/profiles/<vendor>/{machine,process,filament}/ and those files are what
+--load-settings and --load-filaments read.
+
+Every command is recorded with its argv, exit code, seconds and output; the reply carries the
+files the product wrote.
 """
 import base64
-import hashlib
 import json
 import os
 from pathlib import Path
 import plistlib
+import re
 import shutil
 import signal
 import subprocess
@@ -34,6 +43,7 @@ import project_copy as pc
 WORK = Path(__file__).resolve().parent
 CASE = (WORK / "case").read_text().strip()
 PROFILE = WORK / "profile"
+PRESETS = pc.APP / "Contents/Resources/profiles/Snapmaker"
 FUSE = 480
 KEEP = {".3mf", ".stl", ".gcode", ".json", ".png", ".log"}
 FILE_LIMIT = 48 * 1024 * 1024
@@ -45,6 +55,25 @@ def identity():
     bundle = plistlib.loads((pc.APP / "Contents/Info.plist").read_bytes())
     return {"app": str(pc.APP), "version": bundle.get("CFBundleShortVersionString"),
             "bundle_version": bundle.get("CFBundleVersion"), "executable_sha256": pc.digest(Path(pc.EXE))}
+
+
+def preset_file(kind, name, report):
+    """The bundled preset file named `name`. Presets were renamed between versions ("0.40
+    Standard" became "0.40mm Standard"), so a name that differs only by that "mm" is accepted
+    and the name actually used is written down."""
+    folder = PRESETS / kind
+    renamed = lambda text: re.sub(r"^(\d+(?:\.\d+)?)mm\b", r"\1", text)  # noqa: E731
+    for path in sorted(folder.glob("*.json")):
+        try:
+            found = json.loads(path.read_text()).get("name")
+        except (OSError, ValueError):
+            continue
+        if found == name:
+            return path
+        if renamed(found or "") == renamed(name):
+            report.setdefault("renamed_presets", {})[name] = found
+            return path
+    raise FileNotFoundError(f"{kind} preset {name!r} is not in the bundle")
 
 
 def run(label, arguments):
@@ -62,10 +91,17 @@ def run(label, arguments):
             "output_head": output[:1500], "output_tail": output[-2000:]}
 
 
-def commands():
+def commands(report):
     common = ["--datadir", str(PROFILE)]
     if CASE == "stl227":
-        return [("export-3mf", common + ["--export-3mf", str(WORK / "imported.3mf"), str(WORK / "import" / "cube_20mm.stl")])]
+        stl = str(WORK / "import" / "cube_20mm.stl")
+        wanted = json.loads((WORK / "presets.json").read_text())
+        settings = ";".join(str(preset_file(kind, wanted[key], report))
+                            for kind, key in (("machine", "machine"), ("process", "process")))
+        filament = str(preset_file("filament", wanted["filament"], report))
+        return [("export-3mf-default", common + ["--export-3mf", str(WORK / "imported.3mf"), stl]),
+                ("export-3mf-template-presets", common + ["--load-settings", settings, "--load-filaments", filament,
+                                                          "--export-3mf", str(WORK / "imported-u1.3mf"), stl])]
     if CASE == "gcode236":
         return [("slice-export-3mf", common + ["--slice", "1", "--export-3mf", str(WORK / "plate.gcode.3mf"),
                                                str(WORK / "baseline.3mf")]),
@@ -108,32 +144,17 @@ def written():
     return files
 
 
-def pin_presets():
-    """Select the template's printer, process and filament in the config the profile is seeded
-    with (the [presets] section of Snapmaker_Orca.conf), as a new GUI project would have them."""
-    presets = json.loads((WORK / "presets.json").read_text())
-    text = (WORK / "seed.conf").read_text()
-    config = json.loads(text[:text.rindex("}") + 1])
-    config["presets"] = {key: presets[key] for key in ("machine", "process", "filament") if presets.get(key)}
-    body = json.dumps(config, indent=4, ensure_ascii=False)
-    (WORK / "seed.conf").write_text(body + "\n# MD5 checksum "
-                                     + hashlib.md5((body + "\n").encode("utf-8")).hexdigest().upper() + "\n")
-    return config["presets"]
-
-
 def main():
     report = {"case": CASE, "mode": "CLI", "ok": False, "run_id": (WORK / "run-id").read_text().strip(),
               "commit": (WORK / "commit").read_text().strip() if (WORK / "commit").is_file() else None,
               "started": time.strftime("%Y-%m-%d %H:%M:%S %z"), "commands": []}
     try:
         report["sut"] = identity()
-        if (WORK / "presets.json").is_file():
-            report["selected_presets"] = pin_presets()
         pc.seed(PROFILE)
         report["seed"] = {"profile": PROFILE.name, "conf_sha256": pc.digest(PROFILE / "Snapmaker_Orca.conf"),
                           "system_vendors": sorted(p.name for p in (PROFILE / "system").iterdir() if p.is_dir())}
         report["orca_processes_before"] = sorted(pc.processes())
-        for label, arguments in commands():
+        for label, arguments in commands(report):
             reading = run(label, arguments)
             report["commands"].append(reading)
             if reading["exit"] != 0:
