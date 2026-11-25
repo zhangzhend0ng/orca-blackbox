@@ -2,7 +2,7 @@
 
 from collections import Counter
 from dataclasses import dataclass
-from itertools import combinations
+from itertools import combinations, product
 import json
 import math
 from pathlib import Path
@@ -305,23 +305,80 @@ def _find_square(home, obstacles, side):
     return None
 
 
+def _circle_coverage(home, obstacles, radius):
+    # Any additional copy, at any yaw, contains this disk. Its centre
+    # must be inside the bed inset by the radius, even at zero clearance.
+    x0, y0, x1, y1 = home
+    centre_region = (x0 + radius, y0 + radius, x1 - radius, y1 - radius)
+    x0, y0, x1, y1 = centre_region
+    divisions = 6
+    xs = [x0 + (x1 - x0) * i / divisions for i in range(divisions + 1)]
+    ys = [y0 + (y1 - y0) * i / divisions for i in range(divisions + 1)]
+
+    def distance(point, obstacle):
+        x, y = point
+        left, bottom, right, top = obstacle
+        return math.hypot(max(left - x, x - right, 0), max(bottom - y, y - top, 0))
+
+    # Distance to a filled rectangle is convex, so its maximum on each
+    # cell is bounded by the maximum at the corners. Pick one blocking
+    # copy per cell, then take the worst bound over the entire region.
+    upper_bound = 0.0
+    for x_pair, y_pair in product(zip(xs, xs[1:]), zip(ys, ys[1:])):
+        corners = tuple(product(x_pair, y_pair))
+        bound = min(max(distance(point, rect) for point in corners) for rect in obstacles)
+        upper_bound = max(upper_bound, bound)
+    return {
+        'center_region_mm': centre_region,
+        'cells_xy': [divisions, divisions],
+        'inscribed_radius_mm': radius,
+        'worst_distance_upper_bound_mm': upper_bound,
+        'strict_overlap_margin_mm': radius - upper_bound,
+    }
+
+
+def _has_rectangular_contact(item, rectangle):
+    if len(item.contact_faces) != 2:
+        return False
+    a, b = ({point[:2] for point in face} for face in item.contact_faces)
+    x0, y0, x1, y1 = rectangle
+    if len(a) != 3 or len(b) != 3 or a | b != set(product((x0, x1), (y0, y1))):
+        return False
+    # The two distinct triangles must meet on the diagonal and cover the
+    # whole rectangle. A shared outside edge would double-count its area.
+    p, q = a & b
+    return p[0] != q[0] and p[1] != q[1]
+
+
 def _fill_measurement(bed, original, copies):
     base = _rectangle(bed.polygon)
     rectangles = [_rectangle(_hull(v[:2] for v in item.vertices)) for item in copies]
     source = _rectangle(_hull(v[:2] for v in original.vertices))
-    if bed.exclusion or base is None or source is None or any(rect is None for rect in rectangles):
+    if (bed.exclusion or base is None or source is None or not rectangles
+            or any(rect is None for rect in rectangles)):
         return {'status': 'unsupported_rectangular_fixture'}
-    for item, (x0, y0, x1, y1) in zip(copies, rectangles):
-        if abs(_contact_area(item) - (x1 - x0) * (y1 - y0)) > AREA_TOL:
-            return {'status': 'unsupported_rectangular_contact'}
+    if not all(_has_rectangular_contact(item, rect)
+               for item, rect in zip((original, *copies), (source, *rectangles))):
+        return {'status': 'unsupported_rectangular_contact'}
     x0, y0, x1, y1 = source
     # At every yaw the source rectangle contains this axis-aligned square
     # at its centre. If that smaller square cannot fit, no extra copy can
     # fit, even with zero clearance and freely chosen yaw.
-    side = min(x1 - x0, y1 - y0) / math.sqrt(2)
+    width, depth = x1 - x0, y1 - y0
+    side = min(width, depth) / math.sqrt(2)
     empty = _find_square(base, rectangles, side)
-    return {'status': 'saturated' if empty is None else 'saturation_not_proven',
-            'necessary_square_side_mm': side, 'unblocked_square_center_mm': empty}
+    result = {'necessary_square_side_mm': side, 'unblocked_square_center_mm': empty}
+    if empty is None:
+        return {**result, 'status': 'saturated', 'proof': 'inscribed_square'}
+
+    coverage = _circle_coverage(base, rectangles, min(width, depth) / 2)
+    result['inscribed_circle_coverage'] = coverage
+    if coverage['strict_overlap_margin_mm'] > TOL_MM:
+        return {**result, 'status': 'saturated', 'proof': 'inscribed_circle'}
+
+    if abs(width - depth) <= TOL_MM:
+        result['open_full_square_center_mm'] = _find_square(base, rectangles, max(width, depth) + 4*TOL_MM)
+    return {**result, 'status': 'saturation_not_proven'}
 
 
 def verify_clone(before, cloned, filled=None):
@@ -334,12 +391,12 @@ def verify_clone(before, cloned, filled=None):
     original = second[0] if count else None
     copy = second[1] if count == 2 else None
     same_original = original is not None and source.name == original.name and _same_mesh(source, original)
-    original_pose = same_original and all(math.dist(a, b) <= TOL_MM
-                                          for a, b in zip(source.basis, original.basis))
+    original_orientation = same_original and all(math.dist(a, b) <= TOL_MM
+                                                 for a, b in zip(source.basis, original.basis))
     pairs = _pairs(second)
     checks = {
         'exactly_one_copy_added': count == 2 and first_bed == cloned_bed,
-        'original_geometry_and_pose_preserved': original_pose,
+        'original_geometry_and_orientation_preserved': original_orientation,
         'copy_geometry_matches': copy is not None and _same_mesh(source, copy),
         'clone_is_separately_placed': count == 2 and len(pairs) == 1 and not pairs[0]['overlap']
         and all(cloned_bed.contains(item) for item in second),
@@ -351,6 +408,9 @@ def verify_clone(before, cloned, filled=None):
     result = {
         'checks': checks, 'clone_count': count, 'clone_pairs': pairs,
         'source_bounds_mm': source.box, 'cloned_bounds_mm': [item.box for item in second],
+        'original_translation_mm': ([(end_low + end_high - start_low - start_high) / 2
+                                     for (start_low, start_high), (end_low, end_high)
+                                     in zip(source.box, original.box)] if same_original else None),
         'fill': {'status': 'missing_saved_fill'},
     }
     if filled is not None:

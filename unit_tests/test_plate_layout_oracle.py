@@ -98,7 +98,9 @@ def test_clone_keeps_clone_and_fill_verdicts_independent(project, tmp_path):
     clone_positions = [(IDENTITY, 92, 135, 0), (IDENTITY, 175, 135, 0)]
     cloned = _rewrite(before, tmp_path / 'cloned.3mf', clone_positions)
     result = verify_clone(before, cloned)
-    assert all(result['checks'][key] for key in list(result['checks'])[:4])
+    assert all(passed for key, passed in result['checks'].items() if not key.startswith('fill_'))
+    assert result['checks']['original_geometry_and_orientation_preserved']
+    assert result['original_translation_mm'] == pytest.approx([-43, 0, 0])
     assert not result['checks']['fill_saturation_verified']
     assert result['fill']['status'] == 'missing_saved_fill'
     overlap = _rewrite(before, tmp_path / 'overlap.3mf',
@@ -114,4 +116,32 @@ def test_clone_keeps_clone_and_fill_verdicts_independent(project, tmp_path):
     assert not result['checks']['fill_saturation_verified']
     grid = [(IDENTITY, x, y, 0) for x in (39, 103, 167, 231) for y in (40, 104, 168, 232)]
     filled = _rewrite(before, tmp_path / 'filled.3mf', grid)
-    assert all(verify_clone(before, cloned, filled)['checks'].values())
+    result = verify_clone(before, cloned, filled)
+    assert all(result['checks'].values())
+    assert result['fill']['proof'] == 'inscribed_square'
+
+
+def test_staggered_fill_circle_proof_and_open_full_copy_gap(project, tmp_path):
+    before = project(245)
+    primary = (IDENTITY, 135.5, 167, 0)
+    clone = _rewrite(before, tmp_path / 'cloned.3mf', [primary, (IDENTITY, 135.5, 105, 0)])
+    positions = [(135.5, 167), (134, 239), (196, 239), (197.5, 177), (197.5, 115),
+                 (135.5, 105), (72, 239), (72, 177), (72, 115), (135.5, 43), (72, 53), (197.5, 53)]
+    placements = [(IDENTITY, x, y, 0) for x, y in positions]
+    filled = _rewrite(before, tmp_path / 'staggered.3mf', placements)
+    report = verify_clone(before, clone, filled)
+    assert all(report['checks'].values())
+    assert report['fill']['unblocked_square_center_mm'] is not None
+    assert report['fill']['proof'] == 'inscribed_circle'
+    coverage = report['fill']['inscribed_circle_coverage']
+    assert coverage['center_region_mm'] == (30.5, 31, 240.5, 241)
+    assert coverage['cells_xy'] == [6, 6]
+    assert coverage['strict_overlap_margin_mm'] > 7
+    assert 0 < coverage['worst_distance_upper_bound_mm'] < coverage['inscribed_radius_mm'] == 30
+
+    gap = _rewrite(before, tmp_path / 'open-full-copy-gap.3mf', [*placements[:4], *placements[5:]])
+    report = verify_clone(before, clone, gap)
+    assert report['checks']['fill_adds_copies']
+    assert report['checks']['fill_copies_nonoverlapping_and_in_bed']
+    assert not report['checks']['fill_saturation_verified']
+    assert report['fill']['open_full_square_center_mm'] is not None
