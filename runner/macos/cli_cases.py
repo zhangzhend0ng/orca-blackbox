@@ -114,7 +114,10 @@ def commands(report):
     if CASE == "stl233":
         # A second 3MF is refused (CLI_FILELIST_INVALID_ORDER, exit 252: only the first file may
         # be a project), so the sphere is turned into an STL first. --export-stl takes no value
-        # and writes obj_<n>_<name>.stl into <outputdir>/stl, which has to exist.
+        # and writes obj_<n>_<name>.stl into <outputdir>/stl, which has to exist. With
+        # --outputdir set, --export-3mf's name is taken relative to it even when it is absolute
+        # (an absolute path is appended to the output directory and the export fails, exit 243),
+        # so the project is named by its bare file name.
         for folder in (WORK / "sphere-out" / "stl", WORK / "out" / "stl"):
             folder.mkdir(parents=True, exist_ok=True)
 
@@ -126,7 +129,7 @@ def commands(report):
         return [("export-sphere-stl", lambda: common + ["--outputdir", str(WORK / "sphere-out"), "--export-stl",
                                                         str(WORK / "sphere.3mf")]),
                 ("export-cube-and-sphere", lambda: common + [
-                    "--outputdir", str(WORK / "out"), "--export-stl", "--export-3mf", str(WORK / "exported.3mf"),
+                    "--outputdir", str(WORK / "out"), "--export-stl", "--export-3mf", "exported.3mf",
                     str(WORK / "cube.3mf"), sphere_stl()])]
     raise ValueError(f"Unexpected case {CASE!r}")
 
