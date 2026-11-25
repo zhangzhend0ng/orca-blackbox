@@ -1,37 +1,55 @@
 #!/usr/bin/env python3
-# m7x_251_reload_from_disk.py — Feishu #251: reload a modified STL and observe missing-source handling.
+# m7x_251_reload_from_disk.py — Feishu #251: import an STL, reload it from disk after the file changed and after it was deleted
 # feishu: baseline#251
+"""Feishu #251【从磁盘重新加载】模型右键「从磁盘重新加载」按磁盘文件重载对象 (P1).
 
-import argparse
-import re
+Precondition (Feishu): 对象由外部 STL 导入，磁盘上同名文件已修改（如尺寸 20mm→30mm）.
+Steps (Feishu): 1. 选中对象右键 → 点击「从磁盘重新加载」　2. 观察对象几何.
+Expected (Feishu): 对象按磁盘最新文件重新加载，尺寸变为 30mm；文件被删则明确报错.
+
+The project starts as an empty plate with the U1 0.8 printer (the #244 start).
+The 20 mm cube reload_cube.stl is imported through File > Import with the #227
+chooser steps and the plate is saved. The same path is then overwritten with a
+30 mm cube, the object's context menu gives Reload from disk, and the plate is
+saved again. Last the file is deleted and Reload from disk is invoked once
+more: whatever the application shows is kept (kind of dialog, title, offered
+file name, picture), a file chooser is cancelled and a message box closed, and
+the plate is saved a third time.
+tests/reload_oracle.py judges every saved file and the dialog; nothing is
+read back from the screen for the geometry.
+"""
+from hashlib import sha256
+from pathlib import Path
 import shutil
 import struct
 import sys
-import tempfile
 import time
-from pathlib import Path
-from xml.etree import ElementTree as ET
-from zipfile import ZipFile
 
 import cv2
 import numpy as np
 
 HERE = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(HERE))
-sys.path.insert(0, str(HERE / "tests"))
-sys.path.insert(0, str(HERE / "tests" / "engine"))
+sys.path[:0] = [str(HERE), str(HERE / 'tests'), str(HERE / 'tests' / 'engine'), str(HERE / 'tests' / 'gui')]
 
-import m7_common as m7
-import m8_common as m8
-from harness import export_util, topbar_util, winutil
-from m3_common import add_common_args, boot_session
-from m7x_199_new_project_title import save_prompt_words
-from m7x_202_save_as_project import save_as
-from model_context_cases import open_model_menu
-from project_file_cases import digest_file, wait_project_write
+import m7_common as m7  # noqa: E402
+from harness import export_util, topbar_util, winutil  # noqa: E402
+from m7x_199_new_project_title import save_prompt_words  # noqa: E402
+from m7x_249_add_part import capture, stage  # noqa: E402
+from m8_common import wait_arrival  # noqa: E402
+from model_context_cases import open_model_menu  # noqa: E402
+from plate_reserve_case import case_main, save_snapshot  # noqa: E402
+from reload_oracle import (  # noqa: E402
+    CLAUSE_MISSING, clauses, explicit_missing_error, is_cube, verify_cube)
 
-LOG = "[m7x251]"
+FIXTURE = HERE / 'fixtures' / 'agent_layer_cube.3mf'
+LOG = '[m7x251]'
 MENU = "Reload from disk"
+SOURCE_NAME = 'reload_cube.stl'
+
+
+def prepare_fixture(model, work):
+    # The repository template is loaded as it is; the run directory receives evidence only.
+    return model
 
 
 def write_cube(path, size):
@@ -48,39 +66,9 @@ def write_cube(path, size):
             output.write(triangle.pack(0, 0, 0, *vertices, 0))
 
 
-def read_mesh(project):
-    """Read the single exported model and original source association."""
-    with ZipFile(project) as archive:
-        models = [ET.fromstring(archive.read(name)) for name in archive.namelist()
-                  if name.startswith("3D/") and name.endswith(".model")]
-        settings = ET.fromstring(archive.read("Metadata/model_settings.config"))
-    meshes = [mesh for model in models for mesh in model.findall("./{*}resources/{*}object/{*}mesh")]
-    instances = sum(len(model.findall("./{*}build/{*}item")) for model in models)
-    if len(meshes) != 1 or instances != 1:
-        raise ValueError(f"expected 1 mesh and 1 instance, got {len(meshes)} and {instances}")
-    vertices = meshes[0].findall("./{*}vertices/{*}vertex")
-    spans = []
-    for axis in "xyz":
-        coordinates = [float(vertex.attrib[axis]) for vertex in vertices]
-        spans.append(max(coordinates) - min(coordinates))
-    source = settings.find("./object/part/metadata[@key='source_file']")
-    return tuple(spans), source.get("value", "") if source is not None else ""
-
-
-def observe_mesh(session, project, source):
-    if not save_as(session, project) or not wait_project_write(session, project, None, timeout_s=30):
-        print(f"{LOG} could not save geometry snapshot {project}")
-        return None
-    dimensions, reported_source = read_mesh(project)
-    source_matches = reported_source and Path(reported_source) == source
-    print(f"{LOG} {project.name}: XYZ mm={dimensions}, source_file={reported_source!r}, "
-          f"same source={bool(source_matches)}")
-    return dimensions if source_matches else None
-
-
 def reload_selected(session, screenshot):
-    image = m7.capture_bgr(session)
-    cv2.imwrite(str(screenshot), image)
+    """Right-click the object and choose Reload from disk; False when its menu never showed the row."""
+    image = capture(session, screenshot)
     height, width = image.shape[:2]
     viewport_left = m7.VIEWPORT_X0
     viewport_width = width - viewport_left
@@ -94,7 +82,7 @@ def reload_selected(session, screenshot):
     ]
     candidates.sort(key=lambda point: (point[0] - center[0]) ** 2 + (point[1] - center[1]) ** 2)
     candidates.extend((center, (center[0], center[1] - height // 12)))
-    print(f"{LOG} central plate right-click candidates={candidates}")
+    print(f"{LOG} central plate right-click candidates={candidates}", flush=True)
     opened = open_model_menu(session, MENU, candidates=candidates)
     if opened is None:
         return False
@@ -106,31 +94,35 @@ def reload_selected(session, screenshot):
 
 
 def observe_missing_dialog(session, source, screenshot):
+    """What the application showed for the missing `source`, then closed; returns the readings.
+
+    The dialog's kind, title, offered file name and a picture are kept. A file
+    chooser is cancelled with IDCANCEL, a message box is closed with its OK.
+    The judgement of these readings is reload_oracle.explicit_missing_error."""
+    facts = {'appeared': False, 'behavior': 'no dialog', 'title': '', 'filename': '', 'body': '',
+             'screenshot': None, 'closed': True}
     dialog = export_util.wait_toplevel(session.pid, lambda cls, _t, _r: cls == "#32770", timeout_s=10)
     if not dialog:
-        print(f"{LOG} missing source: no Orca dialog")
-        return False, True
+        print(f"{LOG} missing source: no Orca dialog", flush=True)
+        return facts
     _, title, _, hwnd = dialog
+    facts.update(appeared=True, title=title)
     try:
         width, height, raw = winutil.capture_window(hwnd)
         image = np.frombuffer(raw, dtype=np.uint8).reshape(height, width, 4)
         saved = cv2.imwrite(str(screenshot), cv2.cvtColor(image, cv2.COLOR_BGRA2BGR))
-        print(f"{LOG} missing-source dialog screenshot saved={saved}: {screenshot}")
+        facts['screenshot'] = screenshot.name if saved else None
     except (winutil.CaptureError, cv2.error) as exc:
-        print(f"{LOG} missing-source dialog screenshot unavailable: {exc}")
+        print(f"{LOG} missing-source dialog screenshot unavailable: {exc}", flush=True)
+    print(f"{LOG} missing-source dialog screenshot kept={facts['screenshot'] is not None}: {screenshot}", flush=True)
     edit = export_util.find_edit(hwnd)
-    selected = winutil.edit_text(edit, size=260) if edit else ""
     if edit and "select a file" in title.casefold():
-        body = ""
-        behavior = "replacement file chooser"
+        facts.update(behavior="replacement file chooser", filename=winutil.edit_text(edit, size=260))
     else:
-        body = " ".join(word[0] for word in save_prompt_words(hwnd))
-        behavior = "message dialog"
-    message = f"{title} {body}".casefold()
-    explicit_error = (behavior == "message dialog" and bool(re.search(
-        r"\b(?:file|source)\b.*\b(?:not found|does not exist|missing|cannot be found)\b", message)))
-    print(f"{LOG} missing {source}: {behavior}, title={title!r}, filename={selected!r}, "
-          f"body={body!r}, explicit missing error={explicit_error}")
+        facts.update(behavior="message dialog",
+                     body=" ".join(word[0] for word in save_prompt_words(hwnd)))
+    print(f"{LOG} missing {source}: {facts['behavior']}, title={title!r}, filename={facts['filename']!r}, "
+          f"body={facts['body']!r}", flush=True)
     if edit:
         winutil._send_msg(hwnd, m7.WM_COMMAND_MSG, 2, 0)  # IDCANCEL
     else:
@@ -138,63 +130,84 @@ def observe_missing_dialog(session, source, screenshot):
     deadline = time.monotonic() + 8
     while winutil.user32.IsWindowVisible(hwnd) and time.monotonic() < deadline:
         time.sleep(0.25)
-    closed = not winutil.user32.IsWindowVisible(hwnd)
-    print(f"{LOG} missing-source dialog closed={closed}")
-    return explicit_error, closed
+    facts['closed'] = not winutil.user32.IsWindowVisible(hwnd)
+    print(f"{LOG} missing-source dialog closed={facts['closed']}", flush=True)
+    return facts
 
 
-def main():
-    args = add_common_args(argparse.ArgumentParser()).parse_args()
-    root = args.datadir.resolve().parent / "feishu-object-cases" / "251"
-    root.mkdir(parents=True, exist_ok=True)
-    workspace = Path(tempfile.mkdtemp(prefix="run-", dir=root))
-    source = workspace / "reload_cube.stl"
-    original = workspace / "source-20mm.stl"
-    modified = workspace / "source-30mm.stl"
-    project_before = workspace / "before-reload.3mf"
-    project_after = workspace / "after-reload.3mf"
-    project_missing = workspace / "after-missing.3mf"
-    write_cube(original, 20)
-    write_cube(modified, 30)
-    shutil.copyfile(original, source)
-    print(f"{LOG} work directory={workspace}, isolated source={source}, "
-          f"20 mm STL SHA-256={digest_file(source)}")
-    args.datadir = workspace / "profile"
-    session = boot_session(args, model=source)
+def read(analysis, key, project, stl, **checks):
+    """Keep what the oracle reads from `project`, or its refusal, under analysis[key]."""
     try:
-        arrived, fraction = m8.wait_arrival(session, timeout_s=45)
+        analysis[key] = verify_cube(project, stl, **checks)
+    except (ValueError, OSError, KeyError) as exc:
+        analysis[key] = {'error': f'{type(exc).__name__}: {exc}'}
+    print(f"{LOG} {key}: {analysis[key]!r}", flush=True)
+    return 'error' not in analysis[key]
+
+
+def steps(session, work, analysis, args):
+    # Both helpers take write_cube from this module, so they are imported here.
+    from m7x_227_import_stl import import_stl
+    from m7x_244_add_model import prepare_plate
+
+    analysis.setdefault('timings', {})
+    source = work / SOURCE_NAME
+    original, modified = work / 'source-20mm.stl', work / 'source-30mm.stl'
+    with stage(analysis, 'write_stl'):
+        write_cube(original, 20)
+        write_cube(modified, 30)
+        shutil.copyfile(original, source)
+        analysis['source'] = {'path': str(source),
+                              'sha256_20mm': sha256(original.read_bytes()).hexdigest(),
+                              'sha256_30mm': sha256(modified.read_bytes()).hexdigest()}
+    with stage(analysis, 'empty_plate'):
+        center = m7.find_centroid(session)
+        if center is None:
+            raise ValueError('the U1 template did not open')
+        analysis['bed_point'] = list(center)
+        prepare_plate(session, work, analysis)
+    with stage(analysis, 'import_chooser'):
+        import_stl(session, source, work, analysis)
+    with stage(analysis, 'observe_import'):
+        arrived, fraction = wait_arrival(session, timeout_s=30, min_frac=0.001)
+        analysis['import_fraction'] = fraction
         if not arrived:
-            return m7.m7_verdict({"#251 external STL imported": f"FAIL (colored fraction={fraction:.3%})"})
-        m7.ensure_maximized(session)
-        first = observe_mesh(session, project_before, source)
-        results = {"#251 imported external STL has 20 mm XYZ": "PASS" if first == (20, 20, 20) else "FAIL"}
-        if first != (20, 20, 20):
-            return m7.m7_verdict(results)
-
+            raise ValueError(f'the imported STL did not appear on the plate (colored fraction={fraction:.3%})')
+    with stage(analysis, 'save_imported'):
+        read(analysis, 'before', save_snapshot(session, work, 'before-reload'), source, side=20)
+    with stage(analysis, 'reload_modified'):
         shutil.copyfile(modified, source)
-        print(f"{LOG} updated exact source path={source}, 30 mm STL SHA-256={digest_file(source)}")
-        invoked = reload_selected(session, workspace / "prepare-import.png")
-        second = observe_mesh(session, project_after, source) if invoked else None
-        updated = second == (30, 30, 30)
-        results["#251 context reload reads 30 mm XYZ from disk"] = "PASS" if updated else "FAIL"
-        if not updated:
-            return m7.m7_verdict(results)
-
+        analysis['source']['sha256_at_reload'] = sha256(source.read_bytes()).hexdigest()
+        if not reload_selected(session, work / 'prepare-import.png'):
+            raise ValueError('the object menu did not offer Reload from disk after the STL changed')
+    with stage(analysis, 'save_reloaded'):
+        read(analysis, 'reloaded', save_snapshot(session, work, 'after-reload'), source, side=30)
+    with stage(analysis, 'delete_source'):
         source.unlink()
-        print(f"{LOG} deleted isolated source={source}, source still exists={source.exists()}")
-        missing_invoked = reload_selected(session, workspace / "prepare-reloaded.png")
-        explicit, closed = (
-            observe_missing_dialog(session, source, workspace / "missing-dialog.png")
-            if missing_invoked else (False, False)
-        )
-        results["#251 context reload displays explicit missing-source error"] = "PASS" if explicit else "FAIL"
-        final = observe_mesh(session, project_missing, source) if closed else None
-        results["#251 missing source leaves previous 30 mm model"] = (
-            "PASS" if final == second else "FAIL")
-        return m7.m7_verdict(results)
-    finally:
-        session.close()
+        analysis['source']['exists_after_delete'] = source.exists()
+        print(f"{LOG} deleted source={source}, source still exists={source.exists()}", flush=True)
+    with stage(analysis, 'reload_missing'):
+        if not reload_selected(session, work / 'prepare-reloaded.png'):
+            raise ValueError('the object menu did not offer Reload from disk after the STL was deleted')
+        missing = analysis['missing'] = observe_missing_dialog(session, source, work / 'missing-dialog.png')
+        missing['explicit_error'] = explicit_missing_error(missing['behavior'], missing['title'], missing['body'])
+    with stage(analysis, 'save_after_missing'):
+        read(analysis, 'after_missing', save_snapshot(session, work, 'after-missing'), modified,
+             recorded=source, side=30)
+    with stage(analysis, 'read_results'):
+        # A reading, not a clause: cancelling the dialog must not cost the 30 mm object.
+        analysis['after_missing']['still_30mm'] = is_cube(analysis['after_missing'], 30)
+        checks = clauses(analysis['before'], analysis['reloaded'],
+                         missing['behavior'], missing['title'], missing['body'])
+        detail = (f"{missing['behavior']} {missing['title']!r} names no missing file"
+                  if missing['appeared'] else 'no dialog at all')
+        for clause, passed in checks.items():
+            analysis['results'][clause] = 'PASS' if passed else (f'FAIL ({detail})' if clause == CLAUSE_MISSING else 'FAIL')
+        leftovers = m7.wait_dialog(session.pid, timeout_s=0.5)
+        analysis['editor_at_end'] = {'alive': session.alive(), 'dialog': leftovers[1] if leftovers else None}
+        if not session.alive() or leftovers:
+            raise ValueError(f'editor left in an unexpected state: {analysis["editor_at_end"]!r}')
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(case_main(251, FIXTURE, prepare_fixture, steps))
