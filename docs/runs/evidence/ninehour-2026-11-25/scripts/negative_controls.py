@@ -11,8 +11,8 @@ every other member byte-identical), and given to the judges the suite uses:
 
   business  harness.native_pilots.verify_business(scenario, project, fixture, gcode) - the call
             behind checks.business in result.json (harness/native_save_session.py:315,
-            verify_script_business). Row 264: the param-family judge that
-            harness.param_case_lib.make_verify builds. Row 276: make_comparison_verify WITHOUT a
+            verify_script_business). Row 264: the param-family judge, including the original
+            FDM model's export checks. Row 276: make_comparison_verify WITHOUT a
             baseline, exactly as the guest ran it (pair_status "baseline_required").
   paired    row 276 only: the host-side pairing of tools/native_save_demo.py:373-375 -
             verify_business(..., baseline_gcode=<fixed e9aa6f88 export>) and then
@@ -35,7 +35,9 @@ import hashlib
 import io
 import json
 import shutil
+import subprocess
 import sys
+import tempfile
 import time
 import zipfile
 from pathlib import Path
@@ -229,7 +231,10 @@ def controls(run: dict) -> list:
 def summarized(detail) -> dict:
     keep = ("case_id", "pair_status", "layer_count", "last_z", "first_z", "schedule_error", "schedule_asserted",
             "gcode_sha256", "baseline_run", "baseline_outer_wall_peak_mm_s", "outer_wall_peak_mm_s",
-            "outer_wall_peak_mm3_s", "near_feishu_178_mm_s", "x_limit_effect", "other_settings_preserved", "scene_preserved")
+            "outer_wall_peak_mm3_s", "near_feishu_178_mm_s", "x_limit_effect", "other_settings_preserved", "scene_preserved",
+            "fdm_original_model_export_checked", "overhang_feeds_mm_min", "missing_overhang_feeds_mm_min",
+            "bridge_feeds_mm_min", "bridge_feed_set_changed", "top_surface_paths_match_default",
+            "top_surface_feeds_changed", "unmet_expectations")
     return {key: detail[key] for key in keep if isinstance(detail, dict) and key in detail}
 
 
@@ -305,19 +310,33 @@ def cell(entry: dict) -> str:
 
 
 def main() -> int:
+    global SCRATCH
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--out", default=str(HERE / "negative_controls.json"))
     parser.add_argument("--keep", action="store_true", help="keep the scratch copies fed to the full verifier")
+    parser.add_argument("--check-264-fdm", action="store_true",
+                        help="check the original FDM model's genuine export and mutations 6–6e")
     options = parser.parse_args()
+    selected_runs = CASE_RUNS
+    if options.check_264_fdm:
+        if Path(options.out).resolve() == HERE / "negative_controls.json":
+            parser.error("--check-264-fdm requires --out to a distinct file")
+        selected_runs = [run_id for run_id in CASE_RUNS if FIXTURE_OF[run_id] == "fdmt"]
+        SCRATCH = Path(tempfile.mkdtemp(prefix="param_264_fdm_controls_", dir=F.REPO / "artifacts"))
+    else:
+        if SCRATCH.exists():
+            shutil.rmtree(SCRATCH)
+        SCRATCH.mkdir(parents=True)
     started = time.time()
-    if SCRATCH.exists():
-        shutil.rmtree(SCRATCH)                    # this script's own scratch directory only
-    SCRATCH.mkdir(parents=True)
     entries = []
-    for run_id in CASE_RUNS:
+    for run_id in selected_runs:
         run = load(run_id)
         baseline = gcode_of(FIXED_276) if run["row"] == "276" else None
-        for control in controls(run):
+        selected_controls = controls(run)
+        if options.check_264_fdm:
+            selected_controls = [item for item in selected_controls
+                                 if item["id"] in {"1", "6", "6b", "6c", "6d", "6e"}]
+        for control in selected_controls:
             # the copies (and only the copies) are changed here
             project = (run["fixture"] if control["project"] == "fixture"
                        else build_project(run["project"], control["edits"]) if control["edits"] else run["project"])
@@ -361,7 +380,7 @@ def main() -> int:
                 files["exports/0001.gcode"] = gcode
             entries.append(dict(common, judge="full verifier (verify_saved, receipt made consistent)",
                                 **judge_full(run, control["id"], files, options.keep)))
-        print("judged %s (%s): %d controls" % (run_id[:8], run["scenario"], len(controls(run))))
+        print("judged %s (%s): %d controls" % (run_id[:8], run["scenario"], len(selected_controls)))
 
     # ---- table: one line per control, the runs of a group collapsed when they agree
     groups = [("264 cube", "cube", "264"), ("264 fdmt", "fdmt", "264"), ("276", "std", "276")]
@@ -369,7 +388,9 @@ def main() -> int:
               "full verifier (verify_saved, receipt made consistent)"]
     holes, lines = [], []
     for title, kind, row in groups:
-        run_ids = [r for r in CASE_RUNS if FIXTURE_OF[r] == kind and ROW[r] == row]
+        run_ids = [r for r in selected_runs if FIXTURE_OF[r] == kind and ROW[r] == row]
+        if not run_ids:
+            continue
         by = collections.defaultdict(dict)
         for entry in entries:
             if entry["run_id"] in run_ids:
@@ -398,7 +419,7 @@ def main() -> int:
                         if c is not None and c["verdict"] == "ACCEPTED" and not expected.startswith("ACCEPTED"):
                             holes.append((title, r, name, control, mutation, c.get("business_status")))
     report = {"generated_at_local": time.strftime("%Y-%m-%d %H:%M:%S"), "script": str(Path(__file__).resolve()),
-              "command": "set PYTHONDONTWRITEBYTECODE=1 && python -B \"%s\"" % Path(__file__).resolve(),
+              "command": subprocess.list2cmdline(["python", "-B", *sys.argv]),
               "repo": str(F.REPO), "repo_head": F.git_head(F.REPO),
               "methods": {"business": F.cite(verify_business), "paired_status": F.cite(param_comparison.comparison_business_status),
                           "full": F.cite(native_save_session.verify_saved),
@@ -412,6 +433,11 @@ def main() -> int:
     print("=" * 150)
     print("accepted where rejection was expected: %d entry(ies); written to %s (%d bytes) in %.1f s"
           % (len(holes), options.out, Path(options.out).stat().st_size, time.time() - started))
+    if options.check_264_fdm:
+        failed = [entry for entry in entries if entry["verdict"] != entry["expected"]]
+        for entry in failed:
+            print("unexpected %s for %s in %s" % (entry["verdict"], entry["control"], entry["judge"]))
+        return int(bool(failed))
     return 0
 
 
