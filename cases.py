@@ -126,6 +126,7 @@ CASES: dict[str, dict] = {
     # --- regression suite: main flow (m7, Feishu 测试用例 base tblLR8zYgwBuggDI
     #     — GUI业务 #7-#24 原子 + 主流程-模板 O/M 链; mapping in FEISHU_MAINFLOW.md)
     "m7a_boot_shutdown": _r("m7", "A"),
+    "m7x_140_close_without_residue": _r("m7", "A"),
     "m7b_new_project": _r("m7", "A"),
     "m7x_199_new_project_title": _r("m7", "A"),
     "m7c_import_stl": _r("m7", "A"),
