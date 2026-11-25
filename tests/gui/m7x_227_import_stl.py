@@ -154,27 +154,19 @@ def click_object_then_key(session, work, phase, key, analysis):
 
 
 def turn_with_gizmo(session, work, analysis):
-    """Open the Rotate gizmo on the selected object and type 45 into its rightmost (Z) field.
+    """Select the object, open the Rotate gizmo with R, and type 45 into its rightmost (Z) field.
 
     On tag sm-v2.4.0 the PageUp key only opens this gizmo (GLCanvas3D.cpp,
     `do_rotate(L("Tool Rotate"))`); it does not turn the object by itself,
     which a first run showed: the saved project was unchanged. The gizmo is
-    opened with the Rotate tool's shortcut, R, on the selected object. Its
-    window is drawn inside the canvas, so the numeric fields are found by OCR
-    on the row labelled Rotate (X, Y, Z from left to right); m7e_rotate45
-    types into the same fields. The saved project, not the read-back, is the judge."""
-    centre = m7.find_centroid(session)
-    if centre is None:
-        raise ValueError('no object is visible on the plate for the Rotate gizmo')
-    if not bring_main_to_mouse(session.hwnd):
-        raise ValueError('Orca did not acquire the guest foreground')
-    canvas = winutil.deepest_child_at(session.hwnd, *m7.client(session, *centre))
-    if winutil.window_class(canvas) != 'wxGLCanvas' or winutil._window_pid(canvas) != session.pid:
-        raise ValueError('the plate did not resolve to the Prepare canvas')
-    focus_canvas(session, canvas)
-    capture(session, work / 'rotated-before.png')
-    press(ord('R'))  # the Rotate tool's shortcut; a second guest run showed the toolbar tooltips unreadable
-    time.sleep(1.5)
+    opened with the Rotate tool's shortcut, R, after the object is clicked:
+    a third run showed that saving the project had cleared the selection, so
+    R alone highlighted the tool without showing any field. The gizmo window
+    is drawn inside the canvas, so its numeric fields are found by OCR on the
+    row labelled Rotate (X, Y, Z from left to right); m7e_rotate45 types into
+    the same fields. The saved project, not the read-back, is the judge."""
+    click_object_then_key(session, work, 'rotated', ord('R'), analysis)
+    time.sleep(1.0)
     capture(session, work / 'rotated-gizmo.png')
     boxes = m7.gizmo_row_boxes(session, 'rotate') or m7.gizmo_row_boxes(session, 'rotation')
     record = analysis.setdefault('gizmo', {})['rotate'] = {
@@ -188,7 +180,7 @@ def turn_with_gizmo(session, work, analysis):
     time.sleep(1.0)
     record['fields_after'] = [[round(x), round(y), text] for x, y, text in
                               (m7.gizmo_row_boxes(session, 'rotate') or m7.gizmo_row_boxes(session, 'rotation'))]
-    capture(session, work / 'rotated.png')
+    capture(session, work / 'rotated-typed.png')
 
 
 def steps(session, work, analysis, args):
