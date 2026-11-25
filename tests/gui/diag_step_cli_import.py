@@ -40,25 +40,28 @@ def read_project(path):
     """Objects, parts and named extruders of the 3MF, straight from its XML."""
     with ZipFile(path) as archive:
         names = archive.namelist()
-        model_name = "3D/3dmodel.model"
-        if model_name not in names:
-            model_name = next(name for name in names if name.startswith("3D/") and name.endswith(".model"))
-        model = ET.fromstring(archive.read(model_name))
-        objects = []
-        for obj in model.iter("{*}object"):
-            entry = {"id": obj.get("id"), "type": obj.get("type"), "name": obj.get("name")}
-            mesh = obj.find("{*}mesh")
-            if mesh is not None:
-                vertices = mesh.findall("{*}vertices/{*}vertex")
-                points = [(float(v.get("x")), float(v.get("y")), float(v.get("z"))) for v in vertices]
-                entry["triangles"] = len(mesh.findall("{*}triangles/{*}triangle"))
-                entry["box_mm"] = [[min(p[a] for p in points), max(p[a] for p in points)] for a in range(3)] if points else None
-            components = obj.find("{*}components")
-            if components is not None:
-                entry["components"] = [{"object": c.get("objectid"), "transform": c.get("transform")} for c in components]
-            objects.append(entry)
-        build = [{"object": item.get("objectid"), "transform": item.get("transform")}
-                 for item in model.iter("{*}item")]
+        # Snapmaker Orca 2.4.0 writes the objects under 3D/Objects/*.model; 3D/3dmodel.model may be empty.
+        members = sorted(name for name in names if name.startswith("3D/") and name.endswith(".model"))
+        objects, build = [], []
+        for member in members:
+            model = ET.fromstring(archive.read(member))
+            for obj in (e for e in model.iter() if e.tag.rsplit("}", 1)[-1] == "object"):
+                entry = {"member": member, "id": obj.get("id"), "type": obj.get("type"), "name": obj.get("name")}
+                mesh = obj.find("{*}mesh")
+                if mesh is not None:
+                    points = [(float(v.get("x")), float(v.get("y")), float(v.get("z")))
+                              for v in mesh.findall("{*}vertices/{*}vertex")]
+                    entry["triangles"] = len(mesh.findall("{*}triangles/{*}triangle"))
+                    entry["box_mm"] = ([[min(p[a] for p in points), max(p[a] for p in points)] for a in range(3)]
+                                       if points else None)
+                components = obj.find("{*}components")
+                if components is not None:
+                    entry["components"] = [{"object": c.get("objectid"), "transform": c.get("transform")}
+                                           for c in components]
+                objects.append(entry)
+            # ElementTree.iter takes "{namespace}*" but not "{*}tag"; the local names are compared by hand.
+            build.extend({"member": member, "object": item.get("objectid"), "transform": item.get("transform")}
+                         for item in (e for e in model.iter() if e.tag.rsplit("}", 1)[-1] == "item"))
         settings = json.loads(archive.read("Metadata/project_settings.config").decode("utf-8-sig"))
         extruders = []
         if "Metadata/model_settings.config" in names:
@@ -66,7 +69,7 @@ def read_project(path):
             for part in (e for e in meta.iter() if e.tag.rsplit("}", 1)[-1] in ("object", "part")):
                 facts = {m.get("key"): m.get("value") for m in part.findall("{*}metadata")}
                 extruders.append({"name": part.get("name"), **{k: facts.get(k) for k in ("extruder", "source_file")}})
-    return {"model_member": model_name, "objects": objects, "build": build, "object_extruders": extruders,
+    return {"model_members": members, "objects": objects, "build": build, "object_extruders": extruders,
             "filament_colour": settings.get("filament_colour"), "filament_ids": settings.get("filament_settings_id")}
 
 
