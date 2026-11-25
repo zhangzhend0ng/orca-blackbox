@@ -54,7 +54,6 @@ def is_save_prompt(text):
 def import_unsaved_model(session):
     model = HERE / "fixtures" / "Prusa.stl"
     before = m7.model_colored_frac(session)
-    initial_blobs = m7.model_blob_count(session)
     dispatched, dialog = m7.file_menu_dispatch(session, "stl", via="Import", expect_dialog=True)
     if not (dispatched and dialog):
         print("[m7x199] Import STL file chooser did not open")
@@ -71,16 +70,18 @@ def import_unsaved_model(session):
         return False
     winutil._send_msg(dialog[3], m7.WM_COMMAND_MSG, 1, 0)  # IDOK
     deadline = time.monotonic() + 20
+    current = before
     while session.alive() and time.monotonic() < deadline:
         if not winutil.user32.IsWindowVisible(dialog[3]):
             current = m7.model_colored_frac(session)
-            blobs = m7.model_blob_count(session)
-            if blobs > initial_blobs and current > before:
+            # The new STL can overlap a fixture object in this camera view.
+            if current >= before + 0.002:
                 print(f"[m7x199] Imported {model.name}: colored fraction {before:.3%} -> "
-                      f"{current:.3%}; object-shaped blobs {initial_blobs} -> {blobs}")
+                      f"{current:.3%}")
                 return True
         time.sleep(0.8)
-    print(f"[m7x199] could not confirm additional {model.name} geometry")
+    print(f"[m7x199] could not confirm additional {model.name} geometry: "
+          f"colored fraction {before:.3%} -> {current:.3%}")
     return False
 
 
