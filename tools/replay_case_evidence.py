@@ -1,4 +1,4 @@
-"""Replay the on-disk assertions of a harvested #201 or #250 run.
+"""Replay the on-disk assertions of a harvested #201, #249 or #250 run.
 
 Pass one or more *-receipt.json files. JSON output and exit status describe the
 offline checks, including their negative controls. The original GUI verdict is
@@ -15,11 +15,12 @@ from zipfile import BadZipFile
 from xml.etree.ElementTree import ParseError
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from tools import replay_negative_part, replay_project_save
+from tools import replay_negative_part, replay_part_attachment, replay_project_save
 
 
 ADAPTERS = {
     "m7x_201_save_project_reopen": replay_project_save.replay,
+    "m7x_249_add_part": replay_part_attachment.replay,
     "m7x_250_negative_part": replay_negative_part.replay,
 }
 

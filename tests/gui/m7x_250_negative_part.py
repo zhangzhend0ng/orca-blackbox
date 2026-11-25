@@ -40,41 +40,41 @@ def write_cutter(path):
             stream.write(struct.pack('<12fH', 0, 0, 0, *vertices[a], *vertices[b], *vertices[c], 0))
 
 
-def send_menu_key(session, vk):
+def send_menu_key(session, vk, *, log='[m7x250]'):
     fg = winutil.user32.GetForegroundWindow()
     if winutil._window_pid(fg) != session.pid:
-        print(f'[m7x250] refusing menu key {vk:#x}: foreground {fg:#x} owned elsewhere')
+        print(f'{log} refusing menu key {vk:#x}: foreground {fg:#x} owned elsewhere')
         return False
     m7.mdu._send_keys([(vk, False), (vk, True)])
     time.sleep(0.15)
     return True
 
 
-def highlight_menu_item(session, menu, wanted):
+def highlight_menu_item(session, menu, wanted, *, log='[m7x250]'):
     rows = topbar_util.menu_items(menu)
     if not any(i == wanted and flags & 0x80 for i, _, flags in rows):
-        if not send_menu_key(session, 0x24):  # VK_HOME.
+        if not send_menu_key(session, 0x24, log=log):  # VK_HOME.
             return False
     for _ in range(len(rows) + 1):
         current = topbar_util.menu_items(menu)
         if any(i == wanted and flags & 0x80 for i, _, flags in current):
-            print(f'[m7x250] native highlighted row {wanted} in menu {menu:#x}')
+            print(f'{log} native highlighted row {wanted} in menu {menu:#x}')
             return True
-        if not send_menu_key(session, 0x28):  # VK_DOWN.
+        if not send_menu_key(session, 0x28, log=log):  # VK_DOWN.
             return False
-    print(f'[m7x250] target menu row {wanted} not highlighted: {topbar_util.menu_items(menu)!r}')
+    print(f'{log} target menu row {wanted} not highlighted: {topbar_util.menu_items(menu)!r}')
     return False
 
 
-def open_negative_submenu(session):
-    root = open_model_menu(session, 'Add Negative Part')
+def open_part_submenu(session, *, menu_label='Add Negative Part', log='[m7x250]'):
+    root = open_model_menu(session, menu_label)
     if root is None:
         return None
     root_hwnd, root_menu, parent_index = root
     _, submenu = topbar_util.item_info(root_menu, parent_index)
-    if not submenu or not highlight_menu_item(session, root_menu, parent_index):
+    if not submenu or not highlight_menu_item(session, root_menu, parent_index, log=log):
         return None
-    if not send_menu_key(session, 0x27):  # VK_RIGHT.
+    if not send_menu_key(session, 0x27, log=log):  # VK_RIGHT.
         return None
     deadline = time.monotonic() + 5.0
     while time.monotonic() < deadline:
@@ -83,28 +83,28 @@ def open_negative_submenu(session):
         child = next((hwnd for hwnd, hmenu in visible if hwnd != root_hwnd and hmenu == submenu), None)
         if child:
             rows = topbar_util.menu_items(submenu)
-            print(f'[m7x250] visible negative submenu hwnd={child:#x} hmenu={submenu:#x}: {rows!r}')
+            print(f'{log} visible {menu_label} submenu hwnd={child:#x} hmenu={submenu:#x}: {rows!r}')
             load = [i for i, label, flags in rows
                     if label.partition('\t')[0].rstrip('. …').strip().casefold() == 'load' and not flags & 3]
             return (child, submenu, load[0]) if len(load) == 1 else None
         time.sleep(0.2)
-    print(f'[m7x250] expected submenu HMENU {submenu:#x} not visible: {visible!r}')
+    print(f'{log} expected submenu HMENU {submenu:#x} not visible: {visible!r}')
     return None
 
 
-def load_negative_part(session, submenu, source):
+def load_part_file(session, submenu, source, *, log='[m7x250]'):
     _, menu, index = submenu
-    if not highlight_menu_item(session, menu, index) or not send_menu_key(session, 0x0D):
+    if not highlight_menu_item(session, menu, index, log=log) or not send_menu_key(session, 0x0D, log=log):
         return False
     dialog = m7.wait_dialog(session.pid, timeout_s=15)
     edit = export_util.find_edit(dialog[3]) if dialog else None
-    if not edit:
-        print(f'[m7x250] negative Load chooser missing: {dialog!r}')
+    if not edit or winutil._window_pid(edit) != session.pid:
+        print(f'{log} Load chooser missing: {dialog!r}')
         return False
     winutil.select_all(edit)
     winutil.msg_text(edit, str(source))
     entered = winutil.edit_text(edit, size=260)
-    print(f'[m7x250] Load chooser={dialog[1]!r}, filename readback={entered!r}')
+    print(f'{log} Load chooser={dialog[1]!r}, filename readback={entered!r}')
     if entered != str(source):
         return False
     winutil._send_msg(dialog[3], m7.WM_COMMAND_MSG, 1, 0)  # IDOK.
@@ -116,10 +116,10 @@ def load_negative_part(session, submenu, source):
                 time.sleep(1)
                 return winutil.user32.IsWindowEnabled(session.hwnd)
             if prompt[1].strip().casefold() == 'add modifier':
-                print(f'[m7x250] closing expected tips dialog {prompt[1]!r}')
+                print(f'{log} closing expected tips dialog {prompt[1]!r}')
                 m7.click_dialog_button(prompt[3], 'OK', fallback_first=False)
             elif 'load' not in prompt[1].casefold():
-                print(f'[m7x250] unexpected dialog after loading negative part: {prompt!r}')
+                print(f'{log} unexpected dialog after loading part: {prompt!r}')
                 return False
         time.sleep(0.3)
     return False
@@ -207,9 +207,9 @@ def run_case(args, work):
             return results
         before = m7.capture_bgr(session)
         cv2.imwrite(str(work / 'prepare-before.png'), before)
-        submenu = open_negative_submenu(session)
+        submenu = open_part_submenu(session)
         results['Add negative part opens its second-level menu'] = 'PASS' if submenu else 'FAIL'
-        if not submenu or not load_negative_part(session, submenu, src):
+        if not submenu or not load_part_file(session, submenu, src):
             results['load a negative part on model A'] = 'FAIL'
             return results
         after = m7.capture_bgr(session)
