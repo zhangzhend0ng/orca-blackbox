@@ -149,15 +149,17 @@ CASES: dict[str, dict] = {
     # independent guest sessions and the offline replay pass on one commit; the others are runnable.
     "m7x_227_import_stl": _o("m7", "A"),            # File > Import, binary STL
     "m7x_230_import_project": _o("m7", "A"),        # File > Import, a saved two-plate project
+    "m7x_232_import_configs": _o("m7", "A"),        # File > Import Configs
     "m7x_231_import_zip": _o("m7", "A"),            # File > Import Zip Archive
     # 6bdf66b: two guest sessions GREEN on 2026-11-26 and 43 offline checks each
     # (docs/runs/evidence/feishu-233-2026-11-26).
     "m7x_233_export_merged_stl": _r("m7", "A"),
     "m7x_234_export_plate_slice": _o("m7", "A"),    # File > Export, the plate's sliced file
+    "m7x_235_export_all_plates": _o("m7", "A"),    # File > Export, every plate's sliced file
     # 81dbcf1 and again 48e3aa7 (which added the G-code footprint check): two guest sessions GREEN
     # each on 2026-11-26, 38 offline checks each (docs/runs/evidence/feishu-236-2026-11-26).
     "m7x_236_export_gcode": _r("m7", "A"),
-    "m7x_246_repair_model": _o("m7", "A"),         # model context menu, Fix model
+    "m7x_246_repair_model": _o("m7", "A"),         # model context menu, Fix model (no such row on Windows 11)
     # #254 follow-up probe: a record of how the plate's temporary G-code grows under the memory guard,
     # never a verdict.
     "m7x_254_gcode_tmp_probe": _o("m7", "A"),
