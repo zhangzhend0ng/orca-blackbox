@@ -163,6 +163,7 @@ CASES: dict[str, dict] = {
     "m8b_official_color": _r("m8", "A", known_limitation=True),
     "m8x_46_color_confirm": _r("m8", "A"),
     "m8x_47_color_cancel": _r("m8", "A"),
+    "m8x_48_modal_color_header": _r("m8", "A"),
     "m8c_temp_mix_gate": _r("m8", "A", known_limitation=True),
     "m8d_purifier_gcode": _r("m8", "A", known_limitation=True),
     "m8e_purifier_weakcool": _r("m8", "A"),              # GREEN 09-17 客机
