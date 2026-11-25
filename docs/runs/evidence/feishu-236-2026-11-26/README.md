@@ -6,10 +6,10 @@ Snapmaker Orca 2.4.0，U1 0.4 mm、Generic PLA、0.20 mm Standard（`fixtures/fe
 
 | 候选提交 | 会话 | 客机 | 场景耗时 | 离线复核 |
 | --- | --- | --- | ---: | --- |
-| `48e3aa7d…`（现行） | [首轮收据](48e3aa7d-run1-receipt.json) | GREEN | 111.888 秒 | 通过（38 项） |
-| `48e3aa7d…` | [第二轮收据](48e3aa7d-run2-receipt.json) | GREEN | 111.389 秒 | 通过（38 项） |
-| `81dbcf14…`（上一版） | [首轮收据](81dbcf14-run1-receipt.json) | GREEN | 110.605 秒 | 通过（38 项） |
-| `81dbcf14…` | [第二轮收据](81dbcf14-run2-receipt.json) | GREEN | 110.628 秒 | 通过（38 项） |
+| `48e3aa7d…`（现行） | [首轮收据](48e3aa7d-run1-receipt.json) | GREEN | 111.888 秒 | 通过（46 项） |
+| `48e3aa7d…` | [第二轮收据](48e3aa7d-run2-receipt.json) | GREEN | 111.389 秒 | 通过（46 项） |
+| `81dbcf14…`（上一版） | [首轮收据](81dbcf14-run1-receipt.json) | GREEN | 110.605 秒 | 通过（46 项） |
+| `81dbcf14…` | [第二轮收据](81dbcf14-run2-receipt.json) | GREEN | 110.628 秒 | 通过（46 项） |
 
 四个会话都在 win11-test 的 `test` 交互桌面经 `runner/hv_go.ps1` 启动，各自是新的 Orca 进程、配置目录和同一夹具。两个候选提交之间，这条用例多了一项 GUI 内判据：G-code 的挤出范围要落在另存工程的对象包围盒内（超出不超过 1.0 mm）。所以在新提交上重新跑了两个会话，两次的超出量都是 0.0 mm；旧提交的两个会话保留作对照。
 
@@ -22,7 +22,7 @@ Snapmaker Orca 2.4.0，U1 0.4 mm、Generic PLA、0.20 mm Standard（`fixtures/fe
 
 四份导出件的 10,256 行运动指令逐行相同，只有生成时间和对象 id 三行注释不同。切片以 File→Export 的 `Export G-code` 行启用为完成信号（点 Slice 后 8.5 / 8.6 秒），不用按钮的完成态模板：客机内存紧张时那个模板会在切片仍被「Memory Usage Warning」暂停时照样匹配，见[菜单普查记录](../elevenhour-filemenu-2026-11-25/README.md)。四个会话都没有出现该对话框。逐项读数在 [analysis.json](48e3aa7d-run1-analysis.json) 里。
 
-离线复核用 `tools/replay_case_evidence.py`：先核对清单里的字节数与 SHA-256，再只从归档文件重判，并做 13 个反例，每个收据启动一个独立进程，各约 1.5 秒。反例包括空文件、只有文件头、删一层并改写全部声明层数、去掉结束段、整份 G-code 平移 3 mm、扩展名不是 .gcode、换成别的工程、清单不符、把 analysis 改成 PASS。
+离线复核用 `tools/replay_case_evidence.py`：先核对清单里的字节数与 SHA-256，再只从归档文件重判，并做 19 个反例，每个收据启动一个独立进程，各约 1.5 秒。反例包括空文件、只有文件头、删一层并改写全部声明层数、去掉结束段、整份 G-code 平移 3 mm、扩展名不是 .gcode、换成别的工程、清单不符、把 analysis 改成 PASS。
 
 ```powershell
 & runner/hv_go.ps1 -Cases m7x_236_export_gcode -NoSync

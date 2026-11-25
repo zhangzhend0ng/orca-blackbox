@@ -6,8 +6,8 @@ Snapmaker Orca 2.4.0，U1 0.4 mm、Generic PLA、0.20 mm Standard（`fixtures/fe
 
 | 候选提交 | 会话 | 客机 | 场景耗时 | 离线复核 |
 | --- | --- | --- | ---: | --- |
-| `48e3aa7d…` | [首轮收据](48e3aa7d-run1-receipt.json) | GREEN | 190.995 秒 | 通过（97 项） |
-| `48e3aa7d…` | [第二轮收据](48e3aa7d-run2-receipt.json) | GREEN | 191.465 秒 | 通过（97 项） |
+| `48e3aa7d…` | [首轮收据](48e3aa7d-run1-receipt.json) | GREEN | 190.995 秒 | 通过（103 项） |
+| `48e3aa7d…` | [第二轮收据](48e3aa7d-run2-receipt.json) | GREEN | 191.465 秒 | 通过（103 项） |
 
 两个会话都在 win11-test 的 `test` 交互桌面经 `runner/hv_go.ps1` 启动。每个会话依次导出两份：先导出标准立方体（简单），再导出标准球体（复杂），用两者比文件大小。
 
@@ -21,7 +21,7 @@ Snapmaker Orca 2.4.0，U1 0.4 mm、Generic PLA、0.20 mm Standard（`fixtures/fe
 
 两个会话切球体时都弹出了 `Memory Usage Warning`（01:37:22、01:40:42），用例以对话框自身为根窗口点 `Yes, Continue` 后切片继续（[截图](48e3aa7d-run1-memory-guard-0.png)）。切片完成的信号是 File→Export 的 `Export G-code` 行启用，不是按钮的完成态。
 
-离线复核用 `tools/replay_case_evidence.py`：先核对清单里的字节数与 SHA-256，再只从归档文件重判，并做 17 个反例，每个收据启动一个独立进程，各约 14.5 秒。正读数里，归档的配置要等于切片时另存的工程、`slice_info` 要和 G-code 的层数与对象一致、挤出范围要落在对象上（超出量 0.0 mm）。反例包括归档名下放纯 G-code、没有 G-code、没有预览图、空白预览、留下旧校验、删一层并改写校验、把打印整体移出对象等。
+离线复核用 `tools/replay_case_evidence.py`：先核对清单里的字节数与 SHA-256，再只从归档文件重判，并做 23 个反例，每个收据启动一个独立进程，各约 14.5 秒。正读数里，归档的配置要等于切片时另存的工程、`slice_info` 要和 G-code 的层数与对象一致、挤出范围要落在对象上（超出量 0.0 mm）。反例包括归档名下放纯 G-code、没有 G-code、没有预览图、空白预览、留下旧校验、删一层并改写校验、把打印整体移出对象等。
 
 ```powershell
 & runner/hv_go.ps1 -Cases m7x_234_export_plate_slice -NoSync

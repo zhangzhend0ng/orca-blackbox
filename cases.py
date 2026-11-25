@@ -157,12 +157,12 @@ CASES: dict[str, dict] = {
     # 11858f1: two guest sessions GREEN on 2026-11-26 and 56 offline checks each
     # (docs/runs/evidence/feishu-227-2026-11-26).
     "m7x_227_import_stl": _r("m7", "A"),
-    # 48e3aa7: two guest sessions GREEN on 2026-11-26 and 97 offline checks each
+    # 48e3aa7: two guest sessions GREEN on 2026-11-26 and 103 offline checks each
     # (docs/runs/evidence/feishu-234-2026-11-26).
     "m7x_234_export_plate_slice": _r("m7", "A"),
     "m7x_235_export_all_plates": _o("m7", "A"),    # File > Export, every plate's sliced file
     # 81dbcf1 and again 48e3aa7 (which added the G-code footprint check): two guest sessions GREEN
-    # each on 2026-11-26, 38 offline checks each (docs/runs/evidence/feishu-236-2026-11-26).
+    # each on 2026-11-26, 46 offline checks each (docs/runs/evidence/feishu-236-2026-11-26).
     "m7x_236_export_gcode": _r("m7", "A"),
     "m7x_237_export_configs": _o("m7", "A"),       # File > Export Preset Bundle, then Import Configs
     # c378dee: two guest sessions GREEN on 2026-11-26 and 51 offline checks each
