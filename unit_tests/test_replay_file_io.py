@@ -86,8 +86,9 @@ def project_3mf(triangles=None, transform="1 0 0 0 1 0 0 0 1 0 0 0", settings=No
 def config_lines(settings=None):
     lines = []
     for key, value in (SETTINGS if settings is None else settings).items():
-        joined = ",".join(value) if key == "nozzle_diameter" else ";".join(value) if isinstance(value, list) else value
-        lines.append(f"; {key} = {joined}")
+        joined = ("," if key == "nozzle_diameter" else ";").join(str(item) for item in value) \
+            if isinstance(value, list) else value
+        lines.append(f"; {key} = {str(joined).replace(chr(10), chr(92) + 'n')}")     # a newline is written escaped
     return lines + [f"; filler_{index} = {index}" for index in range(12)]
 
 
@@ -193,7 +194,9 @@ def test_synthetic_run_passes_every_reading_and_every_counterexample(tmp_path):
         "empty_file_rejected", "header_only_rejected", "missing_layer_rejected", "declared_total_mismatch_rejected",
         "layer_removed_with_rewritten_totals_rejected", "no_end_gcode_rejected", "tail_truncated_rejected",
         "foreign_gcode_rejected", "print_moved_off_the_object_rejected", "another_object_printed_rejected",
-        "wrong_extension_rejected", "other_project_rejected", "manifest_mismatch_rejected", "edited_analysis_rejected"}
+        "another_generator_rejected", "no_start_gcode_rejected", "no_trailer_notes_rejected", "dry_layer_rejected",
+        "thin_config_rejected", "wrong_extension_rejected", "other_project_rejected", "manifest_mismatch_rejected",
+        "edited_analysis_rejected"}
     assert (result["export"]["layers"], result["export"]["z_last"], result["export"]["object_names"]) == (
         135, [27.05], ["立方体"])
 
@@ -215,8 +218,8 @@ def test_replay_actually_reads_every_counterexample_on_a_temporary_copy(tmp_path
     monkeypatch.setattr(export, "_read", lambda place, pre: reads.append(place.name) or real(place, pre))
     result = export.replay(folder, prefix)
     assert all(result["checks"].values())
-    assert len([key for key in result["checks"] if key.endswith("_rejected")]) == 14
-    assert len(reads) == 15 and sum(name.startswith("replay-") for name in reads) == 14
+    assert len([key for key in result["checks"] if key.endswith("_rejected")]) == 19
+    assert len(reads) == 20 and sum(name.startswith("replay-") for name in reads) == 19
 
 
 # --- what each reading refuses when the manifest agrees with the stand-in ------------
@@ -283,6 +286,22 @@ def test_a_print_attributed_to_another_object_is_refused(tmp_path):
     # whole in itself and in place; only the name it prints belongs to no object of the saved project
     result = refused(tmp_path, ["printed_objects_are_saved_objects"], gcode=export._renamed(plate_gcode()))
     assert result["checks"]["oracle_accepts_export"]
+
+
+@pytest.mark.parametrize("label,failed", [
+    ("another_generator_rejected", ["generated_by_snapmaker_orca"]),
+    ("no_start_gcode_rejected", ["start_gcode_present"]),
+    ("no_trailer_notes_rejected", ["trailer_notes_present"]),
+    ("dry_layer_rejected", ["every_layer_extrudes"]),
+    ("thin_config_rejected", ["config_block_filled", "config_matches_sliced_project"])])
+def test_a_file_whole_in_its_layers_but_unlike_an_export_is_refused(tmp_path, label, failed):
+    # each stand-in changes one thing an export of this build always has, and leaves the layers intact
+    folder, prefix = write_run(tmp_path)
+    _checks, _report, raw, name = export._read(folder, prefix)
+    stand_in = export._stand_ins(raw, name, export.gcode(raw[name]))[label]
+    with copy_of(folder, prefix, **stand_in) as (other, altered):
+        readings = export._read(other, altered)[1]
+    assert set(failed) <= set(readings["failed"]), readings["failed"]
 
 
 def test_the_footprint_reading_is_live_and_an_edited_or_older_record_is_told_apart(tmp_path):
@@ -1422,3 +1441,356 @@ def test_the_menu_reader_tells_a_whole_reading_from_a_dropped_or_malformed_one()
     # a slice that began only after the menu was read "after" it
     assert not rows_replay._ordered(dict(ordered, slice={"started_utc": "2026-11-26T00:01:40+00:00"}))
     assert not rows_replay._ordered({}) and not rows_replay._ordered({"slice": "later"})
+
+
+# --- Feishu #234: the sliced plate exported as an archive -----------------------------------------
+#
+# The two standard fixtures as the application saves them when opened, each given the archive it
+# exports for that plate: a plate G-code printing walls over the object, its checksum record, two
+# previews, the first layer's pattern box and the slice records. The record is what the case writes
+# for these files, made with the case's own oracle.
+
+from hashlib import md5
+from tempfile import TemporaryDirectory
+
+from export_io_oracle import plate_object_layout, project_presets, sliced_expectation_gaps
+from tools import replay_plate_slice as plate_slice
+
+PLATE_PREFIX = "d4e5f678-run1"
+BALL_FIXTURE = ROOT / "fixtures" / "feishu_std_sphere.3mf"
+REAL_SLICED = EVIDENCE / "elevenhour-filemenu-2026-11-25/b958af2-probe1-plate-sliced.gcode.3mf"   # a real export
+RUN_234 = r"C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\234\run-plate001"
+MEMBER = "Metadata/plate_1.gcode"
+SQUARE = ((122.25, 122.75), (148.75, 122.75), (148.75, 149.25), (122.25, 149.25))      # inside the cube's footprint
+OCTAGON = ((129.25, 125.25), (140.75, 125.25), (144.75, 129.25), (144.75, 140.75),
+           (140.75, 144.75), (129.25, 144.75), (125.25, 140.75), (125.25, 129.25))      # inside the sphere's
+CAP = ((130.95, 130.95), (139.05, 130.95), (139.05, 139.05), (130.95, 139.05))          # the sphere's first layer
+INNER = ((131.25, 128.25), (138.75, 128.25), (141.75, 131.25), (141.75, 138.75),
+         (138.75, 141.75), (131.25, 141.75), (128.25, 138.75), (128.25, 131.25))      # its inner wall
+# label: (object, the walls it prints on every layer, those of its first layer or None, layers,
+# filament used in mm, printing time). The complex plate prints two walls a layer, so that its
+# G-code is the larger one although it has fewer layers.
+PLATES = {"simple": ("立方体", (SQUARE,), None, 135, 135.0, "1m 0s"),
+          "complex": ("球体", (OCTAGON, INNER), (CAP,), 100, 671.01, "13m 35s")}
+
+
+def outline_gcode(settings, name, walls, first, layers, used, note):
+    """A G-code that prints every outline of `walls` on every layer (and those of `first` on the
+    first, when given), with every block and note of a real export."""
+    lines = ["; HEADER_BLOCK_START", "; generated by Snapmaker Orca 2.4.0 on 2026-11-26 at 00:00:00",
+             f"; total layer number: {layers}", f"; max_z_height: {0.25 + 0.2 * (layers - 1):.2f}",
+             "; HEADER_BLOCK_END", "; EXECUTABLE_BLOCK_START", "M73 P0 R21", "M140 S65", "M104 T0 S220",
+             "G28", "PRINT_START", "G90", "M83"]
+    for index in range(layers):
+        lines += [";LAYER_CHANGE", f";Z:{0.25 + 0.2 * index:.2f}", ";HEIGHT:0.2",
+                  f"SET_PRINT_STATS_INFO TOTAL_LAYER={layers} CURRENT_LAYER={index + 1}",
+                  f"; printing object {name} id:1 copy 0", ";TYPE:Outer wall"]
+        for shape in (first if index == 0 and first else walls):
+            lines += [f"G1 X{shape[0][0]} Y{shape[0][1]} F30000"]
+            lines += [f"G1 X{x} Y{y} E0.1" for x, y in [*shape[1:], shape[0]]]
+        lines += [f"; stop printing object {name} id:1 copy 0"]
+    lines += ["M106 S0", "M104 S0", "PRINT_END", "; EXECUTABLE_BLOCK_END",
+              f"; filament used [mm] = {used:.2f}, 0.00, 0.00, 0.00, 0.00", f"; total layers count = {layers}",
+              f"; estimated printing time (normal mode) = {note}", "; CONFIG_BLOCK_START", *config_lines(settings),
+              "; CONFIG_BLOCK_END", ""]
+    return "\n".join(lines).encode("utf-8")
+
+
+def preview(size, colours):
+    """A plate preview: vertical stripes of `colours` shades, each far more than 8 pixels wide."""
+    stripes = np.repeat(np.arange(colours) * (255 // colours), size // colours).astype(np.uint8)[:size]
+    out = BytesIO()
+    Image.fromarray(np.stack([np.tile(stripes, (size, 1))] * 3, axis=2), "RGB").save(out, "PNG")
+    return out.getvalue()
+
+
+def bounds(*shapes) -> list:
+    """The box around outlines as the archive writes one: [xmin, ymin, xmax, ymax]."""
+    corners = [corner for shape in shapes for corner in shape]
+    return [min(x for x, _y in corners), min(y for _x, y in corners), max(x for x, _y in corners), max(y for _x, y in corners)]
+
+
+def sliced_archive(code, settings, name, used, note, box, previews=(64, 32)):
+    """A .gcode.3mf as the application writes one for a plate: the plate G-code with its checksum
+    record, two previews, the first layer's pattern box, the slice records and the project's settings."""
+    pattern = {"bbox_all": box, "bbox_objects": [
+        {"area": (box[2] - box[0]) * (box[3] - box[1]), "bbox": box, "id": 64, "layer_height": 0.25, "name": name}]}
+    return zipped({
+        "[Content_Types].xml": b'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>',
+        "Metadata/plate_1.png": preview(previews[0], 4), "Metadata/plate_1_small.png": preview(previews[1], 3),
+        "Metadata/plate_no_light_1.png": preview(8, 1),      # a one-shade picture that is no preview
+        "Metadata/plate_1.json": json.dumps(pattern).encode(),
+        MAIN: (f'<model unit="millimeter" xmlns="{CORE[1:-1]}"><metadata name="Application">Snapmaker_Orca-2.4.0'
+               '</metadata><resources/><build/></model>').encode(),
+        "Metadata/project_settings.config": json.dumps(settings).encode(),
+        MEMBER + ".md5": md5(code).hexdigest().upper().encode("ascii"),
+        MEMBER: code,
+        "Metadata/model_settings.config": (
+            '<config><plate><metadata key="plater_id" value="1"/><metadata key="gcode_file" value="Metadata/plate_1.gcode"/>'
+            '<metadata key="pattern_bbox_file" value="Metadata/plate_1.json"/></plate></config>').encode(),
+        "Metadata/slice_info.config": (
+            '<?xml version="1.0" encoding="UTF-8"?>\n<config>\n  <plate>\n    <metadata key="index" value="1"/>\n'
+            f'    <metadata key="prediction" value="{support.seconds("; estimated printing time (normal mode) = " + note)}"/>\n'
+            f'    <object identify_id="62" name="{name}" skipped="false" />\n'
+            f'    <filament id="1" tray_info_idx="" type="PLA" color="#D9A63A" used_m="{used / 1000:.2f}" used_g="0.4" />\n'
+            '  </plate>\n</config>\n').encode("utf-8"),
+    })
+
+
+def write_plate_run(folder, prefix=PLATE_PREFIX, *, parts=None, record=None, log_lines=None, guard=False):
+    """A #234 harvest in the shape the collector leaves: the two archives, the projects they were
+    sliced from, six screenshots and the record the case writes for them; with `guard`, an answered
+    guard dialog and its picture. `record` may be a callable that edits what the case would have written."""
+    folder.mkdir(parents=True, exist_ok=True)
+    files, codes, models = {}, {}, {"simple": FIXTURE.read_bytes(), "complex": BALL_FIXTURE.read_bytes()}
+    for label, (project_part, archive_part, _bare, pictures) in plate_slice.SAMPLES.items():
+        name, walls, first, layers, used, note = PLATES[label]
+        files[project_part] = as_saved(models[label], "(" + plate_slice.FIXTURES[label] + ")")
+        settings = project(files[project_part])["settings"]
+        codes[archive_part] = outline_gcode(settings, name, walls, first, layers, used, note)
+        files[archive_part] = sliced_archive(codes[archive_part], settings, name, used, note,
+                                             bounds(*(first or walls)))
+        for index, part in enumerate(plate_slice.PICTURES):
+            files[pictures + part] = picture(seed=30 + index)
+    if guard:
+        files.setdefault(GUARD_SHOT, picture(796, 216, seed=41))
+    files.update(parts or {})
+    for part, raw in files.items():
+        (folder / f"{prefix}-{part}").write_bytes(raw)
+    with TemporaryDirectory() as temporary:      # the oracle reads the archives under the names the case gave them
+        plain = Path(temporary)
+        for part in ("before.3mf", "sphere-before.3mf", "plate.gcode.3mf", "sphere.gcode.3mf"):
+            (plain / part).write_bytes(files[part])
+        gaps, readings, comparison = sliced_expectation_gaps(
+            {label: (plain / plate_slice.SAMPLES[label][1], ".gcode.3mf") for label in plate_slice.SAMPLES},
+            {label: plain / plate_slice.SAMPLES[label][0] for label in plate_slice.SAMPLES})
+        analysis = {"case": 234, "timings": {}, "guard_failures": 0, "sliced_files": readings,
+                    "size_comparison": comparison, "expectation_gaps": gaps,
+                    "memory_guard_dialogs": [{"title": "Memory Usage Warning", "texts": ["Yes, Continue", "No, Stop", "htmlWindow"],
+                                              "screenshot": GUARD_SHOT, "image": {"width_px": 796, "height_px": 216},
+                                              "closed": True}] if guard else [],
+                    "results": {clause: "PASS" if not failed else f"FAIL ({'; '.join(failed)[:400]})"
+                                for clause, failed in gaps.items()}}
+        for label, (project_part, archive_part, bare, pictures) in plate_slice.SAMPLES.items():
+            name, *_, note = PLATES[label]
+            shown = png(files[pictures + "export-dialog.png"])
+            analysis[label] = {
+                "fixture": {"name": plate_slice.FIXTURES[label], "bytes": len(models[label]),
+                            "sha256": sha256(models[label]).hexdigest()},
+                "presets": project_presets(plain / project_part),
+                "plate_objects": plate_object_layout(plain / project_part)["objects"],
+                "slice": {"export_enabled_after_seconds": 8.6, "export_menu_after": [
+                    {"index": 3, "label": "Export plate sliced file...\tCtrl+G", "enabled": True}]},
+                "export": {"item": plate_slice.ITEM, "typed_name": bare, "title": plate_slice.TITLE,
+                           "default_name": f"{name}_PLA_{note.replace(' ', '')}.gcode",
+                           "types": [{"selected": 0, "items": [plate_slice.FILTER]}], "directory": RUN_234,
+                           "filename_before_save": bare, "dialog_image": {"width_px": shown["width"], "height_px": shown["height"]},
+                           "dialog_closed": True, "saved_name": archive_part, "saved_extension": ".gcode.3mf",
+                           "file_bytes": len(files[archive_part]), "file_sha256": sha256(files[archive_part]).hexdigest(),
+                           "app_alive": True},
+                "editor_after_export": {"alive": True, "dialog": None}}
+    files["analysis.json"] = json.dumps(record(analysis) if callable(record) else analysis, ensure_ascii=False,
+                                        indent=2).encode("utf-8")
+    (folder / f"{prefix}-analysis.json").write_bytes(files["analysis.json"])
+    (folder / f"{prefix}-object_artifacts.json").write_text(json.dumps(
+        [{"part": part, "bytes": len(raw), "sha256": sha256(raw).hexdigest()} for part, raw in files.items()],
+        indent=1), encoding="utf-8")
+    lines = [f"[m7x234] retained work directory: {RUN_234}"]
+    if guard:
+        lines += ["[export] memory guard dialog: ['Yes, Continue', 'No, Stop', 'htmlWindow']",
+                  "[export] memory guard answered: [{'how': 'message click', 'closed': False}, "
+                  "{'how': 'message click inside dialog', 'closed': True}]"]
+    lines = (lines + [f"[m7x234] file bytes {len(files['plate.gcode.3mf'])} -> {len(files['sphere.gcode.3mf'])}, "
+                      f"G-code bytes {len(codes['plate.gcode.3mf'])} -> {len(codes['sphere.gcode.3mf'])}"]
+             ) if log_lines is None else log_lines
+    log = ("\n".join(lines) + "\n").encode("utf-8")
+    (folder / f"{prefix}-case.log").write_bytes(log)
+    (folder / f"{prefix}-receipt.json").write_text(json.dumps({
+        "case": "m7x_234_export_plate_slice", "commit": "0" * 40, "summary": "SUMMARY: PASS=1 FAIL=0",
+        "dispatched_at": "2026-11-26T00:00:00+00:00", "scenario_completed_at": "2026-11-26T00:03:00+00:00",
+        "log_sha256": sha256(log).hexdigest()}), encoding="utf-8")
+    return folder, prefix
+
+
+def plate_refused(tmp_path, failed, **changes):
+    """A run whose files or record differ: the replay names `failed` among its readings."""
+    folder, prefix = write_plate_run(tmp_path, **changes)
+    result = plate_slice.replay(folder, prefix)
+    assert set(failed) <= set(result["sliced_plates"]["failed"]), result["sliced_plates"]["failed"]
+    assert not all(value is True for value in result["checks"].values())
+    return result
+
+
+# every stand-in of the #234 replay with the readings that own it
+PLATE_REFUSED_BY = {
+    "plain_gcode_under_the_archive_name_rejected": UNOPENABLE,
+    "archive_without_gcode_rejected": ["simple_archive_holds_one_plate_gcode"],
+    "archive_declares_another_gcode_rejected": ["simple_archive_holds_one_plate_gcode"],
+    "archive_without_previews_rejected": ["simple_previews_are_pictures", "simple_oracle_accepts_archive"],
+    "blank_preview_rejected": ["simple_previews_are_pictures", "simple_oracle_accepts_archive"],
+    "checksum_left_behind_rejected": ["simple_gcode_checksum_recorded_and_consistent"],
+    "layer_removed_with_rewritten_checksum_rejected": ["simple_layer_schedule_matches_object_height",
+                                                       "simple_oracle_accepts_archive"],
+    "print_moved_off_the_object_rejected": ["simple_extrusion_lies_on_the_objects",
+                                            "simple_oracle_locates_the_extrusion_on_the_objects"],
+    "sphere_archive_under_the_cube_name_rejected": ["simple_extrusion_lies_on_the_objects",
+                                                    "complex_archive_larger_than_simple"],
+    "cube_archive_under_the_sphere_name_rejected": ["complex_extrusion_lies_on_the_objects",
+                                                    "complex_archive_larger_than_simple",
+                                                    "recorded_size_comparison_matches_files"],
+    "other_project_rejected": ["simple_saved_project_is_the_fixture", "simple_extrusion_lies_on_the_objects"],
+    "archive_settings_from_another_profile_rejected": ["simple_settings_equal_the_sliced_project"],
+    "slice_info_of_the_other_plate_rejected": ["simple_slice_info_names_the_printed_objects",
+                                               "simple_slice_info_agrees_with_the_gcode"],
+    "archive_without_slice_info_rejected": ["simple_slice_info_present", "simple_oracle_accepts_archive"],
+    "pattern_box_of_another_plate_rejected": ["simple_pattern_box_holds_the_first_layer"],
+    "another_application_in_the_archive_rejected": ["simple_same_application_throughout"],
+    "sliced_picture_copied_from_before_rejected": ["sliced_view_differs_from_before"],
+    "blank_screenshot_rejected": ["simple_screenshots_are_pictures"],
+    "dialog_picture_resized_rejected": ["simple_dialog_picture_matches_record", "export_receipts_match_files"],
+    "flattering_record_rejected": ["simple_previews_are_pictures", "recorded_readings_match_files",
+                                   "recorded_verdict_matches_files"],
+    "guard_left_open_rejected": ["guard_dialogs_answered"],
+    "wrong_extension_rejected": UNOPENABLE,
+    "manifest_mismatch_rejected": UNOPENABLE,
+}
+
+
+def test_plate_run_passes_every_reading_and_every_counterexample(tmp_path):
+    folder, prefix = write_plate_run(tmp_path)
+    result = plate_slice.replay(folder, prefix)
+    not_true = [key for key, value in result["checks"].items() if value is not True]
+    assert not not_true, not_true
+    # every reading the replay names is produced, and every counterexample has a label of its own
+    assert set(plate_slice.POSITIVE) == set(result["checks"]) - set(PLATE_REFUSED_BY)
+    report = result["sliced_plates"]
+    assert (report["samples"]["simple"]["gcode"]["layers"], report["samples"]["complex"]["gcode"]["layers"]) == (135, 100)
+    assert report["samples"]["complex"]["triangles"] > report["samples"]["simple"]["triangles"] == 12
+    assert report["size_comparison"]["checks"] == {"complex_file_larger": True, "complex_gcode_larger": True}
+    assert all(sample["oracle"]["footprint"]["max_excursion_mm"]["model"] == 0.0 for sample in report["samples"].values())
+    assert report["guard_dialogs"] == 0 and min(report["screen_changes"].values()) >= plate_slice.CHANGED
+
+
+def test_plate_run_goes_through_the_shared_driver_like_the_other_replays(tmp_path, monkeypatch):
+    folder, prefix = write_plate_run(tmp_path)
+    monkeypatch.setitem(ADAPTERS, "m7x_234_export_plate_slice", plate_slice.replay)
+    assert replay_receipt(folder / f"{prefix}-receipt.json")["offline_checks_passed"]
+    (folder / f"{prefix}-case.log").write_bytes(b"another log\n")
+    assert not replay_receipt(folder / f"{prefix}-receipt.json")["offline_checks_passed"]
+
+
+@pytest.mark.parametrize("label,failed", sorted(PLATE_REFUSED_BY.items()))
+def test_each_plate_counterexample_is_refused_by_the_reading_that_owns_it(tmp_path, label, failed):
+    folder, prefix = write_plate_run(tmp_path)
+    raw, boxes = plate_slice._read(folder, prefix)[2]
+    with copy_of(folder, prefix, **plate_slice._stand_ins(raw, boxes)[label]) as (other, altered):
+        if failed is UNOPENABLE:
+            with pytest.raises(ValueError):
+                plate_slice._read(other, altered)
+            return
+        readings = plate_slice._read(other, altered)[1]
+    assert set(failed) <= set(readings["failed"]), readings["failed"]
+
+
+def test_replay_reads_every_plate_counterexample_on_a_temporary_copy(tmp_path, monkeypatch):
+    folder, prefix = write_plate_run(tmp_path)
+    reads, real = [], plate_slice._read
+    monkeypatch.setattr(plate_slice, "_read", lambda place, pre: reads.append(place.name) or real(place, pre))
+    result = plate_slice.replay(folder, prefix)
+    assert all(value is True for value in result["checks"].values())
+    # the run itself and twenty-three temporary copies, one per counterexample
+    assert len(reads) == 24 and sum(name.startswith("replay-") for name in reads) == 23
+
+
+def test_a_guard_dialog_and_the_plate_records_are_held_against_the_run(tmp_path):
+    passed = plate_slice.replay(*write_plate_run(tmp_path, guard=True))["checks"]
+    assert all(value is True for value in passed.values()), sorted(k for k, v in passed.items() if v is not True)
+    plate_refused(tmp_path, ["guard_dialogs_answered"], guard=True, parts={GUARD_SHOT: picture(796, 216, blank=True)})
+    plate_refused(tmp_path, ["guard_dialogs_answered"], guard=True, record=lambda default: dict(
+        default, memory_guard_dialogs=[dict(default["memory_guard_dialogs"][0], closed=False)]))
+    plate_refused(tmp_path, ["guard_dialogs_answered"], guard=True,
+                  log_lines=[f"[m7x234] retained work directory: {RUN_234}", "[m7x234] file bytes 1 -> 2, G-code bytes 3 -> 4"])
+    # the dialogs the case says it answered must also be told of in its log, once each
+    plate_refused(tmp_path, ["guard_dialogs_answered"], record=lambda default: dict(
+        default, memory_guard_dialogs=[{"title": "Memory Usage Warning", "closed": True, "screenshot": GUARD_SHOT,
+                                        "image": {"width_px": 796, "height_px": 216}}]))
+    # the receipts tell of the archives, the dialog offered the slice's time, and the row was enabled
+    plate_refused(tmp_path, ["export_receipts_match_files"], record=lambda default: dict(
+        default, simple=dict(default["simple"], export=dict(default["simple"]["export"], saved_extension=".3mf"))))
+    plate_refused(tmp_path, ["dialog_default_names_carry_the_slice_time"], record=lambda default: dict(
+        default, complex=dict(default["complex"], export=dict(default["complex"]["export"], default_name="sphere.gcode"))))
+    plate_refused(tmp_path, ["slice_waited_for_the_export_row"], record=lambda default: dict(
+        default, simple=dict(default["simple"], slice=dict(default["simple"]["slice"], export_menu_after=[
+            {"label": "Export plate sliced file...\tCtrl+G", "enabled": False}]))))
+    plate_refused(tmp_path, ["recorded_presets_match_projects", "recorded_objects_match_projects"], record=lambda default: dict(
+        default, simple=dict(default["simple"], presets=dict(default["simple"]["presets"], layer_height="0.3"),
+                             plate_objects=[])))
+    plate_refused(tmp_path, ["editor_left_running_after_each_export"], record=lambda default: dict(
+        default, complex=dict(default["complex"], editor_after_export={"alive": True, "dialog": "Save Sliced file as:"})))
+    plate_refused(tmp_path, ["recorded_case"], record=lambda default: dict(default, case=227))
+    plate_refused(tmp_path, ["recorded_fixtures_match_files"], record=lambda default: dict(
+        default, complex=dict(default["complex"], fixture=dict(default["complex"]["fixture"], sha256="0" * 64))))
+    # the case log names another work directory than the save dialogs did, and states other sizes than the files have
+    folder, prefix = write_plate_run(tmp_path)
+    lines = (folder / f"{prefix}-case.log").read_text(encoding="utf-8").splitlines()
+    plate_refused(tmp_path, ["work_directory_named_in_the_case_log"],
+                  log_lines=[lines[0] + "-elsewhere", lines[1]])
+    plate_refused(tmp_path, ["size_line_is_in_the_case_log"],
+                  log_lines=[lines[0], lines[1].replace("G-code bytes", "G-code bytes 1 +")])
+
+
+def test_sliced_reader_reads_a_real_export_and_refuses_what_is_no_preview():
+    raw = REAL_SLICED.read_bytes()
+    box = support.sliced(raw)
+    assert box["gcode_member"] == MEMBER and len(box["gcode_members"]) == 1 and box["declared_gcode"] == MEMBER
+    assert box["md5_recorded"] == box["md5_computed"] and len(box["md5_recorded"]) == 32
+    assert box["objects"] == ["立方体"] and box["prediction_s"] == 1282 and box["filament_m"] == {"1": 2.55}
+    assert box["application"] == "Snapmaker_Orca-2.4.0" and isinstance(box["settings"], dict) and len(box["settings"]) > 500
+    plate = support.gcode(box["gcode"])
+    assert support.seconds("; estimated printing time (normal mode) = 21m 22s") == 1282
+    assert support.seconds("; estimated first layer printing time (normal mode) = 1d 2h 3m 4s") == 93784
+    assert support.seconds("; nothing here = none") is None
+    assert support.filament_used(plate)[:1] == [2546.07] and support.first_layer(box["gcode"])["moves"] > 0
+    assert support.close(box["pattern"]["bbox_all"], list(support.first_layer(box["gcode"])["box"] or ()), 1.0)
+    (middle, small) = (box["previews"]["Metadata/plate_1.png"], box["previews"]["Metadata/plate_1_small.png"])
+    assert support.shows_picture(middle) and support.shows_picture(small)
+    assert not support.shows_picture(box["previews"]["Metadata/plate_no_light_1.png"])      # one shade is no picture
+    assert not support.shows_picture(None) and not support.shows_picture([8, 512, 400])     # nor 8 pixels a side
+    assert support.sliced(zipped({"Metadata/plate_1.gcode": b"; x"}))["gcode_member"] == MEMBER
+    with pytest.raises(ValueError):
+        support.sliced(b"not an archive")
+    assert support.changed_share(picture(seed=1), picture(seed=1)) == 0.0
+    assert 0.0 < support.changed_share(picture(seed=1), picture(seed=2)) < 0.5     # the same ramp, other noise
+    assert support.changed_share(picture(seed=1), picture(800, 500, seed=1)) is None
+    assert support.changed_share(picture(seed=1), b"not a picture") is None
+
+
+def test_a_mesh_the_application_wrote_again_is_still_its_fixture():
+    from xml.etree import ElementTree as ET
+
+    cube, ball = FIXTURE.read_bytes(), BALL_FIXTURE.read_bytes()
+
+    def nudged(raw, by):
+        """The project with every vertex of its mesh moved `by` millimetres along X."""
+        files = support.archive(raw)
+        for name, data in files.items():
+            if name.endswith(".model"):
+                root = ET.fromstring(data)
+                for vertex in root.iter(CORE + "vertex"):
+                    vertex.set("x", repr(float(vertex.get("x")) + by))
+                files[name] = ET.tostring(root, encoding="utf-8", xml_declaration=True)
+        return zipped(files)
+
+    for raw in (cube, ball):
+        held = project(raw)
+        assert export._same_shape(project(nudged(raw, 1e-6)), held)       # the last digit of a coordinate
+        assert not export._same_shape(project(nudged(raw, 1e-3)), held)   # a micron: ten times the tolerance
+        assert not export._same_shape(project(nudged(raw, 40.0)), held)
+    assert not export._same_shape(project(cube), project(ball))
+    # the sphere the application really saved again differs from its fixture and is still its fixture
+    saved = Path(r"C:\coil\vm_setup\elevenhour_1125\runs\form234-48e3aa7d\m7x_234_export_plate_slice-1\sphere-before.3mf")
+    if not saved.is_file():
+        pytest.skip("the formal #234 sessions live outside the repository")
+    again, held = project(saved.read_bytes()), project(ball)
+    assert export._same_shape(again, held)
+    assert again["objects"][0]["triangles"] != held["objects"][0]["triangles"]    # written again, other last digits

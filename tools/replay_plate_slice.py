@@ -32,7 +32,7 @@ from tools.replay_evidence_files import verified_part
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from export_io_oracle import plate_object_layout, sliced_expectation_gaps
-from file_io_replay_support import (SETTINGS, as_recorded, changed_share, close, filament_used, first_layer,
+from file_io_replay_support import (MAIN, SETTINGS, as_recorded, changed_share, close, filament_used, first_layer,
                                     flattering, gcode, guard_dialogs, guard_parts, guards_answered, manifest,
                                     moved_project, png, presets_match, project, refused, seconds, shows_picture,
                                     sliced, screenshots, work_directories, zipped)
@@ -55,6 +55,7 @@ DIALOG = "export-dialog.png"
 MEMBER = "Metadata/plate_1.gcode"
 PREVIEWS = ("Metadata/plate_1.png", "Metadata/plate_1_small.png")
 SLICE_INFO = "Metadata/slice_info.config"
+PATTERN = "Metadata/plate_1.json"
 CHANGED = 0.01     # slicing repaints a fifth of the window on the archived runs; a copied screenshot changes none
 VERSION = re.compile(r"\d+\.\d+\.\d+")
 SIZE_LINE = re.compile(r"\[m7x234\] file bytes (\d+) -> (\d+), G-code bytes (\d+) -> (\d+)")
@@ -375,13 +376,24 @@ def _without_previews(files: dict) -> bytes:
     return zipped({name: data for name, data in files.items() if name not in PREVIEWS})
 
 
+def _resized(raw: bytes) -> bytes:
+    """A picture at another size than it was recorded with."""
+    from PIL import Image
+
+    with Image.open(BytesIO(raw)) as image:
+        out = BytesIO()
+        image.resize((image.width + 16, image.height + 16)).save(out, "PNG")
+    return out.getvalue()
+
+
 def _stand_ins(raw, boxes):
-    """Each counterexample of the row: the parts it stands in for harvested ones."""
+    """Each counterexample of the row: {label: the parts stood in for harvested ones and how}, each
+    meant for `refused` on a copy whose manifest agrees with the stand-in."""
     simple, complex_ = boxes["simple"], boxes["complex"]
     files, code = simple["members"], simple["gcode"]
     lines, count = code.decode("utf-8").split("\n"), gcode(code)["layer_count"]
     another = dict(simple["settings"] or {}, layer_height="0.3")
-    return {
+    replace = {
         "plain_gcode_under_the_archive_name_rejected": {"plate.gcode.3mf": code},
         "archive_without_gcode_rejected": {
             "plate.gcode.3mf": zipped({name: data for name, data in files.items() if not name.startswith(MEMBER)})},
@@ -402,7 +414,23 @@ def _stand_ins(raw, boxes):
             "plate.gcode.3mf": zipped(dict(files, **{SETTINGS: json.dumps(another).encode("utf-8")}))},
         "slice_info_of_the_other_plate_rejected": {
             "plate.gcode.3mf": zipped(dict(files, **{SLICE_INFO: complex_["members"].get(SLICE_INFO, b"")}))},
+        # the archive's own records point at another file than the plate G-code it holds
+        "archive_declares_another_gcode_rejected": {"plate.gcode.3mf": zipped(dict(files, **{
+            "Metadata/model_settings.config": re.sub(rb'(key="gcode_file" value=")[^"]+',
+                                                     rb"Metadata/plate_9.gcode",
+                                                     files["Metadata/model_settings.config"])}))},
+        "archive_without_slice_info_rejected": {
+            "plate.gcode.3mf": zipped({name: data for name, data in files.items() if name != SLICE_INFO})},
+        # the pattern box of the other plate: its first layer lies somewhere else
+        "pattern_box_of_another_plate_rejected": {
+            "plate.gcode.3mf": zipped(dict(files, **{PATTERN: complex_["members"].get(PATTERN, b"{}")}))},
+        # an archive that says another application wrote it than the project and the G-code do
+        "another_application_in_the_archive_rejected": {"plate.gcode.3mf": zipped(dict(files, **{
+            MAIN: files[MAIN].replace(b"Snapmaker_Orca-2.4.0", b"Snapmaker_Orca-2.3.6")}))},
         "sliced_picture_copied_from_before_rejected": {"sliced.png": raw["before.png"]},
+        # a screenshot replaced by a uniform picture of the same size, and a dialog picture of another size
+        "blank_screenshot_rejected": {"before.png": _uniform(raw["before.png"])},
+        "dialog_picture_resized_rejected": {"export-dialog.png": _resized(raw["export-dialog.png"])},
         # a record that claims every clause over an archive that has lost its previews
         "flattering_record_rejected": {"plate.gcode.3mf": _without_previews(files),
                                        "analysis.json": flattering(raw["analysis.json"], CLAUSES)},
@@ -411,17 +439,17 @@ def _stand_ins(raw, boxes):
             "title": "Memory Usage Warning", "texts": ["Yes, Continue", "No, Stop"], "closed": False,
             "screenshot": "memory-guard-0.png", "image": {"width_px": 796, "height_px": 216}}])},
     }
+    stand_ins = {label: {"replace": parts} for label, parts in replace.items()}
+    stand_ins["wrong_extension_rejected"] = {"rename": {"plate.gcode.3mf": "plate.3mf"}}
+    # the collector that recorded one file and kept another
+    stand_ins["manifest_mismatch_rejected"] = {"replace": {"plate.gcode.3mf": b""}, "keep_manifest": False}
+    return stand_ins
 
 
 def _controls(directory, prefix, raw, boxes):
     """Each counterexample of the row, stood in on a copy whose manifest agrees with it."""
-    checks = {label: refused(_read, POSITIVE, directory, prefix, replace)
-              for label, replace in _stand_ins(raw, boxes).items()}
-    checks["wrong_extension_rejected"] = refused(_read, POSITIVE, directory, prefix,
-                                                 rename={"plate.gcode.3mf": "plate.3mf"})
-    checks["manifest_mismatch_rejected"] = refused(_read, POSITIVE, directory, prefix,
-                                                   {"plate.gcode.3mf": b""}, keep_manifest=False)
-    return checks
+    return {label: refused(_read, POSITIVE, directory, prefix, **how)
+            for label, how in _stand_ins(raw, boxes).items()}
 
 
 def replay(directory: Path, prefix: str) -> dict:
