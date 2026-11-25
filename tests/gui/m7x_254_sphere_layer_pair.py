@@ -94,9 +94,9 @@ def set_pair(session, current, wanted, edits_log):
 
 def retain_plate(session, private_temp, project, output, started_ns):
     # PartPlate uses a process-specific model directory and a per-plate PID filename.
-    # Read the slicer's own output while its process still owns the active Preview.
+    # Let the background slicer finish before interacting with its Preview.
     pattern = f"snapmaker_orca_model/*/*#{session.pid}#*/Metadata/.{session.pid}.*.gcode"
-    deadline = time.monotonic() + 25
+    deadline = time.monotonic() + 90
     while time.monotonic() < deadline and session.alive():
         matches = list(private_temp.glob(pattern))
         require(len(matches) <= 1, "Ambiguous GUI plate in the fresh session")
@@ -114,7 +114,8 @@ def retain_plate(session, private_temp, project, output, started_ns):
                             "sha256": hashlib.sha256(raw).hexdigest(),
                             "project_sha256": hashlib.sha256(project.read_bytes()).hexdigest()}
         time.sleep(0.4)
-    raise ValueError(f"No newly generated complete GUI plate for PID {session.pid} in {private_temp}")
+    owned = [(p.name, p.stat().st_size) for p in private_temp.glob(pattern + "*") if p.is_file()]
+    raise ValueError(f"No complete GUI plate for PID {session.pid}; process files: {owned}")
 
 
 def slice_project(args, work, project, stage, results, analysis):
@@ -126,6 +127,7 @@ def slice_project(args, work, project, stage, results, analysis):
         quality(session)
         started_ns = time.time_ns()
         require(m7.op_slice(session, results, key=stage + " slice", timeout_s=120), f"{stage} slice failed")
+        analysis[stage + "_plate"] = retain_plate(session, private_temp, project, work / (stage + ".gcode"), started_ns)
         score, *_ = anchors.wait_for(session, "tab_preview_active", timeout_s=2)
         if score < anchors.MATCH_THRESHOLD:
             ok, score = anchors.click_and_verify(session, "tab_preview_inactive", "tab_preview_active")
@@ -134,7 +136,6 @@ def slice_project(args, work, project, stage, results, analysis):
         require(cv2.imwrite(str(work / (stage + "-preview.png")), image), "Preview capture failed")
         analysis[stage + "_preview"] = {"score": score, "colored_fraction": anchors.has_colored_content(image)}
         require(analysis[stage + "_preview"]["colored_fraction"] > 0, "Empty viewport")
-        analysis[stage + "_plate"] = retain_plate(session, private_temp, project, work / (stage + ".gcode"), started_ns)
     finally:
         session.close()
 
