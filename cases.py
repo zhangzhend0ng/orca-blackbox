@@ -154,8 +154,8 @@ CASES: dict[str, dict] = {
     # (docs/runs/evidence/feishu-233-2026-11-26).
     "m7x_233_export_merged_stl": _r("m7", "A"),
     "m7x_234_export_plate_slice": _o("m7", "A"),    # File > Export, the plate's sliced file
-    # 81dbcf1: two guest sessions GREEN on 2026-11-26 and 38 offline checks each
-    # (docs/runs/evidence/feishu-236-2026-11-26).
+    # 81dbcf1 and again 48e3aa7 (which added the G-code footprint check): two guest sessions GREEN
+    # each on 2026-11-26, 38 offline checks each (docs/runs/evidence/feishu-236-2026-11-26).
     "m7x_236_export_gcode": _r("m7", "A"),
     "m7x_246_repair_model": _o("m7", "A"),         # model context menu, Fix model
     # #254 follow-up probe: a record of how the plate's temporary G-code grows under the memory guard,

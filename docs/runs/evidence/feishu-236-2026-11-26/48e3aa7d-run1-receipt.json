@@ -1,0 +1,14 @@
+﻿{
+    "commit":  "48e3aa7d471aa224eb119e0afac024c4e3ab481b",
+    "case":  "m7x_236_export_gcode",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "orca_processes_after":  0,
+    "summary":  "SUMMARY: PASS=1 FAIL=0",
+    "dispatched_at":  "2026-11-26T01:30:32.5525819+08:00",
+    "scenario_completed_at":  "2026-11-26T01:32:24.4402880+08:00",
+    "suite_completed_at":  "2026-11-26T01:32:24.6497859+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_236_export_gcode.log",
+    "log_sha256":  "AA735BF3594AC8DCD7059ECED4DA5D8BBEFA42A5186475D30F2C0DBEFFF14111"
+}
