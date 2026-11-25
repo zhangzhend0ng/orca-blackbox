@@ -1,0 +1,176 @@
+{
+  "case": 240,
+  "results": {
+    "initial fixture geometry preserved": "PASS",
+    "loaded objects pairwise overlap": "PASS",
+    "same_three_objects": "PASS",
+    "every_pair_overlapped_before": "PASS",
+    "every_pair_disjoint_after": "PASS",
+    "all_inside_printable_bed_after": "PASS"
+  },
+  "phase_seconds": {
+    "baseline": 57.079,
+    "arrange_and_save": 16.203,
+    "total": 74.297
+  },
+  "geometry": {
+    "checks": {
+      "same_three_objects": true,
+      "every_pair_overlapped_before": true,
+      "every_pair_disjoint_after": true,
+      "all_inside_printable_bed_after": true
+    },
+    "printable_area_mm": [
+      [
+        0.5,
+        1.0
+      ],
+      [
+        270.5,
+        1.0
+      ],
+      [
+        270.5,
+        271.0
+      ],
+      [
+        0.5,
+        271.0
+      ]
+    ],
+    "before_pairs": [
+      {
+        "objects": [
+          "Alpha",
+          "Bravo"
+        ],
+        "overlap": true
+      },
+      {
+        "objects": [
+          "Alpha",
+          "Charlie"
+        ],
+        "overlap": true
+      },
+      {
+        "objects": [
+          "Bravo",
+          "Charlie"
+        ],
+        "overlap": true
+      }
+    ],
+    "after_pairs": [
+      {
+        "objects": [
+          "Charlie",
+          "Bravo"
+        ],
+        "overlap": false
+      },
+      {
+        "objects": [
+          "Charlie",
+          "Alpha"
+        ],
+        "overlap": false
+      },
+      {
+        "objects": [
+          "Bravo",
+          "Alpha"
+        ],
+        "overlap": false
+      }
+    ],
+    "before_bounds_mm": {
+      "Alpha": [
+        [
+          114.0,
+          144.0
+        ],
+        [
+          118.0,
+          142.0
+        ],
+        [
+          0.0,
+          11.0
+        ]
+      ],
+      "Bravo": [
+        [
+          121.5,
+          148.5
+        ],
+        [
+          117.5,
+          150.5
+        ],
+        [
+          0.0,
+          15.0
+        ]
+      ],
+      "Charlie": [
+        [
+          125.0,
+          159.0
+        ],
+        [
+          118.5,
+          147.5
+        ],
+        [
+          0.0,
+          20.0
+        ]
+      ]
+    },
+    "after_bounds_mm": {
+      "Charlie": [
+        [
+          133.000001,
+          167.000001
+        ],
+        [
+          134.499995,
+          163.499995
+        ],
+        [
+          0.0,
+          20.0
+        ]
+      ],
+      "Bravo": [
+        [
+          104.0,
+          131.0
+        ],
+        [
+          130.500005,
+          163.500005
+        ],
+        [
+          0.0,
+          15.0
+        ]
+      ],
+      "Alpha": [
+        [
+          133.0,
+          163.0
+        ],
+        [
+          108.499995,
+          132.499995
+        ],
+        [
+          0.0,
+          11.0
+        ]
+      ]
+    }
+  }
+}

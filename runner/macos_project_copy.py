@@ -32,7 +32,7 @@ from harness.model_move_pilot import geometry_unchanged
 
 SPHERE_SHA256 = "f5f83d00545522c7cde44c0cd4260c325418707afdc83e6056390a0b8800d13c"
 BOAT_SHA256 = "d550f8ac10adfbea6fcfc61be46d76f07515384e20225d425e42eb49d50b4d65"
-COPY_NAMES = {"boat262": "boat-flow-copy.3mf", "sphere254": "sphere-254-copy.3mf", "layer": "layer-024-copy.3mf", "walls": "wall-3-copy.3mf", "pan": "pan-x10-copy.3mf"}
+COPY_NAMES = {"boat262": "boat-flow-copy.3mf", "sphere254": "sphere-254-copy.3mf", "layer": "layer-024-copy.3mf", "walls": "wall-3-copy.3mf", "pan": "pan-x10-copy.3mf", "orient241": "orient-241-copy.3mf"}
 
 
 def settings_of(raw):
@@ -52,6 +52,8 @@ def payload(output, run_id, fixture, edit_height, goal, copy_name, pan_presses):
     worker_files = ["project_copy.py", "accessibility.py", "ocr.swift"]
     if goal == "boat262":
         worker_files.extend(["param_case.py", "param_ops.py", "param_cases.json"])
+    if goal == "orient241":
+        worker_files.append("plate_orient.py")
     for filename in worker_files:
         files[filename] = (ROOT / "runner" / "macos" / filename).read_bytes()
     buffer = io.BytesIO()
@@ -140,7 +142,73 @@ def verify_plate(output, name, receipt, expected_pid, project_sha256, height, co
     return {**facts, "artifact": path.name, "origin": "gui_plate_temporary"}
 
 
+def run_orientation(args):
+    """Harvest the opened fixture and its GUI-saved successor, then replay #241."""
+    sys.path.insert(0, str(ROOT / "tests"))
+    from plate_layout_fixture import create_fixture
+    from plate_layout_oracle import verify_orient
+
+    run_id = uuid.uuid4().hex
+    output = ROOT / "artifacts" / "mac_project_copy" / run_id
+    output.mkdir(parents=True)
+    summary = {"run_id": run_id, "candidate": args.candidate, "goal": "orient241",
+               "started_at": datetime.now(timezone.utc).isoformat(), "verdict": "NON_GREEN",
+               "baseline_source": "project opened in the test session"}
+    print(f"Evidence: {output}", flush=True)
+    stage = "host.fixture"
+    try:
+        before = output / "before.3mf"
+        create_fixture(ROOT / "fixtures/feishu_std_cubesfar.3mf", before, 241)
+        fixture = before.read_bytes()
+        fixture_sha = hashlib.sha256(fixture).hexdigest()
+        stage = "transport"
+        result = subprocess.run(ssh_command(args),
+                                input=payload(output, run_id, fixture, "0.24",
+                                              args.goal, COPY_NAMES[args.goal], args.pan_presses),
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=600)
+        (output / "ssh.log").write_bytes(result.stderr)
+        if result.returncode:
+            raise RuntimeError(f"SSH or Mac supervisor exited with {result.returncode}. See ssh.log")
+        reply = json.loads(result.stdout)
+        report = reply["report"]
+        summary["guest"] = report
+        stage = "harvest"
+        (output / "worker.log").write_text(reply["log"], encoding="utf-8")
+        for phase in ("before", "after"):
+            if phase in reply.get("images", {}):
+                (output / f"{phase}.png").write_bytes(base64.b64decode(reply["images"][phase], validate=True))
+        after = output / "after.3mf"
+        if "project" in reply:
+            target = after if report.get("saved_sha256") else output / "opened-copy.3mf"
+            target.write_bytes(base64.b64decode(reply["project"], validate=True))
+        if not report.get("ok"):
+            stage = report.get("failure_stage", "guest")
+            raise RuntimeError(report.get("error", "Mac orientation worker did not complete"))
+        stage = "verify.identity"
+        if (report["run_id"] != run_id or not report["cleanup_verified"]
+                or (report["source_before"], report["source_after"]) != (fixture_sha, fixture_sha)
+                or hashlib.sha256(after.read_bytes()).hexdigest() != report["saved_sha256"]
+                or report["menu_item"] != "Auto Rotate"):
+            raise ValueError("Run, input, GUI action, or saved project identity mismatch")
+        stage = "verify.orientation"
+        summary["geometry"] = verify_orient(before, after)
+        if not all(summary["geometry"]["checks"].values()):
+            raise ValueError("The saved orientations or plate contact areas do not satisfy #241")
+        summary["verdict"] = "SHADOW"
+    except (OSError, ValueError, RuntimeError, KeyError, TypeError, subprocess.SubprocessError) as error:
+        summary["failure_stage"] = stage
+        summary["error"] = str(error)
+        print(error, file=sys.stderr)
+    finally:
+        summary["finished_at"] = datetime.now(timezone.utc).isoformat()
+        (output / "result.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    print(summary["verdict"], flush=True)
+    return 0 if summary["verdict"] == "SHADOW" else 1
+
+
 def run(args):
+    if args.goal == "orient241" and not args.wrong_layer_control:
+        return run_orientation(args)
     run_id = uuid.uuid4().hex
     output = ROOT / "artifacts" / "mac_project_copy" / run_id
     output.mkdir(parents=True)

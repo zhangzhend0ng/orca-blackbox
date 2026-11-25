@@ -1,0 +1,26 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T21:24:38" tests="1" failures="0" errors="0">
+    <testcase name="m7x_240_arrange" classname="blackbox.m7x_240" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_240_arrange.log" />
+        <property name="dim:initial fixture geometry preserved" value="PASS" />
+        <property name="dim:loaded objects pairwise overlap" value="PASS" />
+        <property name="dim:same_three_objects" value="PASS" />
+        <property name="dim:every_pair_overlapped_before" value="PASS" />
+        <property name="dim:every_pair_disjoint_after" value="PASS" />
+        <property name="dim:all_inside_printable_bed_after" value="PASS" />
+      </properties>
+      <system-out>[m7x240] analysis {"case": 240, "results": {"initial fixture geometry preserved": "PASS", "loaded objects pairwise overlap": "PASS", "same_three_objects": "PASS", "every_pair_overlapped_before": "PASS", "every_pair_disjoint_after": "PASS", "all_inside_printable_bed_after": "PASS"}, "phase_seconds": {"baseline": 57.079, "arrange_and_save": 16.203, "total": 74.297}, "geometry": {"checks": {"same_three_objects": true, "every_pair_overlapped_before": true, "every_pair_disjoint_after": true, "all_inside_printable_bed_after": true}, "printable_area_mm": [[0.5, 1.0], [270.5, 1.0], [270.5, 271.0], [0.5, 271.0]], "before_pairs": [{"objects": ["Alpha", "Bravo"], "overlap": true}, {"objects": ["Alpha", "Charlie"], "overlap": true}, {"objects": ["Bravo", "Charlie"], "overlap": true}], "after_pairs": [{"objects": ["Charlie", "Bravo"], "overlap": false}, {"objects": ["Charlie", "Alpha"], "overlap": false}, {"objects": ["Bravo", "Alpha"], "overlap": false}], "before_bounds_mm": {"Alpha": [[114.0, 144.0], [118.0, 142.0], [0.0, 11.0]], "Bravo": [[121.5, 148.5], [117.5, 150.5], [0.0, 15.0]], "Charlie": [[125.0, 159.0], [118.5, 147.5], [0.0, 20.0]]}, "after_bounds_mm": {"Charlie": [[133.000001, 167.000001], [134.499995, 163.499995], [0.0, 20.0]], "Bravo": [[104.0, 131.0], [130.500005, 163.500005], [0.0, 15.0]], "Alpha": [[133.0, 163.0], [108.499995, 132.499995], [0.0, 11.0]]}}}
+
+[m7] === verdict ===
+  initial fixture geometry preserved: PASS
+  loaded objects pairwise overlap: PASS
+  same_three_objects: PASS
+  every_pair_overlapped_before: PASS
+  every_pair_disjoint_after: PASS
+  all_inside_printable_bed_after: PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

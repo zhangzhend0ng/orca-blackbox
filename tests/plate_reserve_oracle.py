@@ -154,14 +154,14 @@ def create_split_fixture(template, output):
                 base_faces = list(triangles.getElementsByTagName('triangle'))
                 z_min = min(float(v.getAttribute('z')) for v in base_vertices)
                 for vertex in base_vertices:
-                    clone = vertex.cloneNode()
+                    clone = vertex.cloneNode(deep=False)
                     clone.setAttribute('x', str(float(vertex.getAttribute('x')) * 0.8 + 65))
                     clone.setAttribute('y', str(float(vertex.getAttribute('y')) * 0.9))
                     z = float(vertex.getAttribute('z'))
                     clone.setAttribute('z', str(z_min + (z - z_min) * 0.7))
                     vertices.appendChild(clone)
                 for face in base_faces:
-                    clone = face.cloneNode()
+                    clone = face.cloneNode(deep=False)
                     for key in ('v1', 'v2', 'v3'):
                         clone.setAttribute(key, str(int(face.getAttribute(key)) + len(base_vertices)))
                     triangles.appendChild(clone)

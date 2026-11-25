@@ -478,7 +478,9 @@ def worker(report):
     report["test_uid"] = os.getuid()
     source_hash = digest(SOURCE)
     edit_height = (WORK / "edit-height").read_text().strip()
-    require(GOAL in ("layer", "walls", "pan", "sphere254", "boat262"), "Unexpected requested goal")
+    require(GOAL in ("layer", "walls", "pan", "sphere254", "boat262", "orient241"), "Unexpected requested goal")
+    if GOAL == "orient241":
+        return orient_plate(report, console_uid)
     if GOAL == "layer":
         require(edit_height in ("0.24", "0.32"), "Unexpected requested GUI edit")
     if GOAL == "pan":
@@ -556,6 +558,34 @@ def worker(report):
             "File changed")
     with ax.Desktop(console_uid) as desktop:
         desktop.check_session()
+
+
+def orient_plate(report, console_uid):
+    import accessibility as ax
+    from plate_orient import capture_project, choose_auto_rotate
+
+    started = time.monotonic()
+    report["source_before"] = digest(SOURCE)
+    shutil.copyfile(SOURCE, COPY)
+    report["failure_stage"] = "orient.launch"
+    with ax.Desktop(console_uid) as desktop, open_copy(desktop, "edit") as (pid, root, window):
+        report["sut"] = build_identity(pid)
+        report["pid"] = pid
+        # The persisted fixture is the opened baseline. Confirm the title and
+        # retain the rendered scene before applying the only editing action.
+        report["failure_stage"] = "orient.before_capture"
+        report["before_screenshot"] = capture_project(desktop, pid, root, window, COPY.stem, WORK / "before.png")
+        report["failure_stage"] = "orient.context_menu"
+        choose_auto_rotate(desktop, pid, root, window, COPY.stem, report)
+        report["failure_stage"] = "orient.save"
+        wait_for(lambda: desktop.text(window, "AXTitle") == "*" + COPY.stem, "Missing unsaved marker", seconds=20)
+        save_project(desktop, pid, root, window)
+        report["saved_sha256"] = digest(COPY)
+        report["after_screenshot"] = capture_project(desktop, pid, root, window, COPY.stem, WORK / "after.png")
+        desktop.check_session()
+    report["source_after"] = digest(SOURCE)
+    require(report["source_before"] == report["source_after"], "Input fixture changed")
+    report["elapsed_seconds"] = round(time.monotonic() - started, 3)
 
 
 def run_worker():
@@ -636,6 +666,12 @@ def supervise():
             reply["gcodes"][name] = base64.b64encode(plate.read_bytes()).decode("ascii")
     if COPY.is_file() and COPY.stat().st_size <= 16 * 1024 * 1024:
         reply["project"] = base64.b64encode(COPY.read_bytes()).decode("ascii")
+    if GOAL == "orient241":
+        reply["images"] = {}
+        for phase in ("before", "after"):
+            shot = WORK / f"{phase}.png"
+            if result.get(f"{phase}_screenshot") is True and shot.is_file():
+                reply["images"][phase] = base64.b64encode(shot.read_bytes()).decode("ascii")
     print(json.dumps(reply), flush=True)
     if result["ok"]:
         shutil.rmtree(WORK)

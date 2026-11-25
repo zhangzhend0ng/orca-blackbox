@@ -1,0 +1,38 @@
+﻿[m7x240] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\240\run-id5w9cak
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\240\run-id5w9cak\profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\240\run-id5w9cak\profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\240\run-id5w9cak\fixture.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x5550666, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x55a1128, WM_CLOSE)
+[launcher] pid=7804 hwnd=0x1a802a6 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.78%, gate 0.10%)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x566055a did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[model context] desktop hit-test did not resolve to canvas at (1349,540)
+[model context] message right-click @(1349,540) on 0x51e03d2
+[model context] menu hwnd=0x51f0512: [(0, 'Select All', 0), (1, 'Delete All', 0), (2, 'Arrange', 0), (3, 'Reload All', 0), (4, 'Auto Rotate', 0), (5, 'Delete Plate', 1), (6, '', 2051), (7, 'Add Primitive', 2576), (8, 'Add Handy models', 1808), (9, 'Add Models', 0), (10, 'Lock', 0), (11, 'Edit Plate Name', 0)]
+[m7x240] native highlighted row 2 in menu 0x3b570563
+[m7x240] activated context menu item 'Arrange'
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x566055a did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x240] analysis {"case": 240, "results": {"initial fixture geometry preserved": "PASS", "loaded objects pairwise overlap": "PASS", "same_three_objects": "PASS", "every_pair_overlapped_before": "PASS", "every_pair_disjoint_after": "PASS", "all_inside_printable_bed_after": "PASS"}, "phase_seconds": {"baseline": 57.187, "arrange_and_save": 16.328, "total": 75.546}, "geometry": {"checks": {"same_three_objects": true, "every_pair_overlapped_before": true, "every_pair_disjoint_after": true, "all_inside_printable_bed_after": true}, "printable_area_mm": [[0.5, 1.0], [270.5, 1.0], [270.5, 271.0], [0.5, 271.0]], "before_pairs": [{"objects": ["Alpha", "Bravo"], "overlap": true}, {"objects": ["Alpha", "Charlie"], "overlap": true}, {"objects": ["Bravo", "Charlie"], "overlap": true}], "after_pairs": [{"objects": ["Charlie", "Bravo"], "overlap": false}, {"objects": ["Charlie", "Alpha"], "overlap": false}, {"objects": ["Bravo", "Alpha"], "overlap": false}], "before_bounds_mm": {"Alpha": [[114.0, 144.0], [118.0, 142.0], [0.0, 11.0]], "Bravo": [[121.5, 148.5], [117.5, 150.5], [0.0, 15.0]], "Charlie": [[125.0, 159.0], [118.5, 147.5], [0.0, 20.0]]}, "after_bounds_mm": {"Charlie": [[133.000001, 167.000001], [134.499995, 163.499995], [0.0, 20.0]], "Bravo": [[104.0, 131.0], [130.500005, 163.500005], [0.0, 15.0]], "Alpha": [[133.0, 163.0], [108.499995, 132.499995], [0.0, 11.0]]}}}
+
+[m7] === verdict ===
+  initial fixture geometry preserved: PASS
+  loaded objects pairwise overlap: PASS
+  same_three_objects: PASS
+  every_pair_overlapped_before: PASS
+  every_pair_disjoint_after: PASS
+  all_inside_printable_bed_after: PASS
+[m7] GREEN

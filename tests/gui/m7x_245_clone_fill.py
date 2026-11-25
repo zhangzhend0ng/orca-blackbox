@@ -12,7 +12,7 @@ import m7_common as m7
 from harness import export_util, winutil
 
 
-def open_clone_dialog(session, log):
+def open_clone_dialog(session, work, analysis, phase, log):
     candidates = m7.model_candidates(session)
     if not candidates:
         raise ValueError('could not locate a rendered object to clone')
@@ -20,7 +20,14 @@ def open_clone_dialog(session, log):
     dialog = m7.wait_dialog(session.pid, title_substr='Clone', timeout_s=12)
     if not dialog or dialog[1].strip().casefold() != 'clone':
         raise ValueError(f'expected the Clone dialog, got {dialog!r}')
-    return dialog[3]
+    hwnd = dialog[3]
+    visible = children(hwnd)
+    diagnostics = [{'label': label, 'class': winutil.window_class(child), 'rect': rect}
+                   for label, rect, child in visible]
+    analysis.setdefault('dialogs', {})[phase] = diagnostics
+    print(f'{log} {phase} Clone dialog visible controls: {diagnostics!r}', flush=True)
+    frame = dialog_image(hwnd, work / f'{phase}-dialog-initial.png')
+    return hwnd, visible, frame
 
 
 def children(hwnd):
@@ -72,8 +79,7 @@ def checkbox_checked(dialog, hwnd, image):
     return bool(np.mean((g-r > 55) & (b-r > 45)) >= .2)
 
 
-def set_one_auto_arranged(dialog, work):
-    controls = children(dialog)
+def set_one_auto_arranged(dialog, controls, original, work):
     edits = [h for _, _, h in controls if winutil.window_class(h).casefold() == 'edit']
     if len(edits) != 1:
         raise ValueError('Clone dialog did not expose exactly one native copy count field')
@@ -82,7 +88,6 @@ def set_one_auto_arranged(dialog, work):
         winutil.select_all(edit)
         winutil.msg_text(edit, '1')
     checkbox = checkbox_handle(dialog, controls)
-    original = dialog_image(dialog, work / 'clone-dialog-initial.png')
     was_checked = checkbox_checked(dialog, checkbox, original)
     if not was_checked:
         click_dialog_control(checkbox, dialog)
@@ -117,8 +122,8 @@ def clone_fill(session, work, before, analysis, log):
     from plate_layout_oracle import verify_clone
 
     started = time.monotonic()
-    dialog = open_clone_dialog(session, log)
-    analysis['clone_dialog'] = set_one_auto_arranged(dialog, work)
+    dialog, controls, original = open_clone_dialog(session, work, analysis, 'clone', log)
+    analysis['clone_dialog'] = set_one_auto_arranged(dialog, controls, original, work)
     analysis['results']['Clone dialog shows count 1 and Auto arrange checked'] = 'PASS'
     confirm_dialog(session, dialog, 'OK', log)
     time.sleep(6)
@@ -131,8 +136,7 @@ def clone_fill(session, work, before, analysis, log):
         raise ValueError('clone geometry or placement failed before Fill')
 
     started = time.monotonic()
-    dialog = open_clone_dialog(session, log)
-    dialog_image(dialog, work / 'fill-dialog.png')
+    dialog, _, _ = open_clone_dialog(session, work, analysis, 'fill', log)
     confirm_dialog(session, dialog, 'Fill', log)
     time.sleep(12)
     filled = save_stage(session, work, 'filled')
