@@ -1,0 +1,64 @@
+﻿[m7x233] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\233\run-itwe_t_k
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\233\run-itwe_t_k\profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\233\run-itwe_t_k\profile C:\coil\orca-blackbox-v3-r1\fixtures\feishu_std_cube.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x58e0db6, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x59e0698, WM_CLOSE)
+[launcher] pid=5652 hwnd=0x5580a5c rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.10%)
+[m7x249] started add_sphere at 2026-11-25T17:14:47.074336+00:00
+[model context] desktop hit-test did not resolve to canvas at (1345,528)
+[model context] message right-click @(1345,528) on 0x56706b4
+[model context] menu hwnd=0x5f105c0: [(0, 'Select All', 0), (1, 'Delete All', 0), (2, 'Arrange', 0), (3, 'Reload All', 0), (4, 'Auto Rotate', 0), (5, 'Delete Plate', 1), (6, '', 2051), (7, 'Add Primitive', 2576), (8, 'Add Handy models', 1808), (9, 'Add Models', 0), (10, 'Lock', 0), (11, 'Edit Plate Name', 0)]
+[m7x233] native highlighted row 7 in menu 0x3b670489
+[m7x233] visible Add Primitive submenu hwnd=0x249052c hmenu=0x47311c7: [(0, 'Cube', 128), (1, 'Cylinder', 0), (2, 'Sphere', 0), (3, 'Cone', 0), (4, 'Disc', 0), (5, 'Torus', 0), (6, '', 2051), (7, 'Text', 0), (8, '', 2051), (9, 'SVG', 0)]
+[m7x233] native highlighted row 2 in menu 0x47311c7
+[m7x249] finished add_sphere in 5.391s
+[m7x249] started separate_objects at 2026-11-25T17:14:52.544430+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5aa0322 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x249] started arrange at 2026-11-25T17:15:02.166010+00:00
+[model context] desktop hit-test did not resolve to canvas at (1345,528)
+[model context] message right-click @(1345,528) on 0x56706b4
+[model context] menu hwnd=0x6240bdc: [(0, 'Select All', 0), (1, 'Delete All', 0), (2, 'Arrange', 0), (3, 'Reload All', 0), (4, 'Auto Rotate', 0), (5, 'Delete Plate', 1), (6, '', 2051), (7, 'Add Primitive', 2576), (8, 'Add Handy models', 1808), (9, 'Add Models', 0), (10, 'Lock', 0), (11, 'Edit Plate Name', 0)]
+[m7x233] native highlighted row 2 in menu 0x3b670489
+[m7x233] activated context menu item 'Arrange'
+[m7x249] finished arrange in 2.375s
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5aa0322 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x249] finished separate_objects in 25.547s
+[m7x249] started export_merged_stl at 2026-11-25T17:15:18.217417+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5aa0322 did not complete
+[topbar] File opened at offset 10
+[export] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[export] Export menu: [(0, 'Export all objects as one STL...', True), (1, 'Export all objects as STLs...', True), (2, 'Export Generic 3MF...', True), (3, 'Export plate sliced file...\tCtrl+G', False), (4, 'Export all plate sliced file...', False), (5, 'Export G-code...', False), (6, 'Export Preset Bundle...', True)]
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5aa0322 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=324) sent, completed=False
+[export] Export all objects as one STL -> all-objects.stl (1602684 bytes), extension '.stl'
+[m7x249] finished export_merged_stl in 14.921s
+[m7x249] started read_merged_stl at 2026-11-25T17:15:33.139820+00:00
+[m7x249] finished read_merged_stl in 1.625s
+[m7x249] started open_in_viewer at 2026-11-25T17:15:34.858736+00:00
+[m7x249] finished open_in_viewer in 4.547s
+[m7x233] all-objects.stl: gaps {'鐢熸垚 .stl 鏂囦欢': [], '鍖呭惈涓や釜妯″瀷鐨勫悎骞跺嚑浣?: [], '鏂囦欢闈?0 瀛楄妭': [], '鍙甯告墦寮€': []}
+
+[m7] === verdict ===
+  鐢熸垚 .stl 鏂囦欢: PASS
+  鍖呭惈涓や釜妯″瀷鐨勫悎骞跺嚑浣? PASS
+  鏂囦欢闈?0 瀛楄妭: PASS
+  鍙甯告墦寮€: PASS
+[m7] GREEN

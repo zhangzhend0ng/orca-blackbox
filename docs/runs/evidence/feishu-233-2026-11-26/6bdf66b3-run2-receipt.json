@@ -1,0 +1,14 @@
+﻿{
+    "commit":  "6bdf66b396c6de2f58a4269864524eb68b546c3f",
+    "case":  "m7x_233_export_merged_stl",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "orca_processes_after":  0,
+    "summary":  "SUMMARY: PASS=1 FAIL=0",
+    "dispatched_at":  "2026-11-26T01:15:50.4675088+08:00",
+    "scenario_completed_at":  "2026-11-26T01:17:52.9423475+08:00",
+    "suite_completed_at":  "2026-11-26T01:17:53.1549863+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_233_export_merged_stl.log",
+    "log_sha256":  "D64DA3F0B01DE5FBD883B3248FB9F99582136237BA7AE1426FB3AB7066B87F9F"
+}

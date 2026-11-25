@@ -1,0 +1,23 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T01:17:53" tests="1" failures="0" errors="0">
+    <testcase name="m7x_233_export_merged_stl" classname="blackbox.m7x_233_export_merged" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_233_export_merged_stl.log" />
+        <property name="dim:鐢熸垚 .stl 鏂囦欢" value="PASS" />
+        <property name="dim:鏂囦欢闈?0 瀛楄妭" value="PASS" />
+        <property name="dim:鍙甯告墦寮€" value="PASS" />
+      </properties>
+      <system-out>[m7x249] started open_in_viewer at 2026-11-25T17:17:45.702418+00:00
+[m7x249] finished open_in_viewer in 4.141s
+[m7x233] all-objects.stl: gaps {'鐢熸垚 .stl 鏂囦欢': [], '鍖呭惈涓や釜妯″瀷鐨勫悎骞跺嚑浣?: [], '鏂囦欢闈?0 瀛楄妭': [], '鍙甯告墦寮€': []}
+
+[m7] === verdict ===
+  鐢熸垚 .stl 鏂囦欢: PASS
+  鍖呭惈涓や釜妯″瀷鐨勫悎骞跺嚑浣? PASS
+  鏂囦欢闈?0 瀛楄妭: PASS
+  鍙甯告墦寮€: PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

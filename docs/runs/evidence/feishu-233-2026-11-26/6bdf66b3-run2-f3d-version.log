@@ -1,0 +1,17 @@
+F3D 4.0.1
+
+F3D - A fast and minimalist 3D viewer
+Version: 4.0.1.
+Build date: 2026-10-31 14:50:16.
+Build system: Windows 64-bits.
+Compiler: MSVC 19.44.35229.0.
+Module FFmpeg: ON.
+Module ImGui: ON.
+Module OpenEXR: ON.
+Module Raytracing: OFF.
+Module WebP: ON.
+VTK version: 9.7.1-1746-gdbb73e9cc8 (date: 20261016).
+Copyright (C) 2019-2021 Kitware SAS.
+Copyright (C) 2021-2025 Michael Migliore, Mathieu Westphal.
+Copyright (C) 2025-2026 F3D-APP Foundation.
+License BSD-3-Clause.

@@ -150,7 +150,9 @@ CASES: dict[str, dict] = {
     "m7x_227_import_stl": _o("m7", "A"),            # File > Import, binary STL
     "m7x_230_import_project": _o("m7", "A"),        # File > Import, a saved two-plate project
     "m7x_231_import_zip": _o("m7", "A"),            # File > Import Zip Archive
-    "m7x_233_export_merged_stl": _o("m7", "A"),     # File > Export, all objects as one STL
+    # 6bdf66b: two guest sessions GREEN on 2026-11-26 and 43 offline checks each
+    # (docs/runs/evidence/feishu-233-2026-11-26).
+    "m7x_233_export_merged_stl": _r("m7", "A"),
     "m7x_234_export_plate_slice": _o("m7", "A"),    # File > Export, the plate's sliced file
     # 81dbcf1: two guest sessions GREEN on 2026-11-26 and 38 offline checks each
     # (docs/runs/evidence/feishu-236-2026-11-26).
