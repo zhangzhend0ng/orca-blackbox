@@ -6,8 +6,8 @@ win11-test 上运行 Snapmaker Orca 2.4.0，夹具使用 U1 0.4 mm 喷嘴、PLA�
 
 | 会话 | 原始结论 | 场景耗时 | 离线复核 |
 | --- | --- | ---: | --- |
-| [首轮收据](1f8b8ac3-run1-receipt.json) | GREEN | 96.610 秒 | 通过 |
-| [第二轮收据](1f8b8ac3-run2-receipt.json) | GREEN | 96.850 秒 | 通过 |
+| [首轮收据](1f8b8ac3-run1-receipt.json) | GREEN | 96.615 秒 | 通过 |
+| [第二轮收据](1f8b8ac3-run2-receipt.json) | GREEN | 96.853 秒 | 通过 |
 
 | 两轮共同测量 | 盘面法向在模型坐标中的变化 | 贴盘面积（mm²） |
 | --- | --- | --- |

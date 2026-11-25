@@ -4,8 +4,8 @@
 
 | 会话 | 原始结论 | 场景耗时 | 离线复核 |
 | --- | --- | ---: | --- |
-| [首轮收据](7bed4701-run1-receipt.json) | GREEN | 90.010 秒 | 通过 |
-| [第二轮收据](7bed4701-run2-receipt.json) | GREEN | 91.070 秒 | 通过 |
+| [首轮收据](7bed4701-run1-receipt.json) | GREEN | 90.011 秒 | 通过 |
+| [第二轮收据](7bed4701-run2-receipt.json) | GREEN | 91.066 秒 | 通过 |
 
 两轮都从 Keep 和 Remove 两个已占用的盘启动。删除 Remove 后仅余 Keep，Alpha 仍在 Keep，Bravo 完整保留在未分配区域，两件的全部世界坐标三角面都与删除前一致。驱动检测到的编辑器仍存活且无预期外模态。飞书的「盘上对象保留」在本夹具上的实际去向为未分配区域。[首轮逐步分析](7bed4701-run1-analysis.json) · [第二轮逐步分析](7bed4701-run2-analysis.json)
 
