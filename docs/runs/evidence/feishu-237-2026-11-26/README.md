@@ -41,7 +41,7 @@
 
 随后弹 `add file fail`（[截图](ff55c9d8-run1-result-dialog.png)），磁盘上留下 0 字节的 zip。源码里对应 `ExportConfigsDialog::save_presets_to_zip`：`mz_zip_writer_add_file` 失败即返回 `ADD_FILE_FAIL`，压缩包已经创建但没有收尾（`src/slic3r/GUI/CreatePresetsDialog.cpp`）。#232 的另一轮（模板 U1 0.8 mm）导出耗材名时也是同样的签名。
 
-**给测试同事。** 这是一条可以单独提缺陷的产品问题：打开任意带内嵌耗材预设的工程 → 文件→导出→导出配置包 → 选 `Filament presets(.zip)` → 勾一个耗材名 → 导出，会得到 `add file fail` 和一个 0 字节的 zip。另外「经应用自己另存出来的用户工艺预设能否导出、再导入后参数是否一致」这一段本轮没有走到，仍是未测：第三到第五轮里经 GUI 造预设都停在找 Advanced 开关这一步。fa706g3 上的一次 SHADOW（提交 `f9e99228…`，[整屏截图](fa-f9e99228-50e7b699a849-preset-before.png)）读数相同，截图说明了原因：普查五种类型之后「Export Preset Bundle」对话框还开着，用例是在这个模态对话框开着的时候去点侧栏的。这是用例流程的问题，修法是先关掉对话框再去造预设。客机第四、五轮的截图里，这个对话框上面还压着一个 `Windows Security` 防火墙提示（程序名 `Snapmaker Control`，请求访问公共和专用网络）；它是客机环境问题，被测构建的目录里没有叫这个名字的程序，2026-11-26 04:36 给被测程序加了入站 Block 规则之后提示仍然出现，由谁触发没有定位。
+**给测试同事。** 这是一条可以单独提缺陷的产品问题：打开任意带内嵌耗材预设的工程 → 文件→导出→导出配置包 → 选 `Filament presets(.zip)` → 勾一个耗材名 → 导出，会得到 `add file fail` 和一个 0 字节的 zip。另外「经应用自己另存出来的用户工艺预设能否导出、再导入后参数是否一致」这一段本轮没有走到，仍是未测：第三到第五轮里经 GUI 造预设都停在找 Advanced 开关这一步。fa706g3 上的一次 SHADOW（提交 `f9e99228…`，[整屏截图](fa-f9e99228-50e7b699a849-preset-before.png)）读数相同，截图说明了原因：普查五种类型之后「Export Preset Bundle」对话框还开着，用例是在这个模态对话框开着的时候去点侧栏的。这是用例流程的一处问题，已改成先关掉对话框再去造预设（之后客机 `21fa17bd…` 一轮和 fa706g3 一轮都是 `closed: true`）。关掉之后同一步仍然失败：两台机器上做这一步时前台窗口都是跑套件的终端，`ensure_advanced` 的真实点击没有先把 Orca 置前，开关没有翻转（fa 的收割件在 `artifacts/fa-obj-237-21fa17bd-6d23cf11e740`，SHADOW）。客机第四轮起的整屏截图里还画着一个 `Windows Security` 防火墙提示（程序名 `Snapmaker Control`）：它是一块没有被重绘的旧画面——整轮枚举顶层窗口的看门进程没有见过这个窗口（`dev237i` 的控制器日志），05:49 它的真身（`Shell_SystemDialogProxy`，PickerHost.exe）被枚举到过一次并已关掉。2026-11-26 04:36 给被测程序加过一条入站 Block 防火墙规则，与此无关；它最初由谁触发没有定位。
 
 ```powershell
 & runner/hv_go.ps1 -Cases m7x_237_export_configs -NoSync

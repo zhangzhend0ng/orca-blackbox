@@ -628,13 +628,17 @@ run 编号是 `artifacts/windows_mcp_harvest/<编号>`；叙述与决策见运�
   `<前缀>-*` 找件）。
 - **交互桌面预检**：提权中继里 PS Direct 进程的桌面指标是默认值（§18.7），派发前读
   计划任务 `Ready`、Orca 与驱动进程数、分辨率。
-- **`Windows Security` 防火墙提示会在运行中途冒出来盖住应用**：提示里的程序名是 `Snapmaker Control`，
-  即设备代理 `snapmaker_control_windows_x64.exe`（被测构建目录里没有它，客机上另有两份拷贝）。
-  它接走真实输入，表现为「开关点不动」「菜单关不上」。#237 的三轮里它压在应用上面
-  （`docs/runs/evidence/feishu-237-2026-11-26/*-preset-before.png`），由谁触发没有定位；
-  2026-11-26 04:36 给被测的 `snapmaker-orca.exe` 加了 `OrcaBlackbox-MainBuild-BlockInbound-Any`
-  （入站 Block、所有配置，等同于点 Cancel；撤销用 `Remove-NetFirewallRule -DisplayName` 同名）
-  之后提示仍在。步骤莫名点不动时先存整屏截图，再判断。
+- **`Windows Security` 防火墙提示：真身、残影和没查清的部分**（2026-11-26）。提示里的程序名是
+  `Snapmaker Control`（设备代理 `snapmaker_control_windows_x64.exe`，被测构建目录里没有它）。
+  05:49 在客机交互桌面上枚举到过它一次：类名是 **`Shell_SystemDialogProxy`**、属于 PickerHost.exe，
+  没有 `#32770` 类名也没有子窗口——所以只认 `#32770` 的预检从来没看见过它；给它发 WM_CLOSE 就关掉。
+  但 #237 各轮整屏截图里那个提示是另一回事：整轮每 1.5 秒枚举一次顶层窗口的看门进程从没见过它
+  （心跳里只有 Orca、导出弹窗、目录框、终端），同一时刻截图上却画着它和早已关掉的弹窗——是一块
+  没被重绘的旧画面，fa706g3 上没有它时同一步照样失败。给被测的 `snapmaker-orca.exe` 加过
+  `OrcaBlackbox-MainBuild-BlockInbound-Any`（入站 Block、所有配置；撤销用
+  `Remove-NetFirewallRule -DisplayName` 同名），没有改变什么。谁触发它、残影为何不消，都没定位。
+  教训：**步骤莫名点不动时，先枚举顶层窗口（任意类名）再截屏，两样对得上才归因给弹窗**；
+  真实点击之前先把 Orca 主窗口置前并读回前台。
 - **`wait_arrival` 在空盘的 U1 模板上立即返回**：模板本身的彩色占比 0.104% 已经过了
   0.1% 的门，随后另存工程撞上还没关的 Loading 框（#251 第一轮）。导入后要等的是
   「盘上有模型候选且应用没有对话框」，不是彩色占比。
