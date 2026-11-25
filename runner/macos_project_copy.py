@@ -6,6 +6,7 @@ reopen it in a new process and slice; the host verifies independently."""
 import argparse
 import base64
 from datetime import datetime, timezone
+from decimal import Decimal
 import hashlib
 import io
 import json
@@ -27,13 +28,28 @@ from harness.pilot_common import inspect_preserved_settings  # noqa: F401 - Wind
 from harness.pilot_transform import verify_translation
 from harness.profile import MINIMAL_CONF, write_conf
 from harness.project_3mf import inspect_project
+from harness.model_move_pilot import mesh_3mf, source_models, transform_point
 
-COPY_NAMES = {"layer": "layer-024-copy.3mf", "walls": "wall-3-copy.3mf", "pan": "pan-x10-copy.3mf"}
+SPHERE_SHA256 = "f5f83d00545522c7cde44c0cd4260c325418707afdc83e6056390a0b8800d13c"
+COPY_NAMES = {"sphere254": "sphere-254-copy.3mf", "layer": "layer-024-copy.3mf", "walls": "wall-3-copy.3mf", "pan": "pan-x10-copy.3mf"}
 
 
 def settings_of(raw):
     with zipfile.ZipFile(io.BytesIO(raw)) as archive:
         return json.loads(archive.read("Metadata/project_settings.config"))
+
+
+def sphere_geometry_unchanged(saved, original):
+    """Orca retains this fixture's indexed facets but recenters its local mesh."""
+    def geometry(raw):
+        points, faces, build = mesh_3mf(source_models(raw), lambda: False)
+        matrix = tuple(map(float, build))
+        return [transform_point(p, matrix) for p in points], faces
+
+    a, a_faces = geometry(saved)
+    b, b_faces = geometry(original)
+    return (a_faces == b_faces and len(a) == len(b)
+            and all(abs(x - y) <= 0.00001 for p, q in zip(a, b) for x, y in zip(p, q)))
 
 
 def payload(output, run_id, fixture, edit_height, goal, copy_name, pan_presses):
@@ -82,8 +98,10 @@ def verify_walls_differential(saved_raw, fixture_raw, sut):
     either wall_loops 2->3 (plus its dirty-manifest entry) or a difference the
     control made with the exact same value.
     """
-    meta = json.loads((ROOT / "runner" / "macos" / "walls_control.json").read_text())
-    control_raw = (ROOT / "runner" / "macos" / "walls_control.3mf").read_bytes()
+    name = "walls_control_242" if sut["version"] == "2.4.2" else "walls_control"
+    directory = ROOT / "runner" / "macos"
+    meta = json.loads((directory / (name + ".json")).read_text())
+    control_raw = (directory / (name + ".3mf")).read_bytes()
     if hashlib.sha256(control_raw).hexdigest() != meta["control_saved_sha256"]:
         raise ValueError("Committed walls control baseline digest mismatch")
     if (meta["sut"]["version"], meta["sut"]["executable_sha256"]) \
@@ -115,7 +133,7 @@ def verify_walls_differential(saved_raw, fixture_raw, sut):
         raise ValueError(f"mac_walls_unrelated_setting_changed:{key}")
 
 
-def verify_plate(output, name, receipt, expected_pid, project_sha256, height, count):
+def verify_plate(output, name, receipt, expected_pid, project_sha256, height, count, *, sphere=False):
     path = output / (name + ".gcode")
     raw = path.read_bytes()
     if (receipt["pid"] != expected_pid or receipt["size"] != len(raw)
@@ -123,7 +141,8 @@ def verify_plate(output, name, receipt, expected_pid, project_sha256, height, co
             or receipt["project_sha256"] != project_sha256 or receipt["source"] != "open_process_plate"
             or receipt["export_enabled_before"] is not False or receipt["export_enabled_after"] is not True):
         raise ValueError(f"{name} plate lineage or transfer mismatch")
-    facts = analyze_gcode(raw, layer_height=height)
+    facts = (analyze_gcode(raw, layer_height=height, first_layer_height="0.25", expected_height_mm=Decimal(20), allow_startup_retract=True)
+             if sphere else analyze_gcode(raw, layer_height=height, allow_startup_retract=True))
     if facts["layer_count"] != count:
         raise ValueError(f"{name} yielded {facts['layer_count']} model layers, expected {count}")
     return {**facts, "artifact": path.name, "origin": "gui_plate_temporary"}
@@ -146,8 +165,10 @@ def run(args):
     stage = "host.fixture"
     print(f"Evidence: {output}", flush=True)
     try:
-        fixture = (ROOT / LAYER_FIXTURE).read_bytes()
-        if hashlib.sha256(fixture).hexdigest() != LAYER_FIXTURE_SHA256:
+        sphere = goal == "sphere254"
+        fixture = (ROOT / ("fixtures/feishu_std_sphere.3mf" if sphere else LAYER_FIXTURE)).read_bytes()
+        fixture_sha = SPHERE_SHA256 if sphere else LAYER_FIXTURE_SHA256
+        if hashlib.sha256(fixture).hexdigest() != fixture_sha:
             raise ValueError("Repository fixture digest mismatch")
         stage = "transport"
         result = subprocess.run(ssh_command(args),
@@ -175,23 +196,25 @@ def run(args):
         stage = "verify.identity"
         if report["run_id"] != run_id or report["cleanup_verified"] is not True:
             raise ValueError("Run identity or cleanup evidence mismatch")
-        if (report["source_before"], report["source_after"]) != (LAYER_FIXTURE_SHA256, LAYER_FIXTURE_SHA256):
+        if (report["source_before"], report["source_after"]) != (fixture_sha, fixture_sha):
             raise ValueError("Mac original fixture mismatch")
         sut = report["sut"]
         if not sut["version"] or not sut["build"] or not re.fullmatch("[0-9a-f]{64}", sut["executable_sha256"]):
             raise ValueError("Actual Orca build identity is incomplete")
         phases = report["phases"]
         baseline, edit, reopened = phases["baseline"], phases["edit"], phases["reopen"]
+        initial = ["0.2", "0.25"] if sphere else ["0.4", "0.4"]
         if (len({baseline["pid"], edit["pid"], reopened["pid"]}) != 3
-                or baseline["layers"] != ["0.4", "0.4"] or edit["window"] != Path(copy_name).stem
-                or reopened["window"] != edit["window"] or edit["layers"] != ["0.4", "0.4"]):
+                or baseline["layers"] != initial or edit["window"] != Path(copy_name).stem
+                or reopened["window"] != edit["window"] or edit["layers"] != initial):
             raise ValueError("Missing independent GUI reopen evidence")
         stage = "verify.baseline_slice"
         receipts = report["slice_receipts"]
         if receipts["baseline"]["phase"] != "baseline":
             raise ValueError("Unexpected baseline receipt phase")
         summary["slices"]["baseline"] = verify_plate(
-            output, "baseline", receipts["baseline"], baseline["pid"], LAYER_FIXTURE_SHA256, "0.4", 68)
+            output, "baseline", receipts["baseline"], baseline["pid"], fixture_sha,
+            "0.2" if sphere else "0.4", 100 if sphere else 68, sphere=sphere)
         stage = "verify.saved_project"
         if "project" not in reply:
             raise ValueError("Mac did not return the saved project")
@@ -207,6 +230,19 @@ def run(args):
             stage = "verify.reopened_fields"
             if reopened["layers"] != ["0.24", "0.4"]:
                 raise ValueError(f"Reopened layer fields mismatch: {reopened['layers']}")
+        elif sphere:
+            if (report["off_target_layers"] != ["0.24", "0.3"] or report["target_layers"] != initial
+                    or reopened["layers"] != initial):
+                raise ValueError("Missing sphere height edit and independent readback")
+            settings = settings_of(data)
+            original = settings_of(fixture)
+            for key in ("layer_height", "initial_layer_print_height", "nozzle_diameter", "filament_type",
+                        "printer_model", "printer_variant", "print_settings_id"):
+                if settings[key] != original[key]:
+                    raise ValueError(f"Sphere settings mismatch: {key}")
+            if not sphere_geometry_unchanged(data, fixture):
+                raise ValueError("Sphere mesh or transform changed")
+            summary["project"] = {"sphere_unchanged": True, "layers": initial}
         elif goal == "walls":
             verify_walls_differential(data, fixture, sut)
             summary["project"] = {**inspect_project(data, fixture, layer_height="0.4"), "wall_loops": "3",
@@ -220,7 +256,12 @@ def run(args):
             raise ValueError("Unexpected edited receipt phase")
         summary["slices"]["edited"] = verify_plate(
             output, "edited", receipts["edited"], reopened["pid"], report["saved_sha256"],
-            "0.24" if goal == "layer" else "0.4", 112 if goal == "layer" else 68)
+            "0.2" if sphere else ("0.24" if goal == "layer" else "0.4"),
+            100 if sphere else (112 if goal == "layer" else 68), sphere=sphere)
+        if sphere:
+            for key in ("layer_count", "first_z", "last_z", "layer_height"):
+                if summary["slices"]["baseline"][key] != summary["slices"]["edited"][key]:
+                    raise ValueError(f"Sphere baseline comparison failed: {key}")
         if goal == "walls":
             echoes = config_value_all((output / "edited.gcode").read_bytes(), "wall_loops")
             summary["wall_loops_gcode_echo"] = echoes if echoes else "absent"

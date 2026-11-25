@@ -1,0 +1,74 @@
+{
+  "run_id": "92b322e4b6b6430a8c5037e183518437",
+  "verdict": "NON_GREEN",
+  "candidate": "mac-feishu-254-retry",
+  "goal": "sphere254",
+  "test_kind": "sphere254_comparison",
+  "started_at": "2026-11-25T09:00:33.439684+00:00",
+  "slices": {},
+  "native_save_as": "NOT_TESTED",
+  "gui_gcode_export": "NOT_TESTED",
+  "guest": {
+    "ok": false,
+    "failure_stage": "reopen.launch",
+    "run_id": "92b322e4b6b6430a8c5037e183518437",
+    "console_uid": 501,
+    "test_uid": 502,
+    "source_before": "f5f83d00545522c7cde44c0cd4260c325418707afdc83e6056390a0b8800d13c",
+    "phases": {
+      "baseline": {
+        "pid": 46996,
+        "window": "baseline",
+        "layers": [
+          "0.2",
+          "0.25"
+        ]
+      },
+      "edit": {
+        "pid": 47648,
+        "window": "sphere-254-copy",
+        "layers": [
+          "0.2",
+          "0.25"
+        ]
+      }
+    },
+    "slice_receipts": {
+      "baseline": {
+        "phase": "baseline",
+        "pid": 46996,
+        "window_id": 67755,
+        "source": "open_process_plate",
+        "plate_file": ".46996.0.gcode",
+        "inode": 42164305,
+        "size": 769663,
+        "sha256": "c83916c959300022a32978089ca6d81ce736de512720c5a8cffb4f96e437fbd0",
+        "project_sha256": "f5f83d00545522c7cde44c0cd4260c325418707afdc83e6056390a0b8800d13c",
+        "export_enabled_before": false,
+        "export_enabled_after": true
+      }
+    },
+    "sut": {
+      "version": "2.4.2",
+      "build": "sha256:8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75",
+      "bundle_build": "",
+      "build_source": "executable_sha256",
+      "executable_sha256": "8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75"
+    },
+    "off_target_layers": [
+      "0.24",
+      "0.3"
+    ],
+    "target_layers": [
+      "0.2",
+      "0.25"
+    ],
+    "saved_sha256": "7d7d0dc9572c3d116203b6cf7eea64fdde9ec72b1d9c75c3a69f753a445f254f",
+    "error": "Traceback (most recent call last):\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.6lYO95EF/project_copy.py\", line 512, in run_worker\n    worker(report)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.6lYO95EF/project_copy.py\", line 442, in worker\n    with ax.Desktop(console_uid) as desktop, open_copy(desktop, phase) as (pid, root, window):\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py\", line 117, in __enter__\n    return next(self.gen)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.6lYO95EF/project_copy.py\", line 158, in open_copy\n    window = wait_for(main_window, \"Named project window did not open\", 80)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.6lYO95EF/project_copy.py\", line 73, in wait_for\n    raise TimeoutError(message)\nTimeoutError: Named project window did not open\n",
+    "cleanup_verified": true,
+    "remote_evidence": "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.6lYO95EF"
+  },
+  "failure_stage": "reopen.launch",
+  "error": "Traceback (most recent call last):\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.6lYO95EF/project_copy.py\", line 512, in run_worker\n    worker(report)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.6lYO95EF/project_copy.py\", line 442, in worker\n    with ax.Desktop(console_uid) as desktop, open_copy(desktop, phase) as (pid, root, window):\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py\", line 117, in __enter__\n    return next(self.gen)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.6lYO95EF/project_copy.py\", line 158, in open_copy\n    window = wait_for(main_window, \"Named project window did not open\", 80)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.6lYO95EF/project_copy.py\", line 73, in wait_for\n    raise TimeoutError(message)\nTimeoutError: Named project window did not open\n",
+  "finished_at": "2026-11-25T09:05:22.544909+00:00"
+}

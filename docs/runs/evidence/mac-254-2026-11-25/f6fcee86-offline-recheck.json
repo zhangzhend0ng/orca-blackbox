@@ -1,0 +1,62 @@
+{
+  "classification": "OFFLINE_REVALIDATED_SHADOW",
+  "historical_verdict": "NON_GREEN",
+  "run_id": "f6fcee860add45fb82a0c5db68e7d6b8",
+  "calibration_run_id": "714b558c27b84049bd448672cc95d2fe",
+  "build": {
+    "version": "2.4.2",
+    "build": "sha256:8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75",
+    "bundle_build": "",
+    "build_source": "executable_sha256",
+    "executable_sha256": "8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75"
+  },
+  "project": {
+    "sha256": "f56421e52974b8b6fdaae65183d5c5b797ca07e3c6d3210a314349bc6362bda7",
+    "layer_height": "0.4",
+    "initial_layer_print_height": "0.4",
+    "vertices": 8,
+    "triangles": 12,
+    "geometry_unchanged": true
+  },
+  "walls_uis": [
+    "2",
+    "3",
+    "3"
+  ],
+  "slices": {
+    "baseline": {
+      "layer_height": "0.4",
+      "first_layer_height": "0.4",
+      "layer_count": 68,
+      "first_z": "0.4",
+      "last_z": "27.2",
+      "positive_xy_e_moves": 1775,
+      "object_tools": [
+        0
+      ],
+      "sha256": "baccca27b68f4f699bfd5bd672c1b9204908101870e41b8b643d3e2bc7ee380b",
+      "artifact": "baseline.gcode",
+      "origin": "gui_plate_temporary",
+      "wall_loops_gcode": [
+        "2"
+      ]
+    },
+    "edited": {
+      "layer_height": "0.4",
+      "first_layer_height": "0.4",
+      "layer_count": 68,
+      "first_z": "0.4",
+      "last_z": "27.2",
+      "positive_xy_e_moves": 2031,
+      "object_tools": [
+        0
+      ],
+      "sha256": "4ab393ec5dbda194c8db86ef7ade114caa9a8f925fc88b8aa6ac7f5357400627",
+      "artifact": "edited.gcode",
+      "origin": "gui_plate_temporary",
+      "wall_loops_gcode": [
+        "3"
+      ]
+    }
+  }
+}

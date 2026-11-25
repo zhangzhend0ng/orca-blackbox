@@ -1,0 +1,18 @@
+{
+  "sut": {
+    "version": "2.4.2",
+    "build": "sha256:8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75",
+    "bundle_build": "",
+    "build_source": "executable_sha256",
+    "executable_sha256": "8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75"
+  },
+  "fixture_sha256_before": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+  "control_saved_sha256": "3e9c8dedc9adf85d85f0d943f531b559a0c76388cc1abbc8bf7dee34395e1d50",
+  "control_edit": {
+    "key": "layer_height",
+    "from": "0.4",
+    "to": "0.24"
+  },
+  "harvest": "artifacts\\mac_project_copy\\714b558c27b84049bd448672cc95d2fe",
+  "run_id": "714b558c27b84049bd448672cc95d2fe"
+}

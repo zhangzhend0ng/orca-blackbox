@@ -30,7 +30,7 @@
 
 11 月 24 日 GLM 扩样的接收依据见[31 个 Script 场景同版本复跑](docs/runs/glm-flash-expansion-2026-11-21.md)、[飞书 44 行逐项对照](docs/runs/evidence/feishu-expect-vs-gcode-2026-11-24/own-models-verdicts.md)和[89 个旧用例的迁移初稿](docs/runs/p0-3-signoff-draft-2026-11-22.md)。飞书参数行可用以下命令在仓库根目录复核：
 
-- `python tools/replay_case_evidence.py <收据路径>` 离线重判 #201 保存、#249 添加部件和 #250 负零件的归档文件，同时核对反例。见[离线试跑](docs/runs/offline-oracle-replay-2026-11-25.md)和[#249 客机实测与计时](docs/runs/evidence/feishu-249-2026-11-25/README.md)。
+- `python tools/replay_case_evidence.py <收据路径>` 离线重判 #201 保存、#244 添加模型、#249 添加部件和 #250 负零件的归档文件，同时核对反例。见[离线试跑](docs/runs/offline-oracle-replay-2026-11-25.md)、[#249 客机计时](docs/runs/evidence/feishu-249-2026-11-25/README.md)和[#244 客机与 #254 实体机证据](docs/runs/evidence/multi-244-254-2026-11-25/README.md)。
 - `python tools/feishu_vs_table.py . --json` 按行列出步骤里出现而用例表缺少的键。
 - `python tools/feishu_rows_compare.py . --check-expectations` 比较指定模型的最近一次基线和用例导出件。当前核对 #258 的挤出圆弧、#262 的顶底面单位长度挤出量、#273 的非首层最高频空驶进给及 #277 的支撑主体和界面挤出。缺少收割件或判定失败时返回非零。通过仅计对应的可观测项。
 

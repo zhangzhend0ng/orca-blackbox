@@ -141,8 +141,16 @@ def open_copy(desktop, phase):
         root = desktop.own(ax.application(pid))
         require(ax.set_timeout(root, 2) == 0, "Cannot set AX timeout")
 
+        seen = set()
         def main_window():
-            windows = [w for w in desktop.children(root, "AXWindows")
+            children = desktop.children(root, "AXWindows")
+            # The AX root belongs to the one process launched with this exact
+            # private profile and model. Limit diagnostic titles to this PID.
+            signature = tuple((desktop.text(w, "AXSubrole"), desktop.text(w, "AXTitle")) for w in children)
+            if signature not in seen:
+                print(f"{phase}: AX window candidates for {project.stem!r}: {signature!r}", flush=True)
+                seen.add(signature)
+            windows = [w for w in children
                        if desktop.text(w, "AXSubrole") == "AXStandardWindow"
                        and desktop.text(w, "AXTitle") == project.stem]
             return exactly_one(windows) if windows else None
@@ -180,7 +188,7 @@ def save_project(desktop, pid, root, window):
              "Save did not update the named copy", 20)
 
 
-def edit_and_save(desktop, pid, root, window, fields, edit_height):
+def edit_and_save(desktop, pid, root, window, fields, edit_height, first_height="0.4"):
     import accessibility as ax
 
     upper, first_layer = fields
@@ -188,8 +196,12 @@ def edit_and_save(desktop, pid, root, window, fields, edit_height):
     desktop.act(pid, upper, "AXValue", desktop.string(edit_height))
     desktop.act(pid, upper, "AXConfirm")
     desktop.act(pid, first_layer, "AXFocused", ax.true_value)
+    if first_height != "0.4":
+        desktop.act(pid, first_layer, "AXValue", desktop.string(first_height))
+        desktop.act(pid, first_layer, "AXConfirm")
+        desktop.act(pid, upper, "AXFocused", ax.true_value)
     wait_for(lambda: desktop.text(window, "AXTitle") == "*" + COPY.stem, "Missing unsaved marker")
-    require(read_values(desktop, fields) == [edit_height, "0.4"], "Edited fields mismatch")
+    require(read_values(desktop, fields) == [edit_height, first_height], "Edited fields mismatch")
     save_project(desktop, pid, root, window)
 
 
@@ -412,7 +424,7 @@ def worker(report):
     report["test_uid"] = os.getuid()
     source_hash = digest(SOURCE)
     edit_height = (WORK / "edit-height").read_text().strip()
-    require(GOAL in ("layer", "walls", "pan"), "Unexpected requested goal")
+    require(GOAL in ("layer", "walls", "pan", "sphere254"), "Unexpected requested goal")
     if GOAL == "layer":
         require(edit_height in ("0.24", "0.32"), "Unexpected requested GUI edit")
     if GOAL == "pan":
@@ -437,6 +449,8 @@ def worker(report):
             entry = {"pid": pid, "window": desktop.text(window, "AXTitle"), "layers": values}
             report["phases"][phase] = entry
             expected = [edit_height if (GOAL == "layer" and phase == "reopen") else "0.4", "0.4"]
+            if GOAL == "sphere254":
+                expected = ["0.2", "0.25"]
             require(values == expected, f"{phase}: expected layers {expected}, got {values}")
             if GOAL == "walls":
                 report["failure_stage"] = phase + ".wall"
@@ -454,7 +468,16 @@ def worker(report):
                     entry["wall"] = wait_for(ocr_wall_read, "Strength Wall loops value was not visible", 30)
                     require(entry["wall"] == "2", f"Baseline Wall loops OCR value was {entry['wall']!r}, expected '2'")
             elif phase == "edit":
-                if GOAL == "layer":
+                if GOAL == "sphere254":
+                    # The requested pair equals this preset. Verify an actual edit
+                    # by saving an off-target pair, then restoring both fields.
+                    report["failure_stage"] = "edit.off_target"
+                    edit_and_save(desktop, pid, root, window, fields, "0.24", "0.3")
+                    report["off_target_layers"] = read_values(desktop, fields)
+                    report["failure_stage"] = "edit.target"
+                    edit_and_save(desktop, pid, root, window, fields, "0.2", "0.25")
+                    report["target_layers"] = read_values(desktop, fields)
+                elif GOAL == "layer":
                     report["failure_stage"] = "edit.save"
                     edit_and_save(desktop, pid, root, window, fields, edit_height)
                 else:

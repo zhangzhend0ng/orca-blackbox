@@ -34,7 +34,7 @@ def request_digest(request):
 
 
 def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", cancelled=lambda: False,
-                  inspect_ironing=False, expected_height_mm=Decimal(27)) -> dict:
+                  inspect_ironing=False, expected_height_mm=Decimal(27), allow_startup_retract=False) -> dict:
     """Inspect supported U1 object moves, excluding purge/tower/retraction/Z-hop.
 
     Global G90/G91, M82/M83 and G92 are tracked. Object extrusion must occur at
@@ -157,6 +157,13 @@ def analyze_gcode(raw: bytes, *, layer_height: str, first_layer_height="0.4", ca
                     None if old[axis] is None else old[axis] + values[axis])
         delta_e = Decimal(0)
         if "E" in values:
+            # Some 2.4.2 startup macros retract before declaring the E mode.
+            # This standalone move cannot print any part of the object. A
+            # subsequent absolute extrusion still needs a fresh E baseline.
+            if (allow_startup_retract and relative_e is None and not objects and not tower
+                    and not any(axis in values for axis in "XYZ") and values["E"] < 0):
+                position["E"] = None
+                continue
             _require(relative_e is not None, "unknown_extrusion_mode")
             if relative_e:
                 delta_e = values["E"]

@@ -1,0 +1,88 @@
+{
+  "run_id": "f6fcee860add45fb82a0c5db68e7d6b8",
+  "verdict": "NON_GREEN",
+  "candidate": "mac-walls-unlocked-20261125",
+  "goal": "walls",
+  "test_kind": "walls_comparison",
+  "started_at": "2026-11-25T08:46:52.876837+00:00",
+  "slices": {},
+  "native_save_as": "NOT_TESTED",
+  "gui_gcode_export": "NOT_TESTED",
+  "guest": {
+    "ok": true,
+    "run_id": "f6fcee860add45fb82a0c5db68e7d6b8",
+    "console_uid": 501,
+    "test_uid": 502,
+    "source_before": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+    "phases": {
+      "baseline": {
+        "pid": 41006,
+        "window": "baseline",
+        "layers": [
+          "0.4",
+          "0.4"
+        ],
+        "wall": "2"
+      },
+      "edit": {
+        "pid": 41717,
+        "window": "wall-3-copy",
+        "layers": [
+          "0.4",
+          "0.4"
+        ],
+        "wall": "3"
+      },
+      "reopen": {
+        "pid": 42540,
+        "window": "wall-3-copy",
+        "layers": [
+          "0.4",
+          "0.4"
+        ],
+        "wall": "3"
+      }
+    },
+    "slice_receipts": {
+      "baseline": {
+        "phase": "baseline",
+        "pid": 41006,
+        "window_id": 66955,
+        "source": "open_process_plate",
+        "plate_file": ".41006.0.gcode",
+        "inode": 42135391,
+        "size": 170545,
+        "sha256": "baccca27b68f4f699bfd5bd672c1b9204908101870e41b8b643d3e2bc7ee380b",
+        "project_sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+        "export_enabled_before": false,
+        "export_enabled_after": true
+      },
+      "edited": {
+        "phase": "reopen",
+        "pid": 42540,
+        "window_id": 67171,
+        "source": "open_process_plate",
+        "plate_file": ".42540.0.gcode",
+        "inode": 42143001,
+        "size": 188095,
+        "sha256": "4ab393ec5dbda194c8db86ef7ade114caa9a8f925fc88b8aa6ac7f5357400627",
+        "project_sha256": "f56421e52974b8b6fdaae65183d5c5b797ca07e3c6d3210a314349bc6362bda7",
+        "export_enabled_before": false,
+        "export_enabled_after": true
+      }
+    },
+    "sut": {
+      "version": "2.4.2",
+      "build": "sha256:8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75",
+      "bundle_build": "",
+      "build_source": "executable_sha256",
+      "executable_sha256": "8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75"
+    },
+    "saved_sha256": "f56421e52974b8b6fdaae65183d5c5b797ca07e3c6d3210a314349bc6362bda7",
+    "source_after": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+    "cleanup_verified": true
+  },
+  "failure_stage": "verify.baseline_slice",
+  "error": "unknown_extrusion_mode",
+  "finished_at": "2026-11-25T08:52:42.637954+00:00"
+}

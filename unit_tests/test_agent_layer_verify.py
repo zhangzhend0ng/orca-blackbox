@@ -59,6 +59,20 @@ def test_absolute_and_relative_extrusion_with_g92_are_supported(mode):
     assert analyze_gcode(gcode("0.24", e_mode=mode), layer_height="0.24")["layer_count"] == 112
 
 
+def test_mac_startup_retract_must_be_before_any_object_and_without_position_axes():
+    raw = gcode().replace(b"M83\n", b"G1 E-2 F1200\nM83\n", 1)
+    with pytest.raises(ValueError, match="unknown_extrusion_mode"):
+        analyze_gcode(raw, layer_height="0.4")
+    assert analyze_gcode(raw, layer_height="0.4", allow_startup_retract=True)["layer_count"] == 68
+    for variant in (raw.replace(b"E-2 F1200", b"X10 E-2"), raw.replace(b"E-2 F1200", b"E2"),
+                    raw.replace(b"G1 E-2", b"EXCLUDE_OBJECT_START NAME=cube\nG1 E-2")):
+        with pytest.raises(ValueError, match="unknown_extrusion_mode"):
+            analyze_gcode(variant, layer_height="0.4", allow_startup_retract=True)
+    absolute = raw.replace(b"M83\nT0\nG92 E0", b"M82\nT0")
+    with pytest.raises(ValueError, match="unknown_absolute_extrusion_baseline"):
+        analyze_gcode(absolute, layer_height="0.4", allow_startup_retract=True)
+
+
 def test_object_extrusion_must_use_one_explicitly_selected_tool():
     raw = gcode("0.24").replace(b";Z:0.64", b"T1\n;Z:0.64", 1)
     with pytest.raises(ValueError, match="multiple_object_tools"):

@@ -1,0 +1,57 @@
+{
+  "run_id": "637428f4e30547bb82d0f362197fe0bb",
+  "verdict": "NON_GREEN",
+  "candidate": "mac-feishu-254-20261125",
+  "goal": "sphere254",
+  "test_kind": "sphere254_comparison",
+  "started_at": "2026-11-25T08:52:44.241699+00:00",
+  "slices": {},
+  "native_save_as": "NOT_TESTED",
+  "gui_gcode_export": "NOT_TESTED",
+  "guest": {
+    "ok": false,
+    "failure_stage": "edit.launch",
+    "run_id": "637428f4e30547bb82d0f362197fe0bb",
+    "console_uid": 501,
+    "test_uid": 502,
+    "source_before": "f5f83d00545522c7cde44c0cd4260c325418707afdc83e6056390a0b8800d13c",
+    "phases": {
+      "baseline": {
+        "pid": 43522,
+        "window": "baseline",
+        "layers": [
+          "0.2",
+          "0.25"
+        ]
+      }
+    },
+    "slice_receipts": {
+      "baseline": {
+        "phase": "baseline",
+        "pid": 43522,
+        "window_id": 67278,
+        "source": "open_process_plate",
+        "plate_file": ".43522.0.gcode",
+        "inode": 42146754,
+        "size": 769663,
+        "sha256": "f1004e8a689a219388b08f752ee2472c263515cba6aed9e4cedda3e72706d64d",
+        "project_sha256": "f5f83d00545522c7cde44c0cd4260c325418707afdc83e6056390a0b8800d13c",
+        "export_enabled_before": false,
+        "export_enabled_after": true
+      }
+    },
+    "sut": {
+      "version": "2.4.2",
+      "build": "sha256:8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75",
+      "bundle_build": "",
+      "build_source": "executable_sha256",
+      "executable_sha256": "8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75"
+    },
+    "error": "Traceback (most recent call last):\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.MEKxbkJd/project_copy.py\", line 504, in run_worker\n    worker(report)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.MEKxbkJd/project_copy.py\", line 434, in worker\n    with ax.Desktop(console_uid) as desktop, open_copy(desktop, phase) as (pid, root, window):\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py\", line 117, in __enter__\n    return next(self.gen)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.MEKxbkJd/project_copy.py\", line 150, in open_copy\n    window = wait_for(main_window, \"Named project window did not open\", 80)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.MEKxbkJd/project_copy.py\", line 73, in wait_for\n    raise TimeoutError(message)\nTimeoutError: Named project window did not open\n",
+    "cleanup_verified": true,
+    "remote_evidence": "/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.MEKxbkJd"
+  },
+  "failure_stage": "edit.launch",
+  "error": "Traceback (most recent call last):\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.MEKxbkJd/project_copy.py\", line 504, in run_worker\n    worker(report)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.MEKxbkJd/project_copy.py\", line 434, in worker\n    with ax.Desktop(console_uid) as desktop, open_copy(desktop, phase) as (pid, root, window):\n  File \"/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py\", line 117, in __enter__\n    return next(self.gen)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.MEKxbkJd/project_copy.py\", line 150, in open_copy\n    window = wait_for(main_window, \"Named project window did not open\", 80)\n  File \"/private/var/folders/cm/242l3lpn70vd118xch8h_4jw0000gp/T/orca-bb-copy.MEKxbkJd/project_copy.py\", line 73, in wait_for\n    raise TimeoutError(message)\nTimeoutError: Named project window did not open\n",
+  "finished_at": "2026-11-25T08:55:21.660148+00:00"
+}
