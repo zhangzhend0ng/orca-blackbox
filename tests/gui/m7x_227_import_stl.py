@@ -12,9 +12,10 @@ The project starts as an empty plate with a selected printer (the U1 template
 minus its cube, the same start as #244). The one Import row that names STL
 opens the native chooser: its title, visible texts, type filter entries and a
 picture are kept, then the STL's path is given to it. The plate is saved and
-read offline; the object is then clicked once and moved with the Right key
-(+10 mm in world X), saving again, and finally turned 45° about the vertical
-axis through the Rotate gizmo's Z field, saving once more.
+read offline; the object is then selected through the plate menu's Select All
+and moved with the Right key (+10 mm in world X), saving again, and finally
+selected the same way, turned 45° about the vertical axis through the Rotate
+gizmo's Z field (opened with PageUp), saving once more.
 tests/import_stl_oracle.py judges every saved file.
 """
 from hashlib import sha256
@@ -35,11 +36,13 @@ from m8x_48_modal_color_header import bring_main_to_mouse  # noqa: E402
 from m7x_244_add_model import prepare_plate  # noqa: E402
 from m7x_249_add_part import capture, focus_canvas, press, stage  # noqa: E402
 from m7x_251_reload_from_disk import write_cube  # noqa: E402
+from plate_layout_case import activate_on_blank_plate  # noqa: E402
 from plate_reserve_case import case_main, save_snapshot  # noqa: E402
 
 FIXTURE = HERE / 'fixtures' / 'agent_layer_cube.3mf'
 IDOK = 1
-RIGHT = 0x27
+RIGHT, PAGE_UP = 0x27, 0x21
+LOG = '[m7x227]'
 
 
 def prepare_fixture(model, work):
@@ -117,56 +120,50 @@ def import_stl(session, source, work, analysis):
     return entry
 
 
-def click_object_then_key(session, work, phase, key, analysis):
-    """Click the object under its rendered centroid, press `key`, and keep a picture before and after."""
-    center = m7.find_centroid(session)
-    if center is None:
-        raise ValueError('no object is visible on the plate')
+def select_all(session, work, phase, analysis):
+    """Select the object through the plate's own context menu: right-click a blank spot, Select All.
+
+    A message-level click on the object did not select it once the project had
+    been saved (fourth guest run: the panel showed Plate Settings and the
+    Rotate tool highlighted without any field); the native menu path is the
+    one the plate cases already rely on."""
     if not bring_main_to_mouse(session.hwnd):
         raise ValueError('Orca did not acquire the guest foreground')
-    point = m7.client(session, *center)
-    canvas = winutil.deepest_child_at(session.hwnd, *point)
-    if (winutil.window_class(canvas) != 'wxGLCanvas' or winutil._window_pid(canvas) != session.pid
-            or not winutil.user32.IsWindowEnabled(canvas)):
-        raise ValueError(f'click point {point} did not resolve to the Prepare canvas')
-    focus_canvas(session, canvas)
     capture(session, work / f'{phase}-before.png')
-    winutil.user32.SetCursorPos(*point)
-    time.sleep(0.4)
-    if winutil.window_from_screen_point(*point) == canvas:
-        if winutil.real_click_screen(*point) != 2:
-            raise ValueError('the physical click on the object was not fully delivered')
-        method = 'physical'
-    else:
-        # The guest can park a transparent host above the canvas; the click then goes to the verified canvas.
-        if winutil.msg_click_screen(*point, session.hwnd) != canvas:
-            raise ValueError('the click was not dispatched to the verified Prepare canvas')
-        method = 'window message'
-    time.sleep(0.8)
+    activate_on_blank_plate(session, 'Select All', LOG)
+    time.sleep(1.0)
     capture(session, work / f'{phase}-selected.png')
+    words = [word[0] for word in sidebar(session)]
+    analysis.setdefault('selection', {})[phase] = {
+        'menu': 'Select All',
+        'panel_words': [text for text in words if text.casefold().startswith(('cube', 'plate', 'object', 'default', 'outside'))][:12]}
+
+
+def press_on_canvas(session, key, phase, analysis):
+    """Give the Prepare canvas the keyboard focus and press `key`."""
+    centre = m7.find_centroid(session)
+    if centre is None:
+        raise ValueError('no object is visible on the plate')
+    canvas = winutil.deepest_child_at(session.hwnd, *m7.client(session, *centre))
+    if winutil.window_class(canvas) != 'wxGLCanvas' or winutil._window_pid(canvas) != session.pid:
+        raise ValueError('the plate did not resolve to the Prepare canvas')
+    focus_canvas(session, canvas)
     press(key)
-    time.sleep(1.2)
-    capture(session, work / f'{phase}.png')
-    record = {'centroid': list(center), 'click': list(point), 'click_method': method, 'key': f'0x{key:02x}'}
-    analysis.setdefault('keyboard', {})[phase] = record
-    print(f'[m7x227] {phase}: {record}', flush=True)
-    return record
+    time.sleep(1.5)
+    analysis.setdefault('keys', {})[phase] = f'0x{key:02x}'
+    print(f'[m7x227] {phase}: pressed 0x{key:02x} on the canvas', flush=True)
 
 
 def turn_with_gizmo(session, work, analysis):
-    """Select the object, open the Rotate gizmo with R, and type 45 into its rightmost (Z) field.
+    """With the object selected, open the Rotate gizmo with PageUp and type 45 into its rightmost (Z) field.
 
-    On tag sm-v2.4.0 the PageUp key only opens this gizmo (GLCanvas3D.cpp,
-    `do_rotate(L("Tool Rotate"))`); it does not turn the object by itself,
-    which a first run showed: the saved project was unchanged. The gizmo is
-    opened with the Rotate tool's shortcut, R, after the object is clicked:
-    a third run showed that saving the project had cleared the selection, so
-    R alone highlighted the tool without showing any field. The gizmo window
-    is drawn inside the canvas, so its numeric fields are found by OCR on the
-    row labelled Rotate (X, Y, Z from left to right); m7e_rotate45 types into
-    the same fields. The saved project, not the read-back, is the judge."""
-    click_object_then_key(session, work, 'rotated', ord('R'), analysis)
-    time.sleep(1.0)
+    On tag sm-v2.4.0 PageUp opens this gizmo (GLCanvas3D.cpp,
+    `do_rotate(L("Tool Rotate"))`) and does not turn the object by itself: a
+    first run left the saved project unchanged. The gizmo window is drawn
+    inside the canvas, so its numeric fields are found by OCR on the row
+    labelled Rotate (X, Y, Z from left to right); m7e_rotate45 types into the
+    same fields. The saved project, not the read-back, is the judge."""
+    press_on_canvas(session, PAGE_UP, 'rotate_gizmo', analysis)
     capture(session, work / 'rotated-gizmo.png')
     boxes = m7.gizmo_row_boxes(session, 'rotate') or m7.gizmo_row_boxes(session, 'rotation')
     record = analysis.setdefault('gizmo', {})['rotate'] = {
@@ -176,6 +173,8 @@ def turn_with_gizmo(session, work, analysis):
         raise ValueError('the Rotate gizmo showed no numeric field')
     if len(boxes) < 3:
         raise ValueError(f'the Rotate gizmo shows {len(boxes)} numeric field(s), expected X, Y and Z')
+    if not bring_main_to_mouse(session.hwnd):
+        raise ValueError('Orca did not acquire the guest foreground')
     m7.type_into_field(session, boxes[-1][:2], '45', old_len=len(boxes[-1][2]))
     time.sleep(1.0)
     record['fields_after'] = [[round(x), round(y), text] for x, y, text in
@@ -210,7 +209,8 @@ def steps(session, work, analysis, args):
         analysis['imported'] = verify_imported(imported, source)
         print(f'[m7x227] imported: {analysis["imported"]!r}', flush=True)
     with stage(analysis, 'select_and_move'):
-        click_object_then_key(session, work, 'moved', RIGHT, analysis)
+        select_all(session, work, 'moved', analysis)
+        press_on_canvas(session, RIGHT, 'move', analysis)
         moved = save_snapshot(session, work, 'moved')
         analysis['moved'] = verify_moved(imported, moved)
     with stage(analysis, 'select_and_rotate'):
