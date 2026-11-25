@@ -7,8 +7,9 @@ standard cube fixture by content, a G-code that prints it, two screenshots and t
 would keep. The #233 run adds a ball beside the cube, an STL of both written with struct, a viewer
 render with an opaque body in a transparent frame, and the viewer's logs. The #227 run is assembled
 from what the application really wrote for #244 (the same cube_20mm.stl imported the same way); its
-moved and turned projects are those bytes with the instance transform rewritten, until a green #227
-run exists to read instead.
+moved and turned projects are those bytes with the instance transform rewritten. The readings on a
+real move and a real turn by the application were checked on the green guest run of 0d7222e7 and on
+the two formal sessions of 11858f17, which live outside the repository.
 """
 from hashlib import sha256
 from io import BytesIO
@@ -939,6 +940,7 @@ def write_import_run(folder, prefix=IMPORT_PREFIX, *, parts=None, record=None, l
                "image": {"width_px": size["width"], "height_px": size["height"]},
                "entered": str(PureWindowsPath(RUN_244) / SOURCE), "dialog_closed": True}
     chooser["stl_filter"] = stl_filter_label([chooser["title"], *chooser["labels"], *filters])
+    settings = support.project(pieces[START])["settings"]
     readings = {}
     for key, reading in (("imported", lambda: verify_imported(saved, plain)),
                          ("moved", lambda: verify_moved(saved, after)),
@@ -951,9 +953,11 @@ def write_import_run(folder, prefix=IMPORT_PREFIX, *, parts=None, record=None, l
                                        "sha256": sha256(files[SOURCE]).hexdigest()},
                "results": {clause: "PASS" for clause in imported_replay.CLAUSES},
                "sidebar": {"imported": ["Objects", "cube_20mm"]}, "import_fraction": 0.004,
-               "keyboard": {"moved": {"key": "0x27"}, "rotated": {"key": "0x52"}},
-               "gizmo": {"rotate": {"fields": [[1, 2, "0"], [3, 4, "0"], [5, 6, "0"]],
-                                    "fields_after": [[1, 2, "0"], [3, 4, "0"], [5, 6, "45"]]}},
+               "initial_printer": {"model": settings.get("printer_model"),
+                                   "profile": settings.get("printer_settings_id")},
+               "selection": {phase: {"menu": "Select All", "panel_words": [
+                   "Plate", "plate,", "object", "cube_20mm.stl", "default", "Outside"]} for phase in imported_replay.PHASES},
+               "keys": dict(imported_replay.KEYS),
                "object_list_name": ["cube_20mm"], "editor_at_end": {"alive": True, "dialog": None},
                **readings, "chooser": chooser}
     files["analysis.json"] = json.dumps(record(default) if callable(record) else default, ensure_ascii=False,
@@ -998,6 +1002,7 @@ IMPORT_REFUSED_BY = {
     "imported_off_the_bed_rejected": ["imported_on_the_bed"],
     "move_reversed_rejected": ["moved_is_the_import_10_mm_along_x"],
     "move_along_y_rejected": ["moved_is_the_import_10_mm_along_x"],
+    "moved_off_the_bed_rejected": ["moved_on_the_bed"],
     "turn_left_out_rejected": ["rotated_is_the_moved_turned_45_degrees"],
     "turn_about_x_rejected": ["rotated_is_the_moved_turned_45_degrees", "rotated_on_the_bed"],
     "template_as_import_rejected": ["imported_is_the_stl_upright", "imported_is_20_mm",
@@ -1009,6 +1014,10 @@ IMPORT_REFUSED_BY = {
     "chooser_entered_another_file_rejected": ["chooser_entered_this_runs_file"],
     "manifest_mismatch_rejected": UNOPENABLE,
     "edited_analysis_rejected": ["recorded_readings_match_files"],
+    "selection_names_another_object_rejected": ["selection_names_the_import"],
+    "sidebar_names_nothing_rejected": ["sidebar_names_the_import"],
+    "recorded_box_edited_rejected": ["recorded_boxes_match_projects"],
+    "another_key_pressed_rejected": ["keys_are_the_procedure_s"],
 }
 
 
@@ -1024,7 +1033,7 @@ def test_import_run_passes_every_reading_and_every_counterexample(tmp_path):
         "cube_20mm.stl", (125.5, 145.5, 126.0, 146.0, 0.0, 20.0))
     assert report["moved"]["box_mm"] == (135.5, 155.5, 126.0, 146.0, 0.0, 20.0)
     assert report["rotated"]["box_mm"] == (131.357864, 159.642136, 121.857864, 150.142136, 0.0, 20.0)
-    assert set(report["screen_changes"]) == {"select", "move", "turn"}
+    assert set(report["screen_changes"]) == {"select", "move", "reselect", "turn"}
 
 
 def test_import_runs_through_the_shared_driver_like_the_other_replays(tmp_path, monkeypatch):
@@ -1054,7 +1063,7 @@ def test_replay_reads_every_counterexample_of_the_import_on_a_temporary_copy(tmp
     monkeypatch.setattr(imported_replay, "_read", lambda place, pre: reads.append(place.name) or real(place, pre))
     result = imported_replay.replay(folder, prefix)
     assert all(value is True for value in result["checks"].values())
-    assert len(reads) == 19 and sum(name.startswith("replay-") for name in reads) == 18
+    assert len(reads) == 24 and sum(name.startswith("replay-") for name in reads) == 23
 
 
 @pytest.mark.parametrize("degrees", [30.0, 90.0], ids=["30 degrees", "90 degrees: the cube onto itself"])
@@ -1075,6 +1084,23 @@ def test_a_record_that_differs_from_the_files_is_refused(tmp_path):
     import_refused(tmp_path, ["recorded_verdict_matches_readings"], record=lambda default: dict(
         default, results={"可旋转": "FAIL"}))
     import_refused(tmp_path, ["chooser_picture_matches_record"], parts={"chooser.png": picture(700, 450)})
+
+
+def test_the_sidebar_selection_printer_and_key_records_are_held_against_the_run(tmp_path):
+    # the oracle forgives one misread character in a name: such a record still passes whole
+    misread = lambda default: dict(  # noqa: E731
+        default, sidebar={"imported": ["Objects", "cube_20mn"]},
+        selection={phase: dict(default["selection"][phase], panel_words=["Plate", "object", "cube 20mm"])
+                   for phase in imported_replay.PHASES})
+    passed = imported_replay.replay(*write_import_run(tmp_path, record=misread))["checks"]
+    assert all(value is True for value in passed.values()), sorted(k for k, v in passed.items() if v is not True)
+    import_refused(tmp_path, ["printer_as_recorded"], record=lambda default: dict(
+        default, initial_printer=dict(default["initial_printer"], profile="Snapmaker U1 (0.4 nozzle)")))
+    import_refused(tmp_path, ["editor_left_running"], record=lambda default: dict(
+        default, editor_at_end={"alive": True, "dialog": "Save Sliced file as:"}))
+    # the recorded boxes are read against the projects a second time, without the oracle
+    import_refused(tmp_path, ["recorded_boxes_match_projects"], record=lambda default: dict(
+        default, imported=dict(default["imported"], dimensions_mm=[20.0, 20.0, 20.1])))
 
 
 def test_a_case_log_that_never_showed_the_filter_or_another_directory_is_refused(tmp_path):

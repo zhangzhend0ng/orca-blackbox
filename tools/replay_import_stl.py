@@ -10,21 +10,27 @@ tests/file_io_replay_support.py:
 * `imported.3mf` holds exactly that STL once, upright and unturned, 20 mm on
   each axis, on the one plate and on the bed, named after the file and
   pointing at the copy this run wrote;
-* `moved.3mf` is the imported object and nothing else, 10 mm along X;
-* `rotated.3mf` is the moved object turned 45 degrees about the vertical axis.
+* `moved.3mf` is the imported object and nothing else, 10 mm along X, which
+  is what the Right key does to the selection;
+* `rotated.3mf` is the moved object turned 45 degrees about the vertical axis,
+  which is what PageUp does on 2.4.0.
 
 What analysis.json records is held against these readings, against its own
 content and against the case log: the chooser texts that offered *.stl and
 the path entered there must agree with the log whose digest the receipt
-carries. Last, each counterexample of the row is stood in for a harvested
-part on a temporary copy of the run and must be refused.
+carries; the words the sidebar and the selection panel showed must name the
+import; the boxes, the move and the turn recorded must be what the saved
+projects hold by the second reading too; and the keys recorded must be the
+procedure's. How much each screenshot changed is reported, not judged: on the
+green guest run the selections changed nothing measurable. Last, each
+counterexample of the row is stood in for a harvested part on a temporary
+copy of the run and must be refused.
 
     python tools/replay_case_evidence.py <prefix>-receipt.json
 """
 from copy import deepcopy
 from functools import lru_cache
 from hashlib import sha256
-from io import BytesIO
 import json
 import math
 from pathlib import Path, PureWindowsPath
@@ -36,10 +42,10 @@ from tools.replay_evidence_files import verified_part
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from import_stl_oracle import listed_object_names, stl_filter_label, verify_imported, verify_moved, verify_rotated
-from file_io_replay_support import (as_recorded, CORE, at_origin, blank_png, box, compose, faces, flattering, grow,
-                                    item_transform, manifest, moved_project, on_the_bed, paired, png, project,
-                                    refused, shift, stl, stl_bytes, with_item_transform, with_model,
-                                    with_settings, work_directories)
+from file_io_replay_support import (CORE, as_recorded, at_origin, blank_png, box, changed_share, close, compose,
+                                    faces, flattering, grow, item_transform, manifest, moved_project, on_the_bed,
+                                    paired, png, project, refused, shift, stl, stl_bytes, with_item_transform,
+                                    with_model, with_project_settings, with_settings, work_directories)
 
 CASE = 227
 FIXTURE = ROOT / "fixtures" / "agent_layer_cube.3mf"      # the U1 0.8 template the run starts from
@@ -47,10 +53,13 @@ TEMPLATE_PRINTER, NOZZLE = "Snapmaker U1 (0.8 nozzle)", "0.8"
 SOURCE, STEM = "cube_20mm.stl", "cube_20mm"
 START, IMPORTED, MOVED, TURNED = "new-project.3mf", "imported.3mf", "moved.3mf", "rotated.3mf"
 PICTURES = ("chooser.png", "imported.png", "moved-before.png", "moved-selected.png", "moved.png",
-            "rotated-before.png", "rotated-gizmo.png", "rotated.png")
+            "rotated-before.png", "rotated-selected.png", "rotated.png")
 CLAUSES = ("弹出文件选择对话框，格式筛选含 *.stl", "模型出现在盘上，尺寸显示 20×20×20mm",
            "对象列表新增 1 个对象", "可选中/平移", "可旋转")
 SIDE, MOVE, TURN_DEG, TOL = 20.0, 10.0, 45.0, 1e-4
+# the keys the procedure presses on the canvas: Right moves the selection, PageUp turns it (2.4.0)
+KEYS = {"move": "0x27", "turn": "0x21"}
+PHASES = ("moved", "rotated")
 OTHER_RUN = r"C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\227\run-elsewhere"
 TILT = (1.0, 0.0, 0.0, 0.0, 0.7071067811865476, 0.7071067811865476,      # 45 degrees about X
         0.0, -0.7071067811865476, 0.7071067811865476, 0.0, 0.0, 0.0)
@@ -62,7 +71,9 @@ MOVED_READINGS = ("moved_once_on_the_plate", "moved_is_the_import_10_mm_along_x"
 TURNED_READINGS = ("rotated_once_on_the_plate", "rotated_is_the_moved_turned_45_degrees", "rotated_on_the_bed")
 RECORD_READINGS = ("recorded_source_matches_file", "recorded_readings_match_files",
                    "recorded_verdict_matches_readings", "chooser_record_offers_stl", "filter_text_is_in_the_case_log",
-                   "chooser_entered_this_runs_file", "object_list_names_the_import", "chooser_picture_matches_record")
+                   "chooser_entered_this_runs_file", "object_list_names_the_import", "sidebar_names_the_import",
+                   "selection_names_the_import", "chooser_picture_matches_record", "recorded_boxes_match_projects",
+                   "keys_are_the_procedure_s", "printer_as_recorded", "editor_left_running")
 POSITIVE = ("manifest_sizes_and_sha256_match", "source_is_a_binary_20_mm_cube", *START_READINGS, *IMPORTED_READINGS,
             "printer_unchanged_throughout", *MOVED_READINGS, *TURNED_READINGS, *RECORD_READINGS,
             "pictures_are_pictures", "oracle_accepts_the_three_projects")
@@ -221,8 +232,48 @@ def _turned_step(before, after) -> dict:
     return checks
 
 
-def _record(analysis, raw, work, log, readings) -> dict:
+def _boxed(words):
+    """OCR words as boxes, each on a line of its own so that no two of them are merged into one name."""
+    return [[str(word), 0, 10 * index, 1, 1] for index, word in enumerate(words)]
+
+
+def _names(words) -> bool:
+    """Whether OCR words name the import exactly once, with the oracle's tolerance for a misread character."""
+    try:
+        return (isinstance(words, list) and bool(words) and all(isinstance(word, str) for word in words)
+                and bool(listed_object_names(_boxed(words), [STEM])))
+    except ValueError:
+        return False
+
+
+def _pairs(item) -> list:
+    """An object's box as the oracle writes it: [low, high] for each axis."""
+    return [[item["box"][0], item["box"][1]], [item["box"][2], item["box"][3]], [item["box"][4], item["box"][5]]]
+
+
+def _boxes(analysis, states) -> bool:
+    """Whether the boxes, the move and the turn the case recorded are what the saved projects hold, read
+    by the independent reader and not by the oracle that wrote the record."""
+    imported, moved, turned = (_sole(state)[1] for state in states[1:])
+    if any(item is None for item in (imported, moved, turned)):
+        return False
+    first, second, third = analysis.get("imported"), analysis.get("moved"), analysis.get("rotated")
+    if not all(isinstance(block, dict) for block in (first, second, third)):
+        return False
+    extents = [round(high - low, 6) for low, high in zip(imported["box"][0::2], imported["box"][1::2])]
+    return (
+        close(first.get("world_box_mm"), _pairs(imported), 1e-3)
+        and close(first.get("dimensions_mm"), extents, 1e-3) and first.get("triangles") == len(imported["triangles"])
+        and close(second.get("before_box_mm"), _pairs(imported), 1e-3)
+        and close(second.get("after_box_mm"), _pairs(moved), 1e-3) and close(second.get("delta_mm"), (MOVE, 0.0, 0.0), 1e-4)
+        and close(third.get("before_box_mm"), _pairs(moved), 1e-3)
+        and close(third.get("after_box_mm"), _pairs(turned), 1e-3)
+        and abs(_number(third.get("degrees_about_z")) - TURN_DEG) <= 1e-6)
+
+
+def _record(analysis, raw, work, log, readings, states) -> dict:
     """What the GUI recorded, held against the files, against its own content and against the case log."""
+    template = states[0]
     chooser = analysis.get("chooser") if isinstance(analysis.get("chooser"), dict) else {}
     title = chooser.get("title") if isinstance(chooser.get("title"), str) else ""
     labels = [text for text in chooser.get("labels") or [] if isinstance(text, str)]
@@ -231,18 +282,16 @@ def _record(analysis, raw, work, log, readings) -> dict:
     rows = [row for row in chooser.get("import_rows") or [] if isinstance(row, dict)]
     stl_rows = [row for row in rows if "stl" in str(row.get("label", "")).casefold() and row.get("enabled") is True]
     offered = stl_filter_label([title, *labels, *filters])
-    listed = analysis.get("object_list_name")
-    try:
-        names = (isinstance(listed, list) and bool(listed) and all(isinstance(text, str) for text in listed)
-                 and listed_object_names([[text, 0, 10 * index, 1, 1] for index, text in enumerate(listed)],
-                                         [STEM]) == listed)
-    except ValueError:
-        names = False
+    sidebar = analysis.get("sidebar") if isinstance(analysis.get("sidebar"), dict) else {}
+    selection = analysis.get("selection") if isinstance(analysis.get("selection"), dict) else {}
     entered = chooser.get("entered")
     try:
         picture = png(raw["chooser.png"])
     except ValueError:
         picture = None
+    printer = {"model": template["settings"].get("printer_model"),
+               "profile": template["settings"].get("printer_settings_id")}
+    imported = analysis.get("imported") if isinstance(analysis.get("imported"), dict) else {}
     return {
         "recorded_source_matches_file": analysis.get("source") == {
             "name": SOURCE, "bytes": len(raw[SOURCE]), "sha256": sha256(raw[SOURCE]).hexdigest()},
@@ -258,10 +307,27 @@ def _record(analysis, raw, work, log, readings) -> dict:
         "filter_text_is_in_the_case_log": bool(offered) and offered in log,
         "chooser_entered_this_runs_file": len(work) == 1 and isinstance(entered, str)
         and PureWindowsPath(entered) == PureWindowsPath(work[0]) / SOURCE,
-        "object_list_names_the_import": names,
+        # the object list read after the import, and the sidebar words read right after it, name the import
+        "object_list_names_the_import": _names(analysis.get("object_list_name")),
+        "sidebar_names_the_import": _names(sidebar.get("imported")),
+        # so do the panel words read after each Select All, which is how the object was selected
+        "selection_names_the_import": all(
+            isinstance(selection.get(phase), dict) and selection[phase].get("menu") == "Select All"
+            and _names(selection[phase].get("panel_words")) for phase in PHASES),
         "chooser_picture_matches_record": picture is not None and chooser.get("image") == {
             "width_px": picture["width"], "height_px": picture["height"]},
+        "recorded_boxes_match_projects": _boxes(analysis, states),
+        "keys_are_the_procedure_s": analysis.get("keys") == KEYS,
+        "printer_as_recorded": analysis.get("initial_printer") == printer and imported.get("printer") == printer,
+        "editor_left_running": analysis.get("editor_at_end") == {"alive": True, "dialog": None},
     }
+
+
+def _number(value):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def _pictures(raw) -> bool:
@@ -279,21 +345,13 @@ def _pictures(raw) -> bool:
 
 def _screen_changes(raw) -> dict:
     """How much of the picture changed around each action: the share of pixels that differ by 24
-    levels or more. Kept for the record only; no threshold is attached until a green run calibrates it."""
-    import numpy as np
-    from PIL import Image
-
-    def gray(part):
-        with Image.open(BytesIO(raw[part])) as image:
-            return np.asarray(image.convert("L"), dtype=np.int16)
-
-    out = {}
-    for action, (first, second) in {"select": ("moved-before.png", "moved-selected.png"),
-                                     "move": ("moved-selected.png", "moved.png"),
-                                     "turn": ("rotated-before.png", "rotated.png")}.items():
-        before, after = gray(first), gray(second)
-        out[action] = float((np.abs(before - after) >= 24).mean()) if before.shape == after.shape else None
-    return out
+    levels or more. Kept for the record only: on the green guest run of 0d7222e7 the two selections
+    changed nothing measurable and the move and the turn about a thousandth of the picture, so no
+    threshold would tell an action from a copied screenshot."""
+    return {action: changed_share(raw[first], raw[second]) for action, (first, second) in {
+        "select": ("moved-before.png", "moved-selected.png"), "move": ("moved-selected.png", "moved.png"),
+        "reselect": ("rotated-before.png", "rotated-selected.png"),
+        "turn": ("rotated-selected.png", "rotated.png")}.items()}
 
 
 def _oracle(call, *args):
@@ -339,13 +397,16 @@ def _read(directory, prefix):
                     "moved": _oracle(verify_moved, paths[IMPORTED], paths[MOVED]),
                     "rotated": _oracle(verify_rotated, paths[MOVED], paths[TURNED])}
     imported_checks, _item = _imported(imported, source, work)
+    states = (template, imported, moved, turned)
     checks = {"manifest_sizes_and_sha256_match": True, "source_is_a_binary_20_mm_cube": _cube(raw[SOURCE]),
               **_start(template, fixture), **imported_checks,
-              "printer_unchanged_throughout": len(
-                  {_printer(state["settings"]) for state in (template, imported, moved, turned)}) == 1,
+              "printer_unchanged_throughout": len({_printer(state["settings"]) for state in states}) == 1,
               **_moved_step(imported, moved), **_turned_step(moved, turned),
-              **_record(analysis, raw, work, log, readings), "pictures_are_pictures": _pictures(raw),
+              **_record(analysis, raw, work, log, readings, states), "pictures_are_pictures": _pictures(raw),
               "oracle_accepts_the_three_projects": all("refused" not in reading for reading in readings.values())}
+    dropped = sorted(set(POSITIVE) - set(checks))
+    if dropped:
+        raise ValueError(f"readings dropped: {dropped}")
     try:
         changes = _screen_changes(raw)
     except (OSError, ValueError):
@@ -441,6 +502,11 @@ def _other_file(root):
         field.set("value", str(PureWindowsPath(OTHER_RUN) / SOURCE))
 
 
+def _smaller_bed(settings):
+    """A bed that no longer lies under the object that was moved along X."""
+    settings["printable_area"] = ["0x0", "100x0", "100x100", "0x100"]
+
+
 def _stand_ins(raw) -> list:
     """(label, what is stood in and how) for every counterexample of the row.
 
@@ -452,6 +518,7 @@ def _stand_ins(raw) -> list:
                      compose(shift(-centre[0], -centre[1], -centre[2]), item_transform(moved)))
     analysis = json.loads(record.decode("utf-8-sig"))
     chooser = analysis.get("chooser") if isinstance(analysis.get("chooser"), dict) else {}
+    selection = analysis.get("selection") if isinstance(analysis.get("selection"), dict) else {}
     size = png(raw["imported.png"])
 
     def recorded(**changes):
@@ -472,6 +539,8 @@ def _stand_ins(raw) -> list:
             IMPORTED: with_item_transform(imported, compose(shift(0.0, 0.0, 5.0), item_transform(imported)))}}),
         ("move_reversed_rejected", {"replace": {MOVED: moved_project(imported, dx=-MOVE)}}),
         ("move_along_y_rejected", {"replace": {MOVED: moved_project(imported, dy=MOVE)}}),
+        # the move itself is right; the bed saved with it no longer lies under the object
+        ("moved_off_the_bed_rejected", {"replace": {MOVED: with_project_settings(moved, _smaller_bed)}}),
         ("turn_left_out_rejected", {"replace": {TURNED: moved}}),
         ("turn_about_x_rejected", {"replace": {TURNED: with_item_transform(moved, tilted)}}),
         ("template_as_import_rejected", {"replace": {IMPORTED: raw[START]}}),
@@ -487,6 +556,19 @@ def _stand_ins(raw) -> list:
         ("manifest_mismatch_rejected", {"replace": {IMPORTED: b""}, "keep_manifest": False}),
         ("edited_analysis_rejected", {"replace": {IMPORTED: raw[START],
                                                   "analysis.json": flattering(record, CLAUSES)}}),
+        # the panel words after Select All name an object the plate does not hold (one misread character
+        # is forgiven by the oracle, so this name is three away from the import's)
+        ("selection_names_another_object_rejected", {"replace": {"analysis.json": recorded(
+            selection={phase: dict(selection.get(phase) or {}, panel_words=["Plate", "object", "box_20mm.stl"])
+                       for phase in PHASES})}}),
+        # the sidebar read after the import names nothing
+        ("sidebar_names_nothing_rejected", {"replace": {"analysis.json": recorded(sidebar={"imported": []})}}),
+        # a box recorded a millimetre away from where the saved project holds the object
+        ("recorded_box_edited_rejected", {"replace": {"analysis.json": recorded(
+            moved=dict(analysis.get("moved") or {},
+                       after_box_mm=[[136.5, 156.5], [126.0, 146.0], [0.0, 20.0]]))}}),
+        # another key than the procedure's
+        ("another_key_pressed_rejected", {"replace": {"analysis.json": recorded(keys={"move": "0x25", "turn": "0x21"})}}),
     ]
 
 
