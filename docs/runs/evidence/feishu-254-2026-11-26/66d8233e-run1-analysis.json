@@ -1,0 +1,141 @@
+{
+  "edits": [
+    {
+      "field": "layer_height",
+      "before": "0.2",
+      "submitted": "0.24",
+      "pair": [
+        "0.24",
+        "0.25"
+      ]
+    },
+    {
+      "field": "initial_layer_print_height",
+      "before": "0.25",
+      "submitted": "0.30",
+      "pair": [
+        "0.24",
+        "0.30"
+      ]
+    },
+    {
+      "field": "layer_height",
+      "before": "0.24",
+      "submitted": "0.20",
+      "pair": [
+        "0.20",
+        "0.30"
+      ]
+    },
+    {
+      "field": "initial_layer_print_height",
+      "before": "0.30",
+      "submitted": "0.25",
+      "pair": [
+        "0.20",
+        "0.25"
+      ]
+    }
+  ],
+  "timings": {
+    "baseline_reopen_slice_export": {
+      "started_utc": "2026-11-25T20:39:48.138072+00:00",
+      "duration_s": 79.5
+    },
+    "target_reopen_slice_export": {
+      "started_utc": "2026-11-25T20:42:48.631030+00:00",
+      "duration_s": 82.11
+    }
+  },
+  "baseline_slice": {
+    "export_enabled_after_seconds": 5.0,
+    "polls": 1
+  },
+  "baseline_plate": {
+    "pid": 2452,
+    "plate": "snapmaker_orca_model\\Thu_Nov_26\\04_39_59#2452#36\\Metadata\\.2452.0.gcode",
+    "slice_started_ns": 1795639246256493600,
+    "modified_ns": 1795639247446431700,
+    "sha256": "35983b7e5a5a43030abd7b099feccee7d5a997984e8ebf033a6aee7533b5cbe7",
+    "project_sha256": "f5f83d00545522c7cde44c0cd4260c325418707afdc83e6056390a0b8800d13c"
+  },
+  "baseline_preview": {
+    "score": 1.0,
+    "colored_fraction": 0.01985672938999652,
+    "settled": {
+      "seconds": 1.8,
+      "frames": 3,
+      "same_in_a_row": 2,
+      "colored_fractions": [
+        0.01986,
+        0.01986,
+        0.01986
+      ]
+    }
+  },
+  "off_target_saved": [
+    "0.24",
+    "0.3"
+  ],
+  "memory_guard_dialogs": [
+    {
+      "title": "Memory Usage Warning",
+      "at": "04:43:51",
+      "texts": [
+        "Yes, Continue",
+        "No, Stop",
+        "htmlWindow"
+      ],
+      "screenshot": "memory-guard-0.png",
+      "image": {
+        "width_px": 796,
+        "height_px": 216
+      },
+      "button": [
+        1098,
+        617,
+        1218,
+        649
+      ],
+      "tiers": [
+        {
+          "how": "message click",
+          "closed": false
+        },
+        {
+          "how": "message click inside dialog",
+          "closed": true
+        }
+      ],
+      "closed": true
+    }
+  ],
+  "target_slice": {
+    "export_enabled_after_seconds": 7.4,
+    "polls": 1
+  },
+  "target_plate": {
+    "pid": 4172,
+    "plate": "snapmaker_orca_model\\Thu_Nov_26\\04_42_59#4172#36\\Metadata\\.4172.0.gcode",
+    "slice_started_ns": 1795639427096029900,
+    "modified_ns": 1795639428140126200,
+    "sha256": "0abaf84ed270191a8f4487f37fef68959a3f143a7f4a5a3a18381acb1807f8fb",
+    "project_sha256": "2de7619349b9cb9723f7d1fec30e57bb8f8823c607fb00c9b04a3e6ce7b59604"
+  },
+  "target_preview": {
+    "score": 1.0,
+    "colored_fraction": 0.014804488240436602,
+    "settled": {
+      "seconds": 1.8,
+      "frames": 3,
+      "same_in_a_row": 2,
+      "colored_fractions": [
+        0.0148,
+        0.0148,
+        0.0148
+      ]
+    }
+  },
+  "colored_preview_overlap": 0.6825751072961374,
+  "failure": "ValueError: Colored Preview paths no longer agree (68.3%)"
+}

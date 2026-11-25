@@ -1,0 +1,47 @@
+﻿[
+    {
+        "part":  "analysis.json",
+        "bytes":  3331,
+        "sha256":  "5F015FE5877A5FF671A3C4BE70DC257A962139FFD1F23C49B874BFD71DAFB346"
+    },
+    {
+        "part":  "baseline.gcode",
+        "bytes":  757695,
+        "sha256":  "35983B7E5A5A43030ABD7B099FECCEE7D5A997984E8EBF033A6AEE7533B5CBE7"
+    },
+    {
+        "part":  "baseline-preview.png",
+        "bytes":  508322,
+        "sha256":  "E642B1899B6BA7EE9E2B774BB33EBC107A4C55C991685048ED54987E1088C8C8"
+    },
+    {
+        "part":  "fixture.3mf",
+        "bytes":  64030,
+        "sha256":  "F5F83D00545522C7CDE44C0CD4260C325418707AFDC83E6056390A0B8800D13C"
+    },
+    {
+        "part":  "memory-guard-0.png",
+        "bytes":  24733,
+        "sha256":  "AD6D82AEB061C03C8D1067A80F36FC1D31E1280512A4C930B2F1BA3AB2861F51"
+    },
+    {
+        "part":  "off-target.3mf",
+        "bytes":  98992,
+        "sha256":  "5EB06E430F3B37BD494A3273BEBDCFF2607DB949065B9A1E3FC7CD679AFAE4D4"
+    },
+    {
+        "part":  "sphere-edited.3mf",
+        "bytes":  98981,
+        "sha256":  "2DE7619349B9CB9723F7D1FEC30E57BB8F8823C607FB00C9B04A3E6CE7B59604"
+    },
+    {
+        "part":  "target.gcode",
+        "bytes":  757643,
+        "sha256":  "0ABAF84ED270191A8F4487F37FEF68959A3F143A7F4A5A3A18381ACB1807F8FB"
+    },
+    {
+        "part":  "target-preview.png",
+        "bytes":  420709,
+        "sha256":  "18313606E2681E7D06527A2A46044D446976238BCDC4034EF21A4FB4EEE6C905"
+    }
+]

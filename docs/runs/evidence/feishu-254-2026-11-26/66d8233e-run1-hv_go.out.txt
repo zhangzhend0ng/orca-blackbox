@@ -1,0 +1,21 @@
+﻿[preflight] PITFALLS 0901 §15 checklist:
+   (1) relay heartbeat: relay_alive.txt fresh (it refreshes on command completion only)
+   (2) guest orphan sweep: relay Stop-Process snapmaker-orca,python before the batch
+   (3) guest interactive resolution = 1920x1080 (hv_go -Cases setres_1080 to check)
+   (4) no residual 'suite' scheduled-task instance ((Get-ScheduledTask suite).State)
+   (5) long waits go to background tasks (single bash <= 10 min); recordings/large files via base64 relay
+[1] VM already running
+[2] waiting for guest autologon...
+    logged on.
+[2.5] guest sync skipped (-NoSync)
+[2.6] guest resolution ok (1920)
+[3] launching suite: 1 cases (warmup=False perf=off)
+suite launched: Running
+[4] DONE. Poll progress any time (admin window):
+    Get-Content C:\coil\vm_setup\poll_rerun.txt | Set-Content C:\coil\vm_setup\relay_cmd.txt   # via relay
+    or in guest: Get-Content C:\coil\regress_progress.txt -Tail 5
+[5] after-batch closeout (batch discipline, README top section):
+   (1) pull results: & runner\hv_harvest.ps1
+   (2) feishu writeback (GREEN only, host lark-cli): python tools\feishu_writeback.py --help
+   (3) status stays honest: RED may be committed, never relabeled GREEN
+

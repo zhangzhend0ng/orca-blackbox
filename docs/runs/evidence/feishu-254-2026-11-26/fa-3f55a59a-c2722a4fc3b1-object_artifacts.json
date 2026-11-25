@@ -1,0 +1,68 @@
+[
+  {
+    "path": "case.log",
+    "part": "case.log",
+    "bytes": 14780,
+    "sha256": "4746C2B6E02F196BD0541A36BFA18AAED7FC5502C31679FBFC84D482B8DC7F82"
+  },
+  {
+    "path": "done.json",
+    "part": "done.json",
+    "bytes": 1490,
+    "sha256": "9E175992162FA43A1033F011C7A058B1494DC3B08F04A62CDCF853A83132F5A7"
+  },
+  {
+    "path": "execution_host.json",
+    "part": "execution_host.json",
+    "bytes": 1367,
+    "sha256": "8799B3AA2FF4DF02C223094A1F143E248D29DD7D4865E65806AAC6AA503814F5"
+  },
+  {
+    "path": "feishu-object-cases/254/run-m7gbwkx6/analysis.json",
+    "part": "analysis.json",
+    "bytes": 3332,
+    "sha256": "5566A69E1A2C4DACB3DEF8617D79502257645A6E3269CF0774152E791B68A802"
+  },
+  {
+    "path": "feishu-object-cases/254/run-m7gbwkx6/baseline-preview.png",
+    "part": "baseline-preview.png",
+    "bytes": 511224,
+    "sha256": "5221AE95247A8635A5248E9E6993A4DE3C626A3CEFE7E71736923D0D533461FF"
+  },
+  {
+    "path": "feishu-object-cases/254/run-m7gbwkx6/baseline.gcode",
+    "part": "baseline.gcode",
+    "bytes": 750310,
+    "sha256": "916DBB99FA39F574DC2920425919485CE118B4B03799BC4BE9BB8539019E40EF"
+  },
+  {
+    "path": "feishu-object-cases/254/run-m7gbwkx6/fixture.3mf",
+    "part": "fixture.3mf",
+    "bytes": 64030,
+    "sha256": "F5F83D00545522C7CDE44C0CD4260C325418707AFDC83E6056390A0B8800D13C"
+  },
+  {
+    "path": "feishu-object-cases/254/run-m7gbwkx6/off-target.3mf",
+    "part": "off-target.3mf",
+    "bytes": 87746,
+    "sha256": "AE7542C04A328813CD2DBD4F3CECC2D4430499656E4D0CAACE5DAC3FDC8E6897"
+  },
+  {
+    "path": "feishu-object-cases/254/run-m7gbwkx6/sphere-edited.3mf",
+    "part": "sphere-edited.3mf",
+    "bytes": 87735,
+    "sha256": "F90D2B3D0C8AAD2A9EEF33FCC1787AB65703C04F90EEE9D49DE47FB6416E7545"
+  },
+  {
+    "path": "feishu-object-cases/254/run-m7gbwkx6/target-preview.png",
+    "part": "target-preview.png",
+    "bytes": 509544,
+    "sha256": "04E1410EAC3A99038CA08A41FF4405822630421480212320AFAFB6A709FCDD24"
+  },
+  {
+    "path": "feishu-object-cases/254/run-m7gbwkx6/target.gcode",
+    "part": "target.gcode",
+    "bytes": 747858,
+    "sha256": "6C84B9250A52B4FAC607915870D25421F06A5F22E992756AF5A0A56D58992601"
+  }
+]
