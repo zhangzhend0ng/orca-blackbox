@@ -632,6 +632,12 @@ def save_process_preset(session, name, work, analysis, key='preset_saved', value
     A step that does not behave as measured raises ValueError with the receipt kept and leaves
     no box open. The preset is written by the application under
     ``<datadir>/user/default/process/<name>.json``; whether it is, is for the caller to look at."""
+    from harness import host_guard
+    if not (host_guard.real_execution_allowed() or host_guard.allow_host()):
+        # Real keystrokes and clicks belong on the guest. A test that reaches this line on a
+        # host without the opt-in must stop here (one once let keys reach the host's
+        # foreground window, 2026-11-26).
+        raise ValueError('save_process_preset drives real input: the guest, or ORCA_BB_ALLOW_TESTBOX / ORCA_BB_ALLOW_HOST')
     import m5g_preset_manage as m5g
     from harness import mix_dialog_util as mdu
     from harness import process_panel as pp

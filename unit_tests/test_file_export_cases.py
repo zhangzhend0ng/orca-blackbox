@@ -1330,6 +1330,10 @@ class PresetMaker:
         keys = SimpleNamespace(_send_keys=self.keys, _send_chars=self.chars,
                                edit_value=lambda hwnd: self.edits.get(hwnd, ''))
         monkeypatch.setitem(sys.modules, 'm5g_preset_manage', m5g)
+        # The helper lets real input through only on the guest (or with the opt-in): say so here.
+        import harness.host_guard
+        monkeypatch.setattr(harness.host_guard, 'real_execution_allowed', lambda: True)
+        monkeypatch.setattr(harness.host_guard, 'allow_host', lambda: False)
         # The helper imports the two harness modules by name: their functions are replaced one by one,
         # so that nothing of the real keyboard writing is ever reached from a test.
         import harness.mix_dialog_util
@@ -1399,6 +1403,19 @@ def test_a_user_process_preset_is_made_the_way_the_preset_management_case_measur
         ('chars', 'BB Export Test'), ('real click', USER_PRESET), ('real click', OK)]
     assert not any(kind == 'keys' and 0x0D in code for kind, *code in maker.calls)  # no Enter anywhere
     assert not any(kind == 'send' for kind, *_ in maker.calls)  # and no window message to the box
+
+
+def test_making_a_preset_sends_nothing_from_a_host_that_did_not_opt_in(monkeypatch, tmp_path):
+    # 2026-11-26: the keys of a test run reached the host's foreground window once.
+    import harness.host_guard
+    for name in ('real_execution_allowed', 'allow_host'):
+        monkeypatch.setattr(harness.host_guard, name, lambda: False)
+    sent = []
+    monkeypatch.setattr(cases.m7.mdu, '_send_keys', lambda keys: sent.append(keys))
+    monkeypatch.setattr(cases.m7.mdu, '_send_chars', lambda text: sent.append(text))
+    with pytest.raises(ValueError, match='real input'):
+        cases.save_process_preset(SimpleNamespace(pid=1, hwnd=2, alive=lambda: True), 'BB Export Test', tmp_path, {})
+    assert sent == []
 
 
 def test_making_a_preset_stops_and_closes_the_box_when_a_step_does_not_behave(monkeypatch, tmp_path):
