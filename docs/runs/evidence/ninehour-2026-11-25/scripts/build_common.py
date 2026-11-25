@@ -20,27 +20,34 @@ RECEIPTS = "docs/runs/evidence/ninehour-2026-11-25/receipts"
 SNAPSHOT = "docs/runs/evidence/feishu-tblKjIVV8KA53kUQ-2026-11-22/tblKjIVV8KA53kUQ_20261122_024056_171.ndjson"
 
 # label prefix -> role. The roles are the orchestrator's labels in the session ledger.
+# "guest-twins-b" is tested before "guest-twins" so that the second batch keeps its own role.
 ROLES = (
     ("base-", "baseline"), ("timed-", "timed"), ("cand-k1-", "wait264"), ("cand-k2-", "burst264"),
     ("cand-q-", "wait276"), ("cand-s-", "wait276"), ("cand-fa-", "wait276"),
-    ("backlog-", "backlog"), ("regress", "regress"), ("retry-", "retry"), ("native-", "native"),
-    ("final2-", "final2"), ("final-", "final"), ("guest-twins", "twins"), ("fa-shapes", "shapes"),
+    ("backlog-", "backlog"), ("regress", "regress"), ("retry-", "retry"), ("second-sample", "second_sample"),
+    ("native-", "native"), ("final2-", "final2"), ("final-", "final"),
+    ("guest-twins-b", "twins_b"), ("guest-twins", "twins"), ("fa-shapes", "shapes"),
 )
 ROLE_ORDER = ("baseline", "timed", "wait276", "wait264", "burst264", "final2", "final")
 CANDIDATES = ("wait276", "wait264", "burst264")
 TIMED_ROLES = ("baseline", "timed", "wait276", "wait264", "burst264", "final2", "final")
+COVERAGE_ROLES = ("backlog", "twins", "twins_b", "shapes")     # extra coverage: its own account, never closure
 ROLE_TEXT = {
     "baseline": "基线", "timed": "计时版", "wait276": "候选（#276 就绪等待）",
     "wait264": "K1（就绪等待）", "burst264": "K2（滚轮一次到位）",
     "final2": "最终引擎 2a17376 上的复核", "final": "d5fc2fa 上的复核（不是最终引擎）",
-    "backlog": "补覆盖", "regress": "回归", "retry": "重试", "native": "原生模型对照",
-    "twins": "客机自有模型孪生（进行中）", "shapes": "fa706g3 多形状孪生（进行中）",
+    "backlog": "补覆盖（早先的空闲机器运行）", "regress": "回归", "retry": "失败后的重试",
+    "second_sample": "fa706g3 对客机那一半的第二样本", "native": "原生模型对照",
+    "twins": "客机自有模型孪生（第一批）", "twins_b": "客机自有模型孪生（第二批）", "shapes": "fa706g3 多形状夹具孪生",
 }
-# The engine to merge: d5fc2fa plus the cherry-pick of 5b38c80 (one commit, parent d5fc2fa).
+# The engine that was merged: d5fc2fa plus the cherry-pick of 5b38c80 (2a17376), and the first push
+# 62cddee, a merge of 2a17376 with the documentation branch whose engine files are identical.
 FINAL_ENGINE = "2a17376"
+FINAL_ENGINES = ("2a17376", "62cddee")
+MERGED_HEAD = "62cddee803c595a2a46323286ed37fb06bdcff72"
 SUPERSEDED_ENGINE = "d5fc2fa"
-IN_PROGRESS_ROLES = ("twins", "shapes")     # left for a later pass: never counted, only mentioned
 MACHINE_TEXT = {"guest": "客机 win11-test", "fa706g3": "fa706g3"}
+MACHINE_SHORT = {"guest": "客机", "fa706g3": "fa706g3"}
 MACHINE_OF_LEDGER = {"win11-test": "guest", "fa706g3": "fa706g3"}
 
 
@@ -51,9 +58,17 @@ def role_of(label):
     return "other"
 
 
+def engine_of(entry):
+    """'final', 'd5fc2fa' or 'other': what the ledger's commit field says a run was on."""
+    commit = entry.get("commit") or ""
+    if commit.startswith(FINAL_ENGINES):
+        return "final"
+    return "d5fc2fa" if commit.startswith(SUPERSEDED_ENGINE) else "other"
+
+
 def on_final_engine(entry):
-    """Whether the ledger says a run was on the final engine (its commit field)."""
-    return (entry.get("commit") or "").startswith(FINAL_ENGINE)
+    """Whether the ledger says a run was on the final engine (2a17376 or 62cddee: the same engine)."""
+    return engine_of(entry) == "final"
 
 
 def f3(value):
@@ -131,13 +146,26 @@ def family_queues(repo):
             "fa706g3": [n for i, n in enumerate(names) if i % 2 == 1]}
 
 
+def assigned_side(repo):
+    """{scenario name: the half it was assigned to} of the 42 parameter rows."""
+    return {scenario: side for side, names in family_queues(repo).items() for _, _, scenario in names}
+
+
 def feishu_row_of(scenario, family):
-    """The Feishu row a scenario name belongs to, or None (a save-only baseline, the Mac goals)."""
+    """The Feishu row a scenario name belongs to, or None (a save-only baseline, the Mac goals).
+
+    A twin keeps its row: `<scenario>_shapes`, `<scenario>_tol`, `<scenario>_fdmt2` ... all belong to
+    the longest registered scenario name they extend."""
     found = re.match(r"compare_(\d+)_(quality|strength)$", scenario)
     if found:
         return int(found.group(1))
-    base = scenario[:-len("_shapes")] if scenario.endswith("_shapes") else scenario
-    return family.get(base)
+    if scenario in family:
+        return family[scenario]
+    best = ""
+    for key in family:
+        if scenario.startswith(key + "_") and len(key) > len(best):
+            best = key
+    return family.get(best) if best else None
 
 
 def load_snapshot(path):

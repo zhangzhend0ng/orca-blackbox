@@ -1,16 +1,16 @@
 {
- "ledger_lines": 136,
- "ledger_runs": 135,
- "ledger_last_ended": "06:57:35",
- "schema": "ninehour_family_regression/2",
+ "ledger_lines": 223,
+ "ledger_runs": 210,
+ "ledger_last_ended": "08:53:03",
+ "schema": "ninehour_family_regression/3",
  "generated_by": "scripts/build_family.py",
  "status": "final",
  "placeholder": false,
  "engine": {
   "final_engine": "2a1737689ff519686b90c588d52d96519e76f370",
-  "final_engine_short": "2a17376",
-  "superseded_engine": "d5fc2fa",
-  "note": "2a17376 的父提交是 d5fc2fa，二者只差一个提交：5b38c80 的拣选，改 harness/process_panel.py 的 scroll_group_into_view 循环体和 unit_tests/test_param_flow.py（git diff --stat d5fc2fa 2a17376）。"
+  "first_push": "62cddee803c595a2a46323286ed37fb06bdcff72",
+  "same_engine": "62cddee 是 2a17376 和文档分支的合并，harness、tools、unit_tests 等引擎文件与 2a17376 相同（git diff --stat 2a17376 62cddee 只列出 README.md 和 docs/runs）",
+  "fix": "2a17376 的父提交是 d5fc2fa，二者只差一个提交：5b38c80 的拣选，改 harness/process_panel.py 的 scroll_group_into_view 循环体和 unit_tests/test_param_flow.py"
  },
  "counts": {
   "rows": 42,
@@ -23,28 +23,84 @@
     "rows": 21,
     "SHADOW": 21,
     "NON_GREEN": 0,
-    "without_a_verdict": 0
+    "without_a_verdict": 0,
+    "rows_with_a_run_on_the_other_machine": 15,
+    "rows_without_one": [
+     285,
+     287,
+     291,
+     293,
+     295,
+     297
+    ],
+    "other_machine_verdicts": {
+     "SHADOW": 15
+    },
+    "other_machine_runs": 15
    },
    "fa706g3": {
     "rows": 21,
     "SHADOW": 20,
     "NON_GREEN": 1,
-    "without_a_verdict": 0
+    "without_a_verdict": 0,
+    "rows_with_a_run_on_the_other_machine": 19,
+    "rows_without_one": [
+     254,
+     296
+    ],
+    "other_machine_verdicts": {
+     "SHADOW": 18,
+     "NON_GREEN": 2
+    },
+    "other_machine_runs": 20
    }
   },
-  "final_engine_runs": 43,
+  "final_engine_runs": 42,
   "final_engine_verdicts": {
    "SHADOW": 41,
-   "NON_GREEN": 2
+   "NON_GREEN": 1
   },
-  "final_engine_runs_per_machine": {
-   "guest": 22,
-   "fa706g3": 21
+  "final_engine_commits": {
+   "2a17376": 42
   },
   "rows_with_a_non_shadow_run": [
    294
   ],
-  "d5fc2fa_runs": 13,
+  "other_machine_runs": 35,
+  "other_machine_verdicts": {
+   "SHADOW": 33,
+   "NON_GREEN": 2
+  },
+  "other_machine_commits": {
+   "2a17376": 16,
+   "62cddee": 19
+  },
+  "rows_with_both_machines": 34,
+  "other_machine_non_shadow_runs": [
+   {
+    "feishu_row": 294,
+    "run_id": "9db255d48fe64f2db8564a1c476ae48d",
+    "machine": "guest",
+    "verdict": "NON_GREEN",
+    "failed_checks": {
+     "business": "unknown: pilot_target_setting_mismatch",
+     "path": "unknown: pilot_target_setting_mismatch",
+     "visual": "unknown: not checked"
+    }
+   },
+   {
+    "feishu_row": 294,
+    "run_id": "ed62daca9e32493db81ae78155a6d709",
+    "machine": "guest",
+    "verdict": "NON_GREEN",
+    "failed_checks": {
+     "business": "unknown: pilot_target_setting_mismatch",
+     "path": "unknown: pilot_target_setting_mismatch",
+     "visual": "unknown: not checked"
+    }
+   }
+  ],
+  "d5fc2fa_runs": 12,
   "d5fc2fa_rows_shadow": {
    "guest": [
     255,
@@ -65,9 +121,6 @@
   "d5fc2fa_failed_runs": [
    "62a3cd012aa549f593e3c6630db4c6b9"
   ],
-  "d5fc2fa_dispatch_failures": [
-   "9117553219f14bc58703177577b2ebb9"
-  ],
   "retries": 8,
   "retries_per_machine": {
    "fa706g3": 4,
@@ -76,10 +129,9 @@
   "retries_verdicts": {
    "SHADOW": 8
   },
-  "in_progress_runs_at_copy": {
-   "twins": 7,
-   "shapes": 6
-  }
+  "dispatches_of_these_rows": [
+   "9117553219f14bc58703177577b2ebb9"
+  ]
  },
  "rows": [
   {
@@ -112,7 +164,31 @@
      "process_seconds": 207.4488392,
      "script_action_seconds": 103.188,
      "host_orchestration_seconds": 234.797,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "1f87f19262394a55b32b2c81e030cb21",
+     "label": "second-sample",
+     "role": "second_sample",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "07:55:55",
+     "ended": "08:00:23",
+     "ledger_line": 192,
+     "ledger_scenario_raw": "uia_param_line_width_all",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 201.7274829,
+     "script_action_seconds": 101.562,
+     "host_orchestration_seconds": 267.732,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
@@ -136,12 +212,13 @@
      "process_seconds": 208.2983007,
      "script_action_seconds": 103.391,
      "host_orchestration_seconds": 232.985,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 2,
@@ -173,7 +250,31 @@
      "process_seconds": 165.0317578,
      "script_action_seconds": 60.609,
      "host_orchestration_seconds": 188.938,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "80708d3721434ab1a84c05ca2bf6158b",
+     "label": "second-sample",
+     "role": "second_sample",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:00:23",
+     "ended": "08:03:57",
+     "ledger_line": 195,
+     "ledger_scenario_raw": "uia_param_precision_comp",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 160.1354387,
+     "script_action_seconds": 59.968,
+     "host_orchestration_seconds": 213.501,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
@@ -197,12 +298,13 @@
      "process_seconds": 167.8452695,
      "script_action_seconds": 63.469,
      "host_orchestration_seconds": 193.359,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 3,
@@ -234,7 +336,31 @@
      "process_seconds": 167.4637926,
      "script_action_seconds": 63.078,
      "host_orchestration_seconds": 193.563,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "68ffe89eb4634f4ca94aa7c18ca51a2e",
+     "label": "second-sample",
+     "role": "second_sample",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:03:57",
+     "ended": "08:07:58",
+     "ledger_line": 197,
+     "ledger_scenario_raw": "uia_param_ironing_top",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 163.7711196,
+     "script_action_seconds": 63.578,
+     "host_orchestration_seconds": 240.629,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
@@ -258,12 +384,13 @@
      "process_seconds": 167.6290557,
      "script_action_seconds": 63.11,
      "host_orchestration_seconds": 193.765,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 4,
@@ -295,7 +422,31 @@
      "process_seconds": 166.4435332,
      "script_action_seconds": 61.266,
      "host_orchestration_seconds": 192.953,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "44d9459b105e4e78ab198db99c266e3d",
+     "label": "second-sample",
+     "role": "second_sample",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:07:58",
+     "ended": "08:11:31",
+     "ledger_line": 199,
+     "ledger_scenario_raw": "uia_param_single_wall_avoid",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 160.9818342,
+     "script_action_seconds": 60.875,
+     "host_orchestration_seconds": 213.578,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
@@ -319,12 +470,13 @@
      "process_seconds": 165.3551464,
      "script_action_seconds": 61.031,
      "host_orchestration_seconds": 192.953,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 5,
@@ -356,13 +508,38 @@
      "process_seconds": 161.7104011,
      "script_action_seconds": 57.468,
      "host_orchestration_seconds": 188.922,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "17cbb75b4b3c42838af8d3e2560a38fc",
+     "label": "second-sample",
+     "role": "second_sample",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:11:31",
+     "ended": "08:15:05",
+     "ledger_line": 201,
+     "ledger_scenario_raw": "uia_param_bridge",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 156.897709,
+     "script_action_seconds": 56.766,
+     "host_orchestration_seconds": 213.553,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 6,
@@ -394,13 +571,38 @@
      "process_seconds": 141.0863744,
      "script_action_seconds": 36.579,
      "host_orchestration_seconds": 169.125,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "c09780e97b664941a079b53066a0c4a6",
+     "label": "second-sample",
+     "role": "second_sample",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:15:05",
+     "ended": "08:18:39",
+     "ledger_line": 203,
+     "ledger_scenario_raw": "uia_param_overhang_curl",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 136.1005008,
+     "script_action_seconds": 35.969,
+     "host_orchestration_seconds": 213.511,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 7,
@@ -432,13 +634,38 @@
      "process_seconds": 167.4042343,
      "script_action_seconds": 60.281,
      "host_orchestration_seconds": 193.328,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "e8982afaad47467bbe18d54bffa97d71",
+     "label": "second-sample",
+     "role": "second_sample",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:18:39",
+     "ended": "08:22:12",
+     "ledger_line": 205,
+     "ledger_scenario_raw": "uia_param_shells_pattern",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 159.2683415,
+     "script_action_seconds": 59.141,
+     "host_orchestration_seconds": 213.7,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 8,
@@ -470,13 +697,38 @@
      "process_seconds": 164.1703094,
      "script_action_seconds": 59.891,
      "host_orchestration_seconds": 188.938,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "201afcf85b3b4f2c9e646f564c38a5ce",
+     "label": "second-sample",
+     "role": "second_sample",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:22:13",
+     "ended": "08:25:46",
+     "ledger_line": 207,
+     "ledger_scenario_raw": "uia_param_infill_structure",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 159.1315251,
+     "script_action_seconds": 59.016,
+     "host_orchestration_seconds": 213.736,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 9,
@@ -508,13 +760,38 @@
      "process_seconds": 192.5398911,
      "script_action_seconds": 88.344,
      "host_orchestration_seconds": 217.562,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "4cf48ca94d0b438fa00f95cd9a2c62d5",
+     "label": "second-sample",
+     "role": "second_sample",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:25:47",
+     "ended": "08:29:47",
+     "ledger_line": 209,
+     "ledger_scenario_raw": "uia_param_feature_speeds",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 184.6767378,
+     "script_action_seconds": 84.531,
+     "host_orchestration_seconds": 240.686,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 10,
@@ -546,13 +823,38 @@
      "process_seconds": 142.4075623,
      "script_action_seconds": 38.156,
      "host_orchestration_seconds": 169.11,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "3903e250d66d4de0bce579506b810a03",
+     "label": "second-sample",
+     "role": "second_sample",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:29:47",
+     "ended": "08:33:21",
+     "ledger_line": 212,
+     "ledger_scenario_raw": "uia_param_travel_speed",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 137.6319404,
+     "script_action_seconds": 37.593,
+     "host_orchestration_seconds": 213.548,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 11,
@@ -584,13 +886,38 @@
      "process_seconds": 187.7009419,
      "script_action_seconds": 83.235,
      "host_orchestration_seconds": 213.375,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "7878899400ed492ea8608e6081ef7dc6",
+     "label": "second-sample",
+     "role": "second_sample",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:33:21",
+     "ended": "08:37:22",
+     "ledger_line": 214,
+     "ledger_scenario_raw": "uia_param_jerk",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 182.3033267,
+     "script_action_seconds": 82.171,
+     "host_orchestration_seconds": 240.71,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 12,
@@ -622,13 +949,38 @@
      "process_seconds": 151.7890472,
      "script_action_seconds": 47.375,
      "host_orchestration_seconds": 177.531,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "ffc75806825f4f4da23d2a41e8a8f139",
+     "label": "second-sample",
+     "role": "second_sample",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:37:22",
+     "ended": "08:40:56",
+     "ledger_line": 216,
+     "ledger_scenario_raw": "uia_param_support_basic",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 146.3538605,
+     "script_action_seconds": 46.265,
+     "host_orchestration_seconds": 213.575,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 13,
@@ -660,13 +1012,38 @@
      "process_seconds": 150.2899656,
      "script_action_seconds": 45.843,
      "host_orchestration_seconds": 176.937,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "06a0db440bbd4f228251da63d4aab16f",
+     "label": "second-sample",
+     "role": "second_sample",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:40:56",
+     "ended": "08:44:29",
+     "ledger_line": 218,
+     "ledger_scenario_raw": "uia_param_support_filament",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 144.94582,
+     "script_action_seconds": 44.813,
+     "host_orchestration_seconds": 213.599,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 14,
@@ -698,13 +1075,38 @@
      "process_seconds": 197.9113842,
      "script_action_seconds": 93.578,
      "host_orchestration_seconds": 224.969,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "4f10697c624c4705884f3520c8c84176",
+     "label": "second-sample",
+     "role": "second_sample",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:44:29",
+     "ended": "08:48:57",
+     "ledger_line": 221,
+     "ledger_scenario_raw": "uia_param_support_interface",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 203.7834811,
+     "script_action_seconds": 103.656,
+     "host_orchestration_seconds": 267.757,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 15,
@@ -736,13 +1138,38 @@
      "process_seconds": 198.7642844,
      "script_action_seconds": 94.375,
      "host_orchestration_seconds": 225.157,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "21eedd20f0a6430bb0f136e947e9e445",
+     "label": "second-sample",
+     "role": "second_sample",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:48:57",
+     "ended": "08:52:58",
+     "ledger_line": 222,
+     "ledger_scenario_raw": "uia_param_prime_tower",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": null,
+     "process_seconds": 178.1516398,
+     "script_action_seconds": 78.11,
+     "host_orchestration_seconds": 240.624,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 16,
@@ -774,13 +1201,15 @@
      "process_seconds": 160.8418997,
      "script_action_seconds": 56.469,
      "host_orchestration_seconds": 189.344,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
+   "runs_other_machine": [],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 17,
@@ -812,13 +1241,15 @@
      "process_seconds": 169.0244566,
      "script_action_seconds": 64.593,
      "host_orchestration_seconds": 197.359,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
+   "runs_other_machine": [],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 18,
@@ -850,13 +1281,15 @@
      "process_seconds": 157.555825,
      "script_action_seconds": 53.218,
      "host_orchestration_seconds": 185.125,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
+   "runs_other_machine": [],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 19,
@@ -888,13 +1321,15 @@
      "process_seconds": 157.2347749,
      "script_action_seconds": 52.875,
      "host_orchestration_seconds": 184.937,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
+   "runs_other_machine": [],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 20,
@@ -926,13 +1361,15 @@
      "process_seconds": 159.8585887,
      "script_action_seconds": 55.312,
      "host_orchestration_seconds": 184.938,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
+   "runs_other_machine": [],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 21,
@@ -964,13 +1401,15 @@
      "process_seconds": 141.7368816,
      "script_action_seconds": 37.156,
      "host_orchestration_seconds": 169.125,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
+   "runs_other_machine": [],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 1,
@@ -1002,34 +1441,36 @@
      "process_seconds": 160.0056368,
      "script_action_seconds": 59.781,
      "host_orchestration_seconds": 213.524,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "02d7bf394c374d7f95807c93e28710f4",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:50:37",
+     "ended": "07:53:52",
+     "ledger_line": 189,
+     "ledger_scenario_raw": "uia_param_seam_wipe",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 194.93800000008196,
+     "process_seconds": 165.1376172,
+     "script_action_seconds": 60.89,
+     "host_orchestration_seconds": 194.985,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [
-    {
-     "run_id": "9117553219f14bc58703177577b2ebb9",
-     "label": "regress-final",
-     "role": "regress",
-     "machine": "fa706g3",
-     "commit": "d5fc2fa",
-     "on_final_engine": false,
-     "started": "03:55:54",
-     "ended": "03:57:03",
-     "ledger_line": 50,
-     "ledger_scenario_raw": "uia_param_seam_wipe\r",
-     "verdict": null,
-     "verified_pass": null,
-     "cleanup_confirmed": null,
-     "host_wall_seconds": null,
-     "process_seconds": null,
-     "script_action_seconds": null,
-     "host_orchestration_seconds": 68.333,
-     "dispatch_error": "no worker.json",
-     "worker_error": "no worker.json",
-     "failed_checks": null
-    },
     {
      "run_id": "8352f74d3bb6492db7333d850447b2f9",
      "label": "regress-final",
@@ -1048,12 +1489,15 @@
      "process_seconds": 160.0309733,
      "script_action_seconds": 59.797,
      "host_orchestration_seconds": 213.612,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
-   "retries": []
+   "retries": [],
+   "dispatches": [
+    "9117553219f14bc58703177577b2ebb9"
+   ]
   },
   {
    "order": 2,
@@ -1085,7 +1529,31 @@
      "process_seconds": 146.7206873,
      "script_action_seconds": 46.468,
      "host_orchestration_seconds": 213.564,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "04e231ffd70741969e79756c520d73fb",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:53:52",
+     "ended": "07:56:50",
+     "ledger_line": 190,
+     "ledger_scenario_raw": "uia_param_arc_resolution",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 177.31299999996554,
+     "process_seconds": 151.862856,
+     "script_action_seconds": 47.36,
+     "host_orchestration_seconds": 177.359,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
@@ -1109,12 +1577,13 @@
      "process_seconds": 146.6083196,
      "script_action_seconds": 46.438,
      "host_orchestration_seconds": 213.532,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 3,
@@ -1146,7 +1615,31 @@
      "process_seconds": 143.9100319,
      "script_action_seconds": 43.672,
      "host_orchestration_seconds": 213.54,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "80821d98a4ea469895b75c714d7de7a8",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:56:50",
+     "ended": "07:59:45",
+     "ledger_line": 191,
+     "ledger_scenario_raw": "uia_param_wall_generator",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 174.7029999999795,
+     "process_seconds": 148.3707996,
+     "script_action_seconds": 44.094,
+     "host_orchestration_seconds": 174.75,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
@@ -1170,12 +1663,13 @@
      "process_seconds": 143.8743348,
      "script_action_seconds": 43.656,
      "host_orchestration_seconds": 213.463,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 4,
@@ -1207,7 +1701,31 @@
      "process_seconds": 151.7324794,
      "script_action_seconds": 51.515,
      "host_orchestration_seconds": 213.57,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "dee9cd5a447f4dd7a00599a838072212",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:59:45",
+     "ended": "08:02:48",
+     "ledger_line": 194,
+     "ledger_scenario_raw": "uia_param_surface_flow",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 182.71799999999348,
+     "process_seconds": 155.9817837,
+     "script_action_seconds": 51.718,
+     "host_orchestration_seconds": 182.766,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
@@ -1231,12 +1749,13 @@
      "process_seconds": 151.7821968,
      "script_action_seconds": 51.5,
      "host_orchestration_seconds": 213.604,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 5,
@@ -1268,7 +1787,31 @@
      "process_seconds": 182.2859452,
      "script_action_seconds": 82.14,
      "host_orchestration_seconds": 240.683,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "0165cedec6ec4c71ba78ec9ee07a3953",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:02:48",
+     "ended": "08:06:23",
+     "ledger_line": 196,
+     "ledger_scenario_raw": "uia_param_overhang_speeds",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 214.9529999999795,
+     "process_seconds": 186.1343354,
+     "script_action_seconds": 81.843,
+     "host_orchestration_seconds": 215.016,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
@@ -1292,12 +1835,13 @@
      "process_seconds": 182.2844014,
      "script_action_seconds": 82.157,
      "host_orchestration_seconds": 240.65,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 6,
@@ -1329,7 +1873,31 @@
      "process_seconds": 142.5488939,
      "script_action_seconds": 42.297,
      "host_orchestration_seconds": 213.564,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "1b314163f78645e5a76018039f87a4d7",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:06:23",
+     "ended": "08:09:18",
+     "ledger_line": 198,
+     "ledger_scenario_raw": "uia_param_wall_thin",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 174.5,
+     "process_seconds": 147.3710872,
+     "script_action_seconds": 43.046,
+     "host_orchestration_seconds": 174.547,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
@@ -1353,12 +1921,13 @@
      "process_seconds": 142.4674462,
      "script_action_seconds": 42.297,
      "host_orchestration_seconds": 213.521,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 7,
@@ -1390,7 +1959,31 @@
      "process_seconds": 179.9055416,
      "script_action_seconds": 79.75,
      "host_orchestration_seconds": 240.661,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "aaa49b9ef15e49d1831e2995f8c92b61",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:09:18",
+     "ended": "08:12:51",
+     "ledger_line": 200,
+     "ledger_scenario_raw": "uia_param_infill_combo",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 213.53099999995902,
+     "process_seconds": 185.2780497,
+     "script_action_seconds": 80.828,
+     "host_orchestration_seconds": 213.594,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
@@ -1414,7 +2007,7 @@
      "process_seconds": 85.4987979,
      "script_action_seconds": 34.578,
      "host_orchestration_seconds": 159.288,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": "ProtocolError:param_combo_readback:Gyroid:Grid",
      "failed_checks": {
       "business": "unknown: not checked",
@@ -1442,7 +2035,7 @@
      "process_seconds": 179.8925359,
      "script_action_seconds": 79.766,
      "host_orchestration_seconds": 240.685,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     },
@@ -1464,7 +2057,7 @@
      "process_seconds": 185.2813412,
      "script_action_seconds": 80.89,
      "host_orchestration_seconds": 213.641,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     },
@@ -1486,7 +2079,7 @@
      "process_seconds": 184.9933647,
      "script_action_seconds": 80.609,
      "host_orchestration_seconds": 213.172,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     },
@@ -1508,7 +2101,7 @@
      "process_seconds": 180.0118632,
      "script_action_seconds": 79.782,
      "host_orchestration_seconds": 240.709,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     },
@@ -1530,7 +2123,7 @@
      "process_seconds": 184.7924857,
      "script_action_seconds": 80.578,
      "host_orchestration_seconds": 213.219,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     },
@@ -1552,7 +2145,7 @@
      "process_seconds": 185.2276395,
      "script_action_seconds": 80.86,
      "host_orchestration_seconds": 213.359,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     },
@@ -1574,7 +2167,7 @@
      "process_seconds": 180.0447584,
      "script_action_seconds": 79.766,
      "host_orchestration_seconds": 240.707,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     },
@@ -1596,11 +2189,12 @@
      "process_seconds": 179.9180825,
      "script_action_seconds": 79.719,
      "host_orchestration_seconds": 240.717,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   {
    "order": 8,
@@ -1632,7 +2226,31 @@
      "process_seconds": 153.9620029,
      "script_action_seconds": 53.688,
      "host_orchestration_seconds": 213.543,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "66f63d335dc3433bb1b5c7a68538e24d",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:12:51",
+     "ended": "08:15:58",
+     "ledger_line": 202,
+     "ledger_scenario_raw": "uia_param_first_speeds",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 186.51599999994505,
+     "process_seconds": 160.2521388,
+     "script_action_seconds": 55.953,
+     "host_orchestration_seconds": 186.578,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
@@ -1656,12 +2274,13 @@
      "process_seconds": 153.9293894,
      "script_action_seconds": 53.688,
      "host_orchestration_seconds": 213.561,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 9,
@@ -1693,13 +2312,38 @@
      "process_seconds": 181.9307268,
      "script_action_seconds": 81.796,
      "host_orchestration_seconds": 240.668,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "cbe8a4335d7f4515ac2993841d2419ef",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:15:58",
+     "ended": "08:19:32",
+     "ledger_line": 204,
+     "ledger_scenario_raw": "uia_param_overhang_bridge",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 213.329000000027,
+     "process_seconds": 185.7625899,
+     "script_action_seconds": 81.297,
+     "host_orchestration_seconds": 213.39,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 10,
@@ -1731,13 +2375,38 @@
      "process_seconds": 189.5689062,
      "script_action_seconds": 89.438,
      "host_orchestration_seconds": 240.541,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "815c099d3d30423f9c9f7801bbfe5cfb",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:19:32",
+     "ended": "08:23:21",
+     "ledger_line": 206,
+     "ledger_scenario_raw": "uia_param_accelerations",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 228.96900000004098,
+     "process_seconds": 204.7244059,
+     "script_action_seconds": 100.312,
+     "host_orchestration_seconds": 229.032,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 11,
@@ -1769,13 +2438,38 @@
      "process_seconds": 164.6487268,
      "script_action_seconds": 64.391,
      "host_orchestration_seconds": 240.649,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "73d9f22ebb7e40a7886e811341327783",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:23:21",
+     "ended": "08:26:39",
+     "ledger_line": 208,
+     "ledger_scenario_raw": "uia_param_speed_limits",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 197.625,
+     "process_seconds": 169.852205,
+     "script_action_seconds": 65.437,
+     "host_orchestration_seconds": 197.672,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 12,
@@ -1807,13 +2501,38 @@
      "process_seconds": 177.2847537,
      "script_action_seconds": 77.032,
      "host_orchestration_seconds": 240.758,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "daf3216f04904db09960ada51ddd5401",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:26:39",
+     "ended": "08:30:08",
+     "ledger_line": 210,
+     "ledger_scenario_raw": "uia_param_raft",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 209.125,
+     "process_seconds": 181.7789693,
+     "script_action_seconds": 77.515,
+     "host_orchestration_seconds": 209.172,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 13,
@@ -1845,13 +2564,38 @@
      "process_seconds": 159.247532,
      "script_action_seconds": 58.922,
      "host_orchestration_seconds": 213.807,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "8a1d5cdf9f344cc7a3f5a56309c7d5d8",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:30:08",
+     "ended": "08:33:18",
+     "ledger_line": 211,
+     "ledger_scenario_raw": "uia_param_support_ironing",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 189.5,
+     "process_seconds": 164.2212625,
+     "script_action_seconds": 59.922,
+     "host_orchestration_seconds": 189.563,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 14,
@@ -1883,13 +2627,38 @@
      "process_seconds": 184.7148072,
      "script_action_seconds": 84.531,
      "host_orchestration_seconds": 240.66,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "8389410639784112a8fc26ce647b9be9",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:33:18",
+     "ended": "08:36:57",
+     "ledger_line": 213,
+     "ledger_scenario_raw": "uia_param_tree_support",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 218.75,
+     "process_seconds": 189.4068602,
+     "script_action_seconds": 85.188,
+     "host_orchestration_seconds": 218.797,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 15,
@@ -1921,13 +2690,38 @@
      "process_seconds": 145.0086516,
      "script_action_seconds": 44.766,
      "host_orchestration_seconds": 213.548,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "b232861c7b0b4c93a55f3834ddcf75ed",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:36:57",
+     "ended": "08:39:54",
+     "ledger_line": 215,
+     "ledger_scenario_raw": "uia_param_filament_features",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 177.10900000005495,
+     "process_seconds": 151.8854185,
+     "script_action_seconds": 46.141,
+     "host_orchestration_seconds": 177.156,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 16,
@@ -1959,13 +2753,38 @@
      "process_seconds": 145.8688364,
      "script_action_seconds": 45.531,
      "host_orchestration_seconds": 213.519,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "1af4dc1b0ed344aa8f68cf2c565d9a00",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:39:54",
+     "ended": "08:42:51",
+     "ledger_line": 217,
+     "ledger_scenario_raw": "uia_param_flush_options",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 177.09399999992456,
+     "process_seconds": 150.5332521,
+     "script_action_seconds": 46.234,
+     "host_orchestration_seconds": 177.156,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 17,
@@ -1997,13 +2816,38 @@
      "process_seconds": 159.5011376,
      "script_action_seconds": 59.219,
      "host_orchestration_seconds": 213.653,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "749da4390b2f4b898065dfebc645fb66",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:42:51",
+     "ended": "08:46:02",
+     "ledger_line": 219,
+     "ledger_scenario_raw": "uia_param_skirt",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 190.71900000004098,
+     "process_seconds": 164.4195609,
+     "script_action_seconds": 60.203,
+     "host_orchestration_seconds": 190.766,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 18,
@@ -2035,13 +2879,38 @@
      "process_seconds": 134.9381038,
      "script_action_seconds": 34.594,
      "host_orchestration_seconds": 186.393,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": null
+    }
+   ],
+   "runs_other_machine": [
+    {
+     "run_id": "698cf755ae45401abd52ee1b01d7ef65",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:46:02",
+     "ended": "08:48:48",
+     "ledger_line": 220,
+     "ledger_scenario_raw": "uia_param_by_object",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 165.125,
+     "process_seconds": 139.4538273,
+     "script_action_seconds": 35.094,
+     "host_orchestration_seconds": 165.172,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 19,
@@ -2073,14 +2942,16 @@
      "process_seconds": 221.1338198,
      "script_action_seconds": 121.093,
      "host_orchestration_seconds": 294.862,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": {
       "business": "unknown: pilot_target_setting_mismatch",
       "path": "unknown: pilot_target_setting_mismatch",
       "visual": "unknown: not checked"
      }
-    },
+    }
+   ],
+   "runs_other_machine": [
     {
      "run_id": "9db255d48fe64f2db8564a1c476ae48d",
      "label": "regress-final",
@@ -2099,7 +2970,33 @@
      "process_seconds": 226.9485009,
      "script_action_seconds": 122.453,
      "host_orchestration_seconds": 253.031,
-     "dispatch_error": null,
+     "dispatch_failed": null,
+     "worker_error": null,
+     "failed_checks": {
+      "business": "unknown: pilot_target_setting_mismatch",
+      "path": "unknown: pilot_target_setting_mismatch",
+      "visual": "unknown: not checked"
+     }
+    },
+    {
+     "run_id": "ed62daca9e32493db81ae78155a6d709",
+     "label": "regress-final",
+     "role": "regress",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:48:48",
+     "ended": "08:53:03",
+     "ledger_line": 223,
+     "ledger_scenario_raw": "uia_param_timelapse",
+     "verdict": "NON_GREEN",
+     "verified_pass": false,
+     "cleanup_confirmed": true,
+     "host_wall_seconds": 254.96799999999348,
+     "process_seconds": 226.4647877,
+     "script_action_seconds": 122.359,
+     "host_orchestration_seconds": 255.031,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": {
       "business": "unknown: pilot_target_setting_mismatch",
@@ -2109,7 +3006,8 @@
     }
    ],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 20,
@@ -2141,13 +3039,15 @@
      "process_seconds": 164.318005,
      "script_action_seconds": 63.86,
      "host_orchestration_seconds": 240.523,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
+   "runs_other_machine": [],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   },
   {
    "order": 21,
@@ -2179,33 +3079,15 @@
      "process_seconds": 127.6259059,
      "script_action_seconds": 27.391,
      "host_orchestration_seconds": 186.468,
-     "dispatch_error": null,
+     "dispatch_failed": null,
      "worker_error": null,
      "failed_checks": null
     }
    ],
+   "runs_other_machine": [],
    "runs_on_d5fc2fa": [],
-   "retries": []
+   "retries": [],
+   "dispatches": []
   }
- ],
- "in_progress": {
-  "twins": [
-   "246466cc65014ff6ad8491fe44ccdfdf",
-   "57df279e01bc474a9f813b3be21a9aa3",
-   "68ef48ff435a452892291c711f281b9d",
-   "8d854874a8bf42fbaa4acb48e173d46c",
-   "a277ec34257c4e75bfe5053c9aab9f6c",
-   "b3764fd45e4048f0851d6933bc1fe75a",
-   "b685855e48bb4ffb8c878b1b8d30f487"
-  ],
-  "shapes": [
-   "0c44e1014ef74ec6b2bc999790ee0719",
-   "399e6d25b9d64ce6be64a92195c88a0f",
-   "6099d347c3384994b9a847c713aaff0a",
-   "83f09dc39a864edda042fb779543f26a",
-   "b294b048e1554d02a0563f9e1ca4f7bf",
-   "f3709f1cb2294dc7b3eeff6b96304ee8"
-  ],
-  "note": "标签 guest-twins 和 fa-shapes 在本版写成时还在跑，留给以后补；这里只记台账复制时已有的 run，不计入上面任何数字。"
- }
+ ]
 }

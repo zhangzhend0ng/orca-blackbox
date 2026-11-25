@@ -10,14 +10,16 @@
 | `build_native.py` | `native-pairing.json` | `python -B docs/runs/evidence/ninehour-2026-11-25/scripts/build_native.py` |
 | `build_family.py` | `family-regression.json`、`family-regression.md` | `python -B docs/runs/evidence/ninehour-2026-11-25/scripts/build_family.py --repo .` |
 | `build_feishu.py` | `feishu-216-ninehour.json`、`feishu-216-ninehour.md` | `python -B docs/runs/evidence/ninehour-2026-11-25/scripts/build_feishu.py --repo . --combined <11-24 的 combined.json>` |
+| `build_dispatches.py` | `dispatch-failures.json`、`dispatch-failures.md`（没有跑起来的派发，一条一行） | `python -B docs/runs/evidence/ninehour-2026-11-25/scripts/build_dispatches.py [--artifacts <artifacts 根目录>]` |
 | `record_rows.py` | 运行记录「逐条对照」一节里其余触及行的那张表（打印到 stdout；`finalize_record.py` 会调用它） | `python -B docs/runs/evidence/ninehour-2026-11-25/scripts/record_rows.py` |
 | `finalize_record.py`（用 `run-record.template.md`，调用 `record_rows.py`） | 运行记录 `docs/runs/glm54-nine-hour-run-2026-11-25.md` | `python -B docs/runs/evidence/ninehour-2026-11-25/scripts/finalize_record.py --repo .` |
 
-- 顺序：先刷新 `ledger.jsonl` 和 `receipts/`（命令见上级目录的 `README.md`），再依次跑 `build_stage.py`、`build_native.py`、`build_family.py`、`build_feishu.py`（最后一个要读前面三个的输出和 `facts.json`、`negative-controls.json`），最后才是 `finalize_record.py`。
-- `run-record.template.md` 是运行记录的底稿：正文是手写的，其中的 `@@…@@` 占位符由 `finalize_record.py` 从 `ledger.jsonl`、`feishu-216-ninehour.json`、`family-regression.json`、`stage-timings.json` 填上（四类汇总、逐行表、切片复现的计数、最终引擎上的确认、回归结果、进行中的 run 数、机器占用）。手写的部分不经过脚本，要靠对照表逐项核对。
-- `build_stage.py` 通过每份收据里的 `run_dir` 打开收割件（`exports/0001.gcode`、`proof/0001.3mf`、`setup.json`），`build_native.py` 读 `windows_mcp_host/<run_id>/host.json`，`build_family.py` 读没通过的 run 的 `result.json`：收割件还在收据所记的位置时才能重跑。另外两个只读本目录的文件。
+- 顺序：先刷新 `ledger.jsonl` 和 `receipts/`（命令见上级目录的 `README.md`），再依次跑 `build_stage.py`、`build_native.py`、`build_family.py`、`build_feishu.py`（它要读前面几个的输出和 `facts.json`、`negative-controls.json`）、`build_dispatches.py`，最后才是 `finalize_record.py`。
+- `run-record.template.md` 是运行记录的底稿：正文是手写的，其中的 `@@…@@` 占位符由 `finalize_record.py` 从 `ledger.jsonl`、`feishu-216-ninehour.json`、`family-regression.json`、`stage-timings.json`、`dispatch-failures.json` 填上（四类汇总、逐行表、切片复现的计数、最终引擎上的确认、回归结果和换机器复核、补覆盖各批、派发清单和原因、机器占用）。手写的部分不经过脚本，要靠对照表逐项核对。
+- `build_stage.py` 通过每份收据里的 `run_dir` 打开收割件（`exports/0001.gcode`、`proof/0001.3mf`、`setup.json`），`build_native.py` 读 `windows_mcp_host/<run_id>/host.json`，`build_family.py` 和 `build_feishu.py` 读没通过的 run 的 `result.json`，`build_dispatches.py` 读客机各 run 的 `native_save_demo/<run_id>/launch.json` 和 fa706g3 的任务日志：收割件还在原处时才能重跑。`finalize_record.py` 和 `record_rows.py` 只读本目录的文件。
 - `build_family.py` 和 `build_feishu.py` 调 `--repo` 指向的 checkout 里的 `tools/param_closure_list.py`，取参数族 42 个用例的场景名；飞书记录号和标题取仓库里的快照 `docs/runs/evidence/feishu-tblKjIVV8KA53kUQ-2026-11-22/`。
-- 标签怎么归类（`build_common.py` 的 `ROLES`）：`regress-final` 且台账提交号是 `2a17376` 的算最终引擎上的回归，其余 `regress-final` 是 d5fc2fa 上先跑的那一部分，只留作记录；`retry-*` 是失败后的重试；`final2-*` 是最终引擎 2a17376 上的复核，`final-*` 是 d5fc2fa 上的复核；`guest-twins`、`fa-shapes` 只记数，不进行、不计入任何一类。没有收据的 run 是派发失败，没有评级。
+- 标签怎么归类（`build_common.py` 的 `ROLES`）：台账提交号是 `2a17376` 或 `62cddee` 的 run 算在最终引擎上（两者引擎相同）。`regress-final` 在最终引擎上的，跑在该行分到的机器上的算它的回归结果，跑在另一台机器上的算换机器复核；其余 `regress-final` 是 d5fc2fa 上先跑的那一部分，只留作记录。`second-sample` 是 fa706g3 对客机那一半的第二样本，也算换机器复核。`retry-*` 是失败后的重试。`final2-*` 是最终引擎上的复核，`final-*` 是 d5fc2fa 上的复核。`backlog-*`、`guest-twins`、`guest-twins-b`、`fa-shapes` 是补覆盖，单独记账，不计闭环。没有收据的 run 是派发失败：没有评级，不归入任何一类运行，只由 `build_dispatches.py` 逐条列出。
+- 孪生场景归到哪一行：`build_common.py` 的 `feishu_row_of` 取「已登记场景名 + 下划线 + 后缀」里最长的那个已登记场景名，例如 `uia_param_support_filament_fdmt2` 归 `uia_param_support_filament` 所在的行。
 - `build_feishu.py` 的 `--combined` 是 11-24 23:34 的 `artifacts/feishu216-audit/combined.json`（`artifacts/` 不入库，所以它不在本目录）；脚本断言全表 216 行的前 15 列与该文件逐行相同、行序不变。
 - `record_rows.py` 把飞书原文（前置条件的模型、步骤 1、预期 2 以后）从仓库里的快照逐字取出来，不从记忆或别的转述里抄；「今晚的运行」一列取自 `feishu-216-ninehour.json`。
 - `gcode_signature.py` 可以单独比较两个导出件：`python -B docs/runs/evidence/ninehour-2026-11-25/scripts/gcode_signature.py A.gcode B.gcode`。它按「`;TYPE:` 段 × 层 × 进给」累计挤出长度、按「`;TYPE:` 段 × 层」累计耗料，容差 0.05 mm；输出逐项差异和 `same`。

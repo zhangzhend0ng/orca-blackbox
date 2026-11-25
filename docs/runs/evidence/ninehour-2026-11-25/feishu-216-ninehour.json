@@ -1,5 +1,5 @@
 {
- "schema": "ninehour_feishu_216/2",
+ "schema": "ninehour_feishu_216/3",
  "generated_by": "scripts/build_feishu.py",
  "source_table": {
   "sha256": "ec50f29fb2113c4d087fc975ee9614e4b7f287c5f8eae5002bb20e09615cc093",
@@ -7,9 +7,9 @@
   "note": "artifacts/ is git-ignored: the 11-24 file is not in the repository; columns 1-15 of all 216 rows are copied unchanged and the order is kept"
  },
  "ledger": {
-  "ledger_lines": 136,
-  "ledger_runs": 135,
-  "ledger_last_ended": "06:57:35"
+  "ledger_lines": 223,
+  "ledger_runs": 210,
+  "ledger_last_ended": "08:53:03"
  },
  "columns": [
   "用例编号",
@@ -60,25 +60,142 @@
   "untouched": 174
  },
  "summary": {
-  "rule": "按飞书记录 ID 去重，一行可以同时落在几类里。回归行只确认引擎改动没有破坏该行已有的写入和导出，不进前三类；在 d5fc2fa 上失败、最终引擎上通过的行记作「已恢复的失败轮」，不进「失败或待确认」。",
+  "rule": "按飞书记录 ID 去重，一行可以同时落在几类里（#264、#276 既有提速对照，也有补覆盖）。补覆盖（空闲机器、客机自有模型孪生、fa706g3 多形状夹具孪生）单独记账，不计闭环。回归行只确认引擎改动没有破坏该行已有的写入和导出，不进前三类；在 d5fc2fa 上失败、最终引擎上通过的行记作「已恢复的失败轮」，不进「失败或待确认」。派发失败没有评级，不属于任何一类。",
   "new_full_coverage": {
    "count": 0,
    "rows": [],
-   "note": "本轮没有发布 GREEN：收据里的评级只有 NON_GREEN 6、SHADOW 127。"
+   "note": "本轮没有发布 GREEN：收据里的评级只有 NON_GREEN 10、SHADOW 186。"
   },
   "partial_evidence_filled": {
-   "count": 8,
+   "count": 40,
    "rows": [
+    254,
     255,
+    256,
+    257,
+    258,
+    259,
+    260,
+    261,
+    262,
+    263,
+    264,
     265,
     266,
     267,
     268,
     269,
+    270,
+    271,
     272,
-    295
+    273,
+    274,
+    275,
+    276,
+    277,
+    279,
+    280,
+    281,
+    282,
+    283,
+    284,
+    285,
+    286,
+    287,
+    290,
+    291,
+    292,
+    293,
+    295,
+    296,
+    297
    ],
-   "kind": "补覆盖：空闲机器上的额外运行，单独记账，不计闭环，也不改 11-24 的覆盖列"
+   "by_batch": {
+    "backlog": {
+     "rows": [
+      255,
+      264,
+      265,
+      266,
+      267,
+      268,
+      269,
+      272,
+      295
+     ],
+     "runs": 9,
+     "verdicts": {
+      "SHADOW": 9
+     }
+    },
+    "twins": {
+     "rows": [
+      258,
+      260,
+      263,
+      277,
+      280,
+      281,
+      292,
+      293
+     ],
+     "runs": 8,
+     "verdicts": {
+      "SHADOW": 8
+     }
+    },
+    "twins_b": {
+     "rows": [
+      256,
+      257,
+      272,
+      275,
+      279,
+      282,
+      283,
+      284,
+      285,
+      286,
+      287
+     ],
+     "runs": 11,
+     "verdicts": {
+      "SHADOW": 11
+     }
+    },
+    "shapes": {
+     "rows": [
+      254,
+      256,
+      257,
+      259,
+      260,
+      261,
+      262,
+      265,
+      266,
+      270,
+      271,
+      273,
+      274,
+      275,
+      276,
+      285,
+      286,
+      290,
+      291,
+      293,
+      296,
+      297
+     ],
+     "runs": 22,
+     "verdicts": {
+      "SHADOW": 19,
+      "NON_GREEN": 3
+     }
+    }
+   },
+   "kind": "都是补覆盖，单独记账，不计闭环，也不改 11-24 对照表的覆盖列：空闲机器上的额外运行、客机自有模型孪生（第一批 8 行、第二批 11 行）、fa706g3 多形状夹具孪生和客机早先的多形状夹具运行"
   },
   "speed_only": {
    "count": 2,
@@ -86,13 +203,16 @@
     264,
     276
    ],
-   "kind": "纯提速：同机、同构建线、同初态上基线各跑一遍以上、候选各跑两遍；最终引擎 2a17376 上复核过"
+   "kind": "纯提速：同机、同构建线、同初态上基线各跑一遍以上、候选各跑两遍；最终引擎上复核过"
   },
   "failed_or_pending": {
-   "count": 3,
+   "count": 6,
    "rows": [
+    254,
+    259,
     265,
     276,
+    293,
     294
    ],
    "native_rows": [
@@ -102,7 +222,12 @@
    "regression_rows": [
     294
    ],
-   "kind": "#265、#276 是原生模型对照失败（NON_GREEN）；#294 是最终引擎回归里 NON_GREEN，它是 11-24 就开着的行（机型不适用），不是回归。Mac 的壁环数运行没有对应的飞书行，不计入行数",
+   "coverage_rows": [
+    254,
+    259,
+    293
+   ],
+   "kind": "#265、#276 是原生模型对照失败（NON_GREEN）；#294 是最终引擎回归里 NON_GREEN，它是 11-24 就开着的行（机型不适用），不是回归；#293 的多形状夹具孪生在两台机器上都没过，#254、#259 的多形状夹具孪生是 NON_GREEN，原因是判据在多对象板上答不出（gcode_multiple_object_tools）。Mac 的壁环数运行没有对应的飞书行，不计入行数",
    "mac_note": "Mac 壁环数 2→3：1 次运行 NON_GREEN，随后的 8 次探针确认控制台会话锁屏后图形通道不可用；未对应飞书原行，不计入行数（来源：findings-sheet.md、mac/）",
    "regression_failure_runs": [
     {
@@ -110,24 +235,58 @@
      "run_id": "1a4c0845ae0047fca869fcd11bf74455",
      "machine": "fa706g3",
      "label": "regress-final",
+     "verdict": "NON_GREEN",
      "worker_error": null,
      "failed_checks": {
       "business": "unknown: pilot_target_setting_mismatch",
       "path": "unknown: pilot_target_setting_mismatch",
       "visual": "unknown: not checked"
-     }
+     },
+     "completed_edit_and_save": true
+    }
+   ],
+   "coverage_failure_runs": [
+    {
+     "feishu_row": 254,
+     "run_id": "919dcaf885c8492d933e82336a5f62a1",
+     "machine": "fa706g3",
+     "label": "fa-shapes",
+     "verdict": "NON_GREEN",
+     "worker_error": null,
+     "failed_checks": {
+      "business": "unknown: gcode_multiple_object_tools",
+      "path": "unknown: gcode_multiple_object_tools",
+      "visual": "unknown: not checked"
+     },
+     "completed_edit_and_save": true
     },
     {
-     "feishu_row": 294,
-     "run_id": "9db255d48fe64f2db8564a1c476ae48d",
-     "machine": "guest",
-     "label": "regress-final",
+     "feishu_row": 259,
+     "run_id": "0b240d2429a64a03bcd4b4323649ccbf",
+     "machine": "fa706g3",
+     "label": "fa-shapes",
+     "verdict": "NON_GREEN",
      "worker_error": null,
      "failed_checks": {
-      "business": "unknown: pilot_target_setting_mismatch",
-      "path": "unknown: pilot_target_setting_mismatch",
+      "business": "unknown: gcode_multiple_object_tools",
+      "path": "unknown: gcode_multiple_object_tools",
       "visual": "unknown: not checked"
-     }
+     },
+     "completed_edit_and_save": true
+    },
+    {
+     "feishu_row": 293,
+     "run_id": "83f09dc39a864edda042fb779543f26a",
+     "machine": "fa706g3",
+     "label": "fa-shapes",
+     "verdict": "NON_GREEN",
+     "worker_error": "ProtocolError:slice_button_unavailable: SS Jump to (spiral mode)",
+     "failed_checks": {
+      "business": "unknown: not checked",
+      "path": "unknown: not checked",
+      "visual": "unknown: not checked"
+     },
+     "completed_edit_and_save": false
     }
    ]
   },
@@ -135,7 +294,7 @@
    "rows": [
     268
    ],
-   "kind": "d5fc2fa 上回归失败过，重试通过，最终引擎 2a17376 上的回归也通过"
+   "kind": "d5fc2fa 上回归失败过，重试通过，最终引擎上的回归也通过"
   },
   "regression_final_engine": {
    "count": 42,
@@ -231,13 +390,64 @@
    ],
    "runs_per_machine": {
     "fa706g3": 21,
-    "guest": 22
+    "guest": 21
    },
    "verdicts": {
     "SHADOW": 41,
-    "NON_GREEN": 2
+    "NON_GREEN": 1
    },
-   "kind": "最终引擎 2a17376 上有回归运行的行"
+   "kind": "最终引擎上，在分到的机器上有回归运行的行",
+   "other_machine": {
+    "count": 34,
+    "rows": [
+     255,
+     256,
+     257,
+     258,
+     259,
+     260,
+     261,
+     262,
+     263,
+     264,
+     265,
+     266,
+     267,
+     268,
+     269,
+     270,
+     271,
+     272,
+     273,
+     274,
+     275,
+     276,
+     277,
+     278,
+     279,
+     280,
+     281,
+     282,
+     283,
+     284,
+     286,
+     290,
+     292,
+     294
+    ],
+    "failed_rows": [
+     294
+    ],
+    "runs_per_machine": {
+     "guest": 20,
+     "fa706g3": 15
+    },
+    "verdicts": {
+     "SHADOW": 33,
+     "NON_GREEN": 2
+    },
+    "kind": "同一个回归场景在另一台机器上的运行（客机对 fa706g3 那一半的加跑、fa706g3 对客机那一半的第二样本）：复核，不改变上面的结论"
+   }
   },
   "regression_superseded_d5fc2fa": {
    "rows": [
@@ -257,32 +467,192 @@
    "kind": "d5fc2fa 上的回归运行，已被最终引擎上的结果取代"
   },
   "dispatch_failures": [
-   "467e62b17339413f83fdc00ac131c770",
-   "9117553219f14bc58703177577b2ebb9"
+   {
+    "run_id": "9117553219f14bc58703177577b2ebb9",
+    "role": "regress",
+    "label": "regress-final",
+    "scenario": "uia_param_seam_wipe",
+    "machine": "fa706g3",
+    "commit": "d5fc2fa",
+    "on_final_engine": false,
+    "started": "03:55:54",
+    "ledger_dispatch_failed": null,
+    "ledger_scenario_raw": "uia_param_seam_wipe\r",
+    "feishu_row": 256
+   },
+   {
+    "run_id": "616c52eae7e741c8a4aac515392452c8",
+    "role": "twins_b",
+    "label": "guest-twins-b",
+    "scenario": "uia_param_seam_wipe_cyl",
+    "machine": "guest",
+    "commit": "62cddee",
+    "on_final_engine": true,
+    "started": "07:04:22",
+    "ledger_dispatch_failed": "launch_refused_by_precheck",
+    "ledger_scenario_raw": "uia_param_seam_wipe_cyl",
+    "feishu_row": 256
+   },
+   {
+    "run_id": "90b0a97bfce149c788f2fa645c43c7d7",
+    "role": "twins_b",
+    "label": "guest-twins-b",
+    "scenario": "uia_param_precision_comp_tol",
+    "machine": "guest",
+    "commit": "62cddee",
+    "on_final_engine": true,
+    "started": "07:04:25",
+    "ledger_dispatch_failed": "launch_refused_by_precheck",
+    "ledger_scenario_raw": "uia_param_precision_comp_tol",
+    "feishu_row": 257
+   },
+   {
+    "run_id": "467e62b17339413f83fdc00ac131c770",
+    "role": "timed",
+    "label": "timed-vm-1",
+    "scenario": "uia_param_overhang_speeds",
+    "machine": "guest",
+    "commit": "49439ab",
+    "on_final_engine": false,
+    "started": "02:26:10",
+    "ledger_dispatch_failed": null,
+    "ledger_scenario_raw": "uia_param_overhang_speeds",
+    "feishu_row": 264
+   },
+   {
+    "run_id": "ad3862e9855e4febb169a5da2051cdda",
+    "role": "twins_b",
+    "label": "guest-twins-b",
+    "scenario": "uia_param_overhang_bridge_fdmt",
+    "machine": "guest",
+    "commit": "62cddee",
+    "on_final_engine": true,
+    "started": "07:04:28",
+    "ledger_dispatch_failed": "launch_refused_by_precheck",
+    "ledger_scenario_raw": "uia_param_overhang_bridge_fdmt",
+    "feishu_row": 272
+   },
+   {
+    "run_id": "babd20bcc2494d1c9a0258ccd8dc824b",
+    "role": "twins_b",
+    "label": "guest-twins-b",
+    "scenario": "uia_param_jerk_cyl",
+    "machine": "guest",
+    "commit": "62cddee",
+    "on_final_engine": true,
+    "started": "07:04:31",
+    "ledger_dispatch_failed": "launch_refused_by_precheck",
+    "ledger_scenario_raw": "uia_param_jerk_cyl",
+    "feishu_row": 275
+   },
+   {
+    "run_id": "b6605b62161c4495891dce0cf6d797f7",
+    "role": "twins_b",
+    "label": "guest-twins-b",
+    "scenario": "uia_param_support_filament_fdmt2",
+    "machine": "guest",
+    "commit": "62cddee",
+    "on_final_engine": true,
+    "started": "07:04:34",
+    "ledger_dispatch_failed": "launch_refused_by_precheck",
+    "ledger_scenario_raw": "uia_param_support_filament_fdmt2",
+    "feishu_row": 279
+   },
+   {
+    "run_id": "d29a6a0a202b494faeae80bae858a7c8",
+    "role": "twins_b",
+    "label": "guest-twins-b",
+    "scenario": "uia_param_tree_support_bunny",
+    "machine": "guest",
+    "commit": "62cddee",
+    "on_final_engine": true,
+    "started": "07:04:50",
+    "ledger_dispatch_failed": "launch_refused_by_precheck",
+    "ledger_scenario_raw": "uia_param_tree_support_bunny",
+    "feishu_row": 282
+   },
+   {
+    "run_id": "fd60d7ef1c6143d6b02b21ae0d5e1385",
+    "role": "twins_b",
+    "label": "guest-twins-b",
+    "scenario": "uia_param_prime_tower_boat2",
+    "machine": "guest",
+    "commit": "62cddee",
+    "on_final_engine": true,
+    "started": "07:04:37",
+    "ledger_dispatch_failed": "launch_refused_by_precheck",
+    "ledger_scenario_raw": "uia_param_prime_tower_boat2",
+    "feishu_row": 283
+   },
+   {
+    "run_id": "c1bbbdbd4651428d8536fc0878174823",
+    "role": "twins_b",
+    "label": "guest-twins-b",
+    "scenario": "uia_param_filament_features_fdmt2",
+    "machine": "guest",
+    "commit": "62cddee",
+    "on_final_engine": true,
+    "started": "07:04:40",
+    "ledger_dispatch_failed": "launch_refused_by_precheck",
+    "ledger_scenario_raw": "uia_param_filament_features_fdmt2",
+    "feishu_row": 284
+   },
+   {
+    "run_id": "91e1191c81604409b21f24eaf1062df9",
+    "role": "twins_b",
+    "label": "guest-twins-b",
+    "scenario": "uia_param_ooze_prevention_hell",
+    "machine": "guest",
+    "commit": "62cddee",
+    "on_final_engine": true,
+    "started": "07:04:53",
+    "ledger_dispatch_failed": "launch_refused_by_precheck",
+    "ledger_scenario_raw": "uia_param_ooze_prevention_hell",
+    "feishu_row": 285
+   },
+   {
+    "run_id": "d9ecf8bc1bf941e89d3f58a8261d1d7a",
+    "role": "twins_b",
+    "label": "guest-twins-b",
+    "scenario": "uia_param_flush_options_boat2",
+    "machine": "guest",
+    "commit": "62cddee",
+    "on_final_engine": true,
+    "started": "07:04:43",
+    "ledger_dispatch_failed": "launch_refused_by_precheck",
+    "ledger_scenario_raw": "uia_param_flush_options_boat2",
+    "feishu_row": 286
+   },
+   {
+    "run_id": "a744e6db550b4035a0ffee0ba4ddc731",
+    "role": "twins_b",
+    "label": "guest-twins-b",
+    "scenario": "uia_param_material_advanced_fdmt2",
+    "machine": "guest",
+    "commit": "62cddee",
+    "on_final_engine": true,
+    "started": "07:04:47",
+    "ledger_dispatch_failed": "launch_refused_by_precheck",
+    "ledger_scenario_raw": "uia_param_material_advanced_fdmt2",
+    "feishu_row": 287
+   },
+   {
+    "run_id": "65ea51fda43e4947b2b07e7326642847",
+    "role": "retry",
+    "label": "retry-spiral-shapes-2",
+    "scenario": "uia_param_spiral_vase_shapes",
+    "machine": "guest",
+    "commit": "62cddee",
+    "on_final_engine": true,
+    "started": "07:04:19",
+    "ledger_dispatch_failed": "launch_refused_by_precheck",
+    "ledger_scenario_raw": "uia_param_spiral_vase_shapes",
+    "feishu_row": 293
+   }
   ],
-  "in_progress": {
-   "twins": [
-    "246466cc65014ff6ad8491fe44ccdfdf",
-    "57df279e01bc474a9f813b3be21a9aa3",
-    "68ef48ff435a452892291c711f281b9d",
-    "8d854874a8bf42fbaa4acb48e173d46c",
-    "a277ec34257c4e75bfe5053c9aab9f6c",
-    "b3764fd45e4048f0851d6933bc1fe75a",
-    "b685855e48bb4ffb8c878b1b8d30f487"
-   ],
-   "shapes": [
-    "0c44e1014ef74ec6b2bc999790ee0719",
-    "399e6d25b9d64ce6be64a92195c88a0f",
-    "6099d347c3384994b9a847c713aaff0a",
-    "83f09dc39a864edda042fb779543f26a",
-    "b294b048e1554d02a0563f9e1ca4f7bf",
-    "f3709f1cb2294dc7b3eeff6b96304ee8"
-   ],
-   "note": "标签 guest-twins 和 fa-shapes 在本版写成时还在跑，只记数，不进行，不计入任何一类"
-  },
   "verdicts_of_all_receipts": {
-   "NON_GREEN": 6,
-   "SHADOW": 127
+   "NON_GREEN": 10,
+   "SHADOW": 186
   }
  },
  "touched_rows": [
@@ -335,6 +705,7 @@
    "title": "层高-首层与常规层高组合",
    "feishu_status": "待实现",
    "operations": [
+    "补覆盖（fa706g3 多形状夹具孪生）",
     "最终引擎回归"
    ],
    "runs": [
@@ -353,16 +724,38 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "919dcaf885c8492d933e82336a5f62a1",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_layer_pair_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "07:46:06",
+     "verdict": "NON_GREEN",
+     "verified_pass": false,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": {
+      "business": "unknown: gcode_multiple_object_tools",
+      "path": "unknown: gcode_multiple_object_tools",
+      "visual": "unknown: not checked"
+     },
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "255": {
    "record_id": "reczz28b6mRB0WGN",
    "title": "线宽-全特征线宽组合",
    "feishu_status": "待实现",
    "operations": [
-    "补覆盖",
+    "补覆盖（空闲机器）",
     "最终引擎回归",
+    "另一台机器上的回归运行（复核）",
     "d5fc2fa 上的回归（不是最终引擎）"
    ],
    "runs": [
@@ -413,34 +806,38 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "1f87f19262394a55b32b2c81e030cb21",
+     "role": "second_sample",
+     "label": "second-sample",
+     "scenario": "uia_param_line_width_all",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "07:55:55",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "256": {
    "record_id": "reczz28b6mRAynyS",
    "title": "接缝-位置/间隙/擦拭组合",
    "feishu_status": "待实现",
    "operations": [
+    "补覆盖（客机自有模型孪生，第二批）",
+    "补覆盖（fa706g3 多形状夹具孪生）",
     "最终引擎回归",
+    "另一台机器上的回归运行（复核）",
     "d5fc2fa 上的回归（不是最终引擎）"
    ],
    "runs": [
-    {
-     "run_id": "9117553219f14bc58703177577b2ebb9",
-     "role": "regress",
-     "label": "regress-final",
-     "scenario": "uia_param_seam_wipe",
-     "machine": "fa706g3",
-     "commit": "d5fc2fa",
-     "on_final_engine": false,
-     "started": "03:55:54",
-     "verdict": null,
-     "verified_pass": null,
-     "worker_error": "no worker.json",
-     "kind": "regress_d5fc2fa",
-     "failed_checks": null,
-     "failure": null
-    },
     {
      "run_id": "8352f74d3bb6492db7333d850447b2f9",
      "role": "regress",
@@ -472,6 +869,80 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "ecd9a98f4d6646c3aad581528605ae2e",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_seam_wipe_cyl",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:09:43",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins_b",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "37c3394ddb9b42328d1a773d11a1336f",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_seam_wipe_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "07:30:57",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "02d7bf394c374d7f95807c93e28710f4",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_seam_wipe",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:50:37",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
+    }
+   ],
+   "dispatches": [
+    {
+     "run_id": "9117553219f14bc58703177577b2ebb9",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_seam_wipe",
+     "machine": "fa706g3",
+     "commit": "d5fc2fa",
+     "on_final_engine": false,
+     "started": "03:55:54",
+     "ledger_dispatch_failed": null,
+     "ledger_scenario_raw": "uia_param_seam_wipe\r"
+    },
+    {
+     "run_id": "616c52eae7e741c8a4aac515392452c8",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_seam_wipe_cyl",
+     "machine": "guest",
+     "commit": "62cddee",
+     "on_final_engine": true,
+     "started": "07:04:22",
+     "ledger_dispatch_failed": "launch_refused_by_precheck",
+     "ledger_scenario_raw": "uia_param_seam_wipe_cyl"
     }
    ]
   },
@@ -480,7 +951,10 @@
    "title": "精度-尺寸补偿组合",
    "feishu_status": "待实现",
    "operations": [
+    "补覆盖（客机自有模型孪生，第二批）",
+    "补覆盖（fa706g3 多形状夹具孪生）",
     "最终引擎回归",
+    "另一台机器上的回归运行（复核）",
     "d5fc2fa 上的回归（不是最终引擎）"
    ],
    "runs": [
@@ -515,6 +989,68 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "39caa0431b6d4e679da104f58c59d1b0",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_precision_comp_tol",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:13:01",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins_b",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "f0d324848f064de2bb1c23e7c7dc3c85",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_precision_comp_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "07:42:05",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "80708d3721434ab1a84c05ca2bf6158b",
+     "role": "second_sample",
+     "label": "second-sample",
+     "scenario": "uia_param_precision_comp",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:00:23",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
+    }
+   ],
+   "dispatches": [
+    {
+     "run_id": "90b0a97bfce149c788f2fa645c43c7d7",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_precision_comp_tol",
+     "machine": "guest",
+     "commit": "62cddee",
+     "on_final_engine": true,
+     "started": "07:04:25",
+     "ledger_dispatch_failed": "launch_refused_by_precheck",
+     "ledger_scenario_raw": "uia_param_precision_comp_tol"
     }
    ]
   },
@@ -523,7 +1059,9 @@
    "title": "精度-圆弧/分辨率/间隙闭合组合",
    "feishu_status": "待实现",
    "operations": [
+    "补覆盖（客机自有模型孪生）",
     "最终引擎回归",
+    "另一台机器上的回归运行（复核）",
     "d5fc2fa 上的回归（不是最终引擎）"
    ],
    "runs": [
@@ -558,15 +1096,50 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "8d854874a8bf42fbaa4acb48e173d46c",
+     "role": "twins",
+     "label": "guest-twins",
+     "scenario": "uia_param_arc_resolution_tol",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:35:33",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "04e231ffd70741969e79756c520d73fb",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_arc_resolution",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:53:52",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "259": {
    "record_id": "reczz28b6mRB0WWP",
    "title": "熨烫-顶面参数组合",
    "feishu_status": "待实现",
    "operations": [
+    "补覆盖（fa706g3 多形状夹具孪生）",
     "最终引擎回归",
+    "另一台机器上的回归运行（复核）",
     "d5fc2fa 上的回归（不是最终引擎）"
    ],
    "runs": [
@@ -601,15 +1174,55 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "0b240d2429a64a03bcd4b4323649ccbf",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_ironing_top_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "07:34:31",
+     "verdict": "NON_GREEN",
+     "verified_pass": false,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": {
+      "business": "unknown: gcode_multiple_object_tools",
+      "path": "unknown: gcode_multiple_object_tools",
+      "visual": "unknown: not checked"
+     },
+     "failure": null
+    },
+    {
+     "run_id": "68ffe89eb4634f4ca94aa7c18ca51a2e",
+     "role": "second_sample",
+     "label": "second-sample",
+     "scenario": "uia_param_ironing_top",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:03:57",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "260": {
    "record_id": "reczz28b6mRAxxD7",
    "title": "墙生成器-Arachne薄壁组合",
    "feishu_status": "待实现",
    "operations": [
+    "补覆盖（客机自有模型孪生）",
+    "补覆盖（fa706g3 多形状夹具孪生）",
     "最终引擎回归",
+    "另一台机器上的回归运行（复核）",
     "d5fc2fa 上的回归（不是最终引擎）"
    ],
    "runs": [
@@ -644,15 +1257,66 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "6099d347c3384994b9a847c713aaff0a",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_wall_generator_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "06:35:43",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "246466cc65014ff6ad8491fe44ccdfdf",
+     "role": "twins",
+     "label": "guest-twins",
+     "scenario": "uia_param_wall_generator_text",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:38:31",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "80821d98a4ea469895b75c714d7de7a8",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_wall_generator",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:56:50",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "261": {
    "record_id": "reczz28b6mRAzTBr",
    "title": "墙壁和表面-单墙与避墙组合",
    "feishu_status": "待实现",
    "operations": [
+    "补覆盖（fa706g3 多形状夹具孪生）",
     "最终引擎回归",
+    "另一台机器上的回归运行（复核）",
     "d5fc2fa 上的回归（不是最终引擎）"
    ],
    "runs": [
@@ -687,15 +1351,50 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "399e6d25b9d64ce6be64a92195c88a0f",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_single_wall_avoid_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "06:42:50",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "44d9459b105e4e78ab198db99c266e3d",
+     "role": "second_sample",
+     "label": "second-sample",
+     "scenario": "uia_param_single_wall_avoid",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:07:58",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "262": {
    "record_id": "reczz28b6mRAyIRW",
    "title": "墙壁和表面-表面流量组合",
    "feishu_status": "待实现",
    "operations": [
+    "补覆盖（fa706g3 多形状夹具孪生）",
     "最终引擎回归",
+    "另一台机器上的回归运行（复核）",
     "d5fc2fa 上的回归（不是最终引擎）"
    ],
    "runs": [
@@ -730,15 +1429,50 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "00c113aa9cf64aeba460b1d4a45e8105",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_surface_flow_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "07:07:46",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "dee9cd5a447f4dd7a00599a838072212",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_surface_flow",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:59:45",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "263": {
    "record_id": "reczz28b6mRB1jdF",
    "title": "搭桥-桥接质量组合",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "补覆盖（客机自有模型孪生）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -756,8 +1490,41 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "b685855e48bb4ffb8c878b1b8d30f487",
+     "role": "twins",
+     "label": "guest-twins",
+     "scenario": "uia_param_bridge_fdmt",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:41:24",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "17cbb75b4b3c42838af8d3e2560a38fc",
+     "role": "second_sample",
+     "label": "second-sample",
+     "scenario": "uia_param_bridge",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:11:31",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "264": {
    "record_id": "reczz28b6mRB0mjp",
@@ -765,8 +1532,9 @@
    "feishu_status": "待实现",
    "operations": [
     "提速对照",
-    "补覆盖",
+    "补覆盖（空闲机器）",
     "最终引擎回归",
+    "另一台机器上的回归运行（复核）",
     "最终引擎复核",
     "d5fc2fa 上的回归（不是最终引擎）"
    ],
@@ -820,6 +1588,22 @@
      "failure": null
     },
     {
+     "run_id": "b697f7c24c6c49849c05b22c2a8ed1a3",
+     "role": "baseline",
+     "label": "base-vm-1",
+     "scenario": "uia_param_overhang_speeds_fdmt",
+     "machine": "guest",
+     "commit": "636a7330e9ee2b7dc7a78d36b11940eaa56ea78b",
+     "on_final_engine": false,
+     "started": "02:01:25",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "speed",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
      "run_id": "930aa95769bc40a8b54c8cf28a977a2f",
      "role": "backlog",
      "label": "backlog-shapes-1",
@@ -852,22 +1636,6 @@
      "failure": null
     },
     {
-     "run_id": "467e62b17339413f83fdc00ac131c770",
-     "role": "timed",
-     "label": "timed-vm-1",
-     "scenario": "uia_param_overhang_speeds",
-     "machine": "guest",
-     "commit": "49439ab",
-     "on_final_engine": false,
-     "started": "02:26:10",
-     "verdict": null,
-     "verified_pass": null,
-     "worker_error": null,
-     "kind": "speed",
-     "failed_checks": null,
-     "failure": null
-    },
-    {
      "run_id": "778bbfa2fe1e4abebd036af47d2c28fa",
      "role": "timed",
      "label": "timed-vm-1",
@@ -876,6 +1644,22 @@
      "commit": "49439abb927b4fb19803b96c77dbe047133721a3",
      "on_final_engine": false,
      "started": "02:26:58",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "speed",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "0a337de9790c49e49a1a4eecc3c90ba9",
+     "role": "timed",
+     "label": "timed-fdmt-1",
+     "scenario": "uia_param_overhang_speeds_fdmt",
+     "machine": "fa706g3",
+     "commit": "008d97b",
+     "on_final_engine": false,
+     "started": "02:58:57",
      "verdict": "SHADOW",
      "verified_pass": true,
      "worker_error": null,
@@ -916,6 +1700,54 @@
      "failure": null
     },
     {
+     "run_id": "c7029cc05076415bba8a2f4bd755f85b",
+     "role": "wait264",
+     "label": "cand-k1-fdmt-1",
+     "scenario": "uia_param_overhang_speeds_fdmt",
+     "machine": "fa706g3",
+     "commit": "3ef1f94",
+     "on_final_engine": false,
+     "started": "03:15:31",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "speed",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "9c04338f4cf041cda51511370cdeb580",
+     "role": "timed",
+     "label": "timed-fdmt-vm-1",
+     "scenario": "uia_param_overhang_speeds_fdmt",
+     "machine": "guest",
+     "commit": "008d97b06b9eca805d02409355c7c92ccf05e2e7",
+     "on_final_engine": false,
+     "started": "03:18:54",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "speed",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "bed005d71f1c410f95885cd9e5cd714b",
+     "role": "wait264",
+     "label": "cand-k1-fdmt-2",
+     "scenario": "uia_param_overhang_speeds_fdmt",
+     "machine": "fa706g3",
+     "commit": "3ef1f94",
+     "on_final_engine": false,
+     "started": "03:19:59",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "speed",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
      "run_id": "b7ce6d2b045f455bb2a28f48958b7e8c",
      "role": "wait264",
      "label": "cand-k1-cube-1",
@@ -940,6 +1772,38 @@
      "commit": "3ef1f94e4d6c7f8260e0d6ec45fac264be037924",
      "on_final_engine": false,
      "started": "03:29:44",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "speed",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "2910969d2fb24466b5d49050350e2e03",
+     "role": "wait264",
+     "label": "cand-k1-fdmt-1",
+     "scenario": "uia_param_overhang_speeds_fdmt",
+     "machine": "guest",
+     "commit": "3ef1f94e4d6c7f8260e0d6ec45fac264be037924",
+     "on_final_engine": false,
+     "started": "03:33:37",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "speed",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "e15b8b93be8f440bbd39ebce4051c87f",
+     "role": "wait264",
+     "label": "cand-k1-fdmt-2",
+     "scenario": "uia_param_overhang_speeds_fdmt",
+     "machine": "guest",
+     "commit": "3ef1f94e4d6c7f8260e0d6ec45fac264be037924",
+     "on_final_engine": false,
+     "started": "03:37:35",
      "verdict": "SHADOW",
      "verified_pass": true,
      "worker_error": null,
@@ -1012,6 +1876,70 @@
      "failure": null
     },
     {
+     "run_id": "e9167b36fc5c4bc4bb3b9118f249e9a5",
+     "role": "burst264",
+     "label": "cand-k2-fdmt-1",
+     "scenario": "uia_param_overhang_speeds_fdmt",
+     "machine": "fa706g3",
+     "commit": "e3bfdfe",
+     "on_final_engine": false,
+     "started": "03:46:16",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "speed",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "9ff32b2838fa466c873180e07d9fdd90",
+     "role": "burst264",
+     "label": "cand-k2-fdmt-1",
+     "scenario": "uia_param_overhang_speeds_fdmt",
+     "machine": "guest",
+     "commit": "d5fc2fad9ed919467e096a3a7d4c2ec746d6c7e0",
+     "on_final_engine": false,
+     "started": "03:49:37",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "speed",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "5a6d113dfd4f4287994194f671ebc187",
+     "role": "burst264",
+     "label": "cand-k2-fdmt-2",
+     "scenario": "uia_param_overhang_speeds_fdmt",
+     "machine": "fa706g3",
+     "commit": "e3bfdfe",
+     "on_final_engine": false,
+     "started": "03:50:16",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "speed",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "b97452a8e2c2412dbdbc0b26a75f0441",
+     "role": "burst264",
+     "label": "cand-k2-fdmt-2",
+     "scenario": "uia_param_overhang_speeds_fdmt",
+     "machine": "guest",
+     "commit": "d5fc2fad9ed919467e096a3a7d4c2ec746d6c7e0",
+     "on_final_engine": false,
+     "started": "03:53:14",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "speed",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
      "run_id": "9e687519d15a4b77a6cfb7fa12ddba47",
      "role": "regress",
      "label": "regress-final",
@@ -1074,6 +2002,36 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "0165cedec6ec4c71ba78ec9ee07a3953",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_overhang_speeds",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:02:48",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
+    }
+   ],
+   "dispatches": [
+    {
+     "run_id": "467e62b17339413f83fdc00ac131c770",
+     "role": "timed",
+     "label": "timed-vm-1",
+     "scenario": "uia_param_overhang_speeds",
+     "machine": "guest",
+     "commit": "49439ab",
+     "on_final_engine": false,
+     "started": "02:26:10",
+     "ledger_dispatch_failed": null,
+     "ledger_scenario_raw": "uia_param_overhang_speeds"
     }
    ]
   },
@@ -1083,8 +2041,10 @@
    "feishu_status": "待实现",
    "operations": [
     "同夜基线",
-    "补覆盖",
+    "补覆盖（空闲机器）",
+    "补覆盖（fa706g3 多形状夹具孪生）",
     "最终引擎回归",
+    "另一台机器上的回归运行（复核）",
     "最终引擎复核",
     "d5fc2fa 上的复核（不是最终引擎）",
     "原生模型对照（失败）"
@@ -1189,16 +2149,51 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "b294b048e1554d02a0563f9e1ca4f7bf",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_overhang_curl_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "06:53:31",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "c09780e97b664941a079b53066a0c4a6",
+     "role": "second_sample",
+     "label": "second-sample",
+     "scenario": "uia_param_overhang_curl",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:15:05",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "266": {
    "record_id": "reczz28b6mRAyM4X",
    "title": "墙-圈数与薄壁组合",
    "feishu_status": "待实现",
    "operations": [
-    "补覆盖",
+    "补覆盖（空闲机器）",
+    "补覆盖（fa706g3 多形状夹具孪生）",
     "最终引擎回归",
+    "另一台机器上的回归运行（复核）",
     "d5fc2fa 上的回归（不是最终引擎）"
    ],
    "runs": [
@@ -1249,16 +2244,50 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "0c44e1014ef74ec6b2bc999790ee0719",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_wall_thin_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "06:39:16",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "1b314163f78645e5a76018039f87a4d7",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_wall_thin",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:06:23",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "267": {
    "record_id": "reczz28b6mRB1b7s",
    "title": "外壳-层数/图案/颜色渗透组合",
    "feishu_status": "待实现",
    "operations": [
-    "补覆盖",
-    "最终引擎回归"
+    "补覆盖（空闲机器）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -1292,16 +2321,34 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "e8982afaad47467bbe18d54bffa97d71",
+     "role": "second_sample",
+     "label": "second-sample",
+     "scenario": "uia_param_shells_pattern",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:18:39",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "268": {
    "record_id": "reczz28b6mRAz0f1",
    "title": "填充-密度/图案/方向/重叠组合",
    "feishu_status": "待实现",
    "operations": [
-    "补覆盖",
+    "补覆盖（空闲机器）",
     "最终引擎回归",
+    "另一台机器上的回归运行（复核）",
     "失败后的重试",
     "d5fc2fa 上的回归（不是最终引擎）"
    ],
@@ -1485,16 +2532,34 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "aaa49b9ef15e49d1831e2995f8c92b61",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_infill_combo",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:09:18",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "269": {
    "record_id": "reczz28b6mRB164l",
    "title": "强度高级-填充结构组合",
    "feishu_status": "待实现",
    "operations": [
-    "补覆盖",
-    "最终引擎回归"
+    "补覆盖（空闲机器）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -1528,15 +2593,34 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "201afcf85b3b4f2c9e646f564c38a5ce",
+     "role": "second_sample",
+     "label": "second-sample",
+     "scenario": "uia_param_infill_structure",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:22:13",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "270": {
    "record_id": "reczz28b6mRAyhVJ",
    "title": "首层速度-全速度链组合",
    "feishu_status": "待实现",
    "operations": [
+    "补覆盖（fa706g3 多形状夹具孪生）",
     "最终引擎回归",
+    "另一台机器上的回归运行（复核）",
     "d5fc2fa 上的回归（不是最终引擎）"
    ],
    "runs": [
@@ -1571,15 +2655,50 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "d50b8170699b4d6f9c2339b9410cb02b",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_first_speeds_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "07:15:21",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "66f63d335dc3433bb1b5c7a68538e24d",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_first_speeds",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:12:51",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "271": {
    "record_id": "reczz28b6mRAyekU",
    "title": "其他层速度-特征速度组合",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "补覆盖（fa706g3 多形状夹具孪生）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -1597,16 +2716,51 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "64c568578c544fe1971fa2a61260e1c7",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_feature_speeds_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "07:18:54",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "4cf48ca94d0b438fa00f95cd9a2c62d5",
+     "role": "second_sample",
+     "label": "second-sample",
+     "scenario": "uia_param_feature_speeds",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:25:47",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "272": {
    "record_id": "reczz28b6mRB1ZL4",
    "title": "悬垂速度-分档与桥接组合",
    "feishu_status": "待实现",
    "operations": [
-    "补覆盖",
-    "最终引擎回归"
+    "补覆盖（空闲机器）",
+    "补覆盖（客机自有模型孪生，第二批）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -1640,6 +2794,52 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "16ffefbc7df94768bd5cede66f551fd5",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_overhang_bridge_fdmt",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:16:19",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins_b",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "cbe8a4335d7f4515ac2993841d2419ef",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_overhang_bridge",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:15:58",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
+    }
+   ],
+   "dispatches": [
+    {
+     "run_id": "ad3862e9855e4febb169a5da2051cdda",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_overhang_bridge_fdmt",
+     "machine": "guest",
+     "commit": "62cddee",
+     "on_final_engine": true,
+     "started": "07:04:28",
+     "ledger_dispatch_failed": "launch_refused_by_precheck",
+     "ledger_scenario_raw": "uia_param_overhang_bridge_fdmt"
     }
    ]
   },
@@ -1648,7 +2848,9 @@
    "title": "空驶速度-全局映射",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "补覆盖（fa706g3 多形状夹具孪生）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -1666,15 +2868,50 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "ba0e95209bb845b68a47496735fbbcd0",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_travel_speed_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "07:38:31",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "3903e250d66d4de0bce579506b810a03",
+     "role": "second_sample",
+     "label": "second-sample",
+     "scenario": "uia_param_travel_speed",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:29:47",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "274": {
    "record_id": "reczz28b6mRAzthX",
    "title": "加速度-特征组合",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "补覆盖（fa706g3 多形状夹具孪生）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -1692,15 +2929,51 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "0c74c7fa09984820b2bce6bad319df04",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_accelerations_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "07:22:55",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "815c099d3d30423f9c9f7801bbfe5cfb",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_accelerations",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:19:32",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "275": {
    "record_id": "reczz28b6mRAytbr",
    "title": "抖动-特征组合",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "补覆盖（客机自有模型孪生，第二批）",
+    "补覆盖（fa706g3 多形状夹具孪生）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -1718,6 +2991,68 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "1ccddcdf05ca4cd7819dfa73a2551c0b",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_jerk_cyl",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:19:57",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins_b",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "d3fb947ed0fe484ea61e9ce480b3daab",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_jerk_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "07:26:56",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "7878899400ed492ea8608e6081ef7dc6",
+     "role": "second_sample",
+     "label": "second-sample",
+     "scenario": "uia_param_jerk",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:33:21",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
+    }
+   ],
+   "dispatches": [
+    {
+     "run_id": "babd20bcc2494d1c9a0258ccd8dc824b",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_jerk_cyl",
+     "machine": "guest",
+     "commit": "62cddee",
+     "on_final_engine": true,
+     "started": "07:04:31",
+     "ledger_dispatch_failed": "launch_refused_by_precheck",
+     "ledger_scenario_raw": "uia_param_jerk_cyl"
     }
    ]
   },
@@ -1727,7 +3062,9 @@
    "feishu_status": "待实现",
    "operations": [
     "提速对照",
+    "补覆盖（fa706g3 多形状夹具孪生）",
     "最终引擎回归",
+    "另一台机器上的回归运行（复核）",
     "最终引擎复核",
     "d5fc2fa 上的复核（不是最终引擎）",
     "原生模型对照（失败）"
@@ -2024,15 +3361,50 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "f792acdc9e61415a8e06d8ce7f3b81f6",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_speed_limits_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "07:11:20",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "73d9f22ebb7e40a7886e811341327783",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_speed_limits",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:23:21",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "277": {
    "record_id": "reczz28b6mRAydro",
    "title": "支撑-开启与基础结构组合",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "补覆盖（客机自有模型孪生）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -2050,15 +3422,49 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "b3764fd45e4048f0851d6933bc1fe75a",
+     "role": "twins",
+     "label": "guest-twins",
+     "scenario": "uia_param_support_basic_fdmt",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:44:37",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "ffc75806825f4f4da23d2a41e8a8f139",
+     "role": "second_sample",
+     "label": "second-sample",
+     "scenario": "uia_param_support_basic",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:37:22",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "278": {
    "record_id": "reczz28b6mRAzKa2",
    "title": "筏层-结构/间距/扩展组合",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -2076,15 +3482,34 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "daf3216f04904db09960ada51ddd5401",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_raft",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:26:39",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "279": {
    "record_id": "reczz28b6mRAyV6h",
    "title": "支撑耗材-主体与界面组合",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "补覆盖（客机自有模型孪生，第二批）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -2102,6 +3527,52 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "803b7a421fb543eeb4a875565eb0a964",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_support_filament_fdmt2",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:23:30",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins_b",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "06a0db440bbd4f228251da63d4aab16f",
+     "role": "second_sample",
+     "label": "second-sample",
+     "scenario": "uia_param_support_filament",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:40:56",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
+    }
+   ],
+   "dispatches": [
+    {
+     "run_id": "b6605b62161c4495891dce0cf6d797f7",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_support_filament_fdmt2",
+     "machine": "guest",
+     "commit": "62cddee",
+     "on_final_engine": true,
+     "started": "07:04:34",
+     "ledger_dispatch_failed": "launch_refused_by_precheck",
+     "ledger_scenario_raw": "uia_param_support_filament_fdmt2"
     }
    ]
   },
@@ -2110,7 +3581,9 @@
    "title": "支撑熨烫-开关/流量/间距组合",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "补覆盖（客机自有模型孪生）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -2128,15 +3601,50 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "a277ec34257c4e75bfe5053c9aab9f6c",
+     "role": "twins",
+     "label": "guest-twins",
+     "scenario": "uia_param_support_ironing_fdmt",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:47:43",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "8a1d5cdf9f344cc7a3f5a56309c7d5d8",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_support_ironing",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:30:08",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "281": {
    "record_id": "reczz28b6mRAz1dW",
    "title": "支撑高级-距离与界面组合",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "补覆盖（客机自有模型孪生）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -2154,15 +3662,50 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "57df279e01bc474a9f813b3be21a9aa3",
+     "role": "twins",
+     "label": "guest-twins",
+     "scenario": "uia_param_support_interface_fdmt",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:51:00",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "4f10697c624c4705884f3520c8c84176",
+     "role": "second_sample",
+     "label": "second-sample",
+     "scenario": "uia_param_support_interface",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:44:29",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "282": {
    "record_id": "reczz28b6mRB0dhl",
    "title": "支撑高级-树状支撑组合",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "补覆盖（客机自有模型孪生，第二批）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -2180,6 +3723,52 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "a91c3eeaaf1a4109a6e3c2404c3d522a",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_tree_support_bunny",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:40:12",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins_b",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "8389410639784112a8fc26ce647b9be9",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_tree_support",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:33:18",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
+    }
+   ],
+   "dispatches": [
+    {
+     "run_id": "d29a6a0a202b494faeae80bae858a7c8",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_tree_support_bunny",
+     "machine": "guest",
+     "commit": "62cddee",
+     "on_final_engine": true,
+     "started": "07:04:50",
+     "ledger_dispatch_failed": "launch_refused_by_precheck",
+     "ledger_scenario_raw": "uia_param_tree_support_bunny"
     }
    ]
   },
@@ -2188,7 +3777,9 @@
    "title": "擦拭塔-结构/清理/附着组合",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "补覆盖（客机自有模型孪生，第二批）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -2206,6 +3797,52 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "ccf0ff7582b8470f8f51cea4cb13db1e",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_prime_tower_boat2",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:26:36",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins_b",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "21eedd20f0a6430bb0f136e947e9e445",
+     "role": "second_sample",
+     "label": "second-sample",
+     "scenario": "uia_param_prime_tower",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "08:48:57",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
+    }
+   ],
+   "dispatches": [
+    {
+     "run_id": "fd60d7ef1c6143d6b02b21ae0d5e1385",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_prime_tower_boat2",
+     "machine": "guest",
+     "commit": "62cddee",
+     "on_final_engine": true,
+     "started": "07:04:37",
+     "ledger_dispatch_failed": "launch_refused_by_precheck",
+     "ledger_scenario_raw": "uia_param_prime_tower_boat2"
     }
    ]
   },
@@ -2214,7 +3851,9 @@
    "title": "特征用耗材-塔与支撑映射组合",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "补覆盖（客机自有模型孪生，第二批）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -2232,6 +3871,52 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "470f066c57564e37bbd3a732e1fc4a38",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_filament_features_fdmt2",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:30:34",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins_b",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "b232861c7b0b4c93a55f3834ddcf75ed",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_filament_features",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:36:57",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
+    }
+   ],
+   "dispatches": [
+    {
+     "run_id": "c1bbbdbd4651428d8536fc0878174823",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_filament_features_fdmt2",
+     "machine": "guest",
+     "commit": "62cddee",
+     "on_final_engine": true,
+     "started": "07:04:40",
+     "ledger_dispatch_failed": "launch_refused_by_precheck",
+     "ledger_scenario_raw": "uia_param_filament_features_fdmt2"
     }
    ]
   },
@@ -2240,6 +3925,8 @@
    "title": "Ooze预防-待机与预热组合",
    "feishu_status": "待实现",
    "operations": [
+    "补覆盖（客机自有模型孪生，第二批）",
+    "补覆盖（fa706g3 多形状夹具孪生）",
     "最终引擎回归"
    ],
    "runs": [
@@ -2258,6 +3945,52 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "f3709f1cb2294dc7b3eeff6b96304ee8",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_ooze_prevention_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "06:49:57",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "a46d0883673942dead89c90ba1a1e805",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_ooze_prevention_hell",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:44:02",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins_b",
+     "failed_checks": null,
+     "failure": null
+    }
+   ],
+   "dispatches": [
+    {
+     "run_id": "91e1191c81604409b21f24eaf1062df9",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_ooze_prevention_hell",
+     "machine": "guest",
+     "commit": "62cddee",
+     "on_final_engine": true,
+     "started": "07:04:53",
+     "ledger_dispatch_failed": "launch_refused_by_precheck",
+     "ledger_scenario_raw": "uia_param_ooze_prevention_hell"
     }
    ]
   },
@@ -2266,7 +3999,10 @@
    "title": "换料冲刷-去向与体积组合",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "补覆盖（客机自有模型孪生，第二批）",
+    "补覆盖（fa706g3 多形状夹具孪生）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -2284,6 +4020,68 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "f8abae641e0c4d509e45a8a8b9c52687",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_flush_options_boat2",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:33:40",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins_b",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "e5c942764c1d4de99e6ca180a34cb274",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_flush_options_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "07:49:13",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "1af4dc1b0ed344aa8f68cf2c565d9a00",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_flush_options",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:39:54",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
+    }
+   ],
+   "dispatches": [
+    {
+     "run_id": "d9ecf8bc1bf941e89d3f58a8261d1d7a",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_flush_options_boat2",
+     "machine": "guest",
+     "commit": "62cddee",
+     "on_final_engine": true,
+     "started": "07:04:43",
+     "ledger_dispatch_failed": "launch_refused_by_precheck",
+     "ledger_scenario_raw": "uia_param_flush_options_boat2"
     }
    ]
   },
@@ -2292,6 +4090,7 @@
    "title": "材料高级-界面外壳与工具组合",
    "feishu_status": "待实现",
    "operations": [
+    "补覆盖（客机自有模型孪生，第二批）",
     "最终引擎回归"
    ],
    "runs": [
@@ -2310,6 +4109,36 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "78a7ead6d4e44337b61b038a94b9d2f0",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_material_advanced_fdmt2",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "07:36:46",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins_b",
+     "failed_checks": null,
+     "failure": null
+    }
+   ],
+   "dispatches": [
+    {
+     "run_id": "a744e6db550b4035a0ffee0ba4ddc731",
+     "role": "twins_b",
+     "label": "guest-twins-b",
+     "scenario": "uia_param_material_advanced_fdmt2",
+     "machine": "guest",
+     "commit": "62cddee",
+     "on_final_engine": true,
+     "started": "07:04:47",
+     "ledger_dispatch_failed": "launch_refused_by_precheck",
+     "ledger_scenario_raw": "uia_param_material_advanced_fdmt2"
     }
    ]
   },
@@ -2318,7 +4147,9 @@
    "title": "裙边-圈数高度距离与风挡组合",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "补覆盖（fa706g3 多形状夹具孪生）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -2336,14 +4167,48 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "9201a1a0efe94a23803b2fe7dfd76584",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_skirt_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "07:00:39",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "749da4390b2f4b898065dfebc645fb66",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_skirt",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:42:51",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "291": {
    "record_id": "reczz28b6mRAyNfH",
    "title": "Brim-宽度间隙与类型组合",
    "feishu_status": "待实现",
    "operations": [
+    "补覆盖（fa706g3 多形状夹具孪生）",
     "最终引擎回归"
    ],
    "runs": [
@@ -2362,15 +4227,34 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "3c756806282043318a3b8a854a4866ec",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_brim_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "07:04:12",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "292": {
    "record_id": "reczz28b6mRB1mQt",
    "title": "特殊模式-逐件打印与碰撞",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "补覆盖（客机自有模型孪生）",
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -2388,15 +4272,51 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "68ef48ff435a452892291c711f281b9d",
+     "role": "twins",
+     "label": "guest-twins",
+     "scenario": "uia_param_by_object_cubesfar",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:54:50",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "698cf755ae45401abd52ee1b01d7ef65",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_by_object",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:46:02",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "regress_other",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "293": {
    "record_id": "reczz28b6mRB19md",
    "title": "特殊模式-螺旋花瓶单墙",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "补覆盖（客机自有模型孪生）",
+    "补覆盖（fa706g3 多形状夹具孪生）",
+    "最终引擎回归",
+    "失败后的重试"
    ],
    "runs": [
     {
@@ -2414,6 +4334,76 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "83f09dc39a864edda042fb779543f26a",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_spiral_vase_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "06:46:24",
+     "verdict": "NON_GREEN",
+     "verified_pass": false,
+     "worker_error": "ProtocolError:slice_button_unavailable: SS Jump to (spiral mode)",
+     "kind": "shapes",
+     "failed_checks": {
+      "business": "unknown: not checked",
+      "path": "unknown: not checked",
+      "visual": "unknown: not checked"
+     },
+     "failure": null
+    },
+    {
+     "run_id": "f70c7b44e2fa4941b3bc857a4fc3f86b",
+     "role": "twins",
+     "label": "guest-twins",
+     "scenario": "uia_param_spiral_vase_cyl",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "06:57:35",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "twins",
+     "failed_checks": null,
+     "failure": null
+    },
+    {
+     "run_id": "a51409f7a7ae43618b8534ef2e21fbaa",
+     "role": "retry",
+     "label": "retry-spiral-shapes-1",
+     "scenario": "uia_param_spiral_vase_shapes",
+     "machine": "guest",
+     "commit": "2a1737689ff519686b90c588d52d96519e76f370",
+     "on_final_engine": true,
+     "started": "07:01:18",
+     "verdict": "NON_GREEN",
+     "verified_pass": false,
+     "worker_error": "ProtocolError:slice_button_unavailable: SS Jump to (spiral mode)",
+     "kind": "retry",
+     "failed_checks": {
+      "business": "unknown: not checked",
+      "path": "unknown: not checked",
+      "visual": "unknown: not checked"
+     },
+     "failure": null
+    }
+   ],
+   "dispatches": [
+    {
+     "run_id": "65ea51fda43e4947b2b07e7326642847",
+     "role": "retry",
+     "label": "retry-spiral-shapes-2",
+     "scenario": "uia_param_spiral_vase_shapes",
+     "machine": "guest",
+     "commit": "62cddee",
+     "on_final_engine": true,
+     "started": "07:04:19",
+     "ledger_dispatch_failed": "launch_refused_by_precheck",
+     "ledger_scenario_raw": "uia_param_spiral_vase_shapes"
     }
    ]
   },
@@ -2422,7 +4412,8 @@
    "title": "特殊模式-延时与切片模式组合",
    "feishu_status": "待实现",
    "operations": [
-    "最终引擎回归"
+    "最终引擎回归",
+    "另一台机器上的回归运行（复核）"
    ],
    "runs": [
     {
@@ -2457,7 +4448,27 @@
      "verdict": "NON_GREEN",
      "verified_pass": false,
      "worker_error": null,
-     "kind": "regress",
+     "kind": "regress_other",
+     "failed_checks": {
+      "business": "unknown: pilot_target_setting_mismatch",
+      "path": "unknown: pilot_target_setting_mismatch",
+      "visual": "unknown: not checked"
+     },
+     "failure": null
+    },
+    {
+     "run_id": "ed62daca9e32493db81ae78155a6d709",
+     "role": "regress",
+     "label": "regress-final",
+     "scenario": "uia_param_timelapse",
+     "machine": "guest",
+     "commit": "62cddee803c595a2a46323286ed37fb06bdcff72",
+     "on_final_engine": true,
+     "started": "08:48:48",
+     "verdict": "NON_GREEN",
+     "verified_pass": false,
+     "worker_error": null,
+     "kind": "regress_other",
      "failed_checks": {
       "business": "unknown: pilot_target_setting_mismatch",
       "path": "unknown: pilot_target_setting_mismatch",
@@ -2465,14 +4476,15 @@
      },
      "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "295": {
    "record_id": "reczz28b6mRAyPQV",
    "title": "绒毛表面-范围/点距/厚度组合",
    "feishu_status": "待实现",
    "operations": [
-    "补覆盖",
+    "补覆盖（空闲机器）",
     "最终引擎回归"
    ],
    "runs": [
@@ -2508,13 +4520,15 @@
      "failed_checks": null,
      "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "296": {
    "record_id": "reczz28b6mRAyaVq",
    "title": "G-code输出-注释/行号/标签/文件名组合",
    "feishu_status": "待实现",
    "operations": [
+    "补覆盖（fa706g3 多形状夹具孪生）",
     "最终引擎回归"
    ],
    "runs": [
@@ -2533,14 +4547,32 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "54f47f5892a648af80cb0da5d892b767",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_gcode_output_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "07:52:46",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   },
   "297": {
    "record_id": "reczz28b6mRAyshq",
    "title": "G-code输出-排除对象与填充回抽组合",
    "feishu_status": "待实现",
    "operations": [
+    "补覆盖（fa706g3 多形状夹具孪生）",
     "最终引擎回归"
    ],
    "runs": [
@@ -2559,8 +4591,25 @@
      "kind": "regress",
      "failed_checks": null,
      "failure": null
+    },
+    {
+     "run_id": "b23f082ac8d84240affc12d897848180",
+     "role": "shapes",
+     "label": "fa-shapes",
+     "scenario": "uia_param_exclude_objects_shapes",
+     "machine": "fa706g3",
+     "commit": "2a17376",
+     "on_final_engine": true,
+     "started": "06:57:05",
+     "verdict": "SHADOW",
+     "verified_pass": true,
+     "worker_error": null,
+     "kind": "shapes",
+     "failed_checks": null,
+     "failure": null
     }
-   ]
+   ],
+   "dispatches": []
   }
  },
  "rows": [
@@ -6708,13 +8757,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 首层Z=0.25mm，第2层起按0.20mm递增。\n3. 层数、总高度和后续层Z步进与默认基准一致。",
    "质量-层高",
    "reczz28b6mRB1GVG",
-   "最终引擎回归",
+   "补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/1f6c810ad1ca4ebba0b286f07e23a8e9.json",
-   "fa706g3 SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）NON_GREEN：多形状夹具上的同一个场景没有通过（原因见后），同样未对照飞书预期核对；没通过的是 `919dcaf8`（fa706g3）：business unknown: gcode_multiple_object_tools、path unknown: gcode_multiple_object_tools；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/1f6c810ad1ca4ebba0b286f07e23a8e9.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/919dcaf885c8492d933e82336a5f62a1.json",
+   "fa706g3 NON_GREEN 1 次；fa706g3 SHADOW 1 次；都不是发布 GREEN"
   ],
   [
    255,
@@ -6732,13 +8781,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 各特征线宽分别等于设置值。\n3. 各路径E/mm匹配线宽×层高，误差≤2%，外形不变。",
    "质量-线宽",
    "reczz28b6mRB0WGN",
-   "补覆盖；最终引擎回归；d5fc2fa 上的回归（不是最终引擎）",
+   "补覆盖（空闲机器）；最终引擎回归；另一台机器上的回归运行（复核）；d5fc2fa 上的回归（不是最终引擎）",
    null,
    null,
    null,
-   "补覆盖 1 次（客机 win11-test ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；d5fc2fa 上的回归 1 次（客机 win11-test ×1）SHADOW，不是最终引擎，已被取代",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/d318815e3b1e4f60b4941cd9d53971d2.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/cfaa8a0d3aa94d929028838c8dc71310.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/473c4e7c5e8e4419aa45ab2b0db9ed13.json",
-   "客机 win11-test SHADOW 3 次；都不是发布 GREEN"
+   "补覆盖（空闲机器） 1 次（客机 win11-test ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（fa706g3 ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；d5fc2fa 上的回归 1 次（客机 win11-test ×1）SHADOW，不是最终引擎，已被取代",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/d318815e3b1e4f60b4941cd9d53971d2.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/cfaa8a0d3aa94d929028838c8dc71310.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/473c4e7c5e8e4419aa45ab2b0db9ed13.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/1f87f19262394a55b32b2c81e030cb21.json",
+   "客机 win11-test SHADOW 3 次；fa706g3 SHADOW 1 次；都不是发布 GREEN"
   ],
   [
    256,
@@ -6756,13 +8805,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 接缝位于aligned（对齐）方向，每层1条且间隙≈15%。\n3. 外墙结束生成擦拭路径，擦拭F≈3000，正常外墙F不变。",
    "质量-接缝",
    "reczz28b6mRAynyS",
-   "最终引擎回归；d5fc2fa 上的回归（不是最终引擎）",
+   "补覆盖（客机自有模型孪生，第二批）；补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归；另一台机器上的回归运行（复核）；d5fc2fa 上的回归（不是最终引擎）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；d5fc2fa 上的回归 2 次（fa706g3 ×2）SHADOW，不是最终引擎，已被取代",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/8352f74d3bb6492db7333d850447b2f9.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/fefd58ea53cb432bb97433c828b2576a.json",
-   "fa706g3 SHADOW 2 次；派发失败（无评级）1 次（91175532）；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生，第二批） 1 次（客机 win11-test ×1）SHADOW：这 11 行 11-24 在 fa706g3 上的判定是有出入或看不到（`docs/runs/evidence/feishu-expect-vs-gcode-2026-11-24/own-models-verdicts.md`）；客机 SHADOW 只说明在那里写入、保存、重开、切片和导出走通了，不说明预期已经满足；补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；d5fc2fa 上的回归 1 次（fa706g3 ×1）SHADOW，不是最终引擎，已被取代；派发失败 2 次（没有到 GUI，没有评级，不属于任何一类运行；见 dispatch-failures.md）",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/8352f74d3bb6492db7333d850447b2f9.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/fefd58ea53cb432bb97433c828b2576a.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/ecd9a98f4d6646c3aad581528605ae2e.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/37c3394ddb9b42328d1a773d11a1336f.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/02d7bf394c374d7f95807c93e28710f4.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 3 次；派发失败（无评级）2 次（91175532、616c52ea）；都不是发布 GREEN"
   ],
   [
    257,
@@ -6780,13 +8829,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 首层外轮廓内缩≈0.15mm，第2层恢复名义值。\n3. 外墙外扩≈0.10mm、孔洞收缩≈0.10mm，精准外墙误差≤0.001mm。",
    "质量-精度",
    "reczz28b6mRB1nLf",
-   "最终引擎回归；d5fc2fa 上的回归（不是最终引擎）",
+   "补覆盖（客机自有模型孪生，第二批）；补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归；另一台机器上的回归运行（复核）；d5fc2fa 上的回归（不是最终引擎）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；d5fc2fa 上的回归 1 次（客机 win11-test ×1）SHADOW，不是最终引擎，已被取代",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/ee33d983b0c04517ab418bc3f1e85c3d.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/d64dc969eca34b7f9f4bee3aa08ffa2e.json",
-   "客机 win11-test SHADOW 2 次；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生，第二批） 1 次（客机 win11-test ×1）SHADOW：这 11 行 11-24 在 fa706g3 上的判定是有出入或看不到（`docs/runs/evidence/feishu-expect-vs-gcode-2026-11-24/own-models-verdicts.md`）；客机 SHADOW 只说明在那里写入、保存、重开、切片和导出走通了，不说明预期已经满足；补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（fa706g3 ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；d5fc2fa 上的回归 1 次（客机 win11-test ×1）SHADOW，不是最终引擎，已被取代；派发失败 1 次（没有到 GUI，没有评级，不属于任何一类运行；见 dispatch-failures.md）",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/ee33d983b0c04517ab418bc3f1e85c3d.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/d64dc969eca34b7f9f4bee3aa08ffa2e.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/39caa0431b6d4e679da104f58c59d1b0.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/f0d324848f064de2bb1c23e7c7dc3c85.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/80708d3721434ab1a84c05ca2bf6158b.json",
+   "客机 win11-test SHADOW 3 次；fa706g3 SHADOW 2 次；派发失败（无评级）1 次（90b0a97b）；都不是发布 GREEN"
   ],
   [
    258,
@@ -6804,13 +8853,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 圆弧输出G2/G3或arc元数据，轮廓误差≤0.012mm。\n3. 最终Z误差≤0.001mm，约0.098mm以内缝隙闭合、更宽缝隙保留。",
    "质量-精度",
    "reczz28b6mRAyQE3",
-   "最终引擎回归；d5fc2fa 上的回归（不是最终引擎）",
+   "补覆盖（客机自有模型孪生）；最终引擎回归；另一台机器上的回归运行（复核）；d5fc2fa 上的回归（不是最终引擎）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；d5fc2fa 上的回归 1 次（fa706g3 ×1）SHADOW，不是最终引擎，已被取代",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/925fe20fbfcd474380ff3f77743aed56.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/3a43c6fd450147f8a2a011d45b63e5e1.json",
-   "fa706g3 SHADOW 2 次；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生） 1 次（客机 win11-test ×1）SHADOW：这 8 行 11-24 的自有模型运行都在 fa706g3 上；客机 SHADOW 说明在回归证据机上写入、保存、重开、切片和导出走通了，补上了「只有 fa706g3 证据」这一条，11-24 对照表里逐项预期的缺口仍在；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；d5fc2fa 上的回归 1 次（fa706g3 ×1）SHADOW，不是最终引擎，已被取代",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/925fe20fbfcd474380ff3f77743aed56.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/3a43c6fd450147f8a2a011d45b63e5e1.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/8d854874a8bf42fbaa4acb48e173d46c.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/04e231ffd70741969e79756c520d73fb.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 2 次；都不是发布 GREEN"
   ],
   [
    259,
@@ -6828,13 +8877,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 仅顶面生成熨烫路径，线距≈0.15mm。\n3. 熨烫E按10%流量生效，F≈3600，非目标表面不变。",
    "质量-熨烫",
    "reczz28b6mRB0WWP",
-   "最终引擎回归；d5fc2fa 上的回归（不是最终引擎）",
+   "补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归；另一台机器上的回归运行（复核）；d5fc2fa 上的回归（不是最终引擎）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；d5fc2fa 上的回归 1 次（客机 win11-test ×1）SHADOW，不是最终引擎，已被取代",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/8ef072a97c2042b597b567014922f6ac.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/1f79a0cedd23462fb69c3e738a7f8bf7.json",
-   "客机 win11-test SHADOW 2 次；都不是发布 GREEN"
+   "补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）NON_GREEN：多形状夹具上的同一个场景没有通过（原因见后），同样未对照飞书预期核对；没通过的是 `0b240d24`（fa706g3）：business unknown: gcode_multiple_object_tools、path unknown: gcode_multiple_object_tools；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（fa706g3 ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；d5fc2fa 上的回归 1 次（客机 win11-test ×1）SHADOW，不是最终引擎，已被取代",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/8ef072a97c2042b597b567014922f6ac.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/1f79a0cedd23462fb69c3e738a7f8bf7.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/0b240d2429a64a03bcd4b4323649ccbf.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/68ffe89eb4634f4ca94aa7c18ca51a2e.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 NON_GREEN 1 次；fa706g3 SHADOW 1 次；都不是发布 GREEN"
   ],
   [
    260,
@@ -6852,13 +8901,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 薄壁与变宽度墙路径由Arachne重算，外轮廓连续。\n3. 墙线按分布数过渡，无0宽线，外轮廓和总墙数不异常。",
    "质量-墙生成器",
    "reczz28b6mRAxxD7",
-   "最终引擎回归；d5fc2fa 上的回归（不是最终引擎）",
+   "补覆盖（客机自有模型孪生）；补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归；另一台机器上的回归运行（复核）；d5fc2fa 上的回归（不是最终引擎）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；d5fc2fa 上的回归 1 次（fa706g3 ×1）SHADOW，不是最终引擎，已被取代",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/afc73d60a48b4dbc892f77f942e69c76.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/ea11c71012154f1c9f1640aa1db2d8c4.json",
-   "fa706g3 SHADOW 2 次；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生） 1 次（客机 win11-test ×1）SHADOW：这 8 行 11-24 的自有模型运行都在 fa706g3 上；客机 SHADOW 说明在回归证据机上写入、保存、重开、切片和导出走通了，补上了「只有 fa706g3 证据」这一条，11-24 对照表里逐项预期的缺口仍在；补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；d5fc2fa 上的回归 1 次（fa706g3 ×1）SHADOW，不是最终引擎，已被取代",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/afc73d60a48b4dbc892f77f942e69c76.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/ea11c71012154f1c9f1640aa1db2d8c4.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/6099d347c3384994b9a847c713aaff0a.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/246466cc65014ff6ad8491fe44ccdfdf.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/80821d98a4ea469895b75c714d7de7a8.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 3 次；都不是发布 GREEN"
   ],
   [
    261,
@@ -6876,13 +8925,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 窄顶面和窄区首层仅1圈墙，无额外填充。\n3. 空驶不跨越外墙，必要时绕行且绕行距离不超2mm。",
    "质量-墙壁和表面",
    "reczz28b6mRAzTBr",
-   "最终引擎回归；d5fc2fa 上的回归（不是最终引擎）",
+   "补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归；另一台机器上的回归运行（复核）；d5fc2fa 上的回归（不是最终引擎）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；d5fc2fa 上的回归 1 次（客机 win11-test ×1）SHADOW，不是最终引擎，已被取代",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/b0f9538396a34f9ea1eb1d182ed5e3e1.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/10c4fed642c74b72a96947d384e447db.json",
-   "客机 win11-test SHADOW 2 次；都不是发布 GREEN"
+   "补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（fa706g3 ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；d5fc2fa 上的回归 1 次（客机 win11-test ×1）SHADOW，不是最终引擎，已被取代",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/b0f9538396a34f9ea1eb1d182ed5e3e1.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/10c4fed642c74b72a96947d384e447db.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/399e6d25b9d64ce6be64a92195c88a0f.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/44d9459b105e4e78ab198db99c266e3d.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 2 次；都不是发布 GREEN"
   ],
   [
    262,
@@ -6900,13 +8949,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 顶面E增加≈10%，底面E减少≈10%，对象整体流量不变。\n3. 各表面路径和模型外形保持基准。",
    "质量-墙壁和表面",
    "reczz28b6mRAyIRW",
-   "最终引擎回归；d5fc2fa 上的回归（不是最终引擎）",
+   "补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归；另一台机器上的回归运行（复核）；d5fc2fa 上的回归（不是最终引擎）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；d5fc2fa 上的回归 1 次（fa706g3 ×1）SHADOW，不是最终引擎，已被取代",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/c7c8a5475e404cc2a3849a1a8bf8df5b.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/f3daf5c3e30e4cba8303e2418f99d0a0.json",
-   "fa706g3 SHADOW 2 次；都不是发布 GREEN"
+   "补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；d5fc2fa 上的回归 1 次（fa706g3 ×1）SHADOW，不是最终引擎，已被取代",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/c7c8a5475e404cc2a3849a1a8bf8df5b.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/f3daf5c3e30e4cba8303e2418f99d0a0.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/00c113aa9cf64aeba460b1d4a45e8105.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/dee9cd5a447f4dd7a00599a838072212.json",
+   "客机 win11-test SHADOW 1 次；fa706g3 SHADOW 3 次；都不是发布 GREEN"
   ],
   [
    263,
@@ -6924,13 +8973,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 桥接线方向为0°，线距对应100%密度，桥接区连续锚固。\n3. 厚桥开启后桥接层数/流量增加，超过30mm跨度触发支撑或提示。",
    "质量-搭桥",
    "reczz28b6mRB1jdF",
-   "最终引擎回归",
+   "补覆盖（客机自有模型孪生）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/7d8d505a659946bc961f053ef0164971.json",
-   "客机 win11-test SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生） 1 次（客机 win11-test ×1）SHADOW：这 8 行 11-24 的自有模型运行都在 fa706g3 上；客机 SHADOW 说明在回归证据机上写入、保存、重开、切片和导出走通了，补上了「只有 fa706g3 证据」这一条，11-24 对照表里逐项预期的缺口仍在；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（fa706g3 ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/7d8d505a659946bc961f053ef0164971.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/b685855e48bb4ffb8c878b1b8d30f487.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/17cbb75b4b3c42838af8d3e2560a38fc.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 1 次；都不是发布 GREEN"
   ],
   [
    264,
@@ -6948,13 +8997,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 各悬垂区间的F分别≈2400/1800/1200/600/300。\n3. 非悬垂区和桥接区F不变。",
    "质量-悬垂",
    "reczz28b6mRB0mjp",
-   "提速对照；补覆盖；最终引擎回归；最终引擎复核；d5fc2fa 上的回归（不是最终引擎）",
+   "提速对照；补覆盖（空闲机器）；最终引擎回归；另一台机器上的回归运行（复核）；最终引擎复核；d5fc2fa 上的回归（不是最终引擎）",
    "立方体 客机 258.640；立方体 fa706g3 231.998 / 222.329；FDM 测试模型 客机 258.203；FDM 测试模型 fa706g3 无 636a733 基线，计时版 224.345",
    "立方体 客机 K1 232.953 / 232.922、K2 213.344 / 213.328；立方体 fa706g3 K1 202.464 / 202.356、K2 182.280 / 182.316；FDM 测试模型 客机 K1 237.578 / 237.172、K2 216.937 / 218.547；FDM 测试模型 fa706g3 K1 204.379 / 204.325、K2 184.261 / 184.255",
    "立方体 客机 基线 → K1 25.703、K1 → K2 19.602、基线 → K2（两步合计） 45.304、基线 → 最终引擎复核 44.046；立方体 fa706g3 基线 → K1 24.754、K1 → K2 20.112、基线 → K2（两步合计） 44.866、基线 → 最终引擎复核 44.850；FDM 测试模型 客机 基线 → K1 20.828、K1 → K2 19.633、基线 → K2（两步合计） 40.461；FDM 测试模型 fa706g3 计时版 → K1 19.993、K1 → K2 20.094。动作秒：立方体 客机 基线 → K1 20.398、K1 → K2 20.328、基线 → K2（两步合计） 40.727、基线 → 最终引擎复核 40.734；立方体 fa706g3 基线 → K1 20.328、K1 → K2 20.117、基线 → K2（两步合计） 40.445、基线 → 最终引擎复核 40.453；FDM 测试模型 客机 基线 → K1 19.859、K1 → K2 20.414、基线 → K2（两步合计） 40.273；FDM 测试模型 fa706g3 计时版 → K1 19.962、K1 → K2 20.093。客机为宿主整轮秒（含收割），fa706g3 为机内进程秒",
-   "预期 1 缺一项：overhang_totally_speed=5 没有写入，2.4.0 没有这个参数（其余 6 个目标值写入并与导出件一致）；预期 2 未达到：Overhang wall 段（146 段、452 条移动）只有 F1980/3000，没有 F2400/1800/1200/600/300；预期 3 的桥接区不成立：桥接段共 7898.1 mm，其中 F3000 从默认切片的 7897.7 mm 降到 7466.2 mm，少 431.5 mm；非悬垂区的 F 也变了：258 个比较层里 151 层的非墙进给变快（slow_down_for_layer_cooling）；立方体夹具上没有 Overhang wall 段，预期 2 在立方体上看不到；判据不读本行导出件的 G-code：反例 6、6b、6c、6d、6e 被接受（negative-controls.json）；FDM 测试模型当晚 11 次运行里有 8 次切片聚合签名相同，另 3 次（e15b8b93、9ff32b28、b97452a8）内部实心填充少 2023 段，原因未查；拿一次导出件当基线逐行比时要先算进去（stage-timings.md「切片复现」）；预览未核对。来源：facts.json（runs.b697f7c2…）、negative-controls.json；补覆盖 1 次（客机 win11-test ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；最终引擎 2a17376 复核 2 次（fa706g3 ×1、客机 win11-test ×1）SHADOW；d5fc2fa 上的回归 1 次（fa706g3 ×1）SHADOW，不是最终引擎，已被取代",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/19d6103223264b2c8f21a0b8c5f76d1e.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/8e207463943845c2a4564a47efc54d64.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/7484bd43c9114b5b8f8d098a6ac978e3.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/930aa95769bc40a8b54c8cf28a977a2f.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/76b8593191d242bd9aaa18771af25db4.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/778bbfa2fe1e4abebd036af47d2c28fa.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/d235895349ed43dab1990f3e16b78262.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/83a295d9c5bb4268ab659c23a4390f34.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/b7ce6d2b045f455bb2a28f48958b7e8c.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/173f72ec453c4fcc8d2bd0966356e3ae.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/d03f10c838b943338ca4c658d8d34e1d.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/9d2adda0f2e44f67968f6d02840002d7.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/95422bb0640e4f5d86dba39e68f2905e.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/f37f49fd5d31467d86b6e4bdca5ef5ca.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/9e687519d15a4b77a6cfb7fa12ddba47.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/0f1e713999cc40e09ede36bfe1816012.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/3f1397b0ebdd412287cdbbd72385069e.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/b82b9932762a446f9386182e9501aaa9.json\ndocs/runs/evidence/ninehour-2026-11-25/stage-timings.md\ndocs/runs/evidence/ninehour-2026-11-25/facts.json\ndocs/runs/evidence/ninehour-2026-11-25/negative-controls.json",
-   "客机 win11-test SHADOW 8 次；fa706g3 SHADOW 10 次；派发失败（无评级）1 次（467e62b1）；都不是发布 GREEN"
+   "预期 1 缺一项：overhang_totally_speed=5 没有写入，2.4.0 没有这个参数（其余 6 个目标值写入并与导出件一致）；预期 2 未达到：Overhang wall 段（146 段、452 条移动）只有 F1980/3000，没有 F2400/1800/1200/600/300；预期 3 的桥接区不成立：桥接段共 7898.1 mm，其中 F3000 从默认切片的 7897.7 mm 降到 7466.2 mm，少 431.5 mm；非悬垂区的 F 也变了：258 个比较层里 151 层的非墙进给变快（slow_down_for_layer_cooling）；立方体夹具上没有 Overhang wall 段，预期 2 在立方体上看不到；判据不读本行导出件的 G-code：反例 6、6b、6c、6d、6e 被接受（negative-controls.json）；FDM 测试模型当晚 11 次运行里有 8 次切片聚合签名相同，另 3 次（e15b8b93、9ff32b28、b97452a8）内部实心填充少 2023 段，原因未查；拿一次导出件当基线逐行比时要先算进去（stage-timings.md「切片复现」）；预览未核对。来源：facts.json（runs.b697f7c2…）、negative-controls.json；补覆盖（空闲机器） 1 次（客机 win11-test ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；最终引擎复核 2 次（fa706g3 ×1、客机 win11-test ×1）SHADOW；d5fc2fa 上的回归 1 次（fa706g3 ×1）SHADOW，不是最终引擎，已被取代；派发失败 1 次（没有到 GUI，没有评级，不属于任何一类运行；见 dispatch-failures.md）",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/19d6103223264b2c8f21a0b8c5f76d1e.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/8e207463943845c2a4564a47efc54d64.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/7484bd43c9114b5b8f8d098a6ac978e3.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/b697f7c24c6c49849c05b22c2a8ed1a3.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/930aa95769bc40a8b54c8cf28a977a2f.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/76b8593191d242bd9aaa18771af25db4.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/778bbfa2fe1e4abebd036af47d2c28fa.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/0a337de9790c49e49a1a4eecc3c90ba9.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/d235895349ed43dab1990f3e16b78262.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/83a295d9c5bb4268ab659c23a4390f34.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/c7029cc05076415bba8a2f4bd755f85b.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/9c04338f4cf041cda51511370cdeb580.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/bed005d71f1c410f95885cd9e5cd714b.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/b7ce6d2b045f455bb2a28f48958b7e8c.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/173f72ec453c4fcc8d2bd0966356e3ae.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/2910969d2fb24466b5d49050350e2e03.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/e15b8b93be8f440bbd39ebce4051c87f.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/d03f10c838b943338ca4c658d8d34e1d.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/9d2adda0f2e44f67968f6d02840002d7.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/95422bb0640e4f5d86dba39e68f2905e.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/f37f49fd5d31467d86b6e4bdca5ef5ca.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/e9167b36fc5c4bc4bb3b9118f249e9a5.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/9ff32b2838fa466c873180e07d9fdd90.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/5a6d113dfd4f4287994194f671ebc187.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/b97452a8e2c2412dbdbc0b26a75f0441.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/9e687519d15a4b77a6cfb7fa12ddba47.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/0f1e713999cc40e09ede36bfe1816012.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/3f1397b0ebdd412287cdbbd72385069e.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/b82b9932762a446f9386182e9501aaa9.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/0165cedec6ec4c71ba78ec9ee07a3953.json\ndocs/runs/evidence/ninehour-2026-11-25/stage-timings.md\ndocs/runs/evidence/ninehour-2026-11-25/facts.json\ndocs/runs/evidence/ninehour-2026-11-25/negative-controls.json",
+   "客机 win11-test SHADOW 15 次；fa706g3 SHADOW 15 次；派发失败（无评级）1 次（467e62b1）；都不是发布 GREEN"
   ],
   [
    265,
@@ -6972,13 +9021,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 悬垂比例超过10%时M106升至80%。\n3. 翘边区域自动降速，普通表面风扇和F不变。",
    "质量-悬垂",
    "reczz28b6mRAzpVx",
-   "同夜基线；补覆盖；最终引擎回归；最终引擎复核；d5fc2fa 上的复核（不是最终引擎）；原生模型对照（失败）",
+   "同夜基线；补覆盖（空闲机器）；补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归；另一台机器上的回归运行（复核）；最终引擎复核；d5fc2fa 上的复核（不是最终引擎）；原生模型对照（失败）",
    null,
    null,
    null,
-   "补覆盖 1 次（fa706g3 ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；最终引擎 2a17376 复核 1 次（客机 win11-test ×1）SHADOW；d5fc2fa 上的复核 1 次（客机 win11-test ×1）SHADOW，不是最终引擎；同夜基线 1 次（客机 win11-test ×1）SHADOW：作为对照的基线，本身不新增飞书预期的核对；原生模型对照 1 次未取得经独立验证的 GUI 结果（eefe9d78 RuntimeError:zcode_actor_failed:agent_deadline），配对 0 次",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/6da679433a604d94b1ee9518d7fb8a95.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/4cc00ac98d1d477eb0711fda620c994d.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/eefe9d783c1d4bb5b2145da89422eb24.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/b7778cd5650c40f6bcf11ed71db1bc3d.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/e086a1cb17554c1a9df2eed4f069f222.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/e23232a376d14c6b9d05a827bc3884e7.json",
-   "客机 win11-test NON_GREEN 1 次；客机 win11-test SHADOW 4 次；fa706g3 SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（空闲机器） 1 次（fa706g3 ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（fa706g3 ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；最终引擎复核 1 次（客机 win11-test ×1）SHADOW；d5fc2fa 上的复核 1 次（客机 win11-test ×1）SHADOW，不是最终引擎；同夜基线 1 次（客机 win11-test ×1）SHADOW：作为对照的基线，本身不新增飞书预期的核对；原生模型对照 1 次未取得经独立验证的 GUI 结果（eefe9d78 RuntimeError:zcode_actor_failed:agent_deadline），配对 0 次",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/6da679433a604d94b1ee9518d7fb8a95.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/4cc00ac98d1d477eb0711fda620c994d.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/eefe9d783c1d4bb5b2145da89422eb24.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/b7778cd5650c40f6bcf11ed71db1bc3d.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/e086a1cb17554c1a9df2eed4f069f222.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/e23232a376d14c6b9d05a827bc3884e7.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/b294b048e1554d02a0563f9e1ca4f7bf.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/c09780e97b664941a079b53066a0c4a6.json",
+   "客机 win11-test NON_GREEN 1 次；客机 win11-test SHADOW 4 次；fa706g3 SHADOW 3 次；都不是发布 GREEN"
   ],
   [
    266,
@@ -6996,13 +9045,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 正常区域总墙数为4圈，薄壁生成单线墙。\n3. 每圈闭合无断墙，模型外形尺寸不变。",
    "强度-墙",
    "reczz28b6mRAyM4X",
-   "补覆盖；最终引擎回归；d5fc2fa 上的回归（不是最终引擎）",
+   "补覆盖（空闲机器）；补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归；另一台机器上的回归运行（复核）；d5fc2fa 上的回归（不是最终引擎）",
    null,
    null,
    null,
-   "补覆盖 1 次（fa706g3 ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；d5fc2fa 上的回归 1 次（fa706g3 ×1）SHADOW，不是最终引擎，已被取代",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/51f5d2b05d8c4a76acaa992256f9dc02.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/ac15b9ca5fad4b7da33e02c42f192b89.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/09b59283ea2049de9213b0a2b20d01e1.json",
-   "fa706g3 SHADOW 3 次；都不是发布 GREEN"
+   "补覆盖（空闲机器） 1 次（fa706g3 ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；d5fc2fa 上的回归 1 次（fa706g3 ×1）SHADOW，不是最终引擎，已被取代",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/51f5d2b05d8c4a76acaa992256f9dc02.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/ac15b9ca5fad4b7da33e02c42f192b89.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/09b59283ea2049de9213b0a2b20d01e1.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/0c44e1014ef74ec6b2bc999790ee0719.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/1b314163f78645e5a76018039f87a4d7.json",
+   "客机 win11-test SHADOW 1 次；fa706g3 SHADOW 4 次；都不是发布 GREEN"
   ],
   [
    267,
@@ -7020,13 +9069,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 顶/底实体层数分别为5/3层，图案按设置切换。\n3. 顶部颜色渗透3层，颜色边界与层号一致，模型外形不变。",
    "强度-顶部/底部外壳",
    "reczz28b6mRB1b7s",
-   "补覆盖；最终引擎回归",
+   "补覆盖（空闲机器）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "补覆盖 1 次（客机 win11-test ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/819d192b35764f18939e6ac3c28db25a.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/2acd39bdd1ab47bb8073d1636c473de9.json",
-   "客机 win11-test SHADOW 2 次；都不是发布 GREEN"
+   "补覆盖（空闲机器） 1 次（客机 win11-test ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（fa706g3 ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/819d192b35764f18939e6ac3c28db25a.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/2acd39bdd1ab47bb8073d1636c473de9.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/e8982afaad47467bbe18d54bffa97d71.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 1 次；都不是发布 GREEN"
   ],
   [
    268,
@@ -7044,13 +9093,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 填充线距对应20%密度，图案和方向符合设置。\n3. 填充与墙重叠15%，缝隙填充完整，外墙尺寸不变。",
    "强度-填充",
    "reczz28b6mRAz0f1",
-   "补覆盖；最终引擎回归；失败后的重试；d5fc2fa 上的回归（不是最终引擎）",
+   "补覆盖（空闲机器）；最终引擎回归；另一台机器上的回归运行（复核）；失败后的重试；d5fc2fa 上的回归（不是最终引擎）",
    null,
    null,
    null,
-   "补覆盖 1 次（客机 win11-test ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；d5fc2fa 上失败后的重试 8 次（fa706g3 ×4、客机 win11-test ×4）SHADOW；d5fc2fa 上的回归 1 次（fa706g3 ×1）NON_GREEN，不是最终引擎，已被取代；没通过的是 `62a3cd01`（fa706g3）：ProtocolError:param_combo_readback:Gyroid:Grid",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/e9089ec1cf50478c8ba10f1cd38e37ad.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/62a3cd012aa549f593e3c6630db4c6b9.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/47d680529b2140968547bcc48351edfc.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/d58abb248fb14ddf9e3baed84c90ba13.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/3f5f22d753684e6797dbc3808b8ed039.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/cad6b0103b834310b4836c08979930f7.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/da86773c154c4f7698da7eb2f2509cd1.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/0b51fb837ff44727951931dc769bb61b.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/f4d9633d9b784e85897741bda3609b91.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/38cf0c29f7ec4f98bc9bd1ef98594354.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/72f7f6ded4174e2db24d6844d7cc8921.json",
-   "客机 win11-test SHADOW 5 次；fa706g3 NON_GREEN 1 次；fa706g3 SHADOW 5 次；都不是发布 GREEN"
+   "补覆盖（空闲机器） 1 次（客机 win11-test ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；d5fc2fa 上失败后的重试 8 次（fa706g3 ×4、客机 win11-test ×4，uia_param_infill_combo）SHADOW；d5fc2fa 上的回归 1 次（fa706g3 ×1）NON_GREEN，不是最终引擎，已被取代；没通过的是 `62a3cd01`（fa706g3）：ProtocolError:param_combo_readback:Gyroid:Grid",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/e9089ec1cf50478c8ba10f1cd38e37ad.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/62a3cd012aa549f593e3c6630db4c6b9.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/47d680529b2140968547bcc48351edfc.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/d58abb248fb14ddf9e3baed84c90ba13.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/3f5f22d753684e6797dbc3808b8ed039.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/cad6b0103b834310b4836c08979930f7.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/da86773c154c4f7698da7eb2f2509cd1.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/0b51fb837ff44727951931dc769bb61b.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/f4d9633d9b784e85897741bda3609b91.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/38cf0c29f7ec4f98bc9bd1ef98594354.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/72f7f6ded4174e2db24d6844d7cc8921.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/aaa49b9ef15e49d1831e2995f8c92b61.json",
+   "客机 win11-test SHADOW 6 次；fa706g3 NON_GREEN 1 次；fa706g3 SHADOW 5 次；都不是发布 GREEN"
   ],
   [
    269,
@@ -7068,13 +9117,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 相邻填充层合并，小区域不生成稀疏填充。\n3. 内部桥接有支撑，桥接线45°，狭窄区转实心且垂直壳体完整。",
    "强度-高级",
    "reczz28b6mRB164l",
-   "补覆盖；最终引擎回归",
+   "补覆盖（空闲机器）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "补覆盖 1 次（客机 win11-test ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/9f8f116964c14853a88d3140277e2302.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/b4129312f198479fb8650609d5aa2024.json",
-   "客机 win11-test SHADOW 2 次；都不是发布 GREEN"
+   "补覆盖（空闲机器） 1 次（客机 win11-test ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（fa706g3 ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/9f8f116964c14853a88d3140277e2302.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/b4129312f198479fb8650609d5aa2024.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/201afcf85b3b4f2c9e646f564c38a5ce.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 1 次；都不是发布 GREEN"
   ],
   [
    270,
@@ -7092,13 +9141,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 首层外墙/内墙F≈1800，填充F≈2400，空驶F≈9000。\n3. 第2层起恢复其他层速度，模型路径不变。",
    "速度-首层速度",
    "reczz28b6mRAyhVJ",
-   "最终引擎回归；d5fc2fa 上的回归（不是最终引擎）",
+   "补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归；另一台机器上的回归运行（复核）；d5fc2fa 上的回归（不是最终引擎）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；d5fc2fa 上的回归 1 次（fa706g3 ×1）SHADOW，不是最终引擎，已被取代",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/74f17375bbda48fb9e06d91f0a8b3e4a.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/e15272b87a904d0ab18e02dd3f45ff0a.json",
-   "fa706g3 SHADOW 2 次；都不是发布 GREEN"
+   "补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；d5fc2fa 上的回归 1 次（fa706g3 ×1）SHADOW，不是最终引擎，已被取代",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/74f17375bbda48fb9e06d91f0a8b3e4a.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/e15272b87a904d0ab18e02dd3f45ff0a.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/d50b8170699b4d6f9c2339b9410cb02b.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/66f63d335dc3433bb1b5c7a68538e24d.json",
+   "客机 win11-test SHADOW 1 次；fa706g3 SHADOW 3 次；都不是发布 GREEN"
   ],
   [
    271,
@@ -7116,13 +9165,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 外墙/内墙/填充/顶面F分别≈6000/9000/12000/7200。\n3. 周长<10mm的loop使用50mm/s，其他特征F不变。",
    "速度-其他层速度",
    "reczz28b6mRAyekU",
-   "最终引擎回归",
+   "补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/7d2fabac2af5479ea1b1245974e10260.json",
-   "客机 win11-test SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（fa706g3 ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/7d2fabac2af5479ea1b1245974e10260.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/64c568578c544fe1971fa2a61260e1c7.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/4cf48ca94d0b438fa00f95cd9a2c62d5.json",
+   "客机 win11-test SHADOW 1 次；fa706g3 SHADOW 2 次；都不是发布 GREEN"
   ],
   [
    272,
@@ -7140,13 +9189,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 各悬垂档F≈2400/1800/1200/600/300。\n3. 桥接F≈1800，非悬垂区F不变。",
    "速度-悬垂速度",
    "reczz28b6mRB1ZL4",
-   "补覆盖；最终引擎回归",
+   "补覆盖（空闲机器）；补覆盖（客机自有模型孪生，第二批）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "补覆盖 1 次（fa706g3 ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/c087687cffca48c4a0131ec5f5b3a24b.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/ed9d6ba332314cb28c2a8b9229b3470e.json",
-   "fa706g3 SHADOW 2 次；都不是发布 GREEN"
+   "补覆盖（空闲机器） 1 次（fa706g3 ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；补覆盖（客机自有模型孪生，第二批） 1 次（客机 win11-test ×1）SHADOW：这 11 行 11-24 在 fa706g3 上的判定是有出入或看不到（`docs/runs/evidence/feishu-expect-vs-gcode-2026-11-24/own-models-verdicts.md`）；客机 SHADOW 只说明在那里写入、保存、重开、切片和导出走通了，不说明预期已经满足；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；派发失败 1 次（没有到 GUI，没有评级，不属于任何一类运行；见 dispatch-failures.md）",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/c087687cffca48c4a0131ec5f5b3a24b.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/ed9d6ba332314cb28c2a8b9229b3470e.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/16ffefbc7df94768bd5cede66f551fd5.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/cbe8a4335d7f4515ac2993841d2419ef.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 2 次；派发失败（无评级）1 次（ad3862e9）；都不是发布 GREEN"
   ],
   [
    273,
@@ -7164,13 +9213,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 所有非首层空驶F≈18000。\n3. 挤出路径F和刀路不受影响。",
    "速度-空驶速度",
    "reczz28b6mRB1Pm2",
-   "最终引擎回归",
+   "补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/a88d113829be47169c58acf8eb897a59.json",
-   "客机 win11-test SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（fa706g3 ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/a88d113829be47169c58acf8eb897a59.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/ba0e95209bb845b68a47496735fbbcd0.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/3903e250d66d4de0bce579506b810a03.json",
+   "客机 win11-test SHADOW 1 次；fa706g3 SHADOW 2 次；都不是发布 GREEN"
   ],
   [
    274,
@@ -7188,13 +9237,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 首层、外墙、内墙、填充、空驶加速度分别匹配设置。\n3. 超机器上限时被裁剪，非目标特征不变。",
    "速度-加速度",
    "reczz28b6mRAzthX",
-   "最终引擎回归",
+   "补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/5f69c567baa94d1d8653b35c9276fbf4.json",
-   "fa706g3 SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/5f69c567baa94d1d8653b35c9276fbf4.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/0c74c7fa09984820b2bce6bad319df04.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/815c099d3d30423f9c9f7801bbfe5cfb.json",
+   "客机 win11-test SHADOW 1 次；fa706g3 SHADOW 2 次；都不是发布 GREEN"
   ],
   [
    275,
@@ -7212,13 +9261,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 首层、外墙、内墙、填充、空驶Jerk分别匹配设置。\n3. 拐角速度受限制，直线路径不变。",
    "速度-抖动（XY轴）",
    "reczz28b6mRAytbr",
-   "最终引擎回归",
+   "补覆盖（客机自有模型孪生，第二批）；补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/dd7ab37630b5420d98d51ae553cbec06.json",
-   "客机 win11-test SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生，第二批） 1 次（客机 win11-test ×1）SHADOW：这 11 行 11-24 在 fa706g3 上的判定是有出入或看不到（`docs/runs/evidence/feishu-expect-vs-gcode-2026-11-24/own-models-verdicts.md`）；客机 SHADOW 只说明在那里写入、保存、重开、切片和导出走通了，不说明预期已经满足；补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（fa706g3 ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；派发失败 1 次（没有到 GUI，没有评级，不属于任何一类运行；见 dispatch-failures.md）",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/dd7ab37630b5420d98d51ae553cbec06.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/1ccddcdf05ca4cd7819dfa73a2551c0b.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/d3fb947ed0fe484ea61e9ce480b3daab.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/7878899400ed492ea8608e6081ef7dc6.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 2 次；派发失败（无评级）1 次（babd20bc）；都不是发布 GREEN"
   ],
   [
    276,
@@ -7236,13 +9285,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 外墙速度先受体积流量限制到约178mm/s。\n3. 同时不超过机器X轴500mm/s，超限部分降速且路径不变。",
    "速度-高级",
    "reczz28b6mRAyH5p",
-   "提速对照；最终引擎回归；最终引擎复核；d5fc2fa 上的复核（不是最终引擎）；原生模型对照（失败）",
+   "提速对照；补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归；另一台机器上的回归运行（复核）；最终引擎复核；d5fc2fa 上的复核（不是最终引擎）；原生模型对照（失败）",
    "Quality 客机 222.828 / 217.984；Quality fa706g3 183.676；Strength 客机 223.329（单列）",
    "Quality 客机 候选 209.469 / 201.391；Quality fa706g3 候选 168.986 / 168.829；Strength 客机 候选 201.234 / 201.703（单列）",
    "Quality 客机 基线 → 候选 14.976、基线 → 最终引擎复核 18.953；Quality fa706g3 基线 → 候选 14.768、基线 → 最终引擎复核 14.916；Strength 客机 基线 → 候选 21.860、基线 → 最终引擎复核 21.251（单列）。动作秒：Quality 客机 基线 → 候选 15.398、基线 → 最终引擎复核 15.235；Quality fa706g3 基线 → 候选 14.952、基线 → 最终引擎复核 14.953；Strength 客机 基线 → 候选 15.320、基线 → 最终引擎复核 15.360。客机为宿主整轮秒（含收割），fa706g3 为机内进程秒",
-   "预期 1：五个目标值都写入保存件并与导出件配置块一致（5 个），其中层高、外墙线宽、X 上限本来就是步骤值，看不到编辑；预期 2 未达到：外墙峰值 202.956 mm/s，不是约 178（按矩形截面 15÷(0.20×0.42)=178.571；切片按截面积 0.073908 mm² 得 202.956）；预期 3 未激发：X 分量峰值 202.956 mm/s，没有一段接近 500 mm/s，「超限部分降速」无从观察；预期 3 的「路径不变」：外墙路径与固定基线 e9aa6f88 相同（facts.json 对 eebdf238、5359abca 都是如此：是）；整份导出件有 1 次不同：Strength 基线 5359abca 的挤出移动 6093 段，对基线 6123 段，5 个「类型 × 层」格不同，差在内部实心填充（见 stage-timings.md「切片复现」），原因未查；预览未核对（visual: not checked）。来源：facts.json（runs.eebdf238….per_row、pairs.5359abca vs e9aa6f88）；最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；最终引擎 2a17376 复核 3 次（fa706g3 ×1、客机 win11-test ×2）SHADOW；d5fc2fa 上的复核 3 次（客机 win11-test ×3）SHADOW，不是最终引擎；原生模型对照 1 次未取得经独立验证的 GUI 结果（2053992c RuntimeError:zcode_actor_failed:native_action_budget），配对 0 次",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/ec032d7cc54844f1a6f970a6990fa032.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/eebdf238d72e401b9636b161bad6c465.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/5359abcadafa48a2bc493ee3acf56114.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/66048b9dbd7b4ff88dbe721e1fe69d6a.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/82f5390801584c9f99db3e57decf906c.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/c9e2ee61476a49fabaea1300514e39ff.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/194e79b568bc477082090a0b6061a4c4.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/fe4a956a9c90418da3b6b9d67f3677e6.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/3fe3ff186aa14f33a6cb282018e19bb3.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/37ccc139957149b7a14eca15ff79fa05.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/2053992ca24745b1bc1bcfcd22a44f2a.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/9bc10b3f71c443729af68d18c9d933c6.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/db27fe2c663742eb996b08336963f822.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/9d6d1eb30c68464ba06dbb6d9180cac9.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/675a3c275f1442c1a6c952a522b54da1.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/63ee757745444d2bb64a8aa04aeea9d4.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/29e6b8342fa04f4893b1380e84a4e2d6.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/9d89930fbff44e2f9c35323d0d7f54b8.json\ndocs/runs/evidence/ninehour-2026-11-25/stage-timings.md\ndocs/runs/evidence/ninehour-2026-11-25/facts.json\ndocs/runs/evidence/ninehour-2026-11-25/negative-controls.json",
-   "客机 win11-test NON_GREEN 1 次；客机 win11-test SHADOW 12 次；fa706g3 SHADOW 5 次；都不是发布 GREEN"
+   "预期 1：五个目标值都写入保存件并与导出件配置块一致（5 个），其中层高、外墙线宽、X 上限本来就是步骤值，看不到编辑；预期 2 未达到：外墙峰值 202.956 mm/s，不是约 178（按矩形截面 15÷(0.20×0.42)=178.571；切片按截面积 0.073908 mm² 得 202.956）；预期 3 未激发：X 分量峰值 202.956 mm/s，没有一段接近 500 mm/s，「超限部分降速」无从观察；预期 3 的「路径不变」：外墙路径与固定基线 e9aa6f88 相同（facts.json 对 eebdf238、5359abca 都是如此：是）；整份导出件有 1 次不同：Strength 基线 5359abca 的挤出移动 6093 段，对基线 6123 段，5 个「类型 × 层」格不同，差在内部实心填充（见 stage-timings.md「切片复现」），原因未查；预览未核对（visual: not checked）。来源：facts.json（runs.eebdf238….per_row、pairs.5359abca vs e9aa6f88）；补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；最终引擎复核 3 次（fa706g3 ×1、客机 win11-test ×2）SHADOW；d5fc2fa 上的复核 3 次（客机 win11-test ×3）SHADOW，不是最终引擎；原生模型对照 1 次未取得经独立验证的 GUI 结果（2053992c RuntimeError:zcode_actor_failed:native_action_budget），配对 0 次",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/ec032d7cc54844f1a6f970a6990fa032.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/eebdf238d72e401b9636b161bad6c465.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/5359abcadafa48a2bc493ee3acf56114.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/66048b9dbd7b4ff88dbe721e1fe69d6a.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/82f5390801584c9f99db3e57decf906c.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/c9e2ee61476a49fabaea1300514e39ff.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/194e79b568bc477082090a0b6061a4c4.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/fe4a956a9c90418da3b6b9d67f3677e6.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/3fe3ff186aa14f33a6cb282018e19bb3.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/37ccc139957149b7a14eca15ff79fa05.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/2053992ca24745b1bc1bcfcd22a44f2a.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/9bc10b3f71c443729af68d18c9d933c6.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/db27fe2c663742eb996b08336963f822.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/9d6d1eb30c68464ba06dbb6d9180cac9.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/675a3c275f1442c1a6c952a522b54da1.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/63ee757745444d2bb64a8aa04aeea9d4.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/29e6b8342fa04f4893b1380e84a4e2d6.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/9d89930fbff44e2f9c35323d0d7f54b8.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/f792acdc9e61415a8e06d8ce7f3b81f6.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/73d9f22ebb7e40a7886e811341327783.json\ndocs/runs/evidence/ninehour-2026-11-25/stage-timings.md\ndocs/runs/evidence/ninehour-2026-11-25/facts.json\ndocs/runs/evidence/ninehour-2026-11-25/negative-controls.json",
+   "客机 win11-test NON_GREEN 1 次；客机 win11-test SHADOW 13 次；fa706g3 SHADOW 6 次；都不是发布 GREEN"
   ],
   [
    277,
@@ -7260,13 +9309,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 超过45°的悬垂生成支撑，结构为normal(auto)（普通自动）。\n3. 允许支撑从模型表面起枝，完整覆盖关键和非关键悬垂。",
    "支撑-支撑",
    "reczz28b6mRAydro",
-   "最终引擎回归",
+   "补覆盖（客机自有模型孪生）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/cab7609dfda84f60ba51b00d2118d97e.json",
-   "客机 win11-test SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生） 1 次（客机 win11-test ×1）SHADOW：这 8 行 11-24 的自有模型运行都在 fa706g3 上；客机 SHADOW 说明在回归证据机上写入、保存、重开、切片和导出走通了，补上了「只有 fa706g3 证据」这一条，11-24 对照表里逐项预期的缺口仍在；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（fa706g3 ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/cab7609dfda84f60ba51b00d2118d97e.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/b3764fd45e4048f0851d6933bc1fe75a.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/ffc75806825f4f4da23d2a41e8a8f139.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 1 次；都不是发布 GREEN"
   ],
   [
    278,
@@ -7284,13 +9333,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 模型下方生成3层筏层，接触Z间隙≈0.20mm。\n3. 筏层XY外扩≈5mm，首层覆盖率100%且不超打印区域。",
    "支撑-筏层",
    "reczz28b6mRAzKa2",
-   "最终引擎回归",
+   "最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/f8267f3b550e428bb7ee86c71a85d346.json",
-   "fa706g3 SHADOW 1 次；都不是发布 GREEN"
+   "最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/f8267f3b550e428bb7ee86c71a85d346.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/daf3216f04904db09960ada51ddd5401.json",
+   "客机 win11-test SHADOW 1 次；fa706g3 SHADOW 1 次；都不是发布 GREEN"
   ],
   [
    279,
@@ -7308,13 +9357,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 支撑主体使用工具1，接触面使用工具0。\n3. 模型本体工具号不变，切换工具时擦料塔和回抽完整。",
    "支撑-支撑耗材",
    "reczz28b6mRAyV6h",
-   "最终引擎回归",
+   "补覆盖（客机自有模型孪生，第二批）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/98dc9db83bb5417088d3bf48985cefbf.json",
-   "客机 win11-test SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生，第二批） 1 次（客机 win11-test ×1）SHADOW：这 11 行 11-24 在 fa706g3 上的判定是有出入或看不到（`docs/runs/evidence/feishu-expect-vs-gcode-2026-11-24/own-models-verdicts.md`）；客机 SHADOW 只说明在那里写入、保存、重开、切片和导出走通了，不说明预期已经满足；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（fa706g3 ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；派发失败 1 次（没有到 GUI，没有评级，不属于任何一类运行；见 dispatch-failures.md）",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/98dc9db83bb5417088d3bf48985cefbf.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/803b7a421fb543eeb4a875565eb0a964.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/06a0db440bbd4f228251da63d4aab16f.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 1 次；派发失败（无评级）1 次（b6605b62）；都不是发布 GREEN"
   ],
   [
    280,
@@ -7332,13 +9381,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 仅支撑接触面生成rectilinear（直线）熨烫路径。\n3. 熨烫E按10%流量生效，线距≈0.15mm，模型表面不变。",
    "支撑-支撑熨烫",
    "reczz28b6mRAz8Gm",
-   "最终引擎回归",
+   "补覆盖（客机自有模型孪生）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/4000ec43039e49e68a75b947e13eb87a.json",
-   "fa706g3 SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生） 1 次（客机 win11-test ×1）SHADOW：这 8 行 11-24 的自有模型运行都在 fa706g3 上；客机 SHADOW 说明在回归证据机上写入、保存、重开、切片和导出走通了，补上了「只有 fa706g3 证据」这一条，11-24 对照表里逐项预期的缺口仍在；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/4000ec43039e49e68a75b947e13eb87a.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/a277ec34257c4e75bfe5053c9aab9f6c.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/8a1d5cdf9f344cc7a3f5a56309c7d5d8.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 1 次；都不是发布 GREEN"
   ],
   [
    281,
@@ -7356,13 +9405,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 支撑顶/底Z间隙和模型XY间距符合设置。\n3. 3层实心接触面生成，线距≈0，支撑不穿插模型。",
    "支撑-高级",
    "reczz28b6mRAz1dW",
-   "最终引擎回归",
+   "补覆盖（客机自有模型孪生）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/50e7445eae1d4b39b124d154414e3971.json",
-   "客机 win11-test SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生） 1 次（客机 win11-test ×1）SHADOW：这 8 行 11-24 的自有模型运行都在 fa706g3 上；客机 SHADOW 说明在回归证据机上写入、保存、重开、切片和导出走通了，补上了「只有 fa706g3 证据」这一条，11-24 对照表里逐项预期的缺口仍在；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（fa706g3 ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/50e7445eae1d4b39b124d154414e3971.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/57df279e01bc474a9f813b3be21a9aa3.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/4f10697c624c4705884f3520c8c84176.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 1 次；都不是发布 GREEN"
   ],
   [
    282,
@@ -7380,13 +9429,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 树状支撑分支角度和直径符合设置，分支连续。\n3. 支撑层高自适应，超过30mm跨度触发支撑。",
    "支撑-高级",
    "reczz28b6mRB0dhl",
-   "最终引擎回归",
+   "补覆盖（客机自有模型孪生，第二批）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/b543390be2fb4083939b585f2248ec10.json",
-   "fa706g3 SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生，第二批） 1 次（客机 win11-test ×1）SHADOW：这 11 行 11-24 在 fa706g3 上的判定是有出入或看不到（`docs/runs/evidence/feishu-expect-vs-gcode-2026-11-24/own-models-verdicts.md`）；客机 SHADOW 只说明在那里写入、保存、重开、切片和导出走通了，不说明预期已经满足；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；派发失败 1 次（没有到 GUI，没有评级，不属于任何一类运行；见 dispatch-failures.md）",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/b543390be2fb4083939b585f2248ec10.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/a91c3eeaaf1a4109a6e3c2404c3d522a.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/8389410639784112a8fc26ce647b9be9.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 1 次；派发失败（无评级）1 次（d29a6a0a）；都不是发布 GREEN"
   ],
   [
    283,
@@ -7404,13 +9453,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 多工具换料时生成30mm宽擦料塔，清理量≈40mm³。\n3. 塔体为rib（加强筋）墙、无稀疏层、15°锥角并带5mm Brim，模型不碰撞。",
    "材料-擦拭塔",
    "reczz28b6mRAy1At",
-   "最终引擎回归",
+   "补覆盖（客机自有模型孪生，第二批）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/51f2c5a1be9c42458cb0bfbd61dae68e.json",
-   "客机 win11-test SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生，第二批） 1 次（客机 win11-test ×1）SHADOW：这 11 行 11-24 在 fa706g3 上的判定是有出入或看不到（`docs/runs/evidence/feishu-expect-vs-gcode-2026-11-24/own-models-verdicts.md`）；客机 SHADOW 只说明在那里写入、保存、重开、切片和导出走通了，不说明预期已经满足；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（fa706g3 ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；派发失败 1 次（没有到 GUI，没有评级，不属于任何一类运行；见 dispatch-failures.md）",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/51f2c5a1be9c42458cb0bfbd61dae68e.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/ccf0ff7582b8470f8f51cea4cb13db1e.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/21eedd20f0a6430bb0f136e947e9e445.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 1 次；派发失败（无评级）1 次（fd60d7ef）；都不是发布 GREEN"
   ],
   [
    284,
@@ -7428,13 +9477,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 擦料塔使用工具0，支撑主体工具1，接触面工具0。\n3. 模型本体工具号不变，换料顺序和擦料塔路径完整。",
    "材料-特征用耗材",
    "reczz28b6mRAzFuo",
-   "最终引擎回归",
+   "补覆盖（客机自有模型孪生，第二批）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/85f43119a4b84389b6bf4b5e4cdca8fb.json",
-   "fa706g3 SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生，第二批） 1 次（客机 win11-test ×1）SHADOW：这 11 行 11-24 在 fa706g3 上的判定是有出入或看不到（`docs/runs/evidence/feishu-expect-vs-gcode-2026-11-24/own-models-verdicts.md`）；客机 SHADOW 只说明在那里写入、保存、重开、切片和导出走通了，不说明预期已经满足；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；派发失败 1 次（没有到 GUI，没有评级，不属于任何一类运行；见 dispatch-failures.md）",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/85f43119a4b84389b6bf4b5e4cdca8fb.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/470f066c57564e37bbd3a732e1fc4a38.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/b232861c7b0b4c93a55f3834ddcf75ed.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 1 次；派发失败（无评级）1 次（c1bbbdbd）；都不是发布 GREEN"
   ],
   [
    285,
@@ -7452,13 +9501,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 非活动工具进入待机温度，活动工具温度不变。\n3. 换料前按2步、每步15s预热，换回后恢复打印温度。",
    "材料-Ooze预防",
    "reczz28b6mRB1fwT",
-   "最终引擎回归",
+   "补覆盖（客机自有模型孪生，第二批）；补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/c27e3d11da3c460c994a5f4d96dd8ec1.json",
-   "客机 win11-test SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生，第二批） 1 次（客机 win11-test ×1）SHADOW：这 11 行 11-24 在 fa706g3 上的判定是有出入或看不到（`docs/runs/evidence/feishu-expect-vs-gcode-2026-11-24/own-models-verdicts.md`）；客机 SHADOW 只说明在那里写入、保存、重开、切片和导出走通了，不说明预期已经满足；补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；派发失败 1 次（没有到 GUI，没有评级，不属于任何一类运行；见 dispatch-failures.md）",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/c27e3d11da3c460c994a5f4d96dd8ec1.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/f3709f1cb2294dc7b3eeff6b96304ee8.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/a46d0883673942dead89c90ba1a1e805.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 1 次；派发失败（无评级）1 次（91e1191c）；都不是发布 GREEN"
   ],
   [
    286,
@@ -7476,13 +9525,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 冲刷废料按目标导入填充、对象和支撑。\n3. 擦料塔废料减少，冲刷体积≈40mm³，模型外形不变。",
    "材料-换料冲刷选项",
    "reczz28b6mRB035T",
-   "最终引擎回归",
+   "补覆盖（客机自有模型孪生，第二批）；补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/27bb889edf9b413c917b0e0c21bd0da2.json",
-   "fa706g3 SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生，第二批） 1 次（客机 win11-test ×1）SHADOW：这 11 行 11-24 在 fa706g3 上的判定是有出入或看不到（`docs/runs/evidence/feishu-expect-vs-gcode-2026-11-24/own-models-verdicts.md`）；客机 SHADOW 只说明在那里写入、保存、重开、切片和导出走通了，不说明预期已经满足；补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论；派发失败 1 次（没有到 GUI，没有评级，不属于任何一类运行；见 dispatch-failures.md）",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/27bb889edf9b413c917b0e0c21bd0da2.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/f8abae641e0c4d509e45a8a8b9c52687.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/e5c942764c1d4de99e6ca180a34cb274.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/1af4dc1b0ed344aa8f68cf2c565d9a00.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 2 次；派发失败（无评级）1 次（d9ecf8bc）；都不是发布 GREEN"
   ],
   [
    287,
@@ -7500,13 +9549,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 支撑接触面生成2层界面外壳。\n3. 主体工具1和界面工具0映射正确，模型外壳不变。",
    "材料-高级",
    "reczz28b6mRAzl7P",
-   "最终引擎回归",
+   "补覆盖（客机自有模型孪生，第二批）；最终引擎回归",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/55065a003b19456da086f600474bb42b.json",
-   "客机 win11-test SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生，第二批） 1 次（客机 win11-test ×1）SHADOW：这 11 行 11-24 在 fa706g3 上的判定是有出入或看不到（`docs/runs/evidence/feishu-expect-vs-gcode-2026-11-24/own-models-verdicts.md`）；客机 SHADOW 只说明在那里写入、保存、重开、切片和导出走通了，不说明预期已经满足；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；派发失败 1 次（没有到 GUI，没有评级，不属于任何一类运行；见 dispatch-failures.md）",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/55065a003b19456da086f600474bb42b.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/78a7ead6d4e44337b61b038a94b9d2f0.json",
+   "客机 win11-test SHADOW 2 次；派发失败（无评级）1 次（a744e6db）；都不是发布 GREEN"
   ],
   [
    288,
@@ -7572,13 +9621,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 生成3圈、2层、距模型5mm的裙边。\n3. 风挡包围全部模型，模型本体路径和外形不变。",
    "其他-裙边",
    "reczz28b6mRAyRCt",
-   "最终引擎回归",
+   "补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/a8f21d45f0334cc3b0c13f5a1d827173.json",
-   "fa706g3 SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/a8f21d45f0334cc3b0c13f5a1d827173.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/9201a1a0efe94a23803b2fe7dfd76584.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/749da4390b2f4b898065dfebc645fb66.json",
+   "客机 win11-test SHADOW 1 次；fa706g3 SHADOW 2 次；都不是发布 GREEN"
   ],
   [
    291,
@@ -7596,13 +9645,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 仅外墙生成5mm Brim，与模型间隙≈0.2mm。\n3. 内孔无Brim，Brim连续附着且不进入模型内部。",
    "其他-Brim",
    "reczz28b6mRAyNfH",
-   "最终引擎回归",
+   "补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/f6dc29a855044611be03ed93a7eed870.json",
-   "客机 win11-test SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/f6dc29a855044611be03ed93a7eed870.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/3c756806282043318a3b8a854a4866ec.json",
+   "客机 win11-test SHADOW 1 次；fa706g3 SHADOW 1 次；都不是发布 GREEN"
   ],
   [
    292,
@@ -7620,13 +9669,13 @@
    "1. 非法或冲突配置被明确拒绝/纠正，不静默输出G-code；合法场景切片成功。\n2. 间距充足时按对象逐个打印，工具头避让生效。\n3. 间距不足时报告碰撞风险并阻止输出G-code。",
    "其他-特殊模式",
    "reczz28b6mRB1mQt",
-   "最终引擎回归",
+   "补覆盖（客机自有模型孪生）；最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/9ad1b7e263cd4a609dc47c8ef86123a1.json",
-   "fa706g3 SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生） 1 次（客机 win11-test ×1）SHADOW：这 8 行 11-24 的自有模型运行都在 fa706g3 上；客机 SHADOW 说明在回归证据机上写入、保存、重开、切片和导出走通了，补上了「只有 fa706g3 证据」这一条，11-24 对照表里逐项预期的缺口仍在；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期；另一台机器上的回归运行 1 次（客机 win11-test ×1）SHADOW：同一个场景换一台机器再取证，不改变上面的结论",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/9ad1b7e263cd4a609dc47c8ef86123a1.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/68ef48ff435a452892291c711f281b9d.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/698cf755ae45401abd52ee1b01d7ef65.json",
+   "客机 win11-test SHADOW 2 次；fa706g3 SHADOW 1 次；都不是发布 GREEN"
   ],
   [
    293,
@@ -7644,13 +9693,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 单墙模型生成连续上升Z路径，无常规层接缝。\n3. 多墙或多对象模型明确限制，不输出不安全螺旋G-code。",
    "其他-特殊模式",
    "reczz28b6mRB19md",
-   "最终引擎回归",
+   "补覆盖（客机自有模型孪生）；补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归；失败后的重试",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/e2dc078f7d384e5693b18ffee354845a.json",
-   "客机 win11-test SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（客机自有模型孪生） 1 次（客机 win11-test ×1）SHADOW：这 8 行 11-24 的自有模型运行都在 fa706g3 上；客机 SHADOW 说明在回归证据机上写入、保存、重开、切片和导出走通了，补上了「只有 fa706g3 证据」这一条，11-24 对照表里逐项预期的缺口仍在；补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）NON_GREEN：多形状夹具上的同一个场景没有通过（原因见后），同样未对照飞书预期核对；没通过的是 `83f09dc3`（fa706g3）：ProtocolError:slice_button_unavailable: SS Jump to (spiral mode)；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期；最终引擎上失败后的重试 1 次（客机 win11-test ×1，uia_param_spiral_vase_shapes）NON_GREEN；派发失败 1 次（没有到 GUI，没有评级，不属于任何一类运行；见 dispatch-failures.md）",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/e2dc078f7d384e5693b18ffee354845a.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/83f09dc39a864edda042fb779543f26a.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/f70c7b44e2fa4941b3bc857a4fc3f86b.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/a51409f7a7ae43618b8534ef2e21fbaa.json",
+   "客机 win11-test NON_GREEN 1 次；客机 win11-test SHADOW 2 次；fa706g3 NON_GREEN 1 次；派发失败（无评级）1 次（65ea51fd）；都不是发布 GREEN"
   ],
   [
    294,
@@ -7668,13 +9717,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. G-code插入对应延时停靠/拍照指令。\n3. regular（常规）切片路径保持不变，层数不减少。",
    "其他-特殊模式",
    "reczz28b6mRAzCq8",
-   "最终引擎回归",
+   "最终引擎回归；另一台机器上的回归运行（复核）",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 2 次（fa706g3 ×1、客机 win11-test ×1）NON_GREEN：只验引擎，未核对飞书预期；没通过的是 `1a4c0845`（fa706g3）：business unknown: pilot_target_setting_mismatch、path unknown: pilot_target_setting_mismatch；`9db255d4`（客机 win11-test）：business unknown: pilot_target_setting_mismatch、path unknown: pilot_target_setting_mismatch",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/1a4c0845ae0047fca869fcd11bf74455.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/9db255d48fe64f2db8564a1c476ae48d.json",
-   "客机 win11-test NON_GREEN 1 次；fa706g3 NON_GREEN 1 次；都不是发布 GREEN"
+   "最终引擎回归 1 次（fa706g3 ×1）NON_GREEN：只验引擎，未核对飞书预期；没通过的是 `1a4c0845`（fa706g3）：business unknown: pilot_target_setting_mismatch、path unknown: pilot_target_setting_mismatch；另一台机器上的回归运行 2 次（客机 win11-test ×2）NON_GREEN：同一个场景换一台机器再取证，不改变上面的结论；没通过的是 `9db255d4`（客机 win11-test）：business unknown: pilot_target_setting_mismatch、path unknown: pilot_target_setting_mismatch；`ed62daca`（客机 win11-test）：business unknown: pilot_target_setting_mismatch、path unknown: pilot_target_setting_mismatch",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/1a4c0845ae0047fca869fcd11bf74455.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/9db255d48fe64f2db8564a1c476ae48d.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/ed62daca9e32493db81ae78155a6d709.json",
+   "客机 win11-test NON_GREEN 2 次；fa706g3 NON_GREEN 1 次；都不是发布 GREEN"
   ],
   [
    295,
@@ -7692,11 +9741,11 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 仅外表面生成随机扰动，点距≈0.6mm、幅度≈0.3mm。\n3. 内部填充和非目标表面路径不变。",
    "其他-绒毛表面",
    "reczz28b6mRAyPQV",
-   "补覆盖；最终引擎回归",
+   "补覆盖（空闲机器）；最终引擎回归",
    null,
    null,
    null,
-   "补覆盖 1 次（客机 win11-test ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
+   "补覆盖（空闲机器） 1 次（客机 win11-test ×1）SHADOW：只过了脚本自检并导出，未对照飞书预期核对；原有缺口见「未覆盖项与适用边界」；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
    "docs/runs/evidence/ninehour-2026-11-25/receipts/344785dece8a4f579ba1bebdaec02dff.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/c953a01499a24423b5b7f28f794970a3.json",
    "客机 win11-test SHADOW 2 次；都不是发布 GREEN"
   ],
@@ -7716,13 +9765,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. G-code包含注释、行号和对象标签，文件名匹配格式。\n3. 非注释运动指令和刀路与默认基准完全一致。",
    "其他-G-code输出",
    "reczz28b6mRAyaVq",
-   "最终引擎回归",
+   "补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/2c31895fb3994cb193a020beca14b979.json",
-   "fa706g3 SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（fa706g3 ×1）SHADOW：只验引擎，未核对飞书预期",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/2c31895fb3994cb193a020beca14b979.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/54f47f5892a648af80cb0da5d892b767.json",
+   "fa706g3 SHADOW 2 次；都不是发布 GREEN"
   ],
   [
    297,
@@ -7740,13 +9789,13 @@
    "1. 组合参数写入正确，切片成功并产出G-code。\n2. 被排除对象无打印路径，保留对象路径完整。\n3. 填充区回抽次数减少，外墙和支撑回抽不变。",
    "其他-G-code输出",
    "reczz28b6mRAyshq",
-   "最终引擎回归",
+   "补覆盖（fa706g3 多形状夹具孪生）；最终引擎回归",
    null,
    null,
    null,
-   "最终引擎 2a17376 回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
-   "docs/runs/evidence/ninehour-2026-11-25/receipts/2c581bd4b35f4d358dbde5cefac710c2.json",
-   "客机 win11-test SHADOW 1 次；都不是发布 GREEN"
+   "补覆盖（fa706g3 多形状夹具孪生） 1 次（fa706g3 ×1）SHADOW：多形状夹具上的同一个场景，只过了脚本自检并导出，未对照飞书预期核对；最终引擎回归 1 次（客机 win11-test ×1）SHADOW：只验引擎，未核对飞书预期",
+   "docs/runs/evidence/ninehour-2026-11-25/receipts/2c581bd4b35f4d358dbde5cefac710c2.json\ndocs/runs/evidence/ninehour-2026-11-25/receipts/b23f082ac8d84240affc12d897848180.json",
+   "客机 win11-test SHADOW 1 次；fa706g3 SHADOW 1 次；都不是发布 GREEN"
   ]
  ]
 }
