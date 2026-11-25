@@ -45,6 +45,8 @@ Mac 后台工程编辑用例从原始立方体切片开始，以新名字编辑�
 
 九小时跑批后的三机复验新增一条飞书原用例完整实证。[#47 色盘取消](docs/runs/evidence/ninehour-2026-11-25/row-47-hyperv/README.md)提供独立的客机复跑入口与逐步读数。[#264 实体机验收](docs/runs/evidence/ninehour-2026-11-25/row-264-fdm-followup.md)记录错误 G-code 的负对照和仍未满足的预期。[Mac 壁环重开](docs/runs/evidence/ninehour-2026-11-25/mac/repair-README.md)记录三个独立进程的壁环读值。
 
+飞书 #46、#48、#199 的[逐条验收与复跑计时](docs/runs/feishu-46-48-199-followup-2026-11-25.md)包含各行的独立客机入口、原始证据和首次调通耗时。
+
 三业务线并行探索入口见[业务pilot](docs/V3_BUSINESS_PILOTS.md)（下文的「87 条」是 11-17 时点的登记册数；11-21 冻结为 89 条登记，见[台账](docs/V3_MIGRATION_LEDGER.md)）
 
 首个真实 Script 的接入与验证方式见 [m0 Script adapter](docs/V3_SCRIPT_ADAPTER.md)，客机入口为 `runner/hv_go.ps1 -V3 -Cases m0_boot_check`；结果单独记 SHADOW，不进入发布 GREEN。
