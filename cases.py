@@ -129,6 +129,8 @@ CASES: dict[str, dict] = {
     "m7x_140_close_without_residue": _r("m7", "A"),
     "m7b_new_project": _r("m7", "A"),
     "m7x_199_new_project_title": _r("m7", "A"),
+    "m7x_201_save_project_reopen": _r("m7", "A"),
+    "m7x_202_save_as_project": _r("m7", "A"),
     "m7c_import_stl": _r("m7", "A"),
     "m7d_import_corrupt": _r("m7", "A"),
     "m7e_rotate45": _r("m7", "A"),
