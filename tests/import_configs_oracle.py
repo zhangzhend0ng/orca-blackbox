@@ -254,41 +254,45 @@ def missing_from_lists(dropdowns, config):
 
 
 def effective_report(config, settings, defined):
-    """Every exported parameter against the project's effective value.
+    """Every exported parameter that the project's effective configuration carries is
+    compared with it.
 
-    A parameter the effective config does not carry is `not_kept`; it is split into
-    those this build writes into a project (`defined`) and the rest. The selection
-    is read from the three settings ids the project carries."""
-    report = {}
+    A key the effective configuration does not carry is inert for this build: it is
+    not a parameter of the product and takes no part in the verdict. It is only listed,
+    per preset, in `inert_keys`; those of them the template project writes are also
+    listed in `dropped_defined_keys`. The selection is read from the three settings ids
+    the project carries."""
+    report, inert, dropped = {}, {}, {}
     for row in config:
         label = f'{row["kind"]}/{row["name"]}'
-        changed, kept_out, unknown = {}, [], []
+        changed, absent = {}, []
         for key, value in parameters(row['settings']).items():
             if key not in settings:
-                (unknown if key not in defined else kept_out).append(key)
+                absent.append(key)
             elif not same_effective(value, settings[key], row['kind']):
                 changed[key] = [value, settings[key]]
-        report[label] = {'compared': len(parameters(row['settings'])), 'changed': changed,
-                         'not_kept': kept_out, 'not_in_build': unknown}
+        report[label] = {'compared': len(parameters(row['settings'])) - len(absent), 'changed': changed}
+        inert[label] = {'count': len(absent), 'keys': sorted(absent)}
+        dropped[label] = sorted(key for key in absent if key in defined)
     ids = settings.get('filament_settings_id')
     selected = {'machine': settings.get('printer_settings_id'), 'process': settings.get('print_settings_id'),
                 'filament': ids[0] if isinstance(ids, list) and ids else ids}
-    return {'by_preset': report, 'selected': selected,
+    return {'by_preset': report, 'inert_keys': inert, 'dropped_defined_keys': dropped, 'selected': selected,
             'selection_ok': all(selected[kind] == NAMES[kind] for kind in NAMES)}
 
 
 def dropped_report(config, after, defined):
-    """Exported parameters that the import left out of the stored preset (used when the
-    effective values could not be read)."""
+    """Readings for when the effective values could not be read: the exported parameters
+    the import left out of the stored preset, inert ones and those the template writes.
+    They are readings only; a changed value is what fails, and that is read elsewhere."""
     stored = {(row['kind'], row['name']): row['settings'] for row in after}
-    report = {}
+    inert, dropped = {}, {}
     for row in config:
         label = f'{row["kind"]}/{row["name"]}'
-        saved = stored.get((row['kind'], row['name']), {})
-        gone = [key for key in parameters(row['settings']) if key not in saved]
-        report[label] = {'not_kept': [key for key in gone if key in defined],
-                         'not_in_build': [key for key in gone if key not in defined]}
-    return report
+        gone = [key for key in parameters(row['settings']) if key not in stored.get((row['kind'], row['name']), {})]
+        inert[label] = {'count': len(gone), 'keys': sorted(gone)}
+        dropped[label] = sorted(key for key in gone if key in defined)
+    return {'inert_keys': inert, 'dropped_defined_keys': dropped}
 
 
 def _short(values, limit=4):
@@ -296,18 +300,10 @@ def _short(values, limit=4):
                      f'{json.dumps(value[1], ensure_ascii=False)[:40]}' for key, value in list(values.items())[:limit])
 
 
-def _loss_text(report, limit=6, unknown_too=True):
-    parts = []
-    for label, row in report.items():
-        if row.get('changed'):
-            parts.append(f'{label}: {len(row["changed"])} effective values changed ({_short(row["changed"])})')
-        if row.get('not_kept'):
-            parts.append(f'{label}: {len(row["not_kept"])} parameters this build defines were not kept '
-                         f'({", ".join(row["not_kept"][:limit])})')
-        if unknown_too and row.get('not_in_build'):
-            parts.append(f'{label}: {len(row["not_in_build"])} parameters are not in this build\'s config '
-                         f'({", ".join(row["not_in_build"][:limit])})')
-    return parts
+def _loss_text(report):
+    """Only parameters whose effective value differs are named; inert keys are not."""
+    return [f'{label}: {len(row["changed"])} effective values changed ({_short(row["changed"])})'
+            for label, row in report.items() if row.get('changed')]
 
 
 def _key(row):
@@ -366,7 +362,6 @@ def verify_import(config, before, after, dialogs, dropdowns=None, effective=None
     elif dropdowns is not None:
         problems.append(f'the effective values could not be read ({reason}); the stored presets were compared instead')
         dropped = dropped_report(config, after, set(defined or ()))
-        problems += _loss_text(dropped, unknown_too=False)
     if not clashes:
         second = f'FAIL (not exercised: none of the {len(wanted)} presets of the config file was in the profile before the import)'
     elif prompts:

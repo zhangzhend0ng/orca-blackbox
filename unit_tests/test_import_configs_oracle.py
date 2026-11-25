@@ -225,6 +225,7 @@ def test_preset_lists_must_carry_the_three_names(guest):
     text = verify_import(config, [], imported, [RESULT], without, None, (), 'selection failed')[IMPORTED]
     assert "1 presets are not in their preset lists: ['process/BB Test Process']" in text
     assert 'the effective values could not be read (selection failed)' in text
+    assert 'bed_model' not in text  # inert keys stay out of the failure text on the fallback too
 
 
 def selected(settings):
@@ -238,30 +239,33 @@ def selected(settings):
 
 def test_template_effective_values_match_the_exported_presets(guest):
     config, _imported = guest
-    report = effective_report(config, selected(project_settings(TEMPLATE)), set(project_settings(TEMPLATE)))
+    base = project_settings(TEMPLATE)
+    report = effective_report(config, selected(base), set(base))
     assert report['selection_ok']
     assert {label: len(row['changed']) for label, row in report['by_preset'].items()} == {
         'machine/BB Test Printer': 0, 'filament/BB Test Filament': 0, 'process/BB Test Process': 0}
-    assert all(not row['not_kept'] for row in report['by_preset'].values())
-    assert sum(len(row['not_in_build']) for label, row in report['by_preset'].items()) == 62
+    # 62 exported keys are not in the build's effective configuration at all: inert readings.
+    assert {label: row['count'] for label, row in report['inert_keys'].items()} == {
+        'machine/BB Test Printer': 2, 'filament/BB Test Filament': 52, 'process/BB Test Process': 8}
+    assert report['inert_keys']['machine/BB Test Printer']['keys'] == ['bed_model', 'bed_texture']
+    assert all(not keys for keys in report['dropped_defined_keys'].values())
 
 
-def test_changed_or_missing_effective_values_are_rejected(guest):
+def test_only_changed_effective_values_fail(guest):
     config, imported = guest
     base = project_settings(TEMPLATE)
     settings = selected(base)
     settings['layer_height'] = '0.45'  # the exported preset carries 0.4
     settings.pop('wall_loops')
-    text = verify_import(config, [], imported, [RESULT], OPEN, settings, base, 'ok')[IMPORTED]
+    report = verify_import(config, [], imported, [RESULT], OPEN, settings, base, 'ok')
+    text = report[IMPORTED]
     assert 'process/BB Test Process: 1 effective values changed (layer_height: "0.4" -> "0.45")' in text
-    assert 'process/BB Test Process: 1 parameters this build defines were not kept (wall_loops)' in text
-    assert "machine/BB Test Printer: 2 parameters are not in this build's config (bed_model, bed_texture)" in text
+    assert 'wall_loops' not in text  # absent from the effective configuration: inert, a reading only
+    assert report['reading']['effective']['dropped_defined_keys']['process/BB Test Process'] == ['wall_loops']
     untouched = selected(base)
-    text = verify_import(config, [], imported, [RESULT], OPEN, untouched, base, 'ok')[IMPORTED]
-    # Nothing changed and nothing this build defines was dropped; the keys the build's
-    # own vendor files carry without defining them are still named, one group per preset.
-    assert 'effective values changed' not in text and 'were not kept' not in text
-    assert text.count("parameters are not in this build's config") == 3
+    report = verify_import(config, [], imported, [RESULT], OPEN, untouched, base, 'ok')
+    assert report[IMPORTED] == 'PASS'  # the three names are listed and no effective value differs
+    assert sum(row['count'] for row in report['reading']['effective']['inert_keys'].values()) == 62
 
 
 def test_wrong_selection_is_rejected(guest):
