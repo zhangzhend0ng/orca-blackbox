@@ -57,6 +57,16 @@ def official_popup_colour(dlg):
     return m8.popup_colour_texts(dlg)
 
 
+def official_colour_changed(before, selected):
+    if before is None or selected is None:
+        return False
+    before_name, before_sku = before
+    selected_name, selected_sku = selected
+    return bool(before_name and selected_name and (
+        before_name != selected_name or
+        (before_sku and selected_sku and before_sku != selected_sku)))
+
+
 def is_native_picker(dlg):
     """True when the returned dialog is the legacy native picker (what a
     non-Snapmaker filament falls back to, probe 09-24: slot 1 'Generic PETG'
@@ -108,7 +118,7 @@ def pick_official_card(session, dlg, tries=40):
         wu.msg_click_screen(cx, cy)
         time.sleep(0.4)
         now = official_popup_colour(dlg)
-        if now and now != before:
+        if official_colour_changed(before, now):
             print(f"{LOG} colour card @({cx},{cy}) -> {now} (was {before})")
             return now
     print(f"{LOG} no colour card changed the selection ({len(cells)} tried)")
@@ -467,14 +477,13 @@ def main() -> int:
             dlg3 = open_dialog_and_dump(session, "after_cancel") if closed else None
             after47 = (official_popup_colour(dlg3) if (dlg3 and not native)
                        else (read_rgb(session, dlg3) if dlg3 else None))
-            read_colors = before47 is not None and mid is not None
-            if read_colors:
-                if native:
-                    read_colors = all(field.isascii() and field.isdecimal()
-                                      for color in (before47, mid) for field in color)
-                else:
-                    read_colors = bool(before47[0] and mid[0])
-            changed = read_colors and mid != before47
+            changed = False
+            if not native:
+                changed = official_colour_changed(before47, mid)
+            elif before47 is not None and mid is not None:
+                changed = (all(field.isascii() and field.isdecimal()
+                               for color in (before47, mid) for field in color)
+                           and mid != before47)
             detail = (f"before={before47!r}, selected={mid!r}, changed={changed}, "
                       f"cancel_clicked={cancel_clicked}, closed={closed}, "
                       f"reopened={after47!r}")
