@@ -1,0 +1,21 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T13:02:38" tests="1" failures="0" errors="0">
+    <testcase name="m8x_47_color_cancel" classname="blackbox.m8x_47_color" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m8x_47_color_cancel.log" />
+        <property name="dim:#47 cancel keeps color" value="PASS (before=('217', '166', '58'), selected=('0', '166', '58'), changed=True, cancel_clicked=True, closed=True, reopened=('217', '166', '58'))" />
+      </properties>
+      <system-out>[m8x47] cancel: slot=1 preset='Generic PETG @U1 0.8 nozzle(mixed_filament_test.3mf)' chip=(13, 415, 33, 435) target='Button'
+[m8x47] cancel: slot=1 picker='Please choose the filament color'
+[m8b] native picker derived HSL: ('27', '162', '129') -&gt; ('94', '240', '78')
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x4c40cd0 did not complete
+[m8x47] after_cancel: slot=1 preset='Generic PETG @U1 0.8 nozzle(mixed_filament_test.3mf)' chip=(13, 415, 33, 435) target='Button'
+[m8x47] after_cancel: slot=1 picker='Please choose the filament color'
+
+[m7] === verdict ===
+  #47 cancel keeps color: PASS (before=('217', '166', '58'), selected=('0', '166', '58'), changed=True, cancel_clicked=True, closed=True, reopened=('217', '166', '58'))
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

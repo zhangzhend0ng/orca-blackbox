@@ -1,0 +1,31 @@
+﻿[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile C:\coil\orca-blackbox-v3-r1\fixtures\mixed_filament_test.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x5240978, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x50a08be, WM_CLOSE)
+[launcher] pid=1656 hwnd=0x5380800 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.80%, gate 0.25%)
+[m3] gl canvas ready: True
+[m8b] sidebar slots: [(1, 'Generic PETG @U1 0.8 nozzle(mixed_filament_test.3mf)'), (2, 'Snapmaker PLA Silk @U1 0.8 nozzle(mixed_filament_test.3mf)'), (3, 'Snapmaker PLA Silk @U1 0.8 nozzle(mixed_filament_test.3mf)'), (4, 'Snapmaker PLA Silk @U1 0.8 nozzle(mixed_filament_test.3mf)'), (5, 'Snapmaker PLA Silk @U1 0.8 nozzle(mixed_filament_test.3mf)')]
+[m8] popup: message-level wheel found nothing 鈥?retrying with real input
+[m8] slot2 popup OCR (35 words): 'SUNLU PETG SUNLU PLA Marble SUNLU PLA Matte SUNLU PLA+ SUNLU PLA+ 2.0 SUNLU Silk PLA+ SUNLU Wood PLA Valment PLA Valment PLA Galaxy Valment PLA Silk Valment PLA-CF eSUN PETG eSUN PLA+ eSUN ePLA-LW'
+[m8] slot2 target 'Snapmaker PLA Silk' not found by OCR (attempt 1/30)
+[m8] popup: message-level wheel found nothing 鈥?retrying with real input
+[m8] slot2 popup OCR (35 words): 'SUNLU PETG SUNLU PLA Marble SUNLU PLA Matte SUNLU PLA+ SUNLU PLA+ 2.0 SUNLU Silk PLA+ SUNLU Wood PLA Valment PLA Valment PLA Galaxy Valment PLA Silk Valment PLA-CF eSUN PETG eSUN PLA+ eSUN ePLA-LW'
+[m8] slot2 target 'Snapmaker PLA Silk' not found by OCR (attempt 3/30)
+[m8] slot2 preset-switch budget exhausted after 3 attempt(s) 鈥?reporting the current text
+[m8b] slot2 re-applied from the system list: 'Snapmaker PLA Silk @U1 0.8 nozzle(mixed_filament_test.3mf)'
+[m8b] slot2 chip rgb: [62, 98, 73]
+[m8] slot2 chip click at (221,425) -> nothing
+
+[m7] === verdict ===
+  model arrives: PASS
+  #44 slot re-applied from the SYSTEM preset: PASS
+  #48 dialog opens: FAIL (no popup)
+[m7] RED
+[m8b] app closed

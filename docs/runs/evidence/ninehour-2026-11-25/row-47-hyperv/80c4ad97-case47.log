@@ -1,0 +1,17 @@
+﻿[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile C:\coil\orca-blackbox-v3-r1\fixtures\mixed_filament_test.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x4d20dde, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x5010320, WM_CLOSE)
+[launcher] pid=10440 hwnd=0x4cb1122 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.80%, gate 0.25%)
+[m8x47] cancel: slot=1 chip=(13, 415, 33, 435) is obscured
+
+[m7] === verdict ===
+  #47 cancel keeps color: FAIL (no dialog)
+[m7] RED

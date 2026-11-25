@@ -1,0 +1,11 @@
+﻿{
+    "commit":  "d0e429ed2081a38186b0a12e5f9f437edb81db6a",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task":  "suite",
+    "task_state":  "Ready",
+    "summary":  "SUMMARY: PASS=0 FAIL=1\r\nFAILED: m8x_47_color_cancel",
+    "last_write":  "2026-11-25T12:56:07.6310111+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m8x_47_color_cancel.log",
+    "log_sha256":  "C06F871C3ADC9139A0D07EF592B9A93A67C27B7DFE8F6FC2434A6C38D0647208"
+}

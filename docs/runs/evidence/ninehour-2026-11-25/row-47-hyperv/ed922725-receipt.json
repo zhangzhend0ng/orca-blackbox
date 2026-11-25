@@ -1,0 +1,11 @@
+﻿{
+    "commit":  "ed922725497bc53c2e0a5ed8e931468f3d56c939",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task":  "suite",
+    "task_state":  "Ready",
+    "summary":  "SUMMARY: PASS=0 FAIL=1\r\nFAILED: m8b_official_color",
+    "last_write":  "2026-11-25T12:38:02.8568797+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m8b_official_color.log",
+    "log_sha256":  "A0360C31F853DE55D113E455EACF5F598B907A3E39B04358FAF8D01721735308"
+}
