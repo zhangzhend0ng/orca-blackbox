@@ -22,21 +22,20 @@ def main():
         def open_slot_color(tag):
             # The fixture carries Generic PETG in slot 1. The numbered chip's
             # GetWindowRect is already in screen coordinates.
-            winutil.force_set_foreground(session.hwnd)
             hit = next((row for row in m8.wait_slots(session) if row["slot"] == 1), None)
             if not hit or not hit["combo"] or "Generic PETG" not in hit["combo"][0]:
                 print(f"[m8x47] {tag}: missing the expected slot, detected={hit!r}")
                 return None
             x0, y0, x1, y1 = hit["swatch"]
             x, y = (x0 + x1) // 2, (y0 + y1) // 2
-            target = winutil.window_from_screen_point(x, y)
-            if not target or winutil._window_pid(target) != session.pid:
-                print(f"[m8x47] {tag}: slot=1 chip={hit['swatch']} is obscured")
+            target = winutil.deepest_child_at(session.hwnd, x, y)
+            if winutil.window_title(target).strip() != "1":
+                print(f"[m8x47] {tag}: slot=1 chip={hit['swatch']} did not resolve "
+                      f"to its numbered button, class={winutil.window_class(target)!r}")
                 return None
-            winutil.user32.SetCursorPos(x, y)
-            sent = winutil.real_click_screen(x, y)
+            winutil.msg_click_screen(x, y, session.hwnd)
             print(f"[m8x47] {tag}: slot=1 preset={hit['combo'][0]!r} "
-                  f"chip={hit['swatch']} target={winutil.window_class(target)!r} input={sent}")
+                  f"chip={hit['swatch']} target={winutil.window_class(target)!r}")
             deadline = time.monotonic() + 8.0
             observed = set()
             while time.monotonic() < deadline:
