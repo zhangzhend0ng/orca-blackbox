@@ -4,31 +4,48 @@
 The fixture is written by the case itself, in pure Python, into the run directory.
 Nothing here judges the product; tests/colored_obj_oracle.py does.
 
-What each form of the fixture makes the application do, read in the source of
-the guest build (ref ``sync/softfever-20261010``, 813784a9d0):
+Two forms of the same 20 mm cube (the left half the material ``red``, the
+right half ``blue``):
 
-* ``model.obj`` + ``model.mtl`` + ``texture.png``, the material ``red``
-  carrying ``map_Kd texture.png`` and the faces carrying ``vt``: ``load_obj``
-  sets ``has_uv_png`` and keeps the UVs (OBJ.cpp:173-190);
-  ``Model::read_from_file`` hands the mesh and the materials to
-  ``obj_to_textured_mesh`` and keeps the result as the model's ``texture_mesh``
-  (Model.cpp:356-365); the GUI shows the modal ``Import Model`` dialog
-  (Plater.cpp:24060, title at TextureImportDialog.cpp:1777) whose ``Confirm``
-  button has the id wxID_OK (TextureImportDialog.cpp:2352-2353).
-* ``model_kd.obj`` + ``model_kd.mtl``, no ``map_Kd`` and no ``vt``: the face
-  colours become ``precomputed_face_colors`` (Model.cpp:398-415) and the same
-  dialog follows (Plater.cpp:700-706 returns true for them).
+* ``kd-only``: ``model.obj`` + ``model.mtl`` whose two materials carry a
+  ``Kd`` colour only. The material does not reference the texture and the
+  faces carry no ``vt``; ``texture.png`` is in the directory all the same,
+  because the Feishu precondition asks for it. This is the form both clauses
+  are judged on.
+* ``textured``: ``model_tex.obj`` + ``model_tex.mtl`` whose material ``red``
+  carries ``map_Kd texture.png`` and whose faces carry ``vt``. Recorded only.
 
-The dialog is surveyed before anything is pressed: its class, title, every
-child window with its class, text, control id and enabled state, and a
-picture. Only then is the affirmative button pressed, by control id or by its
-text, and the dialog is confirmed closed. Without such a button the survey
-and the picture stay in the analysis and the case stops with an error.
+What the application did with each on the guest (Snapmaker Orca 2.4.0, run
+dev228b-2c32e51c on 2026-11-26), which is what the tag ``sm-v2.4.0``
+(b1831e5d) describes, and not the later ref ``sync/softfever-20261010``
+(813784a9d):
 
-On the tag ``sm-v2.4.0`` (b1831e5d) the same two forms take another way:
-``Model::read_from_file`` calls ``objFn`` only when ``has_uv_png`` is false
-(Model.cpp:282-296 there), which shows ``Obj file Import color``
-(ObjColorDialog.cpp:143), and a textured OBJ is loaded as plain geometry.
+* ``kd-only``: a modal ``Obj file Import color`` dialog of class ``#32770``,
+  with ``OK`` (a wxWindowNR whose control id is wxID_OK, 5100) and ``Cancel``.
+  On the tag ``Model::read_from_file`` calls ``objFn`` for face colours when
+  ``has_uv_png`` is false (Model.cpp:282-289), the GUI shows ``ObjColorDialog``
+  there (GUI/Plater.cpp:12175-12183; title at GUI/ObjColorDialog.cpp:143,
+  the buttons at 86-108), and ``obj_import_face_color_deal`` paints the faces
+  of the one volume (Model.cpp:3255-3280). The sync ref would show another
+  dialog, ``Import Model`` (Model.cpp:398-415, GUI/Plater.cpp:24060), which
+  is why that title is answered as well.
+* ``textured``: no dialog at all, the object as plain geometry with no paint
+  on its faces. On the tag ``map_Kd`` sets ``has_uv_png``
+  (Format/OBJ.cpp:158-163), which turns the face-colour branch off, and the
+  textured branch is commented out (Model.cpp:290-296).
+
+Both refs keep one object with one mesh (Format/OBJ.cpp:211-228 on the tag,
+243-260 on the sync ref) and take a face's colour from ``Ka`` + ``Kd`` when
+every component of the sum is at most 1, else from ``Kd`` (OBJ.cpp:141-157 on
+the tag, 155-172 on the sync ref).
+
+A dialog is surveyed before anything is pressed: its class, title, every
+child window with its class, text, control id, enabled state and place, and a
+picture. Then its affirmative button is pressed, by control id or by its
+text, and the dialog is confirmed closed. Without such a button, or when it
+will not close, the survey and the picture stay in the analysis and the case
+stops with an error. ``OK`` is a wxWindowNR: it is found by text, never by the
+class Button (PITFALLS 17.8).
 """
 import ctypes
 from hashlib import sha256
@@ -46,10 +63,13 @@ from harness import export_util, topbar_util, winutil
 from m8_common import wait_arrival
 
 TEXTURE = 'texture.png'
-IMPORT_DIALOG = 'Import Model'
-WXID_OK = 5104
-AFFIRMATIVE = ('confirm', 'ok', 'import', 'yes', 'continue')
+IMPORT_DIALOGS = ('Obj file Import color', 'Import Model')
+WXID_OK = 5100  # wxWidgets numbers wxID_OK 5100 (wxID_YES is 5103 and wxID_NO is 5104)
+AFFIRMATIVE = ('ok', 'confirm', 'import', 'yes', 'continue')  # whole texts, case-folded
+STRANGER_WAIT_S = 20  # a dialog that is neither an import dialog nor a loading box
 CHILD_LIMIT = 80
+FORMS = {'kd-only': 'Kd colours only; the texture is beside the file and not referenced; no UVs',
+         'textured': 'the material red references texture.png; the faces carry UVs'}
 
 
 # --- the fixture ---------------------------------------------------------------
@@ -75,7 +95,7 @@ def _obj_text(stem, geometry, uv):
     """The OBJ text of a fixture geometry: the vertices once, the faces under their material's
     ``usemtl``. Lines end with a line feed only: after the last number of a ``Kd`` line the
     parser of the guest build accepts a space, a tab or the end of the line and nothing else
-    (Format/objparser.cpp:546, 566)."""
+    (Format/objparser.cpp:440 and 460 on the tag sm-v2.4.0, 546 and 566 on the sync ref)."""
     vertices, faces = mesh_geometry(geometry)
     lines = [f'mtllib {stem}.mtl', '# Feishu #228: a 20 mm cube, the left half red and the right half blue']
     lines += [f'v {x:g} {y:g} {z:g}' for x, y, z in vertices]
@@ -92,7 +112,8 @@ def _obj_text(stem, geometry, uv):
 
 def _mtl_text(texture):
     """Two materials in the spelling the parser of the guest build reads with that casing
-    (Format/objparser.cpp:495-512 for ``newmtl`` and ``map_Kd``, 532-573 for ``Ka`` and ``Kd``)."""
+    (Format/objparser.cpp:390-406 for ``newmtl`` and ``map_Kd``, 426-467 for ``Ka`` and ``Kd``
+    on the tag sm-v2.4.0; 495-512 and 532-573 on the sync ref)."""
     lines = ['# Feishu #228: two materials', 'newmtl red', 'Ka 0 0 0', 'Kd 1 0 0']
     if texture:
         lines.append(f'map_Kd {TEXTURE}')
@@ -100,19 +121,24 @@ def _mtl_text(texture):
     return ('\n'.join(lines)).encode('ascii')
 
 
-def write_fixture(work, stem='model', texture=True, uv=True, geometry='two-boxes'):
+def write_fixture(work, stem='model', texture=False, uv=False, geometry='two-boxes'):
     """Write ``<stem>.obj``, ``<stem>.mtl`` and (unless it is already there) ``texture.png`` into
-    `work`; returns what was written, with the byte count and SHA-256 of each file. ``geometry``
-    names a geometry of colored_obj_oracle.GEOMETRIES."""
+    `work`; returns what was written, with the byte count and SHA-256 of each file. ``texture``
+    says whether the material references the texture and ``uv`` whether the faces carry UVs:
+    the two together name the form (kd-only when both are false, textured when both are true).
+    ``geometry`` names a geometry of colored_obj_oracle.GEOMETRIES."""
     work = Path(work)
+    if texture != uv:
+        raise ValueError(f'a fixture references the texture and carries UVs together, or neither: {texture!r}, {uv!r}')
     files = {f'{stem}.obj': _obj_text(stem, geometry, uv), f'{stem}.mtl': _mtl_text(texture)}
-    if texture or not (work / TEXTURE).is_file():
-        files[TEXTURE] = _red_texture()
+    if not (work / TEXTURE).is_file():
+        files[TEXTURE] = _red_texture()  # the Feishu precondition asks for the texture in either form
     for name, raw in files.items():
         if not name.endswith('.png') and b'\r' in raw:  # the text files end their lines with a line feed only
             raise ValueError(f'{name} was about to be written with a carriage return')
         (work / name).write_bytes(raw)
-    return {'obj': f'{stem}.obj', 'mtl': f'{stem}.mtl', 'geometry': geometry,
+    form = 'textured' if texture else 'kd-only'
+    return {'obj': f'{stem}.obj', 'mtl': f'{stem}.mtl', 'form': form, 'form_says': FORMS[form], 'geometry': geometry,
             'texture_referenced': texture, 'obj_has_uv': uv,
             'faces': {name: len(faces) for name, faces in material_triangles(geometry).items()},
             'files': {name: {'bytes': len(raw), 'sha256': sha256(raw).hexdigest()} for name, raw in files.items()}}
@@ -120,16 +146,21 @@ def write_fixture(work, stem='model', texture=True, uv=True, geometry='two-boxes
 
 # --- the application's own dialogs ---------------------------------------------
 
-def app_dialogs(session, title=''):
+def import_dialog(title):
+    """The name of the import dialog a window title announces, or None when it is none of them."""
+    return next((name for name in IMPORT_DIALOGS if name.casefold() in title.casefold()), None)
+
+
+def app_dialogs(session, titled=()):
     """[(class, title, rect, hwnd)] of the application's visible dialog windows (#32770) and of
-    any visible top-level window of it whose title contains `title`."""
+    any visible top-level window of it whose title holds one of `titled`."""
     found = []
 
     def visit(hwnd, _lp):
         if winutil._window_pid(hwnd) != session.pid or not winutil.user32.IsWindowVisible(hwnd):
             return True
         cls, text = winutil.window_class(hwnd), winutil.window_title(hwnd)
-        if cls == '#32770' or (title and title.casefold() in text.casefold()):
+        if cls == '#32770' or any(name.casefold() in text.casefold() for name in titled):
             found.append((cls, text, winutil.window_rect(hwnd), hwnd))
         return True
 
@@ -160,7 +191,8 @@ def survey_dialog(work, hwnd, stem):
 
 def affirmative(children):
     """The child that accepts the dialog: the one with the control id wxID_OK, else the one
-    enabled and visible child named like an affirmative; None when there is not exactly one."""
+    enabled and visible child whose whole text is an affirmative; None when there is not exactly
+    one. The text is compared whole, so ``Keep color`` and ``Skip Matching`` never match."""
     by_id = [child for child in children if child['id'] == WXID_OK]
     if len(by_id) == 1:
         return by_id[0]
@@ -170,11 +202,13 @@ def affirmative(children):
 
 
 def press_child(session, dialog, child):
-    """Click one child of a dialog until the dialog closes; returns what was tried."""
+    """Click one child of a dialog until the dialog closes; returns what was tried. First a
+    message click resolved inside the dialog's own window tree, then a real click as
+    tests/engine/m5g_preset_manage.py gives one to the same kind of button."""
     left, top, right, bottom = child['rect']
     x, y = (left + right) // 2, (top + bottom) // 2
     tiers = []
-    winutil.msg_click_screen(x, y, dialog)  # resolved inside the dialog's own window tree
+    winutil.msg_click_screen(x, y, dialog)
     time.sleep(1.5)
     tiers.append({'how': 'message click inside dialog', 'at': [x, y],
                   'closed': not winutil.user32.IsWindowVisible(dialog)})
@@ -190,53 +224,61 @@ def press_child(session, dialog, child):
     return tiers
 
 
-def _import_dialog(session, work, record_list, stem):
-    """Survey the application's material dialog, press its affirmative button and confirm it closed."""
-    _cls, _title, _rect, hwnd = next(dialog for dialog in app_dialogs(session, IMPORT_DIALOG)
-                                     if IMPORT_DIALOG.casefold() in dialog[1].casefold())
-    record = survey_dialog(work, hwnd, stem)
-    record_list.append(record)
-    print(f'[m7x228] {record["title"]!r}: {[child["text"] for child in record["children"] if child["text"]][:40]!r}',
-          flush=True)
+def _accept(session, work, hwnd, record):
+    """Press the affirmative button of a surveyed import dialog and see it close. The record
+    says what was pressed; when nothing can be pressed or it will not close, the record stays
+    as it is and the error follows."""
     button = affirmative(record['children'])
     if button is None:
-        raise ValueError(f'{record["title"]!r} has no single affirmative button to press: '
-                         f'{[(child["text"], child["id"], child["enabled"]) for child in record["children"]][:40]!r}')
-    record['pressed'] = {'text': button['text'], 'id': button['id']}
+        record['error'] = (f'{record["title"]!r} has no single affirmative button: '
+                           f'{[(child["text"], child["id"], child["enabled"]) for child in record["children"]][:40]!r}')
+        raise ValueError(record['error'])
+    record['pressed'] = {'text': button['text'], 'id': button['id'], 'class': button['class']}
     record['tiers'] = press_child(session, hwnd, button)
     record['closed'] = not winutil.user32.IsWindowVisible(hwnd)
     if not record['closed']:
-        raise ValueError(f'{record["title"]!r} stayed open after {button["text"]!r} was pressed')
+        record['error'] = f'{record["title"]!r} stayed open after {button["text"]!r} was pressed'
+        raise ValueError(record['error'])
     return record
 
 
 def wait_import(session, work, analysis, key='import_dialogs', stem='import-dialog', timeout_s=120):
-    """After the chooser took the OBJ: answer every dialog the application shows and wait for
-    the model. Each dialog met is written to `analysis[key]` with a picture; an error dialog
-    stops the case after its survey is kept. Returns (arrived, coloured fraction)."""
+    """After the chooser took the OBJ: answer the application's material dialog, wait for the
+    model. Every dialog met is written to `analysis[key]` with a picture; an error dialog, a
+    dialog that is neither an import dialog nor a loading box and stays, or a dialog that will
+    not close stops the case with that record kept. Returns (arrived, coloured fraction)."""
     deadline = time.monotonic() + timeout_s
     met = analysis.setdefault(key, [])
-    seen, quiet = set(), 0
+    seen, quiet, stranger_since = set(), 0, None
     while time.monotonic() < deadline:
-        import_dialogs = [dialog for dialog in app_dialogs(session, IMPORT_DIALOG)
-                          if IMPORT_DIALOG.casefold() in dialog[1].casefold()]
-        if import_dialogs:
-            _import_dialog(session, work, met, f'{stem}-{len(met)}')
+        known = [dialog for dialog in app_dialogs(session, IMPORT_DIALOGS) if import_dialog(dialog[1])]
+        if known:
+            _cls, _title, _rect, hwnd = known[0]
+            record = survey_dialog(work, hwnd, f'{stem}-{len(met)}')
+            met.append(record)
+            print(f'[m7x228] {record["title"]!r} ({record["class"]}): '
+                  f'{[child["text"] for child in record["children"] if child["text"]][:40]!r}', flush=True)
+            _accept(session, work, hwnd, record)
             quiet = 0
             continue
         arrived, fraction = wait_arrival(session, timeout_s=2, min_frac=0.001)
-        for cls, title, _rect, hwnd in app_dialogs(session):
-            if hwnd in seen or title.casefold().startswith('loading'):
-                continue
-            seen.add(hwnd)
-            record = survey_dialog(work, hwnd, f'{stem}-{len(met)}')
-            met.append(record)
-            print(f'[m7x228] dialog {title!r}: {[child["text"] for child in record["children"] if child["text"]][:24]!r}',
-                  flush=True)
-            if 'error' in title.casefold():
-                raise ValueError(f'the application showed {title!r}: '
-                                 f'{[child["text"] for child in record["children"] if child["text"]][:12]!r}')
-        quiet = quiet + 1 if arrived and not app_dialogs(session) else 0
+        open_now = [dialog for dialog in app_dialogs(session) if not dialog[1].casefold().startswith('loading')]
+        for cls, title, _rect, hwnd in open_now:
+            if hwnd not in seen:
+                seen.add(hwnd)
+                record = survey_dialog(work, hwnd, f'{stem}-{len(met)}')
+                met.append(record)
+                print(f'[m7x228] dialog {title!r}: {[child["text"] for child in record["children"] if child["text"]][:24]!r}',
+                      flush=True)
+                if 'error' in title.casefold():
+                    record['error'] = 'an error dialog'
+                    raise ValueError(f'the application showed {title!r}: '
+                                     f'{[child["text"] for child in record["children"] if child["text"]][:12]!r}')
+        stranger_since = (stranger_since or time.monotonic()) if open_now else None
+        if open_now and time.monotonic() - stranger_since > STRANGER_WAIT_S:
+            raise ValueError(f'a dialog that is not an import dialog stayed open {STRANGER_WAIT_S}s: '
+                             f'{[dialog[1] for dialog in open_now]!r}; its survey is in {key}')
+        quiet = quiet + 1 if arrived and not open_now else 0
         if quiet >= 2:
             return arrived, fraction
         time.sleep(0.5)

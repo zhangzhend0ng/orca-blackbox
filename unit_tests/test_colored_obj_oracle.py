@@ -13,6 +13,7 @@ from collections import Counter
 import hashlib
 import json
 from pathlib import Path
+import re
 import struct
 import sys
 import xml.etree.ElementTree as ET
@@ -25,7 +26,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / 'tests'), str(ROOT / 'tests' / 'gui')]
 from colored_obj_cases import affirmative, write_fixture  # noqa: E402
 from colored_obj_oracle import (  # noqa: E402
-    decode_paint, filament_readings, GEOMETRIES, material_triangles, mesh_geometry, painted_readings,
+    decode_paint, filament_readings, gcode_tools, GEOMETRIES, material_triangles, mesh_geometry,
+    painted_readings,
     read_colored_project, verify_filament_change, verify_painted_import)
 
 EVIDENCE = ROOT / 'docs/runs/evidence'
@@ -89,12 +91,17 @@ def _mesh(faces, object_id='1'):
 
 
 def _settings(raw, extruder='1'):
+    """The real model settings with the extruder of the object and of its part set. None leaves
+    the part without one and the object at 0, as the guest saved the unpainted import."""
     root = ET.fromstring(raw)
-    for node in (root.find('object'), root.find('object/part')):
+    obj, part = root.find('object'), root.find('object/part')
+    for node in (obj, part):
         for row in node.findall('metadata'):
             if row.get('key') == 'extruder':
                 node.remove(row)
-        node.insert(0, ET.Element('metadata', {'key': 'extruder', 'value': extruder}))
+    obj.insert(0, ET.Element('metadata', {'key': 'extruder', 'value': extruder or '0'}))
+    if extruder is not None:
+        part.insert(0, ET.Element('metadata', {'key': 'extruder', 'value': extruder}))
     return ET.tostring(root, encoding='utf-8', xml_declaration=True)
 
 
@@ -110,10 +117,17 @@ def _default(material, _number):
 
 
 def painted_project(target, painter=None, extruder='1', colours=('#FF0000', '#0000FF'), geometry='two-boxes'):
-    """The real #227 project with its mesh replaced by the fixture's, each face painted as
-    `painter(material, number)` says (the first material with filament 1, the second with 2)."""
+    """The real #227 project with its mesh replaced by the fixture's. Each face is painted as
+    `painter(material, number)` says, with no paint attribute at all when it returns None (by
+    default the first material with filament 1, the second with 2). `extruder` is the extruder
+    of the object and of its part; None leaves the part without one."""
     choose = painter or _default
-    faces = [(face, encode_state(choose(material, number)))
+
+    def paint(material, number):
+        filament = choose(material, number)
+        return None if filament is None else encode_state(filament)
+
+    faces = [(face, paint(material, number))
              for material, triangles in material_triangles(geometry).items() for number, face in enumerate(triangles)]
     with ZipFile(REAL_227) as archive:
         old = {name: archive.read(name) for name in (MESH, SETTINGS, PROJECT)}
@@ -180,51 +194,67 @@ def _png_pixels(raw):
 
 
 @pytest.mark.parametrize('geometry', sorted(GEOMETRIES))
-def test_fixture_is_the_geometry_the_oracle_expects(tmp_path, geometry):
+def test_judged_fixture_is_kd_only_with_the_texture_beside_it(tmp_path, geometry):
+    """The judged form: Kd colours only, no map_Kd, no vt, and texture.png in the same directory."""
     reading = write_fixture(tmp_path, geometry=geometry)
-    assert reading['texture_referenced'] and reading['obj_has_uv'] and reading['geometry'] == geometry
+    assert reading['form'] == 'kd-only' and not reading['texture_referenced'] and not reading['obj_has_uv']
+    assert reading['geometry'] == geometry and set(reading['files']) == {'model.obj', 'model.mtl', 'texture.png'}
     for name, record in reading['files'].items():
         raw = (tmp_path / name).read_bytes()
         assert len(raw) == record['bytes'] and record['sha256'] == hashlib.sha256(raw).hexdigest()
         assert name.endswith('.png') or b'\r' not in raw
+    text = (tmp_path / 'model.obj').read_text(encoding='ascii')
     vertices, uvs, groups = _read_obj(tmp_path / 'model.obj')
     assert groups == material_triangles(geometry)
-    assert len(vertices) == VERTICES[geometry] and len(uvs) == 4
-    corners = [corner for line in (tmp_path / 'model.obj').read_text(encoding='ascii').split('\n')
-               if line.startswith('f ') for corner in line.split()[1:]]
-    assert len(corners) == 6 * FACES[geometry]
-    assert all(1 <= int(c.split('/')[0]) <= VERTICES[geometry] and 1 <= int(c.split('/')[1]) <= 4 for c in corners)
+    assert len(vertices) == VERTICES[geometry] and not uvs and 'vt ' not in text and 'mtllib model.mtl' in text
+    corners = [corner for line in text.split('\n') if line.startswith('f ') for corner in line.split()[1:]]
+    assert len(corners) == 6 * FACES[geometry] and all(c.isdigit() and 1 <= int(c) <= VERTICES[geometry] for c in corners)
     assert (tmp_path / 'model.mtl').read_text(encoding='ascii').split('\n') == [
-        '# Feishu #228: two materials', 'newmtl red', 'Ka 0 0 0', 'Kd 1 0 0', 'map_Kd texture.png',
+        '# Feishu #228: two materials', 'newmtl red', 'Ka 0 0 0', 'Kd 1 0 0',
         '', 'newmtl blue', 'Ka 0 0 0', 'Kd 0 0 1', '']
     header, pixels = _png_pixels((tmp_path / 'texture.png').read_bytes())
     assert header == (16, 16, 8, 2, 0, 0, 0)
     assert pixels == (b'\x00' + b'\xff\x00\x00' * 16) * 16
 
 
-def test_control_fixture_has_no_texture_and_no_uv(tmp_path):
-    first = write_fixture(tmp_path)
+def test_control_fixture_references_the_texture_and_carries_uvs(tmp_path):
+    """The control form: map_Kd on red and vt on the faces, written into a directory that holds the texture."""
+    judged = write_fixture(tmp_path)
+    assert set(judged['files']) == {'model.obj', 'model.mtl', 'texture.png'}
     before = (tmp_path / 'texture.png').read_bytes()
-    control = write_fixture(tmp_path, 'model_kd', texture=False, uv=False)
-    assert set(control['files']) == {'model_kd.obj', 'model_kd.mtl'}
-    assert set(first['files']) == {'model.obj', 'model.mtl', 'texture.png'}
+    control = write_fixture(tmp_path, 'model_tex', texture=True, uv=True)
+    assert control['form'] == 'textured' and control['texture_referenced'] and control['obj_has_uv']
+    assert set(control['files']) == {'model_tex.obj', 'model_tex.mtl'}
     assert (tmp_path / 'texture.png').read_bytes() == before
-    text = (tmp_path / 'model_kd.obj').read_text(encoding='ascii')
-    vertices, uvs, groups = _read_obj(tmp_path / 'model_kd.obj')
-    assert 'mtllib model_kd.mtl' in text and 'map_Kd' not in text and not uvs and vertices
+    text = (tmp_path / 'model_tex.obj').read_text(encoding='ascii')
+    vertices, uvs, groups = _read_obj(tmp_path / 'model_tex.obj')
+    assert 'mtllib model_tex.mtl' in text and len(vertices) == VERTICES['two-boxes'] and len(uvs) == 4
     assert groups == material_triangles()
-    assert 'map_Kd' not in (tmp_path / 'model_kd.mtl').read_text(encoding='ascii')
+    corners = [corner for line in text.split('\n') if line.startswith('f ') for corner in line.split()[1:]]
+    assert len(corners) == 72 and all(1 <= int(c.split('/')[0]) <= 16 and 1 <= int(c.split('/')[1]) <= 4 for c in corners)
+    assert 'map_Kd texture.png' in (tmp_path / 'model_tex.mtl').read_text(encoding='ascii')
+
+
+def test_a_form_that_references_the_texture_without_uvs_is_not_written(tmp_path):
+    with pytest.raises(ValueError):
+        write_fixture(tmp_path, texture=True, uv=False)
 
 
 def test_affirmative_button_is_found_by_id_or_by_one_name():
-    def child(text, id_, enabled=True):
-        return {'text': text, 'id': id_, 'enabled': enabled, 'visible': True}
-    ok = child('Confirm', 5104)
-    assert affirmative([child('Skip Matching', 6000), ok]) is ok
+    def child(text, id_, cls='wxWindowNR', enabled=True):
+        return {'text': text, 'id': id_, 'class': cls, 'enabled': enabled, 'visible': True}
+    # The census of the guest's Obj file Import color dialog (run dev228b-2c32e51c): OK is a
+    # wxWindowNR with the control id wxID_OK, 5100; Cancel follows with 5101.
+    ok = child('OK', 5100)
+    census = [child('', -30265), child('Keep color', -30262), child('Keep color', -30255), child('Color match', -30249),
+              child('Append', -30248), child('Reset', -30247), child('Color match', -30260), ok, child('Cancel', 5101)]
+    assert affirmative(census) is ok
+    assert affirmative([child('Skip Matching', 6000), child('Confirm', 5100)])['text'] == 'Confirm'
     assert affirmative([child('Skip Matching', 6000), child('Import', 7)])['text'] == 'Import'
     assert affirmative([child('Skip Matching', 6000)]) is None
     assert affirmative([child('OK', 7), child('Yes', 8)]) is None
     assert affirmative([child('OK', 7, enabled=False)]) is None
+    assert affirmative([child('OK', 7, cls='Button', enabled=False), child('Cancel', 5101)]) is None
 
 
 # --- clause 1 ------------------------------------------------------------------
@@ -373,3 +403,54 @@ def test_gcode_without_project_filaments_is_not_judged(tmp_path):
     assert reading['error'] and not reading['checks']
     with pytest.raises(ValueError):
         verify_filament_change(REAL_236, {'checks': {}})
+
+
+# --- what the import dialog leaves ---------------------------------------------
+
+def test_faces_of_the_first_filament_left_to_the_extruder_are_accepted(tmp_path):
+    """What obj_import_face_color_deal on the tag leaves when the first cluster is filament 1:
+    the faces of filament 1 carry no paint and print with the extruder of the part, 1."""
+    project = painted_project(tmp_path / 'base.3mf', _by_material({'red': None, 'blue': 2}), extruder='1')
+    reading = verify_painted_import(project)
+    assert reading['filaments'] == {'red': 1, 'blue': 2} and reading['faces_without_paint_print_with'] == 1
+    assert {name: row['faces'] for name, row in reading['paint_states'].items()} == {'2': 12, 'unpainted': 12}
+
+
+def test_first_cluster_on_the_second_filament_leaves_one_colour(tmp_path):
+    """The dialog of run dev228b-2c32e51c listed the blue cluster first, mapped to filament 2. By
+    the tag's code the extruder of the part becomes 2 and the faces of filament 1 are left to it."""
+    project = painted_project(tmp_path / 'blue-first.3mf', _by_material({'red': None, 'blue': 2}), extruder='2')
+    reading = painted_readings(project)
+    assert reading['filaments'] == {'red': 2, 'blue': 2} and reading['faces_without_paint_print_with'] == 2
+    with pytest.raises(ValueError, match='different_filaments'):
+        verify_painted_import(project)
+
+
+def test_control_form_without_any_paint_is_refused_by_both_clauses(tmp_path):
+    """The textured form as the guest saved it: no paint attribute and no extruder on the part.
+    Every face prints with the first filament, and a monochrome G-code does not print two."""
+    project = painted_project(tmp_path / 'bare.3mf', _by_material({'red': None, 'blue': None}), extruder=None)
+    reading = painted_readings(project)
+    assert reading['filaments'] == {'red': 1, 'blue': 1}
+    assert reading['triangle_attribute_names'] == ['v1', 'v2', 'v3'] and reading['faces_without_paint_print_with'] == 1
+    with pytest.raises(ValueError, match='different_filaments'):
+        verify_painted_import(project)
+    with pytest.raises(ValueError, match='two_filaments_print'):
+        verify_filament_change(REAL_236, reading)
+
+
+def _printed_names(path):
+    found = re.findall(r'^; printing object (.*) id:\d+ copy \d+[ \t]*$', path.read_text(encoding='utf-8'), re.M)
+    return sorted(set(found))
+
+
+def test_gcode_tools_read_one_object_of_a_plate(tmp_path):
+    names = _printed_names(REAL_236)
+    assert len(names) == 1
+    whole = gcode_tools(REAL_236, names[0])
+    assert whole['tools_extruding'] == [0] and whole['object_tools_extruding'] == [0] and whole['object_printed']
+    assert whole['change_count'] == 0 and whole['objects_printed'] == names
+    elsewhere = gcode_tools(gcode_with_change(tmp_path / 'two.gcode'), 'model_tex')
+    assert elsewhere['tools_extruding'] == [0, 1] and elsewhere['change_count'] == 1
+    assert not elsewhere['object_printed'] and elsewhere['object_tools_extruding'] == []
+    assert gcode_tools(tmp_path / 'missing.gcode')['error']

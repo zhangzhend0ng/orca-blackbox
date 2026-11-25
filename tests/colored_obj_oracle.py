@@ -5,40 +5,53 @@ GUI. The ``*_readings`` functions never raise for a failed expectation: they
 return their readings with ``checks``. The ``verify_*`` functions raise
 ValueError on the first failed check.
 
-How Snapmaker Orca 2.4.0 treats an OBJ with an MTL, read in the source of the
-guest build (ref ``sync/softfever-20261010``, 813784a9d0):
+What the application does with such an OBJ, as the guest showed (Snapmaker
+Orca 2.4.0, run dev228b-2c32e51c on 2026-11-26) and as the tag ``sm-v2.4.0``
+(b1831e5d) says, which is the ref the guest behaved like:
 
 * One object with one mesh: ``load_obj`` ends in ``model->add_object(name,
   path, mesh)`` and does not split by ``usemtl``
-  (src/libslic3r/Format/OBJ.cpp:243-260). The tag ``sm-v2.4.0`` (b1831e5d, an
-  ancestor of that ref) is the same there (OBJ.cpp:211-228).
-* A face takes its material's colour when every component of ``Ka + Kd`` is
-  at most 1, else ``Kd``; the alpha is ``Tr`` (OBJ.cpp:155-172).
-* The colours are applied to the faces of the first model part of the object,
-  each face with the state ``Extruder1 + filament index``, and the part's and
-  the object's extruder is set to the smallest filament used
-  (src/slic3r/GUI/Plater.cpp:24255-24272,
-  src/libslic3r/TexturePainting.cpp:581-593). ``Extruder1`` is 1 and
-  ``Extruder2`` is 2, so state n is the n-th filament
-  (src/libslic3r/TriangleSelector.hpp:28-36).
-* A painted triangle is saved with the attribute ``paint_color``
-  (src/libslic3r/Format/bbs_3mf.cpp:372); the same field under its older name
-  ``slic3rpe:mmu_segmentation`` (Format/3mf.cpp:142) is read as well.
-* The value is a bit stream packed four bits to a hexadecimal digit, last
-  digit first (Model.cpp:4063-4085 FacetsAnnotation::get_triangle_as_string).
-  A node is two bits for the number of split sides, then for a split node two
-  bits for the special side and one node per child, else two bits of state,
-  where 3 says that one or more four-bit chunks of ``state - 3`` follow and a
-  chunk of 15 says another chunk follows (TriangleSelector.cpp:1722-1788,
-  TriangleSelector::serialize). An unsplit face painted with the first
-  filament is ``4``, with the second ``8``, with the third ``0C``.
+  (src/libslic3r/Format/OBJ.cpp:211-228). A face takes its material's colour
+  when every component of ``Ka + Kd`` is at most 1, else ``Kd``
+  (OBJ.cpp:141-157).
+* A material with ``map_Kd`` sets ``has_uv_png`` (OBJ.cpp:158-163), which
+  turns the face-colour branch of ``Model::read_from_file`` off
+  (Model.cpp:282); the textured branch is commented out (Model.cpp:290-296).
+  The guest loaded that form as plain geometry: no dialog, 24 faces without
+  any paint attribute, one tool in the G-code.
+* Without ``map_Kd`` the GUI shows ``Obj file Import color``
+  (GUI/Plater.cpp:12175-12183) and ``obj_import_face_color_deal`` sets the
+  extruder of the object and of its one volume to the filament of the first
+  colour cluster, then paints every face whose filament is above 1 and leaves
+  the faces of filament 1 to that extruder (Model.cpp:3255-3280, the skip at
+  3271). A face therefore prints with its paint where it carries one and with
+  its part's extruder otherwise, which is how painted_readings() reads it.
 
-The real saved project docs/runs/evidence/feishu-140-201-202-2026-11-25/
-row-202-hyperv/7a7a584f-after-save-as.3mf carries ``paint_color`` values;
-the unit tests decode them with the same function. No file in this repository
-shows what a texture import leaves on the mesh, so the saved part is read as
-it is: the check on the triangles fails when the application saves other than
-the fixture's 24 faces.
+The ref ``sync/softfever-20261010`` (813784a9d0) describes another importer,
+which would show ``Import Model`` for both forms (Model.cpp:356-365 and
+398-415, GUI/Plater.cpp:24060). The guest did not behave that way; that
+dialog's title is answered all the same.
+
+The paint on a triangle is read as saved, never assumed:
+
+* The attribute is ``paint_color`` (Format/bbs_3mf.cpp:372 on the sync ref;
+  the tracked project docs/runs/evidence/feishu-140-201-202-2026-11-25/
+  row-202-hyperv/7a7a584f-after-save-as.3mf, saved by the same application,
+  carries it). The same field under its older name ``slic3rpe:mmu_segmentation``
+  (Format/3mf.cpp:142) is read as well, and every triangle attribute there is
+  goes into ``triangle_attributes``.
+* The value is a bit stream packed four bits to a hexadecimal digit, last
+  digit first (Model.cpp:4063-4085 FacetsAnnotation::get_triangle_as_string
+  on the sync ref). A node is two bits for the number of split sides, then
+  for a split node two bits for the special side and one node per child, else
+  two bits of state, where 3 says that one or more four-bit chunks of
+  ``state - 3`` follow and a chunk of 15 says another chunk follows
+  (TriangleSelector.cpp:1722-1788, TriangleSelector::serialize). An unsplit
+  face painted with the first filament is ``4``, with the second ``8``, with
+  the third ``0C``: state n is the n-th filament (CONST_FILAMENTS in
+  Model.cpp:48-50 on the tag says the same: "", "4", "8", "0C", ...).
+* The unit tests decode the values of that tracked project with the same
+  function.
 
 Tool changes: a Snapmaker U1 export selects a tool with a ``T<n>`` line, n
 being the filament's index from zero. The real five-tool export 0ac8ba5d
@@ -64,10 +77,12 @@ MAIN = '3D/3dmodel.model'
 SETTINGS = 'Metadata/model_settings.config'
 PROJECT = 'Metadata/project_settings.config'
 EXTRUDER_KEY = 'extruder'
+DEFAULT_EXTRUDER = 1  # what a part prints with that names no extruder, nor does its object
 PAINT_ATTRS = ('paint_color', 'slic3rpe:mmu_segmentation')
 VERTEX_TOL_MM = 0.001  # the same tolerance as tests/import_stl_oracle.py
 TOOL = re.compile(r'^T(\d+)(?:\D|$)')
 LAYER_START = re.compile(r'^;\s*(?:LAYER_CHANGE|LAYER:\s*\d+)\s*$')
+PRINTING = re.compile(r'^; printing object (.*) id:\d+ copy \d+\s*$')
 HEX = re.compile(r'^[0-9A-Fa-f]+$')
 CENSUS_LIMIT = 60
 
@@ -405,13 +420,23 @@ def _part_reading(volume):
             'triangles': len(volume['faces']), 'box_mm': _extents(corners) if corners else None}
 
 
+def _prints_with(face, extruder):
+    """The filament a face prints with: its paint where it carries one, else `extruder`, the one
+    its part prints with. None when a face is split between leaves of different filaments."""
+    if face['decode_error'] or (face['paint'] and face['filament'] is None):
+        return None
+    return face['filament'] if face['paint'] else extruder
+
+
 def painted_readings(project, object_name=None, groups=None):
     """Feishu #228, first clause. The saved project holds the fixture as one object with one
-    normal part on the plate, its 24 faces each where the fixture has it, every face of the
-    first material painted with one filament, every face of the second with another, and the
-    two filaments differ in ``filament_colour``. ``object_name`` picks the object when the
-    plate holds more than one. Nothing raises for a failed expectation; ValueError when the
-    file cannot be read."""
+    normal part on the plate, its faces each where the fixture has it, every face of the first
+    material printing with one filament, every face of the second with another, and the two
+    filaments differ in ``filament_colour``. A face prints with its paint where it carries one
+    and with its part's extruder otherwise, which is how an OBJ import leaves the faces of the
+    first filament (Model.cpp:3271 on the tag sm-v2.4.0 skips them). ``object_name`` picks the
+    object when the plate holds more than one. Nothing raises for a failed expectation;
+    ``error`` when the file cannot be read."""
     expected = {name: [tuple(map(tuple, face)) for face in faces]
                 for name, faces in (groups or material_triangles()).items()}
     names = list(expected)
@@ -424,7 +449,10 @@ def painted_readings(project, object_name=None, groups=None):
         _need(len(wanted[0]['volumes']) == 1, f'expected one part, the object has {len(wanted[0]["volumes"])}')
         entry, part = wanted[0], wanted[0]['volumes'][0]
         offset, placed = _part_faces_placed(part['faces'], expected)
-        values = {name: sorted({part['faces'][index]['filament'] for index, group in placed if group == name},
+        # A part without an extruder of its own follows its object's, and without that the first
+        # filament: the textured project of run dev228b-2c32e51c names none and printed with T0.
+        base = next((value for value in (part['extruder'], entry['extruder']) if value), DEFAULT_EXTRUDER)
+        values = {name: sorted({_prints_with(part['faces'][index], base) for index, group in placed if group == name},
                                key=lambda value: (value is None, value is not None, value))
                   for name in names}
         filaments = [values[name][0] if len(values[name]) == 1 else None for name in names]
@@ -445,9 +473,10 @@ def painted_readings(project, object_name=None, groups=None):
                 'object_extruder': entry['extruder'], 'parts': [_part_reading(part)],
                 'placement_offset_mm': [round(value, 6) for value in offset] if offset is not None else None,
                 'filaments': dict(zip(names, filaments)), 'filament_values': dict(zip(names, values)),
+                'faces_without_paint_print_with': base,
                 'filament_colours': {str(value): _colour(colours, value) for value in painted},
                 'filament_colour': colours, 'printer': saved['printer'],
-                # Plater.cpp:24271-24272 sets the extruders to the smallest filament the faces use.
+                # What the extruders are against the filaments the faces print with (a reading).
                 'extruder_is_smallest_filament': bool(painted) and entry['extruder'] == part['extruder'] == min(painted),
                 'paint_states': _paint_states(part['faces']), 'triangle_attributes': saved['triangle_attributes'],
                 'triangle_attribute_names': saved['triangle_attribute_names'],
@@ -483,55 +512,116 @@ def _codes(raw):
     return lines, codes
 
 
-def filament_readings(path, imported):
-    """Feishu #228, second clause. The G-code prints with the two filaments the saved project
-    painted the model with (``imported`` is painted_readings() of that project) and changes
-    between them. A tool ``T<n>`` is the (n + 1)-th filament. Nothing raises for a failed
-    expectation; ValueError when the file cannot be read."""
-    path = Path(path)
-    try:
-        raw = _read(path)
-        lines, codes = _codes(raw)
-        wanted = sorted({value for value in imported.get('filaments', {}).values() if value})
-        _need(imported.get('checks'), 'the project readings name no painted filaments')
-        first_layer = next((i for i, line in enumerate(lines) if LAYER_START.match(line.strip())), len(lines))
-        tools, changes = {}, []
-        tool, absolute_e, e_position = None, True, None
-
-        def select(new, line):
-            nonlocal tool, e_position
+def _walk(raw):
+    """What a G-code file does with its tools, line by line: ``('select', tool)`` at every
+    ``T<n>``, ``('change', from, to, line, after the first layer starts)`` whenever the tool
+    changes, and ``('extrude', object being printed or None, tool, filament length)`` at every
+    move that extrudes while travelling in XY. ``M82``, ``M83`` and ``G92 E`` are followed."""
+    lines, codes = _codes(raw)
+    first_layer = next((i for i, line in enumerate(lines) if LAYER_START.match(line.strip())), len(lines))
+    tool, absolute_e, e_position, printed = None, True, None, None
+    for number, (line, code) in enumerate(zip(lines, codes), 1):
+        head = code.split(None, 1)[0].upper() if code else ''
+        if line.startswith('; printing object '):
+            found = PRINTING.match(line.strip())
+            printed = found.group(1) if found else None
+            continue
+        if line.startswith('; stop printing object'):
+            printed = None
+            continue
+        found = TOOL.match(code)
+        if found:
+            new = int(found.group(1))
             if tool is not None and new != tool:
-                changes.append({'line': line, 'from': tool, 'to': new, 'after_first_layer': line - 1 >= first_layer})
+                yield 'change', tool, new, number, number - 1 >= first_layer
             tool, e_position = new, None
-            tools.setdefault(tool, {'selects': 0, 'extruding_moves': 0, 'e': 0.0})['selects'] += 1
-
-        for number, (line, code) in enumerate(zip(lines, codes), 1):
-            head = code.split(None, 1)[0].upper() if code else ''
-            found = TOOL.match(code)
-            if found:
-                select(int(found.group(1)), number)
-            elif head == 'M82':
-                absolute_e, e_position = True, None
-            elif head == 'M83':
-                absolute_e = False
-            elif not MOTION.match(code):
-                continue
-            else:
-                words = {key: float(value) for key, value in WORD.findall(code)}
-                if head == 'G92':
-                    e_position = words.get('E', e_position)
-                    continue
-                if 'E' not in words:
-                    continue
+            yield 'select', new
+        elif head == 'M82':
+            absolute_e, e_position = True, None
+        elif head == 'M83':
+            absolute_e = False
+        elif MOTION.match(code):
+            words = {key: float(value) for key, value in WORD.findall(code)}
+            if head == 'G92':
+                e_position = words.get('E', e_position)
+            elif 'E' in words:
                 if absolute_e:
                     delta = None if e_position is None else words['E'] - e_position
                     e_position = words['E']
                 else:
                     delta = words['E']
                 if delta is not None and delta > 0 and ('X' in words or 'Y' in words) and tool is not None:
-                    tools[tool]['extruding_moves'] += 1
-                    tools[tool]['e'] += delta
-        used = sorted(number_ for number_, row in tools.items() if row['extruding_moves'])
+                    yield 'extrude', printed, tool, delta
+
+
+def _per_tool(events):
+    """{tool: its selects, extruding moves and filament length} over the ``select`` and
+    ``extrude`` events of `events`."""
+    tools = {}
+    for event in events:
+        if event[0] == 'select':
+            tools.setdefault(event[1], {'selects': 0, 'extruding_moves': 0, 'e': 0.0})['selects'] += 1
+        elif event[0] == 'extrude':
+            row = tools.setdefault(event[2], {'selects': 0, 'extruding_moves': 0, 'e': 0.0})
+            row['extruding_moves'] += 1
+            row['e'] += event[3]
+    return {str(tool): {**row, 'e': round(row['e'], 5)} for tool, row in sorted(tools.items())}
+
+
+def _extruding(per_tool):
+    return sorted(int(tool) for tool, row in per_tool.items() if row['extruding_moves'])
+
+
+def _filament_used(raw):
+    return [line for line in _codes(raw)[0] if line.startswith('; filament used')]
+
+
+def _printed_in(event, keys):
+    return event[0] == 'extrude' and event[1] is not None and event[1].casefold() in keys
+
+
+def gcode_tools(path, object_name=None):
+    """The tools a G-code file prints with: those that extrude, each tool's extruding moves and
+    filament length, and how often the tool changes. With ``object_name`` the moves inside that
+    object's ``; printing object`` blocks are read once more on their own (``object_...``), which
+    tells one object's filaments from another's on a plate that holds both. A reading: nothing
+    is compared with an expectation. ``error`` when the file cannot be read."""
+    path = Path(path)
+    try:
+        raw = _read(path)
+        events = list(_walk(raw))
+        whole = _per_tool(events)
+        reading = {'tools_extruding': _extruding(whole), 'per_tool': whole,
+                   'change_count': sum(1 for event in events if event[0] == 'change'),
+                   'filament_used': _filament_used(raw), 'file_bytes': len(raw),
+                   'objects_printed': sorted({str(event[1]) for event in events if event[0] == 'extrude' and event[1]})}
+        if object_name is not None:
+            keys = {str(object_name).casefold(), str(object_name).rsplit('.', 1)[0].casefold()}
+            inside = _per_tool([event for event in events if _printed_in(event, keys)])
+            reading.update(object=str(object_name), object_printed=any(_printed_in(event, keys) for event in events),
+                           object_tools_extruding=_extruding(inside),
+                           object_per_tool={tool: {key: value for key, value in row.items() if key != 'selects'}
+                                             for tool, row in inside.items()})
+        return reading
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        return {'error': f'{path.name}: unreadable G-code ({exc})'}
+
+
+def filament_readings(path, imported):
+    """Feishu #228, second clause. The G-code prints with the two filaments the saved project
+    painted the model with (``imported`` is painted_readings() of that project) and changes
+    between them. A tool ``T<n>`` is the (n + 1)-th filament. Nothing raises for a failed
+    expectation; ``error`` when the file cannot be read."""
+    path = Path(path)
+    try:
+        raw = _read(path)
+        wanted = sorted({value for value in imported.get('filaments', {}).values() if value})
+        _need(imported.get('checks'), 'the project readings name no painted filaments')
+        events = list(_walk(raw))
+        per_tool = _per_tool(events)
+        used = _extruding(per_tool)
+        changes = [{'line': event[3], 'from': event[1], 'to': event[2], 'after_first_layer': event[4]}
+                   for event in events if event[0] == 'change']
         printed = [filament for filament in wanted if filament - 1 in used]
         swaps = [change for change in changes
                  if change['from'] + 1 in wanted and change['to'] + 1 in wanted and change['to'] != change['from']]
@@ -542,13 +632,10 @@ def filament_readings(path, imported):
             'filaments_have_distinct_colours': len({_colour(colours, filament) for filament in wanted}) == 2
             and None not in {_colour(colours, filament) for filament in wanted},
         }
-        return {'checks': checks, 'filaments': wanted, 'tools': wanted and [filament - 1 for filament in wanted],
-                'tools_extruding': used, 'per_tool': {str(number_): {**row, 'e': round(row['e'], 5)}
-                                                      for number_, row in sorted(tools.items())},
-                'printed_filaments': printed, 'changes': changes[:12], 'change_count': len(changes),
-                'changes_between_them': len(swaps),
-                'filament_used': [line for line in lines if line.startswith('; filament used')],
-                'file_bytes': len(raw)}
+        return {'checks': checks, 'filaments': wanted, 'tools': [filament - 1 for filament in wanted],
+                'tools_extruding': used, 'per_tool': per_tool, 'printed_filaments': printed,
+                'changes': changes[:12], 'change_count': len(changes), 'changes_between_them': len(swaps),
+                'filament_used': _filament_used(raw), 'file_bytes': len(raw)}
     except (OSError, ValueError, KeyError, TypeError) as exc:
         return {'checks': {}, 'error': f'{path.name}: unreadable G-code ({exc})'}
 
