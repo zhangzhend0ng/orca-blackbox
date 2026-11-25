@@ -63,7 +63,7 @@ def read_project(path):
         extruders = []
         if "Metadata/model_settings.config" in names:
             meta = ET.fromstring(archive.read("Metadata/model_settings.config"))
-            for part in meta.iter("{*}object", "{*}part"):
+            for part in (e for e in meta.iter() if e.tag.rsplit("}", 1)[-1] in ("object", "part")):
                 facts = {m.get("key"): m.get("value") for m in part.findall("{*}metadata")}
                 extruders.append({"name": part.get("name"), **{k: facts.get(k) for k in ("extruder", "source_file")}})
     return {"model_member": model_name, "objects": objects, "build": build, "object_extruders": extruders,
