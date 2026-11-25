@@ -35,7 +35,6 @@ import m7_common as m7  # noqa: E402
 from harness import export_util, topbar_util, winutil  # noqa: E402
 from m7x_199_new_project_title import save_prompt_words  # noqa: E402
 from m7x_249_add_part import capture, stage  # noqa: E402
-from m8_common import wait_arrival  # noqa: E402
 from model_context_cases import open_model_menu  # noqa: E402
 from plate_reserve_case import case_main, save_snapshot  # noqa: E402
 from reload_oracle import (  # noqa: E402
@@ -145,6 +144,25 @@ def read(analysis, key, project, stl, **checks):
     return 'error' not in analysis[key]
 
 
+def wait_import_settled(session, timeout_s=30):
+    """Wait for the imported object and for the Loading box to go.
+
+    wait_arrival is no use here: the empty U1 template's coloured fraction
+    (0.104%) already clears its gate, so it returns at once and the first
+    save met the Loading dialog (guest run dev251a-67abded0)."""
+    deadline = time.monotonic() + timeout_s
+    state = {'dialog': None, 'objects': 0}
+    while True:
+        dialog = m7.wait_dialog(session.pid, timeout_s=0.5)
+        objects = [] if dialog else m7.model_candidates(session, limit=10)
+        state = {'dialog': dialog[1] if dialog else None, 'objects': len(objects)}
+        if (objects and not dialog) or time.monotonic() >= deadline:
+            break
+        time.sleep(1.0)
+    print(f"{LOG} import settled: {state}", flush=True)
+    return state
+
+
 def steps(session, work, analysis, args):
     # Both helpers take write_cube from this module, so they are imported here.
     from m7x_227_import_stl import import_stl
@@ -169,10 +187,10 @@ def steps(session, work, analysis, args):
     with stage(analysis, 'import_chooser'):
         import_stl(session, source, work, analysis)
     with stage(analysis, 'observe_import'):
-        arrived, fraction = wait_arrival(session, timeout_s=30, min_frac=0.001)
-        analysis['import_fraction'] = fraction
-        if not arrived:
-            raise ValueError(f'the imported STL did not appear on the plate (colored fraction={fraction:.3%})')
+        settled = wait_import_settled(session)
+        analysis['import_settled'] = settled
+        if not settled['objects'] or settled['dialog']:
+            raise ValueError(f'the imported STL did not settle on the plate: {settled}')
     with stage(analysis, 'save_imported'):
         read(analysis, 'before', save_snapshot(session, work, 'before-reload'), source, side=20)
     with stage(analysis, 'reload_modified'):
