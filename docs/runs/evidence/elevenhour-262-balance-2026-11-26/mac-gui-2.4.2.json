@@ -1,0 +1,235 @@
+{
+  "baseline": {
+    "path": "docs\\runs\\evidence\\mac-262-2026-11-25\\cb5ac024-baseline.gcode",
+    "ratios": {
+      "top": 1.0,
+      "bottom": 1.0,
+      "object": 1.0
+    },
+    "layers": 240,
+    "features": {
+      "Outer wall": {
+        "positive": 1011.3610400000199,
+        "segments": 31950,
+        "digest": "89aaffcc174306c78c4534e3007409fd75e94356ac3e434d27c2917652644c66"
+      },
+      "Inner wall": {
+        "positive": 1007.3800900000168,
+        "segments": 21422,
+        "digest": "6d37ab9c0243f4efcbe2e9555524d99d7e4dd4a4de8dc8ce1e96c7f4dc8c8510"
+      },
+      "Gap infill": {
+        "positive": 233.05807999999908,
+        "segments": 6458,
+        "digest": "29184025264c5cc03f5a4cbaae3ba07bf1d39c2d319d3380e05efff539ead1fb"
+      },
+      "Bottom surface": {
+        "positive": 21.03846,
+        "segments": 311,
+        "digest": "77d050fa882e6f1648ab2fb13195805fb6c8a542650e56087fc87e4add1426a1"
+      },
+      "Internal solid infill": {
+        "positive": 639.0148999999993,
+        "segments": 10122,
+        "digest": "2a1036f8a077483cf7f918646e00303ea8f470baea3cce217595ef50fc92d84c"
+      },
+      "Bridge": {
+        "positive": 43.95314000000004,
+        "segments": 482,
+        "digest": "33a18cad3a0e4642ac5fe1446665b980df2cff969e952d8633ec036123d70643"
+      },
+      "Top surface": {
+        "positive": 127.37738999999972,
+        "segments": 1014,
+        "digest": "10dce6190d759a8edca063020df05ae7176655ae40f4f477acd47131bb040bd7"
+      },
+      "Sparse infill": {
+        "positive": 536.4202100000002,
+        "segments": 4534,
+        "digest": "25d098e31ac7613fe1eb5d97b2c5f735c511a2fe433894baebeed255ab21aa13"
+      },
+      "Overhang wall": {
+        "positive": 6.412980000000007,
+        "segments": 362,
+        "digest": "9c38f066ae9e21ae291d522126f9002ee9d51c67516074e9ac534fb9e45be977"
+      },
+      "Internal Bridge": {
+        "positive": 159.5810200000006,
+        "segments": 815,
+        "digest": "e9e9f26270aaf82b5269660e9f4c65de6a35fcab6683d71898fddada174125cc"
+      }
+    },
+    "outside": {
+      "Custom": {
+        "positive": 15.0,
+        "segments": 1,
+        "digest": "950b4cbf64175991383c55306a9f2f1ff88eb265e5bf3762f380a7da00088927"
+      },
+      "Brim": {
+        "positive": 0.09108000000000002,
+        "segments": 16,
+        "digest": "b59e1eda2417536ecf0e67b9635a86fe430157b50c80f2b60c0cc1488322a0e0"
+      }
+    },
+    "step": 1e-05,
+    "side_e": 358.50081999999765,
+    "objects": [
+      {
+        "name": "3DBenchy",
+        "id": "0",
+        "copy": "0",
+        "positive": 3785.597310000228
+      }
+    ]
+  },
+  "target": {
+    "emitted_ratios": {
+      "top": [
+        1.0,
+        1.1
+      ],
+      "bottom": [
+        1.0,
+        0.9
+      ],
+      "object": [
+        1.0,
+        1.0
+      ]
+    },
+    "scale": {
+      "top": 1.1,
+      "bottom": 0.9
+    },
+    "top": {
+      "baseline": 127.37739,
+      "target": 140.11529,
+      "segments": [
+        1014,
+        1014
+      ],
+      "paths_identical": true,
+      "deviation_sum": 0.00016099999999016207,
+      "max_abs_deviation": 1.0000000000037756e-05
+    },
+    "bottom": {
+      "baseline": 21.03846,
+      "target": 18.93477,
+      "segments": [
+        311,
+        311
+      ],
+      "paths_identical": true,
+      "deviation_sum": 0.00015599999999945302,
+      "max_abs_deviation": 8.999999999998592e-06
+    },
+    "other_features": {
+      "Bridge": {
+        "baseline": 43.95314000000004,
+        "target": 43.95314000000004,
+        "segments": [
+          482,
+          482
+        ],
+        "identical": true
+      },
+      "Gap infill": {
+        "baseline": 233.05807999999908,
+        "target": 233.05807999999908,
+        "segments": [
+          6458,
+          6458
+        ],
+        "identical": true
+      },
+      "Inner wall": {
+        "baseline": 1007.3800900000168,
+        "target": 1007.3800900000168,
+        "segments": [
+          21422,
+          21422
+        ],
+        "identical": true
+      },
+      "Internal Bridge": {
+        "baseline": 159.5810200000006,
+        "target": 159.5810200000006,
+        "segments": [
+          815,
+          815
+        ],
+        "identical": true
+      },
+      "Internal solid infill": {
+        "baseline": 639.0148999999993,
+        "target": 639.0148999999993,
+        "segments": [
+          10122,
+          10122
+        ],
+        "identical": true
+      },
+      "Outer wall": {
+        "baseline": 1011.3610400000199,
+        "target": 1011.3610400000199,
+        "segments": [
+          31950,
+          31950
+        ],
+        "identical": true
+      },
+      "Overhang wall": {
+        "baseline": 6.412980000000007,
+        "target": 6.412980000000007,
+        "segments": [
+          362,
+          362
+        ],
+        "identical": true
+      },
+      "Sparse infill": {
+        "baseline": 536.4202100000002,
+        "target": 536.4202100000002,
+        "segments": [
+          4534,
+          4534
+        ],
+        "identical": true
+      }
+    },
+    "object_positive": {
+      "baseline": 3785.5973100000356,
+      "target": 3796.2315200000357
+    },
+    "outside_positive": {
+      "baseline": 15.09108,
+      "target": 15.09108
+    },
+    "side_e": [
+      358.50081999999765,
+      358.50081999999765
+    ],
+    "layers": [
+      240,
+      240
+    ],
+    "measured_delta": 10.634210000000166,
+    "predicted_delta": 10.633893000000013,
+    "residual": 0.00031700000015355556,
+    "formula": "(0.1) * 127.377390 + (-0.1) * 21.038460",
+    "e_write_step": 1e-05,
+    "segment_limit": {
+      "top": 1.0500000000000001e-05,
+      "bottom": 9.5e-06
+    },
+    "residual_bound": 0.027203000000000005,
+    "checks": {
+      "top_and_bottom_paths_identical": true,
+      "other_features_identical": true,
+      "top_and_bottom_within_write_step": true,
+      "print_flow_ratio_unchanged": true,
+      "balance_identity_holds": true,
+      "object_positive_unchanged": false
+    }
+  }
+}

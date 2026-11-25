@@ -1,0 +1,244 @@
+{
+  "baseline": {
+    "path": "C:\\Users\\SNAPMA~1\\AppData\\Local\\Temp\\tmp.fymSB5Htlx\\baseline\\export.gcode",
+    "ratios": {
+      "top": 1.0,
+      "bottom": 1.0,
+      "object": 1.0
+    },
+    "layers": 240,
+    "features": {
+      "Brim": {
+        "positive": 0.09108000000000002,
+        "segments": 16,
+        "digest": "0ab5081cc2b8f93e1f36c691178b601b459fbcb06edbc45a23630eb1ff829c04"
+      },
+      "Bottom surface": {
+        "positive": 21.212369999999996,
+        "segments": 310,
+        "digest": "555c6ee2789e036fdb552c90520e5b3ee2f3162113adf80bb4029bd415928768"
+      },
+      "Gap infill": {
+        "positive": 230.14996999999917,
+        "segments": 6103,
+        "digest": "4a60b4dc72727f9486ec80c6843057d0e831a8cc16cd106823f0d140ecce61f2"
+      },
+      "Outer wall": {
+        "positive": 1011.3633999999992,
+        "segments": 29273,
+        "digest": "7bce238f18b2d23106f3b36660cd16baf1fe481d23072ff16c3f0fcb57ac47bd"
+      },
+      "Inner wall": {
+        "positive": 1012.273270000009,
+        "segments": 20882,
+        "digest": "52cd39ca49e55c827167bb9a1fff3576314e7c5afda26b96be1c989c43d840c5"
+      },
+      "Internal solid infill": {
+        "positive": 648.7619499999997,
+        "segments": 11451,
+        "digest": "63e2ef46ae6019c91278d5f7ddb596252bca3e613a91dff65e935d7e29f7422f"
+      },
+      "Bridge": {
+        "positive": 48.21819000000009,
+        "segments": 338,
+        "digest": "dedb7946ea1e33a0a4561c70bc04570261a9a9328f348f7180db5dbc2e937fed"
+      },
+      "Top surface": {
+        "positive": 107.75820999999982,
+        "segments": 956,
+        "digest": "94debf93116e4cf21c61400eaa191dc76b9c2472f38a5d35c96ab04586c572e3"
+      },
+      "Sparse infill": {
+        "positive": 539.6834799999996,
+        "segments": 4605,
+        "digest": "4c9410ed8fb4586a5347f56161095b5ce615e1c6562eee93f4caaea7825300ed"
+      },
+      "Overhang wall": {
+        "positive": 6.415080000000005,
+        "segments": 336,
+        "digest": "5009fb468fdd62eb913fb3aa4f969dbe1263a8645f5d8626349f43616c2118ad"
+      },
+      "Internal Bridge": {
+        "positive": 164.06301000000056,
+        "segments": 864,
+        "digest": "264d8a2a976c0afd318268ae7d8fa730777e3d81b207cdc88fd3773ca0c25e64"
+      }
+    },
+    "outside": {
+      "Custom": {
+        "positive": 15.0,
+        "segments": 1,
+        "digest": "950b4cbf64175991383c55306a9f2f1ff88eb265e5bf3762f380a7da00088927"
+      }
+    },
+    "step": 1e-05,
+    "side_e": 360.00079999999934,
+    "objects": [
+      {
+        "name": "3DBenchy",
+        "id": "7023187088840619264",
+        "copy": "0",
+        "positive": 3789.99001000016
+      }
+    ]
+  },
+  "target": {
+    "emitted_ratios": {
+      "top": [
+        1.0,
+        1.1
+      ],
+      "bottom": [
+        1.0,
+        0.9
+      ],
+      "object": [
+        1.0,
+        1.0
+      ]
+    },
+    "scale": {
+      "top": 1.1,
+      "bottom": 0.9
+    },
+    "top": {
+      "baseline": 107.75821,
+      "target": 118.53362,
+      "segments": [
+        956,
+        956
+      ],
+      "paths_identical": true,
+      "deviation_sum": -0.00041100000000893547,
+      "max_abs_deviation": 1.0000000000065512e-05
+    },
+    "bottom": {
+      "baseline": 21.21237,
+      "target": 19.0913,
+      "segments": [
+        310,
+        310
+      ],
+      "paths_identical": true,
+      "deviation_sum": 0.0001669999999992875,
+      "max_abs_deviation": 9.000000000002062e-06
+    },
+    "other_features": {
+      "Bridge": {
+        "baseline": 48.21819000000009,
+        "target": 48.21819000000009,
+        "segments": [
+          338,
+          338
+        ],
+        "identical": true
+      },
+      "Brim": {
+        "baseline": 0.09108000000000002,
+        "target": 0.09108000000000002,
+        "segments": [
+          16,
+          16
+        ],
+        "identical": true
+      },
+      "Gap infill": {
+        "baseline": 230.14996999999917,
+        "target": 230.14996999999917,
+        "segments": [
+          6103,
+          6103
+        ],
+        "identical": true
+      },
+      "Inner wall": {
+        "baseline": 1012.273270000009,
+        "target": 1012.273270000009,
+        "segments": [
+          20882,
+          20882
+        ],
+        "identical": true
+      },
+      "Internal Bridge": {
+        "baseline": 164.06301000000056,
+        "target": 164.06301000000056,
+        "segments": [
+          864,
+          864
+        ],
+        "identical": true
+      },
+      "Internal solid infill": {
+        "baseline": 648.7619499999997,
+        "target": 648.7619499999997,
+        "segments": [
+          11451,
+          11451
+        ],
+        "identical": true
+      },
+      "Outer wall": {
+        "baseline": 1011.3633999999992,
+        "target": 1011.3633999999992,
+        "segments": [
+          29273,
+          29273
+        ],
+        "identical": true
+      },
+      "Overhang wall": {
+        "baseline": 6.415080000000005,
+        "target": 6.415080000000005,
+        "segments": [
+          336,
+          336
+        ],
+        "identical": true
+      },
+      "Sparse infill": {
+        "baseline": 539.6834799999996,
+        "target": 539.6834799999996,
+        "segments": [
+          4605,
+          4605
+        ],
+        "identical": true
+      }
+    },
+    "object_positive": {
+      "baseline": 3789.9900100000073,
+      "target": 3798.644350000007
+    },
+    "outside_positive": {
+      "baseline": 15.0,
+      "target": 15.0
+    },
+    "side_e": [
+      360.00079999999934,
+      360.00079999999934
+    ],
+    "layers": [
+      240,
+      240
+    ],
+    "measured_delta": 8.654339999999593,
+    "predicted_delta": 8.65458400000001,
+    "residual": -0.0002440000004177989,
+    "formula": "(0.1) * 107.758210 + (-0.1) * 21.212370",
+    "e_write_step": 1e-05,
+    "segment_limit": {
+      "top": 1.0500000000000001e-05,
+      "bottom": 9.5e-06
+    },
+    "residual_bound": 0.025966000000000003,
+    "checks": {
+      "top_and_bottom_paths_identical": true,
+      "other_features_identical": true,
+      "top_and_bottom_within_write_step": true,
+      "print_flow_ratio_unchanged": true,
+      "balance_identity_holds": true,
+      "object_positive_unchanged": false
+    }
+  }
+}

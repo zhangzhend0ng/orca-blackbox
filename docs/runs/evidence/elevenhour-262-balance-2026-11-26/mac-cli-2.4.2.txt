@@ -1,0 +1,30 @@
+== target: top 1 -> 1.1, bottom 1 -> 0.9, print_flow_ratio 1 -> 1; layers 240 -> 240
+  Top surface                127.513110     140.264560   1.100001  segments 1018 -> 1018, max |segment residual| 1.0000000000037756e-05
+  Bottom surface              21.212590      19.091450   0.900006  segments 310 -> 310, max |segment residual| 8.999999999998592e-06
+  other (8 features)        3638.533480    3638.533480   1.000000  segment streams identical
+  object positive E         3787.259180    3797.889490   1.002807  (+0.28069 %)
+  outside objects             15.091080      15.091080           
+  side E (retract/prime)     358.500730     358.500740           
+  measured delta +10.630310   predicted +10.630052   residual +0.000258
+  predicted = (0.1) * 127.513110 + (-0.1) * 21.212590; E write step 1e-05; |residual| bound 0.027268
+  PASS top_and_bottom_paths_identical
+  PASS other_features_identical
+  PASS top_and_bottom_within_write_step
+  PASS print_flow_ratio_unchanged
+  PASS balance_identity_holds
+  FAIL object_positive_unchanged
+== control: top 1 -> 0.9, bottom 1 -> 1.1, print_flow_ratio 1 -> 1; layers 240 -> 240
+  Top surface                127.513110     114.761930   0.900001  segments 1018 -> 1018, max |segment residual| 9.000000000009e-06
+  Bottom surface              21.212590      23.333990   1.100007  segments 310 -> 310, max |segment residual| 9.999999999996123e-06
+  other (8 features)        3638.533480    3638.533480   1.000000  segment streams identical
+  object positive E         3787.259180    3776.629400   0.997193  (-0.28067 %)
+  outside objects             15.091080      15.091080           
+  side E (retract/prime)     358.500730     358.500740           
+  measured delta -10.629780   predicted -10.630052   residual +0.000272
+  predicted = (-0.1) * 127.513110 + (0.1) * 21.212590; E write step 1e-05; |residual| bound 0.025852
+  PASS top_and_bottom_paths_identical
+  PASS other_features_identical
+  PASS top_and_bottom_within_write_step
+  PASS print_flow_ratio_unchanged
+  PASS balance_identity_holds
+  FAIL object_positive_unchanged

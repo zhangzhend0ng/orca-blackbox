@@ -140,7 +140,7 @@ def probe_submenu(session, work, submenu, phase, serial):
     return out, serial
 
 
-def toplevels(pid):
+def toplevels(pid=None):
     """Visible top-level windows of the process: class, title, screen rect and handle."""
     import ctypes.wintypes as wintypes
 
@@ -151,7 +151,7 @@ def toplevels(pid):
     def visit(hwnd, _lp):
         owner = wintypes.DWORD()
         user32.GetWindowThreadProcessId(hwnd, ctypes.byref(owner))
-        if owner.value == pid and user32.IsWindowVisible(hwnd):
+        if (pid is None or owner.value == pid) and user32.IsWindowVisible(hwnd):
             cls = ctypes.create_unicode_buffer(128)
             user32.GetClassNameW(hwnd, cls, 128)
             text = ctypes.create_unicode_buffer(512)
@@ -259,38 +259,67 @@ def press_in(dialog, label):
     return list(point)
 
 
+def desktop_dialogs():
+    """Visible #32770 windows of every process: a system prompt (for example Windows Firewall) is not the app's."""
+    return [window for window in toplevels() if window['class'] == '#32770' and window['title']]
+
+
+def shoot(hwnd, path):
+    width, height, pixels = winutil.capture_window(hwnd)
+    frame = np.frombuffer(pixels, np.uint8).reshape(height, width, 4)
+    image = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
+    cv2.imwrite(str(path), image)
+    return [word[0] for word in m7.mdu.ocr_words_img(image, scale=2, psm=6)]
+
+
 def open_archive(session, work, preview):
-    """Press All, then Open, on the Archive preview and watch the application for 24 s."""
+    """Press All, then Open, on the Archive preview and record every dialog that follows, then answer them."""
     import ctypes
     wintypes = ctypes.wintypes
 
     user32 = winutil.user32
     out = {'all': press_in(preview, 'All')}
     time.sleep(1.0)
-    width, height, pixels = winutil.capture_window(preview['hwnd'])
-    frame = np.frombuffer(pixels, np.uint8).reshape(height, width, 4)
-    cv2.imwrite(str(work / 'zip-after-all.png'), cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR))
+    out['after_all'] = shoot(preview['hwnd'], work / 'zip-after-all.png')
+    known = {window['hwnd'] for window in toplevels(session.pid)}
+    out['desktop_dialogs_before_open'] = desktop_dialogs()
+    for window in out['desktop_dialogs_before_open']:
+        if 'windows security' in window['title'].casefold():
+            # Cancel keeps the firewall blocking inbound connections, which is the state before the prompt.
+            winutil._send_msg(window['hwnd'], 0x0111, 2, 0)
+            time.sleep(1.0)
+            window['cancelled'] = not user32.IsWindowVisible(window['hwnd'])
     out['open'] = press_in(preview, 'Open')
-    samples = []
     started = time.monotonic()
-    while time.monotonic() - started < 24:
-        time.sleep(2.0)
-        windows = []
+    seen = {}
+    samples = []
+    while time.monotonic() - started < 30:
+        time.sleep(1.0)
         for window in toplevels(session.pid):
-            if window['hwnd'] in (session.hwnd, preview['hwnd']) or window['class'] == '#32768':
+            if window['hwnd'] in known or window['class'] != '#32770' or window['hwnd'] in seen:
                 continue
-            if window['rect'][2] - window['rect'][0] >= 1100 and window['class'] not in ('#32770',):
-                continue  # the main frame and its full-size layers
-            windows.append({'class': window['class'], 'title': window['title'], 'rect': window['rect'],
-                            'texts': [text for _cls, text, _child in descendants(window['hwnd']) if text][:16]})
+            record = seen[window['hwnd']] = {'class': window['class'], 'title': window['title'], 'rect': window['rect'],
+                                             'at_s': round(time.monotonic() - started, 1), 'ocr': None}
+            try:
+                record['ocr'] = shoot(window['hwnd'], work / f'after-open-{len(seen)}.png')
+            except (OSError, RuntimeError, ValueError) as exc:
+                record['ocr'] = f'unavailable ({exc})'
+            print('[census] new dialog', json.dumps(record, ensure_ascii=False)[:700], flush=True)
+            if time.monotonic() - started > 6 and window['title'].casefold() == 'snapmaker orca error':
+                # The error has been read and kept; answer it so the application can continue.
+                press_in(window, 'OK')
+                record['ok_pressed_s'] = round(time.monotonic() - started, 1)
         top = user32.GetForegroundWindow()
         owner = wintypes.DWORD()
         user32.GetWindowThreadProcessId(top, ctypes.byref(owner))
         samples.append({'at_s': round(time.monotonic() - started, 1),
-                        'preview_visible': bool(user32.IsWindowVisible(preview['hwnd'])),
                         'model_fraction': round(m7.model_colored_frac(session), 5),
-                        'foreground_is_app': owner.value == session.pid, 'windows': windows})
-        print('[census] after open', json.dumps(samples[-1], ensure_ascii=False)[:900], flush=True)
+                        'foreground_is_app': owner.value == session.pid,
+                        'app_dialogs': [w['title'] for w in toplevels(session.pid) if w['class'] == '#32770'],
+                        'desktop_dialogs': [w['title'] for w in desktop_dialogs()]})
+        if len(samples) >= 12 and not samples[-1]['app_dialogs'] and not samples[-1]['desktop_dialogs']:
+            break
+    out['dialogs'] = list(seen.values())
     out['samples'] = samples
     width, height, pixels = winutil.screen_grab()
     shot = np.frombuffer(pixels, np.uint8).reshape(height, width, 4)
