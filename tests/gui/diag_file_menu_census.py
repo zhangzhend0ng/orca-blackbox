@@ -7,6 +7,7 @@ screenshot. Every dialog is cancelled; nothing is imported or exported. The rows
 diagnostic record, not a verdict."""
 import argparse
 import ctypes
+import hashlib
 import json
 import sys
 import tempfile
@@ -19,12 +20,13 @@ import cv2
 import numpy as np
 
 HERE = Path(__file__).resolve().parents[2]
-sys.path[:0] = [str(HERE), str(HERE / 'tests')]
+sys.path[:0] = [str(HERE), str(HERE / 'tests'), str(HERE / 'tests' / 'gui')]
 
 import m7_common as m7
 from harness import export_util, topbar_util, winutil
 from m2_slice_chain import click_slice_start, wait_slicing_done
 from m3_common import add_common_args, boot_session
+from m7x_249_add_part import capture
 from m8_common import wait_arrival
 
 PROBED = ('g-code', 'sliced file', 'stl', 'config', 'zip', 'generic 3mf', 'preset bundle')
@@ -437,53 +439,64 @@ def give_chooser(session, hwnd, text):
 
 
 def zip_experiments(session, work, analysis):
-    """Three ways to load several models, in one session, each followed by a watch of what the application shows.
+    """Three ways of loading models, in one session, each followed by a watch of what the application shows.
 
-    (1) File > Import with three STL paths typed at once - the multi-file path without any archive;
-    (2) Import Zip Archive with an archive of one STL - the archive path with a single file;
-    (3) Import Zip Archive with an archive of three STLs - what Feishu #231 asks for."""
+    In this order, so that the cleanest case comes before any failure can colour the session:
+    (1) Import Zip Archive with an archive of one STL - the archive path with a single file;
+    (2) Import Zip Archive with an archive of three STLs - what Feishu #231 asks for;
+    (3) File > Import with three STL paths typed at once - several files in one call, with no archive.
+    A failure in one experiment is recorded and the next one still runs."""
     from zipfile import ZipFile
 
     from m7x_251_reload_from_disk import write_cube
 
     out = {'objects_at_start': len(m7.model_candidates(session) or [])}
+    for name, members in (('one_file_archive', ('solo_10mm.stl',)),
+                          ('three_file_archive', ('trio_10mm.stl', 'trio_20mm.stl', 'trio_30mm.stl'))):
+        entry = {}
+        out[name] = entry
+        try:
+            archive = work / f'{name}.zip'
+            with ZipFile(archive, 'w') as bundle:
+                for index, member_name in enumerate(members, 1):
+                    member = work / member_name
+                    write_cube(member, index * 10)
+                    bundle.write(member, member_name)
+            entry['zip_sha256'] = hashlib.sha256(archive.read_bytes()).hexdigest()
+            _dispatched, dialog = m7.file_menu_dispatch(session, 'Import Zip Archive', expect_dialog=True, via='Import', timeout_s=10)
+            if not dialog:
+                raise ValueError('Import Zip Archive opened no chooser')
+            give_chooser(session, dialog[3], str(archive))
+            preview = m7.wait_dialog(session.pid, timeout_s=15, title_substr='Archive preview')
+            if not preview:
+                entry['preview'] = None
+            else:
+                time.sleep(1.0)
+                entry['preview_rows'] = shoot(preview[3], work / f'{name}-preview.png')
+                entry['controls'] = [text for _cls, text, _child in descendants(preview[3]) if text]
+                entry['all'] = press_in({'hwnd': preview[3]}, 'All')
+                time.sleep(1.0)
+                entry['rows_after_all'] = shoot(preview[3], work / f'{name}-all.png')
+                entry['open'] = press_in({'hwnd': preview[3]}, 'Open')
+            entry.update(watch(session, work, name, seconds=14))
+            capture(session, work / f'{name}-after.png')
+        except (OSError, RuntimeError, ValueError) as exc:
+            entry['error'] = f'{type(exc).__name__}: {exc}'
     loose = []
-    for name, size in (('exp1_a.stl', 10), ('exp1_b.stl', 20), ('exp1_c.stl', 30)):
+    for index, name in enumerate(('loose_10mm.stl', 'loose_20mm.stl', 'loose_30mm.stl'), 1):
         path = work / name
-        write_cube(path, size)
+        write_cube(path, index * 10)
         loose.append(str(path))
-    dispatched, dialog = m7.file_menu_dispatch(session, 'Import 3MF/STL/STEP/SVG/OBJ/AMF', expect_dialog=True, via='Import', timeout_s=10)
-    if not dialog:
-        raise ValueError('the Import row opened no chooser')
-    give_chooser(session, dialog[3], ' '.join(f'"{path}"' for path in loose))
-    out['three_files_at_once'] = watch(session, work, 'exp1')
-    capture(session, work / 'exp1-after.png')
-
-    for number, members in ((2, ('solo_10mm.stl',)), (3, ('trio_10mm.stl', 'trio_20mm.stl', 'trio_30mm.stl'))):
-        archive = work / f'exp{number}.zip'
-        with ZipFile(archive, 'w') as bundle:
-            for index, name in enumerate(members, 1):
-                member = work / name
-                write_cube(member, index * 10)
-                bundle.write(member, name)
-        dispatched, dialog = m7.file_menu_dispatch(session, 'Import Zip Archive', expect_dialog=True, via='Import', timeout_s=10)
+    entry = out['three_files_at_once'] = {}
+    try:
+        _dispatched, dialog = m7.file_menu_dispatch(session, 'Import 3MF/STL/STEP/SVG/OBJ/AMF', expect_dialog=True, via='Import', timeout_s=10)
         if not dialog:
-            raise ValueError('Import Zip Archive opened no chooser')
-        give_chooser(session, dialog[3], str(archive))
-        preview = m7.wait_dialog(session.pid, timeout_s=15, title_substr='Archive preview')
-        if not preview:
-            out[f'exp{number}'] = {'preview': None, **watch(session, work, f'exp{number}')}
-            continue
-        time.sleep(1.0)
-        entry = {'preview_rows': shoot(preview[3], work / f'exp{number}-preview.png'),
-                 'controls': [text for _cls, text, _child in descendants(preview[3]) if text]}
-        entry['all'] = press_in({'hwnd': preview[3]}, 'All')
-        time.sleep(1.0)
-        entry['rows_after_all'] = shoot(preview[3], work / f'exp{number}-all.png')
-        entry['open'] = press_in({'hwnd': preview[3]}, 'Open')
-        entry.update(watch(session, work, f'exp{number}'))
-        capture(session, work / f'exp{number}-after.png')
-        out[{2: 'one_file_archive', 3: 'three_file_archive'}[number]] = entry
+            raise ValueError('the Import row opened no chooser')
+        give_chooser(session, dialog[3], ' '.join(f'"{path}"' for path in loose))
+        entry.update(watch(session, work, 'three_files', seconds=14))
+        capture(session, work / 'three_files-after.png')
+    except (OSError, RuntimeError, ValueError) as exc:
+        entry['error'] = f'{type(exc).__name__}: {exc}'
     out['app_alive'] = session.alive()
     return out
 

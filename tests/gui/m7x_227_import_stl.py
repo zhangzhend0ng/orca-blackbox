@@ -163,6 +163,8 @@ def turn_with_gizmo(session, work, analysis):
     inside the canvas, so its numeric fields are found by OCR on the row
     labelled Rotate (X, Y, Z from left to right); m7e_rotate45 types into the
     same fields. The saved project, not the read-back, is the judge."""
+    # Saving the project clears the selection, so the object is selected again first.
+    select_all(session, work, 'rotated', analysis)
     press_on_canvas(session, PAGE_UP, 'rotate_gizmo', analysis)
     capture(session, work / 'rotated-gizmo.png')
     boxes = m7.gizmo_row_boxes(session, 'rotate') or m7.gizmo_row_boxes(session, 'rotation')
