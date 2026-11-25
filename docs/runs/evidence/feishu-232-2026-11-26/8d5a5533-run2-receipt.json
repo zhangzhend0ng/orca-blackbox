@@ -1,0 +1,14 @@
+﻿{
+    "commit":  "8d5a55333b8c7bc130fcee2dcf367f947e96be6d",
+    "case":  "m7x_232_import_configs",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "orca_processes_after":  0,
+    "summary":  "SUMMARY: PASS=0 FAIL=1\r\nFAILED: m7x_232_import_configs",
+    "dispatched_at":  "2026-11-26T05:09:10.8009824+08:00",
+    "scenario_completed_at":  "2026-11-26T05:11:14.8511939+08:00",
+    "suite_completed_at":  "2026-11-26T05:11:15.1961604+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_232_import_configs.log",
+    "log_sha256":  "18FBEF1B6BE606D816C0C82556D753B813D28A054301D09DFD92A37DD5D82774"
+}

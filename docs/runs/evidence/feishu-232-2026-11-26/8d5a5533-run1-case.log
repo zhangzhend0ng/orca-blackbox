@@ -1,0 +1,60 @@
+﻿[m7x232] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\232\run-70v63e3w
+[m7x249] started build_config at 2026-11-25T21:07:13.208196+00:00
+[m7x249] finished build_config in 0.031s
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\232\run-70v63e3w\import-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\232\run-70v63e3w\import-profile C:\coil\orca-blackbox-v3-r1\fixtures\agent_layer_cube.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x5d30ef8, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#2)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x5a71000, WM_CLOSE)
+[launcher] pid=8928 hwnd=0x5dc0ada rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.10%)
+[m7x249] started ini_attempt at 2026-11-25T21:08:03.034029+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x59903d2 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=322) sent, completed=False
+[m7x232] chooser {'title': 'Select profile to load:', 'entered': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\232\\run-70v63e3w\\bb_three.ini', 'file': 'bb_three.ini', 'filters': [{'selected': -1, 'items': []}, {'selected': 0, 'items': ['Config files (*.json;*.zip;*.orca_printer;*.orca_filament)']}], 'ini_in_filter': False}
+[m7x232] dialog {'title': 'Import result', 'texts': ['OK', 'htmlWindow'], 'screenshot': 'ini-dialog-1.png', 'message': '& There are 0 configs imported. (Only non-system and compatible configs) Hint: Make sure you have added the corresponding printer before importing the configs.'}
+[m7x249] finished ini_attempt in 8.906s
+[m7x249] started first_import at 2026-11-25T21:08:11.947589+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x59903d2 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=322) sent, completed=False
+[m7x232] chooser {'title': 'Select profile to load:', 'entered': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\232\\run-70v63e3w\\inputs\\bb_three.zip', 'file': 'bb_three.zip', 'filters': [{'selected': -1, 'items': []}, {'selected': 0, 'items': ['Config files (*.json;*.zip;*.orca_printer;*.orca_filament)']}, {'selected': -1, 'items': []}], 'ini_in_filter': False}
+[m7x232] dialog {'title': 'Import result', 'texts': ['OK', 'htmlWindow'], 'screenshot': 'zip1-dialog-1.png', 'message': 'There are 3 configs imported. (Only non-system and compatible configs) S'}
+[m7x249] finished first_import in 10.437s
+[m7x249] started preset_lists_and_selection at 2026-11-25T21:08:22.389894+00:00
+[m7x232] machine list (2 pages): ['------ Project-inside presets ------', '------ User presets ------', 'BB Test Printer', '------ Select/Remove printers (system presets) ------', '------ Create printer ------']
+[m7x232] filament list (1 pages): ['------ Project-inside presets ------ |', 'Snapmaker PLA Silk @U1 0.8 nozz...', '------ User presets ------', 'BB Test Filament', '------ System presets ------', 'AliZ PA-CF', 'AliZ PETG', 'AliZ PETG-CF', 'AliZ PETG-Metal', 'AliZ PLA', 'Bambu ABS', 'Bambu ABS-GF', 'Bambu ASA', 'Bambu ASA-Aero']
+[m7x232] filament message click: the preset row still reads 'Generic PETG @U1 0.8 nozzle(agent_layer_cube.3mf)'
+[m7x232] filament real click: the preset row still reads 'Generic PETG @U1 0.8 nozzle(agent_layer_cube.3mf)'
+[m7x232] filament arrow keys: the preset row still reads 'Generic PETG @U1 0.8 nozzle(agent_layer_cube.3mf)'
+[m7x249] finished preset_lists_and_selection in 17.407s
+[m7x249] started second_import at 2026-11-25T21:08:39.869196+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x59903d2 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=322) sent, completed=False
+[m7x232] chooser {'title': 'Select profile to load:', 'entered': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\232\\run-70v63e3w\\inputs\\bb_three.zip', 'file': 'bb_three.zip', 'filters': [{'selected': -1, 'items': []}, {'selected': 0, 'items': ['Config files (*.json;*.zip;*.orca_printer;*.orca_filament)']}, {'selected': -1, 'items': []}], 'ini_in_filter': False}
+[m7x232] dialog {'title': 'Overwrite config', 'texts': ['Yes', 'No', 'htmlWindow', 'Yes to All', 'No to All'], 'screenshot': 'zip2-dialog-1.png', 'message': 'A config exists with the same name: BB Test Printer. Do you want to overwrite it? 2 S No Yes to All | | No to All'}
+[m7x232] dialog {'title': 'Overwrite config', 'texts': ['Yes', 'No', 'htmlWindow', 'Yes to All', 'No to All'], 'screenshot': 'zip2-dialog-2.png', 'message': 'A config exists with the same name: BB Test Filament. Do you want to overwrite it? 2 S No Yes to All | | No to All'}
+[m7x232] dialog {'title': 'Overwrite config', 'texts': ['Yes', 'No', 'htmlWindow', 'Yes to All', 'No to All'], 'screenshot': 'zip2-dialog-3.png', 'message': 'A config exists with the same name: BB Test Process. Do you want to overwrite it? 2 S No Yes to All | | No to All'}
+[m7x232] dialog {'title': 'Import result', 'texts': ['OK', 'htmlWindow'], 'screenshot': 'zip2-dialog-4.png', 'message': 'There are 3 configs imported. (Only non-system and compatible configs) S'}
+[m7x249] finished second_import in 10.547s
+[m7x249] started verify at 2026-11-25T21:09:00.425190+00:00
+[m7x232] {'瀵煎叆鎴愬姛锛? 涓璁惧嚭鐜板湪瀵瑰簲鍒楄〃涓斿弬鏁版纭?: 'FAIL (1 presets are not in their preset lists: [\'process/BB Test Process\']; the presets were not selected in the sidebar, so the effective values were not compared (ValueError: BB Test Filament is in the list but could not be selected: filament; tried [{\'how\': \'message click\', \'point\': [74, 562], \'steps\': None, \'result\': "the preset row still reads \'Generic PETG @U1 0.8 nozzle(agent_layer_cube.3mf)\'"}, {\'how\': \'real click\', \'point\': [74, 562], \'steps\': None, \'result\': "the preset row still reads \'Generic PETG @U1 0.8 nozzle(agent_layer_cube.3mf)\'"}, {\'how\': \'arrow keys\', \'point\': [74, 562], \'steps\': 2, \'result\': "the preset row still reads \'Generic PETG @U1 0.8 nozzle(agent_layer_cube.3mf)\'"}]))', '鍚屽悕閲嶅鏃舵寜浜у搧鏃㈡湁绛栫暐鎻愮ず锛堣鐩?閲嶅懡鍚嶏級': 'PASS'}
+[m7x249] finished verify in 0.250s
+
+[m7] === verdict ===
+  瀵煎叆鎴愬姛锛? 涓璁惧嚭鐜板湪瀵瑰簲鍒楄〃涓斿弬鏁版纭? FAIL (1 presets are not in their preset lists: ['process/BB Test Process']; the presets were not selected in the sidebar, so the effective values were not compared (ValueError: BB Test Filament is in the list but could not be selected: filament; tried [{'how': 'message click', 'point': [74, 562], 'steps': None, 'result': "the preset row still reads 'Generic PETG @U1 0.8 nozzle(agent_layer_cube.3mf)'"}, {'how': 'real click', 'point': [74, 562], 'steps': None, 'result': "the preset row still reads 'Generic PETG @U1 0.8 nozzle(agent_layer_cube.3mf)'"}, {'how': 'arrow keys', 'point': [74, 562], 'steps': 2, 'result': "the preset row still reads 'Generic PETG @U1 0.8 nozzle(agent_layer_cube.3mf)'"}]))
+  鍚屽悕閲嶅鏃舵寜浜у搧鏃㈡湁绛栫暐鎻愮ず锛堣鐩?閲嶅懡鍚嶏級: PASS
+[m7] RED
