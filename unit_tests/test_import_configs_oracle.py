@@ -9,8 +9,11 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tests'))
 from import_configs_oracle import (ARCHIVE, DUPLICATES, IMPORTED, INI, NAMES, VENDOR, build_config, bundle_presets,
-                                   checkbox_rows, effective_preset, profile_presets, standalone_preset,
-                                   template_presets, verify_import, vendor_directory, write_ini)
+                                   checkbox_rows, effective_preset, effective_report, list_rows, missing_from_lists,
+                                   normalize, profile_presets, project_settings, standalone_preset, template_presets,
+                                   verify_import, vendor_directory, write_ini)
+
+SAMPLES = ROOT / 'docs/runs/evidence/feishu-232-2026-11-26/dev-fc163e85'
 
 TEMPLATE = ROOT / 'fixtures/agent_layer_cube.3mf'
 VENDOR_DIR = ROOT / 'resources' / VENDOR
@@ -175,3 +178,94 @@ def test_checkbox_rows_pair_buttons_with_their_labels():
     ]
     assert checkbox_rows(listed)['items'] == [
         {'label': 'Snapmaker U1 (0.8 nozzle)', 'checkbox': [795, 700, 813, 718]}]
+
+
+@pytest.fixture(scope='module')
+def guest():
+    """What guest run fc163e85 exported and what the product stored after the import."""
+    if not (SAMPLES / 'fc163e85-dev-imported-presets.json').is_file():
+        pytest.skip('the samples of guest run fc163e85 are not in this checkout')
+    config = [row for kind in ('machine', 'filament', 'process')
+              for row in bundle_presets(SAMPLES / f'fc163e85-dev-bb_test_{kind}.json')]
+    return config, json.loads((SAMPLES / 'fc163e85-dev-imported-presets.json').read_text(encoding='utf-8'))
+
+
+def test_normalize_makes_the_written_form_irrelevant():
+    assert normalize('30') == normalize(['30']) == 30.0
+    assert normalize('0.40') == normalize(0.4) == normalize('0.4')
+    assert normalize('M109\\nG28') == normalize('M109\nG28')
+    assert normalize('{if a==\\"x\\"}') == normalize('{if a=="x"}')
+    assert normalize(['30', '40']) == [30.0, 40.0]
+    assert normalize('30') != normalize('35') and normalize(['30']) != normalize(['30', '40'])
+
+
+def test_guest_sample_values_are_equal_once_normalized(guest):
+    config, imported = guest
+    # 23 string-versus-list and 2 newline differences of run fc163e85, 0 differing values.
+    report = verify_import(config, [], imported, [RESULT])
+    assert report['reading']['changed'] == {} and report[IMPORTED] == 'PASS'
+
+
+LISTS = {
+    'machine': ['------- User presets -------', 'BB Test Printer', '------- System presets -------',
+                'Snapmaker U1 (0.8 nozzle)', 'Snapmaker U1 (0.4 nozzle)'],
+    'filament': ['------- User presets -------', 'Snapmaker PLA Silk', 'BB Test Filament', 'Generic PETG',
+                 '------- System presets -------', 'Generic PETG @U1 0.8 nozzle'],
+    'process': ['------- User presets -------', '0.20mm Standard @Snapmaker U1 (0.4 nozzle) - HF-TEST',
+                'BB Test Process', '------- System presets -------'],
+}
+OPEN = {kind: {'rows': rows, 'selected': True} for kind, rows in LISTS.items()}
+
+
+def test_preset_lists_must_carry_the_three_names(guest):
+    config, imported = guest
+    assert missing_from_lists(OPEN, config) == []
+    assert list_rows(LISTS['filament'])['user'] == ['Snapmaker PLA Silk', 'BB Test Filament', 'Generic PETG']
+    without = {**OPEN, 'process': {'rows': [row for row in LISTS['process'] if 'BB Test' not in row]}}
+    text = verify_import(config, [], imported, [RESULT], without, None, (), 'selection failed')[IMPORTED]
+    assert "1 presets are not in their preset lists: ['process/BB Test Process']" in text
+    assert 'the effective values could not be read (selection failed)' in text
+
+
+def selected(settings):
+    """The project settings as they read once the three imported presets are selected."""
+    patched = dict(settings)
+    ids = list(patched['filament_settings_id'])
+    ids[0] = NAMES['filament']
+    patched.update(printer_settings_id=NAMES['machine'], print_settings_id=NAMES['process'], filament_settings_id=ids)
+    return patched
+
+
+def test_template_effective_values_match_the_exported_presets(guest):
+    config, _imported = guest
+    report = effective_report(config, selected(project_settings(TEMPLATE)), set(project_settings(TEMPLATE)))
+    assert report['selection_ok']
+    assert {label: len(row['changed']) for label, row in report['by_preset'].items()} == {
+        'machine/BB Test Printer': 0, 'filament/BB Test Filament': 0, 'process/BB Test Process': 0}
+    assert all(not row['not_kept'] for row in report['by_preset'].values())
+    assert sum(len(row['not_in_build']) for label, row in report['by_preset'].items()) == 62
+
+
+def test_changed_or_missing_effective_values_are_rejected(guest):
+    config, imported = guest
+    base = project_settings(TEMPLATE)
+    settings = selected(base)
+    settings['layer_height'] = '0.45'  # the exported preset carries 0.4
+    settings.pop('wall_loops')
+    text = verify_import(config, [], imported, [RESULT], OPEN, settings, base, 'ok')[IMPORTED]
+    assert 'process/BB Test Process: 1 effective values changed (layer_height: "0.4" -> "0.45")' in text
+    assert 'process/BB Test Process: 1 parameters this build defines were not kept (wall_loops)' in text
+    assert "machine/BB Test Printer: 2 parameters are not in this build's config (bed_model, bed_texture)" in text
+    untouched = selected(base)
+    text = verify_import(config, [], imported, [RESULT], OPEN, untouched, base, 'ok')[IMPORTED]
+    # Nothing changed and nothing this build defines was dropped; the keys the build's
+    # own vendor files carry without defining them are still named, one group per preset.
+    assert 'effective values changed' not in text and 'were not kept' not in text
+    assert text.count("parameters are not in this build's config") == 3
+
+
+def test_wrong_selection_is_rejected(guest):
+    config, imported = guest
+    plain = project_settings(TEMPLATE)  # the system presets are still selected
+    text = verify_import(config, [], imported, [RESULT], OPEN, plain, plain, 'ok')[IMPORTED]
+    assert 'the imported presets were not the selected ones' in text

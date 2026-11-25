@@ -100,10 +100,15 @@ def profile_presets(datadir):
     return sorted(rows, key=lambda row: (row['kind'], row['name']))
 
 
+def project_settings(project):
+    """The effective configuration a project 3MF carries."""
+    with ZipFile(project) as bundle:
+        return json.loads(bundle.read('Metadata/project_settings.config'))
+
+
 def template_presets(project):
     """Names of the printer, the process and the first filament preset a project 3MF is set to."""
-    with ZipFile(project) as bundle:
-        settings = json.loads(bundle.read('Metadata/project_settings.config'))
+    settings = project_settings(project)
     first = settings['filament_settings_id']
     return {'machine': settings['printer_settings_id'], 'process': settings['print_settings_id'],
             'filament': first[0] if isinstance(first, list) else first}
@@ -180,29 +185,136 @@ def parameters(settings):
     return {name: value for name, value in settings.items() if name not in BOOKKEEPING}
 
 
-def _number(value):
-    try:
-        return float(value) if isinstance(value, (int, float, str)) and str(value).strip() else None
-    except ValueError:
-        return None
+def normalize(value):
+    """One value in one shape, so that the way it was written does not count:
+    a number is a number ("0.40", 0.4), a list with one item is that item ("30" and
+    ["30"]), and a new line or a quote in a G-code string is the same whether it is
+    written as two characters or as itself (measured on guest run fc163e85)."""
+    if isinstance(value, list):
+        items = [normalize(item) for item in value]
+        return items[0] if len(items) == 1 else items
+    if isinstance(value, bool) or value is None:
+        return value
+    if isinstance(value, (int, float)):
+        return round(float(value), 9)
+    if isinstance(value, str):
+        text = value.replace('\\r\\n', '\n').replace('\\n', '\n').replace('\\"', '"').strip()
+        try:
+            return round(float(text), 9)
+        except ValueError:
+            return text
+    return value
 
 
 def _same(left, right):
-    """Equal values; numbers written differently count as equal (0.40 and 0.4)."""
-    if isinstance(left, list) or isinstance(right, list):
-        return isinstance(left, list) and isinstance(right, list) and len(left) == len(right) and all(
-            _same(a, b) for a, b in zip(left, right))
-    a, b = _number(left), _number(right)
-    if a is not None and b is not None:
-        return abs(a - b) <= 1e-9 * max(1.0, abs(a))
-    return left == right
+    return normalize(left) == normalize(right)
+
+
+def _first(value):
+    return value[0] if isinstance(value, list) and value else value
+
+
+def same_effective(exported, effective, kind):
+    """An exported parameter against the project's effective value. Filament values
+    are per extruder and only the first extruder carries the imported preset, so its
+    first item is compared; other values are compared item by item over the exported length."""
+    if not isinstance(exported, list):
+        return _same(exported, _first(effective))
+    if not isinstance(effective, list) or len(effective) < len(exported):
+        return False
+    if kind == 'filament':
+        return _same(exported[0], effective[0])
+    return all(_same(a, b) for a, b in zip(exported, effective))
+
+
+def list_rows(rows):
+    """The rows a preset popup showed, split into the user section and the rest.
+    A section starts at a row that names it (the header reads 'User presets')."""
+    user, inside = [], False
+    for text in rows:
+        low = text.casefold()
+        if 'user' in low and 'preset' in low:
+            inside = True
+            continue
+        if 'system' in low and 'preset' in low:
+            inside = False
+        if inside:
+            user.append(text)
+    return {'user': user, 'others': [text for text in rows if text not in user]}
+
+
+def missing_from_lists(dropdowns, config):
+    """The config presets whose name no row of their own preset popup carried."""
+    missing = []
+    for row in config:
+        read = (dropdowns or {}).get(row['kind']) or {}
+        if not any(row['name'].casefold() in text.casefold() for text in read.get('rows', [])):
+            missing.append(f'{row["kind"]}/{row["name"]}')
+    return missing
+
+
+def effective_report(config, settings, defined):
+    """Every exported parameter against the project's effective value.
+
+    A parameter the effective config does not carry is `not_kept`; it is split into
+    those this build writes into a project (`defined`) and the rest. The selection
+    is read from the three settings ids the project carries."""
+    report = {}
+    for row in config:
+        label = f'{row["kind"]}/{row["name"]}'
+        changed, kept_out, unknown = {}, [], []
+        for key, value in parameters(row['settings']).items():
+            if key not in settings:
+                (unknown if key not in defined else kept_out).append(key)
+            elif not same_effective(value, settings[key], row['kind']):
+                changed[key] = [value, settings[key]]
+        report[label] = {'compared': len(parameters(row['settings'])), 'changed': changed,
+                         'not_kept': kept_out, 'not_in_build': unknown}
+    ids = settings.get('filament_settings_id')
+    selected = {'machine': settings.get('printer_settings_id'), 'process': settings.get('print_settings_id'),
+                'filament': ids[0] if isinstance(ids, list) and ids else ids}
+    return {'by_preset': report, 'selected': selected,
+            'selection_ok': all(selected[kind] == NAMES[kind] for kind in NAMES)}
+
+
+def dropped_report(config, after, defined):
+    """Exported parameters that the import left out of the stored preset (used when the
+    effective values could not be read)."""
+    stored = {(row['kind'], row['name']): row['settings'] for row in after}
+    report = {}
+    for row in config:
+        label = f'{row["kind"]}/{row["name"]}'
+        saved = stored.get((row['kind'], row['name']), {})
+        gone = [key for key in parameters(row['settings']) if key not in saved]
+        report[label] = {'not_kept': [key for key in gone if key in defined],
+                         'not_in_build': [key for key in gone if key not in defined]}
+    return report
+
+
+def _short(values, limit=4):
+    return ', '.join(f'{key}: {json.dumps(value[0], ensure_ascii=False)[:40]} -> '
+                     f'{json.dumps(value[1], ensure_ascii=False)[:40]}' for key, value in list(values.items())[:limit])
+
+
+def _loss_text(report, limit=6, unknown_too=True):
+    parts = []
+    for label, row in report.items():
+        if row.get('changed'):
+            parts.append(f'{label}: {len(row["changed"])} effective values changed ({_short(row["changed"])})')
+        if row.get('not_kept'):
+            parts.append(f'{label}: {len(row["not_kept"])} parameters this build defines were not kept '
+                         f'({", ".join(row["not_kept"][:limit])})')
+        if unknown_too and row.get('not_in_build'):
+            parts.append(f'{label}: {len(row["not_in_build"])} parameters are not in this build\'s config '
+                         f'({", ".join(row["not_in_build"][:limit])})')
+    return parts
 
 
 def _key(row):
     return row['kind'], row['name']
 
 
-def verify_import(config, before, after, dialogs) -> dict:
+def verify_import(config, before, after, dialogs, dropdowns=None, effective=None, defined=(), reason=None) -> dict:
     """Every preset of the config files must be in the profile afterwards with the
     parameter values it was exported with, each of the three kinds must be among them,
     and a name clash must bring a prompt.
@@ -220,7 +332,7 @@ def verify_import(config, before, after, dialogs) -> dict:
         if key not in now:
             continue
         differing = sorted(name for name, value in parameters(settings).items()
-                           if name not in now[key] or not _same(value, now[key][name]))
+                           if name in now[key] and not _same(value, now[key][name]))
         sizes['/'.join(key)] = {'exported_keys': len(settings), 'imported_keys': len(now[key]),
                                 'exported_inherits': settings.get('inherits'), 'imported_inherits': now[key].get('inherits')}
         if differing:
@@ -241,6 +353,20 @@ def verify_import(config, before, after, dialogs) -> dict:
         problems.append(f'{len(missing)} of {len(wanted)} presets are not in the profile: {missing[:6]}')
     if changed:
         problems.append(f'parameters differ for {sorted(changed)[:6]}')
+    effective_reading, dropped = None, None
+    # The preset lists are optional evidence: without them nothing is reported as unlisted.
+    unlisted = missing_from_lists(dropdowns, config) if dropdowns is not None else []
+    if unlisted:
+        problems.append(f'{len(unlisted)} presets are not in their preset lists: {unlisted}')
+    if effective is not None:
+        effective_reading = effective_report(config, effective, set(defined or ()))
+        if not effective_reading['selection_ok']:
+            problems.append(f'the imported presets were not the selected ones: {effective_reading["selected"]}')
+        problems += _loss_text(effective_reading['by_preset'])
+    elif dropdowns is not None:
+        problems.append(f'the effective values could not be read ({reason}); the stored presets were compared instead')
+        dropped = dropped_report(config, after, set(defined or ()))
+        problems += _loss_text(dropped, unknown_too=False)
     if not clashes:
         second = f'FAIL (not exercised: none of the {len(wanted)} presets of the config file was in the profile before the import)'
     elif prompts:
@@ -254,7 +380,8 @@ def verify_import(config, before, after, dialogs) -> dict:
                         'missing': missing, 'changed': changed, 'key_counts': sizes, 'clashes': clashes,
                         'prompt_dialogs': [[row['title'], row.get('message'), *row['texts'][:12]] for row in prompts],
                         'result_dialog': None if result is None else [result['title'], result.get('message'),
-                                                                        *result['texts'][:12]]}}
+                                                                        *result['texts'][:12]],
+                        'not_in_lists': unlisted, 'effective': effective_reading, 'dropped': dropped}}
 
 
 def checkbox_rows(controls):

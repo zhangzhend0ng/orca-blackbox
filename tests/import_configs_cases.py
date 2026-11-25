@@ -6,14 +6,91 @@ and the config file is a precondition of the Feishu case, not a step of it."""
 import time
 
 import cv2
+import numpy as np
 
 import m7_common as m7
 from harness import export_util, winutil
+from harness import process_panel as pp
+from m8_common import combo_text, wait_slots
 from repair_model_cases import IMAGE_ERRORS, dialog_texts
 from zip_import_cases import _comboboxes, shoot, wait_closed
 
 IMPORT_ROW = 'Import Configs'
 YES = ('Yes to all', '&Yes to all', 'Yes', '&Yes', 'OK', 'Confirm', 'Overwrite', 'Replace')
+
+
+def find_printer_combo(session, model):
+    """The sidebar printer combo: a child whose text contains the printer model name but
+    not a process-preset marker, in the sidebar's upper band (m7t84's locator)."""
+    hits = [(text, rect, child) for text, rect, child in export_util._children_texts(session.hwnd)
+            if model in text and 'Standard' not in text and rect[1] < 400 and rect[3] - rect[1] < 60
+            and winutil.user32.IsWindowVisible(child)]
+    return hits[0] if hits else None
+
+
+def popup_rows(popup_hwnd):
+    """(text, first word) of each row a preset popup shows, top to bottom. Rows are
+    self-drawn, so they are OCR-read with psm 6, which alone reads rows beside the
+    section dividers (PITFALLS 17.7); tokens are grouped by their line centre."""
+    width, height, pixels = winutil.capture_window(popup_hwnd)
+    image = cv2.cvtColor(np.frombuffer(pixels, np.uint8).reshape(height, width, 4), cv2.COLOR_BGRA2BGR)
+    lines = []
+    for word in sorted(m7.mdu.ocr_words_img(image, scale=3, psm=6), key=lambda w: (w[2] + w[4] / 2, w[1])):
+        middle = word[2] + word[4] / 2
+        if lines and abs(lines[-1][0] - middle) <= max(6, word[4] / 2):
+            lines[-1][1].append(word)
+        else:
+            lines.append([middle, [word]])
+    return [(' '.join(word[0] for word in sorted(line, key=lambda w: w[1])), line[0]) for _middle, line in lines]
+
+
+def read_and_select(session, rect, hwnd, name, analysis, kind, work):
+    """Open the preset popup at `rect`, keep every row it shows, then click the row named
+    `name`. The click goes to the popup without a root window, as process_panel does."""
+    record = analysis.setdefault('dropdowns', {})[kind] = {'target': name, 'before': combo_text(hwnd)}
+    point = ((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2)
+    winutil.msg_click_screen(*point, session.hwnd)
+    popup = export_util.wait_popup(session.pid, timeout_s=4.0)
+    if not popup:
+        record['error'] = 'the popup did not open'
+        return record
+    popup_rect, popup_hwnd = popup[2], popup[3]
+    try:
+        # The popup opens at the current selection; the user section is at the top.
+        x, y = (popup_rect[0] + popup_rect[2]) // 2, (popup_rect[1] + popup_rect[3]) // 2
+        winutil._send_msg(popup_hwnd, 0x020A, ((-120 * -40 & 0xFFFF) << 16), ((y & 0xFFFF) << 16) | (x & 0xFFFF))
+        time.sleep(0.7)
+        rows = popup_rows(popup_hwnd)
+        record['rows'] = [text for text, _word in rows]
+        try:
+            shoot(popup_hwnd, work / f'{kind}-list.png')
+        except IMAGE_ERRORS as exc:
+            record['image'] = f'unavailable ({exc})'
+        print(f'[m7x232] {kind} list: {record["rows"]!r}', flush=True)
+        hit = next((line for text, line in rows if name.casefold() in text.casefold()), None)
+        if hit is None:
+            record['selected'] = False
+            return record
+        sx = popup_rect[0] + hit[1] + hit[3] // 2
+        sy = popup_rect[1] + hit[2] + hit[4] // 2
+        winutil.msg_click_screen(sx, sy)
+        time.sleep(1.2)
+        record['after'] = combo_text(hwnd)
+        record['selected'] = name.casefold() in record['after'].casefold()
+        return record
+    finally:
+        if winutil.user32.IsWindowVisible(popup_hwnd):
+            pp.close_popup(session, popup_hwnd, point)
+
+
+def answer_dialogs(session, work, analysis, tag, timeout_s=1.5):
+    """Record and close any dialog that follows a preset selection."""
+    found = m7.wait_dialog(session.pid, timeout_s=timeout_s)
+    if not found:
+        return []
+    hwnd = keep(session, work, analysis, found, f'{tag}-dialog')
+    answer_box(hwnd)
+    return analysis['dialogs'][-1:]
 
 
 def keep(session, work, analysis, found, name):
