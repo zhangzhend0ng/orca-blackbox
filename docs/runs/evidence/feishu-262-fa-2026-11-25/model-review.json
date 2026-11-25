@@ -1,0 +1,5 @@
+[
+ {"machine":"fa706g3","requested_model":"new-provider/glm-5.4","message_model":"new-provider/glm-5.4","session_id":"sess_d32cab5a-ccb2-4e49-b9bc-4bb45670cc59","seconds":75.02,"completed":false,"reason":"No completion marker at deadline."},
+ {"machine":"Mac mini","requested_model":"deepseek-flash","message_model":"deepseek-flash","session_id":"sess_5eb56024-a51e-4383-825a-2e1283745566","seconds":12.41,"completed":false,"reason":"Session reasoning low confirmed. Model endpoint returned HTTP 401."},
+ {"machine":"Mac mini","registered_gateway_host":"ai-gateway.s.com","requested_model":"new-provider/glm-5.4","message_model":"new-provider/glm-5.4","session_id":"sess_251ad052-1327-4b23-ac5a-923fc105b4b6","seconds":99.0,"completed":true,"marker":"TEAMMATE_LOOP_OK","review":"Cannot claim unchanged material; positive deposited filament increased by about 8.65 mm / 0.23%. Its separate unweighted summation of top and bottom ratios was discarded."}
+]
