@@ -145,9 +145,12 @@ CASES: dict[str, dict] = {
     "m7x_251_reload_from_disk": _o("m7", "A", known_limitation=True),  # missing source opens a chooser
     "m7x_252_export_stl_viewer": _r("m7", "A"),
     "m7x_254_sphere_layer_pair": _o("m7", "A"),
-    # 2026-11-26: Feishu #236 (File > Export > Export G-code). Runnable, not yet in the suite: it joins the
+    # 2026-11-26: Feishu file import/export rows. Runnable, not yet in the suite: each joins the
     # regression suite only after two independent guest sessions and the offline replay pass on one commit.
-    "m7x_236_export_gcode": _o("m7", "A"),
+    "m7x_227_import_stl": _o("m7", "A"),            # File > Import, binary STL
+    "m7x_231_import_zip": _o("m7", "A"),            # File > Import Zip Archive
+    "m7x_233_export_merged_stl": _o("m7", "A"),     # File > Export, all objects as one STL
+    "m7x_236_export_gcode": _o("m7", "A"),          # File > Export, plain G-code
     # #254 follow-up probe: a record of how the plate's temporary G-code grows under the memory guard,
     # never a verdict.
     "m7x_254_gcode_tmp_probe": _o("m7", "A"),
