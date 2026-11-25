@@ -21,7 +21,8 @@ sys.path[:0] = [str(ROOT), str(ROOT / 'tests'), str(ROOT / 'tests' / 'gui')]
 from step_import_oracle import (  # noqa: E402
     CLAUSES, CLAUSE_COLOUR, CLAUSE_COMPLETE, CLAUSE_ENTITIES, CLAUSE_LIST, recorded_results_match,
     step_import_readings, verdicts, verify_step_import)
-from m7x_229_import_step import SPLIT_OPTION, find_checkbox, readings_of  # noqa: E402  (pure helpers of the case)
+from m7x_229_import_step import (  # noqa: E402  (helpers of the case; none of these touches a window)
+    SPLIT_OPTION, _tick_steps, assert_ticked, find_checkbox, notification_wparam, readings_of, run_tick_steps)
 
 REAL_227 = ROOT / 'docs/runs/evidence/feishu-227-2026-11-26/11858f17-run1-imported.3mf'
 MAIN, MESH = '3D/3dmodel.model', '3D/Objects/cube_20mm.stl_2.model'
@@ -342,3 +343,86 @@ def test_the_dialog_readings_are_the_deflections_and_the_facet_count():
     assert readings_of(_children(CENSUS)) == {'linear_deflection': '0.003', 'angle_deflection': '0.50',
                                               'triangular_facets': '36'}
     assert readings_of([]) == {'linear_deflection': None, 'angle_deflection': None, 'triangular_facets': None}
+
+
+class _Box:
+    """A check box for run_tick_steps without a window: read() tells its state and each step sets
+    the next state given here (or, given a note, leaves the state alone)."""
+
+    def __init__(self, start, *after):
+        self.state, self.after, self.run = start, list(after), []
+
+    def read(self):
+        return self.state
+
+    def step(self, how, note=None):
+        def act(_record):
+            self.run.append(how)
+            return note if note else self._set()
+        return how, act
+
+    def _set(self):
+        self.state = self.after.pop(0)
+
+
+FIRST, SECOND, THIRD = 'first way', 'second way', 'third way'
+
+
+def _steps(box):
+    return [box.step(FIRST), box.step(SECOND), box.step(THIRD)]
+
+
+def test_the_first_way_that_ticks_the_box_ends_the_run():
+    box = _Box(0, 1, 0, 0)
+    records, state = run_tick_steps(box.read, _steps(box))
+    assert state == 1 and [record['how'] for record in records] == [FIRST]
+    assert records[0] == {'how': FIRST, 'before': 0, 'after': 1} and box.run == [FIRST]
+    assert_ticked(records, state)
+
+
+def test_a_box_that_still_reads_zero_is_given_the_next_way():
+    box = _Box(0, 0, 1, 0)
+    records, state = run_tick_steps(box.read, _steps(box))
+    assert state == 1 and [record['how'] for record in records] == [FIRST, SECOND]
+    assert [(record['before'], record['after']) for record in records] == [(0, 0), (0, 1)]
+    box = _Box(0, 0, 0, 1)
+    records, state = run_tick_steps(box.read, _steps(box))
+    assert state == 1 and len(records) == 3 and records[-1]['after'] == 1
+
+
+def test_a_box_that_is_ticked_already_is_left_alone():
+    box = _Box(1)
+    records, state = run_tick_steps(box.read, _steps(box))
+    assert state == 1 and records == [] and box.run == []
+
+
+def test_a_step_that_is_skipped_is_recorded_and_the_next_one_is_tried():
+    box = _Box(0, 1)
+    records, state = run_tick_steps(box.read, [box.step(SECOND, note='skipped: another window covers the box'),
+                                               box.step(THIRD)])
+    assert state == 1 and [record['how'] for record in records] == [SECOND, THIRD]
+    assert records[0] == {'how': SECOND, 'before': 0, 'after': 0, 'note': 'skipped: another window covers the box'}
+
+
+def test_three_ways_that_do_not_tick_the_box_raise_naming_each():
+    box = _Box(0, 0, 0, 0)
+    records, state = run_tick_steps(box.read, _steps(box))
+    assert state == 0 and len(records) == 3 and box.run == [FIRST, SECOND, THIRD]
+    with pytest.raises(ValueError, match='reads 0 after 3 step') as caught:
+        assert_ticked(records, state)
+    for how in (FIRST, SECOND, THIRD):
+        assert f'{how}: 0 -> 0' in str(caught.value)
+
+
+def test_the_three_ways_are_the_prescribed_ones_in_order():
+    ways = [how for how, _act in _tick_steps(None, 0, {'hwnd': 0, 'id': -30284, 'rect': [788, 594, 1089, 609]})]
+    assert ways == ['BM_CLICK sent to the check box',
+                    'dialog brought to the foreground, real click on the box',
+                    'BM_SETCHECK, then WM_COMMAND BN_CLICKED sent to the dialog']
+
+
+def test_the_notification_carries_the_control_id_and_bn_clicked():
+    wparam = notification_wparam(-30284)
+    # A negative control id is a 16-bit id: its low word, and nothing in the high word.
+    assert 0 <= wparam <= 0xFFFF and wparam == 65536 - 30284 == (-30284 & 0xFFFF) and wparam >> 16 == 0
+    assert notification_wparam(5100) == 5100

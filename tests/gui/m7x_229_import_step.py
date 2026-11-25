@@ -32,13 +32,19 @@ with two deflection boxes (``0.003`` and ``0.50``), the facet count, a
 into multiple objects`` that is not ticked. With it as it came, the three
 cubes were saved as one object with one part of 36 triangles in the first
 filament. A user who wants the parts apart ticks that box, so the case
-does: it records the check box, its neighbours and its state, ticks it,
-reads the state back and only then presses OK. The deflections are left as
-they are and recorded. Whether a tick gives three objects or one object
+does: it records the check box, its neighbours and its state, then
+tries three ways to tick it, reading the state back after each (a
+BM_CLICK to the box; the dialog brought to the foreground and a real
+click on the box; BM_SETCHECK followed by the WM_COMMAND a click sends),
+and only a ticked box leads on to OK. A message click inside the dialog
+did not tick it on the guest (run dev229b-21fa17bd). The deflections are
+left as they are and recorded, before and after the tick. Whether a tick gives three objects or one object
 with three parts, and where the colours land, is read from the saved project.
 """
 import ctypes
 from ctypes import wintypes
+
+import cv2
 from hashlib import sha256
 from pathlib import Path
 import shutil
@@ -50,6 +56,7 @@ sys.path[:0] = [str(HERE), str(HERE / 'tests'), str(HERE / 'tests' / 'engine'), 
 
 import m7_common as m7  # noqa: E402
 from colored_obj_cases import _accept, affirmative, app_dialogs, survey_dialog  # noqa: E402
+from file_export_cases import capture_window  # noqa: E402
 from harness import winutil  # noqa: E402
 from m7x_227_import_stl import import_stl, show_objects_tab, sidebar  # noqa: E402
 from m7x_244_add_model import prepare_plate  # noqa: E402
@@ -65,7 +72,8 @@ LOG = '[m7x229]'
 STRANGER_WAIT_S = 20
 STEP_DIALOG = 'Step file import parameters'
 SPLIT_OPTION = 'Split compound and compsolid into multiple objects'
-BM_GETCHECK = 0x00F0
+BM_GETCHECK, BM_SETCHECK, BM_CLICK = 0x00F0, 0x00F1, 0x00F5  # what a native button answers to
+WM_COMMAND, BN_CLICKED = 0x0111, 0  # the notification a dialog gets when a control is clicked
 UNCHECKED, CHECKED = 0, 1  # what BM_GETCHECK answers for a native check box (2 is the third state)
 WORDS_KEPT = 400  # the object list is read below the printer panel, well past the first words
 
@@ -105,6 +113,11 @@ def check_state(hwnd):
     return int(_user32.SendMessageW(hwnd, BM_GETCHECK, 0, 0))
 
 
+def notification_wparam(control_id):
+    """MAKEWPARAM(control id, BN_CLICKED): the wParam a dialog gets when its control is clicked."""
+    return (control_id & 0xFFFF) | (BN_CLICKED << 16)
+
+
 def _neighbours(children, child):
     """The window before and the one after `child`, as the survey lists them."""
     index = next((step for step, other in enumerate(children) if other['hwnd'] == child['hwnd']), None)
@@ -112,37 +125,96 @@ def _neighbours(children, child):
     return [{'class': other['class'], 'rect': other['rect'], 'text': other['text'][:60]} for other in around]
 
 
-def tick_option(session, dialog, record, text):
-    """Tick the check box `text` of a surveyed dialog and see it ticked. The record keeps the
-    check box with its class, rectangle and neighbours, its state before and after, and what was
-    tried. Without such a box, or when it will not tick, the record stays and the error follows."""
+def run_tick_steps(read, steps, checked=CHECKED):
+    """Give a check box `steps`, one after the other: [(how, act)]. `read()` tells the state
+    before and after each step, and the first step after which the box reads `checked` is the
+    last. A step may return a note and leave the box alone. Returns (what was tried, as
+    [{'how', 'before', 'after', 'note'}], and the last state read); assert_ticked() judges it.
+    Nothing here touches a window: `read` and the steps do."""
+    records, state = [], read()
+    for how, act in steps:
+        if state == checked:
+            break
+        record = {'how': how, 'before': state}
+        note = act(record)
+        state = record['after'] = read()
+        if note:
+            record['note'] = note
+        records.append(record)
+    return records, state
+
+
+def assert_ticked(records, state, checked=CHECKED):
+    """Raises ValueError, naming every step with what the box read before and after it, when the
+    box did not come to `checked`."""
+    if state != checked:
+        raise ValueError(f'the check box reads {state} after {len(records)} step(s), {checked} is ticked: '
+                         + '; '.join(f'{record["how"]}: {record["before"]} -> {record["after"]}' for record in records))
+
+
+def _tick_steps(session, dialog, child):
+    """The three ways to tick a native check box of a dialog, in the order they are tried. They
+    are built here and touch a window only when run."""
+    box = child['hwnd']
+    left, top, _right, bottom = child['rect']
+    x, y = left + 7, (top + bottom) // 2  # the box at the left end of a native check box
+
+    def bm_click(_record):
+        _user32.SendMessageW(box, BM_CLICK, 0, 0)
+        time.sleep(0.6)
+
+    def real_click(_record):
+        winutil.force_set_foreground(dialog)
+        time.sleep(0.3)
+        if winutil._window_pid(winutil.window_from_screen_point(x, y)) != session.pid:
+            # A real click goes through the OS input queue: never onto a window of another program.
+            return 'skipped: another window covers the box'
+        winutil.user32.SetCursorPos(x, y)
+        time.sleep(0.2)
+        winutil.real_click_screen(x, y)
+        time.sleep(0.6)
+        return None
+
+    def set_and_notify(_record):
+        _user32.SendMessageW(box, BM_SETCHECK, CHECKED, 0)
+        _user32.SendMessageW(dialog, WM_COMMAND, notification_wparam(child['id']), box)
+        time.sleep(0.6)
+
+    return [('BM_CLICK sent to the check box', bm_click),
+            ('dialog brought to the foreground, real click on the box', real_click),
+            ('BM_SETCHECK, then WM_COMMAND BN_CLICKED sent to the dialog', set_and_notify)]
+
+
+def _picture(work, hwnd, name):
+    """A PrintWindow image of the dialog, kept as `name` in `work`, or why there is none."""
+    try:
+        capture_window(hwnd, Path(work) / name)
+    except (OSError, RuntimeError, ValueError, cv2.error) as exc:
+        return f'unavailable ({exc})'
+    return name
+
+
+def tick_option(session, work, dialog, record, text):
+    """Tick the check box `text` of a surveyed dialog and see it ticked: run_tick_steps() over
+    the three ways of _tick_steps(). The record keeps the check box with its class, rectangle
+    and neighbours, every way with the state before and after it, a picture once they are done
+    (``import-dialog-ticked.png``) and the dialog's numbers read again. When the box will not
+    tick, all of that stays in the record and the error follows."""
     child = find_checkbox(record['children'], text)
     option = record['option'] = {'text': text}
     if child is None:
         option['error'] = 'no single check box with that text'
         raise ValueError(f'{record["title"]!r}: {option["error"]}')
-    option.update({'class': child['class'], 'rect': child['rect'], 'neighbours': _neighbours(record['children'], child)})
-    left, top, right, bottom = child['rect']
-    x, y = left + 7, (top + bottom) // 2  # the box at the left end of a native check box
-    option['at'] = [x, y]
-    option['before'] = check_state(child['hwnd'])
-    option['tiers'] = []
-    if option['before'] != CHECKED:
-        winutil.msg_click_screen(x, y, dialog)  # resolved inside the dialog's own window tree
-        time.sleep(0.6)
-        option['tiers'].append({'how': 'message click inside dialog', 'state': check_state(child['hwnd'])})
-        if (check_state(child['hwnd']) != CHECKED and winutil.user32.IsWindow(dialog)
-                and winutil._window_pid(winutil.window_from_screen_point(x, y)) == session.pid):
-            # A real click goes through the OS input queue: only onto a window of the application under test.
-            winutil.user32.SetCursorPos(x, y)
-            time.sleep(0.2)
-            winutil.real_click_screen(x, y)
-            time.sleep(0.6)
-            option['tiers'].append({'how': 'real click', 'state': check_state(child['hwnd'])})
-    option['after'] = check_state(child['hwnd'])
-    if option['after'] != CHECKED:
-        option['error'] = f'the check box reads {option["after"]} after the click; {CHECKED} is ticked'
-        raise ValueError(f'{record["title"]!r}: {text!r}: {option["error"]}')
+    left, top, _right, bottom = child['rect']
+    option.update({'class': child['class'], 'rect': child['rect'], 'at': [left + 7, (top + bottom) // 2],
+                   'neighbours': _neighbours(record['children'], child)})
+    option['steps'], option['after'] = run_tick_steps(lambda: check_state(child['hwnd']),
+                                                      _tick_steps(session, dialog, child))
+    option['before'] = option['steps'][0]['before'] if option['steps'] else option['after']
+    option['image'] = _picture(work, dialog, 'import-dialog-ticked.png')
+    record['readings_after_tick'] = readings_of([dict(other, text=winutil.window_title(other['hwnd']))
+                                                 for other in record['children']])
+    assert_ticked(option['steps'], option['after'])
     return option
 
 
@@ -175,7 +247,7 @@ def wait_step_import(session, work, analysis, baseline=0, timeout_s=150):
                                  f'{[child["text"] for child in record["children"] if child["text"]][:12]!r}')
             if title.casefold() == STEP_DIALOG.casefold():
                 record['readings'] = readings_of(record['children'])  # the deflections stay as they are
-                tick_option(session, hwnd, record, SPLIT_OPTION)
+                tick_option(session, work, hwnd, record, SPLIT_OPTION)
             if affirmative(record['children']) is not None:
                 _accept(session, work, hwnd, record)  # presses the button and sees the dialog close
                 answered.add(hwnd)
