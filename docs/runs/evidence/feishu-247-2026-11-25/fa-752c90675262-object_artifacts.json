@@ -1,0 +1,80 @@
+[
+  {
+    "path": "case.log",
+    "part": "case.log",
+    "bytes": 16534,
+    "sha256": "FC1F42D135B2023DE591A8D27D716FD78E3885A0120C0CBAB1EE97EE3794C281"
+  },
+  {
+    "path": "done.json",
+    "part": "done.json",
+    "bytes": 484,
+    "sha256": "39CA59DA0E276ED77A5EB46EA3EA80C309D68824BEE364ED4B92BDDBD81D2002"
+  },
+  {
+    "path": "execution_host.json",
+    "part": "execution_host.json",
+    "bytes": 369,
+    "sha256": "32024E1BCA7E2E5CDEDCC019B1A722E2A894176A432DA0D5618E336F6651E3AB"
+  },
+  {
+    "path": "feishu-object-cases/247/run-l8_2g17w/analysis.json",
+    "part": "analysis.json",
+    "bytes": 1397,
+    "sha256": "E32F3AD05C588A99B96C2FF36AAFD9F92C7978C426A0FD826B8DC40C4AD1F0BD"
+  },
+  {
+    "path": "feishu-object-cases/247/run-l8_2g17w/before.3mf",
+    "part": "before.3mf",
+    "bytes": 35066,
+    "sha256": "A523B12AD66B32F46A5E207FF28923F5852D279C0D0C3F425F24DCD37FEDAAD2"
+  },
+  {
+    "path": "feishu-object-cases/247/run-l8_2g17w/before.png",
+    "part": "before.png",
+    "bytes": 291999,
+    "sha256": "28335B38792860D4FD21794F4EF70B76CC5B38ED0BF0107D17CB1B21D85C4492"
+  },
+  {
+    "path": "feishu-object-cases/247/run-l8_2g17w/both-colors.3mf",
+    "part": "both-colors.3mf",
+    "bytes": 35664,
+    "sha256": "F8A95AF63734AC040242FCC16B0209DC19F3D121344B11A0102E0300DCE9360A"
+  },
+  {
+    "path": "feishu-object-cases/247/run-l8_2g17w/both-colors.png",
+    "part": "both-colors.png",
+    "bytes": 316633,
+    "sha256": "80D6FB4E8FB65F3F5EF135590FFCA00D609B3B45BCD4DFCCCA76D6749CFBB6E2"
+  },
+  {
+    "path": "feishu-object-cases/247/run-l8_2g17w/left-color.3mf",
+    "part": "left-color.3mf",
+    "bytes": 36074,
+    "sha256": "44D5C46977DD298AC8054A3E3CECA273149E24B99105C1AA693A6EF88C526CB0"
+  },
+  {
+    "path": "feishu-object-cases/247/run-l8_2g17w/left-color.png",
+    "part": "left-color.png",
+    "bytes": 316317,
+    "sha256": "16D890CF5359A8D70CD91AA126489D6119DE70474ACE9CE96C07B8749237F44C"
+  },
+  {
+    "path": "feishu-object-cases/247/run-l8_2g17w/split.3mf",
+    "part": "split.3mf",
+    "bytes": 35635,
+    "sha256": "32E7A901F54CEC8CC62650F599FE8D79C15F103464A5BF5654CB917C227E9716"
+  },
+  {
+    "path": "feishu-object-cases/247/run-l8_2g17w/split.png",
+    "part": "split.png",
+    "bytes": 313896,
+    "sha256": "E4A84A2479AEBF2B33D9F21B0CF642A9EDDC5EDEA267D575FC78856FF2AE17F4"
+  },
+  {
+    "path": "feishu-object-cases/247/run-l8_2g17w/twin-shell.3mf",
+    "part": "twin-shell.3mf",
+    "bytes": 30327,
+    "sha256": "ED101728087DB0D331A3ABFD30F8AA2391855BB899F1888C76CFD555ACAD537F"
+  }
+]

@@ -1,0 +1,57 @@
+﻿[
+    {
+        "part":  "analysis.json",
+        "bytes":  3693,
+        "sha256":  "6B26B8511EEEA4BCC7736C319908814B0BFA46E8D69B632C771D8F349BE04EBB"
+    },
+    {
+        "part":  "before.3mf",
+        "bytes":  34865,
+        "sha256":  "E522B422DB1520393E99205308856323B3847FB840D7C2CEB27FA0BB6E6F6499"
+    },
+    {
+        "part":  "before.png",
+        "bytes":  288793,
+        "sha256":  "E61B24EB24DAC9CF9CE247A5934C390519032A035DCAEF840EEDEE4BF55344D9"
+    },
+    {
+        "part":  "both-colors.3mf",
+        "bytes":  35814,
+        "sha256":  "8D2D0A3AA405167A409F7E785903E122E06BFD6F9F1FBFDBC72974A77E170188"
+    },
+    {
+        "part":  "both-colors.png",
+        "bytes":  306889,
+        "sha256":  "129745BBF8EC24D2C09CC068D126D67FC5FF29BF5BA60984CDFE978F1A4ED606"
+    },
+    {
+        "part":  "left-color.3mf",
+        "bytes":  36051,
+        "sha256":  "4CC0F8604A66074B4565502B9AFB432460C7242C87EFA9B9AFCAD12FADF7959A"
+    },
+    {
+        "part":  "left-color.png",
+        "bytes":  305360,
+        "sha256":  "7B38FA5748B1A28D66CEC3109179F2F6FA7DFD72D70C5582C1659AA1EF4A7BD0"
+    },
+    {
+        "part":  "object-list.png",
+        "bytes":  293178,
+        "sha256":  "FF5B38AA1B9F4B585D216F7F77F94C9FD7CEDFB130E52D20A36EEF3FD5B8DA4E"
+    },
+    {
+        "part":  "split.3mf",
+        "bytes":  35436,
+        "sha256":  "F247780C2E6C44F9BF5013FFA359C8A19AE35CCB5CCC07CF2559A454E4E98BA6"
+    },
+    {
+        "part":  "split.png",
+        "bytes":  297305,
+        "sha256":  "0B844DE899403DE94EBF64122051464F086A0FED88829A7AC729729716D9A377"
+    },
+    {
+        "part":  "twin-shell.3mf",
+        "bytes":  30327,
+        "sha256":  "ED101728087DB0D331A3ABFD30F8AA2391855BB899F1888C76CFD555ACAD537F"
+    }
+]

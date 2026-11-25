@@ -1,0 +1,23 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T22:14:31" tests="1" failures="0" errors="0">
+    <testcase name="m7x_247_split_shells" classname="blackbox.m7x_247_split" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_247_split_shells.log" />
+        <property name="dim:Split &gt; To objects retained both closed shells as independent objects" value="PASS" />
+        <property name="dim:the first color change updated only the left object" value="PASS" />
+        <property name="dim:both objects can be selected individually and assigned distinct colors" value="PASS" />
+      </properties>
+      <system-out>[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x247] object list: {'objects_tab_located': True, 'words': ['c', 'co', 'File', '&amp;', 'us', 'Calibration', 'a', 'Prepare', 'Preview', 'Devic', 'Printer', '~', 'Snapmaker', 'U1', '(0.4', 'nozzle)(twin-shell.3...', '(7', '~', 'Textured', 'PEI', 'Plate', 'Bed', 'type', 'Nozzle', '3', 'Nozzle', '4', 'Nozzle', '2', 'Diameter', '~', '0.4mm', 'Flow', '~', 'Standard', '(@', 'Filament', 'Management', 'Flushing', 'volumes', 'Color', 'Mixing', 'Matec', '((', 'Filaments', '(FG', '~', 'Generic', 'PLA', '@U1...', '漏', '|', '~', 'Snapmaker', 'PLA', 'Bas...', '漏', 'B', '~', 'Snapmaker', 'PLA', 'B..', '漏', '4', '~', 'Snapmaker', 'PLA', 'Bas...', '漏', '~', 'Snapmaker', 'PLA', 'B...', '漏', '漏', 'Color', 'Mixing', '50%', '漏', 'AS', '&amp;', 'Process', 'Global', 'Advanced', '(9', 'Q', 'Search', 'plate,', 'object', 'and', 'part.', 'wv', 'TwinShell_1', 'TwinShell_2', '&gt;', 'Outside', 'Frequent', 'Quality', 'Strength', 'Support', 'Multimaterial', 'C', 'Layer', 'height', '0.2', 'mm', 'Sparse', 'infill', 'density', '15', '%', '~', '2', 'Wall', 'loops', 'Enable', 'support']}
+
+[m7] === verdict ===
+  Split &gt; To objects retained both closed shells as independent objects: PASS
+  the first color change updated only the left object: PASS
+  both objects can be selected individually and assigned distinct colors: PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

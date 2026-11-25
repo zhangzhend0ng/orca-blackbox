@@ -1,0 +1,13 @@
+﻿{
+    "commit":  "c140c6da71ffc49e0f18185d8b5fa4aca49e4013",
+    "case":  "m7x_247_split_shells",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "summary":  "SUMMARY: PASS=0 FAIL=1\r\nFAILED: m7x_247_split_shells",
+    "dispatched_at":  "2026-11-25T22:07:55.0144148+08:00",
+    "scenario_completed_at":  "2026-11-25T22:09:58.4735483+08:00",
+    "suite_completed_at":  "2026-11-25T22:09:58.6796603+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_247_split_shells.log",
+    "log_sha256":  "DEC64496AAFBB8C05AED7C95A70F0C7B01301216A6FB74EE719992B80326C9C9"
+}

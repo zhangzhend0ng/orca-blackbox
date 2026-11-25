@@ -1,0 +1,79 @@
+﻿[m7x247] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\247\run-lk3yrvhx
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\247\run-lk3yrvhx\profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\247\run-lk3yrvhx\profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\247\run-lk3yrvhx\twin-shell.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x19a0174, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x57c112c, WM_CLOSE)
+[launcher] pid=8776 hwnd=0x5880b9e rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.73%, gate 0.10%)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5760c8a did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x247] before centers: [(1172, 514), (1319, 521)]
+[model context] desktop hit-test did not resolve to canvas at (1172,528)
+[model context] message right-click @(1172,528) on 0x5420732
+[model context] menu hwnd=0x49e0528: [(0, 'Clone\tCtrl+K', 0), (1, 'Simplify Model', 0), (2, '', 2051), (3, 'Mesh boolean', 0), (4, 'Center', 0), (5, 'Drop', 1), (6, 'Split', 528), (7, 'Mirror', 784), (8, 'Delete\tDel', 0), (9, '', 2051), (10, 'Add Part', 3088), (11, 'Add Negative Part', 3088), (12, 'Add Modifier', 3088), (13, 'Add Support Blocker', 2064), (14, 'Add Support Enforcer', 2064), (15, 'Height Range Modifier', 0), (16, '', 2051), (17, 'Printable', 8), (18, 'Edit Process Settings', 0), (19, 'Edit in Parameter Table', 0), (20, '', 2051), (21, 'Reload from disk', 0), (22, 'Replace with STL', 0), (23, 'Export as one STL...', 0), (24, 'Convert from Inches', 0), (25, 'Convert from Meters', 0), (26, 'Change Filament', 1808)]
+[m7x247] native highlighted row 6 in menu 0x40120309
+[m7x247] visible Split submenu hwnd=0x54e0038 hmenu=0x34540569: [(0, 'To Objects', 128), (1, 'To Parts', 0)]
+[m7x247] native highlighted row 0 in menu 0x34540569
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5760c8a did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x247] split centers: [(1172, 514), (1319, 520)]
+[m8x48] SetFocus(0x5420732): return=0x5880b9e, Win32 error=0, (active, focus) before=(92801950, 92801950), after=(92801950, 88213298)
+[m7x247] sent Escape to owned canvas before selecting (1172, 514)
+[model context] desktop hit-test did not resolve to canvas at (1172,528)
+[model context] message right-click @(1172,528) on 0x5420732
+[model context] menu hwnd=0x4a00528: [(0, 'Clone\tCtrl+K', 0), (1, 'Simplify Model', 0), (2, '', 2051), (3, 'Mesh boolean', 1), (4, 'Center', 1), (5, 'Drop', 1), (6, 'Split', 529), (7, 'Mirror', 784), (8, 'Delete\tDel', 0), (9, '', 2051), (10, 'Add Part', 3088), (11, 'Add Negative Part', 3088), (12, 'Add Modifier', 3088), (13, 'Add Support Blocker', 2064), (14, 'Add Support Enforcer', 2064), (15, 'Height Range Modifier', 0), (16, '', 2051), (17, 'Printable', 8), (18, 'Edit Process Settings', 0), (19, 'Edit in Parameter Table', 0), (20, '', 2051), (21, 'Reload from disk', 1), (22, 'Replace with STL', 0), (23, 'Export as one STL...', 0), (24, 'Convert from Inches', 0), (25, 'Convert from Meters', 0), (26, 'Change Filament', 1808)]
+[m7x247] native highlighted row 26 in menu 0x40120309
+[m7x247] individual filament menu [(0, 'Default', 128), (1, 'Generic PLA @U1 0.4 nozzle(twin-shell.3mf)', 0), (2, 'Snapmaker PLA Basic @U1 0.4 nozzle(twin-shell.3mf)', 0), (3, 'Snapmaker PLA Basic @U1 0.4 nozzle(twin-shell.3mf)', 0), (4, 'Snapmaker PLA Basic @U1 0.4 nozzle(twin-shell.3mf)', 0), (5, 'Snapmaker PLA Basic @U1 0.4 nozzle(twin-shell.3mf)', 0), (6, 'Mixed Filament 6', 0)]; requested slot 2
+[m7x247] native highlighted row 2 in menu 0x2fbd0e67
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5760c8a did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x247] left-color centers: [(942, 389), (1172, 514)]
+[m8x48] SetFocus(0x5420732): return=0x5880b9e, Win32 error=0, (active, focus) before=(92801950, 92801950), after=(92801950, 88213298)
+[m7x247] sent Escape to owned canvas before selecting (1172, 514)
+[model context] desktop hit-test did not resolve to canvas at (1172,528)
+[model context] message right-click @(1172,528) on 0x5420732
+[model context] menu hwnd=0x57b0478: [(0, 'Clone\tCtrl+K', 0), (1, 'Simplify Model', 0), (2, '', 2051), (3, 'Mesh boolean', 1), (4, 'Center', 1), (5, 'Drop', 1), (6, 'Split', 529), (7, 'Mirror', 784), (8, 'Delete\tDel', 0), (9, '', 2051), (10, 'Add Part', 3088), (11, 'Add Negative Part', 3088), (12, 'Add Modifier', 3088), (13, 'Add Support Blocker', 2064), (14, 'Add Support Enforcer', 2064), (15, 'Height Range Modifier', 0), (16, '', 2051), (17, 'Printable', 8), (18, 'Edit Process Settings', 0), (19, 'Edit in Parameter Table', 0), (20, 'Flush Options', 784), (21, '', 2051), (22, 'Reload from disk', 1), (23, 'Replace with STL', 0), (24, 'Export as one STL...', 0), (25, 'Convert from Inches', 0), (26, 'Convert from Meters', 0), (27, 'Change Filament', 1808)]
+[m7x247] native highlighted row 27 in menu 0x40120309
+[m7x247] individual filament menu [(0, 'Default', 128), (1, 'Generic PLA @U1 0.4 nozzle(twin-shell.3mf)', 0), (2, 'Snapmaker PLA Basic @U1 0.4 nozzle(twin-shell.3mf)', 0), (3, 'Snapmaker PLA Basic @U1 0.4 nozzle(twin-shell.3mf)', 0), (4, 'Snapmaker PLA Basic @U1 0.4 nozzle(twin-shell.3mf)', 0), (5, 'Snapmaker PLA Basic @U1 0.4 nozzle(twin-shell.3mf)', 0), (6, 'Mixed Filament 6', 0)]; requested slot 3
+python.exe : Traceback (most recent call last):
+At C:\coil\run_suite.ps1:35 char:3
++   & "C:\Python311\python.exe" (Case-File $c) 2>&1 | Out-File -FilePat ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\plate_reserve_case.py", line 35, in case_main
+    steps(session, work, analysis, args)
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\m7x_247_split_shells.py", line 104, in steps
+    analysis['split_selection'] = verify_split_selection(split, left_color, both_colors)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\coil\orca-blackbox-v3-r1\tests\plate_reserve_oracle.py", line 260, in verify_split_selection
+    raise ValueError(f'coloring did not independently update the two selected objects: {first_slots}, {left_slots}, 
+{final_slots}')
+ValueError: coloring did not independently update the two selected objects: ['1', '1'], ['2', '1'], ['3', '1']
+[m7x247] native highlighted row 3 in menu 0x2fbe0e67
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5760c8a did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+
+[m7] === verdict ===
+  Split > To objects retained both closed shells as independent objects: PASS
+  unfinished checks: FAIL (ValueError: coloring did not independently update the two selected objects: ['1', '1'], ['2', '1'], ['3', '1'])
+[m7] RED

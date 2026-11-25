@@ -138,7 +138,7 @@ CASES: dict[str, dict] = {
     "m7x_243_add_primitive": _r("m7", "A"),
     "m7x_244_add_model": _r("m7", "A"),
     "m7x_245_clone_fill": _r("m7", "A"),
-    "m7x_247_split_shells": _o("m7", "A"),
+    "m7x_247_split_shells": _r("m7", "A"),
     "m7x_248_delete_object": _r("m7", "A"),
     "m7x_249_add_part": _r("m7", "A"),
     "m7x_250_negative_part": _r("m7", "A"),

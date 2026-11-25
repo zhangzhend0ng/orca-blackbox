@@ -1,0 +1,225 @@
+{
+  "case": 247,
+  "results": {
+    "Split > To objects retained both closed shells as independent objects": "PASS",
+    "the first color change updated only the left object": "PASS",
+    "both objects can be selected individually and assigned distinct colors": "PASS"
+  },
+  "shell_centers_px": {
+    "before": [
+      [
+        1172,
+        514
+      ],
+      [
+        1319,
+        521
+      ]
+    ],
+    "split": [
+      [
+        1172,
+        514
+      ],
+      [
+        1319,
+        520
+      ]
+    ]
+  },
+  "split_geometry": {
+    "initial_shell_triangle_counts": [
+      12,
+      12
+    ],
+    "split_object_names": [
+      "TwinShell_1",
+      "TwinShell_2"
+    ],
+    "object_bounds_mm": [
+      [
+        [
+          122.0,
+          149.0
+        ],
+        [
+          122.5,
+          149.5
+        ],
+        [
+          0.0,
+          27.0
+        ]
+      ],
+      [
+        [
+          189.7000028,
+          211.3000051
+        ],
+        [
+          123.8500004,
+          148.1499996
+        ],
+        [
+          0.0,
+          18.90000057
+        ]
+      ]
+    ],
+    "max_vertex_deviation_mm": 1.6676030608939842e-06,
+    "vertex_tolerance_mm": 5e-05
+  },
+  "first_color_readback": {
+    "before": [
+      "1",
+      "1"
+    ],
+    "after": [
+      "2",
+      "1"
+    ]
+  },
+  "split_selection": {
+    "slots_before": [
+      "1",
+      "1"
+    ],
+    "slots_after_left": [
+      "2",
+      "1"
+    ],
+    "slots_after_both": [
+      "2",
+      "3"
+    ],
+    "colors_after_both": [
+      "#ECED17",
+      "#00C1AE"
+    ],
+    "max_vertex_deviation_mm": 0.0,
+    "vertex_tolerance_mm": 5e-05
+  },
+  "object_list_ocr": {
+    "objects_tab_located": true,
+    "words": [
+      "c",
+      "co",
+      "File",
+      "&",
+      "us",
+      "Calibration",
+      "a",
+      "Prepare",
+      "Preview",
+      "Devic",
+      "Printer",
+      "~",
+      "Snapmaker",
+      "U1",
+      "(0.4",
+      "nozzle)(twin-shell.3...",
+      "(7",
+      "~",
+      "Textured",
+      "PEI",
+      "Plate",
+      "Bed",
+      "type",
+      "Nozzle",
+      "3",
+      "Nozzle",
+      "4",
+      "Nozzle",
+      "2",
+      "Diameter",
+      "~",
+      "0.4mm",
+      "Flow",
+      "~",
+      "Standard",
+      "(@",
+      "Filament",
+      "Management",
+      "Flushing",
+      "volumes",
+      "Color",
+      "Mixing",
+      "Matec",
+      "((",
+      "Filaments",
+      "(FG",
+      "~",
+      "Generic",
+      "PLA",
+      "@U1...",
+      "\u00a9",
+      "|",
+      "~",
+      "Snapmaker",
+      "PLA",
+      "Bas...",
+      "\u00a9",
+      "B",
+      "~",
+      "Snapmaker",
+      "PLA",
+      "B..",
+      "\u00a9",
+      "4",
+      "~",
+      "Snapmaker",
+      "PLA",
+      "Bas...",
+      "\u00a9",
+      "~",
+      "Snapmaker",
+      "PLA",
+      "B...",
+      "\u00a9",
+      "\u00a9",
+      "Color",
+      "Mixing",
+      "50%",
+      "\u00a9",
+      "AS",
+      "&",
+      "Process",
+      "Global",
+      "Advanced",
+      "(9",
+      "Q",
+      "Search",
+      "plate,",
+      "object",
+      "and",
+      "part.",
+      "wv",
+      "TwinShell_1",
+      "TwinShell_2",
+      ">",
+      "Outside",
+      "Frequent",
+      "Quality",
+      "Strength",
+      "Support",
+      "Multimaterial",
+      "C",
+      "Layer",
+      "height",
+      "0.2",
+      "mm",
+      "Sparse",
+      "infill",
+      "density",
+      "15",
+      "%",
+      "~",
+      "2",
+      "Wall",
+      "loops",
+      "Enable",
+      "support"
+    ]
+  },
+  "wall_seconds": 105.406
+}

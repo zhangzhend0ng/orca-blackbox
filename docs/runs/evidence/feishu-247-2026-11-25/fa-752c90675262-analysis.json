@@ -1,0 +1,82 @@
+{
+  "case": 247,
+  "results": {
+    "Split > To objects retained both closed shells as independent objects": "PASS",
+    "unfinished checks": "FAIL (ValueError: coloring did not independently update the two selected objects: ['1', '1'], ['2', '1'], ['3', '1'])"
+  },
+  "shell_centers_px": {
+    "before": [
+      [
+        1172,
+        518
+      ],
+      [
+        1319,
+        525
+      ]
+    ],
+    "split": [
+      [
+        1172,
+        496
+      ],
+      [
+        1318,
+        513
+      ]
+    ],
+    "left-color": [
+      [
+        942,
+        393
+      ],
+      [
+        1172,
+        518
+      ]
+    ]
+  },
+  "split_geometry": {
+    "initial_shell_triangle_counts": [
+      12,
+      12
+    ],
+    "split_object_names": [
+      "TwinShell_1",
+      "TwinShell_2"
+    ],
+    "object_bounds_mm": [
+      [
+        [
+          122.0,
+          149.0
+        ],
+        [
+          122.5,
+          149.5
+        ],
+        [
+          0.0,
+          27.0
+        ]
+      ],
+      [
+        [
+          189.7000028,
+          211.3000051
+        ],
+        [
+          123.8500004,
+          148.1499996
+        ],
+        [
+          0.0,
+          18.90000057
+        ]
+      ]
+    ],
+    "max_vertex_deviation_mm": 1.6676030608939842e-06,
+    "vertex_tolerance_mm": 5e-05
+  },
+  "wall_seconds": 98.515
+}

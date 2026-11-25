@@ -70,9 +70,14 @@ def replay_split(directory: Path, prefix: str) -> dict:
     stages = {"left-color.3mf", "both-colors.3mf"}
     result["checks"]["independent_selection_and_coloring"] = False
     if stages <= {part["part"] for part in manifest}:
-        result["filaments"] = verify_split_selection(
-            split, read("left-color.3mf"), read("both-colors.3mf"))
-        result["checks"]["independent_selection_and_coloring"] = True
+        left_color = read("left-color.3mf")
+        both_colors = read("both-colors.3mf")
+        try:
+            result["filaments"] = verify_split_selection(split, left_color, both_colors)
+        except ValueError as error:
+            result["selection_error"] = str(error)
+        else:
+            result["checks"]["independent_selection_and_coloring"] = True
     return result
 
 

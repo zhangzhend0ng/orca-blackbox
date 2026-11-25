@@ -1,0 +1,86 @@
+[
+  {
+    "path": "case.log",
+    "part": "case.log",
+    "bytes": 16084,
+    "sha256": "73958CD89403C5217F4A2FD7C8E6F7CCEA0C77DDC492F3E29F4761C52046D449"
+  },
+  {
+    "path": "done.json",
+    "part": "done.json",
+    "bytes": 485,
+    "sha256": "DBE0307C6D850629DD29FFA0D91DB6BEA507E2F39924C8AA96FB963011F85501"
+  },
+  {
+    "path": "execution_host.json",
+    "part": "execution_host.json",
+    "bytes": 369,
+    "sha256": "2D93D770EE20DE988DDD94FD7703E5CB1A5624165048B122C0E58635F0F34ED1"
+  },
+  {
+    "path": "feishu-object-cases/247/run-cukp6k3j/analysis.json",
+    "part": "analysis.json",
+    "bytes": 3754,
+    "sha256": "C091F41497523F693DFB03BF815C9D28FC5642932E26DC9B7B3F90C93A153D22"
+  },
+  {
+    "path": "feishu-object-cases/247/run-cukp6k3j/before.3mf",
+    "part": "before.3mf",
+    "bytes": 35067,
+    "sha256": "DD7E4C5E52774FF13AF65A08332C5A68ADA912557D1BECF35A7FD44C0EC1B9D9"
+  },
+  {
+    "path": "feishu-object-cases/247/run-cukp6k3j/before.png",
+    "part": "before.png",
+    "bytes": 291999,
+    "sha256": "28335B38792860D4FD21794F4EF70B76CC5B38ED0BF0107D17CB1B21D85C4492"
+  },
+  {
+    "path": "feishu-object-cases/247/run-cukp6k3j/both-colors.3mf",
+    "part": "both-colors.3mf",
+    "bytes": 35831,
+    "sha256": "D53FA3B03AAACE818566D08458383B770B9EA5BBC106AEB496D89C0D84E931EB"
+  },
+  {
+    "path": "feishu-object-cases/247/run-cukp6k3j/both-colors.png",
+    "part": "both-colors.png",
+    "bytes": 317224,
+    "sha256": "4F4DDC332699D120933F66E81B96D283139688ACBBFBA27B35C6DB0F80BFC6B5"
+  },
+  {
+    "path": "feishu-object-cases/247/run-cukp6k3j/left-color.3mf",
+    "part": "left-color.3mf",
+    "bytes": 36071,
+    "sha256": "BBD77114C5AA06A83A6D993BA5FFED53AD89A656AFCB3C2AA71B88FD47549D72"
+  },
+  {
+    "path": "feishu-object-cases/247/run-cukp6k3j/left-color.png",
+    "part": "left-color.png",
+    "bytes": 316317,
+    "sha256": "16D890CF5359A8D70CD91AA126489D6119DE70474ACE9CE96C07B8749237F44C"
+  },
+  {
+    "path": "feishu-object-cases/247/run-cukp6k3j/object-list.png",
+    "part": "object-list.png",
+    "bytes": 304023,
+    "sha256": "9C72E4EC05A419BE33EB34C9A840F53771D39FEA357F0899F3C843CA6FEF2924"
+  },
+  {
+    "path": "feishu-object-cases/247/run-cukp6k3j/split.3mf",
+    "part": "split.3mf",
+    "bytes": 35633,
+    "sha256": "B43E4AE87B3728953D7A25DF70F5837415281D40D88E5D301351C1682292B777"
+  },
+  {
+    "path": "feishu-object-cases/247/run-cukp6k3j/split.png",
+    "part": "split.png",
+    "bytes": 313896,
+    "sha256": "E4A84A2479AEBF2B33D9F21B0CF642A9EDDC5EDEA267D575FC78856FF2AE17F4"
+  },
+  {
+    "path": "feishu-object-cases/247/run-cukp6k3j/twin-shell.3mf",
+    "part": "twin-shell.3mf",
+    "bytes": 30327,
+    "sha256": "ED101728087DB0D331A3ABFD30F8AA2391855BB899F1888C76CFD555ACAD537F"
+  }
+]
