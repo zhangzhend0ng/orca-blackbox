@@ -7,7 +7,9 @@ without an extension so that the application decides the extension. Records the 
 name, the file type entry, the name and size of every file that appears, and the head and tail of the G-code.
 Diagnostic record only; the result is not a verdict."""
 import argparse
+import ctypes
 import json
+import subprocess
 import sys
 import tempfile
 import time
@@ -26,6 +28,30 @@ from m3_common import add_common_args, boot_session
 from m8_common import wait_arrival
 
 GUARD = 'Memory Usage Warning'
+HOG = '\n'.join([
+    'import sys, time',
+    'block = bytearray(int(sys.argv[1]) << 20)',
+    'block[::4096] = bytes(len(block[::4096]))',
+    'sys.stdout.write("ready" + chr(10))',
+    'sys.stdout.flush()',
+    'time.sleep(600)',
+])
+
+
+def available_mb():
+    """Available physical memory of the machine under test (GlobalMemoryStatusEx)."""
+    import ctypes.wintypes as wintypes
+
+    class MemoryStatus(ctypes.Structure):
+        _fields_ = [('length', wintypes.DWORD), ('load', wintypes.DWORD)] + [
+            (name, ctypes.c_ulonglong) for name in (
+                'total_physical', 'available_physical', 'total_page_file', 'available_page_file',
+                'total_virtual', 'available_virtual', 'extended_virtual')]
+
+    status = MemoryStatus()
+    status.length = ctypes.sizeof(status)
+    ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status))
+    return {'total_mb': status.total_physical >> 20, 'available_mb': status.available_physical >> 20}
 
 
 def answer_memory_guard(session, work, analysis):
@@ -113,27 +139,45 @@ def export_named(session, work, analysis, key, item, title, name):
 
 
 def run(args, work, analysis):
+    hog = None
+    if args.hog_mb:
+        hog = subprocess.Popen([sys.executable, '-c', HOG, str(args.hog_mb)], stdout=subprocess.PIPE, text=True)
+        hog.stdout.readline()
+        time.sleep(3)
+        analysis['memory_hog'] = {'mb': args.hog_mb, 'pid': hog.pid, 'after_start': available_mb()}
+        print('[sliceprobe] memory hog', analysis['memory_hog'], flush=True)
     session = boot_session(SimpleNamespace(exe=args.exe, datadir=work / 'profile'), model=args.model)
     try:
         m7.ensure_maximized(session)
         if not wait_arrival(session, timeout_s=30, min_frac=0.001)[0]:
             raise ValueError('fixture did not render')
+        analysis['available_before_slice'] = available_mb()
         analysis['slice_click'] = time.monotonic()
         if not click_slice_start(session):
             raise ValueError('slice click did not take')
         if not wait_export_enabled(session, work, analysis):
             raise ValueError('Export G-code never became enabled')
+        analysis['available_after_slice'] = available_mb()
         export_named(session, work, analysis, 'gcode_export', 'Export G-code', 'Save G-code file as:', 'plate-gcode')
         export_named(session, work, analysis, 'sliced_export', 'Export plate sliced file', 'Save Sliced file as:',
                      'plate-sliced')
     finally:
         session.close()
+        if hog is not None:
+            hog.kill()
+            hog.wait()
 
 
 def main():
     parser = add_common_args(argparse.ArgumentParser(), default_model=HERE / 'fixtures/feishu_std_cube.3mf')
     parser.add_argument('--row', default='sliceprobe')
+    parser.add_argument('--hog-mb', type=int, default=0,
+                        help='hold this much physical memory in a helper process while slicing (0 = none)')
     args = parser.parse_args()
+    # hv_go launches a case without extra arguments; the host runner leaves the hog size in this file instead.
+    marker = Path(r'C:\coil\diag_hog_mb.txt')
+    if not args.hog_mb and marker.is_file():
+        args.hog_mb = int(marker.read_text().strip() or 0)
     root = args.datadir.resolve().parent / 'feishu-object-cases' / args.row
     root.mkdir(parents=True, exist_ok=True)
     work = Path(tempfile.mkdtemp(prefix='run-', dir=root))
