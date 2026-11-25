@@ -1,0 +1,256 @@
+{
+  "case": "file menu census",
+  "results": {
+    "census completed with the editor alive": "PASS"
+  },
+  "zip_experiments": {
+    "objects_at_start": 4,
+    "one_file_archive": {
+      "zip_sha256": "b5787fb22db659874fa603d3cc7f7e8b0550e52f9bc63ab4f13d31397da53d1d",
+      "preview_rows": [
+        "filename",
+        "@",
+        "ss"
+      ],
+      "controls": [
+        "dataviewCtrl",
+        "wxdataviewctrlmainwindow",
+        "wxHeaderCtrl",
+        "All",
+        "None",
+        "Open",
+        "Cancel"
+      ],
+      "all": [
+        782,
+        682
+      ],
+      "rows_after_all": [
+        "filename"
+      ],
+      "open": [
+        1007,
+        682
+      ],
+      "dialogs": [
+        {
+          "title": "Snapmaker Orca error",
+          "at_s": 0.5,
+          "ocr": [
+            "Loading",
+            "of",
+            "model",
+            "file",
+            "failed."
+          ],
+          "answers": [
+            {
+              "at_s": 3.3,
+              "pressed": "OK",
+              "point": [
+                1049,
+                603
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Warning",
+          "at_s": 0.6,
+          "ocr": [
+            "T",
+            "The",
+            "file",
+            "does",
+            "not",
+            "contain",
+            "any",
+            "geometry",
+            "data."
+          ],
+          "answers": [
+            {
+              "at_s": 3.3,
+              "failed": "the Archive preview has 0 children labelled 'Cancel'"
+            }
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "at_s": 11.3,
+          "model_fraction": 0.0048,
+          "objects": 4,
+          "app_dialogs": []
+        },
+        {
+          "at_s": 12.1,
+          "model_fraction": 0.0048,
+          "objects": 4,
+          "app_dialogs": []
+        },
+        {
+          "at_s": 13.0,
+          "model_fraction": 0.0048,
+          "objects": 4,
+          "app_dialogs": []
+        },
+        {
+          "at_s": 13.9,
+          "model_fraction": 0.0048,
+          "objects": 4,
+          "app_dialogs": []
+        }
+      ],
+      "objects_at_end": 4
+    },
+    "three_file_archive": {
+      "zip_sha256": "06cdef46472bed0aa1a870731ea2bbdb5bf4c4caa290b4da7ab6ffe6c99df93c",
+      "preview_rows": [
+        "filename",
+        "O",
+        "\u00a9",
+        "trio_10mm.stl",
+        "0",
+        "trio_20mm.stl",
+        "\u00a9",
+        "trio_30mm.stl"
+      ],
+      "controls": [
+        "dataviewCtrl",
+        "wxdataviewctrlmainwindow",
+        "wxHeaderCtrl",
+        "All",
+        "None",
+        "Open",
+        "Cancel"
+      ],
+      "all": [
+        782,
+        682
+      ],
+      "rows_after_all": [
+        "filename",
+        "@",
+        "@",
+        "\u00a9",
+        "trio_30mm.stl"
+      ],
+      "open": [
+        1007,
+        682
+      ],
+      "dialogs": [
+        {
+          "title": "Snapmaker Orca error",
+          "at_s": 0.5,
+          "ocr": [
+            "Loading",
+            "of",
+            "model",
+            "file",
+            "failed."
+          ],
+          "answers": [
+            {
+              "at_s": 3.3,
+              "pressed": "OK",
+              "point": [
+                1049,
+                603
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Loading...",
+          "at_s": 0.6,
+          "ocr": [
+            "Loading",
+            "file:",
+            "trio_10mm.stl",
+            "1",
+            "Cancel"
+          ],
+          "answers": [
+            {
+              "at_s": 3.3,
+              "pressed": "Cancel",
+              "point": [
+                1085,
+                561
+              ]
+            }
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "at_s": 11.1,
+          "model_fraction": 0.0048,
+          "objects": 4,
+          "app_dialogs": []
+        },
+        {
+          "at_s": 12.0,
+          "model_fraction": 0.0048,
+          "objects": 4,
+          "app_dialogs": []
+        },
+        {
+          "at_s": 12.9,
+          "model_fraction": 0.0048,
+          "objects": 4,
+          "app_dialogs": []
+        },
+        {
+          "at_s": 13.8,
+          "model_fraction": 0.0048,
+          "objects": 4,
+          "app_dialogs": []
+        }
+      ],
+      "objects_at_end": 4
+    },
+    "three_files_at_once": {
+      "dialogs": [],
+      "samples": [
+        {
+          "at_s": 11.1,
+          "model_fraction": 0.0048,
+          "objects": 4,
+          "app_dialogs": [
+            "Snapmaker Orca error"
+          ]
+        },
+        {
+          "at_s": 12.0,
+          "model_fraction": 0.0048,
+          "objects": 4,
+          "app_dialogs": [
+            "Snapmaker Orca error"
+          ]
+        },
+        {
+          "at_s": 12.9,
+          "model_fraction": 0.0048,
+          "objects": 4,
+          "app_dialogs": [
+            "Snapmaker Orca error"
+          ]
+        },
+        {
+          "at_s": 13.8,
+          "model_fraction": 0.0048,
+          "objects": 4,
+          "app_dialogs": [
+            "Snapmaker Orca error"
+          ]
+        }
+      ],
+      "objects_at_end": 4
+    },
+    "app_alive": true
+  },
+  "wall_seconds": 134.953
+}

@@ -1,0 +1,14 @@
+﻿{
+    "commit":  "b2467f7d88402fc5c8953fd013297361ed3d7e9a",
+    "case":  "m7x_231_import_zip",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "orca_processes_after":  0,
+    "summary":  "SUMMARY: PASS=0 FAIL=1\r\nFAILED: m7x_231_import_zip",
+    "dispatched_at":  "2026-11-26T00:22:50.9205891+08:00",
+    "scenario_completed_at":  "2026-11-26T00:25:12.5364797+08:00",
+    "suite_completed_at":  "2026-11-26T00:25:12.8059613+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_231_import_zip.log",
+    "log_sha256":  "75258F352DC9007E9F74C285FD530F80654A01D13A1C318B29023A90A076C001"
+}

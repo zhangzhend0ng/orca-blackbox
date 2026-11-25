@@ -1,0 +1,227 @@
+{
+  "case": 231,
+  "results": {
+    "unfinished checks": "FAIL (ValueError: failed to save the imported project)"
+  },
+  "timings": {
+    "prepare_empty_plate": {
+      "started_utc": "2026-11-25T16:23:56.803361+00:00",
+      "duration_s": 11.703
+    },
+    "build_archive": {
+      "started_utc": "2026-11-25T16:24:08.515324+00:00",
+      "duration_s": 0.047
+    },
+    "import_zip_chooser": {
+      "started_utc": "2026-11-25T16:24:08.561080+00:00",
+      "duration_s": 7.985
+    },
+    "archive_preview": {
+      "started_utc": "2026-11-25T16:24:16.534241+00:00",
+      "duration_s": 1.828
+    },
+    "open_archive": {
+      "started_utc": "2026-11-25T16:24:18.483711+00:00",
+      "duration_s": 0.031
+    },
+    "observe_import": {
+      "started_utc": "2026-11-25T16:24:18.508220+00:00",
+      "duration_s": 25.532
+    },
+    "save_and_verify": {
+      "started_utc": "2026-11-25T16:24:44.124486+00:00",
+      "duration_s": 26.39
+    }
+  },
+  "bed_point": [
+    1172,
+    514
+  ],
+  "initial_printer": {
+    "model": "Snapmaker U1",
+    "profile": "Snapmaker U1 (0.8 nozzle)(agent_layer_cube.3mf)"
+  },
+  "empty_plate": {
+    "fraction": 0.0010439742316604283,
+    "candidate_centroids": [
+      [
+        935,
+        331
+      ],
+      [
+        851,
+        759
+      ]
+    ]
+  },
+  "archive": {
+    "file": "inputs/models.zip",
+    "not_harvested": [
+      "models.zip",
+      "readme.txt"
+    ],
+    "bytes": 743,
+    "sha256": "ccb42a16af553abd15e2e0158dd97ae26800d07f3fb46dc7e4b84b457094a532",
+    "members": {
+      "cube_10mm.stl": {
+        "bytes": 684,
+        "sha256": "9b44fa4b09c3b0908f7d27745cc1a34f4c2f662054c3b95754b8d5f3836a17d6"
+      },
+      "cube_20mm.stl": {
+        "bytes": 684,
+        "sha256": "3f09d813eecc842c59960f2f76e22c038782b92ca8f294c6c3bb0bbc2bb5bfcd"
+      },
+      "cube_30mm.stl": {
+        "bytes": 684,
+        "sha256": "1e8c68d2557db9794e60a253e58a833b8405b8f05771c54b033fd244db27457f"
+      }
+    }
+  },
+  "temp_dir": "C:\\Users\\test\\AppData\\Local\\Temp",
+  "temp_collisions": [],
+  "temp_leftovers_removed": [],
+  "chooser": {
+    "title": "Choose ZIP file:",
+    "entered": "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\231\\run-wb4kc9de\\inputs\\models.zip",
+    "filters": [
+      {
+        "selected": -1,
+        "items": []
+      },
+      {
+        "selected": 0,
+        "items": [
+          "ZIP files (*.zip)"
+        ]
+      }
+    ]
+  },
+  "preview": {
+    "controls": [
+      {
+        "class": "wxWindowNR",
+        "text": "dataviewCtrl",
+        "visible": true,
+        "rect": [
+          753,
+          357,
+          1167,
+          646
+        ]
+      },
+      {
+        "class": "wxDataView",
+        "text": "wxdataviewctrlmainwindow",
+        "visible": true,
+        "rect": [
+          754,
+          382,
+          1166,
+          645
+        ]
+      },
+      {
+        "class": "wxWindowNR",
+        "text": "wxHeaderCtrl",
+        "visible": true,
+        "rect": [
+          754,
+          358,
+          1166,
+          382
+        ]
+      },
+      {
+        "class": "SysHeader32",
+        "text": "",
+        "visible": true,
+        "rect": [
+          754,
+          358,
+          1166,
+          382
+        ]
+      },
+      {
+        "class": "wxWindowNR",
+        "text": "All",
+        "visible": true,
+        "rect": [
+          753,
+          670,
+          811,
+          694
+        ]
+      },
+      {
+        "class": "wxWindowNR",
+        "text": "None",
+        "visible": true,
+        "rect": [
+          821,
+          670,
+          879,
+          694
+        ]
+      },
+      {
+        "class": "wxWindowNR",
+        "text": "Open",
+        "visible": true,
+        "rect": [
+          957,
+          666,
+          1057,
+          698
+        ]
+      },
+      {
+        "class": "wxWindowNR",
+        "text": "Cancel",
+        "visible": true,
+        "rect": [
+          1067,
+          666,
+          1167,
+          698
+        ]
+      },
+      {
+        "class": "ScrollBar",
+        "text": "",
+        "visible": true,
+        "rect": [
+          1160,
+          691,
+          1177,
+          708
+        ]
+      }
+    ],
+    "rows_initial": [
+      "O)"
+    ],
+    "all_click": [
+      782,
+      682
+    ],
+    "rows_after_all": [
+      "@",
+      "@",
+      "cube",
+      "20mm.stl",
+      "@",
+      "cube",
+      "30mmstl"
+    ],
+    "open_click": [
+      1007,
+      682
+    ]
+  },
+  "import_fraction": 0.0010439742316604283,
+  "object_list": {
+    "error": "object list does not show ['cube_10mm', 'cube_20mm', 'cube_30mm']; read ['c', 'co', 'us', 'Calibration', '}', 'Prepare', 'Preview', 'Devic', 'Printer', '~', 'Snapmaker', 'U1', '(0.8', 'nozzle)(agent_layer...', '[7', 'Bed', 'type', '~', 'Textured', 'PEI', 'Plate', 'Nozzle', '2', 'Nozzle', '3', 'Nozzle', '4', 'Diameter', '~', '0.8mm', 'Flow', '~', 'Standard', '(@', 'Filament', 'Management', 'Flushing', 'volumes', 'Color', 'Mixing', '((', 'Filaments', '(FG', '~', 'Generic', 'PETG', '@U...', '\u00a9', '~', 'Snapmaker', 'PLA', 'Silk...', '\u00a9', 'B', '~', 'Snapmaker', 'PLA', 'Si...', '\u00a9', '4', '~', 'Snapmaker', 'PLA', 'Silk...', '\u00a9', '~', 'Snapmaker', 'PLA', 'Si...', '\u00a9', '\u00a9', 'Color', 'Mixing', '50%', '\u00a9', '=', 'Objects', 'Advanced', '(9', '=', '=', 'AS', '~', '0.40', 'Standard', '@Snapmaker', 'U1', '(0.8', 'n...', 'Multimaterial', 'Others', 'Quality', 'Strength', 'Support', 'Layer', 'height', 'Layer', 'height', '04', 'mm', '04', 'mm', 'First', 'layer', 'height', '{2', '|]', 'Seam', 'Seam', 'position', '~', 'Aligned', 'Precision', 'Precise', 'wall', 'Walls', 'and', 'surfaces', 'Only', 'one', 'wall', 'on', 'top', 'surfaces']"
+  },
+  "wall_seconds": 121.046
+}

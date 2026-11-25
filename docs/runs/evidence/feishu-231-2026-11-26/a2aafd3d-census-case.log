@@ -1,0 +1,35 @@
+﻿[census] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\census\run-vo1rwqza
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\census\run-vo1rwqza\profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\census\run-vo1rwqza\profile C:\coil\orca-blackbox-v3-r1\fixtures\feishu_std_cube.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x57f1170, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x58d03ee, WM_CLOSE)
+[launcher] pid=7368 hwnd=0x5930a02 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.10%)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x4aa02ea did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=321) sent, completed=False
+[census] one_file_archive {"at_s": 13.9, "model_fraction": 0.0048, "objects": 4, "app_dialogs": []}
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x4aa02ea did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=321) sent, completed=False
+[census] three_file_archive {"at_s": 13.8, "model_fraction": 0.0048, "objects": 4, "app_dialogs": []}
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x4aa02ea did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=320) sent, completed=False
+[census] three_files {"at_s": 13.8, "model_fraction": 0.0048, "objects": 4, "app_dialogs": ["Snapmaker Orca error"]}
+
+[m7] === verdict ===
+  census completed with the editor alive: PASS
+[m7] GREEN

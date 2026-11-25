@@ -1,0 +1,41 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T00:25:12" tests="1" failures="1" errors="0">
+    <testcase name="m7x_231_import_zip" classname="blackbox.m7x_231_import" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_231_import_zip.log" />
+        <property name="dim:unfinished checks" value="FAIL (ValueError: failed to save the imported project)" />
+      </properties>
+      <failure type="RED" message="unfinished checks: FAIL (ValueError: failed to save the imported project)">[m7x249] started open_archive at 2026-11-25T16:24:18.483711+00:00
+[m7x249] finished open_archive in 0.031s
+[m7x249] started observe_import at 2026-11-25T16:24:18.508220+00:00
+[m8] arrival: True (0.10%, gate 0.10%)
+[m7x249] finished observe_import in 25.532s
+[m7x249] started save_and_verify at 2026-11-25T16:24:44.124486+00:00
+[topbar] File offset 10: no menu
+[topbar] File offset 20: no menu
+[topbar] File offset 30: no menu
+[topbar] File offset 40: no menu
+[topbar] File offset 50: no menu
+[topbar] File offset 60: no menu
+[m3g] file menu did not open
+[m7x249] finished save_and_verify in 26.390s
+python.exe : Traceback (most recent call last):
+At C:\coil\run_suite.ps1:35 char:3
++   &amp; "C:\Python311\python.exe" (Case-File $c) 2&gt;&amp;1 | Out-File -FilePat ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\plate_reserve_case.py", line 35, in case_main
+    steps(session, work, analysis, args)
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\m7x_231_import_zip.py", line 98, in steps
+    raise ValueError('failed to save the imported project')
+ValueError: failed to save the imported project
+
+[m7] === verdict ===
+  unfinished checks: FAIL (ValueError: failed to save the imported project)
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

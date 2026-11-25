@@ -1,0 +1,22 @@
+Read-only probe of the guest (PS Direct) at 2026-11-26 01:27 Beijing time, after the runs listed below.
+Files the application extracted from the chosen archives into the test account's TEMP directory:
+
+last written        bytes  name               SHA-256
+11-26 00:24:18        684  cube_10mm.stl      9b44fa4b09c3b0908f7d27745cc1a34f4c2f662054c3b95754b8d5f3836a17d6
+11-26 00:24:18        684  cube_20mm.stl      3f09d813eecc842c59960f2f76e22c038782b92ca8f295c6c3bb0bbc2bb5bfcd
+11-26 00:24:18        684  cube_30mm.stl      1e8c68d2557db9794e60a253e58a833b8405b8f05771c54b033fd244db27457f
+11-26 00:35:56        684  cube_10mm(1).stl   9b44fa4b09c3b0908f7d27745cc1a34f4c2f662054c3b95754b8d5f3836a17d6
+11-26 00:35:56        684  cube_20mm(1).stl   3f09d813eecc842c59960f2f76e22c038782b92ca8f295c6c3bb0bbc2bb5bfcd
+11-26 00:35:56        684  cube_30mm(1).stl   1e8c68d2557db9794e60a253e58a833b8405b8f05771c54b033fd244db27457f
+11-26 00:46:04        684  cube_20mm(2).stl   3f09d813eecc842c59960f2f76e22c038782b92ca8f295c6c3bb0bbc2bb5bfcd
+11-26 00:46:04        684  cube_30mm(2).stl   1e8c68d2557db9794e60a253e58a833b8405b8f05771c54b033fd244db27457f
+11-26 00:46:04        684  cube_10mm(2).stl   9b44fa4b09c3b0908f7d27745cc1a34f4c2f662054c3b95754b8d5f3836a17d6
+
+The 00:24:18 files come from the case run b2467f7d-run1 (dispatched 00:22:50, the same bytes as the
+members recorded in b2467f7d-run1-analysis.json). The later ones come from the census runs, where the
+application renamed a file whose name already existed in TEMP by adding "(1)" and "(2)".
+First 96 bytes of cube_20mm.stl (hex): the binary STL header "Orca black-box #251 cube", the facet count
+0c 00 00 00 at offset 80, then the first facet.
+TEMP = C:\Users\test\AppData\Local\Temp
+The application's own log for the census run (profile\log\2026-11-26-01-47-11.log.0) holds no line about
+the archive load; information-level load messages are not written.
