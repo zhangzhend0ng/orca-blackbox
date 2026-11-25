@@ -13,6 +13,7 @@ from m7x_251_reload_from_disk import write_cube
 from zip_import_oracle import MEMBERS, NOTE
 
 PREVIEW = 'Archive preview'
+IMPORT_ROW = 'Import 3MF'
 
 
 def build_archive(archive, loose):
@@ -152,6 +153,34 @@ def list_words(dlg_hwnd, frame, cls):
 
 def sidebar_words(session):
     return m7.mdu.ocr_words_img(m7.capture_bgr(session)[:, :410], scale=2, psm=11)
+
+
+def choose_project(session, source, work, analysis):
+    """File > Import > Import 3MF/STL/STEP/SVG/OBJ/AMF..., type the project path, confirm.
+
+    The row is bound to Plater::add_model() (MainFrame.cpp:2609-2611 at sm-v2.4.0),
+    which loads a project 3MF as geometry: Plater.cpp:18054-18055 calls
+    load_files(paths, LoadStrategy::LoadModel, false)."""
+    dispatched, dialog = m7.file_menu_dispatch(session, IMPORT_ROW, expect_dialog=True, via='Import', timeout_s=10)
+    if not dispatched or not dialog:
+        raise ValueError(f'{IMPORT_ROW} did not open a file chooser')
+    _, title, _, hwnd = dialog
+    edit = export_util.find_edit(hwnd)
+    if not edit or winutil._window_pid(edit) != session.pid:
+        raise ValueError(f'file chooser has no owned filename control: {title}')
+    winutil.select_all(edit)
+    winutil.msg_text(edit, str(source))
+    entered = winutil.edit_text(edit, size=512)
+    filters = _comboboxes(hwnd)
+    shoot(hwnd, work / 'chooser.png')
+    analysis['chooser'] = {'row': IMPORT_ROW, 'title': title, 'entered': entered, 'filters': filters}
+    print(f'[m7x230] chooser {analysis["chooser"]}', flush=True)
+    if '3mf' not in title.lower() or not any('*.3mf' in item for box in filters for item in box['items']):
+        raise ValueError(f'chooser is not the model import dialog: {title!r} {filters}')
+    if entered != str(source):
+        raise ValueError(f'wrong chooser filename: {entered}')
+    winutil._send_msg(hwnd, m7.WM_COMMAND_MSG, 1, 0)
+    return hwnd
 
 
 def wait_closed(hwnd, timeout_s=15):
