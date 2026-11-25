@@ -473,13 +473,14 @@ def _choose_bundle_kind(hwnd, kind, hint_before, work=None, image=None):
     return entry
 
 
-def bundle_survey(session, work, analysis, key='bundle_survey'):
+def bundle_survey(session, work, analysis, key='bundle_survey', prefix=''):
     """Open File > Export > Export Preset Bundle once and read, for every package type, what it
     lists; then close the dialog without exporting.
 
     The receipt goes to analysis[key] and is returned: the dialog as opened, and per type the
-    rows listed, the hint under the list and a picture. Raises when the dialog does not open,
-    is not the one measured, or will not close."""
+    rows listed, the hint under the list and a picture (`prefix` keeps the pictures of a second
+    reading apart from the first). Raises when the dialog does not open, is not the one
+    measured, or will not close."""
     receipt = analysis[key] = {'order': list(BUNDLE_KINDS), 'kinds': {}}
     dispatched, dialog = m7.file_menu_dispatch(session, BUNDLE_ROW, expect_dialog=True, via='Export', timeout_s=10)
     if not dispatched or not dialog:
@@ -489,10 +490,10 @@ def bundle_survey(session, work, analysis, key='bundle_survey'):
         raise ValueError(f'File > Export > {BUNDLE_ROW} opened {title!r}')
     receipt['title'] = title
     try:
-        receipt['dialog'] = dialog_receipt(hwnd, work, 'bundle-dialog.png')
+        receipt['dialog'] = dialog_receipt(hwnd, work, f'{prefix}bundle-dialog.png')
         hint = bundle_rows(dialog_controls(hwnd))['hint']
         for number, kind in enumerate(BUNDLE_KINDS, 1):
-            receipt['kinds'][kind] = _choose_bundle_kind(hwnd, kind, hint, work, f'bundle-type-{number}.png')
+            receipt['kinds'][kind] = _choose_bundle_kind(hwnd, kind, hint, work, f'{prefix}bundle-type-{number}.png')
     finally:
         receipt['closed'] = _leave_dialog(hwnd)
     if not receipt['closed']:
@@ -613,6 +614,100 @@ def export_preset_bundle(session, kind, directory, work, analysis, tick='all', k
         receipt.update(saved_path=str(target), saved_name=target.name, bytes=len(raw),
                        sha256=sha256(raw).hexdigest())
         print(f'{LOG} {target.name} of kind {kind!r}: {len(raw)} bytes in {directory}', flush=True)
+    return receipt
+
+
+SAVE_PRESET_DIALOG = 'Save preset'
+
+
+def save_process_preset(session, name, work, analysis, key='preset_saved', value='0.3'):
+    """Make the process preset of the moment a user preset named `name`, the way a user does.
+
+    This is the path tests/engine/m5g_preset_manage.py measured, with its helpers: the Advanced
+    switch, the Quality page and its first field (the layer height) are driven with real input
+    until the preset is changed; the save button of the preset row is found by its tooltip; in
+    the application's own "Save preset" box the name is typed without Enter (the box lives on
+    its text events), and "User Preset" and "OK" are clicked by their exact text. The receipt
+    goes to analysis[key] and is returned: what each step saw, the box's texts and a picture.
+    A step that does not behave as measured raises ValueError with the receipt kept and leaves
+    no box open. The preset is written by the application under
+    ``<datadir>/user/default/process/<name>.json``; whether it is, is for the caller to look at."""
+    import m5g_preset_manage as m5g
+    from harness import mix_dialog_util as mdu
+    from harness import process_panel as pp
+    receipt = analysis[key] = {'name': name, 'value': value, 'steps': {}}
+    steps = receipt['steps']
+    dialog = None
+    try:
+        steps['advanced_on'] = bool(pp.ensure_advanced(session, want=True))
+        if not steps['advanced_on']:
+            raise ValueError('the Advanced switch of the process page did not turn on')
+        steps['quality_page'] = bool(pp.click_tab(session, 'Quality', 'height'))
+        field = pp.wait_float_edit(session, timeout_s=60) if steps['quality_page'] else None
+        if not field:
+            raise ValueError('the Quality page shows no field to change')
+        rect, handle, before = field
+        after = pp.real_edit_set(session, rect, handle, value)
+        pp.neutralize_focus(session)
+        steps.update(layer_height_before=before, layer_height_after=after)
+        if not (after and str(after).startswith(value)):
+            raise ValueError(f'the layer height did not take {value!r}: {after!r}')
+        time.sleep(6.0)
+        steps['preset_row_before_save'] = m5g.preset_row_text(session)
+        rect, handle, tooltip = m5g.find_button_by_tooltip(session, 'save')
+        steps['save_button'] = {'rect': list(rect) if rect else None, 'tooltip': tooltip}
+        if handle is None:
+            raise ValueError('the preset row shows no button whose tooltip says save')
+        known = pp.top_dialog_set(session)  # what is open now, so that the box stands out
+        m5g.real_click(rect)
+        box, title = m5g.wait_new_dialog(session, known)
+        if not box:
+            raise ValueError('pressing the save button opened no "Save preset" box')
+        dialog = box
+        receipt['dialog'] = dialog_receipt(box, work, 'save-preset-dialog.png')
+        if SAVE_PRESET_DIALOG.casefold() not in (title or '').casefold():
+            raise ValueError(f'pressing the save button opened {title!r}')
+        edit_rect, edit = m5g.dialog_edit(box)
+        if not edit:
+            raise ValueError('the "Save preset" box has no field for the name')
+        focused = False
+        for _attempt in range(4):
+            winutil.force_set_foreground(session.hwnd)
+            time.sleep(0.3)
+            m5g.real_click(edit_rect)
+            time.sleep(0.4)
+            if pp.focus_hwnd(edit) == edit:
+                focused = True
+                break
+        if not focused:
+            raise ValueError('the field for the name did not take the focus')
+        mdu._send_keys([(0x11, False), (0x41, False), (0x41, True), (0x11, True)])  # Ctrl+A and Delete, never Enter
+        time.sleep(0.15)
+        mdu._send_keys([(0x2E, False), (0x2E, True)])
+        time.sleep(0.2)
+        mdu._send_chars(name)
+        time.sleep(0.4)
+        receipt['typed'] = mdu.edit_value(edit)
+        if receipt['typed'] != name:
+            raise ValueError(f'the "Save preset" box holds {receipt["typed"]!r}, not {name!r}')
+        user, _handle = m5g.dialog_child_exact(box, 'User Preset')
+        if not user:
+            raise ValueError('the "Save preset" box shows no "User Preset"')
+        receipt['user_preset'] = list(user)
+        m5g.real_click(user)
+        time.sleep(0.5)
+        receipt['filled'] = _picture(box, work, 'save-preset-filled.png')
+        ok_rect, _handle = m5g.dialog_child_exact(box, 'OK')
+        if not ok_rect:
+            raise ValueError('the "Save preset" box shows no OK')
+        receipt['ok'] = list(ok_rect)
+        m5g.real_click(ok_rect)
+        time.sleep(3.0)
+        receipt['closed'] = not winutil.user32.IsWindowVisible(box)
+        receipt['preset_row_after_save'] = m5g.preset_row_text(session)
+    finally:
+        if dialog is not None and winutil.user32.IsWindowVisible(dialog):
+            winutil._send_msg(dialog, WM_CLOSE, 0, 0)
     return receipt
 
 

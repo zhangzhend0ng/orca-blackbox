@@ -273,7 +273,9 @@ def package_gaps(package):
     if package.get('extension') not in PACKAGE_SUFFIXES:
         gaps.append(f'{name!r} is not a .zip or .ini package')
     if 'error' in package:
-        gaps.append(f'{name!r} is not a readable package: {package["error"]}')
+        left = ('left a 0-byte zip: the file was created and nothing was added to it'
+                if package.get('bytes') == 0 else f'is not a readable package: {package["error"]}')
+        gaps.append(f'{name!r} {left}')
         return gaps
     if not [member for member in package['members'].values() if member['preset']]:
         gaps.append(f'{name!r} holds no preset')
@@ -299,7 +301,12 @@ def _reported(attempt):
 def _could_not_add(line):
     """The file a "Failed to add file to ZIP archive" line names, without the log's own prefix."""
     head = line[:line.casefold().index(APP_LOG_FAILED)].strip()
-    return head.rsplit('] ', 1)[-1] if '] ' in head else head
+    # The application writes "[severity]<tab><time>[Thread <id>]:<message>" (utils.cpp), older
+    # lines read "<time> [severity] <message>": the name is what follows the last of either.
+    for tail in (']:', '] '):
+        if tail in head:
+            return head.rsplit(tail, 1)[-1].strip()
+    return head
 
 
 def _said(attempt):
@@ -346,8 +353,11 @@ def export_gaps(attempts, nothing_listed=None):
 def _baseline(attempt, name, old_table):
     """(parameters before the export, where they come from) for a preset of a package."""
     old = old_table['presets'].get(name)
-    if old is not None:
+    if old is not None and not old.get('unresolved'):
         return old['effective'], 'as stored in the profile before the export', old
+    if old is not None:  # its parent is not among the system presets: what the file itself says
+        return ({key: value for key, value in old['own'].items() if key not in IDENTITY_KEYS},
+                'as its own file says before the export, its parent not being among the system presets', old)
     exported = (attempt.get('_members') or {}).get(name)
     if exported is None:
         return None, None, None
@@ -408,10 +418,9 @@ def import_gaps(before, after, attempts):
             if old is not None and new.get('inherits') != old.get('inherits'):
                 gaps.append(f'{name}: inherits {new.get("inherits")!r} after the import, '
                             f'{old.get("inherits")!r} before')
-            if old is not None and old.get('unresolved'):
-                gaps.append(f'{name}: the preset it inherits from is not among the system presets '
-                            f'({", ".join(old["unresolved"])}), so its parameters cannot be followed')
-            if new.get('unresolved'):
+            if new.get('unresolved') and not (old is not None and old.get('unresolved')):
+                # The parent was among the system presets before and is not now; when it never
+                # was, the preset is compared by what its own file says.
                 gaps.append(f'{name}: the preset it inherits from is not among the system presets after '
                             f'the import ({", ".join(new["unresolved"])})')
             changed = [key for key in sorted(baseline) if not same_value(baseline[key], new['effective'].get(key))]
@@ -437,11 +446,12 @@ def public_attempts(attempts):
 # --- the application's own log ---------------------------------------------------------------
 
 def app_log_files(datadir):
-    """[(path, bytes)] of the application's own logs under ``<datadir>/log``, by name."""
+    """[(path, bytes)] of the application's own logs under ``<datadir>/log``, by name. The
+    application names them ``<date>-<time>.log.<N>`` (utils.cpp set_log_path_and_level)."""
     folder = Path(datadir, 'log')
     if not folder.is_dir():
         return []
-    return [(path, path.stat().st_size) for path in sorted(folder.glob('*.log')) if path.is_file()]
+    return [(path, path.stat().st_size) for path in sorted(folder.glob('*.log*')) if path.is_file()]
 
 
 def app_log_mark(datadir):
@@ -474,6 +484,24 @@ def app_log_lines(datadir, mark=None, keywords=APP_LOG_KEYWORDS, extra=(), names
             if keep:
                 lines.append(line.strip())
     return lines
+
+
+def log_severities(datadir):
+    """{severity: lines} over the application's whole log, read from the "[severity]" it writes
+    at the start of every line (utils.cpp set_log_path_and_level). Says what the application
+    wrote at all when a line that was looked for is not there."""
+    counts = {}
+    for path, _size in app_log_files(datadir):
+        try:
+            with open(path, 'rb') as handle:
+                text = handle.read().decode('utf-8', errors='replace')
+        except OSError:
+            continue
+        for line in text.splitlines():
+            if line.startswith('[') and ']' in line:
+                severity = line[1:line.index(']')]
+                counts[severity] = counts.get(severity, 0) + 1
+    return counts
 
 
 def failed_to_add(lines):

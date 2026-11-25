@@ -265,7 +265,7 @@ def test_export_that_lands_nothing_or_a_broken_package_fails_the_first_clause(tm
                          app_log={'failed_to_add': ['2026-11-26 02:52:40.9 [info] X.json Failed to add file to ZIP archive']})],
                  "the dialog reported 'add file fail'",
                  'the application log could not add X.json to the ZIP archive',
-                 'is not a readable package: BadZipFile')
+                 'left a 0-byte zip: the file was created and nothing was added to it')
     assert gaps[CLAUSE_IMPORT] == ['not exercised: no package holding a preset was imported']
     # A package whose member is not the preset the profile stores.
     changed = package(tmp_path / 'packages' / 'changed' / 'Process presets.zip', datadir,
@@ -431,3 +431,64 @@ def test_a_preset_of_the_project_is_held_against_what_the_package_holds(tmp_path
         'Generic PLA @U1(x.3mf): the package holds a preset that was not a user preset before the export']
     public = oracle.public_attempts([attempt])
     assert '_members' not in public[0] and attempt['_members'] and public[0]['package'] is attempt['package']
+
+
+def test_a_preset_saved_over_a_preset_of_the_project_is_compared_by_its_own_file(tmp_path):
+    datadir = profile(tmp_path)
+    embedded = '0.20mm Standard @Snapmaker U1 (0.4 nozzle)(cube.3mf)'
+    made = {'type': 'process', 'name': 'BB Export Test', 'from': 'User', 'inherits': embedded, 'layer_height': '0.3'}
+    write_json(user_file(datadir, 'BB Export Test'), made)
+    before = oracle.preset_table(datadir)
+    assert before['presets']['BB Export Test']['unresolved'] == [embedded]
+    attempt = attempt_of(tmp_path / 'packages' / 'u1' / 'Process presets.zip', datadir, before)
+    landed = tmp_path / 'import-profile'
+    after = oracle.preset_table(imported_profile(landed, datadir, names=['BB Export Test']))
+    assert oracle.import_gaps(before, after, [attempt]) == []
+    reading = oracle.import_readings(before, after, [attempt])['BB Export Test']
+    assert reading['baseline'].startswith('as its own file says before the export') and reading['compared'] == 1
+    write_json(user_file(landed, 'BB Export Test'), dict(made, layer_height='0.4'))
+    after = oracle.preset_table(landed)
+    assert oracle.import_gaps(before, after, [attempt]) == [
+        'BB Export Test: 1 parameters differ after the import: layer_height: 0.3 -> 0.4']
+
+
+def attempt_of(path, datadir, table):
+    return attempt(package(path, datadir, names=['BB Export Test']), table)
+
+
+def test_a_zero_byte_zip_is_said_to_be_one(tmp_path):
+    datadir = profile(tmp_path)
+    at_export = oracle.preset_table(datadir)
+    empty = tmp_path / 'packages' / 'u1' / 'Filament presets.zip'
+    empty.parent.mkdir(parents=True)
+    empty.write_bytes(b'')
+    facts = oracle.package_facts(empty, at_export, kind='Filament presets(.zip)', rows=['Generic PLA'])
+    assert facts['bytes'] == 0 and facts['sha256'] == sha256(b'').hexdigest()
+    gaps = oracle.package_gaps(facts)
+    assert gaps == ["'Filament presets.zip' left a 0-byte zip: the file was created and nothing was added to it"]
+    # A file with bytes that are no zip is said so in other words.
+    empty.write_bytes(b'PK' + bytes(100))
+    assert oracle.package_gaps(oracle.package_facts(empty, at_export, kind='Filament presets(.zip)'))[0].startswith(
+        "'Filament presets.zip' is not a readable package")
+
+
+def test_the_log_is_found_under_the_name_the_application_gives_it(tmp_path):
+    log = tmp_path / 'profile' / 'log'
+    log.mkdir(parents=True)
+    (log / '2026-11-26-03-18-50.log.0').write_text(
+        '[info]\t2026-11-26 03:18:52.101000[Thread 0x1234]:nothing of interest\n'
+        '[debug]\t2026-11-26 03:18:52.102000[Thread 0x1234]:more of it\n'
+        '[info]\t2026-11-26 03:19:40.999000[Thread 0x1234]:Generic PLA @U1.json Failed to add file to ZIP archive\n',
+        encoding='utf-8')
+    assert [path.name for path, _size in oracle.app_log_files(tmp_path / 'profile')] == ['2026-11-26-03-18-50.log.0']
+    assert oracle.log_severities(tmp_path / 'profile') == {'info': 2, 'debug': 1}
+    assert oracle.log_severities(tmp_path / 'elsewhere') == {}
+    line = oracle.failed_to_add(oracle.app_log_lines(tmp_path / 'profile'))[0]
+    assert oracle.export_gaps([{'kind': 'Filament presets(.zip)', 'row': 'Generic PLA', 'result_words': 'add file fail',
+                                'package': {'name': 'Filament presets.zip', 'extension': '.zip', 'bytes': 0,
+                                            'members': {}, 'error': 'BadZipFile: File is not a zip file'},
+                                'app_log': {'failed_to_add': [line]}}]) == [
+        "Filament presets(.zip)/Generic PLA: the dialog reported 'add file fail'",
+        'Filament presets(.zip)/Generic PLA: the application log could not add Generic PLA @U1.json to the ZIP archive',
+        "Filament presets(.zip)/Generic PLA: 'Filament presets.zip' left a 0-byte zip: the file was created and nothing "
+        'was added to it']
