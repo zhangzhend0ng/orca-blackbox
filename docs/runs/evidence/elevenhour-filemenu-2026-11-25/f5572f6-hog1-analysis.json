@@ -1,0 +1,233 @@
+{
+  "case": "slice export probe",
+  "results": {
+    "probe": "FAIL (ValueError: Export G-code never became enabled)"
+  },
+  "memory_guard_dialogs": [
+    {
+      "title": "Memory Usage Warning",
+      "texts": [
+        [
+          "wxWindowNR",
+          "Yes, Continue"
+        ],
+        [
+          "wxWindowNR",
+          "No, Stop"
+        ],
+        [
+          "wxWindowNR",
+          "htmlWindow"
+        ]
+      ],
+      "at": "23:44:22",
+      "screenshot": "memory-guard-0.png",
+      "seconds_after_slice_click": 3.6,
+      "closed": false
+    },
+    {
+      "title": "Memory Usage Warning",
+      "texts": [
+        [
+          "wxWindowNR",
+          "Yes, Continue"
+        ],
+        [
+          "wxWindowNR",
+          "No, Stop"
+        ],
+        [
+          "wxWindowNR",
+          "htmlWindow"
+        ]
+      ],
+      "at": "23:44:37",
+      "screenshot": "memory-guard-1.png",
+      "seconds_after_slice_click": 19.4,
+      "closed": false
+    },
+    {
+      "title": "Memory Usage Warning",
+      "texts": [
+        [
+          "wxWindowNR",
+          "Yes, Continue"
+        ],
+        [
+          "wxWindowNR",
+          "No, Stop"
+        ],
+        [
+          "wxWindowNR",
+          "htmlWindow"
+        ]
+      ],
+      "at": "23:44:53",
+      "screenshot": "memory-guard-2.png",
+      "seconds_after_slice_click": 35.1,
+      "closed": false
+    },
+    {
+      "title": "Memory Usage Warning",
+      "texts": [
+        [
+          "wxWindowNR",
+          "Yes, Continue"
+        ],
+        [
+          "wxWindowNR",
+          "No, Stop"
+        ],
+        [
+          "wxWindowNR",
+          "htmlWindow"
+        ]
+      ],
+      "at": "23:45:09",
+      "screenshot": "memory-guard-3.png",
+      "seconds_after_slice_click": 50.8,
+      "closed": false
+    },
+    {
+      "title": "Memory Usage Warning",
+      "texts": [
+        [
+          "wxWindowNR",
+          "Yes, Continue"
+        ],
+        [
+          "wxWindowNR",
+          "No, Stop"
+        ],
+        [
+          "wxWindowNR",
+          "htmlWindow"
+        ]
+      ],
+      "at": "23:45:24",
+      "screenshot": "memory-guard-4.png",
+      "seconds_after_slice_click": 66.5,
+      "closed": false
+    },
+    {
+      "title": "Memory Usage Warning",
+      "texts": [
+        [
+          "wxWindowNR",
+          "Yes, Continue"
+        ],
+        [
+          "wxWindowNR",
+          "No, Stop"
+        ],
+        [
+          "wxWindowNR",
+          "htmlWindow"
+        ]
+      ],
+      "at": "23:45:40",
+      "screenshot": "memory-guard-5.png",
+      "seconds_after_slice_click": 82.2,
+      "closed": false
+    },
+    {
+      "title": "Memory Usage Warning",
+      "texts": [
+        [
+          "wxWindowNR",
+          "Yes, Continue"
+        ],
+        [
+          "wxWindowNR",
+          "No, Stop"
+        ],
+        [
+          "wxWindowNR",
+          "htmlWindow"
+        ]
+      ],
+      "at": "23:45:56",
+      "screenshot": "memory-guard-6.png",
+      "seconds_after_slice_click": 98.0,
+      "closed": false
+    },
+    {
+      "title": "Memory Usage Warning",
+      "texts": [
+        [
+          "wxWindowNR",
+          "Yes, Continue"
+        ],
+        [
+          "wxWindowNR",
+          "No, Stop"
+        ],
+        [
+          "wxWindowNR",
+          "htmlWindow"
+        ]
+      ],
+      "at": "23:46:12",
+      "screenshot": "memory-guard-7.png",
+      "seconds_after_slice_click": 113.7,
+      "closed": false
+    },
+    {
+      "title": "Memory Usage Warning",
+      "texts": [
+        [
+          "wxWindowNR",
+          "Yes, Continue"
+        ],
+        [
+          "wxWindowNR",
+          "No, Stop"
+        ],
+        [
+          "wxWindowNR",
+          "htmlWindow"
+        ]
+      ],
+      "at": "23:46:27",
+      "screenshot": "memory-guard-8.png",
+      "seconds_after_slice_click": 129.4,
+      "closed": false
+    },
+    {
+      "title": "Memory Usage Warning",
+      "texts": [
+        [
+          "wxWindowNR",
+          "Yes, Continue"
+        ],
+        [
+          "wxWindowNR",
+          "No, Stop"
+        ],
+        [
+          "wxWindowNR",
+          "htmlWindow"
+        ]
+      ],
+      "at": "23:46:43",
+      "screenshot": "memory-guard-9.png",
+      "seconds_after_slice_click": 145.2,
+      "closed": false
+    }
+  ],
+  "memory_hog": {
+    "mb": 1500,
+    "pid": 9732,
+    "after_start": {
+      "total_mb": 5028,
+      "available_mb": 1160
+    }
+  },
+  "available_before_slice": {
+    "total_mb": 5028,
+    "available_mb": 215
+  },
+  "slice_click": 460711.359,
+  "export_enabled_after_seconds": null,
+  "wall_seconds": 223.687
+}

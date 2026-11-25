@@ -1,0 +1,14 @@
+﻿{
+    "commit":  "b958af2b561047b55bf017d70027ec9a7aa99fb4",
+    "case":  "diag_slice_export_probe",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "orca_processes_after":  0,
+    "summary":  "SUMMARY: PASS=1 FAIL=0",
+    "dispatched_at":  "2026-11-25T23:37:48.4540032+08:00",
+    "scenario_completed_at":  "2026-11-25T23:39:23.7564402+08:00",
+    "suite_completed_at":  "2026-11-25T23:39:23.8807868+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_diag_slice_export_probe.log",
+    "log_sha256":  "D6CE266CF09D0FE660980799ECFBD90FD7AE3242EA5F022E8D653BCA9314E8C5"
+}

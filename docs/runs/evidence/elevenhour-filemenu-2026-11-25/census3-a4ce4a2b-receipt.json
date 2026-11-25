@@ -1,0 +1,14 @@
+﻿{
+    "commit":  "a4ce4a2b6a9a0c9d2449bb44c0c7948047ccfcb3",
+    "case":  "diag_file_menu_census",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "orca_processes_after":  0,
+    "summary":  "SUMMARY: PASS=1 FAIL=0",
+    "dispatched_at":  "2026-11-25T23:53:19.6192842+08:00",
+    "scenario_completed_at":  "2026-11-25T23:56:56.4987955+08:00",
+    "suite_completed_at":  "2026-11-25T23:56:57.1820859+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_diag_file_menu_census.log",
+    "log_sha256":  "5E359019DDF0C1D47AB4132A5E93AA2CF84F96D97E7528BC8899990B86C61E6D"
+}

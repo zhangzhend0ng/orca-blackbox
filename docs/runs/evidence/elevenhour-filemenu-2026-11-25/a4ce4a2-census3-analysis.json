@@ -1,0 +1,1308 @@
+{
+  "case": "file menu census",
+  "results": {
+    "census completed with the editor alive": "PASS"
+  },
+  "menus_before_slice": {
+    "file": [
+      {
+        "index": 0,
+        "label": "New Project\tCtrl+N",
+        "enabled": true,
+        "separator": false,
+        "submenu": false
+      },
+      {
+        "index": 1,
+        "label": "Open Project...\tCtrl+O",
+        "enabled": true,
+        "separator": false,
+        "submenu": false
+      },
+      {
+        "index": 2,
+        "label": "Recent projects",
+        "enabled": true,
+        "separator": false,
+        "submenu": true
+      },
+      {
+        "index": 3,
+        "label": "Save Project\tCtrl+S",
+        "enabled": false,
+        "separator": false,
+        "submenu": false
+      },
+      {
+        "index": 4,
+        "label": "Save Project as...\tCtrl+Shift+S",
+        "enabled": true,
+        "separator": false,
+        "submenu": false
+      },
+      {
+        "index": 5,
+        "label": "",
+        "enabled": false,
+        "separator": true,
+        "submenu": false
+      },
+      {
+        "index": 6,
+        "label": "Import",
+        "enabled": true,
+        "separator": false,
+        "submenu": true
+      },
+      {
+        "index": 7,
+        "label": "Export",
+        "enabled": true,
+        "separator": false,
+        "submenu": true
+      },
+      {
+        "index": 8,
+        "label": "",
+        "enabled": false,
+        "separator": true,
+        "submenu": false
+      },
+      {
+        "index": 9,
+        "label": "Quit",
+        "enabled": true,
+        "separator": false,
+        "submenu": false
+      }
+    ],
+    "submenus": {
+      "Import": [
+        {
+          "index": 0,
+          "label": "Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I",
+          "enabled": true,
+          "separator": false,
+          "submenu": false
+        },
+        {
+          "index": 1,
+          "label": "Import Zip Archive...",
+          "enabled": true,
+          "separator": false,
+          "submenu": false
+        },
+        {
+          "index": 2,
+          "label": "Import Configs...",
+          "enabled": true,
+          "separator": false,
+          "submenu": false
+        }
+      ],
+      "Export": [
+        {
+          "index": 0,
+          "label": "Export all objects as one STL...",
+          "enabled": true,
+          "separator": false,
+          "submenu": false
+        },
+        {
+          "index": 1,
+          "label": "Export all objects as STLs...",
+          "enabled": true,
+          "separator": false,
+          "submenu": false
+        },
+        {
+          "index": 2,
+          "label": "Export Generic 3MF...",
+          "enabled": true,
+          "separator": false,
+          "submenu": false
+        },
+        {
+          "index": 3,
+          "label": "Export plate sliced file...\tCtrl+G",
+          "enabled": false,
+          "separator": false,
+          "submenu": false
+        },
+        {
+          "index": 4,
+          "label": "Export all plate sliced file...",
+          "enabled": false,
+          "separator": false,
+          "submenu": false
+        },
+        {
+          "index": 5,
+          "label": "Export G-code...",
+          "enabled": false,
+          "separator": false,
+          "submenu": false
+        },
+        {
+          "index": 6,
+          "label": "Export Preset Bundle...",
+          "enabled": true,
+          "separator": false,
+          "submenu": false
+        }
+      ]
+    }
+  },
+  "import_dialogs": [
+    {
+      "via": "Import",
+      "item": "Import 3MF/STL/STEP/SVG/OBJ/AMF",
+      "dispatched": true,
+      "title": "Choose one or more files (3mf/step/stl/svg/obj/amf):",
+      "texts": [
+        "Namespace Tree Control",
+        "Namespace Tree Control",
+        "Navigation Pane",
+        "Shell Preview Extension Host",
+        "ShellView",
+        "File &name:",
+        "Files of &type:",
+        "&Open",
+        "Cancel",
+        "&Help",
+        "Navigation buttons",
+        "Up band",
+        "Address: C:\\coil\\orca-blackbox-v3-r1\\fixtures",
+        "Address band"
+      ],
+      "classes": [
+        "Address Band Root",
+        "Breadcrumb Parent",
+        "Button",
+        "ComboBox",
+        "ComboBoxEx32",
+        "CtrlNotifySink",
+        "DUIViewWndClassName",
+        "DirectUIHWND",
+        "Edit",
+        "ListBox",
+        "NamespaceTreeControl",
+        "ReBarWindow32",
+        "SHELLDLL_DefView",
+        "ScrollBar",
+        "Search Box",
+        "SearchEditBoxWrapperClass",
+        "SeparatorBand",
+        "Shell Preview Extension Host",
+        "Static",
+        "SysTreeView32",
+        "ToolbarWindow32",
+        "TravelBand",
+        "UniversalSearchBand",
+        "UpBand",
+        "WorkerW",
+        "msctls_progress32"
+      ],
+      "comboboxes": [
+        {
+          "selected": -1,
+          "items": []
+        },
+        {
+          "selected": 0,
+          "items": [
+            "Supported files (*.3mf, *.stl, *.oltp, *.stp, *.step, *.svg, *.amf, *.obj)"
+          ]
+        },
+        {
+          "selected": -1,
+          "items": []
+        }
+      ],
+      "filename": "",
+      "screenshot": "dialog-00.png",
+      "closed_by": "IDCANCEL",
+      "dialog_closed": true,
+      "app_alive": true,
+      "next_dialog": null
+    },
+    {
+      "via": "Import",
+      "item": "Import Zip Archive",
+      "dispatched": true,
+      "title": "Choose ZIP file:",
+      "texts": [
+        "Namespace Tree Control",
+        "Namespace Tree Control",
+        "Navigation Pane",
+        "Shell Preview Extension Host",
+        "ShellView",
+        "File &name:",
+        "Files of &type:",
+        "&Open",
+        "Cancel",
+        "&Help",
+        "Navigation buttons",
+        "Up band",
+        "Address: C:\\coil\\orca-blackbox-v3-r1\\fixtures",
+        "Address band"
+      ],
+      "classes": [
+        "Address Band Root",
+        "Breadcrumb Parent",
+        "Button",
+        "ComboBox",
+        "ComboBoxEx32",
+        "CtrlNotifySink",
+        "DUIViewWndClassName",
+        "DirectUIHWND",
+        "Edit",
+        "ListBox",
+        "NamespaceTreeControl",
+        "ReBarWindow32",
+        "SHELLDLL_DefView",
+        "ScrollBar",
+        "Search Box",
+        "SearchEditBoxWrapperClass",
+        "SeparatorBand",
+        "Shell Preview Extension Host",
+        "Static",
+        "SysTreeView32",
+        "ToolbarWindow32",
+        "TravelBand",
+        "UniversalSearchBand",
+        "UpBand",
+        "WorkerW",
+        "msctls_progress32"
+      ],
+      "comboboxes": [
+        {
+          "selected": -1,
+          "items": []
+        },
+        {
+          "selected": 0,
+          "items": [
+            "ZIP files (*.zip)"
+          ]
+        }
+      ],
+      "filename": "",
+      "screenshot": "dialog-01.png",
+      "closed_by": "IDCANCEL",
+      "dialog_closed": true,
+      "app_alive": true,
+      "next_dialog": null
+    },
+    {
+      "via": "Import",
+      "item": "Import Configs",
+      "dispatched": true,
+      "title": "Select profile to load:",
+      "texts": [
+        "Namespace Tree Control",
+        "Namespace Tree Control",
+        "Navigation Pane",
+        "Shell Preview Extension Host",
+        "ShellView",
+        "File &name:",
+        "Files of &type:",
+        "&Open",
+        "Cancel",
+        "&Help",
+        "Navigation buttons",
+        "Up band",
+        "Address: C:\\coil\\orca-blackbox-v3-r1\\fixtures",
+        "Address band"
+      ],
+      "classes": [
+        "Address Band Root",
+        "Breadcrumb Parent",
+        "Button",
+        "ComboBox",
+        "ComboBoxEx32",
+        "CtrlNotifySink",
+        "DUIViewWndClassName",
+        "DirectUIHWND",
+        "Edit",
+        "ListBox",
+        "NamespaceTreeControl",
+        "ReBarWindow32",
+        "SHELLDLL_DefView",
+        "ScrollBar",
+        "Search Box",
+        "SearchEditBoxWrapperClass",
+        "SeparatorBand",
+        "Shell Preview Extension Host",
+        "Static",
+        "SysTreeView32",
+        "ToolbarWindow32",
+        "TravelBand",
+        "UniversalSearchBand",
+        "UpBand",
+        "WorkerW",
+        "msctls_progress32"
+      ],
+      "comboboxes": [
+        {
+          "selected": -1,
+          "items": []
+        },
+        {
+          "selected": 0,
+          "items": [
+            "Config files (*.json;*.zip;*.orca_printer;*.orca_filament)"
+          ]
+        }
+      ],
+      "filename": "config",
+      "screenshot": "dialog-02.png",
+      "closed_by": "IDCANCEL",
+      "dialog_closed": true,
+      "app_alive": true,
+      "next_dialog": null
+    }
+  ],
+  "export_dialogs_before_slice": [
+    {
+      "via": "Export",
+      "item": "Export all objects as one STL",
+      "dispatched": true,
+      "title": "Export STL file:",
+      "texts": [
+        "Namespace Tree Control",
+        "Namespace Tree Control",
+        "Navigation Pane",
+        "ShellView",
+        "&Save",
+        "Cancel",
+        "&Help",
+        "Navigation buttons",
+        "Up band",
+        "Address: C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\sliceprobe\\run-vir3h0yk",
+        "Address band"
+      ],
+      "classes": [
+        "Address Band Root",
+        "Breadcrumb Parent",
+        "Button",
+        "ComboBox",
+        "ComboBoxEx32",
+        "CtrlNotifySink",
+        "DUIViewWndClassName",
+        "DirectUIHWND",
+        "Edit",
+        "FloatNotifySink",
+        "ListBox",
+        "NamespaceTreeControl",
+        "ReBarWindow32",
+        "SHELLDLL_DefView",
+        "ScrollBar",
+        "Search Box",
+        "SearchEditBoxWrapperClass",
+        "SeparatorBand",
+        "Static",
+        "SysTreeView32",
+        "ToolbarWindow32",
+        "TravelBand",
+        "UniversalSearchBand",
+        "UpBand",
+        "WorkerW",
+        "msctls_progress32"
+      ],
+      "comboboxes": [
+        {
+          "selected": -1,
+          "items": []
+        },
+        {
+          "selected": 0,
+          "items": [
+            "STL files (*.stl)"
+          ]
+        },
+        {
+          "selected": -1,
+          "items": []
+        }
+      ],
+      "filename": "feishu_std_cube",
+      "screenshot": "dialog-03.png",
+      "closed_by": "IDCANCEL",
+      "dialog_closed": true,
+      "app_alive": true,
+      "next_dialog": null
+    },
+    {
+      "via": "Export",
+      "item": "Export all objects as STLs",
+      "dispatched": true,
+      "title": "Choose a directory",
+      "texts": [
+        "Namespace Tree Control",
+        "Namespace Tree Control",
+        "Navigation Pane",
+        "ShellView",
+        "Folder:",
+        "Select Folder",
+        "Cancel",
+        "&Help",
+        "Navigation buttons",
+        "Up band",
+        "Address: C:\\coil\\orca-blackbox-v3-r1\\fixtures",
+        "Address band"
+      ],
+      "classes": [
+        "Address Band Root",
+        "Breadcrumb Parent",
+        "Button",
+        "CtrlNotifySink",
+        "DUIViewWndClassName",
+        "DirectUIHWND",
+        "Edit",
+        "ListBox",
+        "NamespaceTreeControl",
+        "ReBarWindow32",
+        "SHELLDLL_DefView",
+        "ScrollBar",
+        "Search Box",
+        "SearchEditBoxWrapperClass",
+        "SeparatorBand",
+        "Static",
+        "SysTreeView32",
+        "ToolbarWindow32",
+        "TravelBand",
+        "UniversalSearchBand",
+        "UpBand",
+        "WorkerW",
+        "msctls_progress32"
+      ],
+      "comboboxes": [],
+      "filename": "",
+      "screenshot": "dialog-04.png",
+      "closed_by": "IDCANCEL",
+      "dialog_closed": true,
+      "app_alive": true,
+      "next_dialog": null
+    },
+    {
+      "via": "Export",
+      "item": "Export Generic 3MF",
+      "dispatched": true,
+      "title": "Save file as",
+      "texts": [
+        "Namespace Tree Control",
+        "Namespace Tree Control",
+        "Navigation Pane",
+        "ShellView",
+        "&Save",
+        "Cancel",
+        "&Help",
+        "Navigation buttons",
+        "Up band",
+        "Address: C:\\coil\\orca-blackbox-v3-r1\\fixtures",
+        "Address band"
+      ],
+      "classes": [
+        "Address Band Root",
+        "Breadcrumb Parent",
+        "Button",
+        "ComboBox",
+        "ComboBoxEx32",
+        "CtrlNotifySink",
+        "DUIViewWndClassName",
+        "DirectUIHWND",
+        "Edit",
+        "FloatNotifySink",
+        "ListBox",
+        "NamespaceTreeControl",
+        "ReBarWindow32",
+        "SHELLDLL_DefView",
+        "ScrollBar",
+        "Search Box",
+        "SearchEditBoxWrapperClass",
+        "SeparatorBand",
+        "Static",
+        "SysTreeView32",
+        "ToolbarWindow32",
+        "TravelBand",
+        "UniversalSearchBand",
+        "UpBand",
+        "WorkerW",
+        "msctls_progress32"
+      ],
+      "comboboxes": [
+        {
+          "selected": -1,
+          "items": []
+        },
+        {
+          "selected": 0,
+          "items": [
+            "3MF files (*.3mf)"
+          ]
+        },
+        {
+          "selected": -1,
+          "items": []
+        }
+      ],
+      "filename": "feishu_std_cube",
+      "screenshot": "dialog-05.png",
+      "closed_by": "IDCANCEL",
+      "dialog_closed": true,
+      "app_alive": true,
+      "next_dialog": null
+    },
+    {
+      "via": "Export",
+      "item": "Export Preset Bundle",
+      "dispatched": true,
+      "title": "Export Preset Bundle",
+      "texts": [
+        "panel",
+        "Presets",
+        "Printer config bundle(.orca_printer)",
+        "Printer and all the filament&&process presets that belongs to the printer.\nCan be shared with others.",
+        "Filament bundle(.orca_filament)",
+        "User's filament preset set.\nCan be shared with others.",
+        "Printer presets(.zip)",
+        "Filament presets(.zip)",
+        "Process presets(.zip)",
+        "Please select a preset type you want to export",
+        "panel",
+        "panel",
+        "panel",
+        "OK",
+        "Cancel"
+      ],
+      "classes": [
+        "Button",
+        "Static",
+        "wxWindowNR"
+      ],
+      "comboboxes": [],
+      "filename": null,
+      "screenshot": "dialog-06.png",
+      "closed_by": "WM_CLOSE",
+      "dialog_closed": true,
+      "app_alive": true,
+      "next_dialog": null
+    }
+  ],
+  "zip_dialog": {
+    "item": "Import Zip Archive",
+    "dispatched": true,
+    "file_dialog": "Choose ZIP file:",
+    "new_windows": [
+      {
+        "hwnd": 93062388,
+        "class": "#32770",
+        "title": "Archive preview",
+        "rect": [
+          735,
+          316,
+          1185,
+          716
+        ]
+      }
+    ],
+    "dialog": {
+      "hwnd": 93062388,
+      "class": "#32770",
+      "title": "Archive preview",
+      "rect": [
+        735,
+        316,
+        1185,
+        716
+      ]
+    },
+    "children": [
+      {
+        "class": "wxWindowNR",
+        "text": "dataviewCtrl",
+        "visible": true,
+        "rect": [
+          753,
+          357,
+          1167,
+          646
+        ]
+      },
+      {
+        "class": "wxDataView",
+        "text": "wxdataviewctrlmainwindow",
+        "visible": true,
+        "rect": [
+          754,
+          382,
+          1166,
+          645
+        ]
+      },
+      {
+        "class": "wxWindowNR",
+        "text": "wxHeaderCtrl",
+        "visible": true,
+        "rect": [
+          754,
+          358,
+          1166,
+          382
+        ]
+      },
+      {
+        "class": "SysHeader32",
+        "text": "",
+        "visible": true,
+        "rect": [
+          754,
+          358,
+          1166,
+          382
+        ]
+      },
+      {
+        "class": "wxWindowNR",
+        "text": "All",
+        "visible": true,
+        "rect": [
+          753,
+          670,
+          811,
+          694
+        ]
+      },
+      {
+        "class": "wxWindowNR",
+        "text": "None",
+        "visible": true,
+        "rect": [
+          821,
+          670,
+          879,
+          694
+        ]
+      },
+      {
+        "class": "wxWindowNR",
+        "text": "Open",
+        "visible": true,
+        "rect": [
+          957,
+          666,
+          1057,
+          698
+        ]
+      },
+      {
+        "class": "wxWindowNR",
+        "text": "Cancel",
+        "visible": true,
+        "rect": [
+          1067,
+          666,
+          1167,
+          698
+        ]
+      },
+      {
+        "class": "ScrollBar",
+        "text": "",
+        "visible": true,
+        "rect": [
+          1160,
+          691,
+          1177,
+          708
+        ]
+      }
+    ],
+    "screenshot": "zip-dialog.png",
+    "dialog_closed": true,
+    "app_alive": true,
+    "windows_after_close": []
+  },
+  "slice_done": {
+    "done": true,
+    "score": 1.0
+  },
+  "menus_after_slice": {
+    "file": [
+      {
+        "index": 0,
+        "label": "New Project\tCtrl+N",
+        "enabled": true,
+        "separator": false,
+        "submenu": false
+      },
+      {
+        "index": 1,
+        "label": "Open Project...\tCtrl+O",
+        "enabled": true,
+        "separator": false,
+        "submenu": false
+      },
+      {
+        "index": 2,
+        "label": "Recent projects",
+        "enabled": true,
+        "separator": false,
+        "submenu": true
+      },
+      {
+        "index": 3,
+        "label": "Save Project\tCtrl+S",
+        "enabled": true,
+        "separator": false,
+        "submenu": false
+      },
+      {
+        "index": 4,
+        "label": "Save Project as...\tCtrl+Shift+S",
+        "enabled": true,
+        "separator": false,
+        "submenu": false
+      },
+      {
+        "index": 5,
+        "label": "",
+        "enabled": false,
+        "separator": true,
+        "submenu": false
+      },
+      {
+        "index": 6,
+        "label": "Import",
+        "enabled": true,
+        "separator": false,
+        "submenu": true
+      },
+      {
+        "index": 7,
+        "label": "Export",
+        "enabled": true,
+        "separator": false,
+        "submenu": true
+      },
+      {
+        "index": 8,
+        "label": "",
+        "enabled": false,
+        "separator": true,
+        "submenu": false
+      },
+      {
+        "index": 9,
+        "label": "Quit",
+        "enabled": true,
+        "separator": false,
+        "submenu": false
+      }
+    ],
+    "submenus": {
+      "Import": [
+        {
+          "index": 0,
+          "label": "Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I",
+          "enabled": true,
+          "separator": false,
+          "submenu": false
+        },
+        {
+          "index": 1,
+          "label": "Import Zip Archive...",
+          "enabled": true,
+          "separator": false,
+          "submenu": false
+        },
+        {
+          "index": 2,
+          "label": "Import Configs...",
+          "enabled": true,
+          "separator": false,
+          "submenu": false
+        }
+      ],
+      "Export": [
+        {
+          "index": 0,
+          "label": "Export all objects as one STL...",
+          "enabled": true,
+          "separator": false,
+          "submenu": false
+        },
+        {
+          "index": 1,
+          "label": "Export all objects as STLs...",
+          "enabled": true,
+          "separator": false,
+          "submenu": false
+        },
+        {
+          "index": 2,
+          "label": "Export Generic 3MF...",
+          "enabled": true,
+          "separator": false,
+          "submenu": false
+        },
+        {
+          "index": 3,
+          "label": "Export plate sliced file...\tCtrl+G",
+          "enabled": true,
+          "separator": false,
+          "submenu": false
+        },
+        {
+          "index": 4,
+          "label": "Export all plate sliced file...",
+          "enabled": true,
+          "separator": false,
+          "submenu": false
+        },
+        {
+          "index": 5,
+          "label": "Export G-code...",
+          "enabled": true,
+          "separator": false,
+          "submenu": false
+        },
+        {
+          "index": 6,
+          "label": "Export Preset Bundle...",
+          "enabled": true,
+          "separator": false,
+          "submenu": false
+        }
+      ]
+    }
+  },
+  "export_dialogs_after_slice": [
+    {
+      "via": "Export",
+      "item": "Export all objects as one STL",
+      "dispatched": true,
+      "title": "Export STL file:",
+      "texts": [
+        "Namespace Tree Control",
+        "Namespace Tree Control",
+        "Navigation Pane",
+        "ShellView",
+        "&Save",
+        "Cancel",
+        "&Help",
+        "Navigation buttons",
+        "Up band",
+        "Address: C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\census\\run-zds1wuyg",
+        "Address band"
+      ],
+      "classes": [
+        "Address Band Root",
+        "Breadcrumb Parent",
+        "Button",
+        "ComboBox",
+        "ComboBoxEx32",
+        "CtrlNotifySink",
+        "DUIViewWndClassName",
+        "DirectUIHWND",
+        "Edit",
+        "FloatNotifySink",
+        "ListBox",
+        "NamespaceTreeControl",
+        "ReBarWindow32",
+        "SHELLDLL_DefView",
+        "ScrollBar",
+        "Search Box",
+        "SearchEditBoxWrapperClass",
+        "SeparatorBand",
+        "Static",
+        "SysTreeView32",
+        "ToolbarWindow32",
+        "TravelBand",
+        "UniversalSearchBand",
+        "UpBand",
+        "WorkerW",
+        "msctls_progress32"
+      ],
+      "comboboxes": [
+        {
+          "selected": -1,
+          "items": []
+        },
+        {
+          "selected": 0,
+          "items": [
+            "STL files (*.stl)"
+          ]
+        },
+        {
+          "selected": -1,
+          "items": []
+        }
+      ],
+      "filename": "feishu_std_cube",
+      "screenshot": "dialog-07.png",
+      "closed_by": "IDCANCEL",
+      "dialog_closed": true,
+      "app_alive": true,
+      "next_dialog": null
+    },
+    {
+      "via": "Export",
+      "item": "Export all objects as STLs",
+      "dispatched": true,
+      "title": "Choose a directory",
+      "texts": [
+        "Namespace Tree Control",
+        "Namespace Tree Control",
+        "Navigation Pane",
+        "ShellView",
+        "Folder:",
+        "Select Folder",
+        "Cancel",
+        "&Help",
+        "Navigation buttons",
+        "Up band",
+        "Address: C:\\coil\\orca-blackbox-v3-r1\\fixtures",
+        "Address band"
+      ],
+      "classes": [
+        "Address Band Root",
+        "Breadcrumb Parent",
+        "Button",
+        "CtrlNotifySink",
+        "DUIViewWndClassName",
+        "DirectUIHWND",
+        "Edit",
+        "ListBox",
+        "NamespaceTreeControl",
+        "ReBarWindow32",
+        "SHELLDLL_DefView",
+        "ScrollBar",
+        "Search Box",
+        "SearchEditBoxWrapperClass",
+        "SeparatorBand",
+        "Static",
+        "SysTreeView32",
+        "ToolbarWindow32",
+        "TravelBand",
+        "UniversalSearchBand",
+        "UpBand",
+        "WorkerW",
+        "msctls_progress32"
+      ],
+      "comboboxes": [],
+      "filename": "",
+      "screenshot": "dialog-08.png",
+      "closed_by": "IDCANCEL",
+      "dialog_closed": true,
+      "app_alive": true,
+      "next_dialog": null
+    },
+    {
+      "via": "Export",
+      "item": "Export Generic 3MF",
+      "dispatched": true,
+      "title": "Save file as",
+      "texts": [
+        "Namespace Tree Control",
+        "Namespace Tree Control",
+        "Navigation Pane",
+        "ShellView",
+        "&Save",
+        "Cancel",
+        "&Help",
+        "Navigation buttons",
+        "Up band",
+        "Address: C:\\coil\\orca-blackbox-v3-r1\\fixtures",
+        "Address band"
+      ],
+      "classes": [
+        "Address Band Root",
+        "Breadcrumb Parent",
+        "Button",
+        "ComboBox",
+        "ComboBoxEx32",
+        "CtrlNotifySink",
+        "DUIViewWndClassName",
+        "DirectUIHWND",
+        "Edit",
+        "FloatNotifySink",
+        "ListBox",
+        "NamespaceTreeControl",
+        "ReBarWindow32",
+        "SHELLDLL_DefView",
+        "ScrollBar",
+        "Search Box",
+        "SearchEditBoxWrapperClass",
+        "SeparatorBand",
+        "Static",
+        "SysTreeView32",
+        "ToolbarWindow32",
+        "TravelBand",
+        "UniversalSearchBand",
+        "UpBand",
+        "WorkerW",
+        "msctls_progress32"
+      ],
+      "comboboxes": [
+        {
+          "selected": -1,
+          "items": []
+        },
+        {
+          "selected": 0,
+          "items": [
+            "3MF files (*.3mf)"
+          ]
+        },
+        {
+          "selected": -1,
+          "items": []
+        }
+      ],
+      "filename": "feishu_std_cube",
+      "screenshot": "dialog-09.png",
+      "closed_by": "IDCANCEL",
+      "dialog_closed": true,
+      "app_alive": true,
+      "next_dialog": null
+    },
+    {
+      "via": "Export",
+      "item": "Export plate sliced file",
+      "dispatched": true,
+      "title": "Save Sliced file as:",
+      "texts": [
+        "Namespace Tree Control",
+        "Namespace Tree Control",
+        "Navigation Pane",
+        "ShellView",
+        "&Save",
+        "Cancel",
+        "&Help",
+        "Navigation buttons",
+        "Up band",
+        "Address: C:\\coil\\orca-blackbox-v3-r1\\fixtures",
+        "Address band"
+      ],
+      "classes": [
+        "Address Band Root",
+        "Breadcrumb Parent",
+        "Button",
+        "ComboBox",
+        "CtrlNotifySink",
+        "DUIViewWndClassName",
+        "DirectUIHWND",
+        "Edit",
+        "FloatNotifySink",
+        "ListBox",
+        "NamespaceTreeControl",
+        "ReBarWindow32",
+        "SHELLDLL_DefView",
+        "ScrollBar",
+        "Search Box",
+        "SearchEditBoxWrapperClass",
+        "SeparatorBand",
+        "Static",
+        "SysTreeView32",
+        "ToolbarWindow32",
+        "TravelBand",
+        "UniversalSearchBand",
+        "UpBand",
+        "WorkerW",
+        "msctls_progress32"
+      ],
+      "comboboxes": [
+        {
+          "selected": -1,
+          "items": []
+        },
+        {
+          "selected": 0,
+          "items": [
+            "Gcode 3MF files (*.gcode.3mf)"
+          ]
+        }
+      ],
+      "filename": "\u7acb\u65b9\u4f53_PLA_21m22s.gcode",
+      "screenshot": "dialog-10.png",
+      "closed_by": "IDCANCEL",
+      "dialog_closed": true,
+      "app_alive": true,
+      "next_dialog": null
+    },
+    {
+      "via": "Export",
+      "item": "Export all plate sliced file",
+      "dispatched": true,
+      "title": "Save Sliced file as:",
+      "texts": [
+        "Namespace Tree Control",
+        "Namespace Tree Control",
+        "Navigation Pane",
+        "ShellView",
+        "&Save",
+        "Cancel",
+        "&Help",
+        "Navigation buttons",
+        "Up band",
+        "Address: C:\\coil\\orca-blackbox-v3-r1\\fixtures",
+        "Address band"
+      ],
+      "classes": [
+        "Address Band Root",
+        "Breadcrumb Parent",
+        "Button",
+        "ComboBox",
+        "CtrlNotifySink",
+        "DUIViewWndClassName",
+        "DirectUIHWND",
+        "Edit",
+        "FloatNotifySink",
+        "ListBox",
+        "NamespaceTreeControl",
+        "ReBarWindow32",
+        "SHELLDLL_DefView",
+        "ScrollBar",
+        "Search Box",
+        "SearchEditBoxWrapperClass",
+        "SeparatorBand",
+        "Static",
+        "SysTreeView32",
+        "ToolbarWindow32",
+        "TravelBand",
+        "UniversalSearchBand",
+        "UpBand",
+        "WorkerW",
+        "msctls_progress32"
+      ],
+      "comboboxes": [
+        {
+          "selected": -1,
+          "items": []
+        },
+        {
+          "selected": 0,
+          "items": [
+            "Gcode 3MF files (*.gcode.3mf)"
+          ]
+        }
+      ],
+      "filename": "\u7acb\u65b9\u4f53_PLA_21m22s.gcode",
+      "screenshot": "dialog-11.png",
+      "closed_by": "IDCANCEL",
+      "dialog_closed": true,
+      "app_alive": true,
+      "next_dialog": null
+    },
+    {
+      "via": "Export",
+      "item": "Export G-code",
+      "dispatched": true,
+      "title": "Save G-code file as:",
+      "texts": [
+        "Namespace Tree Control",
+        "Namespace Tree Control",
+        "Navigation Pane",
+        "ShellView",
+        "&Save",
+        "Cancel",
+        "&Help",
+        "Navigation buttons",
+        "Up band",
+        "Address: C:\\coil\\orca-blackbox-v3-r1\\fixtures",
+        "Address band"
+      ],
+      "classes": [
+        "Address Band Root",
+        "Breadcrumb Parent",
+        "Button",
+        "ComboBox",
+        "CtrlNotifySink",
+        "DUIViewWndClassName",
+        "DirectUIHWND",
+        "Edit",
+        "FloatNotifySink",
+        "ListBox",
+        "NamespaceTreeControl",
+        "ReBarWindow32",
+        "SHELLDLL_DefView",
+        "ScrollBar",
+        "Search Box",
+        "SearchEditBoxWrapperClass",
+        "SeparatorBand",
+        "Static",
+        "SysTreeView32",
+        "ToolbarWindow32",
+        "TravelBand",
+        "UniversalSearchBand",
+        "UpBand",
+        "WorkerW",
+        "msctls_progress32"
+      ],
+      "comboboxes": [
+        {
+          "selected": -1,
+          "items": []
+        },
+        {
+          "selected": 0,
+          "items": [
+            "G-code files (*.gcode)"
+          ]
+        }
+      ],
+      "filename": "\u7acb\u65b9\u4f53_PLA_21m22s",
+      "screenshot": "dialog-12.png",
+      "closed_by": "IDCANCEL",
+      "dialog_closed": true,
+      "app_alive": true,
+      "next_dialog": null
+    },
+    {
+      "via": "Export",
+      "item": "Export Preset Bundle",
+      "dispatched": true,
+      "title": "Export Preset Bundle",
+      "texts": [
+        "panel",
+        "Presets",
+        "Printer config bundle(.orca_printer)",
+        "Printer and all the filament&&process presets that belongs to the printer.\nCan be shared with others.",
+        "Filament bundle(.orca_filament)",
+        "User's filament preset set.\nCan be shared with others.",
+        "Printer presets(.zip)",
+        "Filament presets(.zip)",
+        "Process presets(.zip)",
+        "Please select a preset type you want to export",
+        "panel",
+        "panel",
+        "panel",
+        "OK",
+        "Cancel"
+      ],
+      "classes": [
+        "Button",
+        "Static",
+        "wxWindowNR"
+      ],
+      "comboboxes": [],
+      "filename": null,
+      "screenshot": "dialog-13.png",
+      "closed_by": "WM_CLOSE",
+      "dialog_closed": true,
+      "app_alive": true,
+      "next_dialog": null
+    }
+  ],
+  "print_buttons": [
+    "panel",
+    "",
+    "Slice plate",
+    "",
+    "Print"
+  ],
+  "wall_seconds": 198.5
+}
