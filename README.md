@@ -47,6 +47,8 @@ Mac 后台工程编辑用例从原始立方体切片开始，以新名字编辑�
 
 飞书 #46、#48、#199 的[逐条验收与复跑计时](docs/runs/feishu-46-48-199-followup-2026-11-25.md)包含各行的独立客机入口、原始证据和首次调通耗时。
 
+飞书 #140、#201、#202 的[进程退出与工程保存验证](docs/runs/feishu-140-201-202-followup-2026-11-25.md)记录正常退出后的进程检查、保存文件的校验和独立复跑结果。
+
 三业务线并行探索入口见[业务pilot](docs/V3_BUSINESS_PILOTS.md)（下文的「87 条」是 11-17 时点的登记册数；11-21 冻结为 89 条登记，见[台账](docs/V3_MIGRATION_LEDGER.md)）
 
 首个真实 Script 的接入与验证方式见 [m0 Script adapter](docs/V3_SCRIPT_ADAPTER.md)，客机入口为 `runner/hv_go.ps1 -V3 -Cases m0_boot_check`；结果单独记 SHADOW，不进入发布 GREEN。
