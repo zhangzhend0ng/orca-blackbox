@@ -1,0 +1,24 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T16:15:56" tests="1" failures="0" errors="0">
+    <testcase name="m7x_249_add_part" classname="blackbox.m7x_249_add" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_249_add_part.log" />
+        <property name="dim:Add Part opens its second-level menu" value="PASS" />
+        <property name="dim:Add Part &gt; Load... accepts part.stl" value="PASS" />
+        <property name="dim:part.stl is a normal part of the existing object" value="PASS" />
+        <property name="dim:clicking model A selects and moves both parts" value="PASS" />
+      </properties>
+      <system-out>[m7x249] finished verify_group_move in 0.000s
+[m7x249] started close_app at 2026-11-25T08:15:54.611535+00:00
+[m7x249] finished close_app in 1.515s
+
+[m7] === verdict ===
+  Add Part opens its second-level menu: PASS
+  Add Part &gt; Load... accepts part.stl: PASS
+  part.stl is a normal part of the existing object: PASS
+  clicking model A selects and moves both parts: PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

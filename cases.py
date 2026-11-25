@@ -131,7 +131,7 @@ CASES: dict[str, dict] = {
     "m7x_199_new_project_title": _r("m7", "A"),
     "m7x_201_save_project_reopen": _r("m7", "A"),
     "m7x_202_save_as_project": _r("m7", "A"),
-    "m7x_249_add_part": _o("m7", "A"),
+    "m7x_249_add_part": _r("m7", "A"),
     "m7x_250_negative_part": _r("m7", "A"),
     "m7x_251_reload_from_disk": _o("m7", "A", known_limitation=True),  # missing source opens a chooser
     "m7c_import_stl": _r("m7", "A"),

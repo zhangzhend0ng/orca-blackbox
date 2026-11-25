@@ -1,0 +1,237 @@
+{
+  "case": 249,
+  "timings": {
+    "prepare_inputs": {
+      "started_utc": "2026-11-25T08:14:28.601215+00:00",
+      "duration_s": 0.0
+    },
+    "open_original": {
+      "started_utc": "2026-11-25T08:14:28.606409+00:00",
+      "duration_s": 57.359
+    },
+    "open_add_part_submenu": {
+      "started_utc": "2026-11-25T08:15:25.962912+00:00",
+      "duration_s": 3.063
+    },
+    "load_part_stl": {
+      "started_utc": "2026-11-25T08:15:29.030229+00:00",
+      "duration_s": 3.187
+    },
+    "save_added_project": {
+      "started_utc": "2026-11-25T08:15:32.268797+00:00",
+      "duration_s": 8.344
+    },
+    "verify_attached_part": {
+      "started_utc": "2026-11-25T08:15:40.613260+00:00",
+      "duration_s": 0.031
+    },
+    "click_parent": {
+      "started_utc": "2026-11-25T08:15:40.634581+00:00",
+      "duration_s": 3.375
+    },
+    "move_selection": {
+      "started_utc": "2026-11-25T08:15:44.014818+00:00",
+      "duration_s": 2.281
+    },
+    "save_moved_project": {
+      "started_utc": "2026-11-25T08:15:46.298897+00:00",
+      "duration_s": 8.313
+    },
+    "verify_group_move": {
+      "started_utc": "2026-11-25T08:15:54.606938+00:00",
+      "duration_s": 0.0
+    },
+    "close_app": {
+      "started_utc": "2026-11-25T08:15:54.611535+00:00",
+      "duration_s": 1.515
+    }
+  },
+  "results": {
+    "Add Part opens its second-level menu": "PASS",
+    "Add Part > Load... accepts part.stl": "PASS",
+    "part.stl is a normal part of the existing object": "PASS",
+    "clicking model A selects and moves both parts": "PASS"
+  },
+  "paths": {
+    "original": "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\249\\run-2m1mqypg\\original.3mf",
+    "part": "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\249\\run-2m1mqypg\\part.stl",
+    "added": "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\249\\run-2m1mqypg\\added.3mf",
+    "moved": "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\249\\run-2m1mqypg\\moved.3mf"
+  },
+  "attachment": {
+    "printable_object_id": "3",
+    "printable_object_count": 1,
+    "original": {
+      "name": "\u7acb\u65b9\u4f53",
+      "subtype": "normal_part",
+      "triangle_count": 12,
+      "world_bounds_mm": [
+        [
+          122.0,
+          149.0
+        ],
+        [
+          122.5,
+          149.5
+        ],
+        [
+          0.0,
+          27.0
+        ]
+      ]
+    },
+    "attachment": {
+      "name": "part.stl",
+      "subtype": "normal_part",
+      "triangle_count": 12,
+      "world_bounds_mm": [
+        [
+          147.5,
+          158.5
+        ],
+        [
+          122.0,
+          133.0
+        ],
+        [
+          1.5,
+          10.5
+        ]
+      ]
+    }
+  },
+  "selection": {
+    "click_client": [
+      1172,
+      528
+    ],
+    "click_screen": [
+      1172,
+      528
+    ],
+    "unselected_centroids": [
+      [
+        1177,
+        517
+      ],
+      [
+        1177,
+        517
+      ]
+    ],
+    "unselected_centroid_distance_px": 0.0,
+    "original_body_pixels_matched": 1.0,
+    "click_method": "window message",
+    "body_pixels_changed_after_click": 0.0,
+    "canvas_centroids": [
+      [
+        1177,
+        517
+      ],
+      [
+        1200,
+        517
+      ]
+    ],
+    "moved_centroid_distance_px": 23.0
+  },
+  "group_move": {
+    "parent_delta_mm": [
+      10.0,
+      0.0,
+      0.0
+    ],
+    "parts": [
+      {
+        "before": {
+          "name": "\u7acb\u65b9\u4f53",
+          "subtype": "normal_part",
+          "triangle_count": 12,
+          "world_bounds_mm": [
+            [
+              122.0,
+              149.0
+            ],
+            [
+              122.5,
+              149.5
+            ],
+            [
+              0.0,
+              27.0
+            ]
+          ]
+        },
+        "after": {
+          "name": "\u7acb\u65b9\u4f53",
+          "subtype": "normal_part",
+          "triangle_count": 12,
+          "world_bounds_mm": [
+            [
+              132.0,
+              159.0
+            ],
+            [
+              122.5,
+              149.5
+            ],
+            [
+              0.0,
+              27.0
+            ]
+          ]
+        },
+        "delta_mm": [
+          10.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "before": {
+          "name": "part.stl",
+          "subtype": "normal_part",
+          "triangle_count": 12,
+          "world_bounds_mm": [
+            [
+              147.5,
+              158.5
+            ],
+            [
+              122.0,
+              133.0
+            ],
+            [
+              1.5,
+              10.5
+            ]
+          ]
+        },
+        "after": {
+          "name": "part.stl",
+          "subtype": "normal_part",
+          "triangle_count": 12,
+          "world_bounds_mm": [
+            [
+              157.5,
+              168.5
+            ],
+            [
+              122.0,
+              133.0
+            ],
+            [
+              1.5,
+              10.5
+            ]
+          ]
+        },
+        "delta_mm": [
+          10.0,
+          0.0,
+          0.0
+        ]
+      }
+    ]
+  }
+}

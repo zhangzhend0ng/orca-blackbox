@@ -11,9 +11,12 @@ from tools.replay_case_evidence import replay_receipt
 EVIDENCE = Path(__file__).resolve().parents[1] / "docs/runs/evidence"
 SAVE = EVIDENCE / "feishu-140-201-202-2026-11-25/row-201-hyperv"
 CUT = EVIDENCE / "feishu-250-251-2026-11-25/row-250-hyperv"
+PART = EVIDENCE / "feishu-249-2026-11-25"
 
 
-@pytest.mark.parametrize("directory,prefix", [(SAVE, "1216dc9e-run1"), (CUT, "a7a65272-run2")])
+@pytest.mark.parametrize("directory,prefix", [
+    (SAVE, "1216dc9e-run1"), (CUT, "a7a65272-run2"), (PART, "dcadf798-run1"),
+])
 def test_archived_evidence_and_negative_controls(directory, prefix):
     report = replay_receipt(directory / f"{prefix}-receipt.json")
     assert report["offline_checks_passed"], report
