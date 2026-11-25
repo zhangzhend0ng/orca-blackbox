@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # m7x_254_sphere_layer_pair.py — Edit both sphere layer heights and verify an independent GUI reslice.
 # feishu: baseline#254
+# Slicing is awaited by the enabled state of File > Export > Export G-code, not by the Slice
+# button's rendering, and the runtime memory guard is answered on the way (slice_until_exportable).
 
 import argparse
 from decimal import Decimal
@@ -29,9 +31,14 @@ from m3_common import add_common_args, boot_session
 from m7x_249_add_part import stage as measure_stage
 from m8_common import wait_arrival
 from harness.model_move_pilot import geometry_unchanged
+from file_export_cases import answer_memory_guard
 
 FIXTURE = HERE / "fixtures" / "feishu_std_sphere.3mf"
 TARGET = ("0.20", "0.25")
+EXPORT_ROW = "Export G-code"
+# op_slice waits this few seconds for the Slice button's own rendering; the export row is awaited after it
+BUTTON_GLANCE_S = 3
+EXPORT_ROW_TIMEOUT_S = 150
 
 
 def require(check, message):
@@ -118,6 +125,44 @@ def retain_plate(session, private_temp, project, output, started_ns):
     raise ValueError(f"No complete GUI plate for PID {session.pid}; process files: {owned}")
 
 
+def slice_until_exportable(session, work, stage, results, analysis, timeout_s=EXPORT_ROW_TIMEOUT_S):
+    """Slice the plate and wait until File > Export > `Export G-code` is enabled.
+
+    That row is enabled only when the current plate's slice result is ready
+    for export (MainFrame.cpp can_export_gcode, sm-v2.4.0), so it says when
+    slicing is done. The Slice button's rendering does not: on the guest its
+    "done" picture scored about 1.0 while a Memory Usage Warning had the
+    export paused with the plate file half written (probe254hog-07ac1bf6;
+    hogprobe2-e3ce6f8b), so a wait on that rendering can end too early. The
+    click is still op_slice's, with its handling of a plate that was sliced
+    already; only its wait is cut to a glance, and its verdict on the button
+    is replaced by this wait's. The memory guard is answered on the way by
+    file_export_cases: only the child whose text is exactly `Yes, Continue`
+    is clicked, with the dialog as the root window, and a second dialog that
+    will not close stops the run. Returns the readings. Raises ValueError
+    when the click was rejected or the row stays disabled, leaving that
+    failure in `results`."""
+    key = stage + " slice"
+    m7.op_slice(session, results, key=key, timeout_s=BUTTON_GLANCE_S)
+    if str(results.get(key, "")).startswith("FAIL ("):
+        raise ValueError(f"{stage} slice: {results[key]}")
+    started, polls = time.monotonic(), 0
+    while True:
+        answer_memory_guard(session, work, analysis)
+        enabled, _ = m7.file_menu_dispatch(session, EXPORT_ROW, via="Export", inspect_enabled=True)
+        polls += 1
+        if enabled:
+            results[key] = "PASS"
+            reading = {"export_enabled_after_seconds": round(time.monotonic() - started, 1), "polls": polls}
+            print(f"[m7x254] {stage}: {EXPORT_ROW!r} enabled {reading['export_enabled_after_seconds']}s after "
+                  f"the glance, in poll {polls}", flush=True)
+            return reading
+        if time.monotonic() >= started + timeout_s:
+            results[key] = f"FAIL ({EXPORT_ROW!r} stayed disabled {timeout_s}s after the Slice click)"
+            raise ValueError(results[key])
+        time.sleep(1.5)
+
+
 def slice_project(args, work, project, stage, results, analysis):
     private_temp = work / (stage + "-temp")
     private_temp.mkdir()
@@ -126,7 +171,7 @@ def slice_project(args, work, project, stage, results, analysis):
     try:
         quality(session)
         started_ns = time.time_ns()
-        require(m7.op_slice(session, results, key=stage + " slice", timeout_s=120), f"{stage} slice failed")
+        analysis[stage + "_slice"] = slice_until_exportable(session, work, stage, results, analysis)
         analysis[stage + "_plate"] = retain_plate(session, private_temp, project, work / (stage + ".gcode"), started_ns)
         score, *_ = anchors.wait_for(session, "tab_preview_active", timeout_s=2)
         if score < anchors.MATCH_THRESHOLD:
