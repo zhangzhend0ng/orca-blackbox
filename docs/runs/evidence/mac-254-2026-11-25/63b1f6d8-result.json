@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "run_id": "63b1f6d807354cedb4b5d6c783acff4c",
+  "source_run": "92b322e4b6b6430a8c5037e183518437",
+  "sut": {
+    "version": "2.4.2",
+    "build": "sha256:8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75",
+    "bundle_build": "",
+    "build_source": "executable_sha256",
+    "executable_sha256": "8e66373f2cdd53fad29c7b123f0c8a25f45c37c6132c161f6e7d6d6a89abbd75"
+  },
+  "phase": {
+    "pid": 9611,
+    "window": "sphere-254-copy",
+    "layers": [
+      "0.2",
+      "0.25"
+    ]
+  },
+  "slice": {
+    "phase": "reopen",
+    "pid": 9611,
+    "window_id": 68094,
+    "source": "open_process_plate",
+    "plate_file": ".9611.0.gcode",
+    "inode": 42372131,
+    "size": 769663,
+    "sha256": "1a97a9216156e66a6803854f02e3edfe44afb5f0ed7aa7c6fc590e35dd8de662",
+    "project_sha256": "7d7d0dc9572c3d116203b6cf7eea64fdde9ec72b1d9c75c3a69f753a445f254f",
+    "export_enabled_before": false,
+    "export_enabled_after": true
+  },
+  "saved_sha256": "7d7d0dc9572c3d116203b6cf7eea64fdde9ec72b1d9c75c3a69f753a445f254f",
+  "cleanup_verified": true
+}
