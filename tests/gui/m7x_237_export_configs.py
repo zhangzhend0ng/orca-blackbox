@@ -194,7 +194,8 @@ def export_session(args, work, analysis):
                 traceback.print_exc()
             reading['made_preset'] = {key: made.get(key) for key in
                                       ('file', 'typed', 'closed', 'preset_row_before_save',
-                                       'preset_row_after_save', 'error')}
+                                       'preset_row_after_save', 'error', 'page_up', 'page', 'before')}
+            reading['made_preset']['sidebar_tree'] = len(made.get('sidebar_tree') or [])
             if made.get('file'):
                 with stage(analysis, 'read_export_dialog_again'):
                     listed = listed_labels(bundle_survey(session, work, analysis, key='bundle_survey_after',
@@ -238,7 +239,8 @@ def export_session(args, work, analysis):
         'sources': [f'log/{path.name} ({size} bytes)' for path, size in app_log_files(datadir)],
         'severities': log_severities(datadir),
         'loaded_user_presets': [line[-200:] for line in lines if 'load config successful' in line.casefold()][-12:],
-        'parents_not_found': [line[-200:] for line in lines if 'can not find parent' in line.casefold()][-12:],
+        # Kept whole: the lines that say which of the seeded presets the application did not load.
+        'parents_not_found': [line for line in lines if 'can not find parent' in line.casefold()][-12:],
         'printer_visibility': [line[-200:] for line in lines if 'is_visible set to' in line.casefold()][-12:],
         'failed_to_add': [line[-240:] for line in failed[-6:]],
         'added': [line[-200:] for line in lines if 'json add successful' in line.casefold()][-12:]}
@@ -290,17 +292,53 @@ def import_session(args, work, analysis, attempts):
     return tables_of(datadir)
 
 
-def nothing_listed(reading, listed):
-    """The sentence for a dialog that offers no process row."""
+def unloaded_process_presets(lines):
+    """The preset files the application's log says it found no parent for, under user/.../process."""
+    names = set()
+    for line in lines:
+        flat = line.replace(chr(92), '/')
+        if '/process/' in flat:
+            tail = flat.rsplit('/process/', 1)[1]
+            names.add(tail.split('.json', 1)[0] + '.json' if '.json' in tail else tail[-80:])
+    return sorted(names)
+
+
+def filament_said(second):
+    """What the export of the filament name came to, in one clause: the words of the box, what
+    landed, and the file the application's log says it could not add."""
+    from export_configs_oracle import _could_not_add
+    if not second:
+        return ''
+    package = second.get('package') or {}
+    landed = 'left a 0-byte zip' if package.get('bytes') == 0 else f'landed {package.get("name")!r}'
+    files = ', '.join(dict.fromkeys(_could_not_add(line)[-90:]
+                                    for line in (second.get('app_log') or {}).get('failed_to_add', [])[:2]))
+    said = f'the filament name "{second["row"]}" exported with "{second.get("result_words")}", {landed}'
+    return f'{said}, the log could not add {files}' if files else said
+
+
+def nothing_listed(reading, listed, second=None):
+    """The sentence for a dialog that offers no process row: why there is none, what the
+    filament name came to, and what the dialog does list. The first 400 characters of it are
+    what the verdict shows, so what matters comes first."""
     offered = '; '.join(f'{kind}: {labels or "nothing"}' for kind, labels in listed.items())
     made = reading.get('made_preset') or {}
+    parts = [f'"{KIND}" lists no row']
+    not_loaded = unloaded_process_presets((reading.get('app_log') or {}).get('parents_not_found', []))
+    if not_loaded:
+        parts.append(f'the application loaded none of the {len(not_loaded)} process presets the harness seeds '
+                     f'(its log: "can not find parent for config")')
+    said = filament_said(second)
+    if said:
+        parts.append(said)
     if made.get('file'):
-        return (f'"{KIND}" lists no row although the application itself just saved the user preset '
-                f'"{SAVED_PRESET}" under user/default/process; it lists {offered}')
-    custom = reading['custom_presets_on_disk']
-    why = f'; making a user preset through the application failed: {made.get("error")}' if made.get('error') else ''
-    return (f'the dialog lists no row to export, although the profile holds custom presets on disk '
-            f'({custom}){why}; it lists {offered}')
+        parts.append(f'although it had just saved the user preset "{SAVED_PRESET}" itself')
+    elif made.get('error'):
+        parts.append(f'making a user preset through the application failed: {made["error"][:110]}')
+    else:
+        parts.append(f'although the profile holds custom presets on disk ({reading["custom_presets_on_disk"]})')
+    parts.append(f'it lists {offered}')
+    return '; '.join(parts)
 
 
 def run(args, work, analysis):
@@ -311,7 +349,8 @@ def run(args, work, analysis):
     after = import_session(args, work, analysis, attempts)
     write_json(work / 'presets-after.json', {'after': after})
     gaps = analysis['expectation_gaps'] = configs_expectation_gaps(
-        at_export, after, attempts, nothing_listed=nothing_listed(analysis['export_session'], listed))
+        at_export, after, attempts,
+        nothing_listed=nothing_listed(analysis['export_session'], listed, analysis.get('filament_reading')))
     analysis['import_readings'] = import_readings(at_export, after, attempts)
     for clause, failed in gaps.items():
         analysis['results'][clause] = 'PASS' if not failed else f'FAIL ({"; ".join(failed)[:400]})'

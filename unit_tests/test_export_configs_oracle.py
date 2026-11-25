@@ -492,3 +492,13 @@ def test_the_log_is_found_under_the_name_the_application_gives_it(tmp_path):
         'Filament presets(.zip)/Generic PLA: the application log could not add Generic PLA @U1.json to the ZIP archive',
         "Filament presets(.zip)/Generic PLA: 'Filament presets.zip' left a 0-byte zip: the file was created and nothing "
         'was added to it']
+
+
+def test_the_file_a_failed_line_names_is_read_from_both_of_the_application_s_wordings():
+    # Run 847aa160, the application's other wording: the kind of preset follows the name.
+    measured = ('[info]\t2026-11-26 03:44:10.790257[Thread 0x0000165c]:'
+                'Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).json Filament preset failed to add file to ZIP archive')
+    assert oracle._could_not_add(measured) == 'Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).json'
+    assert oracle.failed_to_add([measured]) == [measured]
+    other = '2026-11-26 03:44:10.790 [info] X.json Failed to add file to ZIP archive'
+    assert oracle._could_not_add(other) == 'X.json'

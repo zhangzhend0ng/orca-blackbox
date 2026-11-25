@@ -1303,17 +1303,24 @@ def test_import_refuses_a_file_that_is_not_there_before_touching_the_menu(monkey
     assert rig.calls == []
 
 
-BOX, NAME_BOX, SAVE_BUTTON = 900, 910, 911
+BOX, NAME_BOX, SAVE_BUTTON, MAIN = 900, 910, 911, 77
 USER_PRESET, OK = (40, 120, 140, 140), (160, 180, 240, 204)
+GLOBAL, OBJECTS, QUALITY = (96, 606, 146, 626), (150, 606, 200, 626), (52, 666, 100, 688)
+# What the application's log said about the presets the harness seeds (run 847aa160): no parent.
+NO_PARENT = 'can not find parent for config C:/runs/237/export-profile/user/default/process/{}.json!'
+SEEDED = ('0.20mm Standard @Snapmaker U1 (0.4 nozzle) - HF-TEST', '0.20mm Standard @Snapmaker U1 (0.4 nozzle) - STD-TEST',
+          '0.24mm Standard @Snapmaker U1 (0.4 nozzle) - FLOW-TEST')
 
 
 class PresetMaker:
-    """The process page, the preset row and the application's "Save preset" box, as
-    tests/engine/m5g_preset_manage.py measured them, with every call recorded."""
+    """The sidebar's process page, the preset row and the application's "Save preset" box, as
+    tests/engine/m5g_preset_manage.py measured them, with every call recorded. Nothing of the real
+    mouse or keyboard can be reached: whatever asks for it fails the test."""
 
-    def __init__(self, monkeypatch, *, box_opens=True, focus=True, closes=True):
+    def __init__(self, monkeypatch, tmp_path, *, box_opens=True, focus=True, closes=True, page_down=False,
+                 page_never=False):
         self.calls, self.up, self.box_opens, self.focus, self.closes = [], False, box_opens, focus, closes
-        self.edits = {}
+        self.edits, self.page_down, self.page_never = {}, page_down or page_never, page_never
         m5g = SimpleNamespace(
             preset_row_text=lambda session: '0.20mm Standard @Snapmaker U1 (0.4 nozzle)(cube.3mf)',
             find_button_by_tooltip=self.find_save, real_click=self.real_click, wait_new_dialog=self.wait_new_dialog,
@@ -1322,6 +1329,8 @@ class PresetMaker:
                                                                                                                  (None, None))
             if self.up else (None, None))
         panel = SimpleNamespace(
+            process_row_y=lambda session: 616, tab_button=self.tab_button,
+            real_click=self.never('the panel driver clicked'),
             ensure_advanced=lambda session, want=True: self.calls.append(('advanced', want)) or True,
             click_tab=lambda session, name, word: self.calls.append(('tab', name, word)) or True,
             wait_float_edit=lambda session, timeout_s=180.0: ((300, 500, 380, 520), 11, '0.2'),
@@ -1342,15 +1351,40 @@ class PresetMaker:
             monkeypatch.setattr(harness.process_panel, name, value)
         for name, value in vars(keys).items():
             monkeypatch.setattr(harness.mix_dialog_util, name, value)
-        monkeypatch.setattr(cases, 'descendants', lambda hwnd: [])
-        monkeypatch.setattr(cases.export_util, '_children_texts', lambda hwnd: [])
+        # Should anything else reach for the real mouse, the test ends there and then.
+        for name in ('real_click_screen', 'real_right_click_screen', 'real_wheel_screen', 'real_drag_screen'):
+            monkeypatch.setattr(cases.winutil, name, self.never(f'winutil.{name}'))
+        monkeypatch.setattr(cases.winutil.user32, 'SetCursorPos', self.never('SetCursorPos'))
+        children = {MAIN: [('Process', (16, 616, 80, 630), 20), ('Global', GLOBAL, 21), ('Objects', OBJECTS, 22),
+                           ('Quality', QUALITY, 23)]}
+        monkeypatch.setattr(cases, 'descendants', lambda hwnd: [
+            ('Static' if text == 'Process' else 'wxWindowNR', text, child) for text, _rect, child in children.get(hwnd, [])])
+        monkeypatch.setattr(cases.export_util, '_children_texts',
+                            lambda hwnd: children.get(hwnd, []))
         monkeypatch.setattr(cases.winutil, 'window_title', lambda hwnd: 'Save preset')
-        monkeypatch.setattr(cases.winutil.user32, 'IsWindowVisible', lambda hwnd: hwnd == BOX and self.up)
+        monkeypatch.setattr(cases.winutil.user32, 'IsWindowVisible', lambda hwnd: self.up if hwnd == BOX else hwnd != 0)
         monkeypatch.setattr(cases.winutil, 'force_set_foreground', lambda hwnd: True)
         monkeypatch.setattr(cases.winutil, '_send_msg', self.send)
+        monkeypatch.setattr(cases.winutil, 'msg_click_screen', self.click)
+        monkeypatch.setattr(cases.winutil, 'screen_grab', lambda: (4, 3, bytes(48)))
         monkeypatch.setattr(cases, 'capture_window', lambda hwnd, path: {'width_px': 300, 'height_px': 200})
         ticking(monkeypatch)
-        self.session = SimpleNamespace(pid=SESSION_PID, hwnd=77, alive=lambda: True)
+        self.session = SimpleNamespace(pid=SESSION_PID, hwnd=MAIN, alive=lambda: True)
+
+    def never(self, what):
+        def refuse(*args):
+            raise AssertionError(f'{what}: a test reached the real mouse or keyboard')
+        return refuse
+
+    def tab_button(self, session, name):
+        self.calls.append(('tab', name))
+        return None if self.page_down else (QUALITY, 23)
+
+    def click(self, x, y, root_hwnd=None):
+        self.calls.append(('click', x, y, root_hwnd))
+        if root_hwnd == MAIN and GLOBAL[0] <= x < GLOBAL[2] and GLOBAL[1] <= y < GLOBAL[3] and not self.page_never:
+            self.page_down = False
+        return 1
 
     def find_save(self, session, substr):
         self.calls.append(('tooltip', substr))
@@ -1362,7 +1396,7 @@ class PresetMaker:
 
     def real_click(self, rect):
         self.calls.append(('real click', tuple(rect)))
-        if SAVE_BUTTON == 911 and tuple(rect) == (600, 520, 616, 536):
+        if tuple(rect) == (600, 520, 616, 536):
             self.up = self.box_opens
         elif tuple(rect) == OK and self.closes:
             self.up = False
@@ -1384,25 +1418,59 @@ class PresetMaker:
 
 
 def test_a_user_process_preset_is_made_the_way_the_preset_management_case_measured_it(monkeypatch, tmp_path):
-    maker = PresetMaker(monkeypatch)
+    maker = PresetMaker(monkeypatch, tmp_path)
     analysis = {}
     receipt = cases.save_process_preset(maker.session, 'BB Export Test', tmp_path, analysis)
     assert analysis['preset_saved'] is receipt
+    assert receipt['page_up'] is True and (tmp_path / 'preset-before.png').is_file()
+    assert receipt['before'] == {'image': {'width_px': 4, 'height_px': 3}, 'image_name': 'preset-before.png'}
+    assert receipt['page'] == {'process_row_y': 616, 'quality_tab': [52, 666, 100, 688],
+                               'process_row_y_after': 616, 'quality_tab_after': [52, 666, 100, 688]}
     assert receipt['steps'] == {'advanced_on': True, 'quality_page': True, 'layer_height_before': '0.2',
                                 'layer_height_after': '0.3',
                                 'preset_row_before_save': '0.20mm Standard @Snapmaker U1 (0.4 nozzle)(cube.3mf)',
                                 'save_button': {'rect': [600, 520, 616, 536], 'tooltip': 'Save current Process'}}
     assert receipt['typed'] == 'BB Export Test' and receipt['closed'] is True
     assert receipt['dialog']['title'] == 'Save preset'
-    # The layer height, the save button by its tooltip, the name without Enter, then the two
-    # buttons of the box by their exact text, each with one real click.
+    # The page read (no click: it is up), the layer height, the save button by its tooltip, the name
+    # without Enter, then the two buttons of the box by their exact text, each with one real click.
     assert maker.calls == [
-        ('advanced', True), ('tab', 'Quality', 'height'), ('edit', '0.3'), ('neutral',),
+        ('tab', 'Quality'), ('advanced', True), ('tab', 'Quality', 'height'), ('edit', '0.3'), ('neutral',),
         ('tooltip', 'save'), ('real click', (600, 520, 616, 536)), ('wait box', False),
         ('real click', (20, 60, 200, 80)), ('keys', (0x11, 0x41, 0x41, 0x11)), ('keys', (0x2E, 0x2E)),
         ('chars', 'BB Export Test'), ('real click', USER_PRESET), ('real click', OK)]
     assert not any(kind == 'keys' and 0x0D in code for kind, *code in maker.calls)  # no Enter anywhere
     assert not any(kind == 'send' for kind, *_ in maker.calls)  # and no window message to the box
+
+
+def test_the_process_page_is_brought_forward_by_its_scope_switch_and_read_again(monkeypatch, tmp_path):
+    maker = PresetMaker(monkeypatch, tmp_path, page_down=True)
+    analysis = {}
+    receipt = cases.save_process_preset(maker.session, 'BB Export Test', tmp_path, analysis)
+    assert receipt['page_up'] is True and 'sidebar_tree' not in receipt
+    assert receipt['page'] == {
+        'process_row_y': 616, 'quality_tab': None,
+        'scope_switch': [['wxWindowNR', 'Global', [96, 606, 146, 626]], ['wxWindowNR', 'Objects', [150, 606, 200, 626]]],
+        'clicked': ['Global', [96, 606, 146, 626], '0x1'],
+        'process_row_y_after': 616, 'quality_tab_after': [52, 666, 100, 688]}
+    # "Global" was clicked once, a window message resolved inside the main window, before anything else.
+    assert maker.calls[:3] == [('tab', 'Quality'), ('click', 121, 616, MAIN), ('tab', 'Quality')]
+    assert receipt['typed'] == 'BB Export Test'
+
+
+def test_when_the_process_page_stays_down_the_step_stops_with_the_sidebar_written_down(monkeypatch, tmp_path):
+    maker = PresetMaker(monkeypatch, tmp_path, page_never=True)
+    analysis = {}
+    with pytest.raises(ValueError, match='the process page of the sidebar is not up'):
+        cases.save_process_preset(maker.session, 'BB Export Test', tmp_path, analysis)
+    receipt = analysis['preset_saved']
+    assert receipt['page_up'] is False and receipt['page']['clicked'][0] == 'Global'
+    assert receipt['sidebar_tree'] == [['Static', 'Process', [16, 616, 80, 630]], ['wxWindowNR', 'Global', [96, 606, 146, 626]],
+                                       ['wxWindowNR', 'Objects', [150, 606, 200, 626]], ['wxWindowNR', 'Quality', [52, 666, 100, 688]]]
+    assert (tmp_path / 'preset-before.png').is_file()  # the whole screen, as it was before anything was touched
+    assert ('advanced', True) not in maker.calls and ('real click', (600, 520, 616, 536)) not in maker.calls
+    assert cases.window_tree(MAIN, limit=2) == [['Static', 'Process', [16, 616, 80, 630]],
+                                                ['wxWindowNR', 'Global', [96, 606, 146, 626]]]
 
 
 def test_making_a_preset_sends_nothing_from_a_host_that_did_not_opt_in(monkeypatch, tmp_path):
@@ -1421,7 +1489,7 @@ def test_making_a_preset_sends_nothing_from_a_host_that_did_not_opt_in(monkeypat
 def test_making_a_preset_stops_and_closes_the_box_when_a_step_does_not_behave(monkeypatch, tmp_path):
     for flags, words in (({'box_opens': False}, 'opened no "Save preset" box'),
                          ({'focus': False}, 'did not take the focus')):
-        maker = PresetMaker(monkeypatch, **flags)
+        maker = PresetMaker(monkeypatch, tmp_path, **flags)
         analysis = {}
         with pytest.raises(ValueError, match=words):
             cases.save_process_preset(maker.session, 'BB Export Test', tmp_path, analysis)
@@ -1441,16 +1509,20 @@ PROJECT_FILAMENT = {'type': 'filament', 'name': 'Generic PLA @U1 0.4 nozzle(feis
 MADE = {'type': 'process', 'name': 'BB Export Test', 'from': 'User', 'version': '2.3.1.2',
         'inherits': '0.20mm Standard @Snapmaker U1 (0.4 nozzle)(feishu_std_cubesfar.3mf)', 'layer_height': '0.3'}
 FAILED_LOG = ('[info]\t2026-11-26 03:19:40.999000[Thread 0x1234]:'
-              'Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).json Failed to add file to ZIP archive')
+              'Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).json Filament preset failed to add file to ZIP archive')
+NOT_LISTED = ('"Process presets(.zip)" lists no row; the application loaded none of the 3 process presets the harness '
+              'seeds (its log: "can not find parent for config"); the filament name "Generic PLA" exported with '
+              '"add file fail", left a 0-byte zip, the log could not add '
+              'Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf).json; ')
 
 
 def configs_case(monkeypatch, tmp_path, *, rows=(PRINTER,), after_rows=(PRINTER,), make='ok',
                  filament_rows=(FILAMENT_ROW, 'Snapmaker PLA Basic'), filament='junk', change=None):
     """The #237 case with both of its sessions and every window call faked. `rows` is what the
     dialog lists for the process type at first and `after_rows` what it lists once the case has
-    made a user preset (`make`: 'ok' writes its file, 'error' fails, 'nofile' saves without a
-    file); `filament` is what the export of the filament name lands ('package' or 'junk');
-    `change` rewrites each imported preset."""
+    made a user preset (`make`: 'ok' writes its file, 'error' fails); `filament` is what the
+    export of the filament name lands ('package' or 'junk'); `change` rewrites each imported
+    preset."""
     sys.path.insert(0, str(ROOT / 'tests' / 'gui'))
     import m7x_237_export_configs as case
     import test_export_configs_oracle as profiles
@@ -1467,7 +1539,9 @@ def configs_case(monkeypatch, tmp_path, *, rows=(PRINTER,), after_rows=(PRINTER,
             '[info]\t2026-11-26 03:18:52.101000[Thread 0x1234]:load config successful and preset name is:0.20mm Standard - HF-TEST\n'
             '[debug]\t2026-11-26 03:18:52.102000[Thread 0x1234]:set_visible_from_appconfig: name Snapmaker U1 (0.4 nozzle), is_visible set to 1\n'
             '[debug]\t2026-11-26 03:18:52.103000[Thread 0x1234]:set_visible_from_appconfig: name Other Printer, is_visible set to 1\n'
-            '[warning]\t2026-11-26 03:18:52.104000[Thread 0x1234]:nothing of interest here\n', encoding='utf-8')
+            '[warning]\t2026-11-26 03:18:52.104000[Thread 0x1234]:nothing of interest here\n'
+            + ''.join(f'[error]\t2026-11-26 03:18:52.2{n}000[Thread 0x1234]:{NO_PARENT.format(name)}\n'
+                      for n, name in enumerate(SEEDED)), encoding='utf-8')
         return dest
 
     def log_line(text, severity='info', profile='export-profile'):
@@ -1488,7 +1562,8 @@ def configs_case(monkeypatch, tmp_path, *, rows=(PRINTER,), after_rows=(PRINTER,
 
     def save_preset(session, name, work, analysis, key='preset_saved', value='0.3'):
         made_calls.append((name, value))
-        analysis[key] = {'name': name, 'typed': name, 'closed': True, 'preset_row_after_save': name}
+        analysis[key] = {'name': name, 'typed': name, 'closed': True, 'preset_row_after_save': name,
+                         'page_up': True, 'page': {'quality_tab': [1, 2, 3, 4]}}
         if make == 'error':
             raise ValueError('the preset row shows no button whose tooltip says save')
         if make == 'ok':
@@ -1503,7 +1578,7 @@ def configs_case(monkeypatch, tmp_path, *, rows=(PRINTER,), after_rows=(PRINTER,
         junk = kind == case.FALLBACK and filament == 'junk'
         if junk:
             target.write_bytes(b'')  # what the failed export of the filament name leaves behind
-            log_line(f'{PROJECT_FILAMENT["name"]}.json Failed to add file to ZIP archive')
+            log_line(f'{PROJECT_FILAMENT["name"]}.json Filament preset failed to add file to ZIP archive')
         else:
             if kind == case.KIND:
                 source = Path(work, 'export-profile', 'user', 'default', 'process', f'{case.SAVED_PRESET}.json')
@@ -1591,7 +1666,8 @@ def test_configs_case_passes_when_the_made_preset_is_exported_and_the_filament_r
     assert reading['made_preset'] == {'file': 'export-profile/user/default/process/BB Export Test.json',
                                       'typed': 'BB Export Test', 'closed': True,
                                       'preset_row_before_save': None, 'preset_row_after_save': 'BB Export Test',
-                                      'error': None}
+                                      'error': None, 'page_up': True, 'page': {'quality_tab': [1, 2, 3, 4]},
+                                      'before': None, 'sidebar_tree': 0}
     assert analysis['bundle_survey_after']['pictures'] == 'after-'
     assert exported == [(KIND, [PRINTER]), (FALLBACK, [FILAMENT_ROW])]
     assert [record['kind'] for record in analysis['exports']] == [KIND]  # the filament row is not judged
@@ -1615,8 +1691,12 @@ def test_configs_case_passes_when_the_made_preset_is_exported_and_the_filament_r
     assert imported_reading['unchanged'] == 1
     log = reading['app_log']
     assert len(log['sources']) == 1 and log['sources'][0].startswith('log/2026-11-26-03-18-50.log.0 (')
-    assert log['lines_kept'] == 4 and log['severities'] == {'info': 3, 'debug': 2, 'warning': 1}
+    assert log['lines_kept'] == 7
+    assert log['severities'] == {'info': 3, 'debug': 2, 'warning': 1, 'error': 3}
     assert log['failed_to_add'] == [FAILED_LOG] and len(log['added']) == 1
+    # The lines that say the application found no parent for the seeded presets are kept whole.
+    assert log['parents_not_found'] == [f'[error]\t2026-11-26 03:18:52.2{n}000[Thread 0x1234]:{NO_PARENT.format(name)}'
+                                        for n, name in enumerate(SEEDED)]
     assert len(log['printer_visibility']) == 1
     assert log['printer_visibility'][0].endswith('name Snapmaker U1 (0.4 nozzle), is_visible set to 1')
     kept = (tmp_path / 'app-log.log').read_text(encoding='utf-8')
@@ -1628,9 +1708,10 @@ def test_configs_case_passes_when_the_made_preset_is_exported_and_the_filament_r
 def test_configs_case_fails_the_first_clause_when_a_preset_the_product_saved_is_not_listed(monkeypatch, tmp_path):
     analysis, _seeds, launches, _closed, exported, _made = configs_case(monkeypatch, tmp_path, rows=(), after_rows=())
     package, imported = configs.CONFIGS_CLAUSES
-    assert analysis['results'][package].startswith(
-        'FAIL ("Process presets(.zip)" lists no row although the application itself just saved the user preset '
-        '"BB Export Test" under user/default/process; it lists Printer config bundle(.orca_printer): nothing')
+    said = analysis['expectation_gaps'][package][0]  # the whole sentence; the verdict line shows its first 400
+    assert said.startswith(
+        NOT_LISTED + 'although it had just saved the user preset "BB Export Test" itself; it lists '
+        'Printer config bundle(.orca_printer): nothing')
     assert analysis['results'][imported] == 'FAIL (not exercised: no package holding a preset was imported)'
     assert m7.m7_verdict(analysis['results']) == 1
     assert exported == [(FALLBACK, [FILAMENT_ROW])] and analysis['exports'] == []
@@ -1642,12 +1723,15 @@ def test_configs_case_names_it_when_making_the_preset_fails(monkeypatch, tmp_pat
     package, imported = configs.CONFIGS_CLAUSES
     assert analysis['export_session']['made_preset'] == {
         'file': None, 'typed': None, 'closed': None, 'preset_row_before_save': None,
-        'preset_row_after_save': None, 'error': 'ValueError: the preset row shows no button whose tooltip says save'}
-    assert analysis['results'][package].startswith(
-        "FAIL (the dialog lists no row to export, although the profile holds custom presets on disk "
-        "({'process': 2, 'filament': 0, 'machine': 0}); making a user preset through the application failed: "
+        'preset_row_after_save': None, 'error': 'ValueError: the preset row shows no button whose tooltip says save',
+        'page_up': None, 'page': None, 'before': None, 'sidebar_tree': 0}
+    # Why there is no row, what the filament name came to, why making one failed, and then the lists.
+    said = analysis['expectation_gaps'][package][0]  # the whole sentence; the verdict line shows its first 400
+    assert said.startswith(
+        NOT_LISTED + 'making a user preset through the application failed: '
         'ValueError: the preset row shows no button whose tooltip says save; it lists')
     assert 'bundle_survey_after' not in analysis  # the dialog is not read again without the file
+    assert analysis['results'][package] == f'FAIL ({said[:400]})' and 'making a user preset' in analysis['results'][package]
 
 
 def test_configs_case_only_reads_a_package_of_the_filament_name(monkeypatch, tmp_path):

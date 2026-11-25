@@ -299,13 +299,18 @@ def _reported(attempt):
 
 
 def _could_not_add(line):
-    """The file a "Failed to add file to ZIP archive" line names, without the log's own prefix."""
+    """The file a "Failed to add file to ZIP archive" line names, without the log's own prefix.
+    One of the application's two wordings puts the kind of preset after the name
+    ("<name>.json Filament preset failed to add file to ZIP archive", run 847aa160)."""
     head = line[:line.casefold().index(APP_LOG_FAILED)].strip()
     # The application writes "[severity]<tab><time>[Thread <id>]:<message>" (utils.cpp), older
     # lines read "<time> [severity] <message>": the name is what follows the last of either.
     for tail in (']:', '] '):
         if tail in head:
-            return head.rsplit(tail, 1)[-1].strip()
+            head = head.rsplit(tail, 1)[-1].strip()
+    for kind in ('filament preset', 'printer preset', 'process preset'):
+        if head.casefold().endswith(kind):
+            head = head[:-len(kind)].rstrip()
     return head
 
 

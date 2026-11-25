@@ -618,14 +618,74 @@ def export_preset_bundle(session, kind, directory, work, analysis, tick='all', k
 
 
 SAVE_PRESET_DIALOG = 'Save preset'
+# The scope switch on the title row of the sidebar's Process panel, and the tab that is a
+# child of the main window only while that panel's page is up (run c378dee0, before.png).
+PROCESS_PAGE = ('Global', 'Objects')
+PROCESS_TAB = 'Quality'
+SIDEBAR_TREE = 300
+
+
+def _screen_picture(work, image):
+    """A picture of the whole screen under `image`, or why there is none."""
+    try:
+        width, height, pixels = winutil.screen_grab()
+        frame = np.frombuffer(pixels, np.uint8).reshape(height, width, 4)[:, :, :3]
+        if not cv2.imwrite(str(Path(work) / image), frame):
+            return {'image': 'unavailable (not written)', 'image_name': image}
+        return {'image': {'width_px': int(width), 'height_px': int(height)}, 'image_name': image}
+    except Exception as exc:  # noqa: BLE001 - a picture is evidence; no step depends on it
+        return {'image': f'unavailable ({exc})', 'image_name': image}
+
+
+def window_tree(hwnd, limit=SIDEBAR_TREE):
+    """[[class, text, rectangle]] of a window's children, the ones with a text first."""
+    classes = {child: cls for cls, _text, child in descendants(hwnd)}
+    rows = [[classes.get(child, ''), text[:80], [left, top, right, bottom]]
+            for text, (left, top, right, bottom), child in export_util._children_texts(hwnd)]
+    rows.sort(key=lambda row: not row[1].strip())
+    return rows[:limit]
+
+
+def show_process_page(session, work, receipt, panel):
+    """Bring the page of the sidebar's Process panel forward, and write down what is there.
+
+    The page is up when its "Quality" tab is a child of the main window. When it is not, the
+    "Global" side of the scope switch on the panel's title row is clicked, a window message
+    resolved inside the main window, and the tab is looked for again. A picture of the whole
+    screen is taken first; when the page is still not up, the sidebar's windows (class, text,
+    rectangle) go into the receipt. Returns whether the page is up."""
+    receipt['before'] = _screen_picture(work, 'preset-before.png')
+    row, tab = panel.process_row_y(session), panel.tab_button(session, PROCESS_TAB)
+    found = {'process_row_y': row, 'quality_tab': list(tab[0]) if tab else None}
+    if tab is None:
+        switch = [control for control in dialog_controls(session.hwnd)
+                  if control['visible'] and plain(control['text']) in PROCESS_PAGE
+                  and 0 < control['rect'][2] - control['rect'][0] <= 160
+                  and 12 <= control['rect'][3] - control['rect'][1] <= 40]
+        found['scope_switch'] = [[control['cls'], control['text'], control['rect']] for control in switch]
+        target = next((control for control in switch if plain(control['text']) == PROCESS_PAGE[0]), None)
+        if target is not None:
+            left, top, right, bottom = target['rect']
+            hit = winutil.msg_click_screen((left + right) // 2, (top + bottom) // 2, session.hwnd)
+            found['clicked'] = [PROCESS_PAGE[0], [left, top, right, bottom], hex(hit) if hit else None]
+            time.sleep(2.0)
+            row, tab = panel.process_row_y(session), panel.tab_button(session, PROCESS_TAB)
+    found.update(process_row_y_after=row, quality_tab_after=list(tab[0]) if tab else None)
+    receipt['page'] = found
+    receipt['page_up'] = tab is not None
+    if tab is None:
+        receipt['sidebar_tree'] = window_tree(session.hwnd)
+    return tab is not None
 
 
 def save_process_preset(session, name, work, analysis, key='preset_saved', value='0.3'):
     """Make the process preset of the moment a user preset named `name`, the way a user does.
 
-    This is the path tests/engine/m5g_preset_manage.py measured, with its helpers: the Advanced
-    switch, the Quality page and its first field (the layer height) are driven with real input
-    until the preset is changed; the save button of the preset row is found by its tooltip; in
+    This is the path tests/engine/m5g_preset_manage.py measured, with its helpers. First the
+    page of the sidebar's Process panel is brought forward (show_process_page), with a picture
+    of the whole screen taken before anything is touched. Then the Advanced switch, the Quality
+    page and its first field (the layer height) are driven with real input until the preset is
+    changed; the save button of the preset row is found by its tooltip; in
     the application's own "Save preset" box the name is typed without Enter (the box lives on
     its text events), and "User Preset" and "OK" are clicked by their exact text. The receipt
     goes to analysis[key] and is returned: what each step saw, the box's texts and a picture.
@@ -645,6 +705,10 @@ def save_process_preset(session, name, work, analysis, key='preset_saved', value
     steps = receipt['steps']
     dialog = None
     try:
+        if not show_process_page(session, work, receipt, pp):
+            raise ValueError('the process page of the sidebar is not up: no "Quality" tab under the '
+                             'Process title (preset-before.png holds the whole screen, sidebar_tree '
+                             'the sidebar\'s windows)')
         steps['advanced_on'] = bool(pp.ensure_advanced(session, want=True))
         if not steps['advanced_on']:
             raise ValueError('the Advanced switch of the process page did not turn on')
