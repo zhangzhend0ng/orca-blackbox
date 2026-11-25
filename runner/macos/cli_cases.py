@@ -10,7 +10,7 @@ business step through its command line, so that the business criteria can be rea
             its own, and with the template's printer, process and filament preset files
             (--load-settings, --load-filaments)
   gcode236  feishu_std_cube.3mf  -> --slice 1 --export-3mf plate.gcode.3mf, then --export-slicedata
-  stl233    the standard cube and the standard sphere  -> --arrange 1 --export-3mf --export-stl
+  stl233    the standard cube and the standard sphere  -> --export-stl (one STL per object) and --export-3mf
 
 The profile is seeded as project_copy.seed does for the GUI (the app's bundled Snapmaker and BBL
 vendor profiles, its printers, the run's Snapmaker_Orca.conf) under a private --datadir.
@@ -108,9 +108,11 @@ def commands(report):
                 ("slice-export-slicedata", common + ["--slice", "1", "--export-slicedata", str(WORK / "slicedata"),
                                                      str(WORK / "baseline.3mf")])]
     if CASE == "stl233":
-        return [("arrange-export-3mf-export-stl", common + [
-            "--arrange", "1", "--export-3mf", str(WORK / "arranged.3mf"), "--export-stl", str(WORK / "all-objects.stl"),
-            str(WORK / "cube.3mf"), str(WORK / "sphere.3mf")])]
+        # --export-stl takes no value: it writes one STL per object into <outputdir>/stl/ as
+        # obj_<n>_<name>.stl (CLI::export_models), before the plate is arranged or sliced.
+        return [("export-stl-and-3mf", common + ["--outputdir", str(WORK / "out"), "--export-stl",
+                                                 "--export-3mf", str(WORK / "exported.3mf"),
+                                                 str(WORK / "cube.3mf"), str(WORK / "sphere.3mf")])]
     raise ValueError(f"Unexpected case {CASE!r}")
 
 
