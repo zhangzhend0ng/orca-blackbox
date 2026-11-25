@@ -1,11 +1,14 @@
-"""Feishu #236 and #233 replayed offline: synthetic harvests for tools/replay_gcode_export.py and
-tools/replay_merged_stl.py, and the independent readers of tests/file_io_replay_support.py against
-real archived bytes.
+"""Feishu #236, #233 and #227 replayed offline: synthetic harvests for tools/replay_gcode_export.py,
+tools/replay_merged_stl.py and tools/replay_import_stl.py, and the independent readers of
+tests/file_io_replay_support.py against real archived bytes.
 
 The #236 run is built here with zipfile, string templates and Pillow: a project equal to the
 standard cube fixture by content, a G-code that prints it, two screenshots and the record the GUI
 would keep. The #233 run adds a ball beside the cube, an STL of both written with struct, a viewer
-render with an opaque body in a transparent frame, and the viewer's logs.
+render with an opaque body in a transparent frame, and the viewer's logs. The #227 run is assembled
+from what the application really wrote for #244 (the same cube_20mm.stl imported the same way); its
+moved and turned projects are those bytes with the instance transform rewritten, until a green #227
+run exists to read instead.
 """
 from hashlib import sha256
 from io import BytesIO
@@ -811,3 +814,277 @@ def test_project_stand_in_log_marker_and_shared_helpers(tmp_path):
     assert support.refused(merged._read, merged.POSITIVE, folder, prefix,
                            {"f3d-view.png": support.blank_png(800, 600)})
     assert not support.refused(merged._read, merged.POSITIVE, folder, prefix)
+
+
+# --- Feishu #227: the imported STL ------------------------------------------------
+# No green #227 run exists yet, so the run is assembled here from what the application really wrote
+# for #244, which imports the same cube_20mm.stl through the same File > Import row: the STL, the
+# template the run started from and the project saved after the import. The moved and the turned
+# project are those bytes with the instance transform rewritten; the screenshots, the viewer-side
+# record and the case log are written here.
+
+from pathlib import PureWindowsPath
+
+from import_stl_oracle import stl_filter_label, verify_imported, verify_moved, verify_rotated
+from tools import replay_import_stl as imported_replay
+
+IMPORT_PREFIX = "cf3a5219-run1"
+REAL_244 = EVIDENCE / "multi-244-254-2026-11-25/win11-test/e7ba1cd2-run1-"      # a real import by the application
+RUN_244 = r"C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\244\run-bspxyqai"   # the directory it named
+CHOOSER_TYPES = [{"selected": -1, "items": []},
+                 {"selected": 0, "items": ["Supported files (*.3mf *.step *.stl *.svg *.obj *.amf)",
+                                           "3MF files (*.3mf)", "STL files (*.stl)"]},
+                 {"selected": -1, "items": []}]
+IMPORT_ROWS = [{"label": "Import 3MF/STL/STEP/SVG/OBJ/AMF...", "enabled": True},
+               {"label": "Import Zip Archive", "enabled": True},
+               {"label": "Import Configs", "enabled": True}]
+SOURCE, START, IMPORTED = imported_replay.SOURCE, imported_replay.START, imported_replay.IMPORTED
+MOVED, TURNED = imported_replay.MOVED, imported_replay.TURNED
+
+
+def real_import() -> dict:
+    """The bytes the application wrote for a real import of cube_20mm.stl: the STL, the template the
+    run started from and the project saved after the import."""
+    return {part: Path(f"{REAL_244}{part}").read_bytes() for part in (SOURCE, START, IMPORTED)}
+
+
+def moved_copy(project) -> bytes:
+    return support.with_item_transform(
+        project, support.compose(support.shift(10.0, 0.0, 0.0), support.item_transform(project)))
+
+
+def turned_copy(project, degrees=45.0, move=10.0) -> bytes:
+    """The project with its only object turned about the vertical axis through the moved object's centre."""
+    x0, x1, y0, y1, _, _ = support.project(project)["objects"][0]["box"]
+    centre = ((x0 + x1) / 2 + move, (y0 + y1) / 2, 0.0)
+    about = support.compose(support.compose(support.shift(*centre), support.turn(degrees)),
+                            support.shift(-centre[0], -centre[1], -centre[2]))
+    return support.with_item_transform(project, support.compose(about, support.item_transform(project)))
+
+
+def write_import_run(folder, prefix=IMPORT_PREFIX, *, parts=None, record=None, log_lines=None):
+    """A #227 harvest in the shape the collector leaves. The record is what the case writes for these
+    files: the oracle's readings of the three projects and what the chooser showed."""
+    folder.mkdir(parents=True, exist_ok=True)
+    pieces = real_import()
+    pieces[MOVED] = moved_copy(pieces[IMPORTED])
+    pieces[TURNED] = turned_copy(pieces[MOVED], move=0.0)       # turned where the move left it
+    shots = dict(zip(imported_replay.PICTURES, (picture(seed=index) for index in range(8))))
+    files = {**pieces, **shots, **(parts or {})}
+    for part, raw in files.items():
+        (folder / f"{prefix}-{part}").write_bytes(raw)
+    source, saved, after, final = (folder / f"{prefix}-{part}" for part in (SOURCE, IMPORTED, MOVED, TURNED))
+    (folder / "plain").mkdir(exist_ok=True)     # the oracle wants the STL under the name the case gave it
+    plain = folder / "plain" / SOURCE
+    plain.write_bytes(files[SOURCE])
+    shown = json.loads(Path(f"{REAL_244}analysis.json").read_text(encoding="utf-8-sig"))["chooser"]
+    filters = [item for group in CHOOSER_TYPES for item in group["items"]]
+    size = png(shots["chooser.png"])
+    chooser = {"import_rows": IMPORT_ROWS, "row": IMPORT_ROWS[0]["label"], "title": shown["title"],
+               "labels": shown["labels"], "types": CHOOSER_TYPES,
+               "image": {"width_px": size["width"], "height_px": size["height"]},
+               "entered": str(PureWindowsPath(RUN_244) / SOURCE), "dialog_closed": True}
+    chooser["stl_filter"] = stl_filter_label([chooser["title"], *chooser["labels"], *filters])
+    readings = {}
+    for key, reading in (("imported", lambda: verify_imported(saved, plain)),
+                         ("moved", lambda: verify_moved(saved, after)),
+                         ("rotated", lambda: verify_rotated(after, final))):
+        try:
+            readings[key] = reading()
+        except (OSError, ValueError):
+            break                      # the case stops at the first reading that fails
+    default = {"case": 227, "source": {"name": SOURCE, "bytes": len(files[SOURCE]),
+                                       "sha256": sha256(files[SOURCE]).hexdigest()},
+               "results": {clause: "PASS" for clause in imported_replay.CLAUSES},
+               "sidebar": {"imported": ["Objects", "cube_20mm"]}, "import_fraction": 0.004,
+               "keyboard": {"moved": {"key": "0x27"}, "rotated": {"key": "0x52"}},
+               "gizmo": {"rotate": {"fields": [[1, 2, "0"], [3, 4, "0"], [5, 6, "0"]],
+                                    "fields_after": [[1, 2, "0"], [3, 4, "0"], [5, 6, "45"]]}},
+               "object_list_name": ["cube_20mm"], "editor_at_end": {"alive": True, "dialog": None},
+               **readings, "chooser": chooser}
+    files["analysis.json"] = json.dumps(record(default) if callable(record) else default, ensure_ascii=False,
+                                        indent=2).encode("utf-8")
+    (folder / f"{prefix}-analysis.json").write_bytes(files["analysis.json"])
+    (folder / f"{prefix}-object_artifacts.json").write_text(json.dumps(
+        [{"part": part, "bytes": len(raw), "sha256": sha256(raw).hexdigest()} for part, raw in files.items()],
+        indent=1), encoding="utf-8")
+    lines = [f"[m7x227] retained work directory: {RUN_244}",
+             f"[m7x227] chooser {chooser['title']!r}: labels {chooser['labels']!r}, types {filters!r}",
+             "[m7x227] sidebar after the import: ['Objects', 'cube_20mm']",
+             f"[m7x227] imported: {readings.get('imported')!r}",
+             "[m7x227] moved: {'centroid': [900, 500], 'click': [900, 500], 'click_method': 'physical', 'key': '0x27'}",
+             "[m7x227] rotated: {'centroid': [950, 500], 'click': [950, 500], 'click_method': 'physical', "
+             "'key': '0x52'}"] if log_lines is None else log_lines
+    log = ("\n".join(lines) + "\n").encode()
+    (folder / f"{prefix}-case.log").write_bytes(log)
+    (folder / f"{prefix}-receipt.json").write_text(json.dumps({
+        "case": "m7x_227_import_stl", "commit": "0" * 40, "summary": "SUMMARY: PASS=1 FAIL=0",
+        "dispatched_at": "2026-11-26T00:00:00+00:00", "scenario_completed_at": "2026-11-26T00:03:00+00:00",
+        "log_sha256": sha256(log).hexdigest()}), encoding="utf-8")
+    return folder, prefix
+
+
+def import_refused(tmp_path, failed, **changes):
+    """A run whose files differ and whose record was written for those files: the replay names `failed`."""
+    folder, prefix = write_import_run(tmp_path, **changes)
+    result = imported_replay.replay(folder, prefix)
+    assert set(failed) <= set(result["import"]["failed"]), result["import"]["failed"]
+    assert not all(value is True for value in result["checks"].values())
+    return result
+
+
+# every stand-in of the import replay with the readings that own it; UNOPENABLE: the replay cannot
+# even read the run
+IMPORT_REFUSED_BY = {
+    "start_replaced_rejected": ["start_is_the_u1_template_with_its_cube"],
+    "empty_plate_rejected": ["imported_once", "imported_is_the_stl_upright"],
+    "thirty_mm_cube_rejected": ["source_is_a_binary_20_mm_cube", "imported_is_20_mm"],
+    "two_objects_rejected": ["imported_once"],
+    "object_off_the_plate_rejected": ["imported_on_the_plate"],
+    "imported_off_the_bed_rejected": ["imported_on_the_bed"],
+    "move_reversed_rejected": ["moved_is_the_import_10_mm_along_x"],
+    "move_along_y_rejected": ["moved_is_the_import_10_mm_along_x"],
+    "turn_left_out_rejected": ["rotated_is_the_moved_turned_45_degrees"],
+    "turn_about_x_rejected": ["rotated_is_the_moved_turned_45_degrees", "rotated_on_the_bed"],
+    "template_as_import_rejected": ["imported_is_the_stl_upright", "imported_is_20_mm",
+                                    "imported_named_after_the_file", "imported_points_at_this_runs_file"],
+    "another_runs_file_rejected": ["imported_points_at_this_runs_file"],
+    "source_not_a_cube_rejected": ["source_is_a_binary_20_mm_cube", "imported_is_the_stl_upright"],
+    "blank_screenshot_rejected": ["pictures_are_pictures"],
+    "invented_filter_rejected": ["chooser_record_offers_stl"],
+    "chooser_entered_another_file_rejected": ["chooser_entered_this_runs_file"],
+    "manifest_mismatch_rejected": UNOPENABLE,
+    "edited_analysis_rejected": ["recorded_readings_match_files"],
+}
+
+
+def test_import_run_passes_every_reading_and_every_counterexample(tmp_path):
+    folder, prefix = write_import_run(tmp_path)
+    result = imported_replay.replay(folder, prefix)
+    not_true = [key for key, value in result["checks"].items() if value is not True]
+    assert not not_true, not_true
+    # every reading the replay names is produced, and every counterexample has a label of its own
+    assert set(imported_replay.POSITIVE) == set(result["checks"]) - set(IMPORT_REFUSED_BY)
+    report = result["import"]
+    assert (report["imported"]["name"], report["imported"]["box_mm"]) == (
+        "cube_20mm.stl", (125.5, 145.5, 126.0, 146.0, 0.0, 20.0))
+    assert report["moved"]["box_mm"] == (135.5, 155.5, 126.0, 146.0, 0.0, 20.0)
+    assert report["rotated"]["box_mm"] == (131.357864, 159.642136, 121.857864, 150.142136, 0.0, 20.0)
+    assert set(report["screen_changes"]) == {"select", "move", "turn"}
+
+
+def test_import_runs_through_the_shared_driver_like_the_other_replays(tmp_path, monkeypatch):
+    folder, prefix = write_import_run(tmp_path)
+    monkeypatch.setitem(ADAPTERS, "m7x_227_import_stl", imported_replay.replay)
+    assert replay_receipt(folder / f"{prefix}-receipt.json")["offline_checks_passed"]
+    (folder / f"{prefix}-case.log").write_bytes(b"another log\n")
+    assert not replay_receipt(folder / f"{prefix}-receipt.json")["offline_checks_passed"]
+
+
+@pytest.mark.parametrize("label,failed", sorted(IMPORT_REFUSED_BY.items()))
+def test_each_import_counterexample_is_refused_by_the_reading_that_owns_it(tmp_path, label, failed):
+    folder, prefix = write_import_run(tmp_path)
+    how = dict(imported_replay._stand_ins(imported_replay._read(folder, prefix)[2][0]))[label]
+    with copy_of(folder, prefix, **how) as (other, altered):
+        if failed is UNOPENABLE:
+            with pytest.raises(ValueError):
+                imported_replay._read(other, altered)
+            return
+        readings = imported_replay._read(other, altered)[1]
+    assert set(failed) <= set(readings["failed"]), readings["failed"]
+
+
+def test_replay_reads_every_counterexample_of_the_import_on_a_temporary_copy(tmp_path, monkeypatch):
+    folder, prefix = write_import_run(tmp_path)
+    reads, real = [], imported_replay._read
+    monkeypatch.setattr(imported_replay, "_read", lambda place, pre: reads.append(place.name) or real(place, pre))
+    result = imported_replay.replay(folder, prefix)
+    assert all(value is True for value in result["checks"].values())
+    assert len(reads) == 19 and sum(name.startswith("replay-") for name in reads) == 18
+
+
+@pytest.mark.parametrize("degrees", [30.0, 90.0], ids=["30 degrees", "90 degrees: the cube onto itself"])
+def test_a_turn_that_is_not_45_degrees_is_refused(tmp_path, degrees):
+    pieces = real_import()
+    import_refused(tmp_path, ["rotated_is_the_moved_turned_45_degrees", "oracle_accepts_the_three_projects"],
+                    parts={TURNED: turned_copy(pieces[IMPORTED], degrees)})
+
+
+def test_a_record_that_differs_from_the_files_is_refused(tmp_path):
+    import_refused(tmp_path, ["recorded_readings_match_files"], record=lambda default: dict(
+        default, moved=dict(default["moved"], delta_mm=[10.0, 1.0, 0.0])))
+    import_refused(tmp_path, ["recorded_source_matches_file"], record=lambda default: dict(
+        default, source=dict(default["source"], sha256="0" * 64)))
+    # the oracle forgives one misread character in a name; this one is three away from the import's
+    import_refused(tmp_path, ["object_list_names_the_import"], record=lambda default: dict(
+        default, object_list_name=["box_20mm"]))
+    import_refused(tmp_path, ["recorded_verdict_matches_readings"], record=lambda default: dict(
+        default, results={"可旋转": "FAIL"}))
+    import_refused(tmp_path, ["chooser_picture_matches_record"], parts={"chooser.png": picture(700, 450)})
+
+
+def test_a_case_log_that_never_showed_the_filter_or_another_directory_is_refused(tmp_path):
+    folder, prefix = write_import_run(tmp_path)
+    lines = (folder / f"{prefix}-case.log").read_text(encoding="utf-8").splitlines()
+    without = [line for line in lines if not line.startswith("[m7x227] chooser")]
+    import_refused(tmp_path, ["filter_text_is_in_the_case_log"], log_lines=without)
+    elsewhere = [line.replace(RUN_244, RUN_244 + "-other") for line in lines]
+    import_refused(tmp_path, ["imported_points_at_this_runs_file", "chooser_entered_this_runs_file"],
+                   log_lines=elsewhere)
+
+
+def test_import_readings_hold_on_what_the_application_really_wrote():
+    pieces = real_import()
+    source = support.stl(pieces[SOURCE])[1]
+    assert imported_replay._cube(pieces[SOURCE]) and len(source) == 12
+    thirty = (EVIDENCE / "feishu-250-251-2026-11-25/row-251-hyperv/1149a497-source-30mm.stl").read_bytes()
+    assert not imported_replay._cube(thirty) and not imported_replay._cube(b"not an STL")
+    start, saved = support.project(pieces[START]), support.project(pieces[IMPORTED])
+    assert imported_replay._start(start, support.project((ROOT / "fixtures/agent_layer_cube.3mf").read_bytes())) == {
+        "start_is_the_u1_template_with_its_cube": True}
+    readings, item = imported_replay._imported(saved, source, [RUN_244])
+    assert all(readings.values()) and item["source_file"] == str(PureWindowsPath(RUN_244) / SOURCE)
+    assert not imported_replay._imported(saved, source, [RUN_244 + "-another"])[0]["imported_points_at_this_runs_file"]
+    # the saved project must not pass for the import itself: its cube is the template's, 27 mm
+    assert not all(imported_replay._imported(start, source, [RUN_244])[0].values())
+    # a real move by the application (#201: the cube 10 mm along X)
+    row = EVIDENCE / "feishu-140-201-202-2026-11-25/row-201-hyperv"
+    before, after = (support.project((row / f"1216dc9e-run1-{part}-save.3mf").read_bytes()) for part in ("before", "after"))
+    assert imported_replay._moved_step(before, after) == {
+        "moved_once_on_the_plate": True, "moved_is_the_import_10_mm_along_x": True, "moved_on_the_bed": True}
+    assert not imported_replay._moved_step(after, before)["moved_is_the_import_10_mm_along_x"]
+
+
+def test_transform_helpers_and_project_edits():
+    pieces = real_import()
+    raw, moved = pieces[IMPORTED], moved_copy(pieces[IMPORTED])
+    assert support.item_transform(raw) == (1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 135.5, 136.0, 10.0)
+    assert support.compose(support.shift(1, 2, 3), support.shift(10, 0, 0)) == support.UNIT[:9] + (11.0, 2.0, 3.0)
+    assert support.compose(support.grow(2.0), support.shift(10, 0, 0)) == (2.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 2.0, 20.0, 0.0, 0.0)
+    cosine, sine = math.cos(math.pi / 2), math.sin(math.pi / 2)
+    assert all(math.isclose(a, b, abs_tol=1e-12) for a, b in zip(support.turn(90.0), (cosine, sine, 0.0, -sine, cosine, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0)))
+    assert support.project(support.with_item_transform(raw, support.item_transform(raw)))["objects"] == support.project(raw)["objects"]
+    # a turn of 90 degrees puts the cube back on itself; 45 degrees widens its footprint
+    assert support.project(turned_copy(raw, 90.0, move=0.0))["objects"][0]["box"] == support.project(raw)["objects"][0]["box"]
+    assert support.project(turned_copy(raw))["objects"][0]["triangles"] != support.project(moved)["objects"][0]["triangles"]
+    assert support.at_origin(support.project(moved)["objects"][0]) == support.at_origin(support.project(raw)["objects"][0])
+
+    def rename(root):
+        root.find("object/metadata[@key='name']").set("value", "renamed")
+
+    def drop(root):
+        root.find(f"{CORE}build").clear()
+
+    assert support.project(support.with_settings(raw, rename))["objects"][0]["name"] == "renamed"
+    assert support.project(support.with_model(raw, drop))["objects"] == []
+    square = [(0.0, 0.0), (10.0, 0.0), (10.0, 10.0), (0.0, 10.0)]
+    assert support.printable_area({"printable_area": ["0x0", "10x0", "10x10", "0x10"]}) == square
+    assert support.printable_area({"printable_area": ["0 0", "10 0", "10 10", "0 10"]}) == square
+    assert support.printable_area({"printable_area": ["0x0", "10x0"]}) is None and support.printable_area({}) is None
+    assert support.in_polygon(square, (5, 5)) and not support.in_polygon(square, (15, 5))
+    assert support.in_polygon(square[::-1], (5, 5)) and support.in_polygon(square, (0, 0))     # either way round, edge included
+    state, (item,) = support.project(raw), support.project(raw)["objects"]
+    assert support.on_the_bed(state["settings"], item)
+    assert not support.on_the_bed(state["settings"], dict(item, box=(125.5, 145.5, 126.0, 146.0, 5.0, 25.0)))
+    assert not support.on_the_bed(state["settings"], dict(item, box=(265.5, 285.5, 226.0, 246.0, 0.0, 20.0)))
+    assert not support.on_the_bed(state["settings"], dict(item, box=(125.5, 145.5, 126.0, 146.0, 0.0, 300.0)))

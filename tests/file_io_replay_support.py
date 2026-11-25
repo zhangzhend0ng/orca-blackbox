@@ -172,7 +172,8 @@ def box(points: list) -> tuple:
 
 
 def project(raw: bytes) -> dict:
-    """What a saved project holds, in world millimetres: application, settings and one entry per build item."""
+    """What a saved project holds, in world millimetres: application, settings, the plates and one
+    entry per build item with its name, its plate, the file it was imported from and its triangles."""
     files = archive(raw)
     missing = [name for name in (MAIN, SETTINGS, OBJECT_SETTINGS) if name not in files]
     _need(not missing, f'project lacks {", ".join(missing)}')
@@ -182,9 +183,10 @@ def project(raw: bytes) -> dict:
     settings = json.loads(files[SETTINGS].decode('utf-8-sig'))
     _need(isinstance(settings, dict), 'project settings are not an object')
     rows = _xml(files[OBJECT_SETTINGS], OBJECT_SETTINGS)
-    names = {row.get('id'): _metadata(row, 'name') for row in rows.findall('object')}
-    plates = {}
+    rows_of = {row.get('id'): row for row in rows.findall('object')}
+    plates, plate_ids = {}, []
     for plate in rows.findall('plate'):
+        plate_ids.append(_metadata(plate, 'plater_id'))
         for row in plate.findall('model_instance'):
             _need(_metadata(row, 'instance_id') in (None, '0'),
                   'a project with several instances of one object is not read')
@@ -195,11 +197,71 @@ def project(raw: bytes) -> dict:
     for item in build.findall(CORE + 'item'):
         corners = _corners(files, {MAIN: main}, item.get('objectid'), _matrix(item.get('transform')))
         _need(corners, f'object {item.get("objectid")} adds no triangles')
-        objects.append({'name': names.get(item.get('objectid')), 'plate': plates.get(item.get('objectid')),
+        row = rows_of.get(item.get('objectid'))
+        part = row.find('part') if row is not None else None
+        objects.append({'name': _metadata(row, 'name') if row is not None else None,
+                        'plate': plates.get(item.get('objectid')),
+                        'source_file': _metadata(part, 'source_file') if part is not None else None,
                         'triangles': faces(corners), 'box': box(corners)})
     application = main.find(CORE + 'metadata[@name="Application"]')
     return {'application': application.text if application is not None else None, 'settings': settings,
-            'objects': objects}
+            'plates': plate_ids, 'objects': objects}
+
+
+def with_settings(raw: bytes, edit) -> bytes:
+    """The project with its `Metadata/model_settings.config` passed through `edit`, which receives
+    the root of that member and may change it in place."""
+    files = archive(raw)
+    root = _xml(files[OBJECT_SETTINGS], OBJECT_SETTINGS)
+    edit(root)
+    files[OBJECT_SETTINGS] = ET.tostring(root, encoding='utf-8', xml_declaration=True)
+    return zipped(files)
+
+
+def with_model(raw: bytes, edit) -> bytes:
+    """The project with its `3D/3dmodel.model` passed through `edit`, which receives the root."""
+    files = archive(raw)
+    root = _xml(files[MAIN], MAIN)
+    edit(root)
+    files[MAIN] = _serialise(root)
+    return zipped(files)
+
+
+def at_origin(item: dict) -> tuple:
+    """An object's triangles moved so that its box starts at the origin: one mesh placed twice over
+    compares equal this way, whatever the plate did to it."""
+    low = item['box'][0], item['box'][2], item['box'][4]
+    return tuple(sorted(tuple(tuple(round(c - o + 0.0, 6) for c, o in zip(corner, low)) for corner in triangle)
+                        for triangle in item['triangles']))
+
+
+def printable_area(settings: dict) -> list | None:
+    """The corners of the printable area, from `printable_area` or `bed_shape` ("0.5x1" or "0.5 1")."""
+    try:
+        corners = [tuple(float(word) for word in re.split(r'[,\s]+|x', text.strip()) if word)
+                   for text in settings.get('printable_area') or settings.get('bed_shape') or []]
+    except (TypeError, ValueError, AttributeError):
+        return None
+    return corners if len(corners) >= 3 and all(len(corner) == 2 for corner in corners) else None
+
+
+def in_polygon(polygon, point) -> bool:
+    """Whether a point lies in a convex polygon, whichever way its corners run."""
+    turns = [(b[0] - a[0]) * (point[1] - a[1]) - (b[1] - a[1]) * (point[0] - a[0])
+             for a, b in zip(polygon, polygon[1:] + polygon[:1])]
+    return all(value >= -1e-6 for value in turns) or all(value <= 1e-6 for value in turns)
+
+
+def on_the_bed(settings: dict, item: dict, tol=1e-3) -> bool:
+    """Whether an object rests on the bed, its low face at z = 0, and lies inside the printable area."""
+    area = printable_area(settings)
+    try:
+        height = float(settings['printable_height'])
+    except (KeyError, TypeError, ValueError):
+        return False
+    if area is None or abs(item['box'][4]) > tol or item['box'][5] > height + tol:
+        return False
+    return all(in_polygon(area, (x, y)) for x in item['box'][:2] for y in item['box'][2:4])
 
 
 # --- G-code ----------------------------------------------------------------------
@@ -407,8 +469,62 @@ def moved_project(raw: bytes, dx: float = 0.0, dy: float = 0.0, dz: float = 0.0)
     for item in model.iter(CORE + 'item'):
         values = list(_matrix(item.get('transform')))
         values[9:12] = [values[9] + dx, values[10] + dy, values[11] + dz]
-        item.set('transform', ' '.join(f'{value:g}' for value in values))
-    files[MAIN] = ET.tostring(model, encoding='utf-8', xml_declaration=True)
+        item.set('transform', ' '.join(f'{value:.9g}' for value in values))
+    files[MAIN] = _serialise(model)
+    return zipped(files)
+
+
+def _serialise(model) -> bytes:
+    """A model member as the application keeps it: the core namespace is the default one."""
+    ET.register_namespace('', CORE[1:-1])
+    ET.register_namespace('p', PROD[1:-1])
+    return ET.tostring(model, encoding='utf-8', xml_declaration=True)
+
+
+def compose(outer: tuple, inner: tuple) -> tuple:
+    """The transform that applies `inner` first and `outer` after it."""
+    return _compose(outer, inner)
+
+
+def shift(x: float, y: float, z: float) -> tuple:
+    """A pure translation."""
+    return UNIT[:9] + (x, y, z)
+
+
+def turn(degrees: float) -> tuple:
+    """A rotation about the vertical axis through the origin."""
+    cosine, sine = math.cos(math.radians(degrees)), math.sin(math.radians(degrees))
+    return (cosine, sine, 0.0, -sine, cosine, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0)
+
+
+def grow(factor: float) -> tuple:
+    """A scaling about the origin."""
+    return (factor, 0.0, 0.0, 0.0, factor, 0.0, 0.0, 0.0, factor, 0.0, 0.0, 0.0)
+
+
+def _item(files):
+    """(model, its only build item) of a project with one object."""
+    model = _xml(files[MAIN], MAIN)
+    items = model.findall(f'{CORE}build/{CORE}item')
+    _need(len(items) == 1, f'expected a project with one object, found {len(items)}')
+    return model, items[0]
+
+
+def item_transform(raw: bytes) -> tuple:
+    """The twelve numbers of the transform of the only build item."""
+    return _matrix(_item(archive(raw))[1].get('transform'))
+
+
+def with_item_transform(raw: bytes, matrix) -> bytes:
+    """The project with the transform of its only build item replaced by `matrix` (twelve numbers).
+
+    What the plate operations leave in a saved project can be stood in this way: a move is a
+    translation composed after the old transform, a turn a rotation about the object's centre."""
+    _need(len(matrix) == 12, 'a transform has twelve numbers')
+    files = archive(raw)
+    model, item = _item(files)
+    item.set('transform', ' '.join(f'{value:.9g}' for value in matrix))
+    files[MAIN] = _serialise(model)
     return zipped(files)
 
 

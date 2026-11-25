@@ -27,8 +27,9 @@ from tools.replay_evidence_files import verified_part
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from export_io_oracle import merged_stl_expectation_gaps, plate_object_layout, verify_merged_stl, viewer_gaps
-from file_io_replay_support import blank_png, box, flattering, manifest, moved_project, paired, png, project
-from file_io_replay_support import refused, screenshots, stl, stl_bytes, work_directories
+from file_io_replay_support import (at_origin, blank_png, box, flattering, in_polygon, manifest, moved_project,
+                                    paired, png, printable_area, project, refused, screenshots, stl, stl_bytes,
+                                    work_directories)
 from plate_reserve_oracle import verify_f3d_image
 
 CASE = 233
@@ -93,34 +94,10 @@ def _sphere(item):
             and max(abs(math.dist(corner, center) - sides[0] / 2) for corner in corners) <= SPHERE_TOL)
 
 
-def _at_origin(item):
-    """An object's triangles moved so that its box starts at the origin: one mesh placed twice over
-    compares equal this way, whatever the plate did to it."""
-    return tuple(sorted(tuple(tuple(round(c - low + 0.0, 6) for c, low in zip(corner, _mins(item)))
-                              for corner in triangle) for triangle in item["triangles"]))
-
-
-def _area(settings):
-    """The printable area as corners, from `printable_area` or `bed_shape` ("0.5x1" or "0.5 1" texts)."""
-    try:
-        corners = [tuple(float(word) for word in re.split(r"[,\s]+|x", text.strip()) if word)
-                   for text in settings.get("printable_area") or settings.get("bed_shape") or []]
-    except (TypeError, ValueError, AttributeError):
-        return None
-    return corners if len(corners) >= 3 and all(len(corner) == 2 for corner in corners) else None
-
-
-def _inside(polygon, point):
-    """Whether a point lies in a convex polygon, whichever way its corners run."""
-    turns = [(b[0] - a[0]) * (point[1] - a[1]) - (b[1] - a[1]) * (point[0] - a[0])
-             for a, b in zip(polygon, polygon[1:] + polygon[:1])]
-    return all(turn >= -1e-6 for turn in turns) or all(turn <= 1e-6 for turn in turns)
-
-
 def _plate(saved, fixture):
     """The saved plate on its own: the fixture's cube beside a sphere, on the bed, apart, inside the bed."""
     objects, (cube,) = saved["objects"], fixture["objects"]
-    copies = [item for item in objects if item["name"] == cube["name"] and _at_origin(item) == _at_origin(cube)]
+    copies = [item for item in objects if item["name"] == cube["name"] and at_origin(item) == at_origin(cube)]
     balls = [item for item in objects if _sphere(item)]
     recognised = (len(objects) == 2 and len(copies) == 1 and len(balls) == 1 and balls[0] is not copies[0]
                   and len({item["plate"] for item in objects}) == 1)
@@ -128,9 +105,9 @@ def _plate(saved, fixture):
     if len(objects) == 2:
         (ax0, ax1, ay0, ay1, _, _), (bx0, bx1, by0, by1, _, _) = (item["box"] for item in objects)
         apart = ax1 <= bx0 or bx1 <= ax0 or ay1 <= by0 or by1 <= ay0
-    area, height = _area(saved["settings"]), _number(saved["settings"].get("printable_height"))
+    area, height = printable_area(saved["settings"]), _number(saved["settings"].get("printable_height"))
     inside = area is not None and height is not None and all(
-        _inside(area, corner) and item["box"][5] <= height + 1e-3
+        in_polygon(area, corner) and item["box"][5] <= height + 1e-3
         for item in objects for x in item["box"][:2] for y in item["box"][2:4] for corner in ((x, y),))
     return {
         "plate_is_the_cube_and_a_sphere": recognised,
