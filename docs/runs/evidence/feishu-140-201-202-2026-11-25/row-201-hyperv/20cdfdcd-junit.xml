@@ -1,0 +1,37 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T14:29:47" tests="1" failures="1" errors="0">
+    <testcase name="m7x_201_save_project_reopen" classname="blackbox.m7x_201_save_project" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_201_save_project_reopen.log" />
+        <property name="dim:#201 named project opened" value="PASS" />
+        <property name="dim:#201 existing object's X changed" value="FAIL (viewport centroid (1172, 514) -&gt; None; initial X=135.5, target X=145.5)" />
+      </properties>
+      <failure type="RED" message="#201 existing object's X changed: FAIL (viewport centroid (1172, 514) -&gt; None; initial X=135.5, target X=145.5)">[m7x201] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-7an212h8
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-7an212h8\edit-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-7an212h8\edit-profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-7an212h8\test_project.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x20503ea, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x4f004ba, WM_CLOSE)
+[launcher] pid=9236 hwnd=0x49c10b4 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.25%)
+[m7x201] original pid=9236, title='test_project', project=C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-7an212h8\test_project.3mf, modeled=0.480%, X=135.5, optical centroid=(1172, 514)
+[m8x48] SetFocus(0x54b06b6): return=0x54b06b6, Win32 error=0, (active, focus) before=(77336756, 88802998), after=(77336756, 88802998)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x572095c did not complete
+[topbar] Dropdown opened at offset 70
+[m7x201] Edit &gt; 'Select All\tCtrl+A'
+[topbar] WM_COMMAND(id=341) sent, completed=True
+[m7x201] selected cube pixel change=0.0%, canvas=0x54b06b6
+
+[m7] === verdict ===
+  #201 named project opened: PASS
+  #201 existing object's X changed: FAIL (viewport centroid (1172, 514) -&gt; None; initial X=135.5, target X=145.5)
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

@@ -1,0 +1,42 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T14:11:20" tests="1" failures="1" errors="0">
+    <testcase name="m7x_202_save_as_project" classname="blackbox.m7x_202_save_as" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_202_save_as_project.log" />
+        <property name="dim:#202 Save As generates new project" value="FAIL" />
+        <property name="dim:#202 source bytes unchanged after Save As" value="PASS" />
+        <property name="dim:#202 current title points to new name" value="PASS" />
+      </properties>
+      <failure type="RED" message="#202 Save As generates new project: FAIL">[m7x202] isolated source=C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmpkfyca2bn\source\test_project.3mf, target=C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmpkfyca2bn\target\test_project_v2.3mf, fixture copy SHA-256=ea00678017a7b6d7d65a4280b8f80c2d441493fd15998a924c66998ac946ccf0
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmpkfyca2bn\profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmpkfyca2bn\profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmpkfyca2bn\source\test_project.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x51908ce, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x4ec08ca, WM_CLOSE)
+[launcher] pid=5816 hwnd=0x4f4091e rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m7x202] active project title='test_project'
+[m7x202] source before Save As SHA-256=ea00678017a7b6d7d65a4280b8f80c2d441493fd15998a924c66998ac946ccf0, scene=('Snapmaker U1 (0.8 nozzle)', ('绔嬫柟浣?,), 1)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5230a6e did not complete
+[topbar] File opened at offset 10
+[project file] File &gt; 'Save Project as...\tCtrl+Shift+S'
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m7x202] chooser='Save file as', actual selected filename='C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-project-cases\\202\\tmpkfyca2bn\\target\\test_project_v2.3mf'
+[m7x202] Save As chooser closed=True
+[project file] C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmpkfyca2bn\target\test_project_v2.3mf sha256 None -&gt; 1fe4cb7330c87887bf353c8a8ba8d316893bb9afebd7595b851a046bba55311f
+[m7x202] active project title='test_project_v2'
+[m7x202] after Save As source SHA-256=ea00678017a7b6d7d65a4280b8f80c2d441493fd15998a924c66998ac946ccf0, target SHA-256=1fe4cb7330c87887bf353c8a8ba8d316893bb9afebd7595b851a046bba55311f, target scene=('Snapmaker U1 (0.8 nozzle)(test_project.3mf)', ('绔嬫柟浣?,), 1)
+
+[m7] === verdict ===
+  #202 Save As generates new project: FAIL
+  #202 source bytes unchanged after Save As: PASS
+  #202 current title points to new name: PASS
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

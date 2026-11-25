@@ -1,0 +1,41 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T14:18:18" tests="1" failures="1" errors="0">
+    <testcase name="m7x_202_save_as_project" classname="blackbox.m7x_202_save_as" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_202_save_as_project.log" />
+        <property name="dim:#202 Save As generates new project" value="FAIL" />
+      </properties>
+      <failure type="RED" message="#202 Save As generates new project: FAIL">[launcher] blocker dismissed: 'customized preset' (hwnd=0x50308fa, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x58e0596, WM_CLOSE)
+[launcher] pid=11960 hwnd=0x4f00efe rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m7x202] active project title='test_project'
+[m7x202] test_project.3mf raw printer_settings_id='Snapmaker U1 (0.8 nozzle)'
+[m7x202] source before Save As SHA-256=ea00678017a7b6d7d65a4280b8f80c2d441493fd15998a924c66998ac946ccf0, scene=(('Snapmaker U1 (0.8 nozzle)', 'Snapmaker U1', '0.8', ('0.8', '0.8', '0.8', '0.8')), ('\u7acb\u65b9\u4f53',), 1)
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x538054e did not complete
+[topbar] File offset 10: no menu
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x4f00efe did not complete
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x4f00efe did not complete
+[topbar] File offset 20: no menu
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x4f00efe did not complete
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x4f00efe did not complete
+[topbar] File offset 30: no menu
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x4f00efe did not complete
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x4f00efe did not complete
+[topbar] File offset 40: no menu
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x4f00efe did not complete
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x4f00efe did not complete
+[topbar] File offset 50: no menu
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x4f00efe did not complete
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x4f00efe did not complete
+[topbar] File offset 60: no menu
+[project file] File menu did not open
+
+[m7] === verdict ===
+  #202 Save As generates new project: FAIL
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

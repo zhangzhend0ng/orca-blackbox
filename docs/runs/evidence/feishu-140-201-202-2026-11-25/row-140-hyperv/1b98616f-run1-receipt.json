@@ -1,0 +1,13 @@
+﻿{
+    "commit":  "1b98616fe69a311ff3beb9e168c4e335378dc3a2",
+    "case":  "m7x_140_close_without_residue",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "summary":  "SUMMARY: PASS=1 FAIL=0",
+    "dispatched_at":  "2026-11-25T14:06:56.5426397+08:00",
+    "scenario_completed_at":  "2026-11-25T14:08:05.1442563+08:00",
+    "suite_completed_at":  "2026-11-25T14:08:05.2075839+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_140_close_without_residue.log",
+    "log_sha256":  "AC73C009908579F0E20C05C96FDEFE3A020E7CF1C71463C791384770C70357B7"
+}

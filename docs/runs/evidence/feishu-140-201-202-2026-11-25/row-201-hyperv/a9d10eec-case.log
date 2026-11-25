@@ -1,0 +1,27 @@
+﻿[m7x201] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-e1d0gjdo
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-e1d0gjdo\edit-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-e1d0gjdo\edit-profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-e1d0gjdo\test_project.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x52a0e46, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x51204f6, WM_CLOSE)
+[launcher] pid=10688 hwnd=0x54b056c rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.25%)
+[m7x201] original pid=10688, title='test_project', project=C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-e1d0gjdo\test_project.3mf, modeled=0.480%, X=135.5
+[m7] slot @x712: 'So =~'
+[m7] slot @x734: '鈥?= ! ! 鈥?
+[m7] slot @x756: 'us 鈥?
+[m7] slot @x998: 'Sl鈥?co Vv ~'
+[m7] slot @x1020: 'ANY Sl鈥?Vv ~'
+[m7] slot @x1042: 'Ul co Vv ~'
+[m7] slot @x1064: 'Vv ~'
+[m7] rotate slot not found 鈥?toolbar unreadable?
+
+[m7] === verdict ===
+  #201 named project opened: PASS
+  #201 existing object's X changed: FAIL (initial=135.5, target=145, UI='')
+[m7] RED

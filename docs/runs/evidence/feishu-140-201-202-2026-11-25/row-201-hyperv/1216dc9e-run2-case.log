@@ -1,0 +1,44 @@
+﻿[m7x201] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-hwb7app1
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-hwb7app1\edit-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-hwb7app1\edit-profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-hwb7app1\test_project.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x4f50e20, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x4fe0d30, WM_CLOSE)
+[launcher] pid=10876 hwnd=0x4fc04a8 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.25%)
+[m7x201] original pid=10876, title='test_project', project=C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-hwb7app1\test_project.3mf, modeled=0.480%, X=135.5, optical centroid=(1172, 514)
+[m8x48] SetFocus(0x5600f4c): return=0x5600f4c, Win32 error=0, (active, focus) before=(83625128, 90181452), after=(83625128, 90181452)
+[m8x48] SetFocus(0x5600f4c): return=0x5600f4c, Win32 error=0, (active, focus) before=(83625128, 90181452), after=(83625128, 90181452)
+[m7x201] selected cube pixel change=1.6%, canvas=0x5600f4c
+[m8x48] SetFocus(0x5600f4c): return=0x5600f4c, Win32 error=0, (active, focus) before=(83625128, 90181452), after=(83625128, 90181452)
+[m7x201] edit viewport centroid (1172, 514) -> (1195, 514), moved=True; initial X=135.5, target X=145.5
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x51310e0 did not complete
+[topbar] File opened at offset 10
+[project file] File > 'Save Project\tCtrl+S'
+[topbar] WM_COMMAND(id=318) sent, completed=True
+[project file] C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-hwb7app1\test_project.3mf sha256 ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef -> a3291dd2154b5c19023a96227a8b29b41bbbfb010ab3b5087df586c07472cad2
+[m7x201] editor exited: pid=10876, exit_code=1, save SHA-256=a3291dd2154b5c19023a96227a8b29b41bbbfb010ab3b5087df586c07472cad2, pre-reopen SHA-256=a3291dd2154b5c19023a96227a8b29b41bbbfb010ab3b5087df586c07472cad2, pre-reopen translation=(Decimal('145.5'), Decimal('136'), Decimal('13.5'))
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-hwb7app1\reopen-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-hwb7app1\reopen-profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-hwb7app1\test_project.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x5030d42, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#2)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x53704d2, WM_CLOSE)
+[launcher] pid=4340 hwnd=0x5030ec6 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.25%)
+
+[m7] === verdict ===
+  #201 named project opened: PASS
+  #201 File > Save Project rewrites the named file: PASS (command=True, path=C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-hwb7app1\test_project.3mf, sha256=a3291dd2154b5c19023a96227a8b29b41bbbfb010ab3b5087df586c07472cad2)
+  #201 saved geometry contains the edit: PASS (translation=(Decimal('145.5'), Decimal('136'), Decimal('13.5')), intended X=145.5)
+  #201 independently reopening the saved project: PASS (path=C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-hwb7app1\test_project.3mf, editor_pid=10876, reopen_pid=4340, title='test_project', modeled=0.479%, initial centroid=(1172, 514), edited=(1195, 514), reopened=(1195, 514))
+[m7] GREEN

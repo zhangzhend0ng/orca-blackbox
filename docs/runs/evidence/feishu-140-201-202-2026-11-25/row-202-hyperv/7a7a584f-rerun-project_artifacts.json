@@ -1,0 +1,17 @@
+﻿[
+    {
+        "part":  "source\\test_project.3mf",
+        "bytes":  35543,
+        "sha256":  "EA00678017A7B6D7D65A4280B8F80C2D441493FD15998A924C66998AC946CCF0"
+    },
+    {
+        "part":  "after-save-as.3mf",
+        "bytes":  45102,
+        "sha256":  "A71D604F4317E4C7BDC02EABE4984D5B1937D73548FB747CA0D40123B4ABEBDA"
+    },
+    {
+        "part":  "target\\test_project_v2.3mf",
+        "bytes":  54346,
+        "sha256":  "73C8AAE75BCE921DF514B143740ED3EF76C0531E4DF06FC7F52D402DF878BC0D"
+    }
+]

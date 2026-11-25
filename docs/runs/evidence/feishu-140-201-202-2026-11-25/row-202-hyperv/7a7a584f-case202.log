@@ -1,0 +1,48 @@
+﻿[m7x202] isolated source=C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmp9mm_ac63\source\test_project.3mf, target=C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmp9mm_ac63\target\test_project_v2.3mf, fixture copy SHA-256=ea00678017a7b6d7d65a4280b8f80c2d441493fd15998a924c66998ac946ccf0
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmp9mm_ac63\profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmp9mm_ac63\profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmp9mm_ac63\source\test_project.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x4a010fc, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x5290f7c, WM_CLOSE)
+[launcher] pid=10792 hwnd=0x5080a8a rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m7x202] active project title='test_project'
+[m7x202] test_project.3mf raw printer_settings_id='Snapmaker U1 (0.8 nozzle)'
+[m7x202] source before Save As SHA-256=ea00678017a7b6d7d65a4280b8f80c2d441493fd15998a924c66998ac946ccf0, scene=(('Snapmaker U1 (0.8 nozzle)', 'Snapmaker U1', '0.8', ('0.8', '0.8', '0.8', '0.8')), ('\u7acb\u65b9\u4f53',), 1)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x2f7041c did not complete
+[topbar] File opened at offset 10
+[project file] File > 'Save Project as...\tCtrl+Shift+S'
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m7x202] chooser='Save file as', actual selected filename='C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-project-cases\\202\\tmp9mm_ac63\\target\\test_project_v2.3mf'
+[m7x202] Save As chooser closed=True
+[project file] C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmp9mm_ac63\target\test_project_v2.3mf sha256 None -> ad91b52f70edf0fcd5b8548f033cd04b495065ff62a7e25eb2a83449419de555
+[m7x202] test_project_v2.3mf raw printer_settings_id='Snapmaker U1 (0.8 nozzle)(test_project.3mf)'
+[m7x202] active project title='test_project_v2'
+[m7x202] after Save As source SHA-256=ea00678017a7b6d7d65a4280b8f80c2d441493fd15998a924c66998ac946ccf0, target SHA-256=ad91b52f70edf0fcd5b8548f033cd04b495065ff62a7e25eb2a83449419de555, target scene=(('Snapmaker U1 (0.8 nozzle)', 'Snapmaker U1', '0.8', ('0.8', '0.8', '0.8', '0.8')), ('\u7acb\u65b9\u4f53',), 1)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x2f7041c did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=320) sent, completed=False
+[m7x199] Imported Prusa.stl: colored fraction 0.801% -> 1.577%
+[m7x202] after STL import before ordinary Save: changed on screen=True, target SHA-256=ad91b52f70edf0fcd5b8548f033cd04b495065ff62a7e25eb2a83449419de555
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x2f7041c did not complete
+[topbar] File opened at offset 10
+[project file] File > 'Save Project\tCtrl+S'
+[topbar] WM_COMMAND(id=318) sent, completed=True
+[project file] C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmp9mm_ac63\target\test_project_v2.3mf sha256 ad91b52f70edf0fcd5b8548f033cd04b495065ff62a7e25eb2a83449419de555 -> 9efb255c338c6ba2fb12bde34bfbf71de8ad75fcdb83aea90a6b18605a0c5a7f
+[m7x202] test_project_v2.3mf raw printer_settings_id='Snapmaker U1 (0.8 nozzle)(test_project.3mf)'
+[m7x202] after ordinary Save source SHA-256=ea00678017a7b6d7d65a4280b8f80c2d441493fd15998a924c66998ac946ccf0, target SHA-256=9efb255c338c6ba2fb12bde34bfbf71de8ad75fcdb83aea90a6b18605a0c5a7f, target scene=(('Snapmaker U1 (0.8 nozzle)', 'Snapmaker U1', '0.8', ('0.8', '0.8', '0.8', '0.8')), ('Prusa.stl', '\u7acb\u65b9\u4f53'), 2)
+[m7x202] active project title='test_project_v2'
+
+[m7] === verdict ===
+  #202 Save As generates new project: PASS
+  #202 source bytes unchanged after Save As: PASS
+  #202 current title points to new name: PASS
+  #202 ordinary Save persists edit to new path: PASS
+  #202 source bytes unchanged after ordinary Save: PASS
+[m7] GREEN

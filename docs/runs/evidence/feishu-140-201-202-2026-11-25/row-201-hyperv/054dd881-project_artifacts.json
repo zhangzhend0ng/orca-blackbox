@@ -1,0 +1,12 @@
+﻿[
+    {
+        "part":  "before-save.3mf",
+        "bytes":  30292,
+        "sha256":  "ED1CA79DD1DD1DE28E9D21FB55EFC5CEE12F1215FBAD9CAC07159E5D7687D8EF"
+    },
+    {
+        "part":  "after-save.3mf",
+        "bytes":  34362,
+        "sha256":  "628948BA2D4A58E99D55E11782D9BD731B3CE5DCA4E637688AD6E3876F99C860"
+    }
+]

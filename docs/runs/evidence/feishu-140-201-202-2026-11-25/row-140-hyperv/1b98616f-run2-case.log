@@ -1,0 +1,24 @@
+﻿[m7x140] machine='DESKTOP-NVS6QT4', images before launch=[]
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] wizard dismissed: 'setup wizard' (hwnd=0x4ff0c4a, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x1bc10da, WM_CLOSE)
+[launcher] pid=10348 hwnd=0x50d0f9a rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m7x140] Prepare score=1.000, own pid=10348, system process={'Name': 'snapmaker-orca.exe', 'ProcessId': 10348, 'ParentProcessId': 11004, 'SessionId': 1, 'CreationDate': '/Date(1795586912853)/'}, all Orca images=[10348], exe=C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe, isolated profile=C:\coil\orca-blackbox-v3-r1\artifacts\m3_profile
+[m7x140] pre-close process family=[(4928, 'crashpad_handler.exe'), (6220, 'msedgewebview2.exe'), (10960, 'msedgewebview2.exe'), (9616, 'msedgewebview2.exe'), (5972, 'msedgewebview2.exe'), (10328, 'msedgewebview2.exe'), (6104, 'msedgewebview2.exe'), (2136, 'msedgewebview2.exe'), (11352, 'msedgewebview2.exe'), (6048, 'msedgewebview2.exe'), (10348, 'snapmaker-orca.exe'), (5552, 'msedgewebview2.exe'), (2864, 'msedgewebview2.exe'), (4088, 'msedgewebview2.exe')]
+[m7x140] topbar=(0, 0, 1920, 31), close X score=6/6, point=(1901, 14), toolbar=0x51e0722, target=0x51e0722
+[m7x140] before any cleanup: window_closed=True, exit_code=0, elapsed=0.625s
+[m7x140] machine-wide post-close process residue samples=[[], []]
+
+[m7] === verdict ===
+  Prepare page and launched Orca process observed: PASS
+  upper-right Close tool clicked: PASS
+  window and process exit normally: PASS
+  no Orca image or process-family residue: PASS
+[m7] GREEN

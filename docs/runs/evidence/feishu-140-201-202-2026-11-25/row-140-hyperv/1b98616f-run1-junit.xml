@@ -1,0 +1,24 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T14:08:05" tests="1" failures="0" errors="0">
+    <testcase name="m7x_140_close_without_residue" classname="blackbox.m7x_140_close_without" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_140_close_without_residue.log" />
+        <property name="dim:Prepare page and launched Orca process observed" value="PASS" />
+        <property name="dim:upper-right Close tool clicked" value="PASS" />
+        <property name="dim:window and process exit normally" value="PASS" />
+        <property name="dim:no Orca image or process-family residue" value="PASS" />
+      </properties>
+      <system-out>[m7x140] topbar=(0, 0, 1920, 31), close X score=6/6, point=(1901, 14), toolbar=0x18d06a0, target=0x18d06a0
+[m7x140] before any cleanup: window_closed=True, exit_code=0, elapsed=0.641s
+[m7x140] machine-wide post-close process residue samples=[[], []]
+
+[m7] === verdict ===
+  Prepare page and launched Orca process observed: PASS
+  upper-right Close tool clicked: PASS
+  window and process exit normally: PASS
+  no Orca image or process-family residue: PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

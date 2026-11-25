@@ -1,0 +1,17 @@
+﻿[
+    {
+        "part":  "before-save.3mf",
+        "bytes":  30292,
+        "sha256":  "ED1CA79DD1DD1DE28E9D21FB55EFC5CEE12F1215FBAD9CAC07159E5D7687D8EF"
+    },
+    {
+        "part":  "after-save.3mf",
+        "bytes":  34362,
+        "sha256":  "7CD0E21CD995D94889EDCFB155361842DACC62B08B9E4F76D014131AF1695385"
+    },
+    {
+        "part":  "reopen-input.3mf",
+        "bytes":  34362,
+        "sha256":  "7CD0E21CD995D94889EDCFB155361842DACC62B08B9E4F76D014131AF1695385"
+    }
+]

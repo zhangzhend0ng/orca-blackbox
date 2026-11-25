@@ -1,0 +1,31 @@
+﻿[m7x201] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-_nb88_b4
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-_nb88_b4\edit-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-_nb88_b4\edit-profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-_nb88_b4\test_project.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x4e61156, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x56a1084, WM_CLOSE)
+[launcher] pid=12048 hwnd=0x1af05fe rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.25%)
+[m7x201] original pid=12048, title='test_project', project=C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-_nb88_b4\test_project.3mf, modeled=0.480%, X=135.5, optical centroid=(1172, 514)
+[m8x48] SetFocus(0x41910ae): return=0x0, Win32 error=0, (active, focus) before=(28247550, 0), after=(28247550, 68751534)
+[m8x48] SetFocus(0x41910ae): return=0x41910ae, Win32 error=0, (active, focus) before=(28247550, 68751534), after=(28247550, 68751534)
+[m7x201] selected cube pixel change=1.6%, canvas=0x41910ae
+[m8x48] SetFocus(0x41910ae): return=0x41910ae, Win32 error=0, (active, focus) before=(28247550, 68751534), after=(28247550, 68751534)
+[m7x201] edit viewport centroid (1172, 514) -> (1195, 514), moved=True; initial X=135.5, target X=145.5
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x54a04ae did not complete
+[topbar] File opened at offset 10
+[project file] File > 'Save Project\tCtrl+S'
+[topbar] WM_COMMAND(id=318) sent, completed=True
+[project file] C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-_nb88_b4\test_project.3mf sha256 ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef -> 628948ba2d4a58e99d55e11782d9bd731b3ce5dca4e637688ad6e3876f99c860
+
+[m7] === verdict ===
+  #201 named project opened: PASS
+  #201 File > Save Project rewrites the named file: PASS (command=True, path=C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\201\run-_nb88_b4\test_project.3mf, sha256=628948ba2d4a58e99d55e11782d9bd731b3ce5dca4e637688ad6e3876f99c860)
+  #201 saved geometry contains the edit: PASS (translation=(Decimal('145.5'), Decimal('136'), Decimal('13.5')), intended X=145.5)
+  #201 independently reopening the saved project: FAIL (editor still alive or save changed after close)
+[m7] RED

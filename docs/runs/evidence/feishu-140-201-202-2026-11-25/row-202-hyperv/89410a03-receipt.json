@@ -1,0 +1,13 @@
+﻿{
+    "commit":  "89410a03ee28ebff4efe2cab298b97ac87abd8e6",
+    "case":  "m7x_202_save_as_project",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "summary":  "SUMMARY: PASS=1 FAIL=0",
+    "dispatched_at":  "2026-11-25T14:14:56.6795386+08:00",
+    "scenario_completed_at":  "2026-11-25T14:16:36.3885044+08:00",
+    "suite_completed_at":  "2026-11-25T14:16:36.7206638+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_202_save_as_project.log",
+    "log_sha256":  "8C9CCA6E77E836F0DF6854E06B1C82F341FDCB63141AE634B78269119A2042DB"
+}

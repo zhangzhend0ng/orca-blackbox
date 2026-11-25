@@ -1,0 +1,25 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T14:16:36" tests="1" failures="0" errors="0">
+    <testcase name="m7x_202_save_as_project" classname="blackbox.m7x_202_save_as" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_202_save_as_project.log" />
+        <property name="dim:#202 Save As generates new project" value="PASS" />
+        <property name="dim:#202 source bytes unchanged after Save As" value="PASS" />
+        <property name="dim:#202 current title points to new name" value="PASS" />
+        <property name="dim:#202 ordinary Save persists edit to new path" value="PASS" />
+        <property name="dim:#202 source bytes unchanged after ordinary Save" value="PASS" />
+      </properties>
+      <system-out>[m7x202] after ordinary Save source SHA-256=ea00678017a7b6d7d65a4280b8f80c2d441493fd15998a924c66998ac946ccf0, target SHA-256=c533ab3f429f748d74317dee0747aeb777e133702dac7dbaf55106a92cd1a25f, target scene=(('Snapmaker U1 (0.8 nozzle)', 'Snapmaker U1', '0.8', ('0.8', '0.8', '0.8', '0.8')), ('Prusa.stl', '\u7acb\u65b9\u4f53'), 2)
+[m7x202] active project title='test_project_v2'
+
+[m7] === verdict ===
+  #202 Save As generates new project: PASS
+  #202 source bytes unchanged after Save As: PASS
+  #202 current title points to new name: PASS
+  #202 ordinary Save persists edit to new path: PASS
+  #202 source bytes unchanged after ordinary Save: PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

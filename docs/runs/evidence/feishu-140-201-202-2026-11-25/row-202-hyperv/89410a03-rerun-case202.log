@@ -1,0 +1,37 @@
+﻿[m7x202] isolated source=C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmpf58dcevi\source\test_project.3mf, target=C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmpf58dcevi\target\test_project_v2.3mf, fixture copy SHA-256=ea00678017a7b6d7d65a4280b8f80c2d441493fd15998a924c66998ac946ccf0
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmpf58dcevi\profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmpf58dcevi\profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-project-cases\202\tmpf58dcevi\source\test_project.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x50308fa, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x58e0596, WM_CLOSE)
+[launcher] pid=11960 hwnd=0x4f00efe rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m7x202] active project title='test_project'
+[m7x202] test_project.3mf raw printer_settings_id='Snapmaker U1 (0.8 nozzle)'
+[m7x202] source before Save As SHA-256=ea00678017a7b6d7d65a4280b8f80c2d441493fd15998a924c66998ac946ccf0, scene=(('Snapmaker U1 (0.8 nozzle)', 'Snapmaker U1', '0.8', ('0.8', '0.8', '0.8', '0.8')), ('\u7acb\u65b9\u4f53',), 1)
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x538054e did not complete
+[topbar] File offset 10: no menu
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x4f00efe did not complete
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x4f00efe did not complete
+[topbar] File offset 20: no menu
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x4f00efe did not complete
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x4f00efe did not complete
+[topbar] File offset 30: no menu
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x4f00efe did not complete
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x4f00efe did not complete
+[topbar] File offset 40: no menu
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x4f00efe did not complete
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x4f00efe did not complete
+[topbar] File offset 50: no menu
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x4f00efe did not complete
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x4f00efe did not complete
+[topbar] File offset 60: no menu
+[project file] File menu did not open
+
+[m7] === verdict ===
+  #202 Save As generates new project: FAIL
+[m7] RED
