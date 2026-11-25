@@ -1,0 +1,223 @@
+#!/usr/bin/env python3
+# m7x_250_negative_part.py — Feishu #250: add a negative part and measure actual slicing subtraction.
+# feishu: baseline#250
+
+import argparse
+import json
+import shutil
+import struct
+import sys
+import tempfile
+import time
+from pathlib import Path
+from types import SimpleNamespace
+
+import cv2
+import numpy as np
+
+HERE = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(HERE / 'tests'))
+import m7_common as m7
+from harness import export_util, topbar_util, winutil
+from m3_common import add_common_args, boot_session
+from m8_common import wait_arrival
+from m8x_48_modal_color_header import bring_main_to_mouse
+from negative_part_oracle import measure_difference, project_boxes
+
+FIXTURE = HERE / 'fixtures' / 'agent_layer_cube.3mf'
+
+
+def write_cutter(path):
+    # Fixed object-space offset cuts through the front-right corner of the cube.
+    vertices = ((18, -6, -16), (18, -18, -16), (6, -18, -16), (6, -6, -16),
+                (18, -6, 16), (6, -6, 16), (6, -18, 16), (18, -18, 16))
+    faces = ((0, 1, 2), (0, 2, 3), (4, 5, 6), (4, 6, 7), (0, 4, 7), (0, 7, 1),
+             (1, 7, 6), (1, 6, 2), (2, 6, 5), (2, 5, 3), (4, 0, 3), (4, 3, 5))
+    with path.open('wb') as stream:
+        stream.write(struct.pack('<80sI', b'Feishu #250 box cutter', len(faces)))
+        for a, b, c in faces:
+            stream.write(struct.pack('<12fH', 0, 0, 0, *vertices[a], *vertices[b], *vertices[c], 0))
+
+
+def open_negative_submenu(session, centroid):
+    if not bring_main_to_mouse(session.hwnd):
+        print('[m7x250] Orca could not own the guest foreground')
+        return None
+    candidates = [(centroid[0], centroid[1] + 14), centroid]
+    existing = {row[4] for row in topbar_util._enum_menu_windows(session.pid)}
+    for px, py in candidates:
+        x, y = m7.client(session, px, py)
+        canvas = winutil.deepest_child_at(session.hwnd, x, y)
+        if winutil.window_class(canvas) != 'wxGLCanvas' or winutil._window_pid(canvas) != session.pid:
+            continue
+        winutil.user32.SetCursorPos(x, y)
+        time.sleep(0.4)
+        winutil.msg_click_screen(x, y, session.hwnd)
+        time.sleep(0.4)
+        lp = winutil._lparam_from_screen(canvas, x, y)
+        winutil._send_msg(canvas, 0x0204, 0x0002, lp)  # WM_RBUTTONDOWN.
+        winutil._send_msg(canvas, 0x0205, 0, lp)       # WM_RBUTTONUP.
+        popup = topbar_util.wait_submenu(session.pid, existing, timeout_s=3.0)
+        if not popup:
+            continue
+        _, hwnd, menu = popup
+        rows = topbar_util.menu_items(menu)
+        print(f'[m7x250] object context menu: {rows!r}')
+        item = m7.click_menu_row(session, hwnd, menu, 'Add negative part', nested=True)
+        if item:
+            _, (submenu_hwnd, submenu) = item
+            rows = topbar_util.menu_items(submenu)
+            print(f'[m7x250] visible negative submenu hwnd={submenu_hwnd:#x}: {rows!r}')
+            if any(label.partition('\t')[0].rstrip('. …').strip().casefold() == 'load'
+                   and not flags & 3 for _, label, flags in rows):
+                return submenu_hwnd, submenu
+        topbar_util.close_menu_windows(session.pid)
+    return None
+
+
+def load_negative_part(session, submenu, source):
+    hwnd, menu = submenu
+    chosen = m7.click_menu_row(session, hwnd, menu, 'Load')
+    if chosen is None:
+        return False
+    dialog = m7.wait_dialog(session.pid, timeout_s=15)
+    edit = export_util.find_edit(dialog[3]) if dialog else None
+    if not edit:
+        print(f'[m7x250] negative Load chooser missing: {dialog!r}')
+        return False
+    winutil.select_all(edit)
+    winutil.msg_text(edit, str(source))
+    entered = winutil.edit_text(edit, size=260)
+    print(f'[m7x250] Load chooser={dialog[1]!r}, filename readback={entered!r}')
+    if entered != str(source):
+        return False
+    winutil._send_msg(dialog[3], m7.WM_COMMAND_MSG, 1, 0)  # IDOK.
+    deadline = time.monotonic() + 20
+    while time.monotonic() < deadline:
+        if not winutil.user32.IsWindowVisible(dialog[3]):
+            prompt = m7.wait_dialog(session.pid, timeout_s=1.0)
+            if not prompt:
+                time.sleep(1)
+                return winutil.user32.IsWindowEnabled(session.hwnd)
+            if prompt[1].strip().casefold() == 'add modifier':
+                print(f'[m7x250] closing expected tips dialog {prompt[1]!r}')
+                m7.click_dialog_button(prompt[3], 'OK', fallback_first=False)
+            elif 'load' not in prompt[1].casefold():
+                print(f'[m7x250] unexpected dialog after loading negative part: {prompt!r}')
+                return False
+        time.sleep(0.3)
+    return False
+
+
+def color_witness(before, after, centroid):
+    x, y = centroid
+    # Compare the corresponding scene crop. Ignore UI chrome and require a
+    # connected region near the model, changed from the original background.
+    p = before[y - 135:y + 135, x - 135:x + 135].astype(np.int16)
+    q = after[y - 135:y + 135, x - 135:x + 135].astype(np.int16)
+    if p.shape != q.shape or not p.size:
+        return {'pass': False, 'reason': 'viewport geometry changed'}
+    changed = np.max(np.abs(p - q), axis=2) >= 18
+    body = (np.ptp(p, axis=2) >= 45) & (np.ptp(q, axis=2) >= 45) & ~changed
+    contrasting = (np.ptp(q, axis=2) <= 35) & changed & (np.ptp(p, axis=2) <= 35)
+    _, labels, stats, _ = cv2.connectedComponentsWithStats(contrasting.astype(np.uint8))
+    largest = int(np.argmax(stats[1:, cv2.CC_STAT_AREA]) + 1) if len(stats) > 1 else 0
+    pixels = int(stats[largest, cv2.CC_STAT_AREA]) if largest else 0
+    body_bgr = np.median(q[body], axis=0).tolist() if np.count_nonzero(body) else []
+    negative_bgr = np.median(q[labels == largest], axis=0).tolist() if largest else []
+    return {'pass': pixels >= 100 and np.count_nonzero(body) >= 100,
+            'negative_connected_pixels': pixels, 'body_bgr': body_bgr, 'negative_bgr': negative_bgr}
+
+
+def load_fixture(args, work, profile_name, fixture):
+    run_args = SimpleNamespace(exe=args.exe, datadir=work / profile_name)
+    session = boot_session(run_args, model=fixture)
+    m7.ensure_maximized(session)
+    arrived, amount = wait_arrival(session, timeout_s=30)
+    print(f'[m7x250] {profile_name} fixture arrived={arrived}, foreground fraction={amount:.3%}')
+    return session, arrived
+
+
+def run_case(args, work):
+    results = {}
+    src = work / 'cutter.stl'
+    write_cutter(src)
+    baseline_project = work / 'baseline-fixture.3mf'
+    test_project = work / 'test-fixture.3mf'
+    shutil.copyfile(args.model, baseline_project)
+    shutil.copyfile(args.model, test_project)
+    body = project_boxes(test_project)['normal_part']
+    baseline_gcode = work / 'baseline.gcode'
+    negative_gcode = work / 'negative.gcode'
+
+    session, arrived = load_fixture(args, work, 'negative-profile', test_project)
+    try:
+        center = m7.find_centroid(session) if arrived else None
+        if not center:
+            results['model A present'] = 'FAIL'
+            return results
+        before = m7.capture_bgr(session)
+        cv2.imwrite(str(work / 'prepare-before.png'), before)
+        submenu = open_negative_submenu(session, center)
+        results['Add negative part opens its second-level menu'] = 'PASS' if submenu else 'FAIL'
+        if not submenu or not load_negative_part(session, submenu, src):
+            results['load a negative part on model A'] = 'FAIL'
+            return results
+        after = m7.capture_bgr(session)
+        cv2.imwrite(str(work / 'prepare-negative.png'), after)
+        color = color_witness(before, after, center)
+        print(f'[m7x250] rendered negative against model A: {color!r}')
+        results['negative part has a distinct canvas color'] = ('PASS' if color['pass'] else 'FAIL') + f' ({color})'
+
+        snapshot = work / 'negative-project.3mf'
+        if not m7.save_project_as(session, snapshot, timeout_s=40):
+            results['negative part saved on the same object'] = 'FAIL (save evidence missing)'
+            return results
+        boxes = project_boxes(snapshot)
+        attached = boxes.keys() == {'normal_part', 'negative_part'} and boxes['normal_part'] == body
+        results['negative part saved on the same object'] = (
+            ('PASS' if attached else 'FAIL') + f' ({boxes})')
+        if not attached:
+            return results
+        if not m7.op_slice(session, results, key='negative slice', export_to=negative_gcode, timeout_s=120):
+            results['negative G-code'] = 'FAIL'
+            return results
+        results['negative G-code'] = 'PASS'
+    finally:
+        session.close()
+
+    session, arrived = load_fixture(args, work, 'baseline-profile', baseline_project)
+    try:
+        if not arrived or not m7.op_slice(session, results, key='baseline slice',
+                                         export_to=baseline_gcode, timeout_s=120):
+            results['baseline G-code'] = 'FAIL'
+            return results
+        results['baseline G-code'] = 'PASS'
+    finally:
+        session.close()
+
+    analysis = measure_difference(baseline_gcode, negative_gcode, body, boxes['negative_part'])
+    same_input = measure_difference(baseline_gcode, baseline_gcode, body, boxes['negative_part'])
+    assert not same_input['pass'], 'oracle admitted unchanged G-code'
+    analysis.update(color=color, unchanged_control_pass=same_input['pass'])
+    (work / 'analysis.json').write_text(json.dumps(analysis, indent=2), encoding='utf-8')
+    print(f'[m7x250] geometric difference: {json.dumps(analysis)}')
+    results['slice locally subtracts only where cutter intersects'] = ('PASS' if analysis['pass'] else 'FAIL')
+    return results
+
+
+def main():
+    args = add_common_args(argparse.ArgumentParser(), default_model=FIXTURE).parse_args()
+    root = args.datadir.parent / 'feishu-object-cases' / '250'
+    root.mkdir(parents=True, exist_ok=True)
+    work = Path(tempfile.mkdtemp(prefix='run-', dir=root))
+    print(f'[m7x250] retained work directory: {work}')
+    try:
+        return m7.m7_verdict(run_case(args, work))
+    except (AssertionError, KeyError, ValueError) as exc:
+        return m7.m7_verdict({'#250 semantic evidence': f'FAIL ({type(exc).__name__}: {exc})'})
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
