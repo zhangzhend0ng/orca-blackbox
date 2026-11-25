@@ -10,7 +10,32 @@ RESULT_TITLE = 'Import result'  # MessageDialog of MainFrame::load_config_file, 
 # A prompt counts as the product's name-clash strategy when it says that the
 # preset exists and offers what to do with it.
 CLASH = ('already', 'exist', 'overwrite', 'rename', 'replace')
+# The five rows of the Export Preset Bundle dialog (CreatePresetsDialog.cpp:3298-3302, sm-v2.4.0).
+TYPES = ('Printer config bundle(.orca_printer)', 'Filament bundle(.orca_filament)', 'Printer presets(.zip)',
+         'Filament presets(.zip)', 'Process presets(.zip)')
 LIMIT = 4 * 1024 * 1024
+
+
+def checkbox_rows(controls):
+    """Pair every small textless Button with the Static written to its right on the same row.
+
+    `controls` is describe(hwnd) output. A type row is a native radio Button plus its label;
+    a listed printer or preset is a textless checkbox Button plus the label to its right,
+    and only that Button takes the click (CreatePresetsDialog.cpp:306-315, sm-v2.4.0)."""
+    boxes = [c for c in controls if c['class'] == 'Button' and not c['text'] and c['visible']
+             and c['rect'][2] - c['rect'][0] <= 24 and c['rect'][3] - c['rect'][1] <= 24]
+    labels = [c for c in controls if c['class'] == 'Static' and c['text'] and c['visible']]
+    items, radios = [], []
+    for box in boxes:
+        left, top, right, bottom = box['rect']
+        middle = (top + bottom) / 2
+        beside = [s for s in labels if s['rect'][0] >= right - 2 and s['rect'][1] - 4 <= middle <= s['rect'][3] + 4]
+        if not beside:
+            continue
+        label = min(beside, key=lambda s: s['rect'][0])
+        row = {'label': label['text'], 'checkbox': box['rect']}
+        (radios if label['text'] in TYPES else items).append(row)
+    return {'items': items, 'types': radios}
 
 
 def _preset(data):

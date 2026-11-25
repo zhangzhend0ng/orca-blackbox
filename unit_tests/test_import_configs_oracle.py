@@ -8,7 +8,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tests'))
-from import_configs_oracle import DUPLICATES, IMPORTED, bundle_presets, profile_presets, verify_import
+from import_configs_oracle import (DUPLICATES, IMPORTED, TYPES, bundle_presets, checkbox_rows, profile_presets,
+                                   verify_import)
 
 PRINTER = {'type': 'machine', 'name': 'U1 bundle', 'printer_model': 'Snapmaker U1', 'nozzle_diameter': '0.8'}
 FILAMENT = {'type': 'filament', 'name': 'PLA bundle', 'filament_type': 'PLA', 'filament_settings_id': ['PLA bundle']}
@@ -72,6 +73,32 @@ def test_name_clash_needs_a_prompt(tmp_path):
     report = verify_import(config, before, rows(PRINTER, FILAMENT, PROCESS), [RESULT])
     assert report[DUPLICATES] == 'FAIL (1 presets of the config file were already in the profile and no prompt was shown)'
     assert report[IMPORTED] == 'PASS'  # the imported parameters equal the exported ones
+
+
+def test_checkbox_rows_pair_buttons_with_their_labels():
+    # Export Preset Bundle dialog as the guest census read it (bundle2-0d7222e7), abridged.
+    census = [
+        {'class': 'Static', 'text': 'Presets', 'visible': True, 'rect': [783, 443, 883, 459]},
+        {'class': 'Button', 'text': '', 'visible': True, 'rect': [903, 443, 921, 461]},
+        {'class': 'Static', 'text': TYPES[0], 'visible': True, 'rect': [926, 443, 1112, 461]},
+        {'class': 'Static', 'text': 'Printer and all the filament&&process presets.\nCan be shared with others.',
+         'visible': True, 'rect': [925, 467, 1309, 496]},
+        {'class': 'Button', 'text': '', 'visible': True, 'rect': [903, 563, 921, 581]},
+        {'class': 'Static', 'text': TYPES[2], 'visible': True, 'rect': [926, 563, 1027, 581]},
+        {'class': 'wxWindowNR', 'text': 'OK', 'visible': True, 'rect': [1104, 711, 1204, 743]},
+    ]
+    read = checkbox_rows(census)
+    assert read['items'] == []
+    assert [row['label'] for row in read['types']] == [TYPES[0], TYPES[2]]
+    assert [row['checkbox'] for row in read['types']] == [[903, 443, 921, 461], [903, 563, 921, 581]]
+    listed = census + [
+        {'class': 'Button', 'text': '', 'visible': True, 'rect': [795, 700, 813, 718]},
+        {'class': 'Static', 'text': 'Snapmaker U1 (0.8 nozzle)', 'visible': True, 'rect': [820, 700, 1050, 718]},
+        {'class': 'Button', 'text': '', 'visible': False, 'rect': [795, 730, 813, 748]},
+        {'class': 'Static', 'text': 'scrolled out of view', 'visible': True, 'rect': [820, 730, 950, 748]},
+    ]
+    assert checkbox_rows(listed)['items'] == [
+        {'label': 'Snapmaker U1 (0.8 nozzle)', 'checkbox': [795, 700, 813, 718]}]
 
 
 @pytest.mark.parametrize('after, fragment', [
