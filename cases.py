@@ -145,6 +145,10 @@ CASES: dict[str, dict] = {
     "m7x_251_reload_from_disk": _o("m7", "A", known_limitation=True),  # missing source opens a chooser
     "m7x_252_export_stl_viewer": _r("m7", "A"),
     "m7x_254_sphere_layer_pair": _o("m7", "A"),
+    # 2026-11-25: read-only census of the topbar File / Import / Export rows and their file dialogs
+    # (labels, enabled state before and after slicing, filter text, proposed file name). No Feishu
+    # row: it is the reference the file import/export cases are written against.
+    "diag_file_menu_census": _o("m7", "A"),
     "m7c_import_stl": _r("m7", "A"),
     "m7d_import_corrupt": _r("m7", "A"),
     "m7e_rotate45": _r("m7", "A"),
