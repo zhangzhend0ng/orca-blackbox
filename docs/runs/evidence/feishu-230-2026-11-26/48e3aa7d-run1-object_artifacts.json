@@ -1,0 +1,37 @@
+﻿[
+    {
+        "part":  "analysis.json",
+        "bytes":  7596,
+        "sha256":  "5E1A27CD55ACC710923696904AB15BFFF136B941ADDE205996255C06E34EC8E7"
+    },
+    {
+        "part":  "chooser.png",
+        "bytes":  104632,
+        "sha256":  "D962748E34D526AB882D48BE36A34BF9FB6B58F9C2914C72784B1A9CBE69F856"
+    },
+    {
+        "part":  "imported.3mf",
+        "bytes":  27163,
+        "sha256":  "FBD03291FB51C6117ACA624AC053E70B8089990C2FD7012B2280234946C9E8C7"
+    },
+    {
+        "part":  "imported.png",
+        "bytes":  299535,
+        "sha256":  "64921A789F7127035D1F7C0B5EE7F8EF4049E3076BF78417683D8CB1A444842D"
+    },
+    {
+        "part":  "new-project.3mf",
+        "bytes":  34347,
+        "sha256":  "373F675264A861E0A419FC7C76280358FC2B9E7E3EA67B7E0FCD55C7CADFD7FB"
+    },
+    {
+        "part":  "prepare-before.png",
+        "bytes":  288805,
+        "sha256":  "5A9AD89B34049478620E878A35DFD1FEDB471E6E2B62A64BA37BC3301DD10E2E"
+    },
+    {
+        "part":  "project.3mf",
+        "bytes":  47876,
+        "sha256":  "93D1907BCB6478949BEE124C2489AFE861AC3D6D1836D71791AB281C27E9A11C"
+    }
+]

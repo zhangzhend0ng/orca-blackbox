@@ -1,0 +1,238 @@
+{
+  "case": 230,
+  "timings": {
+    "export_project": {
+      "started_utc": "2026-11-25T16:49:32.151640+00:00",
+      "duration_s": 58.656
+    },
+    "import_project": {
+      "started_utc": "2026-11-25T16:50:30.804914+00:00",
+      "duration_s": 81.157
+    },
+    "prepare_empty_plate": {
+      "started_utc": "2026-11-25T16:51:18.603816+00:00",
+      "duration_s": 11.281
+    },
+    "import_project_chooser": {
+      "started_utc": "2026-11-25T16:51:29.891058+00:00",
+      "duration_s": 7.688
+    },
+    "observe_import": {
+      "started_utc": "2026-11-25T16:51:37.579234+00:00",
+      "duration_s": 3.297
+    },
+    "save_imported": {
+      "started_utc": "2026-11-25T16:51:40.865331+00:00",
+      "duration_s": 9.062
+    },
+    "verify_restore": {
+      "started_utc": "2026-11-25T16:51:49.936008+00:00",
+      "duration_s": 0.032
+    }
+  },
+  "results": {
+    "\u76d8\u6570\u4e0e\u5bf9\u8c61\u5b8c\u6574\u8fd8\u539f": "FAIL (plate_count_equal, plate_names_equal, objects_on_same_plates, world_triangles_equal)",
+    "\u5404\u5bf9\u8c61\u5de5\u827a/\u8017\u6750\u914d\u7f6e\u4e0e\u5bfc\u51fa\u524d\u4e00\u81f4": "FAIL (plate_settings_equal, project_settings_equal)",
+    "\u65e0\u4e22\u5931": "PASS"
+  },
+  "export": {
+    "bytes": 47876,
+    "sha256": "65ad4e6c62706843ef00d485b76cd5f05502a7f3e692aeb2296c42fe3c8c86ea"
+  },
+  "bed_point": [
+    1172,
+    514
+  ],
+  "initial_printer": {
+    "model": "Snapmaker U1",
+    "profile": "Snapmaker U1 (0.8 nozzle)(agent_layer_cube.3mf)"
+  },
+  "empty_plate": {
+    "fraction": 0.0010439742316604283,
+    "candidate_centroids": [
+      [
+        935,
+        331
+      ],
+      [
+        851,
+        759
+      ]
+    ]
+  },
+  "chooser": {
+    "row": "Import 3MF",
+    "title": "Choose one or more files (3mf/step/stl/svg/obj/amf):",
+    "entered": "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\230\\run-zu16_ydy\\project.3mf",
+    "filters": [
+      {
+        "selected": -1,
+        "items": []
+      },
+      {
+        "selected": 0,
+        "items": [
+          "Supported files (*.3mf, *.stl, *.oltp, *.stp, *.step, *.svg, *.amf, *.obj)"
+        ]
+      },
+      {
+        "selected": -1,
+        "items": []
+      }
+    ]
+  },
+  "import_fraction": 0.0010439742316604283,
+  "dialog_after_import": null,
+  "restore": {
+    "checks": {
+      "plate_count_equal": false,
+      "plate_names_equal": false,
+      "objects_on_same_plates": false,
+      "world_triangles_equal": false,
+      "object_settings_equal": true,
+      "plate_settings_equal": false,
+      "project_settings_equal": false,
+      "no_object_lost": true
+    },
+    "detail": {
+      "plates": {
+        "exported": [
+          "Keep",
+          "Remove"
+        ],
+        "imported": [
+          "1"
+        ]
+      },
+      "object_plates": {
+        "exported": {
+          "Alpha": "Keep",
+          "Bravo": "Remove"
+        },
+        "imported": {
+          "Alpha": "unassigned",
+          "Bravo": "unassigned"
+        }
+      },
+      "objects_with_other_world_triangles": [
+        "Alpha",
+        "Bravo"
+      ],
+      "objects_with_other_mesh": [],
+      "extruders": {
+        "exported": {
+          "Alpha": "1",
+          "Bravo": "3"
+        },
+        "imported": {
+          "Alpha": "1",
+          "Bravo": "3"
+        }
+      },
+      "object_setting_keys_compared": [
+        "extruder"
+      ],
+      "object_settings_differences": {},
+      "plate_settings_differences": {
+        "Keep": "plate missing",
+        "Remove": "plate missing"
+      },
+      "plate_settings_identical_across_exported_plates": true,
+      "project_settings_differing_keys": 86,
+      "project_settings_differing_first": [
+        "additional_cooling_fan_speed",
+        "bridge_density",
+        "bridge_flow",
+        "bridge_speed",
+        "close_fan_the_first_x_layers",
+        "cool_plate_temp",
+        "cool_plate_temp_initial_layer",
+        "default_filament_profile",
+        "default_print_profile",
+        "eng_plate_temp",
+        "eng_plate_temp_initial_layer",
+        "fan_cooling_layer_time",
+        "fan_max_speed",
+        "fan_min_speed",
+        "filament_cooling_final_speed",
+        "filament_cooling_initial_speed",
+        "filament_cooling_moves",
+        "filament_cost",
+        "filament_density",
+        "filament_end_gcode",
+        "filament_flow_ratio",
+        "filament_ids",
+        "filament_loading_speed",
+        "filament_loading_speed_start",
+        "filament_max_volumetric_speed",
+        "filament_multitool_ramming_flow",
+        "filament_multitool_ramming_volume",
+        "filament_retraction_length",
+        "filament_settings_id",
+        "filament_stamping_distance",
+        "filament_stamping_loading_speed",
+        "filament_type",
+        "filament_unloading_speed",
+        "filament_wipe",
+        "filament_wipe_distance",
+        "filament_z_hop_types",
+        "gap_infill_speed",
+        "graphic_effect_plate_temp",
+        "graphic_effect_plate_temp_initial_layer",
+        "hot_plate_temp"
+      ],
+      "preset_ids": {
+        "exported": {
+          "printer_settings_id": "Snapmaker U1 (0.4 nozzle)(two-plates.3mf)",
+          "print_settings_id": "0.20mm Standard @Snapmaker U1 (0.4 nozzle)(two-plates.3mf)",
+          "filament_settings_id": [
+            "Generic PLA @U1 0.4 nozzle(two-plates.3mf)",
+            "Snapmaker PLA Basic @U1 0.4 nozzle(two-plates.3mf)",
+            "Snapmaker PLA Basic @U1 0.4 nozzle(two-plates.3mf)",
+            "Snapmaker PLA Basic @U1 0.4 nozzle(two-plates.3mf)",
+            "Snapmaker PLA Basic @U1 0.4 nozzle(two-plates.3mf)"
+          ]
+        },
+        "imported": {
+          "printer_settings_id": "Snapmaker U1 (0.8 nozzle)(agent_layer_cube.3mf)",
+          "print_settings_id": "0.40 Standard @Snapmaker U1 (0.8 nozzle)(agent_layer_cube.3mf)",
+          "filament_settings_id": [
+            "Generic PETG @U1 0.8 nozzle(agent_layer_cube.3mf)",
+            "Snapmaker PLA Silk @U1 0.8 nozzle(agent_layer_cube.3mf)",
+            "Snapmaker PLA Silk @U1 0.8 nozzle(agent_layer_cube.3mf)",
+            "Snapmaker PLA Silk @U1 0.8 nozzle(agent_layer_cube.3mf)",
+            "Snapmaker PLA Silk @U1 0.8 nozzle(agent_layer_cube.3mf)"
+          ]
+        }
+      },
+      "start_differs_from_export_in_project_keys": 86,
+      "start_differs_from_export_first": [
+        "additional_cooling_fan_speed",
+        "bridge_density",
+        "bridge_flow",
+        "bridge_speed",
+        "close_fan_the_first_x_layers",
+        "cool_plate_temp",
+        "cool_plate_temp_initial_layer",
+        "default_filament_profile",
+        "default_print_profile",
+        "eng_plate_temp",
+        "eng_plate_temp_initial_layer",
+        "fan_cooling_layer_time",
+        "fan_max_speed",
+        "fan_min_speed",
+        "filament_cooling_final_speed",
+        "filament_cooling_initial_speed",
+        "filament_cooling_moves",
+        "filament_cost",
+        "filament_density",
+        "filament_end_gcode"
+      ]
+    },
+    "results": {
+      "\u76d8\u6570\u4e0e\u5bf9\u8c61\u5b8c\u6574\u8fd8\u539f": "FAIL (plate_count_equal, plate_names_equal, objects_on_same_plates, world_triangles_equal)",
+      "\u5404\u5bf9\u8c61\u5de5\u827a/\u8017\u6750\u914d\u7f6e\u4e0e\u5bfc\u51fa\u524d\u4e00\u81f4": "FAIL (plate_settings_equal, project_settings_equal)",
+      "\u65e0\u4e22\u5931": "PASS"
+    }
+  }
+}

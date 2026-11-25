@@ -1,0 +1,40 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T00:51:52" tests="1" failures="1" errors="0">
+    <testcase name="m7x_230_import_project" classname="blackbox.m7x_230_import" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_230_import_project.log" />
+      </properties>
+      <failure type="exit-1" message="exit code 1">[m7x244] native highlighted row 8 in menu 0x4fbe0a69
+[m7x249] finished prepare_empty_plate in 11.281s
+[m7x249] started import_project_chooser at 2026-11-25T16:51:29.891058+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x50f0768 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=320) sent, completed=False
+[m7x230] chooser {'row': 'Import 3MF', 'title': 'Choose one or more files (3mf/step/stl/svg/obj/amf):', 'entered': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\230\\run-zu16_ydy\\project.3mf', 'filters': [{'selected': -1, 'items': []}, {'selected': 0, 'items': ['Supported files (*.3mf, *.stl, *.oltp, *.stp, *.step, *.svg, *.amf, *.obj)']}, {'selected': -1, 'items': []}]}
+[m7x249] finished import_project_chooser in 7.688s
+[m7x249] started observe_import at 2026-11-25T16:51:37.579234+00:00
+[m8] arrival: True (0.10%, gate 0.10%)
+[m7x249] finished observe_import in 3.297s
+[m7x249] started save_imported at 2026-11-25T16:51:40.865331+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x50f0768 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x249] finished save_imported in 9.062s
+[m7x249] started verify_restore at 2026-11-25T16:51:49.936008+00:00
+[m7x230] restore {'plate_count_equal': False, 'plate_names_equal': False, 'objects_on_same_plates': False, 'world_triangles_equal': False, 'object_settings_equal': True, 'plate_settings_equal': False, 'project_settings_equal': False, 'no_object_lost': True}
+[m7x249] finished verify_restore in 0.032s
+[m7x249] finished import_project in 81.157s
+
+[m7] === verdict ===
+  鐩樻暟涓庡璞″畬鏁磋繕鍘? FAIL (plate_count_equal, plate_names_equal, objects_on_same_plates, world_triangles_equal)
+  鍚勫璞″伐鑹?鑰楁潗閰嶇疆涓庡鍑哄墠涓€鑷? FAIL (plate_settings_equal, project_settings_equal)
+  鏃犱涪澶? PASS
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>
