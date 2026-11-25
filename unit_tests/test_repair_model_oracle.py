@@ -10,7 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tests'))
 from harness.model_move_pilot import stl_mesh
 from repair_model_oracle import (DROPPED, FACES, cube_triangles, edge_report, fix_row, initial_state, judge,
-                                 menu_rows, repair_reading, repaired, verify_digests, write_holed_cube)
+                                 menu_rows, missing_row_verdict, repair_reading, repaired, verify_digests,
+                                 write_holed_cube)
 from zip_import_oracle import digest
 
 TEMPLATE = ROOT / 'fixtures/agent_layer_cube.3mf'
@@ -140,6 +141,15 @@ def test_menu_reading():
     assert fix_row([(index, label, 0) for index, label in enumerate(observed)]) is None
     with pytest.raises(ValueError, match='2 rows'):
         fix_row([(0, 'Fix model', 0), (1, 'Fix Model', 0)])
+
+
+def test_missing_row_verdict_is_readable():
+    initial = {'open_edges': 3}
+    value = missing_row_verdict(27, initial, 'Windows 11 Pro')
+    assert value == ('FAIL (the object menu has no "Fix model" row on Windows 11 Pro: 27 rows read; '
+                     'no repair was attempted and the model was not sliced; '
+                     'the hole stays open with 3 open edges in before.3mf)')
+    assert 'on this system: 27 rows read' in missing_row_verdict(27, initial)
 
 
 def test_digest_mismatch_is_rejected(tmp_path, files):

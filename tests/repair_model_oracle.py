@@ -138,6 +138,14 @@ def judge(row, reading, sliced, prompt_texts) -> str:
     return 'FAIL (' + '; '.join(problems) + ')'
 
 
+def missing_row_verdict(row_count, initial, os_caption=None):
+    """The readable result when the object menu has no `Fix model` row on this system."""
+    where = f' on {os_caption}' if os_caption else ' on this system'
+    return (f'FAIL (the object menu has no "{FIX_ROW}" row{where}: {row_count} rows read; '
+            f'no repair was attempted and the model was not sliced; '
+            f'the hole stays open with {initial["open_edges"]} open edges in before.3mf)')
+
+
 def verify_digests(files):
     """Every retained file must still have the byte length and SHA-256 recorded for it."""
     from zip_import_oracle import digest

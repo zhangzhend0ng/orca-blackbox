@@ -15,6 +15,8 @@ from pathlib import Path
 import sys
 import time
 
+import cv2
+
 HERE = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(HERE), str(HERE / 'tests')]
 
@@ -24,8 +26,9 @@ from m7x_244_add_model import prepare_plate
 from m7x_249_add_part import capture, stage
 from m8_common import wait_arrival
 from plate_reserve_case import activate, case_main
-from repair_model_cases import grab_menu, open_object_menu, slice_until_exportable, watch_prompts
-from repair_model_oracle import EXPECTED, fix_row, initial_state, judge, menu_rows, repair_reading, write_holed_cube
+from repair_model_cases import grab_menu, open_object_menu, os_caption, slice_until_exportable, watch_prompts
+from repair_model_oracle import (EXPECTED, fix_row, initial_state, judge, menu_rows, missing_row_verdict,
+                                 repair_reading, write_holed_cube)
 from zip_import_cases import choose_project
 from zip_import_oracle import digest
 
@@ -73,7 +76,16 @@ def steps(session, work, analysis, _args):
         row = fix_row(rows)
         analysis['fix_row'] = row
         prompts = []
-        if row and row['enabled']:
+        if row is None:
+            # No row on this system: nothing was clicked, so a slice would say
+            # nothing about this expectation. Keep the evidence and stop here.
+            topbar_util.close_menu_windows(session.pid)
+            analysis['os_caption'] = os_caption()
+            analysis['results'][EXPECTED] = missing_row_verdict(
+                len(rows), analysis['initial'], analysis['os_caption']['product_name'])
+            print(f'{LOG} {analysis["results"][EXPECTED]}', flush=True)
+            return
+        if row['enabled']:
             with stage(analysis, 'fix_model'):
                 activate(session, (menu_hwnd, hmenu, row['index']), LOG)
                 time.sleep(1.5)
@@ -88,7 +100,13 @@ def steps(session, work, analysis, _args):
         analysis['after_file'] = digest(after)
         print(f'{LOG} saved mesh after the menu action: {analysis["repair"]}', flush=True)
     with stage(analysis, 'slice'):
-        sliced = slice_until_exportable(session, work, analysis)
+        analysis['os_caption'] = os_caption()
+        try:
+            sliced = slice_until_exportable(session, work, analysis)
+        except (OSError, RuntimeError, ValueError, cv2.error) as exc:
+            # A slice that could not even be started leaves the conclusion to the judge.
+            analysis['slice_error'] = f'{type(exc).__name__}: {exc}'
+            sliced = False
     with stage(analysis, 'judge'):
         analysis['results'][EXPECTED] = judge(analysis['fix_row'], analysis['repair'], sliced, prompts)
 

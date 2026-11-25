@@ -1,6 +1,7 @@
 """GUI helpers for Feishu #246 Fix model."""
 import ctypes
 import ctypes.wintypes as wintypes
+import sys
 import time
 
 import cv2
@@ -126,6 +127,23 @@ def watch_prompts(session, work, analysis, timeout_s=8):
     analysis['texts_after_click'] = reads
     print(f'[m7x246] texts after the click: {reads!r}', flush=True)
     return reads
+
+
+def os_caption():
+    """Windows product name and build as this Python sees them.
+
+    The registry value is the one the product reads to decide whether the
+    `Fix model` row exists (FixModelByWin10.cpp:195-207, sm-v2.4.0). Registry and
+    sys.getwindowsversion only: no subprocess is started."""
+    import winreg
+
+    try:
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\Windows NT\CurrentVersion') as key:
+            name = winreg.QueryValueEx(key, 'ProductName')[0]
+    except OSError:
+        name = None
+    version = sys.getwindowsversion()
+    return {'product_name': name, 'major': version.major, 'minor': version.minor, 'build': version.build}
 
 
 def answer_memory_guard(session, work, analysis):
