@@ -73,12 +73,28 @@ def answer_memory_guard(session, work, analysis):
     if len(yes) != 1:
         raise ValueError(f'expected one "Yes, Continue" button, found {len(yes)}')
     (left, top, right, bottom), _child = yes[0]
-    winutil.msg_click_screen((left + right) // 2, (top + bottom) // 2)
-    deadline = time.monotonic() + 10
-    while winutil.user32.IsWindowVisible(hwnd) and time.monotonic() < deadline:
-        time.sleep(0.2)
-    analysis['memory_guard_dialogs'][-1]['closed'] = not winutil.user32.IsWindowVisible(hwnd)
-    print('[sliceprobe] memory guard answered Yes', analysis['memory_guard_dialogs'][-1], flush=True)
+    cx, cy = (left + right) // 2, (top + bottom) // 2
+    record = analysis['memory_guard_dialogs'][-1]
+    record['tiers'] = []
+    for how in ('message click', 'message click inside dialog', 'real click'):
+        if how == 'message click':
+            winutil.msg_click_screen(cx, cy)
+        elif how == 'message click inside dialog':
+            winutil.msg_click_screen(cx, cy, hwnd)
+        else:
+            winutil.user32.SetCursorPos(cx, cy)
+            time.sleep(0.2)
+            winutil.real_click_screen(cx, cy)
+        time.sleep(1.5)
+        record['tiers'].append({'how': how, 'closed': not winutil.user32.IsWindowVisible(hwnd)})
+        if not winutil.user32.IsWindowVisible(hwnd):
+            break
+    record['closed'] = not winutil.user32.IsWindowVisible(hwnd)
+    print('[sliceprobe] memory guard', json.dumps(record, ensure_ascii=False), flush=True)
+    if not record['closed']:
+        analysis['guard_failures'] = analysis.get('guard_failures', 0) + 1
+        if analysis['guard_failures'] >= 2:
+            raise ValueError('Memory Usage Warning could not be answered with "Yes, Continue"')
     return True
 
 
