@@ -501,15 +501,81 @@ def zip_experiments(session, work, analysis):
     return out
 
 
-def run(args, work, analysis):
+def bundle_census(session, work, analysis):
+    """File > Export > Export Preset Bundle...: map its controls, then try to choose a type and press OK.
+
+    The dialog is drawn by the application (radio rows and buttons are wxWindowNR children). For each type
+    tried: a message click on the row's text with the dialog as the root window, a picture, a message click on
+    OK, and a record of what opened next (title, texts, proposed file name), which is then cancelled."""
+    out = {'tries': {}}
+    _dispatched, dialog = m7.file_menu_dispatch(session, 'Export Preset Bundle', expect_dialog=True, via='Export', timeout_s=10)
+    if not dialog:
+        raise ValueError('Export Preset Bundle opened no dialog')
+    hwnd = dialog[3]
+    time.sleep(1.0)
+    out['dialog'] = {'title': dialog[1], 'rect': dialog[2], 'controls': describe(hwnd)}
+    out['ocr'] = shoot(hwnd, work / 'bundle-dialog.png')
+    for label in ('Printer config bundle(.orca_printer)', 'Process presets(.zip)'):
+        entry = out['tries'][label] = {}
+        known = {window['hwnd'] for window in toplevels(session.pid)} | {hwnd}
+        rows = [(rect, child) for text, rect, child in export_util._children_texts(hwnd) if text.strip() == label]
+        entry['row'] = [list(rect) for rect, _child in rows]
+        if len(rows) == 1:
+            (left, top, right, bottom), _child = rows[0]
+            winutil.msg_click_screen((left + right) // 2, (top + bottom) // 2, hwnd)
+            time.sleep(1.0)
+            entry['row_after_click'] = [list(rect) for text, rect, _child in export_util._children_texts(hwnd) if text.strip() == label]
+            entry['ocr_after_click'] = shoot(hwnd, work / f'bundle-{len(out["tries"])}-selected.png')
+        ok = [(rect, child) for text, rect, child in export_util._children_texts(hwnd) if text.strip() == 'OK']
+        entry['ok'] = [list(rect) for rect, _child in ok]
+        if len(ok) == 1:
+            (left, top, right, bottom), _child = ok[0]
+            winutil.msg_click_screen((left + right) // 2, (top + bottom) // 2, hwnd)
+            time.sleep(2.5)
+        entry['bundle_closed'] = not winutil.user32.IsWindowVisible(hwnd)
+        entry['new_windows'] = []
+        for window in toplevels(session.pid):
+            if window['hwnd'] in known or window['class'] == '#32768':
+                continue
+            record = {'class': window['class'], 'title': window['title'], 'rect': window['rect'], 'texts': [], 'ocr': None}
+            if window['class'] == '#32770':
+                try:
+                    record['ocr'] = shoot(window['hwnd'], work / f'bundle-{len(out["tries"])}-next.png')
+                except (OSError, RuntimeError, ValueError) as exc:
+                    record['ocr'] = f'unavailable ({exc})'
+                record['texts'] = [text for _cls, text, _child in export_util._children_texts(window['hwnd']) if text][:16]
+                edit = export_util.find_edit(window['hwnd'])
+                record['filename'] = winutil.edit_text(edit, size=512) if edit else None
+                winutil._send_msg(window['hwnd'], 0x0111, 2, 0)  # IDCANCEL on a file chooser
+                time.sleep(1.0)
+                record['closed'] = not winutil.user32.IsWindowVisible(window['hwnd'])
+            entry['new_windows'].append(record)
+            print('[census] after OK', json.dumps(record, ensure_ascii=False)[:700], flush=True)
+        if winutil.user32.IsWindowVisible(hwnd):
+            winutil._send_msg(hwnd, 0x0010, 0, 0)  # WM_CLOSE on the bundle dialog itself
+            time.sleep(1.0)
+        entry['bundle_closed_at_end'] = not winutil.user32.IsWindowVisible(hwnd)
+        if entry['bundle_closed']:
+            break
+        _dispatched, dialog = m7.file_menu_dispatch(session, 'Export Preset Bundle', expect_dialog=True, via='Export', timeout_s=10)
+        if not dialog:
+            break
+        hwnd = dialog[3]
+        time.sleep(1.0)
+    out['app_alive'] = session.alive()
+    return out
     # hv_go launches a case without arguments: the host runner leaves option files under C:\coil.
     open_zip = Path(r'C:\coil\diag_open_zip.txt').is_file()
     experiments = Path(r'C:\coil\diag_zip_experiments.txt').is_file()
+    bundle = Path(r'C:\coil\diag_bundle.txt').is_file()
     session = boot_session(SimpleNamespace(exe=args.exe, datadir=work / 'profile'), model=args.model)
     try:
         m7.ensure_maximized(session)
         if not wait_arrival(session, timeout_s=30, min_frac=0.001)[0]:
             raise ValueError('fixture did not render')
+        if bundle:
+            analysis['bundle'] = bundle_census(session, work, analysis)
+            return
         if experiments:
             analysis['zip_experiments'] = zip_experiments(session, work, analysis)
             return
