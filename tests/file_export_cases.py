@@ -717,6 +717,52 @@ def bring_to_front(session, receipt, tries=3):
             return True
     record['in_front'] = False
     return False
+
+
+def switch_on(reading):
+    """Whether the Advanced switch is on, from process_panel.advanced_on's reading: the share of
+    coloured pixels in the left and in the right half of the switch.
+
+    process_panel.ensure_advanced reads it as "the knob is in the right half", which is the
+    older layout. Run dev237j: off it reads (0, 0); on, the switch turns teal all over and
+    reads about (0.8, 0.43), and the sidebar shows the Advanced tabs; the old layout reads
+    about (0, 0.8). Any colour at all is on."""
+    return reading is not None and (reading[0] + reading[1]) > 0.3
+
+
+def point_owner(session, point):
+    """Which window a point of the screen is on, and whether it is the application's own."""
+    hwnd = winutil.window_from_screen_point(*point)
+    return {'hwnd': hwnd, 'class': winutil.window_class(hwnd) if hwnd else None,
+            'title': winutil.window_title(hwnd) if hwnd else None,
+            'is_app': bool(hwnd) and winutil._window_pid(hwnd) == session.pid}
+
+
+def _covered(look):
+    return (f'the Advanced switch is covered by another window: {look["class"]!r} {look["title"]!r} takes '
+            'every real click of the screen; nothing is clicked')
+
+
+def wait_point_over_app(session, rect, receipt, key, wait_s=15, step_s=3):
+    """Wait until the centre of `rect` is on a window of the application.
+
+    A system dialog and its full-screen shade take every real click of the screen while they
+    are there, and they are not the application's (run dev237j: "Windows Security" over the
+    whole desktop). The point is looked at at once and then every `step_s` seconds for up to
+    `wait_s`; every look is kept in receipt[key]. Returns whether the point is on a window of
+    the application."""
+    centre = ((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2)
+    looks = receipt[key] = []
+    started = time.monotonic()
+    deadline = started + wait_s
+    while True:
+        seen = dict(point_owner(session, centre), waited=round(time.monotonic() - started, 1))
+        looks.append(seen)
+        if seen['is_app']:
+            return True
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(step_s)
 # The scope switch on the title row of the sidebar's Process panel, and the tab that is a
 # child of the main window only while that panel's page is up (run c378dee0, before.png).
 PROCESS_PAGE = ('Global', 'Objects')
@@ -815,31 +861,42 @@ def save_process_preset(session, name, work, analysis, key='preset_saved', value
             raise ValueError('the process page of the sidebar is not up: no "Quality" tab under the '
                              'Process title (preset-before.png holds the whole screen, sidebar_tree '
                              'the sidebar\'s windows)')
-        # The switch is clicked for real: the application has to be the window in front.
-        lifted = True
-        if not bring_to_front(session, receipt):
-            last = receipt['front']['tries'][-1]
-            raise ValueError(f'the application window did not come to the front for the real click; in front '
-                             f'is {last["title"]!r} ({last["class"]!r}): nothing is clicked')
         switch = pp.advanced_switch(session)
-        reading = receipt['advanced'] = {
-            'switch': {'rect': list(switch[0]), 'hwnd': switch[1]} if switch else None,
-            'on_before': list(pp.advanced_on(session) or [])}
+        if switch is None:
+            raise ValueError('the process page shows no Advanced switch on its title row')
+        (left, top, right, bottom), handle = switch
+        centre = ((left + right) // 2, (top + bottom) // 2)
+        reading = receipt['advanced'] = {'switch': {'rect': list(switch[0]), 'hwnd': handle}, 'centre': list(centre),
+                                         'on_before': list(pp.advanced_on(session) or [])}
         reading.update(_screen_picture(work, 'advanced-before.png'))
-        on = bool(pp.ensure_advanced(session, want=True))
-        steps['advanced_on'] = on
-        reading.update(_screen_picture(work, 'advanced-after.png'))
-        if not on and switch is not None:
-            # A real click that did not turn it: the same click as a window message, resolved
-            # inside the switch's own window.
-            left, top, right, bottom = switch[0]
-            hit = winutil.msg_click_screen((left + right) // 2, (top + bottom) // 2, switch[1])
-            reading['message_click'] = {'hit': hex(hit) if hit else None}
+        if not switch_on(reading['on_before']):
+            # Read once, bring the application to the front, click for real, read; when that did
+            # not turn it, the same click as a message resolved inside the switch's own window.
+            if not wait_point_over_app(session, switch[0], receipt, 'under_before_front'):
+                raise ValueError(_covered(receipt['under_before_front'][-1]))
+            lifted = True
+            if not bring_to_front(session, receipt):
+                last = receipt['front']['tries'][-1]
+                raise ValueError(f'the application window did not come to the front for the real click; in front '
+                                 f'is {last["title"]!r} ({last["class"]!r}): nothing is clicked')
+            if not wait_point_over_app(session, switch[0], receipt, 'under_before_click'):
+                raise ValueError(_covered(receipt['under_before_click'][-1]))
+            if not bring_to_front(session, receipt):
+                last = receipt['front']['tries'][-1]
+                raise ValueError(f'the application window did not come to the front for the real click; in front '
+                                 f'is {last["title"]!r} ({last["class"]!r}): nothing is clicked')
+            pp.real_click(switch[0])
             time.sleep(2.0)
-            after = pp.advanced_on(session)
-            steps['advanced_on'] = bool(after and after[1] > after[0])
-            reading.update(_screen_picture(work, 'advanced-after-message.png'))
+            reading['after_real_click'] = list(pp.advanced_on(session) or [])
+            reading.update(_screen_picture(work, 'advanced-after.png'))
+            if not switch_on(reading['after_real_click']):
+                hit = winutil.msg_click_screen(*centre, handle)
+                reading['message_click'] = {'hit': hex(hit) if hit else None}
+                time.sleep(2.0)
+                reading['after_message_click'] = list(pp.advanced_on(session) or [])
+                reading.update(_screen_picture(work, 'advanced-after-message.png'))
         reading['on_after'] = list(pp.advanced_on(session) or [])
+        steps['advanced_on'] = switch_on(reading['on_after'])
         if not steps['advanced_on']:
             raise ValueError('the Advanced switch of the process page did not turn on')
         steps['quality_page'] = bool(pp.click_tab(session, 'Quality', 'height'))

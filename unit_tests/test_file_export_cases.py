@@ -1361,6 +1361,7 @@ class PresetMaker:
         self.edits, self.page_down, self.page_never = {}, page_down or page_never, page_never
         self.comes_to_front, self.real_flips, self.message_flips = comes_to_front, real_flips, message_flips
         self.switch_on, self.switch, self.front, self.settled = False, switch, 0, []
+        self.shade, self.seen = 0, []  # looks at the switch that land on a system shade, then what they land on
         m5g = SimpleNamespace(
             preset_row_text=lambda session: '0.20mm Standard @Snapmaker U1 (0.4 nozzle)(cube.3mf)',
             find_button_by_tooltip=self.find_save, real_click=self.real_click, wait_new_dialog=self.wait_new_dialog,
@@ -1370,10 +1371,10 @@ class PresetMaker:
             if self.up else (None, None))
         panel = SimpleNamespace(
             process_row_y=lambda session: 616, tab_button=self.tab_button,
-            advanced_switch=lambda session: self.switch, advanced_on=lambda session: (
-                (0.1, 0.9) if self.switch_on else (0.9, 0.1)) if self.switch else None,
-            ensure_advanced=lambda session, want=True: self.ensure_advanced(want),
-            real_click=self.never('the panel driver clicked'),
+            advanced_switch=lambda session: self.switch,
+            advanced_on=lambda session: ((0.798, 0.426) if self.switch_on else (0.0, 0.0)) if self.switch else None,
+            ensure_advanced=self.never('the shared ensure_advanced: it judges the switch by the wrong rule'),
+            real_click=self.real_click_switch,
             click_tab=lambda session, name, word: self.calls.append(('tab', name, word)) or True,
             wait_float_edit=lambda session, timeout_s=180.0: ((300, 500, 380, 520), 11, '0.2'),
             real_edit_set=self.real_edit_set, neutralize_focus=lambda session: self.calls.append(('neutral',)),
@@ -1404,10 +1405,11 @@ class PresetMaker:
         monkeypatch.setattr(cases.export_util, '_children_texts',
                             lambda hwnd: children.get(hwnd, []))
         monkeypatch.setattr(cases.winutil, 'window_title',
-                            lambda hwnd: 'Save preset' if hwnd == BOX else ('Orca' if hwnd in (MAIN, 31)
-                                                                              else 'Windows PowerShell'))
+                            lambda hwnd: 'Save preset' if hwnd == BOX else (
+                                '' if hwnd == 99 else ('Orca' if hwnd in (MAIN, 31) else 'Windows PowerShell')))
         monkeypatch.setattr(cases.winutil, 'window_class',
-                            lambda hwnd: 'wxWindowNR' if hwnd in (MAIN, 31) else 'ConsoleWindowClass')
+                            lambda hwnd: 'Shell_SystemDim' if hwnd == 99 else (
+                                'wxWindowNR' if hwnd in (MAIN, 31) else 'ConsoleWindowClass'))
         monkeypatch.setattr(cases.winutil.user32, 'GetAncestor', lambda hwnd, flag: MAIN if hwnd in (MAIN, 31) else hwnd)
         monkeypatch.setattr(cases.winutil.user32, 'IsWindowVisible', lambda hwnd: self.up if hwnd == BOX else hwnd != 0)
         monkeypatch.setattr(cases.winutil, 'force_set_foreground', lambda hwnd: True)
@@ -1420,6 +1422,8 @@ class PresetMaker:
         monkeypatch.setattr(cases.winutil.user32, 'GetForegroundWindow', lambda: self.front)
         monkeypatch.setattr(cases, '_lift_and_raise', self.lift)
         monkeypatch.setattr(cases, '_settle_back', lambda hwnd: self.settled.append(hwnd))
+        monkeypatch.setattr(cases.winutil, 'window_from_screen_point', self.under)
+        monkeypatch.setattr(cases.winutil, '_window_pid', lambda hwnd: SESSION_PID if hwnd in (MAIN, 31) else 4)
         self.open, self.switch = [], (ADVANCED, 31)  # nothing open, the switch where the panel has it
         ticking(monkeypatch)
         self.session = SimpleNamespace(pid=SESSION_PID, hwnd=MAIN, alive=lambda: True)
@@ -1429,11 +1433,20 @@ class PresetMaker:
             self.front = MAIN
         return self.comes_to_front
 
-    def ensure_advanced(self, want):
-        self.calls.append(('advanced', want))
+    def under(self, x, y):
+        # The first `shade` looks land on a system shade that is not the application's (run dev237j).
+        if self.shade:
+            self.shade -= 1
+            self.seen.append('shade')
+            return 99
+        self.seen.append('app')
+        return 31
+
+    def real_click_switch(self, rect):
+        assert self.seen and self.seen[-1] == 'app', 'clicked for real while another window covered the switch'
+        self.calls.append(('real click', tuple(rect)))
         if self.real_flips:
             self.switch_on = True
-        return self.switch_on
 
     def never(self, what):
         def refuse(*args):
@@ -1501,13 +1514,16 @@ def test_a_user_process_preset_is_made_the_way_the_preset_management_case_measur
     assert receipt['front'] == {'tries': [{'title': 'Orca', 'class': 'wxWindowNR', 'is_app': True,
                                            'attempt': 1, 'raised': True}], 'in_front': True}
     assert receipt['advanced']['switch'] == {'rect': [314, 609, 342, 624], 'hwnd': 31}
-    assert receipt['advanced']['on_before'] == [0.9, 0.1] and receipt['advanced']['on_after'] == [0.1, 0.9]
+    assert receipt['advanced']['on_before'] == [0.0, 0.0] and receipt['advanced']['on_after'] == [0.798, 0.426]
     assert 'message_click' not in receipt['advanced'] and maker.settled == [MAIN]
+    # The switch was looked at before the window was brought to the front and again before the click.
+    assert receipt['under_before_front'] == receipt['under_before_click'] == [
+        {'hwnd': 31, 'class': 'wxWindowNR', 'title': 'Orca', 'is_app': True, 'waited': 0.5}]
     assert (tmp_path / 'advanced-before.png').is_file() and (tmp_path / 'advanced-after.png').is_file()
     # The page read (no click: it is up), the layer height, the save button by its tooltip, the name
     # without Enter, then the two buttons of the box by their exact text, each with one real click.
     assert maker.calls == [
-        ('tab', 'Quality'), ('advanced', True), ('tab', 'Quality', 'height'), ('edit', '0.3'), ('neutral',),
+        ('tab', 'Quality'), ('real click', ADVANCED), ('tab', 'Quality', 'height'), ('edit', '0.3'), ('neutral',),
         ('tooltip', 'save'), ('real click', (600, 520, 616, 536)), ('wait box', False),
         ('real click', (20, 60, 200, 80)), ('keys', (0x11, 0x41, 0x41, 0x11)), ('keys', (0x2E, 0x2E)),
         ('chars', 'BB Export Test'), ('real click', USER_PRESET), ('real click', OK)]
@@ -1545,6 +1561,43 @@ def test_when_the_process_page_stays_down_the_step_stops_with_the_sidebar_writte
                                                 ['wxWindowNR', 'Global', [96, 606, 146, 626]]]
 
 
+def test_the_switch_is_judged_by_its_colour_not_by_the_half_its_knob_is_in():
+    # Run dev237j: off reads (0, 0); on, the switch is teal all over and reads about (0.8, 0.43).
+    assert cases.switch_on((0.0, 0.0)) is False and cases.switch_on(None) is False
+    assert cases.switch_on((0.798, 0.426)) is True and cases.switch_on([0.798, 0.426]) is True
+    assert cases.switch_on((0.0, 0.8)) is True  # the older layout: the knob in the right half
+    assert cases.switch_on((0.1, 0.15)) is False  # a little colour is not on
+
+
+def test_the_click_waits_while_another_window_covers_the_switch(monkeypatch, tmp_path):
+    maker = PresetMaker(monkeypatch, tmp_path)
+    maker.shade = 2  # a system shade has the screen for the first two looks (run dev237j)
+    analysis = {}
+    receipt = cases.save_process_preset(maker.session, 'BB Export Test', tmp_path, analysis)
+    assert receipt['steps']['advanced_on'] is True and receipt['typed'] == 'BB Export Test'
+    looks = receipt['under_before_front']
+    assert [look['class'] for look in looks] == ['Shell_SystemDim', 'Shell_SystemDim', 'wxWindowNR']
+    assert [look['is_app'] for look in looks] == [False, False, True]
+    assert [look['waited'] for look in looks] == [0.5, 1.5, 2.5]  # every three seconds of the clock it was given
+    assert receipt['under_before_click'][0]['is_app'] is True
+    assert maker.seen[:4] == ['shade', 'shade', 'app', 'app']
+
+
+def test_when_another_window_keeps_the_switch_covered_nothing_is_clicked(monkeypatch, tmp_path):
+    maker = PresetMaker(monkeypatch, tmp_path)
+    maker.shade = 10 ** 9  # never gone
+    analysis = {}
+    with pytest.raises(ValueError, match="covered by another window: 'Shell_SystemDim' ''"):
+        cases.save_process_preset(maker.session, 'BB Export Test', tmp_path, analysis)
+    receipt = analysis['preset_saved']
+    looks = receipt['under_before_front']
+    assert len(looks) >= 5 and {look['class'] for look in looks} == {'Shell_SystemDim'}
+    assert looks[0]['waited'] == 0.5 and looks[-1]['waited'] >= 14  # looked for fifteen seconds, then gave up
+    # Not brought to the front, not clicked for real, not clicked by message: nothing was touched.
+    assert maker.calls == [('tab', 'Quality')] and maker.front == 0 and maker.settled == []
+    assert 'front' not in receipt and 'under_before_click' not in receipt
+
+
 def test_nothing_is_clicked_for_real_while_another_window_is_in_front(monkeypatch, tmp_path):
     maker = PresetMaker(monkeypatch, tmp_path, comes_to_front=False)
     maker.front = 55  # the terminal that runs the suite, as in runs dev237i and its shadow twin
@@ -1557,7 +1610,7 @@ def test_nothing_is_clicked_for_real_while_another_window_is_in_front(monkeypatc
                                             'is_app': False, 'attempt': 1, 'raised': False}
     # The page was read, the switch was neither clicked for real nor by message, and the window was settled back.
     assert maker.calls == [('tab', 'Quality')] and maker.settled == [MAIN]
-    assert not (tmp_path / 'advanced-before.png').exists()
+    assert (tmp_path / 'advanced-before.png').is_file()  # the reading came first, with its picture
 
 
 def test_a_switch_that_a_real_click_does_not_turn_gets_the_same_click_as_a_message(monkeypatch, tmp_path):
@@ -1566,10 +1619,11 @@ def test_a_switch_that_a_real_click_does_not_turn_gets_the_same_click_as_a_messa
     receipt = cases.save_process_preset(maker.session, 'BB Export Test', tmp_path, analysis)
     assert receipt['steps']['advanced_on'] is True and receipt['typed'] == 'BB Export Test'
     assert receipt['advanced']['message_click'] == {'hit': '0x1'}
-    assert receipt['advanced']['on_after'] == [0.1, 0.9]
+    assert receipt['advanced']['after_real_click'] == [0.0, 0.0]
+    assert receipt['advanced']['after_message_click'] == receipt['advanced']['on_after'] == [0.798, 0.426]
     assert (tmp_path / 'advanced-after-message.png').is_file()
     # The message click goes to the switch's own window, at its centre, once the real click failed.
-    assert maker.calls.index(('advanced', True)) < maker.calls.index(('click', 328, 616, 31))
+    assert maker.calls.index(('real click', ADVANCED)) < maker.calls.index(('click', 328, 616, 31))
     assert ('tab', 'Quality', 'height') in maker.calls and maker.settled == [MAIN]
 
 
@@ -1581,7 +1635,7 @@ def test_a_switch_that_stays_off_is_written_down_with_all_its_readings(monkeypat
     reading = analysis['preset_saved']['advanced']
     assert analysis['preset_saved']['steps']['advanced_on'] is False
     assert reading['switch'] == {'rect': [314, 609, 342, 624], 'hwnd': 31}
-    assert reading['on_before'] == [0.9, 0.1] and reading['on_after'] == [0.9, 0.1]
+    assert reading['on_before'] == reading['on_after'] == [0.0, 0.0]
     assert reading['message_click'] == {'hit': '0x1'}
     assert {name for name in ('advanced-before.png', 'advanced-after.png', 'advanced-after-message.png')
             if (tmp_path / name).is_file()} == {'advanced-before.png', 'advanced-after.png',
