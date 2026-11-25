@@ -1,0 +1,14 @@
+{
+  "edits": [],
+  "timings": {
+    "baseline_reopen_slice_export": {
+      "started_utc": "2026-11-25T12:29:41.753305+00:00",
+      "duration_s": 98.25
+    }
+  },
+  "baseline_preview": {
+    "score": 1.0,
+    "colored_fraction": 0.005812588235626965
+  },
+  "failure": "ValueError: No newly generated complete GUI plate for PID 6692 in C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\254\\run-gwrof6ze\\baseline-temp"
+}

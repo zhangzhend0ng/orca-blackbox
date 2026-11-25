@@ -1,0 +1,59 @@
+{
+  "edits": [
+    {
+      "field": "layer_height",
+      "before": "0.2",
+      "submitted": "0.24",
+      "pair": [
+        "0.24",
+        "0.25"
+      ]
+    },
+    {
+      "field": "initial_layer_print_height",
+      "before": "0.25",
+      "submitted": "0.30",
+      "pair": [
+        "0.24",
+        "0.30"
+      ]
+    },
+    {
+      "field": "layer_height",
+      "before": "0.24",
+      "submitted": "0.20",
+      "pair": [
+        "0.20",
+        "0.30"
+      ]
+    },
+    {
+      "field": "initial_layer_print_height",
+      "before": "0.30",
+      "submitted": "0.25",
+      "pair": [
+        "0.20",
+        "0.25"
+      ]
+    }
+  ],
+  "timings": {
+    "baseline_reopen_slice_export": {
+      "started_utc": "2026-11-25T12:07:42.622074+00:00",
+      "duration_s": 72.391
+    },
+    "target_reopen_slice_export": {
+      "started_utc": "2026-11-25T12:10:34.289131+00:00",
+      "duration_s": 119.328
+    }
+  },
+  "baseline_preview": {
+    "score": 1.0,
+    "colored_fraction": 0.02102872485196219
+  },
+  "off_target_saved": [
+    "0.24",
+    "0.3"
+  ],
+  "failure": "ValueError: target G-code export failed"
+}

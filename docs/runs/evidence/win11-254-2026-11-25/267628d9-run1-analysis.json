@@ -1,0 +1,8 @@
+{
+  "edits": [],
+  "baseline_preview": {
+    "score": 0.9999986290931702,
+    "colored_fraction": 0.02102872485196219
+  },
+  "failure": "ValueError: Edit 0 read None"
+}

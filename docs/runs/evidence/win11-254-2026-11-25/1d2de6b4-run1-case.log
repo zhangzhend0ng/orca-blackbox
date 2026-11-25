@@ -1,0 +1,76 @@
+﻿[m7x254] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-v43rpcdc
+[m7x249] started baseline_reopen_slice_export at 2026-11-25T12:15:32.696893+00:00
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-v43rpcdc\baseline-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-v43rpcdc\baseline-profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-v43rpcdc\fixture.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x55804ea, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x50e0614, WM_CLOSE)
+[launcher] pid=9652 hwnd=0x5560b1e rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.22%, gate 0.10%)
+[panel] click_tab(Quality) poll0 strat0: '|= layer height layer height 0.2 mm first layer height 0.25 mm [2 | se'
+[m7] baseline slice: slice button state='idle'
+[m2] slicing started (button left idle, score 0.666)
+[m7] baseline slice: True
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x31106ae did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=329) sent, completed=False
+[m7x249] finished baseline_reopen_slice_export in 72.375s
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-v43rpcdc\editor-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-v43rpcdc\editor-profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-v43rpcdc\fixture.3mf
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x5660440, WM_CLOSE)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x3060bcc, WM_CLOSE)
+[launcher] pid=10292 hwnd=0x15c11c0 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.22%, gate 0.10%)
+[panel] click_tab(Quality) poll0 strat0: '|= layer height layer height 0.2 mm first layer height 0.25 mm [2 | se'
+[m7x254] {'field': 'layer_height', 'before': '0.2', 'submitted': '0.24', 'pair': ['0.24', '0.25']}
+[m7x254] {'field': 'initial_layer_print_height', 'before': '0.25', 'submitted': '0.30', 'pair': ['0.24', '0.30']}
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5270dcc did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x254] {'field': 'layer_height', 'before': '0.24', 'submitted': '0.20', 'pair': ['0.20', '0.30']}
+[m7x254] {'field': 'initial_layer_print_height', 'before': '0.30', 'submitted': '0.25', 'pair': ['0.20', '0.25']}
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5270dcc did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x249] started target_reopen_slice_export at 2026-11-25T12:18:24.835327+00:00
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-v43rpcdc\target-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-v43rpcdc\target-profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-v43rpcdc\sphere-edited.3mf
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x17c0174, WM_CLOSE)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x5360930, WM_CLOSE)
+[launcher] pid=6516 hwnd=0x4ef0704 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.22%, gate 0.10%)
+[panel] click_tab(Quality) poll0 strat0: '|= layer height layer height 0.2 mm first layer height 0.25 mm [2 | se'
+[m7] target slice: slice button state='idle'
+[m2] slicing started (button left idle, score 0.666)
+[m7] target slice: True
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x50c0920 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=329) sent, completed=False
+[m7x249] finished target_reopen_slice_export in 72.125s
+
+[m7] === verdict ===
+  baseline slice: PASS
+  target slice: PASS
+  GUI edit, reopened sphere and both extrusion schedules: PASS
+[m7] GREEN

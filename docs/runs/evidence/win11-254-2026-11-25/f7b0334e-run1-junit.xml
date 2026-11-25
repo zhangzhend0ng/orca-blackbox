@@ -1,0 +1,43 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T20:12:35" tests="1" failures="1" errors="0">
+    <testcase name="m7x_254_sphere_layer_pair" classname="blackbox.m7x_254_sphere_layer" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_254_sphere_layer_pair.log" />
+        <property name="dim:baseline slice" value="PASS" />
+        <property name="dim:target slice" value="PASS" />
+        <property name="dim:Feishu #254" value="FAIL (ValueError: target G-code export failed)" />
+      </properties>
+      <failure type="RED" message="Feishu #254: FAIL (ValueError: target G-code export failed)">[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x249] started target_reopen_slice_export at 2026-11-25T12:10:34.289131+00:00
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-f6fjdk0o\target-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-f6fjdk0o\target-profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-f6fjdk0o\sphere-edited.3mf
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x57d0fce, WM_CLOSE)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x1c206a0, WM_CLOSE)
+[launcher] pid=5604 hwnd=0x56408cc rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.22%, gate 0.10%)
+[panel] click_tab(Quality) poll0 strat0: '|= layer height layer height 0.2 mm first layer height 0.25 mm [2 | se'
+[m7] target slice: slice button state='idle'
+[m2] slicing started (button left idle, score 0.666)
+[m7] target slice: True
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5300f1a did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=329) sent, completed=False
+[m7x250] Export G-code chooser='Save G-code file as:', filename='C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\254\\run-f6fjdk0o\\target.gcode'
+[m7x249] finished target_reopen_slice_export in 119.328s
+
+[m7] === verdict ===
+  baseline slice: PASS
+  target slice: PASS
+  Feishu #254: FAIL (ValueError: target G-code export failed)
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

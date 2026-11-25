@@ -1,0 +1,29 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T19:46:56" tests="1" failures="1" errors="0">
+    <testcase name="m7x_254_sphere_layer_pair" classname="blackbox.m7x_254_sphere_layer" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_254_sphere_layer_pair.log" />
+        <property name="dim:Feishu #254" value="FAIL (ValueError: baseline sphere did not appear)" />
+      </properties>
+      <failure type="RED" message="Feishu #254: FAIL (ValueError: baseline sphere did not appear)">[m7x254] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-naageu2y
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-naageu2y\baseline-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-naageu2y\baseline-profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-naageu2y\default.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x5890502, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x4fd0cd0, WM_CLOSE)
+[launcher] pid=6976 hwnd=0x51e0684 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: False (0.22%, gate 0.25%)
+[m7x250] baseline-profile fixture arrived=False, foreground fraction=0.216%
+
+[m7] === verdict ===
+  Feishu #254: FAIL (ValueError: baseline sphere did not appear)
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

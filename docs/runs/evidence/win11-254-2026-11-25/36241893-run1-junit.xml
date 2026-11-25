@@ -1,0 +1,43 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T20:42:29" tests="1" failures="1" errors="0">
+    <testcase name="m7x_254_sphere_layer_pair" classname="blackbox.m7x_254_sphere_layer" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_254_sphere_layer_pair.log" />
+        <property name="dim:baseline slice" value="PASS" />
+        <property name="dim:target slice" value="PASS" />
+        <property name="dim:Feishu #254" value="FAIL (ValueError: No complete GUI plate for PID 7624; process files: [('.7624.0.gcode.tmp', 69632)])" />
+      </properties>
+      <failure type="RED" message="Feishu #254: FAIL (ValueError: No complete GUI plate for PID 7624; process files: [('.7624.0.gcode.tmp', 69632)])">[m7x254] {'field': 'initial_layer_print_height', 'before': '0.30', 'submitted': '0.25', 'pair': ['0.20', '0.25']}
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x5061130 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x249] started target_reopen_slice_export at 2026-11-25T12:39:44.121386+00:00
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-o0n26hr0\target-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-o0n26hr0\target-profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-o0n26hr0\sphere-edited.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x55f0b3c, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#2)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x565055a, WM_CLOSE)
+[launcher] pid=7624 hwnd=0x540113e rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.22%, gate 0.10%)
+[panel] click_tab(Quality) poll0 strat0: '|= layer height layer height 0.2 mm first layer height 0.25 mm [2 | se'
+[m7] target slice: slice button state='idle'
+[m2] slicing started (button left idle, score 0.666)
+[m7] target slice: True
+[m7x249] finished target_reopen_slice_export in 162.328s
+
+[m7] === verdict ===
+  baseline slice: PASS
+  target slice: PASS
+  Feishu #254: FAIL (ValueError: No complete GUI plate for PID 7624; process files: [('.7624.0.gcode.tmp', 69632)])
+[m7] RED</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

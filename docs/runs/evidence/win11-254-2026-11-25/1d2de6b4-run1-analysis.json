@@ -1,0 +1,85 @@
+{
+  "edits": [
+    {
+      "field": "layer_height",
+      "before": "0.2",
+      "submitted": "0.24",
+      "pair": [
+        "0.24",
+        "0.25"
+      ]
+    },
+    {
+      "field": "initial_layer_print_height",
+      "before": "0.25",
+      "submitted": "0.30",
+      "pair": [
+        "0.24",
+        "0.30"
+      ]
+    },
+    {
+      "field": "layer_height",
+      "before": "0.24",
+      "submitted": "0.20",
+      "pair": [
+        "0.20",
+        "0.30"
+      ]
+    },
+    {
+      "field": "initial_layer_print_height",
+      "before": "0.30",
+      "submitted": "0.25",
+      "pair": [
+        "0.20",
+        "0.25"
+      ]
+    }
+  ],
+  "timings": {
+    "baseline_reopen_slice_export": {
+      "started_utc": "2026-11-25T12:15:32.696893+00:00",
+      "duration_s": 72.375
+    },
+    "target_reopen_slice_export": {
+      "started_utc": "2026-11-25T12:18:24.835327+00:00",
+      "duration_s": 72.125
+    }
+  },
+  "baseline_preview": {
+    "score": 1.0,
+    "colored_fraction": 0.02102872485196219
+  },
+  "off_target_saved": [
+    "0.24",
+    "0.3"
+  ],
+  "target_preview": {
+    "score": 1.0,
+    "colored_fraction": 0.02102872485196219
+  },
+  "colored_preview_overlap": 1.0,
+  "baseline": {
+    "case_id": "param_layer_pair_254",
+    "layer_height": "0.2",
+    "initial_layer_print_height": "0.25",
+    "layer_count": 100,
+    "first_z": "0.25",
+    "last_z": "20.05",
+    "gcode_sha256": "fdb0f5f286fde1ba87c55833380c84851d26efb224956d1bbe8ed5c44c0d87c8",
+    "other_settings_preserved": true,
+    "schedule_asserted": true
+  },
+  "target": {
+    "case_id": "param_layer_pair_254",
+    "layer_height": "0.2",
+    "initial_layer_print_height": "0.25",
+    "layer_count": 100,
+    "first_z": "0.25",
+    "last_z": "20.05",
+    "gcode_sha256": "b5dd42980ad690c46a33a523d2d2bd6c81d13ef5fb96b59a61d6799acb159b03",
+    "other_settings_preserved": true,
+    "schedule_asserted": true
+  }
+}

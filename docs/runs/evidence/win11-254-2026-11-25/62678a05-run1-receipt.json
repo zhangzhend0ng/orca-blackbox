@@ -1,0 +1,13 @@
+﻿{
+    "commit":  "62678a05edca16f5576b6a10ba4d178625452c17",
+    "case":  "m7x_254_sphere_layer_pair",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "summary":  "SUMMARY: PASS=0 FAIL=1\r\nFAILED: m7x_254_sphere_layer_pair",
+    "dispatched_at":  "2026-11-25T20:00:33.1587405+08:00",
+    "scenario_completed_at":  "2026-11-25T20:04:54.3527444+08:00",
+    "suite_completed_at":  "2026-11-25T20:04:54.6540184+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_254_sphere_layer_pair.log",
+    "log_sha256":  "943521E534A96E55619B2158879E94DA16738CD823B51194A870028D771F38A0"
+}

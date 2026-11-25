@@ -1,0 +1,37 @@
+﻿[
+    {
+        "part":  "sphere-edited.3mf",
+        "bytes":  98980,
+        "sha256":  "F508A189B1FE41DDD8080473C7B559CA904613AB7561D63C81BC89D410D34B4A"
+    },
+    {
+        "part":  "off-target.3mf",
+        "bytes":  98991,
+        "sha256":  "1410441BDFEEBC18C7EC39433E62C6C23FB2CF34D1CDDC39E075EC648E132C9E"
+    },
+    {
+        "part":  "baseline.gcode",
+        "bytes":  757495,
+        "sha256":  "FDB0F5F286FDE1BA87C55833380C84851D26EFB224956D1BBE8ED5C44C0D87C8"
+    },
+    {
+        "part":  "target.gcode",
+        "bytes":  757643,
+        "sha256":  "B5DD42980AD690C46A33A523D2D2BD6C81D13EF5FB96B59A61D6799ACB159B03"
+    },
+    {
+        "part":  "baseline-preview.png",
+        "bytes":  507918,
+        "sha256":  "0820FF95E09EA43986FE63397FA86A1291683E83A3B2A206370E479B74D5F9CF"
+    },
+    {
+        "part":  "target-preview.png",
+        "bytes":  508614,
+        "sha256":  "9205C399F03F19503EDAD5DED4F2C62518FB6FC6CA5567BC4DAAD47BD1EAC374"
+    },
+    {
+        "part":  "analysis.json",
+        "bytes":  1978,
+        "sha256":  "2683121EDC9559CD6243D87F773EC500BC4E9C6202CC57038071F8EE7B7C1F01"
+    }
+]

@@ -1,0 +1,64 @@
+{
+  "edits": [
+    {
+      "field": "layer_height",
+      "before": "0.2",
+      "submitted": "0.24",
+      "pair": [
+        "0.24",
+        "0.25"
+      ]
+    },
+    {
+      "field": "initial_layer_print_height",
+      "before": "0.25",
+      "submitted": "0.30",
+      "pair": [
+        "0.24",
+        "0.30"
+      ]
+    },
+    {
+      "field": "layer_height",
+      "before": "0.24",
+      "submitted": "0.20",
+      "pair": [
+        "0.20",
+        "0.30"
+      ]
+    },
+    {
+      "field": "initial_layer_print_height",
+      "before": "0.30",
+      "submitted": "0.25",
+      "pair": [
+        "0.20",
+        "0.25"
+      ]
+    }
+  ],
+  "baseline_preview": {
+    "score": 0.9999986290931702,
+    "colored_fraction": 0.02102872485196219
+  },
+  "off_target_saved": [
+    "0.24",
+    "0.3"
+  ],
+  "target_preview": {
+    "score": 0.9999986290931702,
+    "colored_fraction": 0.02096011678931242
+  },
+  "baseline": {
+    "case_id": "param_layer_pair_254",
+    "layer_height": "0.2",
+    "initial_layer_print_height": "0.25",
+    "layer_count": 100,
+    "first_z": "0.25",
+    "last_z": "20.05",
+    "gcode_sha256": "79686535bc82ab5f1c921036f511deb8ca154eb624b0815bcf2ba2ccc5184ede",
+    "other_settings_preserved": true,
+    "schedule_asserted": true
+  },
+  "failure": "_InvalidEvidence: pilot_unrelated_setting_changed:filament_settings_id"
+}

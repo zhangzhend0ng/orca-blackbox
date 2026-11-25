@@ -1,0 +1,17 @@
+﻿[
+    {
+        "part":  "baseline.gcode",
+        "bytes":  755295,
+        "sha256":  "648B96C76479CBC440D1C0EC34A247BD839A53E1BEAEEE42F37F90D778CDC274"
+    },
+    {
+        "part":  "baseline-preview.png",
+        "bytes":  506303,
+        "sha256":  "53F32EF2D5B3D8C13DA863DB0AD9E72DFCD713F596B30E145A5E72082DD35446"
+    },
+    {
+        "part":  "analysis.json",
+        "bytes":  175,
+        "sha256":  "B7318082042C25E62F2A5C120DA3BA6146C806803B61B290DC8A25AB8876CB7B"
+    }
+]

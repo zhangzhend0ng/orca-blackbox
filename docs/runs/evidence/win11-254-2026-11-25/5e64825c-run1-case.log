@@ -1,0 +1,24 @@
+﻿[m7x254] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-gwrof6ze
+[m7x249] started baseline_reopen_slice_export at 2026-11-25T12:29:41.753305+00:00
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-gwrof6ze\baseline-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-gwrof6ze\baseline-profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-gwrof6ze\fixture.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x53f03be, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x56909b0, WM_CLOSE)
+[launcher] pid=6692 hwnd=0x54b0e36 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.22%, gate 0.10%)
+[panel] click_tab(Quality) poll0 strat0: '|= layer height layer height 0.2 mm first layer height 0.25 mm [2 | se'
+[m7] baseline slice: slice button state='idle'
+[m2] slicing started (button left idle, score 0.666)
+[m7] baseline slice: True
+[m7x249] finished baseline_reopen_slice_export in 98.250s
+
+[m7] === verdict ===
+  baseline slice: PASS
+  Feishu #254: FAIL (ValueError: No newly generated complete GUI plate for PID 6692 in C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\254\run-gwrof6ze\baseline-temp)
+[m7] RED

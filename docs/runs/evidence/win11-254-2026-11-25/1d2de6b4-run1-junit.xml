@@ -1,0 +1,23 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T20:19:37" tests="1" failures="0" errors="0">
+    <testcase name="m7x_254_sphere_layer_pair" classname="blackbox.m7x_254_sphere_layer" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_254_sphere_layer_pair.log" />
+        <property name="dim:baseline slice" value="PASS" />
+        <property name="dim:target slice" value="PASS" />
+        <property name="dim:GUI edit, reopened sphere and both extrusion schedules" value="PASS" />
+      </properties>
+      <system-out>[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=329) sent, completed=False
+[m7x249] finished target_reopen_slice_export in 72.125s
+
+[m7] === verdict ===
+  baseline slice: PASS
+  target slice: PASS
+  GUI edit, reopened sphere and both extrusion schedules: PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

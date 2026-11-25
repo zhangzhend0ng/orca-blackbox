@@ -1,0 +1,27 @@
+﻿[
+    {
+        "part":  "sphere-edited.3mf",
+        "bytes":  98981,
+        "sha256":  "FD92D8DB5A84E1EA87A575828B05320B3409F53B196F459B17CE8CCC101597D0"
+    },
+    {
+        "part":  "off-target.3mf",
+        "bytes":  98992,
+        "sha256":  "C05EE048D519CD9F2E257696036DCA4ACC4C09DD66F4FC5CA4E9AD5CBBA60FCC"
+    },
+    {
+        "part":  "baseline.gcode",
+        "bytes":  755295,
+        "sha256":  "530F4DEE9D7F1A94E0D3DC9B1AC298CE5B74EA7D30C505C699FAEC7F5D972A3D"
+    },
+    {
+        "part":  "baseline-preview.png",
+        "bytes":  499987,
+        "sha256":  "196BB69CFA453D51CA9A77E93299488746AA96945EBC6742D3DA89C7B41EF8AB"
+    },
+    {
+        "part":  "analysis.json",
+        "bytes":  1647,
+        "sha256":  "A32B365FD3946E197EC1763A3B6547E5858788D11FE69783EE87380B9FC1D88B"
+    }
+]

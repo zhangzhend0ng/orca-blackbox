@@ -1,0 +1,12 @@
+﻿[
+    {
+        "part":  "baseline-preview.png",
+        "bytes":  297112,
+        "sha256":  "DDA67294BC4F7F51D5F7DFB7616E918797884503949E2B4DD752E5C0D9418DFC"
+    },
+    {
+        "part":  "analysis.json",
+        "bytes":  447,
+        "sha256":  "858EC48DBD1E0010460858A0CDBFCF8901C1FD43E7890616137501AE9AB81A54"
+    }
+]
