@@ -423,17 +423,21 @@ def executable_sha256():
 
 
 def preflight(desktop, report):
+    """Everything the two cases depend on, read without launching anything. The GUI cases can
+    run only while the front login's console is unlocked."""
     stage(report, "preflight")
     bundle = plistlib.loads((pc.APP / "Contents/Info.plist").read_bytes())
-    report["preflight"] = {
+    facts = {
         "ax_trusted": ax.trusted(), "post_allowed": ax.post_allowed(),
         "console_uid": os.stat("/dev/console").st_uid, "test_uid": os.getuid(),
-        "console_locked": console_locked(), "session": session_facts(desktop),
+        "console_locked": report["console_locked"], "session": report["session"],
         "app": str(pc.APP), "version": bundle.get("CFBundleShortVersionString"),
         "bundle_version": bundle.get("CFBundleVersion"), "executable_sha256": executable_sha256(),
         "orca_processes": sorted(pc.processes())}
+    facts["gui_cases_runnable"] = bool(facts["ax_trusted"] and facts["post_allowed"] and facts["console_locked"] == "No")
+    report["preflight"] = facts
     report["outcome"] = "PREFLIGHT"
-    log(f"preflight {report['preflight']}")
+    log(f"preflight {facts}")
 
 
 def export_gcode(desktop, report):
@@ -622,15 +626,16 @@ def run_case(report):
     require(ax.trusted(), "Accessibility permission is missing for the Aqua worker")
     require(ax.post_allowed(), "Posting input events is not allowed for the Aqua worker")
     report["console_locked"] = console_locked()
-    # While the front login's console is locked, every AX window of this session reads as a
-    # placeholder titled with the application name (2026-11-25, ninehour mac/README.md).
-    require(report["console_locked"] == "No", "The front login's console is locked: no named window will open")
     console_uid = os.stat("/dev/console").st_uid
     with ax.Desktop(console_uid) as desktop:
         desktop.check_session()
+        report["session"] = session_facts(desktop)
         if CASE == "preflight":
             preflight(desktop, report)
             return
+        # While the front login's console is locked, every AX window of this session reads as a
+        # placeholder titled with the application name (2026-11-25, ninehour mac/README.md).
+        require(report["console_locked"] == "No", "The front login's console is locked: no named window will open")
         stage(report, "launch")
         {"gcode236": export_gcode, "stl227": import_stl}[CASE](desktop, report)
         desktop.check_session()
