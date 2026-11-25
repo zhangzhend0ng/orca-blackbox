@@ -22,6 +22,9 @@ guest probe ``runs/sliceprobe-b958af2b`` (standard cube, 135 layers):
   macro, so a heater-off command counts as end evidence but is not demanded.
 * Trailer notes between the executable and the config block: ``; filament
   used`` and ``; estimated printing time``.
+* The material lies where the plate's objects are: gcode_footprint() measures
+  every extruding move of the layers against the objects of the saved project
+  (see the section of the same name for the tolerances).
 
 Scope: one plate printed layer by layer. An export that prints object by
 object restarts Z for the second object and is rejected by the Z check; a
@@ -33,11 +36,13 @@ from bisect import bisect_right
 from hashlib import md5, sha256
 from io import BytesIO
 from itertools import permutations
+import json
 import math
 from pathlib import Path
 import re
 import struct
 from zipfile import BadZipFile, ZipFile
+from xml.etree.ElementTree import ParseError
 
 from harness.model_move_pilot import bounds, stl_mesh
 from part_attachment_oracle import _read
@@ -337,7 +342,7 @@ def verify_gcode_export(path):
 
 
 GCODE_EXPECTATIONS = (
-    ('生成 .gcode 文件', ('extension', 'gcode_extension')),
+    ('生成 .gcode 文件', ('extension', 'gcode_extension', 'extrusion_on_objects')),
     ('含起始/结束 G-code', ('header_block', 'config_block', 'executable_block', 'start_gcode', 'end_gcode',
                            'trailer_notes')),
     ('无空文件', ('non_empty', 'layers_present', 'extrusion_present', 'layers_printed')),
@@ -345,12 +350,16 @@ GCODE_EXPECTATIONS = (
 )
 
 
-def gcode_expectation_gaps(facts, extension):
+def gcode_expectation_gaps(facts, extension, footprint=None):
     """{clause of the Feishu #236 expectation: [names of its failed checks]}.
 
     `extension` is the one the application appended when saving; `facts` comes
-    from the file as it landed. Nothing raises: each clause reports its own gaps."""
-    checks = dict(gcode_checks(facts), extension=extension == '.gcode')
+    from the file as it landed. `footprint` is gcode_footprint() of the same
+    file against the saved plate: its failed checks fail the first clause, as
+    a file that prints somewhere else is not this plate's G-code. Without it
+    the material is not located and nothing extra is judged."""
+    checks = dict(gcode_checks(facts), extension=extension == '.gcode',
+                  extrusion_on_objects=footprint is None or all(footprint['checks'].values()))
     return {clause: [name for name in names if not checks[name]] for clause, names in GCODE_EXPECTATIONS}
 
 
@@ -685,12 +694,16 @@ def compare_sliced_sizes(simple, complex_):
     return _size_comparison(verify_sliced_3mf(simple), verify_sliced_3mf(complex_))
 
 
-def sliced_expectation_gaps(samples):
+def sliced_expectation_gaps(samples, projects=None):
     """({clause of the Feishu #234 expectation: [what failed]}, readings, size comparison).
 
     `samples` maps 'simple' and 'complex' to (path, extension) of the two sliced
     files as the application saved them: a bare name was typed, the extension
-    is its own. Nothing raises; each clause reports its own gaps."""
+    is its own. `projects` maps the same labels to the project that was on the
+    plate when it was sliced; where it is given, the G-code inside the archive
+    must deposit its material on that plate's objects (gcode_footprint) or the
+    clause about the G-code fails. Nothing raises; each clause reports its own gaps."""
+    projects = projects or {}
     gaps = {clause: [] for clause in SLICED_EXPECTATIONS}
     readings = {}
     for label, (path, extension) in samples.items():
@@ -709,6 +722,18 @@ def sliced_expectation_gaps(samples):
                 if failed:
                     gaps[clause].append(f'{label}: {failed}')
             readings[label]['checks'] = checks
+            if label in projects:
+                try:
+                    with ZipFile(path) as archive:
+                        member = archive.read(readings[label]['gcode_member'])
+                    plate = _footprint(member, readings[label]['gcode_member'], projects[label])
+                except (OSError, ValueError, KeyError, TypeError, BadZipFile, ParseError) as exc:
+                    gaps['内含 G-code 与预览信息'].append(f'{label}: extrusion_on_objects {exc}')
+                else:
+                    readings[label]['footprint'] = plate
+                    failed = [name for name, passed in plate['checks'].items() if not passed]
+                    if failed:
+                        gaps['内含 G-code 与预览信息'].append(f'{label}: extrusion_on_objects {failed}')
     comparison = None
     ready = {label: facts is not None and facts['gcode'] is not None for label, facts in readings.items()}
     if ready.get('simple') and ready.get('complex'):
@@ -743,3 +768,211 @@ def harvested_readings(entries):
         except (OSError, ValueError) as exc:
             out[label] = {'present': True, 'error': _reason(path, exc)}
     return out
+
+
+# --- G-code footprint (#236, #234) --------------------------------------------
+
+# Where the G-code deposits material, against the plate it was sliced from.
+#
+# Read off the same real exports (plain single-colour runs, each compared with its own input project):
+# * Every wall, infill, surface and bridge move lies inside its object's box. The outermost
+#   centreline sits 0.41 mm (0.8 nozzle) or 0.21 mm (0.4 nozzle) inside it, and no plain run has a
+#   model move beyond the box. 1.0 mm therefore leaves room for the extrusion width and still
+#   rejects a whole-file shift of 1.5 mm or more on either nozzle.
+# * ``; printing object <name> id:<id> copy <n>`` ... ``; stop printing object`` wraps each object's
+#   moves of a layer (135 pairs in the standard cube export). Brim and raft moves sit inside those
+#   blocks and leave the object's box: 4.24 mm for a 5 mm brim (run f6dc29a8), 7.63 mm for a raft
+#   with raft_first_layer_expansion 5 and raft_expansion 1.5 (run daf3216f). Skirt moves sit outside
+#   the blocks and reached 6.84 mm beyond all objects for skirt_distance 5 and three 0.82 mm loops
+#   (run 749da439). Each of those three allowances rests on one run.
+# * The start G-code extrudes the machine's own purge line at the front edge of the bed (315/315);
+#   it is counted, not judged.
+# * Prime tower and custom G-code may stand anywhere on the bed.
+# The allowances are read from the saved project, never from the G-code, so that a file cannot
+# widen them itself.
+FOOTPRINT_TOL_MM = 1.0
+SUPPORT_TYPES = frozenset(('Support', 'Support interface'))
+CATEGORIES = ('model', 'support', 'brim', 'skirt', 'tower', 'custom')
+PRINTING = re.compile(r'^; printing object (.*) id:\d+ copy \d+\s*$')
+
+
+def _extrusions(raw):
+    """(moves, purges): every extruding XY move from the first layer on as
+    (type, object name or None, x0, y0, x1, y1), and how many such moves precede it."""
+    lines, codes = _lines(raw)
+    exec_start, exec_end = _block_positions(lines)['executable']
+    lo = exec_start + 1 if exec_start is not None else 0
+    hi = exec_end if exec_end is not None else len(lines)
+    first = next((i for i in range(lo, hi) if LAYER_A.match(lines[i].strip()) or LAYER_B.match(lines[i].strip())), hi)
+    absolute_e, e_position, x, y = True, 0.0, None, None
+    current, kind, moves, purges = None, None, [], 0
+    for i in range(lo, hi):
+        line, code = lines[i].strip(), codes[i]
+        if line.startswith('; printing object '):
+            found = PRINTING.match(line)
+            current = found.group(1) if found else None
+            continue
+        if line.startswith('; stop printing object'):
+            current = None
+            continue
+        if line.startswith(';TYPE:'):
+            kind = line[6:].strip()
+            continue
+        if not code:
+            continue
+        head = _head(code)
+        if head == 'M82':
+            absolute_e = True
+            continue
+        if head == 'M83':
+            absolute_e = False
+            continue
+        if not MOTION.match(code):
+            continue
+        words = {key: float(value) for key, value in WORD.findall(code)}
+        nx, ny = words.get('X', x), words.get('Y', y)
+        if 'E' in words:
+            delta = words['E'] - e_position if absolute_e else words['E']
+            e_position = words['E']
+            if delta > 0 and ('X' in words or 'Y' in words) and None not in (x, y, nx, ny):
+                if i < first:
+                    purges += 1
+                else:
+                    moves.append((kind, current, x, y, nx, ny))
+        x, y = nx, ny
+    return moves, purges
+
+
+def _outside(point, box):
+    """How far a point lies beyond ((x0, x1), (y0, y1)); 0 when inside."""
+    return max(0.0, box[0][0] - point[0], point[0] - box[0][1], box[1][0] - point[1], point[1] - box[1][1])
+
+
+def _category(kind):
+    if kind == 'Brim':
+        return 'brim'
+    if kind == 'Skirt':
+        return 'skirt'
+    if kind in ('Prime tower', 'Wipe tower'):
+        return 'tower'
+    if not kind or kind == 'Custom':
+        return 'custom'
+    return 'support' if kind in SUPPORT_TYPES else 'model'
+
+
+def _setting(settings, key, default=0.0):
+    """The first number of a project setting ('5', '0.82', '5,5'); the default when absent or not a number."""
+    value = settings.get(key)
+    if value is None:
+        return default
+    try:
+        return float(str(value).split(',')[0].strip().strip('"'))
+    except ValueError:
+        return default
+
+
+def _footprint(raw, name, project):
+    """The readings and checks of one G-code file against the plate of a saved project."""
+    project = Path(project)
+    try:
+        bed, items = _project(project)
+        with ZipFile(project) as archive:
+            settings = json.loads(archive.read('Metadata/project_settings.config'))
+    except (OSError, ValueError, KeyError, TypeError, BadZipFile, ParseError) as exc:
+        raise ValueError(f'{project.name}: unreadable project ({exc})') from exc
+    boxes = {item.name: ((min(v[0] for v in item.vertices), max(v[0] for v in item.vertices)),
+                         (min(v[1] for v in item.vertices), max(v[1] for v in item.vertices))) for item in items}
+
+    def flat(axis):
+        return min(box[axis][0] for box in boxes.values()), max(box[axis][1] for box in boxes.values())
+
+    union = (flat(0), flat(1)) if boxes else ((0.0, 0.0), (0.0, 0.0))
+    area = ((min(p[0] for p in bed.polygon), max(p[0] for p in bed.polygon)),
+            (min(p[1] for p in bed.polygon), max(p[1] for p in bed.polygon)))
+    line_width = _setting(settings, 'line_width', 0.42)
+    raft = 0.0
+    if _setting(settings, 'raft_layers') > 0:
+        raft = _setting(settings, 'raft_first_layer_expansion') + _setting(settings, 'raft_expansion') + line_width
+    allowances = {
+        'model': FOOTPRINT_TOL_MM,
+        'support': FOOTPRINT_TOL_MM + raft,
+        'brim': FOOTPRINT_TOL_MM + _setting(settings, 'brim_width') + _setting(settings, 'brim_object_gap'),
+        'skirt': FOOTPRINT_TOL_MM + _setting(settings, 'skirt_distance') + _setting(settings, 'skirt_loops') * line_width,
+    }
+    moves, purges = _extrusions(raw)
+    objects = {label: {'box_mm': [box[0][0], box[0][1], box[1][0], box[1][1]], 'moves': 0, 'model_moves': 0,
+                       'extruded_mm': None, 'max_excursion_mm': 0.0} for label, box in boxes.items()}
+    counts = dict.fromkeys(CATEGORIES, 0)
+    worst = dict.fromkeys(CATEGORIES, 0.0)
+    named, unknown, unassigned = set(), set(), 0
+    for kind, label, x0, y0, x1, y1 in moves:
+        category = _category(kind)
+        points = ((x0, y0), (x1, y1))
+        counts[category] += 1
+        if category in ('tower', 'custom'):
+            far = max(_outside(point, area) for point in points)
+        else:
+            if category == 'skirt' or label not in boxes:
+                box = union
+                if category != 'skirt':
+                    unassigned += 1
+                    if label:
+                        unknown.add(label)
+            else:
+                box = boxes[label]
+                named.add(label)
+                record = objects[label]
+                record['moves'] += 1
+                record['model_moves'] += category == 'model'
+                span = record['extruded_mm'] or [x0, x0, y0, y0]
+                record['extruded_mm'] = [min(span[0], x0, x1), max(span[1], x0, x1),
+                                         min(span[2], y0, y1), max(span[3], y0, y1)]
+            far = max(_outside(point, box) for point in points)
+            if label in boxes and category != 'skirt':
+                objects[label]['max_excursion_mm'] = max(objects[label]['max_excursion_mm'], far)
+        worst[category] = max(worst[category], far)
+    printed = {label for label, record in objects.items() if record['model_moves']}
+    checks = {
+        'objects_named': not unknown,
+        'every_object_printed': printed == set(boxes) if named else counts['model'] > 0,
+        'model_inside_object_blocks': unassigned == 0,
+        'model_on_objects': worst['model'] <= allowances['model'],
+        'support_on_objects': worst['support'] <= allowances['support'],
+        'brim_near_objects': worst['brim'] <= allowances['brim'],
+        'skirt_near_objects': worst['skirt'] <= allowances['skirt'],
+        'ancillary_on_bed': worst['tower'] <= FOOTPRINT_TOL_MM and worst['custom'] <= FOOTPRINT_TOL_MM,
+    }
+    return {
+        'file_name': name,
+        'tolerance_mm': FOOTPRINT_TOL_MM,
+        'allowances_mm': allowances,
+        'plate_objects': {label: record['box_mm'] for label, record in objects.items()},
+        'plate_box_mm': [union[0][0], union[0][1], union[1][0], union[1][1]],
+        'printable_area_mm': [area[0][0], area[0][1], area[1][0], area[1][1]],
+        'names_in_gcode': sorted(named),
+        'moves': dict(counts, unassigned=unassigned, start_gcode=purges),
+        'max_excursion_mm': worst,
+        'objects': objects,
+        'checks': checks,
+    }
+
+
+def gcode_footprint(path, project):
+    """Where the G-code deposits material, against the objects of the saved plate. Nothing here judges
+    beyond `checks`; `project` is the project as it was on the plate when the plate was sliced."""
+    path = Path(path)
+    try:
+        raw = path.read_bytes()
+    except OSError as exc:
+        raise ValueError(_reason(path, exc) + ': unreadable G-code') from exc
+    return _footprint(raw, path.name, project)
+
+
+def verify_gcode_footprint(path, project):
+    """Raises ValueError naming the failed footprint checks; returns the readings."""
+    footprint = gcode_footprint(path, project)
+    failed = [check for check, passed in footprint['checks'].items() if not passed]
+    if failed:
+        raise ValueError(f'{footprint["file_name"]}: {failed}; excursions {footprint["max_excursion_mm"]} mm '
+                         f'against allowances {footprint["allowances_mm"]} mm')
+    return footprint

@@ -12,6 +12,9 @@ the runtime memory guard when the guest is low on memory), and the save dialog
 is navigated to the run directory and given the bare name `plate`: the
 application decides the extension. The file that lands is read offline by
 tests/export_io_oracle.py; each clause of the expectation reports its own gaps.
+Its extruding moves are also measured against the cube as it stood in the
+saved `before` project (gcode_footprint): model material may leave an object's
+box by at most 1.0 mm, so a file shifted off the plate fails the first clause.
 """
 from hashlib import sha256
 from pathlib import Path
@@ -21,7 +24,7 @@ HERE = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(HERE), str(HERE / 'tests'), str(HERE / 'tests' / 'engine'), str(HERE / 'tests' / 'gui')]
 
 import m7_common as m7  # noqa: E402
-from export_io_oracle import gcode_expectation_gaps, gcode_export_facts, project_presets  # noqa: E402
+from export_io_oracle import gcode_expectation_gaps, gcode_export_facts, gcode_footprint, project_presets  # noqa: E402
 from file_export_cases import export_via_file_menu, read_export_menu, slice_until_exportable  # noqa: E402
 from m7x_249_add_part import capture, stage  # noqa: E402
 from plate_reserve_case import case_main, save_snapshot  # noqa: E402
@@ -49,9 +52,17 @@ def steps(session, work, analysis, args):
         receipt = export_via_file_menu(session, 'Export G-code', work, 'plate', work, analysis,
                                        title_substr='Save G-code file as', kind='gcode')
     with stage(analysis, 'read_gcode'):
-        facts = gcode_export_facts(work / receipt['saved_name'])
+        target = work / receipt['saved_name']
+        facts = gcode_export_facts(target)
         analysis['gcode'] = facts
-        gaps = analysis['expectation_gaps'] = gcode_expectation_gaps(facts, receipt['saved_extension'])
+        # The material must lie where the plate's objects were: a file that prints somewhere
+        # else is not this plate's G-code, whatever else it contains.
+        try:
+            footprint = gcode_footprint(target, before)
+        except ValueError as exc:
+            footprint = {'error': str(exc), 'checks': {'footprint_unreadable': False}}
+        analysis['footprint'] = footprint
+        gaps = analysis['expectation_gaps'] = gcode_expectation_gaps(facts, receipt['saved_extension'], footprint)
     for clause, failed in gaps.items():
         analysis['results'][clause] = 'PASS' if not failed else f'FAIL ({", ".join(failed)})'
     leftover = m7.wait_dialog(session.pid, timeout_s=0.5)

@@ -284,8 +284,9 @@ def test_plate_slice_case_runs_two_sessions_and_judges_the_three_clauses(monkeyp
     def export(session, item, directory, name, work, analysis, title, kind, image, key):
         assert item == 'Export plate sliced file' and title == 'Save Sliced file as' and kind == 'archive'
         Image.new('RGB', (4, 4), (9, 9, 9)).save(work / image)
-        path = gcode.write_sliced(Path(directory) / f'{name}.gcode.3mf',
-                                  gcode=gcode.gcode_text(5 if name == 'plate' else 60).encode('utf-8'))
+        text = (gcode.gcode_text(5, box=gcode.CUBE_BOX) if name == 'plate'
+                else gcode.gcode_text(60, box=gcode.SPHERE_BOX, name='球体'))
+        path = gcode.write_sliced(Path(directory) / f'{name}.gcode.3mf', gcode=text.encode('utf-8'))
         analysis[key] = {'item': item, 'saved_name': path.name, 'saved_extension': '.gcode.3mf'}
         return analysis[key]
 
@@ -308,6 +309,11 @@ def test_plate_slice_case_runs_two_sessions_and_judges_the_three_clauses(monkeyp
     assert [o['shape'] for o in analysis['complex']['plate_objects']] == ['sphere']
     assert analysis['sliced_files']['simple']['gcode']['layer_count'] == 5
     assert analysis['sliced_files']['complex']['gcode']['layer_count'] == 60
+    # Each archive's material is located on the plate it was sliced from.
+    assert [analysis['sliced_files'][label]['footprint']['names_in_gcode'] for label in ('simple', 'complex')] == [
+        ['立方体'], ['球体']]
+    assert all(analysis['sliced_files'][label]['footprint']['checks'].values() for label in ('simple', 'complex'))
+    assert analysis['sliced_files']['complex']['footprint']['moves']['brim'] == 0
     assert set(analysis['harvested_references']) == {label for label, _path, _kind in case.REFERENCES}
     assert set(analysis['timings']) == {'simple_open', 'simple_slice', 'simple_export', 'complex_open',
                                         'complex_slice', 'complex_export'}
@@ -339,7 +345,8 @@ def test_plate_slice_case_still_judges_the_cube_when_the_sphere_session_fails(mo
             raise ValueError('the Sphere click did not take')
 
     def export(session, item, directory, name, work, analysis, title, kind, image, key):
-        path = gcode.write_sliced(Path(directory) / f'{name}.gcode.3mf')
+        path = gcode.write_sliced(Path(directory) / f'{name}.gcode.3mf',
+                                  gcode=gcode.gcode_text(box=gcode.CUBE_BOX).encode('utf-8'))
         analysis[key] = {'saved_name': path.name, 'saved_extension': '.gcode.3mf'}
         return analysis[key]
 
@@ -362,3 +369,95 @@ def test_plate_slice_case_still_judges_the_cube_when_the_sphere_session_fails(mo
         'complex plate: ValueError: the Sphere click did not take')
     assert analysis['complex']['error'] == 'ValueError: the Sphere click did not take'
     assert m7.m7_verdict(analysis['results']) == 1
+
+
+def rig_case(monkeypatch, tmp_path, export):
+    """The #234 case with every window call faked; `export` writes what the application would have saved."""
+    sys.path.insert(0, str(ROOT / 'tests' / 'gui'))
+    import m7x_234_export_plate_slice as case
+    from PIL import Image
+    models = iter((case.CUBE, case.SPHERE))
+
+    def boot(args, model=None):
+        return SimpleNamespace(pid=SESSION_PID, alive=lambda: True, close=lambda: None)
+
+    def snapshot(session, work, phase):
+        Image.new('RGB', (4, 4), (9, 9, 9)).save(work / f'{phase}.png')
+        target = work / f'{phase}.3mf'
+        target.write_bytes(next(models).read_bytes())
+        return target
+
+    monkeypatch.setattr(case, 'boot_session', boot)
+    monkeypatch.setattr(case.m7, 'ensure_maximized', lambda session: True)
+    monkeypatch.setattr(case, 'wait_arrival', lambda session, timeout_s, min_frac: (True, 0.01))
+    monkeypatch.setattr(case, 'save_snapshot', snapshot)
+    monkeypatch.setattr(case, 'slice_until_exportable', lambda session, work, analysis, item, timeout_s=150, key='slice':
+                        analysis.__setitem__(key, {'item': item, 'polls': 1}))
+    monkeypatch.setattr(case, 'capture', lambda session, path: None)
+    monkeypatch.setattr(case, 'export_via_file_menu', export)
+    monkeypatch.setattr(case.m7, 'wait_dialog', lambda pid, timeout_s=15.0, title_substr='': None)
+    monkeypatch.setattr(case, 'harvested_readings', lambda entries: {})
+    analysis = {'results': {}, 'timings': {}}
+    case.run(SimpleNamespace(exe=None, model=case.CUBE), tmp_path, analysis)
+    return analysis
+
+
+def test_plate_slice_case_fails_the_gcode_clause_when_the_sphere_gcode_misses_the_sphere(monkeypatch, tmp_path):
+    def export(session, item, directory, name, work, analysis, title, kind, image, key):
+        text = gcode.gcode_text(5, box=gcode.CUBE_BOX) if name == 'plate' else gcode.shifted(
+            gcode.gcode_text(60, box=gcode.SPHERE_BOX, name='球体'), 3, 3)
+        path = gcode.write_sliced(Path(directory) / f'{name}.gcode.3mf', gcode=text.encode('utf-8'))
+        analysis[key] = {'saved_name': path.name, 'saved_extension': '.gcode.3mf'}
+        return analysis[key]
+
+    analysis = rig_case(monkeypatch, tmp_path, export)
+    assert analysis['results'] == {
+        '生成 .gcode.3mf 文件': 'PASS', '内含 G-code 与预览信息': "FAIL (complex: extrusion_on_objects ['model_on_objects'])",
+        '文件大小随切片复杂度合理增大': 'PASS'}
+    assert analysis['sliced_files']['complex']['footprint']['max_excursion_mm']['model'] == pytest.approx(2.79)
+    assert m7.m7_verdict(analysis['results']) == 1
+
+
+def gcode_case(monkeypatch, tmp_path, text):
+    """The #236 case's steps with every window call faked; the export lands as `text`."""
+    sys.path.insert(0, str(ROOT / 'tests' / 'gui'))
+    import m7x_236_export_gcode as case
+    from PIL import Image
+
+    def snapshot(session, work, phase):
+        Image.new('RGB', (4, 4), (9, 9, 9)).save(work / f'{phase}.png')
+        target = work / f'{phase}.3mf'
+        target.write_bytes(case.FIXTURE.read_bytes())
+        return target
+
+    def export(session, item, directory, name, work, analysis, title_substr, kind):
+        assert (item, title_substr, kind) == ('Export G-code', 'Save G-code file as', 'gcode')
+        Image.new('RGB', (4, 4), (9, 9, 9)).save(work / 'export-dialog.png')
+        path = gcode.write_gcode(Path(directory) / 'plate.gcode', text)
+        analysis['export'] = {'saved_name': path.name, 'saved_extension': '.gcode'}
+        return analysis['export']
+
+    monkeypatch.setattr(case, 'save_snapshot', snapshot)
+    monkeypatch.setattr(case, 'read_export_menu', lambda session: {'file': [], 'export': gcode.EXPORT_ROWS})
+    monkeypatch.setattr(case, 'slice_until_exportable', lambda session, work, analysis, item: {'item': item})
+    monkeypatch.setattr(case, 'capture', lambda session, path: Image.new('RGB', (4, 4), (9, 9, 9)).save(path))
+    monkeypatch.setattr(case, 'export_via_file_menu', export)
+    monkeypatch.setattr(case.m7, 'wait_dialog', lambda pid, timeout_s=15.0, title_substr='': None)
+    analysis = {'results': {}, 'timings': {}}
+    case.steps(SimpleNamespace(pid=SESSION_PID, alive=lambda: True), tmp_path, analysis,
+               SimpleNamespace(model=case.FIXTURE))
+    return analysis
+
+
+def test_gcode_case_fails_the_first_clause_when_the_export_misses_the_cube(monkeypatch, tmp_path):
+    (tmp_path / 'as-exported').mkdir()
+    good = gcode_case(monkeypatch, tmp_path / 'as-exported', gcode.gcode_text(box=gcode.CUBE_BOX))
+    assert good['results'] == dict.fromkeys(
+        ('生成 .gcode 文件', '含起始/结束 G-code', '无空文件', '层命令连续'), 'PASS')
+    assert all(good['footprint']['checks'].values()) and good['footprint']['names_in_gcode'] == ['立方体']
+    (tmp_path / 'shifted').mkdir()
+    moved = gcode_case(monkeypatch, tmp_path / 'shifted', gcode.shifted(gcode.gcode_text(box=gcode.CUBE_BOX), 3, 0))
+    assert moved['results'] == {'生成 .gcode 文件': 'FAIL (extrusion_on_objects)', '含起始/结束 G-code': 'PASS',
+                                '无空文件': 'PASS', '层命令连续': 'PASS'}
+    assert moved['footprint']['max_excursion_mm']['model'] == pytest.approx(2.79)
+    assert m7.m7_verdict(moved['results']) == 1

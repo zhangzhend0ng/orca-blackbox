@@ -17,6 +17,8 @@ into the run directory, so that the application decides the extension. The
 cube's file is `plate.gcode.3mf`, the sphere's `sphere.gcode.3mf`. The
 archive sizes and the G-code inside them are compared; readings of exports
 collected earlier are listed next to them when those files are on the machine.
+The G-code inside each archive must also deposit its material on the objects
+of the plate it was sliced from (gcode_footprint, against the saved `before`).
 """
 import argparse
 from hashlib import sha256
@@ -60,7 +62,7 @@ REFERENCES = (
 
 
 def run_sample(args, work, analysis, label, model, name, prefix):
-    """One session: open `model`, slice it, export its sliced file; returns the export receipt."""
+    """One session: open `model`, slice it, export its sliced file; returns the receipt and the saved plate."""
     reading = analysis[label] = {'fixture': {'name': model.name, 'bytes': model.stat().st_size,
                                               'sha256': sha256(model.read_bytes()).hexdigest()}}
     session = boot_session(SimpleNamespace(exe=args.exe, datadir=work / f'{label}-profile'), model=model)
@@ -84,17 +86,17 @@ def run_sample(args, work, analysis, label, model, name, prefix):
         reading['editor_after_export'] = {'alive': session.alive(), 'dialog': leftover[1] if leftover else None}
         if not session.alive() or leftover:
             raise ValueError(f'editor left in an unexpected state after the export: {reading["editor_after_export"]!r}')
-        return receipt
+        return receipt, before
     finally:
         session.close()
 
 
 def run(args, work, analysis):
-    samples = {}
+    samples, projects = {}, {}
     for label, name, prefix in SAMPLES:
         model = args.model if label == 'simple' else SPHERE
         try:
-            receipt = run_sample(args, work, analysis, label, model, name, prefix)
+            receipt, before = run_sample(args, work, analysis, label, model, name, prefix)
         except Exception as exc:  # noqa: BLE001 - recorded; the verdict below turns red on it
             # The cube alone decides the first two clauses; without the sphere there is no size comparison.
             if label == 'simple':
@@ -103,7 +105,9 @@ def run(args, work, analysis):
             traceback.print_exc()
             break
         samples[label] = (work / receipt['saved_name'], receipt['saved_extension'])
-    gaps, readings, comparison = sliced_expectation_gaps(samples)
+        projects[label] = before
+    # Each archive's G-code must deposit its material on the objects of the plate it was sliced from.
+    gaps, readings, comparison = sliced_expectation_gaps(samples, projects)
     if analysis.get('complex', {}).get('error'):
         gaps['文件大小随切片复杂度合理增大'].append(f'complex plate: {analysis["complex"]["error"]}')
     analysis['sliced_files'] = readings
