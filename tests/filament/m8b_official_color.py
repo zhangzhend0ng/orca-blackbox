@@ -210,6 +210,44 @@ def click_swatch_row(session, dlg, x_off, y_off, tries=14, step=17):
     return False
 
 
+def check_cancel_keeps_color(session, open_dialog):
+    """Follow baseline #47 with a caller-supplied opener for the same slot."""
+    from harness import winutil as wu
+
+    dialog = open_dialog("cancel")
+    if not dialog:
+        return "FAIL (no dialog)"
+
+    native = is_native_picker(dialog)
+    if native:
+        before = read_rgb(session, dialog)
+        click_swatch_row(session, dialog, 8, 8)
+        selected = read_rgb(session, dialog)
+        changed = (before is not None and selected is not None and before != selected
+                   and all(field.isascii() and field.isdecimal()
+                           for color in (before, selected) for field in color))
+    else:
+        before = official_popup_colour(dialog)
+        selected = pick_official_card(session, dialog)
+        changed = official_colour_changed(before, selected)
+
+    cancel_clicked = m8.close_dialog_by_button(dialog, "Cancel")
+    closed = not wu.user32.IsWindowVisible(dialog[3])
+    reopened = open_dialog("after_cancel") if closed else None
+    after = None
+    if reopened:
+        if native == is_native_picker(reopened):
+            after = read_rgb(session, reopened) if native else official_popup_colour(reopened)
+        m8.close_dialog_by_button(reopened, "Cancel")
+        time.sleep(0.8)
+
+    detail = (f"before={before!r}, selected={selected!r}, changed={changed}, "
+              f"cancel_clicked={cancel_clicked}, closed={closed}, reopened={after!r}")
+    if changed and cancel_clicked and closed and after == before:
+        return f"PASS ({detail})"
+    return f"FAIL ({detail})"
+
+
 def dismiss_all_pops(session):
     """Close leftover dialogs/popups before a GUI action.
 
@@ -462,37 +500,8 @@ def main() -> int:
             time.sleep(0.8)
 
         # --- #47: pick -> Cancel keeps the old colour ---------------------
-        dlg2 = open_dialog_and_dump(session, "cancel")
-        kept = "FAIL (no dialog)"
-        if dlg2:
-            before47 = (official_popup_colour(dlg2) if not native
-                        else read_rgb(session, dlg2))
-            if native:
-                click_swatch_row(session, dlg2, 8, 8)
-                mid = read_rgb(session, dlg2)
-            else:
-                mid = pick_official_card(session, dlg2)
-            cancel_clicked = m8.close_dialog_by_button(dlg2, "Cancel")
-            closed = not _wu.user32.IsWindowVisible(dlg2[3])
-            dlg3 = open_dialog_and_dump(session, "after_cancel") if closed else None
-            after47 = (official_popup_colour(dlg3) if (dlg3 and not native)
-                       else (read_rgb(session, dlg3) if dlg3 else None))
-            changed = False
-            if not native:
-                changed = official_colour_changed(before47, mid)
-            elif before47 is not None and mid is not None:
-                changed = (all(field.isascii() and field.isdecimal()
-                               for color in (before47, mid) for field in color)
-                           and mid != before47)
-            detail = (f"before={before47!r}, selected={mid!r}, changed={changed}, "
-                      f"cancel_clicked={cancel_clicked}, closed={closed}, "
-                      f"reopened={after47!r}")
-            kept = (f"PASS ({detail})" if changed and cancel_clicked and closed
-                    and after47 == before47 else f"FAIL ({detail})")
-            if dlg3:
-                m8.close_dialog_by_button(dlg3, "Cancel")
-                time.sleep(0.8)
-        results["#47 cancel keeps color"] = kept
+        results["#47 cancel keeps color"] = check_cancel_keeps_color(
+            session, lambda tag: open_dialog_and_dump(session, tag))
 
         # --- #55/#56/#58: rainbow preset + render + slice -----------------
         final = m8.switch_filament_preset(session, slot=2,
