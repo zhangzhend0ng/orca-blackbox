@@ -20,9 +20,8 @@ sys.path.insert(0, str(HERE / 'tests'))
 
 import m7_common as m7
 from harness import export_util, winutil
-from import_model_oracle import verify_import
+from import_model_oracle import selected_printer, verify_import
 from m3_common import add_common_args, boot_session
-from m7x_199_new_project_title import click_discard, is_save_prompt, save_prompt_words
 from m7x_249_add_part import capture, stage
 from m7x_250_negative_part import highlight_menu_item, send_menu_key
 from m7x_251_reload_from_disk import write_cube
@@ -30,22 +29,25 @@ from m8_common import wait_arrival
 from model_context_cases import open_model_menu
 
 
-def prepare_plate(session):
-    ok, _ = m7.file_menu_dispatch(session, 'New Project')
-    if not ok:
-        raise ValueError('could not select File > New Project')
-    dialog = m7.wait_dialog(session.pid, timeout_s=2)
-    if dialog:
-        words = save_prompt_words(dialog[3])
-        if not is_save_prompt(' '.join(w[0] for w in words)) or not click_discard(dialog[3], words):
-            raise ValueError(f'unexpected New Project dialog: {dialog[1]}')
+def prepare_plate(session, work, analysis):
+    # File > New discards the project-embedded U1 preset and falls back to
+    # Default Printer on this build. Create the new project from the U1 template.
+    project = work / 'new-project.3mf'
+    if project.exists() or not m7.save_project_as(session, project, timeout_s=40):
+        raise ValueError('could not create new project from the U1 template')
+    analysis['initial_printer'] = selected_printer(project)
+    root = open_model_menu(session, 'Delete')
+    if not root:
+        raise ValueError('could not select Delete on the template cube')
+    _, menu, index = root
+    if not highlight_menu_item(session, menu, index, log='[m7x244]') or not send_menu_key(session, 0x0D, log='[m7x244]'):
+        raise ValueError('could not delete the template cube')
     deadline = time.monotonic() + 12
     while time.monotonic() < deadline:
-        title = winutil.window_title(session.hwnd).partition(' - ')[0].lstrip('*')
-        if title == 'Untitled' and m7.model_colored_frac(session) < m7.EMPTY_BED_FLOOR:
+        if m7.model_colored_frac(session) < m7.EMPTY_BED_FLOOR and m7.find_centroid(session) is None:
             return
         time.sleep(0.3)
-    raise ValueError(f'new project did not display an empty plate, title={title!r}')
+    raise ValueError('new project did not show an empty plate after removing its template cube')
 
 
 def select_model_file(session, source, work, analysis):
@@ -95,7 +97,7 @@ def run(args, work, analysis):
             if not center:
                 raise ValueError('initial printer fixture did not open')
             analysis['bed_point'] = list(center)
-            prepare_plate(session)
+            prepare_plate(session, work, analysis)
             capture(session, work / 'prepare-before.png')
         with stage(analysis, 'add_models_chooser'):
             hwnd = select_model_file(session, source, work, analysis)
