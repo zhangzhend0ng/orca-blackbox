@@ -1,0 +1,131 @@
+{
+  "case": 245,
+  "results": {
+    "initial fixture geometry preserved": "PASS",
+    "Clone dialog shows count 1 and Auto arrange checked": "PASS",
+    "case execution": "FAIL (ValueError: Clone dialog remained open after OK)"
+  },
+  "phase_seconds": {
+    "baseline": 57.063,
+    "total": 75.563
+  },
+  "dialogs": {
+    "clone": [
+      {
+        "label": "Number of copies:",
+        "class": "Static",
+        "rect": [
+          778,
+          468,
+          1005,
+          487
+        ]
+      },
+      {
+        "label": "",
+        "class": "wxWindowNR",
+        "rect": [
+          1025,
+          465,
+          1145,
+          491
+        ]
+      },
+      {
+        "label": "",
+        "class": "Edit",
+        "rect": [
+          1046,
+          469,
+          1135,
+          487
+        ]
+      },
+      {
+        "label": "",
+        "class": "wxWindowNR",
+        "rect": [
+          1028,
+          466,
+          1043,
+          477
+        ]
+      },
+      {
+        "label": "",
+        "class": "wxWindowNR",
+        "rect": [
+          1028,
+          479,
+          1043,
+          490
+        ]
+      },
+      {
+        "label": "Auto arrange plate after cloning:",
+        "class": "Static",
+        "rect": [
+          778,
+          499,
+          1005,
+          518
+        ]
+      },
+      {
+        "label": "",
+        "class": "Button",
+        "rect": [
+          1025,
+          500,
+          1043,
+          518
+        ]
+      },
+      {
+        "label": "panel",
+        "class": "wxWindowNR",
+        "rect": [
+          768,
+          533,
+          1155,
+          585
+        ]
+      },
+      {
+        "label": "Fill",
+        "class": "wxWindowNR",
+        "rect": [
+          778,
+          543,
+          878,
+          575
+        ]
+      },
+      {
+        "label": "OK",
+        "class": "wxWindowNR",
+        "rect": [
+          935,
+          543,
+          1035,
+          575
+        ]
+      },
+      {
+        "label": "Cancel",
+        "class": "wxWindowNR",
+        "rect": [
+          1045,
+          543,
+          1145,
+          575
+        ]
+      }
+    ]
+  },
+  "clone_dialog": {
+    "copies": 1,
+    "auto_arrange": true,
+    "auto_arrange_initial": true
+  }
+}

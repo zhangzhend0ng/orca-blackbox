@@ -1,0 +1,45 @@
+﻿[m7x245] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\245\run-7kcy133c
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\245\run-7kcy133c\profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\245\run-7kcy133c\profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\245\run-7kcy133c\fixture.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x52c03e8, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x52904bc, WM_CLOSE)
+[launcher] pid=308 hwnd=0x555064e rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (1.40%, gate 0.10%)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x554065e did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[model context] desktop hit-test did not resolve to canvas at (1171,533)
+[model context] message right-click @(1171,533) on 0x16711f4
+[model context] menu hwnd=0x59d03b4: [(0, 'Clone\tCtrl+K', 0), (1, 'Simplify Model', 0), (2, '', 2051), (3, 'Mesh boolean', 1), (4, 'Center', 0), (5, 'Drop', 1), (6, 'Split', 529), (7, 'Mirror', 784), (8, 'Delete\tDel', 0), (9, '', 2051), (10, 'Add Part', 3088), (11, 'Add Negative Part', 3088), (12, 'Add Modifier', 3088), (13, 'Add Support Blocker', 2064), (14, 'Add Support Enforcer', 2064), (15, 'Height Range Modifier', 0), (16, '', 2051), (17, 'Printable', 8), (18, 'Edit Process Settings', 0), (19, 'Edit in Parameter Table', 0), (20, '', 2051), (21, 'Reload from disk', 0), (22, 'Replace with STL', 0), (23, 'Export as one STL...', 0), (24, 'Convert from Inches', 0), (25, 'Convert from Meters', 0), (26, 'Change Filament', 1808)]
+[m7x245] native highlighted row 0 in menu 0x3a4b0467
+[m7x245] activated context menu item 'Clone'
+[m7x245] clone Clone dialog visible controls: [{'label': 'Number of copies:', 'class': 'Static', 'rect': (778, 468, 1005, 487)}, {'label': '', 'class': 'wxWindowNR', 'rect': (1025, 465, 1145, 491)}, {'label': '', 'class': 'Edit', 'rect': (1046, 469, 1135, 487)}, {'label': '', 'class': 'wxWindowNR', 'rect': (1028, 466, 1043, 477)}, {'label': '', 'class': 'wxWindowNR', 'rect': (1028, 479, 1043, 490)}, {'label': 'Auto arrange plate after cloning:', 'class': 'Static', 'rect': (778, 499, 1005, 518)}, {'label': '', 'class': 'Button', 'rect': (1025, 500, 1043, 518)}, {'label': 'panel', 'class': 'wxWindowNR', 'rect': (768, 533, 1155, 585)}, {'label': 'Fill', 'class': 'wxWindowNR', 'rect': (778, 543, 878, 575)}, {'label': 'OK', 'class': 'wxWindowNR', 'rect': (935, 543, 1035, 575)}, {'label': 'Cancel', 'class': 'wxWindowNR', 'rect': (1045, 543, 1145, 575)}]
+python.exe : Traceback (most recent call last):
+At C:\coil\run_suite.ps1:35 char:3
++   & "C:\Python311\python.exe" (Case-File $c) 2>&1 | Out-File -FilePat ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\plate_layout_case.py", line 93, in run_case
+    operation(session, work, before, analysis, log)
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\m7x_245_clone_fill.py", line 128, in clone_fill
+    confirm_dialog(session, dialog, 'OK', log)
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\m7x_245_clone_fill.py", line 115, in confirm_dialog
+    raise ValueError(f'Clone dialog remained open after {label}')
+ValueError: Clone dialog remained open after OK
+[m7x245] analysis {"case": 245, "results": {"initial fixture geometry preserved": "PASS", "Clone dialog shows count 1 and Auto arrange checked": "PASS", "case execution": "FAIL (ValueError: Clone dialog remained open after OK)"}, "phase_seconds": {"baseline": 57.094, "total": 75.5}, "dialogs": {"clone": [{"label": "Number of copies:", "class": "Static", "rect": [778, 468, 1005, 487]}, {"label": "", "class": "wxWindowNR", "rect": [1025, 465, 1145, 491]}, {"label": "", "class": "Edit", "rect": [1046, 469, 1135, 487]}, {"label": "", "class": "wxWindowNR", "rect": [1028, 466, 1043, 477]}, {"label": "", "class": "wxWindowNR", "rect": [1028, 479, 1043, 490]}, {"label": "Auto arrange plate after cloning:", "class": "Static", "rect": [778, 499, 1005, 518]}, {"label": "", "class": "Button", "rect": [1025, 500, 1043, 518]}, {"label": "panel", "class": "wxWindowNR", "rect": [768, 533, 1155, 585]}, {"label": "Fill", "class": "wxWindowNR", "rect": [778, 543, 878, 575]}, {"label": "OK", "class": "wxWindowNR", "rect": [935, 543, 1035, 575]}, {"label": "Cancel", "class": "wxWindowNR", "rect": [1045, 543, 1145, 575]}]}, "clone_dialog": {"copies": 1, "auto_arrange": true, "auto_arrange_initial": true}}
+
+[m7] === verdict ===
+  initial fixture geometry preserved: PASS
+  Clone dialog shows count 1 and Auto arrange checked: PASS
+  case execution: FAIL (ValueError: Clone dialog remained open after OK)
+[m7] RED

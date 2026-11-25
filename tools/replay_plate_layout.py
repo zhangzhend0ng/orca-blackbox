@@ -38,8 +38,15 @@ def replay_clone(directory: Path, prefix: str) -> dict:
     from plate_layout_oracle import verify_clone
 
     manifest, read = _projects(directory, prefix)
-    filled = read("filled.3mf") if any(part["part"] == "filled.3mf" for part in manifest) else None
-    result = verify_clone(read("before.3mf"), read("cloned.3mf"), filled)
+    parts = {part["part"] for part in manifest}
+    before = read("before.3mf")
+    if "cloned.3mf" not in parts:
+        from delete_object_oracle import objects
+
+        return {"checks": {"initial_fixture_retained": objects(before) == objects(read("fixture.3mf")),
+                           "clone_evidence_present": False, "fill_evidence_present": False}}
+    filled = read("filled.3mf") if "filled.3mf" in parts else None
+    result = verify_clone(before, read("cloned.3mf"), filled)
     if filled is None:
         result["checks"]["fill_evidence_present"] = False
     return result

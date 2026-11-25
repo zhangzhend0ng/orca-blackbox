@@ -1,0 +1,13 @@
+﻿{
+    "commit":  "07bab89ba1ec9fb2b9903ebec5e1280102e818b6",
+    "case":  "m7x_245_clone_fill",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "summary":  "SUMMARY: PASS=0 FAIL=1\r\nFAILED: m7x_245_clone_fill",
+    "dispatched_at":  "2026-11-25T21:31:16.9056545+08:00",
+    "scenario_completed_at":  "2026-11-25T21:32:51.0841142+08:00",
+    "suite_completed_at":  "2026-11-25T21:32:51.0851194+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_245_clone_fill.log",
+    "log_sha256":  "C4A2601C07C6B977D937DF77B0B1B139B1C2EEA006E4C5C3378DC248A554808A"
+}

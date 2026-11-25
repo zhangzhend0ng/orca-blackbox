@@ -1,0 +1,32 @@
+﻿[
+    {
+        "part":  "analysis.json",
+        "bytes":  2353,
+        "sha256":  "6F2394DF8531A13378E86EF873207D2B53CD4FD78E568E8FB71109699D40878A"
+    },
+    {
+        "part":  "before.3mf",
+        "bytes":  34596,
+        "sha256":  "AC89940CBDF71BF6E902C4B8694014B4C491CC82B1114ABADE1FF2912D75179C"
+    },
+    {
+        "part":  "before.png",
+        "bytes":  285764,
+        "sha256":  "D31238E0699A4B0A86B98ED49E9D783798DDFAF2AAF162D353E2FB013B6F8A72"
+    },
+    {
+        "part":  "clone-dialog-initial.png",
+        "bytes":  10778,
+        "sha256":  "65B9AA04E01281E8216C2BA6B9834941C0BEC09EE5A5209A6C72877ED9DD9A0E"
+    },
+    {
+        "part":  "clone-dialog-ready.png",
+        "bytes":  10778,
+        "sha256":  "65B9AA04E01281E8216C2BA6B9834941C0BEC09EE5A5209A6C72877ED9DD9A0E"
+    },
+    {
+        "part":  "fixture.3mf",
+        "bytes":  31093,
+        "sha256":  "79E218C3E28D5CA606335D86F70D716A67CFF44FF5332831F9D85443269D4678"
+    }
+]

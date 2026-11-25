@@ -10,7 +10,6 @@ sys.path[:0] = [str(HERE), str(HERE / 'tests')]
 
 from harness import topbar_util
 import m7_common as m7
-from m7x_242_delete_plate import top_view
 from m7x_250_negative_part import highlight_menu_item, open_part_submenu, send_menu_key
 from model_context_cases import open_model_menu
 from plate_reserve_case import activate, case_main, save_snapshot
@@ -23,9 +22,11 @@ def prepare_fixture(template, work):
     return fixture
 
 
-def object_centers(session):
-    points = sorted(m7.find_centroids(session, limit=2, min_area=90))
-    if len(points) != 2 or points[1][0] - points[0][0] < 45:
+def object_centers(session, phase, analysis):
+    points = sorted(m7.find_centroids(session, limit=2, min_area=70))
+    analysis.setdefault('shell_centers_px', {})[phase] = points
+    print(f'[m7x247] {phase} centers: {points!r}', flush=True)
+    if len(points) != 2 or points[1][0] - points[0][0] < 30:
         raise ValueError(f'could not address both visible mesh shells: {points!r}')
     return points
 
@@ -53,20 +54,18 @@ def set_color(session, point, slot):
 
 
 def steps(session, work, analysis, _args):
-    top_view(session)
     before = save_snapshot(session, work, 'before')
-    left, right = object_centers(session)
-    analysis['shell_centers_before_px'] = [left, right]
+    left, right = object_centers(session, 'before', analysis)
     activate(session, open_part_submenu(session, menu_label='Split', child_label='To objects',
                                        candidates=[left, right], log='[m7x247]'), '[m7x247]')
     time.sleep(1)
     split = save_snapshot(session, work, 'split')
     analysis['split_geometry'] = verify_split(before, split)
     analysis['results']['Split > To objects retained both closed shells as independent objects'] = 'PASS'
-    left, _ = object_centers(session)
+    left, _ = object_centers(session, 'split', analysis)
     set_color(session, left, 2)
     left_color = save_snapshot(session, work, 'left-color')
-    _, right = object_centers(session)
+    _, right = object_centers(session, 'left-color', analysis)
     set_color(session, right, 3)
     both_colors = save_snapshot(session, work, 'both-colors')
     analysis['split_selection'] = verify_split_selection(split, left_color, both_colors)

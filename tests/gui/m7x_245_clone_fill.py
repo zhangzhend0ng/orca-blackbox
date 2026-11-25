@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # feishu: baseline#245
 """Confirm one arranged clone, then invoke Fill in a new Clone dialog."""
+import ctypes
 import time
 
 import cv2
@@ -34,14 +35,29 @@ def children(hwnd):
     return [row for row in export_util._children_texts(hwnd) if winutil.user32.IsWindowVisible(row[2])]
 
 
-def click_dialog_control(hwnd, dialog):
+def click_dialog_control(session, hwnd, dialog):
     left, top, right, bottom = winutil.window_rect(hwnd)
     x, y = (left + right) // 2, (top + bottom) // 2
-    if winutil.deepest_child_at(dialog, x, y) != hwnd:
-        raise ValueError('dialog control does not own its click target')
-    if winutil.real_click_screen(x, y) != 2:
-        raise ValueError('could not send a complete click to the Clone dialog')
-    time.sleep(.4)
+    user32 = winutil.user32
+    if (not session.alive() or user32.IsWindowEnabled(session.hwnd)
+            or not user32.IsWindowVisible(dialog) or winutil._window_pid(dialog) != session.pid
+            or winutil._window_pid(hwnd) != session.pid or not user32.IsWindowEnabled(hwnd)
+            or winutil.deepest_child_at(dialog, x, y) != hwnd):
+        raise ValueError('expected an enabled owned control in the active Clone modal')
+    ox, oy = winutil.client_to_screen(hwnd, 0, 0)
+    lparam = ((y - oy) << 16) | ((x - ox) & 0xFFFF)
+    result = ctypes.c_size_t()
+    # The self-drawn wx button starts its press on LEFT_DOWN and emits the
+    # button event on LEFT_UP in its client rect. Route one pair directly to
+    # the verified child even when a transparent overlay owns the desktop hit.
+    target = ctypes.c_void_p(hwnd)
+    sent_down = bool(user32.SendMessageTimeoutW(target, winutil.WM_LBUTTONDOWN, winutil.MK_LBUTTON,
+                                              lparam, winutil.SMTO_ABORTIFHUNG, 3000, ctypes.byref(result)))
+    sent_up = None
+    if sent_down and user32.IsWindowVisible(hwnd):
+        sent_up = bool(user32.SendMessageTimeoutW(target, winutil.WM_LBUTTONUP, 0,
+                                                lparam, winutil.SMTO_ABORTIFHUNG, 3000, ctypes.byref(result)))
+    return {'mouse_down_completed': sent_down, 'mouse_up_completed': sent_up}
 
 
 def dialog_image(hwnd, path):
@@ -79,7 +95,7 @@ def checkbox_checked(dialog, hwnd, image):
     return bool(np.mean((g-r > 55) & (b-r > 45)) >= .2)
 
 
-def set_one_auto_arranged(dialog, controls, original, work):
+def set_one_auto_arranged(session, dialog, controls, original, work):
     edits = [h for _, _, h in controls if winutil.window_class(h).casefold() == 'edit']
     if len(edits) != 1:
         raise ValueError('Clone dialog did not expose exactly one native copy count field')
@@ -90,7 +106,7 @@ def set_one_auto_arranged(dialog, controls, original, work):
     checkbox = checkbox_handle(dialog, controls)
     was_checked = checkbox_checked(dialog, checkbox, original)
     if not was_checked:
-        click_dialog_control(checkbox, dialog)
+        click_dialog_control(session, checkbox, dialog)
     image = dialog_image(dialog, work / 'clone-dialog-ready.png')
     count = winutil.edit_text(edit)
     checked = checkbox_checked(dialog, checkbox, image)
@@ -99,19 +115,43 @@ def set_one_auto_arranged(dialog, controls, original, work):
     return {'copies': int(count), 'auto_arrange': checked, 'auto_arrange_initial': was_checked}
 
 
-def confirm_dialog(session, dialog, label, log):
+def button_state(session, dialog, button):
+    user32 = winutil.user32
+    return {'dialog_visible': bool(user32.IsWindowVisible(dialog)),
+            'button_visible': bool(user32.IsWindowVisible(button)),
+            'button_enabled': bool(user32.IsWindowEnabled(button)),
+            'main_enabled': bool(user32.IsWindowEnabled(session.hwnd)),
+            'foreground_is_dialog': user32.GetForegroundWindow() == dialog,
+            'foreground_pid': winutil._window_pid(user32.GetForegroundWindow())}
+
+
+def confirm_dialog(session, dialog, label, work, analysis, log):
     visible = [(text, handle) for text, _, handle in children(dialog) if text.strip().casefold() == label.casefold()]
-    if len(visible) == 1:
-        click_dialog_control(visible[0][1], dialog)
-    elif label == 'OK' and not visible:
-        if not m7.click_dialog_button(dialog, label, fallback_first=False):
-            raise ValueError('Clone dialog did not expose its OK button')
-    else:
+    if len(visible) != 1:
         raise ValueError(f'Clone dialog did not expose exactly one {label} button')
+    button = visible[0][1]
+    initial = button_state(session, dialog, button)
+    left, top, right, bottom = winutil.window_rect(button)
+    desktop_hit = winutil.window_from_screen_point((left + right) // 2, (top + bottom) // 2)
+    diagnostics = {'initial': initial, 'desktop_hit_is_button': desktop_hit == button,
+                   'desktop_hit_pid': winutil._window_pid(desktop_hit), 'transitions': []}
+    analysis.setdefault('button_actions', {})[label] = diagnostics
+    diagnostics['dispatch'] = click_dialog_control(session, button, dialog)
+    print(f'{log} Clone dialog {label!r} input: {diagnostics!r}', flush=True)
+    previous = initial
     deadline = time.monotonic() + 15
-    while time.monotonic() < deadline and winutil.user32.IsWindowVisible(dialog):
-        time.sleep(.2)
-    if winutil.user32.IsWindowVisible(dialog):
+    while True:
+        state = button_state(session, dialog, button)
+        if state != previous:
+            diagnostics['transitions'].append(state)
+            print(f'{log} Clone dialog {label!r} state: {state!r}', flush=True)
+            previous = state
+        if not state['dialog_visible'] or time.monotonic() >= deadline:
+            break
+        time.sleep(.1)
+    diagnostics['final'] = state
+    if state['dialog_visible']:
+        dialog_image(dialog, work / f'{label.casefold()}-dialog-after-input.png')
         raise ValueError(f'Clone dialog remained open after {label}')
     if not session.alive():
         raise ValueError(f'editor exited after {label}')
@@ -123,9 +163,9 @@ def clone_fill(session, work, before, analysis, log):
 
     started = time.monotonic()
     dialog, controls, original = open_clone_dialog(session, work, analysis, 'clone', log)
-    analysis['clone_dialog'] = set_one_auto_arranged(dialog, controls, original, work)
+    analysis['clone_dialog'] = set_one_auto_arranged(session, dialog, controls, original, work)
     analysis['results']['Clone dialog shows count 1 and Auto arrange checked'] = 'PASS'
-    confirm_dialog(session, dialog, 'OK', log)
+    confirm_dialog(session, dialog, 'OK', work, analysis, log)
     time.sleep(6)
     cloned = save_stage(session, work, 'cloned')
     clone_report = verify_clone(before, cloned)
@@ -137,7 +177,7 @@ def clone_fill(session, work, before, analysis, log):
 
     started = time.monotonic()
     dialog, _, _ = open_clone_dialog(session, work, analysis, 'fill', log)
-    confirm_dialog(session, dialog, 'Fill', log)
+    confirm_dialog(session, dialog, 'Fill', work, analysis, log)
     time.sleep(12)
     filled = save_stage(session, work, 'filled')
     record_checks(analysis, verify_clone(before, cloned, filled))
