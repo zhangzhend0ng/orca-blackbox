@@ -57,7 +57,10 @@ from m7x_244_add_model import prepare_plate  # noqa: E402
 from m7x_249_add_part import capture, stage  # noqa: E402
 from plate_reserve_case import case_main, save_snapshot  # noqa: E402
 
-FIXTURE = HERE / 'fixtures' / 'feishu_std_cube.3mf'
+# The U1 0.8 template with its first two filaments coloured red and blue
+# (tools/make_agent_layer_redblue.py): the MTL carries a red and a blue material, and
+# prepare_plate reads the U1 0.8 printer from the project it saves.
+FIXTURE = HERE / 'fixtures' / 'agent_layer_redblue.3mf'
 LOG = '[m7x228]'
 
 
