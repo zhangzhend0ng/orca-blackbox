@@ -1,0 +1,44 @@
+﻿[m7x244] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\244\run-plzrew8v
+[m7x249] started open_project at 2026-11-25T08:48:19.352957+00:00
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\244\run-plzrew8v\profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\244\run-plzrew8v\profile C:\coil\orca-blackbox-v3-r1\fixtures\agent_layer_cube.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x5630b84, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x12e11ae, WM_CLOSE)
+[launcher] pid=10636 hwnd=0x54c08b6 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m7x249] finished open_project in 48.687s
+[m7x249] started prepare_empty_plate at 2026-11-25T08:49:08.065566+00:00
+[m8] arrival: True (0.48%, gate 0.25%)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x51b04fe did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[topbar] WM_COMMAND(id=315) sent, completed=True
+[m7x249] finished prepare_empty_plate in 7.250s
+[m7x249] started add_models_chooser at 2026-11-25T08:49:15.450403+00:00
+[model context] desktop hit-test did not resolve to canvas at (1172,528)
+[model context] message right-click @(1172,528) on 0x52e070e
+[model context] menu hwnd=0x53e057c: [(0, 'Select All', 1), (1, 'Delete All', 1), (2, 'Arrange', 1), (3, 'Reload All', 1), (4, 'Auto Rotate', 1), (5, 'Delete Plate', 1), (6, '', 2051), (7, 'Add Primitive', 2576), (8, 'Add Handy models', 1808), (9, 'Add Models', 0), (10, 'Lock', 0), (11, 'Edit Plate Name', 0)]
+[m7x244] native highlighted row 9 in menu 0x4ead01d3
+[m7x244] chooser {'title': 'Choose one or more files (3mf/step/stl/svg/obj/amf):', 'entered': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\244\\run-plzrew8v\\cube_20mm.stl', 'labels': ['Choose one or more files (3mf/step/stl/svg/obj/amf):', '', '', '', 'Namespace Tree Control', 'Navigation Pane', '', 'ShellView', '', '', '', 'File &name:', '', '', 'Files of &type:', '', '&Open', 'Cancel', '', '', '', '', 'Navigation buttons', '', 'Up band', '', '', '', 'Address: C:\\coil\\orca-blackbox-v3-r1\\fixtures', 'Address band', '', '', '', '', '', '']}
+[m7x249] finished add_models_chooser in 3.719s
+[m7x249] started observe_import at 2026-11-25T08:49:19.406553+00:00
+[m8] arrival: True (0.60%, gate 0.10%)
+[m7x249] finished observe_import in 0.218s
+[m7x249] started save_and_verify at 2026-11-25T08:49:19.617032+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x51b04fe did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x244] saved {'source_file': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\244\\run-plzrew8v\\cube_20mm.stl', 'dimensions_mm': [20.0, 20.0, 20.0], 'printer': 'Default Printer', 'triangles': 12, 'printable_object_id': '2'}
+[m7x249] finished save_and_verify in 8.360s
+
+[m7] === verdict ===
+  blank plate Add Models opens format-aware file chooser: PASS
+  single imported object on current plate matches the 20mm STL: PASS
+[m7] GREEN

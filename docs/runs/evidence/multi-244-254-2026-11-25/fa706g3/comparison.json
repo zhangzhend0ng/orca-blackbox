@@ -1,0 +1,84 @@
+{
+  "head": "b193585f1980fc8356c1c4dbe62287d5bc17cbc1",
+  "matched_snapmaker_preset_files": 738,
+  "runs": [
+    {
+      "sample": "cube",
+      "run_id": "09748193bb31455f941b57f591237fb6",
+      "fixture_sha256": "ed1ca79dd1dd1de28e9d21fb55efc5cee12f1215fbad9cac07159e5d7687d8ef",
+      "first_z": "0.25",
+      "last_z": "27.05",
+      "layer_count": 135,
+      "increments": [
+        "0.20"
+      ],
+      "layer_height": "0.2",
+      "initial_layer_print_height": "0.25",
+      "printer": "Snapmaker U1 (0.8 nozzle)(fixture.3mf)",
+      "filament": [
+        "Generic PETG @U1 0.8 nozzle(fixture.3mf)",
+        "Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3mf)",
+        "Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3mf)",
+        "Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3mf)",
+        "Snapmaker PLA Silk @U1 0.8 nozzle(fixture.3mf)"
+      ],
+      "print_profile": "0.40 Standard @Snapmaker U1 (0.8 nozzle)(fixture.3mf)",
+      "verdict": "SHADOW",
+      "cleanup_confirmed": true,
+      "old_pid": 5428,
+      "reopened_pid": 8656
+    },
+    {
+      "sample": "sphere-baseline",
+      "run_id": "a673f4e21e424361bd8e83f6273aff7d",
+      "fixture_sha256": "f5f83d00545522c7cde44c0cd4260c325418707afdc83e6056390a0b8800d13c",
+      "first_z": "0.25",
+      "last_z": "20.05",
+      "layer_count": 100,
+      "increments": [
+        "0.20"
+      ],
+      "layer_height": "0.2",
+      "initial_layer_print_height": "0.25",
+      "printer": "Snapmaker U1 (0.4 nozzle)(fixture.3mf)",
+      "filament": [
+        "Generic PLA @U1 0.4 nozzle(fixture.3mf)",
+        "Snapmaker PLA Basic @U1 0.4 nozzle(fixture.3mf)",
+        "Snapmaker PLA Basic @U1 0.4 nozzle(fixture.3mf)",
+        "Snapmaker PLA Basic @U1 0.4 nozzle(fixture.3mf)",
+        "Snapmaker PLA Basic @U1 0.4 nozzle(fixture.3mf)"
+      ],
+      "print_profile": "0.20mm Standard @Snapmaker U1 (0.4 nozzle)(fixture.3mf)",
+      "verdict": "SHADOW",
+      "cleanup_confirmed": true,
+      "old_pid": 6900,
+      "reopened_pid": 26928
+    },
+    {
+      "sample": "sphere-target",
+      "run_id": "ae209cf764f64fffb8752746906c5946",
+      "fixture_sha256": "f5f83d00545522c7cde44c0cd4260c325418707afdc83e6056390a0b8800d13c",
+      "first_z": "0.25",
+      "last_z": "20.05",
+      "layer_count": 100,
+      "increments": [
+        "0.20"
+      ],
+      "layer_height": "0.2",
+      "initial_layer_print_height": "0.25",
+      "printer": "Snapmaker U1 (0.4 nozzle)(fixture.3mf)",
+      "filament": [
+        "Generic PLA @U1 0.4 nozzle(fixture.3mf)",
+        "Snapmaker PLA Basic @U1 0.4 nozzle(fixture.3mf)",
+        "Snapmaker PLA Basic @U1 0.4 nozzle(fixture.3mf)",
+        "Snapmaker PLA Basic @U1 0.4 nozzle(fixture.3mf)",
+        "Snapmaker PLA Basic @U1 0.4 nozzle(fixture.3mf)"
+      ],
+      "print_profile": "0.20mm Standard @Snapmaker U1 (0.4 nozzle)(fixture.3mf)",
+      "verdict": "SHADOW",
+      "cleanup_confirmed": true,
+      "old_pid": 5656,
+      "reopened_pid": 2420
+    }
+  ]
+}

@@ -12,10 +12,12 @@ EVIDENCE = Path(__file__).resolve().parents[1] / "docs/runs/evidence"
 SAVE = EVIDENCE / "feishu-140-201-202-2026-11-25/row-201-hyperv"
 CUT = EVIDENCE / "feishu-250-251-2026-11-25/row-250-hyperv"
 PART = EVIDENCE / "feishu-249-2026-11-25"
+IMPORT = EVIDENCE / "multi-244-254-2026-11-25/win11-test"
 
 
 @pytest.mark.parametrize("directory,prefix", [
     (SAVE, "1216dc9e-run1"), (CUT, "a7a65272-run2"), (PART, "dcadf798-run1"),
+    (IMPORT, "e7ba1cd2-run1"),
 ])
 def test_archived_evidence_and_negative_controls(directory, prefix):
     report = replay_receipt(directory / f"{prefix}-receipt.json")

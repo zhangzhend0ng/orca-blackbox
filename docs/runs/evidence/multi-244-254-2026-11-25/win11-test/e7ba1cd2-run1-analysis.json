@@ -1,0 +1,107 @@
+{
+  "case": 244,
+  "timings": {
+    "open_project": {
+      "started_utc": "2026-11-25T08:55:21.304649+00:00",
+      "duration_s": 50.875
+    },
+    "prepare_empty_plate": {
+      "started_utc": "2026-11-25T08:56:12.189543+00:00",
+      "duration_s": 11.953
+    },
+    "add_models_chooser": {
+      "started_utc": "2026-11-25T08:56:24.143095+00:00",
+      "duration_s": 3.297
+    },
+    "observe_import": {
+      "started_utc": "2026-11-25T08:56:27.428160+00:00",
+      "duration_s": 0.281
+    },
+    "save_and_verify": {
+      "started_utc": "2026-11-25T08:56:27.721003+00:00",
+      "duration_s": 8.297
+    }
+  },
+  "results": {
+    "blank plate Add Models opens format-aware file chooser": "PASS",
+    "single imported object on current plate matches the 20mm STL": "PASS"
+  },
+  "bed_point": [
+    1172,
+    514
+  ],
+  "initial_printer": {
+    "model": "Snapmaker U1",
+    "profile": "Snapmaker U1 (0.8 nozzle)(agent_layer_cube.3mf)"
+  },
+  "empty_plate": {
+    "fraction": 0.0010439742316604283,
+    "candidate_centroids": [
+      [
+        935,
+        331
+      ],
+      [
+        851,
+        759
+      ]
+    ]
+  },
+  "chooser": {
+    "title": "Choose one or more files (3mf/step/stl/svg/obj/amf):",
+    "entered": "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\244\\run-bspxyqai\\cube_20mm.stl",
+    "labels": [
+      "Choose one or more files (3mf/step/stl/svg/obj/amf):",
+      "",
+      "",
+      "",
+      "Namespace Tree Control",
+      "Navigation Pane",
+      "",
+      "ShellView",
+      "",
+      "",
+      "",
+      "File &name:",
+      "",
+      "",
+      "Files of &type:",
+      "",
+      "&Open",
+      "Cancel",
+      "",
+      "",
+      "",
+      "",
+      "Navigation buttons",
+      "",
+      "Up band",
+      "",
+      "",
+      "",
+      "Address: C:\\coil\\orca-blackbox-v3-r1\\fixtures",
+      "Address band",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "import_fraction": 0.0010439742316604283,
+  "saved": {
+    "source_file": "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\244\\run-bspxyqai\\cube_20mm.stl",
+    "dimensions_mm": [
+      20.0,
+      20.0,
+      20.0
+    ],
+    "printer": {
+      "model": "Snapmaker U1",
+      "profile": "Snapmaker U1 (0.8 nozzle)(agent_layer_cube.3mf)"
+    },
+    "triangles": 12,
+    "printable_object_id": "2"
+  }
+}

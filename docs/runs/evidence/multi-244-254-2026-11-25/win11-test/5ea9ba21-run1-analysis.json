@@ -1,0 +1,87 @@
+{
+  "case": 244,
+  "timings": {
+    "open_project": {
+      "started_utc": "2026-11-25T08:48:19.352957+00:00",
+      "duration_s": 48.687
+    },
+    "prepare_empty_plate": {
+      "started_utc": "2026-11-25T08:49:08.065566+00:00",
+      "duration_s": 7.25
+    },
+    "add_models_chooser": {
+      "started_utc": "2026-11-25T08:49:15.450403+00:00",
+      "duration_s": 3.719
+    },
+    "observe_import": {
+      "started_utc": "2026-11-25T08:49:19.406553+00:00",
+      "duration_s": 0.218
+    },
+    "save_and_verify": {
+      "started_utc": "2026-11-25T08:49:19.617032+00:00",
+      "duration_s": 8.36
+    }
+  },
+  "results": {
+    "blank plate Add Models opens format-aware file chooser": "PASS",
+    "single imported object on current plate matches the 20mm STL": "PASS"
+  },
+  "bed_point": [
+    1172,
+    514
+  ],
+  "chooser": {
+    "title": "Choose one or more files (3mf/step/stl/svg/obj/amf):",
+    "entered": "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\244\\run-plzrew8v\\cube_20mm.stl",
+    "labels": [
+      "Choose one or more files (3mf/step/stl/svg/obj/amf):",
+      "",
+      "",
+      "",
+      "Namespace Tree Control",
+      "Navigation Pane",
+      "",
+      "ShellView",
+      "",
+      "",
+      "",
+      "File &name:",
+      "",
+      "",
+      "Files of &type:",
+      "",
+      "&Open",
+      "Cancel",
+      "",
+      "",
+      "",
+      "",
+      "Navigation buttons",
+      "",
+      "Up band",
+      "",
+      "",
+      "",
+      "Address: C:\\coil\\orca-blackbox-v3-r1\\fixtures",
+      "Address band",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "import_fraction": 0.006022656221265953,
+  "saved": {
+    "source_file": "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\244\\run-plzrew8v\\cube_20mm.stl",
+    "dimensions_mm": [
+      20.0,
+      20.0,
+      20.0
+    ],
+    "printer": "Default Printer",
+    "triangles": 12,
+    "printable_object_id": "2"
+  }
+}

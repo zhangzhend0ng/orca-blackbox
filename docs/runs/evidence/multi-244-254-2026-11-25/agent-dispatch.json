@@ -1,0 +1,12 @@
+{
+  "scope": "Text-only oracle review; GUI was exercised independently.",
+  "dispatches": [
+    {"machine":"fa706g3","row":244,"requested":"new-provider/glm-5.4","reported":"new-provider/glm-5.4","session_id":"sess_a0359fa3-59db-4f84-8f5f-91b091f3af06","completion_marker":"TEAMMATE_LOOP_OK","success":true,"reason":"Substantive assistant reply and completion marker received.","suggestion":"Verify picker ownership and STL/3MF/OBJ filters, and exactly one 20 mm cube added to the selected plate. Use an identical cube on another plate and a cancelled import as controls."},
+    {"machine":"Mac mini","row":254,"requested":"new-provider/glm-5.4","reported":"new-provider/glm-5.4","session_id":"sess_68159411-c74a-4818-a97c-429c4b351288","completion_marker":null,"success":false,"reason":"Request accepted; session entered error and returned no assistant text.","error_observed_at":"2026-11-25T16:43:21+08:00"},
+    {"machine":"Windows host (direct API)","rows":[244,254],"requested":"DeepSeek Flash (catalog lookup)","reported":null,"session_id":null,"completion_marker":null,"success":false,"reason":"Provider returned HTTP 401 during model discovery; no inference request issued."},
+    {"machine":"fa706g3","row":254,"requested":"new-provider/glm-5.4","reported":"new-provider/glm-5.4","session_id":"sess_fd8321ef-2b06-48f0-8799-04656d210d9c","completion_marker":null,"success":false,"reason":"Session entered error and returned no assistant text.","error_observed_at":"2026-11-25T16:46:17+08:00"},
+    {"machine":"Mac mini","row":254,"requested":"deepseek-flash","reported":"deepseek-flash","session_id":"sess_7940c174-220e-4310-8ae1-f28e841f0cf9","completion_marker":null,"success":false,"reason":"No assistant text or completion marker."},
+    {"machine":"Mac mini","row":254,"requested":"deepseek-v4-flash","reported":"deepseek-v4-flash","session_id":"sess_6022d4f4-4505-4052-bfd6-2fb04307facd","completion_marker":null,"success":false,"reason":"Request accepted; session entered error and returned no assistant text.","error_observed_at":"2026-11-25T16:47:33+08:00"}
+  ],
+  "reported_model_definition": "Value from assistant message metadata when present. Completion also requires substantive text and the requested marker."
+}

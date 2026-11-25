@@ -1,0 +1,13 @@
+﻿{
+    "commit":  "e7ba1cd2cfa3d54a845513c222668c2a2de9f194",
+    "case":  "m7x_244_add_model",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "summary":  "SUMMARY: PASS=1 FAIL=0",
+    "dispatched_at":  "2026-11-25T16:55:02.7771201+08:00",
+    "scenario_completed_at":  "2026-11-25T16:56:37.5192711+08:00",
+    "suite_completed_at":  "2026-11-25T16:56:37.6676990+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_m7x_244_add_model.log",
+    "log_sha256":  "8DAEDC39718305F12A401E017667E0498A47B9549EED50B30D50CF9C08552D04"
+}
