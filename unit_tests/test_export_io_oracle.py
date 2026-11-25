@@ -7,15 +7,16 @@ import sys
 from xml.etree import ElementTree as ET
 from zipfile import ZIP_DEFLATED, ZipFile
 
-from PIL import Image
+from PIL import Image, ImageDraw
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tests'))
 
 from export_io_oracle import (MERGED_VERTEX_TOL_MM, compare_sliced_sizes, gcode_checks,  # noqa: E402
-                              gcode_export_facts, merged_stl_expectation_gaps, plate_object_layout,
-                              sliced_3mf_checks, sliced_3mf_facts, verify_gcode_export, verify_merged_stl,
+                              gcode_export_facts, harvested_readings, merged_stl_expectation_gaps,
+                              plate_object_layout, sliced_3mf_checks, sliced_3mf_facts,
+                              sliced_expectation_gaps, verify_gcode_export, verify_merged_stl,
                               verify_sliced_3mf, viewer_gaps)
 from plate_reserve_oracle import _CORE, read_project, verify_f3d_image  # noqa: E402
 
@@ -497,13 +498,24 @@ def test_blank_viewer_image_is_rejected(tmp_path):
 
 # --- sliced-file archive (#234) -----------------------------------------------
 
-def png(side=32):
+PROBE_SLICED = ROOT / 'docs/runs/evidence/elevenhour-filemenu-2026-11-25/b958af2-probe1-plate-sliced.gcode.3mf'
+PROBE_GCODE = ROOT / 'docs/runs/evidence/elevenhour-filemenu-2026-11-25/b958af2-probe1-plate-gcode.gcode'
+CLAUSES = ('生成 .gcode.3mf 文件', '内含 G-code 与预览信息', '文件大小随切片复杂度合理增大')
+
+
+def png(side=32, blank=False):
+    """A preview-like picture: three coloured blocks on a transparent ground, or a blank one."""
     buffer = BytesIO()
-    Image.new('RGBA', (side, side), (40, 120, 200, 255)).save(buffer, format='PNG')
+    image = Image.new('RGBA', (side, side), (0, 0, 0, 0))
+    if not blank:
+        draw = ImageDraw.Draw(image)
+        for index, color in enumerate(((40, 120, 200, 255), (200, 120, 40, 255), (90, 200, 90, 255))):
+            draw.rectangle([side // 6, index * side // 3 + 1, side // 2, index * side // 3 + side // 3 - 1], fill=color)
+    image.save(buffer, format='PNG')
     return buffer.getvalue()
 
 
-def write_sliced(path, gcode=None, members=None, checksum=None):
+def write_sliced(path, gcode=None, members=None, checksum=None, drop=()):
     gcode = gcode_text().encode('utf-8') if gcode is None else gcode
     entries = {'Metadata/plate_1.gcode': gcode, 'Metadata/plate_1.png': png(),
                'Metadata/plate_1_small.png': png(16), 'Metadata/plate_no_light_1.png': png(),
@@ -514,6 +526,8 @@ def write_sliced(path, gcode=None, members=None, checksum=None):
     if checksum:
         entries['Metadata/plate_1.gcode.md5'] = checksum
     entries.update(members or {})
+    for name in drop:
+        entries.pop(name, None)
     with ZipFile(path, 'w', ZIP_DEFLATED) as archive:
         for name, data in entries.items():
             archive.writestr(name, data)
@@ -525,10 +539,15 @@ def test_sliced_archive_holds_gcode_and_previews(tmp_path):
     facts = verify_sliced_3mf(path)
     assert facts['extension'] == '.gcode.3mf' and facts['gcode_member'] == 'Metadata/plate_1.gcode'
     assert facts['gcode']['layer_count'] == 5 and all(gcode_checks(facts['gcode']).values())
-    assert [p['name'] for p in facts['previews']] == ['Metadata/plate_1.png', 'Metadata/plate_1_small.png',
-                                                        'Metadata/plate_no_light_1.png']
-    assert facts['gcode_md5_recorded'] == facts['gcode_md5_computed'] and facts['has_slice_info']
+    # Three blocks and the transparent ground: a picture, not a placeholder.
+    assert [(p['name'], p['size_px'], p['colors']) for p in facts['previews']] == [
+        ('Metadata/plate_1.png', [32, 32], 4), ('Metadata/plate_1_small.png', [16, 16], 4),
+        ('Metadata/plate_no_light_1.png', [32, 32], 4)]
+    assert facts['gcode_md5_recorded'] == facts['gcode_md5_computed'] == md5(gcode_text().encode('utf-8')).hexdigest()
+    assert facts['has_slice_info'] and facts['plate'] == 'Metadata/plate_1'
     assert all(sliced_3mf_checks(facts).values())
+    assert sliced_3mf_facts(path)['members'][0] == {
+        'name': 'Metadata/plate_1.gcode', 'bytes': len(gcode_text().encode('utf-8'))}
 
 
 @pytest.mark.parametrize('name', ['plate.3mf', 'plate.gcode', 'plate.zip'])
@@ -542,10 +561,31 @@ def test_sliced_archive_without_gcode_preview_or_consistent_checksum_is_rejected
         verify_sliced_3mf(write_sliced(tmp_path / 'empty-gcode.gcode.3mf', gcode=b''))
     with pytest.raises(ValueError, match=r"failed \['contains_preview'\]"):
         verify_sliced_3mf(write_sliced(tmp_path / 'no-preview.gcode.3mf', members={'Metadata/plate_1.png': b'not a png'}))
+    # A decodable but blank or tiny preview is no preview.
+    for label, picture in (('blank', png(blank=True)), ('tiny', png(8))):
+        with pytest.raises(ValueError, match=r"failed \['contains_preview'\]"):
+            verify_sliced_3mf(write_sliced(tmp_path / f'{label}-preview.gcode.3mf',
+                                           members={'Metadata/plate_1.png': picture}))
+    # The same for the small plate preview alone.
+    with pytest.raises(ValueError, match=r"failed \['contains_preview'\]"):
+        verify_sliced_3mf(write_sliced(tmp_path / 'blank-small.gcode.3mf',
+                                       members={'Metadata/plate_1_small.png': png(16, blank=True)}))
     with pytest.raises(ValueError, match=r"failed \['gcode_checksum_consistent'\]"):
         verify_sliced_3mf(write_sliced(tmp_path / 'wrong-sum.gcode.3mf', checksum=md5(b'another file').hexdigest().encode()))
-    with pytest.raises(ValueError, match=r"failed \['gcode_checksum_consistent'\]"):
+    # No record is nothing to contradict, but a complete archive on this build carries one.
+    with pytest.raises(ValueError, match=r"failed \['gcode_checksum_recorded'\]"):
         verify_sliced_3mf(write_sliced(tmp_path / 'no-sum.gcode.3mf', checksum=False))
+    with pytest.raises(ValueError, match=r"failed \['has_slice_info'\]"):
+        verify_sliced_3mf(write_sliced(tmp_path / 'no-slice-info.gcode.3mf', drop=('Metadata/slice_info.config',)))
+    # The record matches the cut G-code: only the G-code itself is incomplete.
+    torn = write_sliced(tmp_path / 'torn.gcode.3mf', gcode=gcode_text()[:-20].encode('utf-8'))
+    with pytest.raises(ValueError, match=r"failed \['contains_gcode'\]"):
+        verify_sliced_3mf(torn)
+    # Another valid G-code behind the original record: only the record exposes the swap.
+    swapped = write_sliced(tmp_path / 'swapped.gcode.3mf',
+                           members={'Metadata/plate_1.gcode': gcode_text(60).encode('utf-8')})
+    with pytest.raises(ValueError, match=r"failed \['gcode_checksum_consistent'\]"):
+        verify_sliced_3mf(swapped)
     broken = tmp_path / 'broken.gcode.3mf'
     broken.write_bytes(b'PK\x03\x04 not really a zip')
     with pytest.raises(ValueError, match='not a readable sliced-file archive'):
@@ -557,17 +597,100 @@ def test_sliced_archive_without_gcode_preview_or_consistent_checksum_is_rejected
 
 
 def test_size_comparison_needs_the_complex_sample_to_be_larger(tmp_path):
-    simple = write_sliced(tmp_path / 'simple.gcode.3mf')
-    complex_ = write_sliced(tmp_path / 'complex.gcode.3mf', gcode=gcode_text(60).encode('utf-8'))
+    simple = write_sliced(tmp_path / 'plate.gcode.3mf')
+    complex_ = write_sliced(tmp_path / 'sphere.gcode.3mf', gcode=gcode_text(60).encode('utf-8'))
     smaller = write_sliced(tmp_path / 'smaller.gcode.3mf', gcode=gcode_text(2).encode('utf-8'))
     report = compare_sliced_sizes(simple, complex_)
     assert report['simple']['layers'] == 5 and report['complex']['layers'] == 60
-    assert report['complex']['gcode_bytes'] > report['simple']['gcode_bytes']
+    assert report['simple']['file_name'] == 'plate.gcode.3mf' and report['complex']['file_name'] == 'sphere.gcode.3mf'
+    assert report['complex']['gcode_bytes'] > report['simple']['gcode_bytes'] and report['complex']['file_bytes'] > report['simple']['file_bytes']
     assert report['checks'] == {'complex_file_larger': True, 'complex_gcode_larger': True}
-    assert compare_sliced_sizes(simple, smaller)['checks'] == {
-        'complex_file_larger': False, 'complex_gcode_larger': False}
-    assert sliced_3mf_facts(simple)['members'][0] == {'name': 'Metadata/plate_1.gcode',
-                                                        'bytes': len(gcode_text().encode('utf-8'))}
+    assert report['file_ratio'] > 1 and report['gcode_ratio'] > 1
+    reversed_ = compare_sliced_sizes(simple, smaller)
+    assert reversed_['checks'] == {'complex_file_larger': False, 'complex_gcode_larger': False}
+    assert reversed_['file_ratio'] < 1
+
+
+def test_sliced_expectation_clauses_report_their_own_gaps(tmp_path):
+    simple = write_sliced(tmp_path / 'plate.gcode.3mf')
+    sphere = write_sliced(tmp_path / 'sphere.gcode.3mf', gcode=gcode_text(60).encode('utf-8'))
+    gaps, readings, comparison = sliced_expectation_gaps(
+        {'simple': (simple, '.gcode.3mf'), 'complex': (sphere, '.gcode.3mf')})
+    assert gaps == dict.fromkeys(CLAUSES, [])
+    assert set(readings) == {'simple', 'complex'} and all(readings[label]['checks']['has_slice_info'] for label in readings)
+    assert comparison['checks'] == {'complex_file_larger': True, 'complex_gcode_larger': True}
+    # The same plate twice: nothing grew.
+    gaps, _readings, comparison = sliced_expectation_gaps(
+        {'simple': (simple, '.gcode.3mf'), 'complex': (simple, '.gcode.3mf')})
+    assert gaps == {'生成 .gcode.3mf 文件': [], '内含 G-code 与预览信息': [],
+                    '文件大小随切片复杂度合理增大': ['complex_file_larger', 'complex_gcode_larger']}
+    assert comparison['file_ratio'] == comparison['gcode_ratio'] == 1.0
+    # Only the cube: its own two clauses are judged, the comparison cannot be.
+    gaps, readings, comparison = sliced_expectation_gaps({'simple': (simple, '.gcode.3mf')})
+    assert gaps == {'生成 .gcode.3mf 文件': [], '内含 G-code 与预览信息': [],
+                    '文件大小随切片复杂度合理增大': ["no readable plate G-code for ['complex']: the two files cannot be compared"]}
+    assert comparison is None and set(readings) == {'simple'}
+    # What the application saved decides the first clause; the archive decides the second.
+    plain = write_sliced(tmp_path / 'sphere.3mf', gcode=gcode_text(60).encode('utf-8'))
+    gaps, _readings, comparison = sliced_expectation_gaps({'simple': (simple, '.gcode.3mf'), 'complex': (plain, '.3mf')})
+    assert gaps['生成 .gcode.3mf 文件'] == ["complex: extension '.3mf'"]
+    assert gaps['内含 G-code 与预览信息'] == [] and gaps['文件大小随切片复杂度合理增大'] == []
+    blank = write_sliced(tmp_path / 'blank.gcode.3mf', members={'Metadata/plate_1.png': png(blank=True)})
+    gaps, _readings, _comparison = sliced_expectation_gaps({'simple': (blank, '.gcode.3mf'), 'complex': (sphere, '.gcode.3mf')})
+    assert gaps['内含 G-code 与预览信息'] == ["simple: ['contains_preview']"]
+    torn = write_sliced(tmp_path / 'torn.gcode.3mf', gcode=gcode_text()[:-20].encode('utf-8'))
+    gaps, _readings, _comparison = sliced_expectation_gaps({'simple': (torn, '.gcode.3mf'), 'complex': (sphere, '.gcode.3mf')})
+    assert gaps['内含 G-code 与预览信息'] == ["simple: ['contains_gcode']"]
+    # A missing record is not a contradiction; a wrong one is.
+    no_sum = write_sliced(tmp_path / 'no-sum.gcode.3mf', gcode=gcode_text(60).encode('utf-8'), checksum=False)
+    gaps, readings, _comparison = sliced_expectation_gaps({'simple': (simple, '.gcode.3mf'), 'complex': (no_sum, '.gcode.3mf')})
+    assert gaps == dict.fromkeys(CLAUSES, [])
+    assert readings['complex']['checks']['gcode_checksum_recorded'] is False
+    wrong = write_sliced(tmp_path / 'wrong.gcode.3mf', gcode=gcode_text(60).encode('utf-8'),
+                         checksum=md5(b'another file').hexdigest().encode())
+    gaps, _readings, _comparison = sliced_expectation_gaps({'simple': (simple, '.gcode.3mf'), 'complex': (wrong, '.gcode.3mf')})
+    assert gaps['内含 G-code 与预览信息'] == ["complex: ['gcode_checksum_consistent']"]
+    # A file that is not an archive at all fails the first two clauses of that sample.
+    text = tmp_path / 'sphere.gcode.3mf'
+    text.write_text(gcode_text(60), encoding='utf-8')
+    gaps, readings, comparison = sliced_expectation_gaps({'simple': (simple, '.gcode.3mf'), 'complex': (text, '.gcode.3mf')})
+    assert gaps['生成 .gcode.3mf 文件'] == [
+        'complex: sphere.gcode.3mf: not a readable sliced-file archive (File is not a zip file)']
+    assert gaps['内含 G-code 与预览信息'] == gaps['生成 .gcode.3mf 文件']
+    assert readings['complex'] is None and comparison is None
+    assert gaps['文件大小随切片复杂度合理增大'] == ["no readable plate G-code for ['complex']: the two files cannot be compared"]
+
+
+def test_harvested_readings_list_what_is_there_and_name_what_is_not(tmp_path):
+    cube = write_gcode(tmp_path / '0001.gcode', gcode_text())
+    sphere_gcode = write_gcode(tmp_path / 'sphere.gcode', gcode_text(60))
+    sliced = write_sliced(tmp_path / 'plate-sliced.gcode.3mf')
+    entries = [('cube G-code', cube, 'gcode'), ('sphere G-code', sphere_gcode, 'gcode'),
+               ('cube sliced file', sliced, 'sliced'), ('elsewhere', tmp_path / 'absent' / '0001.gcode', 'gcode'),
+               ('wrong kind', write_gcode(tmp_path / 'plain.gcode.3mf', gcode_text()), 'sliced')]
+    readings = harvested_readings(entries)
+    assert readings['cube G-code'] == {
+        'file_name': '0001.gcode', 'file_bytes': cube.stat().st_size, 'gcode_bytes': cube.stat().st_size,
+        'layers': 5, 'extruding_moves': 20, 'estimated_time': '; estimated printing time (normal mode) = 21m 22s',
+        'present': True}
+    assert readings['sphere G-code']['layers'] == 60 and readings['sphere G-code']['file_bytes'] > readings['cube G-code']['file_bytes']
+    assert readings['cube sliced file']['gcode_bytes'] == cube.stat().st_size
+    assert readings['elsewhere'] == {'present': False, 'file_name': '0001.gcode'}
+    assert readings['wrong kind'] == {
+        'present': True, 'error': 'plain.gcode.3mf: not a readable sliced-file archive (File is not a zip file)'}
+
+
+@pytest.mark.skipif(not PROBE_SLICED.is_file(), reason='local evidence absent')
+def test_real_guest_sliced_file_of_the_standard_cube_passes():
+    facts = verify_sliced_3mf(PROBE_SLICED)
+    assert facts['file_bytes'] == 64548 and facts['gcode']['file_bytes'] == 353856
+    assert facts['gcode']['layer_count'] == 135 and facts['gcode_md5_recorded'] == facts['gcode_md5_computed']
+    assert {preview['name']: preview['colors'] for preview in facts['previews']} == {
+        'Metadata/plate_1.png': 17, 'Metadata/plate_1_small.png': 9, 'Metadata/plate_no_light_1.png': 5,
+        'Metadata/top_1.png': 3, 'Metadata/pick_1.png': 2}
+    # The G-code inside the archive is the plain G-code export of the same slice, byte for byte.
+    with ZipFile(PROBE_SLICED) as archive:
+        assert archive.read('Metadata/plate_1.gcode') == PROBE_GCODE.read_bytes()
 
 
 # --- helpers of the GUI cases that need no application (file_export_cases) ----

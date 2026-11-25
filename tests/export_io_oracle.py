@@ -552,10 +552,39 @@ def viewer_gaps(receipt):
 
 # --- sliced-file archive (#234) -----------------------------------------------
 
+# The two plate previews of the real guest export carry 17 and 9 colours that cover at
+# least 8 pixels each; a blank image carries one. Three asks for a picture, not for that model.
+PREVIEW_MIN_COLORS = 3
+PREVIEW_MIN_SIDE_PX = 16
+SLICED_EXPECTATIONS = ('生成 .gcode.3mf 文件', '内含 G-code 与预览信息', '文件大小随切片复杂度合理增大')
+# Which archive checks carry which clause of the expectation. The third clause is the size comparison.
+SLICED_CLAUSES = (
+    ('内含 G-code 与预览信息', ('single_plate_gcode', 'contains_gcode', 'contains_preview',
+                           'gcode_checksum_consistent')),
+)
+
+
 def _png_size(data):
     if len(data) >= 24 and data[:8] == PNG_SIGNATURE and data[12:16] == b'IHDR':
         return list(struct.unpack('>II', data[16:24]))
     return None
+
+
+def _png_colors(data):
+    """[width, height, colours covering at least 8 pixels each], or None when not a decodable PNG."""
+    size = _png_size(data)
+    if not size:
+        return None
+    try:
+        from io import BytesIO
+        from PIL import Image
+        with Image.open(BytesIO(data)) as image:
+            rgba = image.convert('RGBA')
+            width, height = rgba.size
+            colors = sum(1 for count, _rgba in rgba.getcolors(maxcolors=width * height) if count >= 8)
+    except Exception:  # noqa: BLE001 - a preview that does not decode is not a preview
+        return None
+    return size + [colors]
 
 
 def sliced_3mf_facts(path):
@@ -569,42 +598,54 @@ def sliced_3mf_facts(path):
             members = [(info.filename, info.file_size) for info in archive.infolist()]
             names = [name for name, _size in members]
             plates = sorted(name for name in names if PLATE_GCODE.match(name))
-            gcode, recorded, previews = b'', b'', []
+            gcode, recorded = b'', b''
             if len(plates) == 1:
                 gcode = archive.read(plates[0])
                 if plates[0] + '.md5' in names:
                     recorded = archive.read(plates[0] + '.md5').strip()
-            computed = md5(archive.read(plates[0])).hexdigest() if len(plates) == 1 else ''
+            previews = []
             for name, size in members:
                 if name.startswith('Metadata/') and name.lower().endswith('.png'):
-                    previews.append((name, size))
-            images = [(name, size, _png_size(archive.read(name))) for name, size in previews]
+                    image = _png_colors(archive.read(name))
+                    previews.append({'name': name, 'bytes': size,
+                                     'size_px': image[:2] if image else None,
+                                     'colors': image[2] if image else None})
     except (BadZipFile, KeyError, OSError, struct.error, ValueError) as exc:
         raise ValueError(f'{path.name}: not a readable sliced-file archive ({exc})') from exc
     facts.update({
         'members': [{'name': name, 'bytes': size} for name, size in members],
         'gcode_member': plates[0] if len(plates) == 1 else None,
+        'plate': plates[0][:-len('.gcode')] if len(plates) == 1 else None,
         'gcode': _gcode_facts(gcode, plates[0]) if len(plates) == 1 else None,
-        'previews': [{'name': name, 'bytes': size, 'size_px': size_px} for name, size, size_px in images],
+        'previews': previews,
         'gcode_md5_recorded': recorded.decode('ascii', errors='replace').lower(),
-        'gcode_md5_computed': computed,
+        'gcode_md5_computed': md5(gcode).hexdigest() if len(plates) == 1 else '',
         'has_slice_info': 'Metadata/slice_info.config' in names,
         'has_project_settings': 'Metadata/project_settings.config' in names,
     })
     return facts
 
 
+def _shows_picture(preview):
+    return (preview['size_px'] is not None and min(preview['size_px']) >= PREVIEW_MIN_SIDE_PX
+            and preview['colors'] is not None and preview['colors'] >= PREVIEW_MIN_COLORS)
+
+
 def sliced_3mf_checks(facts):
-    plate = facts['gcode_member'].replace('.gcode', '') if facts['gcode_member'] else None
-    valid = {image['name'] for image in facts['previews']
-             if image['size_px'] and min(image['size_px']) >= 16}
+    """Ordered {check: passed}; ``verify_sliced_3mf`` raises on the first failure.
+
+    The checksum record and slice_info are part of a complete archive on this
+    build; whether the Feishu expectation holds is decided by SLICED_CLAUSES."""
+    plate = facts['plate']
+    pictures = {preview['name'] for preview in facts['previews'] if _shows_picture(preview)}
     return {
         'gcode_3mf_extension': facts['extension'] == '.gcode.3mf',
         'single_plate_gcode': plate is not None,
         'contains_gcode': facts['gcode'] is not None and all(gcode_checks(facts['gcode']).values()),
-        'contains_preview': plate is not None and {plate + '.png', plate + '_small.png'} <= valid,
-        'gcode_checksum_consistent': bool(facts['gcode_md5_recorded'])
-        and facts['gcode_md5_recorded'] == facts['gcode_md5_computed'],
+        'contains_preview': plate is not None and {plate + '.png', plate + '_small.png'} <= pictures,
+        'gcode_checksum_recorded': bool(facts['gcode_md5_recorded']),
+        # A record that contradicts the G-code member is a broken archive; no record is none to compare.
+        'gcode_checksum_consistent': facts['gcode_md5_recorded'] in ('', facts['gcode_md5_computed']),
         'has_slice_info': facts['has_slice_info'],
     }
 
@@ -620,15 +661,85 @@ def verify_sliced_3mf(path):
     return facts
 
 
+def _size_row(facts):
+    """Size and content readings of a sliced archive (its G-code member) or of a plain G-code export."""
+    gcode = facts.get('gcode') or facts
+    return {'file_name': facts['file_name'], 'file_bytes': facts['file_bytes'],
+            'gcode_bytes': gcode['file_bytes'], 'layers': gcode['layer_count'],
+            'extruding_moves': gcode['extruding_moves'],
+            'estimated_time': gcode['trailer_notes']['estimated_time']}
+
+
+def _size_comparison(simple, complex_):
+    """The simple and the complex plate side by side; both must have passed verify_sliced_3mf."""
+    rows = {'simple': _size_row(simple), 'complex': _size_row(complex_)}
+    return {'simple': rows['simple'], 'complex': rows['complex'],
+            'file_ratio': round(rows['complex']['file_bytes'] / rows['simple']['file_bytes'], 3),
+            'gcode_ratio': round(rows['complex']['gcode_bytes'] / rows['simple']['gcode_bytes'], 3),
+            'checks': {'complex_file_larger': rows['complex']['file_bytes'] > rows['simple']['file_bytes'],
+                       'complex_gcode_larger': rows['complex']['gcode_bytes'] > rows['simple']['gcode_bytes']}}
+
+
 def compare_sliced_sizes(simple, complex_):
     """Readings for "the file grows with slicing complexity": two archives side by side."""
-    rows = []
-    for path in (simple, complex_):
-        facts = verify_sliced_3mf(path)
-        rows.append({'file_name': facts['file_name'], 'file_bytes': facts['file_bytes'],
-                     'gcode_bytes': facts['gcode']['file_bytes'], 'layers': facts['gcode']['layer_count'],
-                     'extruding_moves': facts['gcode']['extruding_moves'],
-                     'estimated_time': facts['gcode']['trailer_notes']['estimated_time']})
-    return {'simple': rows[0], 'complex': rows[1],
-            'checks': {'complex_file_larger': rows[1]['file_bytes'] > rows[0]['file_bytes'],
-                       'complex_gcode_larger': rows[1]['gcode_bytes'] > rows[0]['gcode_bytes']}}
+    return _size_comparison(verify_sliced_3mf(simple), verify_sliced_3mf(complex_))
+
+
+def sliced_expectation_gaps(samples):
+    """({clause of the Feishu #234 expectation: [what failed]}, readings, size comparison).
+
+    `samples` maps 'simple' and 'complex' to (path, extension) of the two sliced
+    files as the application saved them: a bare name was typed, the extension
+    is its own. Nothing raises; each clause reports its own gaps."""
+    gaps = {clause: [] for clause in SLICED_EXPECTATIONS}
+    readings = {}
+    for label, (path, extension) in samples.items():
+        if extension != '.gcode.3mf':
+            gaps['生成 .gcode.3mf 文件'].append(f'{label}: extension {extension!r}')
+        try:
+            readings[label] = sliced_3mf_facts(path)
+        except ValueError as exc:
+            readings[label] = None
+            gaps['生成 .gcode.3mf 文件'].append(f'{label}: {exc}')
+            gaps['内含 G-code 与预览信息'].append(f'{label}: {exc}')
+        else:
+            checks = sliced_3mf_checks(readings[label])
+            for clause, names in SLICED_CLAUSES:
+                failed = [name for name in names if not checks[name]]
+                if failed:
+                    gaps[clause].append(f'{label}: {failed}')
+            readings[label]['checks'] = checks
+    comparison = None
+    ready = {label: facts is not None and facts['gcode'] is not None for label, facts in readings.items()}
+    if ready.get('simple') and ready.get('complex'):
+        comparison = _size_comparison(readings['simple'], readings['complex'])
+        gaps['文件大小随切片复杂度合理增大'] = [name for name, grown in comparison['checks'].items() if not grown]
+    else:
+        missing = [label for label in ('simple', 'complex') if not ready.get(label)]
+        gaps['文件大小随切片复杂度合理增大'].append(
+            f'no readable plate G-code for {missing}: the two files cannot be compared')
+    return gaps, readings, comparison
+
+
+def harvested_readings(entries):
+    """{label: size readings} of exports collected earlier, for a side-by-side look.
+
+    Each entry is (label, path, kind) with kind 'gcode' for a plain G-code
+    export or 'sliced' for a ``.gcode.3mf`` archive. A file that is not on
+    this machine is reported as absent, not skipped."""
+    out = {}
+    for label, path, kind in entries:
+        path = Path(path)
+        if not path.is_file():
+            out[label] = {'present': False, 'file_name': path.name}
+            continue
+        try:
+            facts = sliced_3mf_facts(path) if kind == 'sliced' else gcode_export_facts(path)
+            if kind == 'sliced':
+                failed = [check for check, passed in sliced_3mf_checks(facts).items() if not passed]
+                if failed:
+                    raise ValueError(f'{path.name}: failed {failed}')
+            out[label] = dict(_size_row(facts), present=True)
+        except (OSError, ValueError) as exc:
+            out[label] = {'present': True, 'error': _reason(path, exc)}
+    return out

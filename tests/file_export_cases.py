@@ -210,8 +210,11 @@ def wait_export_enabled(session, work, analysis, item, timeout_s=150):
     raise ValueError(f'{item!r} stayed disabled {timeout_s}s after the Slice click')
 
 
-def slice_until_exportable(session, work, analysis, item, timeout_s=150):
-    """Click Slice once, then wait for the `item` export row; readings land in analysis['slice']."""
+def slice_until_exportable(session, work, analysis, item, timeout_s=150, key='slice'):
+    """Click Slice once, then wait for the `item` export row.
+
+    The readings land in analysis[key]; the memory guard records stay in the
+    analysis itself so that a case which slices twice keeps both sets."""
     analysis['slice'] = {'topbar_before': topbar_labels(session), 'clicked_at': time.monotonic()}
     # Every run records whether the guest's memory guard came up, also when it did not.
     analysis.setdefault('memory_guard_dialogs', [])
@@ -222,7 +225,9 @@ def slice_until_exportable(session, work, analysis, item, timeout_s=150):
         wait_export_enabled(session, work, analysis, item, timeout_s)
     finally:
         analysis['slice'].pop('clicked_at', None)
-    slice_reading = analysis['slice']
+        if key != 'slice':
+            analysis[key] = analysis.pop('slice')
+    slice_reading = analysis[key]
     slice_reading['topbar_after'] = topbar_labels(session)
     slice_reading['export_menu_after'] = read_export_menu(session)['export']
     return slice_reading
@@ -279,13 +284,16 @@ def cancel_dialog(hwnd):
     winutil._send_msg(hwnd, m7.WM_COMMAND_MSG, IDCANCEL, 0)
 
 
-def export_via_file_menu(session, item, directory, name, work, analysis, title_substr, kind, timeout_s=60):
+def export_via_file_menu(session, item, directory, name, work, analysis, title_substr, kind, timeout_s=60,
+                         image='export-dialog.png', key='export'):
     """File > Export > `item`: navigate the dialog to `directory`, save under `name`, return what landed.
 
     The name is typed without an extension so that the application decides it.
     The receipt carries the Export rows seen, the dialog title, the proposed
     name, the type filter entries and the name and size of the file. A dialog
-    with another title is left untouched: it may be the memory guard."""
+    with another title is left untouched: it may be the memory guard.
+    `image` names the kept dialog picture and `key` the analysis entry of the
+    receipt; a case that exports more than once gives each its own."""
     directory, name = Path(directory), str(name)
     if not directory.is_dir():
         raise ValueError(f'{directory} is not a directory')
@@ -298,7 +306,7 @@ def export_via_file_menu(session, item, directory, name, work, analysis, title_s
     known = {path.name for path in directory.iterdir()}
     if name in known or any(entry.startswith(name + '.') for entry in known):
         raise ValueError(f'{name!r} already exists in {directory}')
-    receipt = analysis['export'] = {'item': item, 'export_rows': rows, 'typed_name': name}
+    receipt = analysis[key] = {'item': item, 'export_rows': rows, 'typed_name': name}
     dispatched, dialog = m7.file_menu_dispatch(session, item, expect_dialog=True, via='Export', timeout_s=10)
     if not dispatched or not dialog:
         raise ValueError(f'File > Export > {item} opened no dialog (dispatched={dispatched!r}, dialog={dialog!r})')
@@ -330,7 +338,7 @@ def export_via_file_menu(session, item, directory, name, work, analysis, title_s
     if receipt['filename_before_save'] != name:
         cancel_dialog(hwnd)
         raise ValueError(f'{title!r} did not accept the name {name!r}: {receipt["filename_before_save"]!r}')
-    receipt['dialog_image'] = capture_window(hwnd, work / 'export-dialog.png')
+    receipt['dialog_image'] = capture_window(hwnd, work / image)
     winutil._send_msg(hwnd, 0x0111, IDOK, 0)
     receipt['dialog_closed'] = _wait_closed(hwnd, 15)
     if not receipt['dialog_closed']:

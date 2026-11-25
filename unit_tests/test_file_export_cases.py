@@ -40,7 +40,9 @@ class Rig:
         monkeypatch.setattr(cases.winutil, 'edit_text', lambda hwnd, size=64: self.text)
         monkeypatch.setattr(cases.winutil, '_send_msg', self.send)
         monkeypatch.setattr(cases.winutil.user32, 'IsWindowVisible', lambda hwnd: self.visible)
-        monkeypatch.setattr(cases, 'capture_window', lambda hwnd, path: {'width_px': 800, 'height_px': 600})
+        self.images = []
+        monkeypatch.setattr(cases, 'capture_window', lambda hwnd, path: self.images.append(Path(path).name)
+                            or {'width_px': 800, 'height_px': 600})
         monkeypatch.setattr(cases.time, 'sleep', lambda seconds: None)
         self.session = SimpleNamespace(pid=SESSION_PID, alive=lambda: True)
 
@@ -223,3 +225,140 @@ def test_slice_wait_reports_the_menu_when_the_row_never_enables(monkeypatch, tmp
     assert analysis['slice']['export_enabled_after_seconds'] is None
     assert analysis['slice']['export_menu_at_timeout'] == ROWS and 'clicked_at' not in analysis['slice']
     assert analysis['memory_guard_dialogs'] == [] and analysis['guard_failures'] == 0
+
+
+def test_a_case_that_exports_twice_keeps_each_dialog_image_and_receipt_apart(monkeypatch, tmp_path):
+    rig = Rig(monkeypatch, tmp_path, title='Save Sliced file as:')
+    analysis = {}
+    first = cases.export_via_file_menu(rig.session, 'Export plate sliced file', tmp_path, 'plate', tmp_path, analysis,
+                                       'Save Sliced file as', 'gcode')
+    rig.visible, rig.text = True, rig.default
+    second = cases.export_via_file_menu(rig.session, 'Export plate sliced file', tmp_path, 'sphere', tmp_path, analysis,
+                                        'Save Sliced file as', 'gcode',
+                                        image='sphere-export-dialog.png', key='complex_export')
+    assert analysis['export'] is first and analysis['complex_export'] is second and 'export' in analysis
+    assert rig.images == ['export-dialog.png', 'sphere-export-dialog.png']
+    assert first['typed_name'] == 'plate' and second['typed_name'] == 'sphere'
+    assert sorted(path.name for path in tmp_path.iterdir()) == ['plate.gcode', 'sphere.gcode']
+
+
+def test_each_slice_gets_its_own_reading_while_the_guard_records_stay_together(monkeypatch, tmp_path):
+    rig = Guard(monkeypatch, tmp_path)
+    monkeypatch.setattr(m7, 'file_menu_dispatch', lambda *a, **k: (True, None))
+    monkeypatch.setattr(cases, 'read_export_menu', lambda session: {'file': [], 'export': ROWS})
+    monkeypatch.setattr(cases, 'topbar_labels', lambda session: ['panel', '', 'Slice plate', '', 'Print'])
+    monkeypatch.setattr(cases, 'click_slice_start', lambda session: True)
+    analysis = {}
+    for key in ('simple_slice', 'complex_slice'):
+        cases.slice_until_exportable(rig.session, tmp_path, analysis, 'Export plate sliced file', key=key)
+        rig.up = True
+    assert 'slice' not in analysis and set(analysis) == {'simple_slice', 'complex_slice', 'memory_guard_dialogs',
+                                                         'guard_failures'}
+    assert [record['screenshot'] for record in analysis['memory_guard_dialogs']] == [
+        'memory-guard-0.png', 'memory-guard-1.png']
+    assert analysis['guard_failures'] == 0 and analysis['simple_slice']['polls'] == 1
+    assert analysis['complex_slice']['export_menu_after'] == ROWS
+
+
+def test_plate_slice_case_runs_two_sessions_and_judges_the_three_clauses(monkeypatch, tmp_path):
+    sys.path.insert(0, str(ROOT / 'tests' / 'gui'))
+    import m7x_234_export_plate_slice as case
+    from PIL import Image
+    sessions = []
+
+    def boot(args, model=None):
+        sessions.append(model.name)
+        return SimpleNamespace(pid=SESSION_PID, alive=lambda: True, close=lambda: sessions.append('closed'))
+
+    models = iter((case.CUBE, case.SPHERE))
+
+    def snapshot(session, work, phase):
+        Image.new('RGB', (4, 4), (9, 9, 9)).save(work / f'{phase}.png')
+        target = work / f'{phase}.3mf'
+        target.write_bytes(next(models).read_bytes())
+        return target
+
+    def sliced(session, work, analysis, item, timeout_s=150, key='slice'):
+        analysis[key] = {'item': item, 'polls': 1}
+
+    def export(session, item, directory, name, work, analysis, title, kind, image, key):
+        assert item == 'Export plate sliced file' and title == 'Save Sliced file as' and kind == 'archive'
+        Image.new('RGB', (4, 4), (9, 9, 9)).save(work / image)
+        path = gcode.write_sliced(Path(directory) / f'{name}.gcode.3mf',
+                                  gcode=gcode.gcode_text(5 if name == 'plate' else 60).encode('utf-8'))
+        analysis[key] = {'item': item, 'saved_name': path.name, 'saved_extension': '.gcode.3mf'}
+        return analysis[key]
+
+    monkeypatch.setattr(case, 'boot_session', boot)
+    monkeypatch.setattr(case.m7, 'ensure_maximized', lambda session: True)
+    monkeypatch.setattr(case, 'wait_arrival', lambda session, timeout_s, min_frac: (True, 0.01))
+    monkeypatch.setattr(case, 'save_snapshot', snapshot)
+    monkeypatch.setattr(case, 'slice_until_exportable', sliced)
+    monkeypatch.setattr(case, 'capture', lambda session, path: Image.new('RGB', (4, 4), (9, 9, 9)).save(path))
+    monkeypatch.setattr(case, 'export_via_file_menu', export)
+    monkeypatch.setattr(case.m7, 'wait_dialog', lambda pid, timeout_s=15.0, title_substr='': None)
+    analysis = {'results': {}, 'timings': {}}
+    args = SimpleNamespace(exe=None, model=case.CUBE)
+    case.run(args, tmp_path, analysis)
+    assert sessions == ['feishu_std_cube.3mf', 'closed', 'feishu_std_sphere.3mf', 'closed']
+    assert analysis['results'] == dict.fromkeys(gcode.CLAUSES, 'PASS')
+    assert analysis['size_comparison']['checks'] == {'complex_file_larger': True, 'complex_gcode_larger': True}
+    assert analysis['simple']['presets'] == analysis['complex']['presets']  # the same printer and process preset
+    assert [o['shape'] for o in analysis['simple']['plate_objects']] == ['cube']
+    assert [o['shape'] for o in analysis['complex']['plate_objects']] == ['sphere']
+    assert analysis['sliced_files']['simple']['gcode']['layer_count'] == 5
+    assert analysis['sliced_files']['complex']['gcode']['layer_count'] == 60
+    assert set(analysis['harvested_references']) == {label for label, _path, _kind in case.REFERENCES}
+    assert set(analysis['timings']) == {'simple_open', 'simple_slice', 'simple_export', 'complex_open',
+                                        'complex_slice', 'complex_export'}
+    assert sorted(path.name for path in tmp_path.iterdir() if path.suffix in ('.png', '.3mf')) == [
+        'before.3mf', 'before.png', 'export-dialog.png', 'plate.gcode.3mf', 'sliced.png', 'sphere-before.3mf',
+        'sphere-before.png', 'sphere-export-dialog.png', 'sphere-sliced.png', 'sphere.gcode.3mf']
+
+
+def test_plate_slice_case_still_judges_the_cube_when_the_sphere_session_fails(monkeypatch, tmp_path):
+    sys.path.insert(0, str(ROOT / 'tests' / 'gui'))
+    import m7x_234_export_plate_slice as case
+    from PIL import Image
+    closed = []
+
+    def boot(args, model=None):
+        return SimpleNamespace(pid=SESSION_PID, alive=lambda: True, close=lambda: closed.append(model.name))
+
+    models = iter((case.CUBE, case.SPHERE))
+
+    def snapshot(session, work, phase):
+        Image.new('RGB', (4, 4), (9, 9, 9)).save(work / f'{phase}.png')
+        target = work / f'{phase}.3mf'
+        target.write_bytes(next(models).read_bytes())
+        return target
+
+    def sliced(session, work, analysis, item, timeout_s=150, key='slice'):
+        analysis[key] = {'item': item}
+        if key == 'complex_slice':
+            raise ValueError('the Sphere click did not take')
+
+    def export(session, item, directory, name, work, analysis, title, kind, image, key):
+        path = gcode.write_sliced(Path(directory) / f'{name}.gcode.3mf')
+        analysis[key] = {'saved_name': path.name, 'saved_extension': '.gcode.3mf'}
+        return analysis[key]
+
+    monkeypatch.setattr(case, 'boot_session', boot)
+    monkeypatch.setattr(case.m7, 'ensure_maximized', lambda session: True)
+    monkeypatch.setattr(case, 'wait_arrival', lambda session, timeout_s, min_frac: (True, 0.01))
+    monkeypatch.setattr(case, 'save_snapshot', snapshot)
+    monkeypatch.setattr(case, 'slice_until_exportable', sliced)
+    monkeypatch.setattr(case, 'capture', lambda session, path: None)
+    monkeypatch.setattr(case, 'export_via_file_menu', export)
+    monkeypatch.setattr(case.m7, 'wait_dialog', lambda pid, timeout_s=15.0, title_substr='': None)
+    monkeypatch.setattr(case, 'harvested_readings', lambda entries: {})
+    analysis = {'results': {}, 'timings': {}}
+    case.run(SimpleNamespace(exe=None, model=case.CUBE), tmp_path, analysis)
+    assert closed == ['feishu_std_cube.3mf', 'feishu_std_sphere.3mf']
+    assert analysis['results']['生成 .gcode.3mf 文件'] == 'PASS'
+    assert analysis['results']['内含 G-code 与预览信息'] == 'PASS'
+    assert analysis['results']['文件大小随切片复杂度合理增大'].startswith(
+        "FAIL (no readable plate G-code for ['complex']: the two files cannot be compared; "
+        'complex plate: ValueError: the Sphere click did not take')
+    assert analysis['complex']['error'] == 'ValueError: the Sphere click did not take'
+    assert m7.m7_verdict(analysis['results']) == 1
