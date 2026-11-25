@@ -163,6 +163,7 @@ CASES: dict[str, dict] = {
     # 81dbcf1 and again 48e3aa7 (which added the G-code footprint check): two guest sessions GREEN
     # each on 2026-11-26, 38 offline checks each (docs/runs/evidence/feishu-236-2026-11-26).
     "m7x_236_export_gcode": _r("m7", "A"),
+    "m7x_237_export_configs": _o("m7", "A"),       # File > Export Preset Bundle, then Import Configs
     "m7x_238_export_disabled": _o("m7", "A"),    # File > Export rows disabled until the plate is sliced
     "m7x_246_repair_model": _o("m7", "A"),         # model context menu, Fix model (no such row on Windows 11)
     # #254 follow-up probe: a record of how the plate's temporary G-code grows under the memory guard,
