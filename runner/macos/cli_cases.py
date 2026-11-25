@@ -6,14 +6,15 @@ Not the GUI action of the Feishu row and not its coverage. The same product bina
 business step through its command line, so that the business criteria can be read on macOS
 2.4.2 while the test session's windows cannot be driven (console locked, native panels).
 
-  stl227    the empty-plate template (0 objects, U1 0.8 mm) and cube_20mm.stl  -> --export-3mf
+  stl227    cube_20mm.stl with the template's printer, process and filament selected
+            -> --export-3mf (the command line refuses an empty project file: "it's empty")
   gcode236  feishu_std_cube.3mf  -> --slice 1 --export-3mf plate.gcode.3mf, then --export-slicedata
   stl233    the standard cube and the standard sphere  -> --arrange 1 --export-3mf --export-stl
 
 The profile is seeded as project_copy.seed does for the GUI (the app's bundled Snapmaker and BBL
-vendor profiles, its printers, the run's Snapmaker_Orca.conf) under a private --datadir. Every
-command is recorded with its argv, exit code, seconds and output; the reply carries the files the
-product wrote.
+vendor profiles, its printers, the run's Snapmaker_Orca.conf) under a private --datadir; presets.json
+selects the template's presets in that config. Every command is recorded with its argv, exit code,
+seconds and output; the reply carries the files the product wrote.
 """
 import base64
 import hashlib
@@ -37,7 +38,7 @@ FUSE = 480
 KEEP = {".3mf", ".stl", ".gcode", ".json", ".png", ".log"}
 FILE_LIMIT = 48 * 1024 * 1024
 TOTAL_LIMIT = 96 * 1024 * 1024
-INPUTS = {"template.3mf", "baseline.3mf", "cube.3mf", "sphere.3mf", "import/cube_20mm.stl"}
+INPUTS = {"baseline.3mf", "cube.3mf", "sphere.3mf", "import/cube_20mm.stl", "presets.json", "seed.conf"}
 
 
 def identity():
@@ -64,8 +65,7 @@ def run(label, arguments):
 def commands():
     common = ["--datadir", str(PROFILE)]
     if CASE == "stl227":
-        return [("export-3mf", common + ["--export-3mf", str(WORK / "imported.3mf"), str(WORK / "template.3mf"),
-                                         str(WORK / "import" / "cube_20mm.stl")])]
+        return [("export-3mf", common + ["--export-3mf", str(WORK / "imported.3mf"), str(WORK / "import" / "cube_20mm.stl")])]
     if CASE == "gcode236":
         return [("slice-export-3mf", common + ["--slice", "1", "--export-3mf", str(WORK / "plate.gcode.3mf"),
                                                str(WORK / "baseline.3mf")]),
@@ -108,12 +108,27 @@ def written():
     return files
 
 
+def pin_presets():
+    """Select the template's printer, process and filament in the config the profile is seeded
+    with (the [presets] section of Snapmaker_Orca.conf), as a new GUI project would have them."""
+    presets = json.loads((WORK / "presets.json").read_text())
+    text = (WORK / "seed.conf").read_text()
+    config = json.loads(text[:text.rindex("}") + 1])
+    config["presets"] = {key: presets[key] for key in ("machine", "process", "filament") if presets.get(key)}
+    body = json.dumps(config, indent=4, ensure_ascii=False)
+    (WORK / "seed.conf").write_text(body + "\n# MD5 checksum "
+                                     + hashlib.md5((body + "\n").encode("utf-8")).hexdigest().upper() + "\n")
+    return config["presets"]
+
+
 def main():
     report = {"case": CASE, "mode": "CLI", "ok": False, "run_id": (WORK / "run-id").read_text().strip(),
               "commit": (WORK / "commit").read_text().strip() if (WORK / "commit").is_file() else None,
               "started": time.strftime("%Y-%m-%d %H:%M:%S %z"), "commands": []}
     try:
         report["sut"] = identity()
+        if (WORK / "presets.json").is_file():
+            report["selected_presets"] = pin_presets()
         pc.seed(PROFILE)
         report["seed"] = {"profile": PROFILE.name, "conf_sha256": pc.digest(PROFILE / "Snapmaker_Orca.conf"),
                           "system_vendors": sorted(p.name for p in (PROFILE / "system").iterdir() if p.is_dir())}
