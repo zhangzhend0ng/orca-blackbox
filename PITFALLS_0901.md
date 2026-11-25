@@ -628,12 +628,13 @@ run 编号是 `artifacts/windows_mcp_harvest/<编号>`；叙述与决策见运�
   `<前缀>-*` 找件）。
 - **交互桌面预检**：提权中继里 PS Direct 进程的桌面指标是默认值（§18.7），派发前读
   计划任务 `Ready`、Orca 与驱动进程数、分辨率。
-- **`Windows Security` 防火墙提示会在运行中途冒出来盖住应用**：它是 `Snapmaker Control`
-  请求访问网络时弹的，接走真实输入，表现为「开关点不动」「菜单关不上」。04:03 #237 的整屏
-  截图里它压在应用上面（`docs/runs/evidence/feishu-237-2026-11-26/a09a0662-run1-preset-before.png`）。
-  开跑前的预检只取消一次不够；给那个辅助程序加一条入站 Block 规则（等同于点 Cancel）
-  才不再弹，见 `C:\coilm_setup\elevenhour_1125\guest_fw_fix.ps1`。步骤莫名点不动时
-  先存整屏截图。
+- **`Windows Security` 防火墙提示会在运行中途冒出来盖住应用**：被测构建的
+  `snapmaker-orca.exe` 一开始监听端口就弹（提示里显示的程序名是 `Snapmaker Control`），
+  接走真实输入，表现为「开关点不动」「菜单关不上」。04:03 #237 的整屏截图里它压在应用
+  上面（`docs/runs/evidence/feishu-237-2026-11-26/a09a0662-run1-preset-before.png`）。
+  原因是它只有两条「Allow | Public」规则，别的网络配置下每次都问。2026-11-26 04:36 给它加了
+  `OrcaBlackbox-MainBuild-BlockInbound-Any`（入站 Block、所有配置，等同于点 Cancel；撤销用
+  `Remove-NetFirewallRule -DisplayName` 同名）。步骤莫名点不动时先存整屏截图。
 - **`wait_arrival` 在空盘的 U1 模板上立即返回**：模板本身的彩色占比 0.104% 已经过了
   0.1% 的门，随后另存工程撞上还没关的 Loading 框（#251 第一轮）。导入后要等的是
   「盘上有模型候选且应用没有对话框」，不是彩色占比。
