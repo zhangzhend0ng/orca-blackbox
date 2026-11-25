@@ -1,0 +1,86 @@
+[
+  {
+    "path": "case.log",
+    "part": "case.log",
+    "bytes": 24000,
+    "sha256": "1AF50DDC2A161C25FA23451DB54687A9FBAB758BD890687F4BB0AE32EF80A2D4"
+  },
+  {
+    "path": "done.json",
+    "part": "done.json",
+    "bytes": 482,
+    "sha256": "A3007654962398FBB5CA99BAEC9A983E36B90DD5B08312046A114B8CEF23B5A1"
+  },
+  {
+    "path": "execution_host.json",
+    "part": "execution_host.json",
+    "bytes": 367,
+    "sha256": "26CB6AEF68566E1D28D7E73FCEC3597C2C6454E8299AA74B83A4284F1FA603DC"
+  },
+  {
+    "path": "feishu-object-cases/245/run-97ho_yol/analysis.json",
+    "part": "analysis.json",
+    "bytes": 8376,
+    "sha256": "BFCA6864ECB9C3DD749D4A4B637C0282E44F67949BC89F01821874C71A2A9AD8"
+  },
+  {
+    "path": "feishu-object-cases/245/run-97ho_yol/before.3mf",
+    "part": "before.3mf",
+    "bytes": 34890,
+    "sha256": "C6DFB8EA51D3CD08F0DE9503C90138912D3F4E1DC094AF745795C3FC3EAF0CF3"
+  },
+  {
+    "path": "feishu-object-cases/245/run-97ho_yol/before.png",
+    "part": "before.png",
+    "bytes": 289135,
+    "sha256": "70E0401509425C7E66995696BCF0DE201C9735F089098FE836A2A4863A75451C"
+  },
+  {
+    "path": "feishu-object-cases/245/run-97ho_yol/clone-dialog-initial.png",
+    "part": "clone-dialog-initial.png",
+    "bytes": 10725,
+    "sha256": "65FBE3E4DEED75ACD5CEA89FB6D34FC695876C93FFBDFA127E2AC4EC73E20DFC"
+  },
+  {
+    "path": "feishu-object-cases/245/run-97ho_yol/clone-dialog-ready.png",
+    "part": "clone-dialog-ready.png",
+    "bytes": 10725,
+    "sha256": "65FBE3E4DEED75ACD5CEA89FB6D34FC695876C93FFBDFA127E2AC4EC73E20DFC"
+  },
+  {
+    "path": "feishu-object-cases/245/run-97ho_yol/cloned.3mf",
+    "part": "cloned.3mf",
+    "bytes": 37061,
+    "sha256": "3208A95B1E1AE8490E77FB00B1329101F45B59AD7538AF198EEA57767E65F5A8"
+  },
+  {
+    "path": "feishu-object-cases/245/run-97ho_yol/cloned.png",
+    "part": "cloned.png",
+    "bytes": 312193,
+    "sha256": "73B1A5D879234E37F495F4218D67D03EC3605125994779E57331915BA02C4BD6"
+  },
+  {
+    "path": "feishu-object-cases/245/run-97ho_yol/fill-dialog-initial.png",
+    "part": "fill-dialog-initial.png",
+    "bytes": 10725,
+    "sha256": "65FBE3E4DEED75ACD5CEA89FB6D34FC695876C93FFBDFA127E2AC4EC73E20DFC"
+  },
+  {
+    "path": "feishu-object-cases/245/run-97ho_yol/filled.3mf",
+    "part": "filled.3mf",
+    "bytes": 52240,
+    "sha256": "825DDB02B4C192390809B2DE8DF84B0C4206474DBC09D9BB575F01504C160F65"
+  },
+  {
+    "path": "feishu-object-cases/245/run-97ho_yol/filled.png",
+    "part": "filled.png",
+    "bytes": 296617,
+    "sha256": "DA01B6210F5F63F0ED27CEA818C7D060E7AC4C256EB3B1B30104C52A54A908B1"
+  },
+  {
+    "path": "feishu-object-cases/245/run-97ho_yol/fixture.3mf",
+    "part": "fixture.3mf",
+    "bytes": 31093,
+    "sha256": "6B97EC333EE537FC452D46DAA948145BA5B771BA5DBDE6C6E819F45279F960F4"
+  }
+]

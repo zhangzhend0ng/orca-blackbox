@@ -1,0 +1,30 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-25T21:55:25" tests="1" failures="0" errors="0">
+    <testcase name="m7x_245_clone_fill" classname="blackbox.m7x_245_clone" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_245_clone_fill.log" />
+        <property name="dim:initial fixture geometry preserved" value="PASS" />
+        <property name="dim:Clone dialog shows count 1 and Auto arrange checked" value="PASS" />
+        <property name="dim:exactly_one_copy_added" value="PASS" />
+        <property name="dim:original_geometry_and_orientation_preserved" value="PASS" />
+        <property name="dim:copy_geometry_matches" value="PASS" />
+        <property name="dim:clone_is_separately_placed" value="PASS" />
+        <property name="dim:fill_adds_copies" value="PASS" />
+        <property name="dim:fill_copies_match" value="PASS" />
+        <property name="dim:fill_copies_nonoverlapping_and_in_bed" value="PASS" />
+        <property name="dim:fill_saturation_verified" value="PASS" />
+      </properties>
+      <system-out>  Clone dialog shows count 1 and Auto arrange checked: PASS
+  exactly_one_copy_added: PASS
+  original_geometry_and_orientation_preserved: PASS
+  copy_geometry_matches: PASS
+  clone_is_separately_placed: PASS
+  fill_adds_copies: PASS
+  fill_copies_match: PASS
+  fill_copies_nonoverlapping_and_in_bed: PASS
+  fill_saturation_verified: PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

@@ -1,0 +1,60 @@
+﻿[m7x245] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\245\run-d6gawwt3
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\245\run-d6gawwt3\profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\245\run-d6gawwt3\profile C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\245\run-d6gawwt3\fixture.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x5a70d94, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#3)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x5300758, WM_CLOSE)
+[launcher] pid=10652 hwnd=0x58b09b8 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (1.40%, gate 0.10%)
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x2f606a8 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[model context] desktop hit-test did not resolve to canvas at (1171,533)
+[model context] message right-click @(1171,533) on 0x5cd05be
+[model context] menu hwnd=0x2630178: [(0, 'Clone\tCtrl+K', 0), (1, 'Simplify Model', 0), (2, '', 2051), (3, 'Mesh boolean', 1), (4, 'Center', 0), (5, 'Drop', 1), (6, 'Split', 529), (7, 'Mirror', 784), (8, 'Delete\tDel', 0), (9, '', 2051), (10, 'Add Part', 3088), (11, 'Add Negative Part', 3088), (12, 'Add Modifier', 3088), (13, 'Add Support Blocker', 2064), (14, 'Add Support Enforcer', 2064), (15, 'Height Range Modifier', 0), (16, '', 2051), (17, 'Printable', 8), (18, 'Edit Process Settings', 0), (19, 'Edit in Parameter Table', 0), (20, '', 2051), (21, 'Reload from disk', 0), (22, 'Replace with STL', 0), (23, 'Export as one STL...', 0), (24, 'Convert from Inches', 0), (25, 'Convert from Meters', 0), (26, 'Change Filament', 1808)]
+[m7x245] native highlighted row 0 in menu 0x3b891155
+[m7x245] activated context menu item 'Clone'
+[m7x245] clone Clone dialog visible controls: [{'label': 'Number of copies:', 'class': 'Static', 'rect': (778, 468, 1005, 487)}, {'label': '', 'class': 'wxWindowNR', 'rect': (1025, 465, 1145, 491)}, {'label': '', 'class': 'Edit', 'rect': (1046, 469, 1135, 487)}, {'label': '', 'class': 'wxWindowNR', 'rect': (1028, 466, 1043, 477)}, {'label': '', 'class': 'wxWindowNR', 'rect': (1028, 479, 1043, 490)}, {'label': 'Auto arrange plate after cloning:', 'class': 'Static', 'rect': (778, 499, 1005, 518)}, {'label': '', 'class': 'Button', 'rect': (1025, 500, 1043, 518)}, {'label': 'panel', 'class': 'wxWindowNR', 'rect': (768, 533, 1155, 585)}, {'label': 'Fill', 'class': 'wxWindowNR', 'rect': (778, 543, 878, 575)}, {'label': 'OK', 'class': 'wxWindowNR', 'rect': (935, 543, 1035, 575)}, {'label': 'Cancel', 'class': 'wxWindowNR', 'rect': (1045, 543, 1145, 575)}]
+[m7x245] Clone dialog 'OK' input: {'initial': {'dialog_visible': True, 'button_visible': True, 'button_enabled': True, 'main_enabled': False, 'foreground_is_dialog': True, 'foreground_pid': 10652}, 'desktop_hit_is_button': False, 'desktop_hit_pid': 1856, 'transitions': [], 'dispatch': {'mouse_down_completed': True, 'mouse_up_completed': True}}
+[m7x245] Clone dialog 'OK' state: {'dialog_visible': False, 'button_visible': False, 'button_enabled': False, 'main_enabled': True, 'foreground_is_dialog': False, 'foreground_pid': 10652}
+[m7x245] Clone dialog executed 'OK'
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x2f606a8 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[model context] desktop hit-test did not resolve to canvas at (1172,536)
+[model context] message right-click @(1172,536) on 0x5cd05be
+[model context] menu hwnd=0x2660178: [(0, 'Clone\tCtrl+K', 0), (1, 'Simplify Model', 0), (2, '', 2051), (3, 'Mesh boolean', 1), (4, 'Center', 0), (5, 'Drop', 1), (6, 'Split', 529), (7, 'Mirror', 784), (8, 'Delete\tDel', 0), (9, '', 2051), (10, 'Add Part', 3088), (11, 'Add Negative Part', 3088), (12, 'Add Modifier', 3088), (13, 'Add Support Blocker', 2064), (14, 'Add Support Enforcer', 2064), (15, 'Height Range Modifier', 0), (16, '', 2051), (17, 'Printable', 8), (18, 'Edit Process Settings', 0), (19, 'Edit in Parameter Table', 0), (20, '', 2051), (21, 'Reload from disk', 0), (22, 'Replace with STL', 0), (23, 'Export as one STL...', 0), (24, 'Convert from Inches', 0), (25, 'Convert from Meters', 0), (26, 'Change Filament', 1808)]
+[m7x245] native highlighted row 0 in menu 0x3b891155
+[m7x245] activated context menu item 'Clone'
+[m7x245] fill Clone dialog visible controls: [{'label': 'Number of copies:', 'class': 'Static', 'rect': (778, 468, 1005, 487)}, {'label': '', 'class': 'wxWindowNR', 'rect': (1025, 465, 1145, 491)}, {'label': '', 'class': 'Edit', 'rect': (1046, 469, 1135, 487)}, {'label': '', 'class': 'wxWindowNR', 'rect': (1028, 466, 1043, 477)}, {'label': '', 'class': 'wxWindowNR', 'rect': (1028, 479, 1043, 490)}, {'label': 'Auto arrange plate after cloning:', 'class': 'Static', 'rect': (778, 499, 1005, 518)}, {'label': '', 'class': 'Button', 'rect': (1025, 500, 1043, 518)}, {'label': 'panel', 'class': 'wxWindowNR', 'rect': (768, 533, 1155, 585)}, {'label': 'Fill', 'class': 'wxWindowNR', 'rect': (778, 543, 878, 575)}, {'label': 'OK', 'class': 'wxWindowNR', 'rect': (935, 543, 1035, 575)}, {'label': 'Cancel', 'class': 'wxWindowNR', 'rect': (1045, 543, 1145, 575)}]
+[m7x245] Clone dialog 'Fill' input: {'initial': {'dialog_visible': True, 'button_visible': True, 'button_enabled': True, 'main_enabled': False, 'foreground_is_dialog': True, 'foreground_pid': 10652}, 'desktop_hit_is_button': False, 'desktop_hit_pid': 1856, 'transitions': [], 'dispatch': {'mouse_down_completed': True, 'mouse_up_completed': True}}
+[m7x245] Clone dialog 'Fill' state: {'dialog_visible': False, 'button_visible': False, 'button_enabled': True, 'main_enabled': True, 'foreground_is_dialog': False, 'foreground_pid': 10652}
+[m7x245] Clone dialog executed 'Fill'
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x2f606a8 did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x245] analysis {"case": 245, "results": {"initial fixture geometry preserved": "PASS", "Clone dialog shows count 1 and Auto arrange checked": "PASS", "exactly_one_copy_added": "PASS", "original_geometry_and_orientation_preserved": "PASS", "copy_geometry_matches": "PASS", "clone_is_separately_placed": "PASS", "fill_adds_copies": "PASS", "fill_copies_match": "PASS", "fill_copies_nonoverlapping_and_in_bed": "PASS", "fill_saturation_verified": "PASS"}, "phase_seconds": {"baseline": 57.719, "clone_and_save": 17.234, "fill_and_save": 22.953, "total": 99.406}, "dialogs": {"clone": [{"label": "Number of copies:", "class": "Static", "rect": [778, 468, 1005, 487]}, {"label": "", "class": "wxWindowNR", "rect": [1025, 465, 1145, 491]}, {"label": "", "class": "Edit", "rect": [1046, 469, 1135, 487]}, {"label": "", "class": "wxWindowNR", "rect": [1028, 466, 1043, 477]}, {"label": "", "class": "wxWindowNR", "rect": [1028, 479, 1043, 490]}, {"label": "Auto arrange plate after cloning:", "class": "Static", "rect": [778, 499, 1005, 518]}, {"label": "", "class": "Button", "rect": [1025, 500, 1043, 518]}, {"label": "panel", "class": "wxWindowNR", "rect": [768, 533, 1155, 585]}, {"label": "Fill", "class": "wxWindowNR", "rect": [778, 543, 878, 575]}, {"label": "OK", "class": "wxWindowNR", "rect": [935, 543, 1035, 575]}, {"label": "Cancel", "class": "wxWindowNR", "rect": [1045, 543, 1145, 575]}], "fill": [{"label": "Number of copies:", "class": "Static", "rect": [778, 468, 1005, 487]}, {"label": "", "class": "wxWindowNR", "rect": [1025, 465, 1145, 491]}, {"label": "", "class": "Edit", "rect": [1046, 469, 1135, 487]}, {"label": "", "class": "wxWindowNR", "rect": [1028, 466, 1043, 477]}, {"label": "", "class": "wxWindowNR", "rect": [1028, 479, 1043, 490]}, {"label": "Auto arrange plate after cloning:", "class": "Static", "rect": [778, 499, 1005, 518]}, {"label": "", "class": "Button", "rect": [1025, 500, 1043, 518]}, {"label": "panel", "class": "wxWindowNR", "rect": [768, 533, 1155, 585]}, {"label": "Fill", "class": "wxWindowNR", "rect": [778, 543, 878, 575]}, {"label": "OK", "class": "wxWindowNR", "rect": [935, 543, 1035, 575]}, {"label": "Cancel", "class": "wxWindowNR", "rect": [1045, 543, 1145, 575]}]}, "clone_dialog": {"copies": 1, "auto_arrange": true, "auto_arrange_initial": true}, "button_actions": {"OK": {"initial": {"dialog_visible": true, "button_visible": true, "button_enabled": true, "main_enabled": false, "foreground_is_dialog": true, "foreground_pid": 10652}, "desktop_hit_is_button": false, "desktop_hit_pid": 1856, "transitions": [{"dialog_visible": false, "button_visible": false, "button_enabled": false, "main_enabled": true, "foreground_is_dialog": false, "foreground_pid": 10652}], "dispatch": {"mouse_down_completed": true, "mouse_up_completed": true}, "final": {"dialog_visible": false, "button_visible": false, "button_enabled": false, "main_enabled": true, "foreground_is_dialog": false, "foreground_pid": 10652}}, "Fill": {"initial": {"dialog_visible": true, "button_visible": true, "button_enabled": true, "main_enabled": false, "foreground_is_dialog": true, "foreground_pid": 10652}, "desktop_hit_is_button": false, "desktop_hit_pid": 1856, "transitions": [{"dialog_visible": false, "button_visible": false, "button_enabled": true, "main_enabled": true, "foreground_is_dialog": false, "foreground_pid": 10652}], "dispatch": {"mouse_down_completed": true, "mouse_up_completed": true}, "final": {"dialog_visible": false, "button_visible": false, "button_enabled": true, "main_enabled": true, "foreground_is_dialog": false, "foreground_pid": 10652}}}, "geometry": {"checks": {"exactly_one_copy_added": true, "original_geometry_and_orientation_preserved": true, "copy_geometry_matches": true, "clone_is_separately_placed": true, "fill_adds_copies": true, "fill_copies_match": true, "fill_copies_nonoverlapping_and_in_bed": true, "fill_saturation_verified": true}, "clone_count": 2, "clone_pairs": [{"objects": ["Alpha", "Alpha"], "overlap": false}], "source_bounds_mm": [[105.0, 165.0], [105.0, 165.0], [0.0, 24.0]], "cloned_bounds_mm": [[[105.5, 165.5], [137.0, 197.0], [0.0, 24.0]], [[105.500001, 165.500001], [75.0, 135.0], [0.0, 24.0]]], "original_translation_mm": [0.5, 32.0, 0.0], "fill": {"count": 12, "necessary_square_side_mm": 42.426406871192846, "unblocked_square_center_mm": [247.16706143559642, 228.21310343559642], "inscribed_circle_coverage": {"center_region_mm": [30.5, 31.0, 240.5, 241.0], "cells_xy": [6, 6], "inscribed_radius_mm": 30.0, "worst_distance_upper_bound_mm": 22.203720409877263, "strict_overlap_margin_mm": 7.796279590122737}, "status": "saturated", "proof": "inscribed_circle"}}}
+
+[m7] === verdict ===
+  initial fixture geometry preserved: PASS
+  Clone dialog shows count 1 and Auto arrange checked: PASS
+  exactly_one_copy_added: PASS
+  original_geometry_and_orientation_preserved: PASS
+  copy_geometry_matches: PASS
+  clone_is_separately_placed: PASS
+  fill_adds_copies: PASS
+  fill_copies_match: PASS
+  fill_copies_nonoverlapping_and_in_bed: PASS
+  fill_saturation_verified: PASS
+[m7] GREEN
