@@ -468,11 +468,9 @@ def _gone(session, hwnd, timeout_s):
 def open_dialog_record(session, work, image):
     """What dialogs of the application are open now, with a picture of the whole screen and the
     window in front: the record a step leaves when it must not click with a dialog open."""
-    front = winutil.user32.GetForegroundWindow()
     record = {'dialogs': [[text, list(rect)] for text, rect, _hwnd in app_dialogs(session)],
-              'main_enabled': bool(winutil.user32.IsWindowEnabled(session.hwnd)),
-              'foreground': {'title': winutil.window_title(front) if front else None,
-                             'class': winutil.window_class(front) if front else None}}
+              'main_enabled': bool(winutil.user32.IsWindowEnabled(session.hwnd))}
+    record.update({key: value for key, value in in_front(session).items() if key != 'is_app'})
     record.update(_screen_picture(work, image) if image else {'image_name': None})
     return record
 
@@ -672,6 +670,53 @@ def export_preset_bundle(session, kind, directory, work, analysis, tick='all', k
 
 
 SAVE_PRESET_DIALOG = 'Save preset'
+HWND_NOTOPMOST = -2
+
+
+def _lift_and_raise(hwnd):
+    """Lift the demotion the boot gave the main window and bring it to the front, the way m8x_48
+    does: a window with WS_EX_NOACTIVATE never takes the foreground by itself."""
+    from m8x_48_modal_color_header import bring_main_to_mouse
+    return bring_main_to_mouse(hwnd)
+
+
+def _settle_back(hwnd):
+    """Give the main window back the place the boot gave it: not topmost, demoted."""
+    try:
+        winutil.user32.SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0,
+                                    winutil.SWP_NOMOVE | winutil.SWP_NOSIZE | winutil.SWP_NOACTIVATE)
+    finally:
+        winutil.demote_window(hwnd)
+
+
+def in_front(session):
+    """The window that is in front now, and whether it is the application's own."""
+    front = winutil.user32.GetForegroundWindow()
+    root = winutil.user32.GetAncestor(front, 2) if front else 0  # GA_ROOT
+    return {'title': winutil.window_title(front) if front else None,
+            'class': winutil.window_class(front) if front else None,
+            'is_app': bool(front) and root == session.hwnd}
+
+
+def bring_to_front(session, receipt, tries=3):
+    """Bring the application's main window to the front for the real input that follows, and make
+    sure by reading the window in front after every try. What was in front is kept in
+    receipt['front']. Returns whether the application is in front; a real click is not worth
+    trying otherwise (runs dev237i and its shadow twin found the terminal in front)."""
+    record = receipt['front'] = {'tries': []}
+    for attempt in range(1, tries + 1):
+        try:
+            raised = bool(_lift_and_raise(session.hwnd))
+        except Exception as exc:  # noqa: BLE001 - written down; the reading below decides
+            raised, record['error'] = False, f'{type(exc).__name__}: {exc}'
+        time.sleep(0.5)
+        seen = dict(in_front(session), attempt=attempt, raised=raised)
+        record['tries'].append(seen)
+        if seen['is_app']:
+            record['in_front'] = True
+            return True
+    record['in_front'] = False
+    return False
 # The scope switch on the title row of the sidebar's Process panel, and the tab that is a
 # child of the main window only while that panel's page is up (run c378dee0, before.png).
 PROCESS_PAGE = ('Global', 'Objects')
@@ -764,13 +809,37 @@ def save_process_preset(session, name, work, analysis, key='preset_saved', value
         raise ValueError(f'the application has a dialog open: {[row[0] for row in app_dialogs(session)]!r}; '
                          'nothing is clicked while it is')
     receipt['at_start'] = open_dialog_record(session, work, None)
-    dialog = None
+    dialog, lifted = None, False
     try:
         if not show_process_page(session, work, receipt, pp):
             raise ValueError('the process page of the sidebar is not up: no "Quality" tab under the '
                              'Process title (preset-before.png holds the whole screen, sidebar_tree '
                              'the sidebar\'s windows)')
-        steps['advanced_on'] = bool(pp.ensure_advanced(session, want=True))
+        # The switch is clicked for real: the application has to be the window in front.
+        lifted = True
+        if not bring_to_front(session, receipt):
+            last = receipt['front']['tries'][-1]
+            raise ValueError(f'the application window did not come to the front for the real click; in front '
+                             f'is {last["title"]!r} ({last["class"]!r}): nothing is clicked')
+        switch = pp.advanced_switch(session)
+        reading = receipt['advanced'] = {
+            'switch': {'rect': list(switch[0]), 'hwnd': switch[1]} if switch else None,
+            'on_before': list(pp.advanced_on(session) or [])}
+        reading.update(_screen_picture(work, 'advanced-before.png'))
+        on = bool(pp.ensure_advanced(session, want=True))
+        steps['advanced_on'] = on
+        reading.update(_screen_picture(work, 'advanced-after.png'))
+        if not on and switch is not None:
+            # A real click that did not turn it: the same click as a window message, resolved
+            # inside the switch's own window.
+            left, top, right, bottom = switch[0]
+            hit = winutil.msg_click_screen((left + right) // 2, (top + bottom) // 2, switch[1])
+            reading['message_click'] = {'hit': hex(hit) if hit else None}
+            time.sleep(2.0)
+            after = pp.advanced_on(session)
+            steps['advanced_on'] = bool(after and after[1] > after[0])
+            reading.update(_screen_picture(work, 'advanced-after-message.png'))
+        reading['on_after'] = list(pp.advanced_on(session) or [])
         if not steps['advanced_on']:
             raise ValueError('the Advanced switch of the process page did not turn on')
         steps['quality_page'] = bool(pp.click_tab(session, 'Quality', 'height'))
@@ -839,6 +908,8 @@ def save_process_preset(session, name, work, analysis, key='preset_saved', value
     finally:
         if dialog is not None and winutil.user32.IsWindowVisible(dialog):
             winutil._send_msg(dialog, WM_CLOSE, 0, 0)
+        if lifted:
+            _settle_back(session.hwnd)  # the window gets back the place the boot gave it
     return receipt
 
 

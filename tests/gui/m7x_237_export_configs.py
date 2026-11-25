@@ -211,7 +211,7 @@ def export_session(args, work, analysis):
             reading['made_preset'] = {key: made.get(key) for key in
                                       ('file', 'typed', 'closed', 'preset_row_before_save',
                                        'preset_row_after_save', 'error', 'page_up', 'page', 'before',
-                                       'open_dialogs')}
+                                       'open_dialogs', 'steps', 'front', 'advanced')}
             reading['made_preset']['sidebar_tree'] = len(made.get('sidebar_tree') or [])
             # Whether the survey's dialog was gone before anything of the sidebar was touched.
             reading['made_preset']['survey_dialog_closed'] = reading.get('survey_dialog_closed')
