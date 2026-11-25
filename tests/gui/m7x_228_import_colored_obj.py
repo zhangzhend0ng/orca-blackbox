@@ -148,7 +148,8 @@ def control_import(session, work, analysis, geometry):
         # The plate holds the judged object too: the control's own tools are those of its blocks.
         with stage(analysis, 'control_gcode'):
             slice_until_exportable(session, work, control, 'Export G-code', timeout_s=60, key='slice')
-            receipt = export_via_file_menu(session, 'Export G-code', work, 'control', work, control,
+            # A second name: the saved project already holds the name "control" in this directory.
+            receipt = export_via_file_menu(session, 'Export G-code', work, 'control-gcode', work, control,
                                            title_substr='Save G-code file as', kind='gcode',
                                            image='control-export-dialog.png')
             control['gcode'] = gcode_tools(work / receipt['saved_name'], f'{CONTROL}.obj')
