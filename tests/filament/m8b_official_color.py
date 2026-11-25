@@ -9,7 +9,7 @@
 #
 #   #48 模态弹窗布局: 弹窗出现 + 背景(画布)点击不改状态 + OCR 含 SKU/色名
 #   #46 确定生效: 选色卡 -> OK -> 重开弹窗当前选中色变化 (swatch 像素)
-#   #47 取消不登记: 选色卡 -> Cancel -> swatch 像素不变
+#   #47 取消不登记: 读原色 -> 证实选了另一色 -> Cancel 关闭 -> 重开读回原色
 #   #44 颜色列表: 弹窗 OCR 断言分类/官方色名 (证据级)
 #   #55 渐变耗材切换: 槽1 combo -> 'PLA Rainbow' 行 -> combo 文本
 #   #56 模型渲染渐变主色: 槽色块像素非灰 (色度) — 弱断言
@@ -462,14 +462,24 @@ def main() -> int:
                 mid = read_rgb(session, dlg2)
             else:
                 mid = pick_official_card(session, dlg2)
-            m8.close_dialog_by_button(dlg2, "Cancel")
-            time.sleep(1.0)
-            dlg3 = open_dialog_and_dump(session, "after_cancel")
+            cancel_clicked = m8.close_dialog_by_button(dlg2, "Cancel")
+            closed = not _wu.user32.IsWindowVisible(dlg2[3])
+            dlg3 = open_dialog_and_dump(session, "after_cancel") if closed else None
             after47 = (official_popup_colour(dlg3) if (dlg3 and not native)
                        else (read_rgb(session, dlg3) if dlg3 else None))
-            print(f"{LOG} #47 {before47} -> picked {mid} -> cancel -> {after47}")
-            kept = ("PASS" if (before47 and after47 == before47 and mid != before47)
-                    else f"FAIL ({before47} -> {mid} -> {after47})")
+            read_colors = before47 is not None and mid is not None
+            if read_colors:
+                if native:
+                    read_colors = all(field.isascii() and field.isdecimal()
+                                      for color in (before47, mid) for field in color)
+                else:
+                    read_colors = bool(before47[0] and mid[0])
+            changed = read_colors and mid != before47
+            detail = (f"before={before47!r}, selected={mid!r}, changed={changed}, "
+                      f"cancel_clicked={cancel_clicked}, closed={closed}, "
+                      f"reopened={after47!r}")
+            kept = (f"PASS ({detail})" if changed and cancel_clicked and closed
+                    and after47 == before47 else f"FAIL ({detail})")
             if dlg3:
                 m8.close_dialog_by_button(dlg3, "Cancel")
                 time.sleep(0.8)
