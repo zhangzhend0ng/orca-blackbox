@@ -14,6 +14,7 @@ Nothing here is a verdict on the Feishu row.
 """
 import argparse
 import json
+import re
 import sys
 import tempfile
 import time
@@ -38,7 +39,6 @@ from m8_common import combo_text, wait_arrival  # noqa: E402
 
 LOG = '[diag237]'
 KEY = 'Process presets(.zip) lists a printer once the printer is a user preset'
-FALLBACK = 'Filament presets(.zip)'
 
 
 def read(session, work, analysis, key, prefix, image):
@@ -85,22 +85,43 @@ def run(args, work, analysis):
         with stage(analysis, 'survey_user'):
             analysis['user'] = read(session, work, analysis, 'user', 'user-', 'after-survey-user.png')
         with stage(analysis, 'make_preset'):
-            analysis['preset_saved'] = save_process_preset(session, SAVED_PRESET, work, analysis)
+            # The process row already shows a user preset: whether a save button is offered then is
+            # recorded, not required.
+            try:
+                analysis['preset_saved'] = save_process_preset(session, SAVED_PRESET, work, analysis)
+            except Exception as exc:  # noqa: BLE001 - a probe keeps whatever happened
+                analysis['preset_saved'] = {'error': f'{type(exc).__name__}: {exc}'}
+                traceback.print_exc()
         with stage(analysis, 'survey_after'):
             analysis['after'] = read(session, work, analysis, 'after', 'after-', 'after-survey-after.png')
         listed = analysis['after'][KIND] or analysis['user'][KIND]
         analysis['results'][KEY] = 'PASS' if listed else (
             f'FAIL (listed {analysis["user"][KIND]!r} after the switch and {analysis["after"][KIND]!r} after the preset)')
-        if listed or analysis['after'][FALLBACK]:
-            kind = KIND if listed else FALLBACK
-            folder = work / 'packages' / kind.replace(' ', '_')
+        # Export what the dialog lists for a user printer and a user filament; the project-embedded
+        # filament names are left out on purpose (they are what reported `add file fail` before).
+        wanted = (('Printer presets(.zip)', 'all'), ('Filament presets(.zip)', [NAMES['filament']]), (KIND, 'all'))
+        analysis['exports'] = []
+        for number, (kind, tick) in enumerate(wanted, 1):
+            rows = analysis['after'][kind] or analysis['user'][kind]
+            if not rows:
+                analysis['exports'].append({'kind': kind, 'listed': rows, 'error': 'nothing listed'})
+                continue
+            folder = work / 'packages' / f'{number}-{re.sub(r"[^A-Za-z0-9._-]+", "_", kind)}'
             folder.mkdir(parents=True)
-            with stage(analysis, 'export'):
-                receipt = export_preset_bundle(session, kind, folder, work, analysis, tick='all', key='export')
-            analysis['export'] = {'kind': kind, 'landed': receipt.get('landed'), 'dialog_closed': receipt.get('dialog_closed'),
-                                  'result': (receipt.get('result') or {}).get('words'),
-                                  'files': sorted(f'{path.name}:{path.stat().st_size}' for path in folder.rglob('*') if path.is_file())}
-            print(f'{LOG} export {kind}: {analysis["export"]!r}', flush=True)
+            record = {'kind': kind, 'listed': rows, 'tick': tick}
+            analysis['exports'].append(record)
+            try:
+                with stage(analysis, f'export_{number}'):
+                    receipt = export_preset_bundle(session, kind, folder, work, analysis, tick=tick,
+                                                   key=f'export_{number}')
+                record.update(landed=receipt.get('landed'), dialog_closed=receipt.get('dialog_closed'),
+                              result=(receipt.get('result') or {}).get('words'),
+                              refusal=(receipt.get('refusal') or {}).get('words'),
+                              files=sorted(f'{path.name}:{path.stat().st_size}' for path in folder.rglob('*') if path.is_file()))
+            except Exception as exc:  # noqa: BLE001 - recorded
+                record['error'] = f'{type(exc).__name__}: {exc}'
+                traceback.print_exc()
+            print(f'{LOG} export: {record!r}', flush=True)
     finally:
         session.close()
 
