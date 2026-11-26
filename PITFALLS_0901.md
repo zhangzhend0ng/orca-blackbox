@@ -645,6 +645,10 @@ run 编号是 `artifacts/windows_mcp_harvest/<编号>`；叙述与决策见运�
   Block、所有配置的规则，都没有可证明的效果；撤销用
   `Remove-NetFirewallRule -DisplayName <同名>`。现在总控的直派脚本在派发期间每 1.5 秒按类名
   关它一次，并在启动前关一次。
+  **它挡的不只是真实鼠标**：按屏幕点找目标窗口的消息点击（`msg_click_screen` 不带根窗口）
+  也落在遮罩上。#232 六轮「选不中导入的预设」、它的打印机行「点不中」，都是这个；
+  关掉之后三行各一点就中。在一个桌面上某个点击总不生效时，先用 `WindowFromPoint` 看那一点
+  到底是谁。
   教训：**步骤莫名点不动时，先 `WindowFromPoint` / 按类名找窗口，再截屏；只枚举 `#32770`
   不算查过**；真实点击之前先把 Orca 主窗口置前并读回前台和落点处的窗口。
 - **`obj_run.ps1` 的 `-Attempts` 是最后一个轮次号，不是列表**：`-Attempts 1,2` 经 `-File`
@@ -694,6 +698,16 @@ run 编号是 `artifacts/windows_mcp_harvest/<编号>`；叙述与决策见运�
   `PresetBundle::import_presets` 只收单个预设 JSON 或 zip 类容器里的成员
   （`libslic3r/PresetBundle.cpp`，`sync/softfever-20261010`）。要做导入配置的夹具，
   用装着三份预设 JSON 的 zip。
+- **预设下拉列表里带键盘焦点框的那一行，默认的 OCR 读不到**（#232，scale 3 / psm 6）：整页
+  只剩 `------` 分隔行时，把图反相再用 psm 4 读一遍，两种读数取并集（
+  `tests/import_configs_cases.py` 的 `popup_page`）。并集里分隔行的词会重复，不影响判定。
+- **读「预设行现在写的是什么」要按控件读**：按旧文字再找一次（`find_process_preset_combo`
+  只认 `@Snapmaker` 和 `Default Setting`）在行变成导入的预设名之后读到空串；换到别的打印机
+  之后工艺行会自己变成新的预设名。控件被重建时按原矩形再找一次（`m7x_232_import_configs.py`
+  的 `row_text`）。`process_panel.kids` 给的是（文本、类名、矩形、窗口句柄、x、y）。
+- **改用例的打印格式时，回放里对读日志行的匹配要跟着改**：#232 的用例从 `47aa1df` 起打印
+  `machine list (1 pages): [...]`，回放只认 `machine list: [...]`，两个干净的会话因此在
+  「列表在日志里」一项上判失败。
 - **「导出配置包」弹窗的列出条件**（`CreatePresetsDialog.cpp` 的 `ExportConfigsDialog::
   data_init()`，`sync/softfever-20261010`）：对每个可见的非默认打印机，只收与它兼容的
   用户耗材/工艺预设；`Printer presets(.zip)` 只列非系统打印机。种子 profile 里那 3 个

@@ -1,0 +1,64 @@
+﻿[m7x232] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\232\run-ks08_xkv
+[m7x249] started build_config at 2026-11-26T00:14:27.972192+00:00
+[m7x249] finished build_config in 0.031s
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\232\run-ks08_xkv\import-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\232\run-ks08_xkv\import-profile C:\coil\orca-blackbox-v3-r1\fixtures\agent_layer_cube.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x6051108, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#2)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x5fd0f4e, WM_CLOSE)
+[launcher] pid=3452 hwnd=0x625079e rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.10%)
+[m7x249] started ini_attempt at 2026-11-26T00:15:16.265035+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x68e047a did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=322) sent, completed=False
+[m7x232] chooser {'title': 'Select profile to load:', 'entered': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\232\\run-ks08_xkv\\bb_three.ini', 'file': 'bb_three.ini', 'filters': [{'selected': -1, 'items': []}, {'selected': 0, 'items': ['Config files (*.json;*.zip;*.orca_printer;*.orca_filament)']}], 'ini_in_filter': False}
+[m7x232] dialog {'title': 'Import result', 'texts': ['OK', 'htmlWindow'], 'screenshot': 'ini-dialog-1.png', 'message': '& There are 0 configs imported. (Only non-system and compatible configs) Hint: Make sure you have added the corresponding printer before importing the configs.'}
+[m7x249] finished ini_attempt in 8.672s
+[m7x249] started first_import at 2026-11-26T00:15:24.931353+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x68e047a did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=322) sent, completed=False
+[m7x232] chooser {'title': 'Select profile to load:', 'entered': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\232\\run-ks08_xkv\\inputs\\bb_three.zip', 'file': 'bb_three.zip', 'filters': [{'selected': -1, 'items': []}, {'selected': 0, 'items': ['Config files (*.json;*.zip;*.orca_printer;*.orca_filament)']}, {'selected': -1, 'items': []}], 'ini_in_filter': False}
+[m7x232] dialog {'title': 'Import result', 'texts': ['OK', 'htmlWindow'], 'screenshot': 'zip1-dialog-1.png', 'message': 'There are 3 configs imported. (Only non-system and compatible configs) S'}
+[m7x249] finished first_import in 9.813s
+[m7x249] started preset_lists_and_selection at 2026-11-26T00:15:34.749367+00:00
+[m7x232] machine list (1 pages): ['------ Project-inside presets ------', '~ Snapmaker U1 (0.8 nozzle)(agent_layer_cube.3mf)', '------ User User presets presets ------', 'BB Test Printer', '------ Select/Remove Select/Remove printers printers (system (system presets) presets) ------ ------', '------ Create printer ------']
+[m7x232] filament list (1 pages): ['------ Project-inside presets ------ |', 'Generic PETG @U1 0.8 nozzle(agent_layer_cube.3...', 'Snapmaker PLA Silk @U1 0.8 nozzle(agent_layer-...', '------ User presets ------', 'BB Test Filament', '------ System presets ------', 'AliZ PA-CF', 'AliZ PETG-CF', 'AliZ PETG-Metal', 'Bambu ABS', 'Bambu ABS-GF', 'Bambu ASA', 'Bambu ASA-Aero']
+[panel] preset NOT found; sidebar texts near Process row: [('panel', 'wxWindowNR', 8, 487), ('panel', 'wxWindowNR', 8, 497), ('BB Test Process', 'wxWindowNR', 41, 499), ('panel', 'wxWindowNR', 8, 537), ('Quality', 'wxWindowNR', 22, 541), ('Strength', 'wxWindowNR', 93, 541), ('Support', 'wxWindowNR', 175, 541), ('Multimaterial', 'wxWindowNR', 252, 541), ('Others', 'wxWindowNR', 365, 541), ('Process', 'Static', 37, 462), ('Advanced', 'Static', 261, 464)]
+[m7x232] process list (1 pages): ['------ User presets ------', '~ BB Test Process']
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x68e047a did not complete
+[topbar] File opened at offset 10
+[m3g] 'Save Project as' at index 4, dispatching WM_COMMAND
+[topbar] WM_COMMAND(id=319) sent, completed=False
+[m3g] save dialog 'Save file as'
+[m7x249] finished preset_lists_and_selection in 17.187s
+[m7x249] started second_import at 2026-11-26T00:15:51.931750+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x68e047a did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=322) sent, completed=False
+[m7x232] chooser {'title': 'Select profile to load:', 'entered': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\232\\run-ks08_xkv\\inputs\\bb_three.zip', 'file': 'bb_three.zip', 'filters': [{'selected': -1, 'items': []}, {'selected': 0, 'items': ['Config files (*.json;*.zip;*.orca_printer;*.orca_filament)']}, {'selected': -1, 'items': []}], 'ini_in_filter': False}
+[m7x232] dialog {'title': 'Overwrite config', 'texts': ['Yes', 'No', 'htmlWindow', 'Yes to All', 'No to All'], 'screenshot': 'zip2-dialog-1.png', 'message': 'A config exists with the same name: BB Test Printer. Do you want to overwrite it? 2 S No Yes to All | | No to All'}
+[m7x232] dialog {'title': 'Overwrite config', 'texts': ['Yes', 'No', 'htmlWindow', 'Yes to All', 'No to All'], 'screenshot': 'zip2-dialog-2.png', 'message': 'A config exists with the same name: BB Test Filament. Do you want to overwrite it? 2 S No Yes to All | | No to All'}
+[m7x232] dialog {'title': 'Overwrite config', 'texts': ['Yes', 'No', 'htmlWindow', 'Yes to All', 'No to All'], 'screenshot': 'zip2-dialog-3.png', 'message': 'A config exists with the same name: BB Test Process. Do you want to overwrite it? 2 S No Yes to All | | No to All'}
+[m7x232] dialog {'title': 'Import result', 'texts': ['OK', 'htmlWindow'], 'screenshot': 'zip2-dialog-4.png', 'message': 'There are 3 configs imported. (Only non-system and compatible configs) S'}
+[m7x249] finished second_import in 10.735s
+[m7x249] started verify at 2026-11-26T00:16:12.752654+00:00
+[m7x232] {'瀵煎叆鎴愬姛锛? 涓璁惧嚭鐜板湪瀵瑰簲鍒楄〃涓斿弬鏁版纭?: 'PASS', '鍚屽悕閲嶅鏃舵寜浜у搧鏃㈡湁绛栫暐鎻愮ず锛堣鐩?閲嶅懡鍚嶏級': 'PASS'}
+[m7x249] finished verify in 0.297s
+
+[m7] === verdict ===
+  瀵煎叆鎴愬姛锛? 涓璁惧嚭鐜板湪瀵瑰簲鍒楄〃涓斿弬鏁版纭? PASS
+  鍚屽悕閲嶅鏃舵寜浜у搧鏃㈡湁绛栫暐鎻愮ず锛堣鐩?閲嶅懡鍚嶏級: PASS
+[m7] GREEN
