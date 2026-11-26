@@ -1,0 +1,14 @@
+﻿{
+    "commit":  "fe33d9c8d80e51d647d694bccc47045c31cc4ddd",
+    "case":  "diag_bundle_user_printer",
+    "test_host":  "DESKTOP-NVS6QT4",
+    "test_user":  "test",
+    "task_state":  "Ready",
+    "orca_processes_after":  0,
+    "summary":  "SUMMARY: PASS=0 FAIL=1\r\nFAILED: diag_bundle_user_printer",
+    "dispatched_at":  "2026-11-26T08:57:20.2041938+08:00",
+    "scenario_completed_at":  "2026-11-26T09:00:49.5325883+08:00",
+    "suite_completed_at":  "2026-11-26T09:00:50.7737926+08:00",
+    "log_path":  "C:\\coil\\orca-blackbox-v3-r1\\artifacts\\regress_diag_bundle_user_printer.log",
+    "log_sha256":  "F88619BC1E23C315E1CC1860E7BB8DE3B4B51CE6F2176C9919A1615DEEA5687E"
+}

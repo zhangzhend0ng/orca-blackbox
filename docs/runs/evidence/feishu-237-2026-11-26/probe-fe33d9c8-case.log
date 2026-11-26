@@ -1,0 +1,103 @@
+﻿[diag237] retained work directory: C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\probe-e7admt0r
+[profile] system presets source: C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\resources\profiles
+[profile] user presets seeded: ['filament', 'process']
+[profile] seeded C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\probe-e7admt0r\probe-profile (resources: C:\coil\orca-blackbox-v3-r1\resources)
+[profile] conf: {"app": {"language": "en_US", "show_splash_screen": false, "single_instance": false, "default_page": "1", "privacy_policy_isagree": true, "backup_switch": false}, "firstguide": {"finish": true}}
+[launcher] C:\coil\Projects\SnapmakerOrca_dev\build\src\Release\snapmaker-orca.exe --datadir C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\probe-e7admt0r\probe-profile C:\coil\orca-blackbox-v3-r1\fixtures\agent_layer_cube.3mf
+[winutil] demote_watchdog: foreground restored to pre-launch window (#1)
+[launcher] blocker dismissed: 'customized preset' (hwnd=0x611082e, WM_CLOSE)
+[winutil] demote_watchdog: foreground restored to pre-launch window (#2)
+[launcher] blocker dismissed: 'new version of snapmaker orca' (hwnd=0x5f31016, WM_CLOSE)
+[launcher] pid=5744 hwnd=0x6110400 rect=(360, 116, 1560, 916) dpi=96
+[m3] gl canvas ready: True
+[m8] arrival: True (0.48%, gate 0.10%)
+[m7x249] started survey_embedded at 2026-11-26T00:58:27.717588+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x6260058 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=330) sent, completed=False
+[diag237] embedded: {'Printer config bundle(.orca_printer)': [], 'Filament bundle(.orca_filament)': ['Generic PETG', 'Snapmaker PLA Silk'], 'Printer presets(.zip)': [], 'Filament presets(.zip)': ['Generic PETG', 'Snapmaker PLA Silk'], 'Process presets(.zip)': []}; dialog closed=True
+[m7x249] finished survey_embedded in 13.703s
+[m7x249] started import at 2026-11-26T00:58:41.420956+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x6260058 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Import menu: ['Import 3MF/STL/STEP/SVG/OBJ/AMF...\tCtrl+I', 'Import Zip Archive...', 'Import Configs...']
+[topbar] WM_COMMAND(id=322) sent, completed=False
+[m7x232] chooser {'title': 'Select profile to load:', 'entered': 'C:\\coil\\orca-blackbox-v3-r1\\artifacts\\feishu-object-cases\\237\\probe-e7admt0r\\inputs\\bb_three.zip', 'file': 'bb_three.zip', 'filters': [{'selected': -1, 'items': []}, {'selected': 0, 'items': ['Config files (*.json;*.zip;*.orca_printer;*.orca_filament)']}], 'ini_in_filter': False}
+[m7x232] dialog {'title': 'Import result', 'texts': ['OK', 'htmlWindow'], 'screenshot': 'zip1-dialog-1.png', 'message': 'There are 3 configs imported. (Only non-system and compatible configs) S'}
+[m7x249] finished import in 9.250s
+[m7x249] started switch_printer at 2026-11-26T00:58:50.672143+00:00
+[m7x232] machine list (1 pages): ['------ Project-inside presets ------', '~ Snapmaker U1 (0.8 nozzle)(agent_layer_cube.3mf)', '------ User User presets presets ------', 'BB Test Printer', '------ Select/Remove Select/Remove printers printers (system (system presets) presets) ------ ------', '------ Create printer ------']
+[m7x249] finished switch_printer in 3.047s
+[m7x249] started survey_user at 2026-11-26T00:58:53.786518+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x6260058 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=330) sent, completed=False
+[diag237] user: {'Printer config bundle(.orca_printer)': ['BB Test Printer'], 'Filament bundle(.orca_filament)': ['BB Test Filament', 'Generic PETG', 'Snapmaker PLA Silk'], 'Printer presets(.zip)': ['BB Test Printer'], 'Filament presets(.zip)': ['BB Test Filament', 'Generic PETG', 'Snapmaker PLA Silk'], 'Process presets(.zip)': []}; dialog closed=True
+[m7x249] finished survey_user in 11.609s
+[m7x249] started make_preset at 2026-11-26T00:59:05.400779+00:00
+python.exe : Traceback (most recent call last):
+At C:\coil\run_suite.ps1:35 char:3
++   & "C:\Python311\python.exe" (Case-File $c) 2>&1 | Out-File -FilePat ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\coil\orca-blackbox-v3-r1\tests\gui\diag_bundle_user_printer.py", line 91, in run
+    analysis['preset_saved'] = save_process_preset(session, SAVED_PRESET, work, analysis)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\coil\orca-blackbox-v3-r1\tests\file_export_cases.py", line 935, in save_process_preset
+    raise ValueError('the preset row shows no button whose tooltip says save')
+ValueError: the preset row shows no button whose tooltip says save
+[panel] click_tab(Quality) poll0 strat0: '|= layer height layer height 04 mm first layer height 04 mm = line wid'
+[m5g] preset-row buttons: [(341, 492, 357, 518), (367, 492, 383, 518), (393, 492, 409, 518)]
+[m5g] btn (341, 492, 357, 518) tooltip='-AliZ PLA @System _'
+[m5g] btn (367, 492, 383, 518) tooltip='-AliZ PLA @System _'
+[m5g] btn (393, 492, 409, 518) tooltip='-AliZ PLA @System _'
+[m5g] btn (341, 492, 357, 518) tooltip='-AliZ PLA @System _'
+[m5g] btn (367, 492, 383, 518) tooltip='-AliZ PLA @System _'
+[m5g] btn (393, 492, 409, 518) tooltip='-AliZ PLA @System _'
+[m5g] btn (341, 492, 357, 518) tooltip='-AliZ PLA @System _'
+[m5g] btn (367, 492, 383, 518) tooltip='-AliZ PLA @System _'
+[m5g] btn (393, 492, 409, 518) tooltip='-AliZ PLA @System _'
+[m5g] btn (341, 492, 357, 518) tooltip='-AliZ PLA @System _'
+[m5g] btn (367, 492, 383, 518) tooltip='-AliZ PLA @System _'
+[m5g] btn (393, 492, 409, 518) tooltip='-AliZ PLA @System _'
+[m7x249] finished make_preset in 41.250s
+[m7x249] started survey_after at 2026-11-26T00:59:46.649328+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x6260058 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=330) sent, completed=False
+[diag237] after: {'Printer config bundle(.orca_printer)': ['BB Test Printer'], 'Filament bundle(.orca_filament)': ['BB Test Filament', 'Generic PETG', 'Snapmaker PLA Silk'], 'Printer presets(.zip)': ['BB Test Printer'], 'Filament presets(.zip)': ['BB Test Filament', 'Generic PETG', 'Snapmaker PLA Silk'], 'Process presets(.zip)': []}; dialog closed=True
+[m7x249] finished survey_after in 11.609s
+[m7x249] started export_1 at 2026-11-26T00:59:58.261425+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x6260058 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=330) sent, completed=False
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x52d0de4 did not complete
+[export] Printer presets.zip of kind 'Printer presets(.zip)': 3538 bytes in C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\probe-e7admt0r\packages\1-Printer_presets_.zip_
+[m7x249] finished export_1 in 20.657s
+[diag237] export: {'kind': 'Printer presets(.zip)', 'listed': ['BB Test Printer'], 'tick': 'all', 'landed': True, 'dialog_closed': True, 'result': '& Export successful S) S Yes', 'refusal': None, 'files': ['Printer presets.zip:3538']}
+[m7x249] started export_2 at 2026-11-26T01:00:18.920759+00:00
+[winutil] SendMessageTimeoutW(msg=0x201) to hwnd 0x6260058 did not complete
+[topbar] File opened at offset 10
+[m7] file menu: ['New Project\tCtrl+N', 'Open Project...\tCtrl+O', 'Recent projects', 'Save Project\tCtrl+S', 'Save Project as...\tCtrl+Shift+S', '', 'Import', 'Export', '', 'Quit']
+[m7] Export menu: ['Export all objects as one STL...', 'Export all objects as STLs...', 'Export Generic 3MF...', 'Export plate sliced file...\tCtrl+G', 'Export all plate sliced file...', 'Export G-code...', 'Export Preset Bundle...']
+[topbar] WM_COMMAND(id=330) sent, completed=False
+[winutil] SendMessageTimeoutW(msg=0x202) to hwnd 0x4b50ea8 did not complete
+[export] Filament presets.zip of kind 'Filament presets(.zip)': 1434 bytes in C:\coil\orca-blackbox-v3-r1\artifacts\feishu-object-cases\237\probe-e7admt0r\packages\2-Filament_presets_.zip_
+[m7x249] finished export_2 in 20.547s
+[diag237] export: {'kind': 'Filament presets(.zip)', 'listed': ['BB Test Filament', 'Generic PETG', 'Snapmaker PLA Silk'], 'tick': ['BB Test Filament'], 'landed': True, 'dialog_closed': True, 'result': '& Export successful S) S Yes', 'refusal': None, 'files': ['Filament presets.zip:1434']}
+[diag237] {'Process presets(.zip) lists a printer once the printer is a user preset': 'FAIL (listed [] after the switch and [] after the preset)'}
+
+[m7] === verdict ===
+  Process presets(.zip) lists a printer once the printer is a user preset: FAIL (listed [] after the switch and [] after the preset)
+[m7] RED

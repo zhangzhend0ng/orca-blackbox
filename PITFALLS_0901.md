@@ -708,18 +708,25 @@ run 编号是 `artifacts/windows_mcp_harvest/<编号>`；叙述与决策见运�
 - **改用例的打印格式时，回放里对读日志行的匹配要跟着改**：#232 的用例从 `47aa1df` 起打印
   `machine list (1 pages): [...]`，回放只认 `machine list: [...]`，两个干净的会话因此在
   「列表在日志里」一项上判失败。
-- **「导出配置包」弹窗的列出条件**（`CreatePresetsDialog.cpp` 的 `ExportConfigsDialog::
-  data_init()`，`sync/softfever-20261010`）：对每个可见的非默认打印机，只收与它兼容的
-  用户耗材/工艺预设；`Printer presets(.zip)` 只列非系统打印机。种子 profile 里那 3 个
-  工艺预设在弹窗里一行都列不出（#237 第一轮）。
-- **导出预设包在这个构建上报 `add file fail`**：`Snapmaker Orca - Info`，按钮文本是
+- **「导出配置包」弹窗按什么列**（`CreatePresetsDialog.cpp` 的 `ExportConfigsDialog::
+  data_init()` 和类型切换处，`sync/softfever-20261010`；2026-11-26 09:00 的探针
+  `diag_bundle_user_printer` 实测）：`data_init()` 遍历预设集里的打印机，**跳过不可见的、
+  默认的和工程内嵌的**，对剩下的每台打印机收与它兼容的用户耗材/工艺预设。
+  `Printer presets(.zip)` 列其中的非系统打印机（用户打印机）；两种耗材类型按耗材名列出
+  可覆盖的耗材预设，工程内嵌的也算；`Process presets(.zip)` **只列已安装的系统打印机**
+  （它自己的基础预设）里至少有一个用户工艺预设的，用户打印机不列。测试用的新配置目录里
+  没有安装系统打印机，当前打印机又是工程内嵌的，所以工艺类型每次都是空的——这是前置条件
+  没做全，不是产品的缺陷（#237 的前十三次会话都栽在这里）。要做这一条：先在
+  Select/Remove printers 里安装一台系统打印机，再准备用户打印机/耗材/工艺预设。
+- **导出预设包对工程内嵌的耗材名报 `add file fail`**：`Snapmaker Orca - Info`，按钮文本是
   `Yes`，正文自绘（窗口文本只有 `Yes`，要 OCR）。源码在 `mz_zip_writer_add_file`
   失败时返回 `ADD_FILE_FAIL`，并在应用日志里写一行 `<预设名> Failed to add file to ZIP
-  archive`——先读那一行。实测于 #232 第二轮（按类型导出耗材预设）和 #237。
-- **应用自己另存出来的用户工艺预设，「导出配置包」里照样列不出**：打开带内嵌打印机预设的
-  工程，改层高 0.2→0.3，另存为 `BB Export Test`（`Save Process as` 框；文件
-  `user/default/process/BB Export Test.json` 落盘，侧栏预设行变成它），再打开
-  `Export Preset Bundle`，`Process presets(.zip)` 一行都没有（#237 第十轮起的客机会话）。
+  archive`——先读那一行。实测于 #232 第二轮（按类型导出耗材预设）和 #237。**对真正的
+  用户预设不报**：探针里导出用户打印机的 `Printer presets(.zip)` 和只勾用户耗材的
+  `Filament presets(.zip)` 都 `Export successful`。
+- **工艺行已经是用户预设时没有保存按钮**：`save_process_preset` 靠按钮提示里的 `save` 找
+  保存按钮，会以 `the preset row shows no button whose tooltip says save` 停下（探针
+  `probe237a/b`）。要先改一个参数让行变成已修改。
 - **Advanced 开关是「左蓝右蓝」才叫开**：读开关小矩形左右两半的色度，和大于 0.3 为开
   （实测开 `[0.798, 0.426]`、关 `[0, 0]`）；`process_panel.ensure_advanced` 按「旋钮在右」
   判断，在这个布局上读反了。消息点击和置前后的真实点击都能打开它（
