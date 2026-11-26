@@ -37,14 +37,16 @@ from import_configs_oracle import (ARCHIVE, DUPLICATES, IMPORTED, INI, NAMES, VE
 
 def process_row_combo(session):
     """The process preset list control by where it is: the wide texted control on the Process title
-    row, whatever it reads once the printer was switched (process_panel's finder knows two texts)."""
+    row, whatever it reads once the printer was switched (process_panel's finder knows two texts;
+    after the switch to the imported printer the row read `BB Test Process`, run dev232o-3c0c6065).
+    `kids` gives (text, class, rect, hwnd, x, y)."""
     py = pp.process_row_y(session)
     if py is None:
         return None
-    for text, control, rect, _h, lx, ly in pp.kids(session):
-        if text.strip() and winutil.user32.IsWindowVisible(control) and py + 10 <= ly <= py + 70 \
+    for text, _cls, rect, hwnd, lx, ly in pp.kids(session):
+        if text.strip() and winutil.user32.IsWindowVisible(hwnd) and py + 10 <= ly <= py + 70 \
                 and 10 <= lx <= 60 and rect[2] - rect[0] >= 100:
-            return rect, control, text.strip()
+            return rect, hwnd, text.strip()
     return None
 
 TEMPLATE = HERE / 'fixtures/agent_layer_cube.3mf'
@@ -111,8 +113,8 @@ def run(args, work, analysis):
                     def read():
                         current = control
                         if not winutil.user32.IsWindow(current):
-                            current = next((c for _t, c, r, *_rest in pp.kids(session)
-                                            if list(r) == list(rect) and winutil.user32.IsWindowVisible(c)), None)
+                            current = next((hwnd for _text, _cls, r, hwnd, *_rest in pp.kids(session)
+                                            if list(r) == list(rect) and winutil.user32.IsWindowVisible(hwnd)), None)
                         return combo_text(current) if current else ''
                     return read
 
