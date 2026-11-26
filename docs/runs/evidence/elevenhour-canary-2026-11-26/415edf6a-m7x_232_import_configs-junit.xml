@@ -1,0 +1,21 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<testsuites>
+  <testsuite name="orca-blackbox" timestamp="2026-11-26T08:47:47" tests="1" failures="0" errors="0">
+    <testcase name="m7x_232_import_configs" classname="blackbox.m7x_232_import" time="0.0">
+      <properties>
+        <property name="log" value="artifacts\regress_m7x_232_import_configs.log" />
+        <property name="dim:鍚屽悕閲嶅鏃舵寜浜у搧鏃㈡湁绛栫暐鎻愮ず锛堣鐩?閲嶅懡鍚嶏級" value="PASS" />
+      </properties>
+      <system-out>[m7x232] dialog {'title': 'Import result', 'texts': ['OK', 'htmlWindow'], 'screenshot': 'zip2-dialog-4.png', 'message': 'There are 3 configs imported. (Only non-system and compatible configs) S'}
+[m7x249] finished second_import in 10.687s
+[m7x249] started verify at 2026-11-26T00:47:46.500526+00:00
+[m7x232] {'瀵煎叆鎴愬姛锛? 涓璁惧嚭鐜板湪瀵瑰簲鍒楄〃涓斿弬鏁版纭?: 'PASS', '鍚屽悕閲嶅鏃舵寜浜у搧鏃㈡湁绛栫暐鎻愮ず锛堣鐩?閲嶅懡鍚嶏級': 'PASS'}
+[m7x249] finished verify in 0.203s
+
+[m7] === verdict ===
+  瀵煎叆鎴愬姛锛? 涓璁惧嚭鐜板湪瀵瑰簲鍒楄〃涓斿弬鏁版纭? PASS
+  鍚屽悕閲嶅鏃舵寜浜у搧鏃㈡湁绛栫暐鎻愮ず锛堣鐩?閲嶅懡鍚嶏級: PASS
+[m7] GREEN</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

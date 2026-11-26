@@ -1,0 +1,422 @@
+{
+  "case": 238,
+  "results": {
+    "\u5207\u7247\u5bfc\u51fa\u7c7b\u6761\u76ee\u7f6e\u7070": "PASS",
+    "\u5207\u7247\u5b8c\u6210\u540e\u6062\u590d\u53ef\u7528": "PASS"
+  },
+  "timings": {
+    "open_unsliced_plate": {
+      "started_utc": "2026-11-26T00:34:37.819566+00:00",
+      "duration_s": 9.156
+    },
+    "observe_before_slice": {
+      "started_utc": "2026-11-26T00:34:46.982967+00:00",
+      "duration_s": 6.828
+    },
+    "slice": {
+      "started_utc": "2026-11-26T00:34:53.812726+00:00",
+      "duration_s": 13.157
+    },
+    "observe_after_slice": {
+      "started_utc": "2026-11-26T00:35:06.963460+00:00",
+      "duration_s": 12.515
+    }
+  },
+  "fixture": {
+    "name": "feishu_std_cube.3mf",
+    "bytes": 30270,
+    "sha256": "36389ec3d26c54fc8d3e6bfccac3097fb080a12ab8fab0f2b7f8038cfc278d94"
+  },
+  "presets": {
+    "printer_model": "Snapmaker U1",
+    "printer_settings_id": "Snapmaker U1 (0.4 nozzle)(feishu_std_cube.3mf)",
+    "print_settings_id": "0.20mm Standard @Snapmaker U1 (0.4 nozzle)(feishu_std_cube.3mf)",
+    "filament_settings_id": "Generic PLA @U1 0.4 nozzle(feishu_std_cube.3mf)",
+    "layer_height": "0.2",
+    "initial_layer_print_height": "0.25",
+    "print_sequence": "by layer"
+  },
+  "before_is_sliced": false,
+  "plate_objects": [
+    "\u7acb\u65b9\u4f53"
+  ],
+  "menu_before_slice": {
+    "file": [
+      {
+        "index": 0,
+        "label": "New Project\tCtrl+N",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 1,
+        "label": "Open Project...\tCtrl+O",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 2,
+        "label": "Recent projects",
+        "enabled": true,
+        "submenu": true
+      },
+      {
+        "index": 3,
+        "label": "Save Project\tCtrl+S",
+        "enabled": false,
+        "submenu": false
+      },
+      {
+        "index": 4,
+        "label": "Save Project as...\tCtrl+Shift+S",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 5,
+        "label": "",
+        "enabled": false,
+        "submenu": false
+      },
+      {
+        "index": 6,
+        "label": "Import",
+        "enabled": true,
+        "submenu": true
+      },
+      {
+        "index": 7,
+        "label": "Export",
+        "enabled": true,
+        "submenu": true
+      },
+      {
+        "index": 8,
+        "label": "",
+        "enabled": false,
+        "submenu": false
+      },
+      {
+        "index": 9,
+        "label": "Quit",
+        "enabled": true,
+        "submenu": false
+      }
+    ],
+    "export": [
+      {
+        "index": 0,
+        "label": "Export all objects as one STL...",
+        "enabled": true,
+        "submenu": false,
+        "text_luminance": 249
+      },
+      {
+        "index": 1,
+        "label": "Export all objects as STLs...",
+        "enabled": true,
+        "submenu": false,
+        "text_luminance": 249
+      },
+      {
+        "index": 2,
+        "label": "Export Generic 3MF...",
+        "enabled": true,
+        "submenu": false,
+        "text_luminance": 249
+      },
+      {
+        "index": 3,
+        "label": "Export plate sliced file...\tCtrl+G",
+        "enabled": false,
+        "submenu": false,
+        "text_luminance": 249
+      },
+      {
+        "index": 4,
+        "label": "Export all plate sliced file...",
+        "enabled": false,
+        "submenu": false,
+        "text_luminance": 249
+      },
+      {
+        "index": 5,
+        "label": "Export G-code...",
+        "enabled": false,
+        "submenu": false,
+        "text_luminance": 249
+      },
+      {
+        "index": 6,
+        "label": "Export Preset Bundle...",
+        "enabled": true,
+        "submenu": false,
+        "text_luminance": 249
+      }
+    ],
+    "menu_picture": {
+      "image": "menu-before.png",
+      "file_menu_px": [
+        1,
+        29,
+        251,
+        229
+      ],
+      "foreground": true,
+      "screen_px": [
+        1920,
+        1080
+      ],
+      "opened_by": [
+        {
+          "how": "row rectangle",
+          "point": [
+            126,
+            184
+          ],
+          "opened": true
+        }
+      ],
+      "menus_px": {
+        "file": [
+          1,
+          29,
+          251,
+          229
+        ],
+        "export": [
+          245,
+          170,
+          521,
+          330
+        ]
+      }
+    }
+  },
+  "slice": {
+    "topbar_before": [
+      "panel",
+      "",
+      "Slice plate",
+      "",
+      "Print"
+    ],
+    "export_enabled_after_seconds": 8.6,
+    "polls": 1,
+    "topbar_after": [
+      "panel",
+      "",
+      "Slice plate",
+      "",
+      "Print"
+    ],
+    "export_menu_after": [
+      {
+        "index": 0,
+        "label": "Export all objects as one STL...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 1,
+        "label": "Export all objects as STLs...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 2,
+        "label": "Export Generic 3MF...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 3,
+        "label": "Export plate sliced file...\tCtrl+G",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 4,
+        "label": "Export all plate sliced file...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 5,
+        "label": "Export G-code...",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 6,
+        "label": "Export Preset Bundle...",
+        "enabled": true,
+        "submenu": false
+      }
+    ]
+  },
+  "memory_guard_dialogs": [],
+  "guard_failures": 0,
+  "menu_after_slice": {
+    "file": [
+      {
+        "index": 0,
+        "label": "New Project\tCtrl+N",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 1,
+        "label": "Open Project...\tCtrl+O",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 2,
+        "label": "Recent projects",
+        "enabled": true,
+        "submenu": true
+      },
+      {
+        "index": 3,
+        "label": "Save Project\tCtrl+S",
+        "enabled": false,
+        "submenu": false
+      },
+      {
+        "index": 4,
+        "label": "Save Project as...\tCtrl+Shift+S",
+        "enabled": true,
+        "submenu": false
+      },
+      {
+        "index": 5,
+        "label": "",
+        "enabled": false,
+        "submenu": false
+      },
+      {
+        "index": 6,
+        "label": "Import",
+        "enabled": true,
+        "submenu": true
+      },
+      {
+        "index": 7,
+        "label": "Export",
+        "enabled": true,
+        "submenu": true
+      },
+      {
+        "index": 8,
+        "label": "",
+        "enabled": false,
+        "submenu": false
+      },
+      {
+        "index": 9,
+        "label": "Quit",
+        "enabled": true,
+        "submenu": false
+      }
+    ],
+    "export": [
+      {
+        "index": 0,
+        "label": "Export all objects as one STL...",
+        "enabled": true,
+        "submenu": false,
+        "text_luminance": 249
+      },
+      {
+        "index": 1,
+        "label": "Export all objects as STLs...",
+        "enabled": true,
+        "submenu": false,
+        "text_luminance": 249
+      },
+      {
+        "index": 2,
+        "label": "Export Generic 3MF...",
+        "enabled": true,
+        "submenu": false,
+        "text_luminance": 249
+      },
+      {
+        "index": 3,
+        "label": "Export plate sliced file...\tCtrl+G",
+        "enabled": true,
+        "submenu": false,
+        "text_luminance": 249
+      },
+      {
+        "index": 4,
+        "label": "Export all plate sliced file...",
+        "enabled": true,
+        "submenu": false,
+        "text_luminance": 249
+      },
+      {
+        "index": 5,
+        "label": "Export G-code...",
+        "enabled": true,
+        "submenu": false,
+        "text_luminance": 249
+      },
+      {
+        "index": 6,
+        "label": "Export Preset Bundle...",
+        "enabled": true,
+        "submenu": false,
+        "text_luminance": 249
+      }
+    ],
+    "menu_picture": {
+      "image": "menu-after.png",
+      "file_menu_px": [
+        1,
+        29,
+        251,
+        229
+      ],
+      "foreground": true,
+      "screen_px": [
+        1920,
+        1080
+      ],
+      "opened_by": [
+        {
+          "how": "row rectangle",
+          "point": [
+            126,
+            184
+          ],
+          "opened": true
+        }
+      ],
+      "menus_px": {
+        "file": [
+          1,
+          29,
+          251,
+          229
+        ],
+        "export": [
+          245,
+          170,
+          521,
+          330
+        ]
+      }
+    }
+  },
+  "expectation_gaps": {
+    "\u5207\u7247\u5bfc\u51fa\u7c7b\u6761\u76ee\u7f6e\u7070": [],
+    "\u5207\u7247\u5b8c\u6210\u540e\u6062\u590d\u53ef\u7528": []
+  },
+  "editor_after_case": {
+    "alive": true,
+    "dialog": null
+  },
+  "wall_seconds": 90.656
+}

@@ -9,7 +9,7 @@
 | [首轮收据](1b2d99dd-run1-receipt.json) | `1b2d99dd…` | GREEN | 123.560 秒 | 通过（25 项） |
 | [第二轮收据](1b2d99dd-run2-receipt.json) | `1b2d99dd…` | GREEN | 123.837 秒 | 通过（25 项） |
 
-两个会话都在 win11-test 的 `test` 交互桌面经 `runner/hv_go.ps1` 启动，各自是新的 Orca 进程、配置目录和工作目录，打开 `fixtures/agent_layer_cube.3mf`（U1 0.8 mm）。[构建摘要](build.json)。进入默认回归（提交 `c5ec2ec…`）之后在同一提交上又跑了一次，收据见[金丝雀回归](../elevenhour-canary-2026-11-26/README.md)。更早的会话留在这个目录里（`2c32e51c…`、`641f1a6c…` ×2、`3f55a59a…`、`8d5a5533…` ×2），都是选不中预设的版本。
+两个会话都在 win11-test 的 `test` 交互桌面经 `runner/hv_go.ps1` 启动，各自是新的 Orca 进程、配置目录和工作目录，打开 `fixtures/agent_layer_cube.3mf`（U1 0.8 mm）。[构建摘要](build.json)。进入默认回归（提交 `c5ec2ec…`）之后在同一提交上又跑了一次，收据见[金丝雀回归](../elevenhour-canary-2026-11-26/README.md)。fa706g3 上同一用例在 `415edf6…` 上的一次 SHADOW 也通过（用例内 99.3 秒，[收尾记录](fa-415edf6a-d0d739-done.json)），三行同样各一点就中。更早的会话留在这个目录里（`2c32e51c…`、`641f1a6c…` ×2、`3f55a59a…`、`8d5a5533…` ×2），都是选不中预设的版本。
 
 **配置文件是怎么来的。** 飞书前置条件写的是 `.ini`。2.4.0 的「导入配置」文件框放行 `.ini`，随后报 `Import result`：`There are 0 configs imported. (Only non-system and compatible configs) Hint: Make sure you have added the corresponding printer before importing the configs.`（[截图](1b2d99dd-run1-ini-dialog-1.png)）。所以用例现场改用产品认的容器：从模板的三个系统预设把继承链合并成独立预设，改名为 `BB Test Printer` / `BB Test Filament` / `BB Test Process`；耗材、工艺两份把 `compatible_printers` 写成空列表、条件写成空串，使它们与所有打印机兼容。三份 JSON 平铺在工作目录，另打成 zip。这一段每轮都留作读数，不参与判定。
 
