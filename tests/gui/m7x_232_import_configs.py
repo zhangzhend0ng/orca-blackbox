@@ -29,10 +29,23 @@ from m3_common import add_common_args, boot_session
 from m7x_249_add_part import capture, stage
 from m8_common import combo_text, switch_filament_preset, wait_arrival, wait_slots
 from zip_import_oracle import digest
-from import_configs_cases import answer_dialogs, find_printer_combo, import_once, read_popup, select_row
-from import_configs_oracle import (ARCHIVE, DUPLICATES, IMPORTED, INI, MACHINE_CHECK, NAMES, VENDOR, build_config,
+from import_configs_cases import answer_dialogs, find_printer_combo, import_once, select_row
+from import_configs_oracle import (ARCHIVE, DUPLICATES, IMPORTED, INI, NAMES, VENDOR, build_config,
                                    bundle_presets, profile_presets, project_settings, template_presets, verify_import,
                                    vendor_directory, write_ini)
+
+
+def process_row_combo(session):
+    """The process preset list control by where it is: the wide texted control on the Process title
+    row, whatever it reads once the printer was switched (process_panel's finder knows two texts)."""
+    py = pp.process_row_y(session)
+    if py is None:
+        return None
+    for text, control, rect, _h, lx, ly in pp.kids(session):
+        if text.strip() and winutil.user32.IsWindowVisible(control) and py + 10 <= ly <= py + 70 \
+                and 10 <= lx <= 60 and rect[2] - rect[0] >= 100:
+            return rect, control, text.strip()
+    return None
 
 TEMPLATE = HERE / 'fixtures/agent_layer_cube.3mf'
 LOG = '[m7x232]'
@@ -76,13 +89,13 @@ def run(args, work, analysis):
             first = profile_presets(datadir)
             capture(session, work / 'imported.png')
         with stage(analysis, 'preset_lists_and_selection'):
-            # Feishu step 2. The printer preset is not switched to: two clicks on its
-            # popup row did not switch it (guest runs 2c32e51c, 641f1a6c, a09a066). The
-            # imported filament and process presets are compatible with every printer, so
-            # the three lists are read as they stand; the filament and process rows are
-            # read and clicked where they were read, and the project is saved.
+            # Feishu step 2. The three lists are read, the three presets are selected where they
+            # were read, and the project is saved and its effective values compared. The printer
+            # row is switched to as well, as the case was first written (58b73fd): the clicks that
+            # did not take it on 2c32e51c, 641f1a6c and a09a066 were made while a full-screen window
+            # covered the guest's desktop (PITFALLS 22.1), and they resolve their target by the
+            # screen point.
             analysis['dropdowns'] = {}
-            analysis['machine_check'] = MACHINE_CHECK
             effective, reason = None, None
             try:
                 printer = find_printer_combo(session, settings['printer_model'])
@@ -90,18 +103,33 @@ def run(args, work, analysis):
                     raise ValueError('the printer preset list control was not found in the sidebar')
                 rect, control = printer[1], printer[2]
                 point = ((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2)
-                machine = analysis['dropdowns']['machine'] = {'target': NAMES['machine'], 'before': combo_text(control)}
-                popup = read_popup(session, point, session.hwnd, 'machine', work, machine)
-                if popup[1]:
-                    pp.close_popup(session, popup[1], point)
-                def slot_text():
-                    """What the preset row of the first filament slot reads now."""
-                    hit = next((s for s in wait_slots(session, timeout_s=3) if s['slot'] == 1 and s['combo']), None)
-                    return combo_text(hit['combo'][2]) if hit else ''
+
+                def row_text(control, rect):
+                    """A reader of one preset row: its control, or the visible control that took its
+                    rectangle when a selection rebuilt it. (Run dev232m-4999edf0: the process row read
+                    `BB Test Process` on screen and a lookup by its old text read ''.)"""
+                    def read():
+                        current = control
+                        if not winutil.user32.IsWindow(current):
+                            current = next((c for _t, c, r, *_rest in pp.kids(session)
+                                            if list(r) == list(rect) and winutil.user32.IsWindowVisible(c)), None)
+                        return combo_text(current) if current else ''
+                    return read
 
                 def unselected(kind, record):
                     where = 'is in the list but could not be selected' if record.get('listed') else 'is not in the list'
                     return ValueError(f'{record["target"]} {where}: {kind}; tried {record.get("attempts")}')
+
+                machine = analysis['dropdowns']['machine'] = {'target': NAMES['machine'], 'before': combo_text(control)}
+                if not select_row(session, point, session.hwnd, 'machine', NAMES['machine'], work, machine,
+                                  row_text(control, rect)):
+                    raise unselected('machine', machine) from None
+                answer_dialogs(session, work, analysis, 'machine-selected')
+
+                def slot_text():
+                    """What the preset row of the first filament slot reads now."""
+                    hit = next((s for s in wait_slots(session, timeout_s=3) if s['slot'] == 1 and s['combo']), None)
+                    return combo_text(hit['combo'][2]) if hit else ''
 
                 slot = next((s for s in wait_slots(session, timeout_s=10) if s['slot'] == 1 and s['combo']), None)
                 if not slot:
@@ -114,19 +142,11 @@ def run(args, work, analysis):
                 answer_dialogs(session, work, analysis, 'filament-selected')
                 process = pp.find_process_preset_combo(session)
                 if not process[1]:
+                    process = process_row_combo(session)
+                if not process[1]:
                     raise ValueError('the process preset list control was not found')
                 rect, control = process[0], process[1]
-
-                def process_text():
-                    """What the process preset row reads now: the control found above, or the visible
-                    control that took its rectangle when the selection rebuilt it. (Run dev232m-4999edf0:
-                    the row read `BB Test Process` on screen and the reading looked the control up by
-                    its old text, `@Snapmaker` or `Default Setting`, and so read ''.)"""
-                    current = control
-                    if not winutil.user32.IsWindow(current):
-                        current = next((c for _t, c, r, *_rest in pp.kids(session)
-                                        if list(r) == list(rect) and winutil.user32.IsWindowVisible(c)), None)
-                    return combo_text(current) if current else ''
+                process_text = row_text(control, rect)
                 point = ((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2)
                 step = analysis['dropdowns']['process'] = {'target': NAMES['process'], 'before': combo_text(control)}
                 if not select_row(session, point, session.hwnd, 'process', NAMES['process'], work, step, process_text):
