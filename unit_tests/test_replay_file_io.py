@@ -2057,6 +2057,12 @@ def test_the_config_is_what_the_repository_builds_and_the_case_log_ties_the_reco
         return [line for line in lines if not line.startswith(start)]
 
     configs_refused(tmp_path, ["lists_and_dialogs_are_in_the_case_log"], log_lines=without("[m7x232] machine list:"))
+    # the case names the pages it read (`machine list (1 pages): [...]`, since 47aa1df): the same line
+    paged = [line.replace(" list: ", " list (1 pages): ") for line in lines]
+    assert all(value is True for value in configs.replay(*write_configs_run(tmp_path, log_lines=paged))["checks"].values())
+    # one list told twice is not one reading of it
+    configs_refused(tmp_path, ["lists_and_dialogs_are_in_the_case_log"],
+                    log_lines=lines + [line for line in lines if line.startswith("[m7x232] machine list")])
     configs_refused(tmp_path, ["lists_and_dialogs_are_in_the_case_log"], log_lines=without("[m7x232] dialog "))
     configs_refused(tmp_path, ["verdict_line_is_in_the_case_log"], log_lines=without("[m7x232] {"))
     # a failure's text holds quotes and garbled clause names in the log: only its outcome is read

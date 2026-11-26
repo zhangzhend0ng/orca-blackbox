@@ -151,7 +151,9 @@ CASES: dict[str, dict] = {
     "m7x_228_import_colored_obj": _o("m7", "A"),   # File > Import, an OBJ with two MTL colours
     "m7x_229_import_step": _o("m7", "A"),         # File > Import, a STEP of three coloured cubes
     "m7x_230_import_project": _o("m7", "A"),        # File > Import, a saved two-plate project
-    "m7x_232_import_configs": _o("m7", "A"),        # File > Import Configs
+    # 1b2d99d: two guest sessions GREEN on 2026-11-26 and 25 offline checks each
+    # (docs/runs/evidence/feishu-232-2026-11-26).
+    "m7x_232_import_configs": _r("m7", "A"),
     "m7x_231_import_zip": _o("m7", "A"),            # File > Import Zip Archive
     # 6bdf66b: two guest sessions GREEN on 2026-11-26 and 43 offline checks each
     # (docs/runs/evidence/feishu-233-2026-11-26).

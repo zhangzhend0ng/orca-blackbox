@@ -250,12 +250,20 @@ def _literal(text):
         return None
 
 
+LIST_LINE = re.compile(rf"^{re.escape(TAG)} ({'|'.join(KINDS)}) list(?: \(\d+ pages\))?: (.*)$", re.M)
+
+
 def _logged_lists(log, dropdowns) -> bool:
-    """Whether the case log printed the rows of each preset list as the record holds them."""
+    """Whether the case log printed the rows of each preset list as the record holds them, once each.
+    The case names the pages it read (`machine list (1 pages): [...]`, since 47aa1df); the line
+    without them is read the same way."""
+    printed = {}
+    for match in LIST_LINE.finditer(log):
+        printed.setdefault(match.group(1), []).append(match.group(2))
     for kind in KINDS:
         read = dropdowns.get(kind).get("rows") if isinstance(dropdowns.get(kind), dict) else None
-        lines = [line for line in log.splitlines() if line.startswith(f"{TAG} {kind} list: ")]
-        if not isinstance(read, list) or len(lines) != 1 or _literal(lines[0].split(": ", 1)[1]) != read:
+        lines = printed.get(kind, [])
+        if not isinstance(read, list) or len(lines) != 1 or _literal(lines[0]) != read:
             return False
     return True
 
